@@ -870,6 +870,10 @@ export default function MyAppointments() {
                         setShouldOpenChatFromNotification(false);
                         setActiveChatAppointmentId(null);
                       }}
+                      preferUnreadForAppointmentId={preferUnreadForAppointmentId}
+                      onConsumePreferUnread={(id) => {
+                        if (preferUnreadForAppointmentId === id) setPreferUnreadForAppointmentId(null);
+                      }}
                       onExportChat={(appointment, comments) => {
                         setExportAppointment(appointment);
                         setExportComments(comments);
@@ -1170,7 +1174,7 @@ function getDateLabel(date) {
   if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
   return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
-function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDelete, actionLoading, onShowOtherParty, onOpenReinitiate, handleArchiveAppointment, handleUnarchiveAppointment, isArchived, onCancelRefresh, copyMessageToClipboard, activeChatAppointmentId, shouldOpenChatFromNotification, onChatOpened, onExportChat }) {
+function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDelete, actionLoading, onShowOtherParty, onOpenReinitiate, handleArchiveAppointment, handleUnarchiveAppointment, isArchived, onCancelRefresh, copyMessageToClipboard, activeChatAppointmentId, shouldOpenChatFromNotification, onChatOpened, onExportChat, preferUnreadForAppointmentId, onConsumePreferUnread }) {
   const [replyTo, setReplyTo] = useState(null);
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState(appt.comments || []);
@@ -1299,9 +1303,14 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         if (onChatOpened) {
           onChatOpened();
         }
+        // If this open was requested with unread preference, set the local flag
+        if (preferUnreadForAppointmentId === appt._id) {
+          setPreferUnreadOnOpen(true);
+          if (typeof onConsumePreferUnread === 'function') onConsumePreferUnread(appt._id);
+        }
       }
     }
-  }, [shouldOpenChatFromNotification, activeChatAppointmentId, appt._id, appt.buyerChatLocked, appt.sellerChatLocked, appt.buyerId, appt.sellerId, currentUser._id, onChatOpened]);
+  }, [shouldOpenChatFromNotification, activeChatAppointmentId, appt._id, appt.buyerChatLocked, appt.sellerChatLocked, appt.buyerId, appt.sellerId, currentUser._id, onChatOpened, preferUnreadForAppointmentId, onConsumePreferUnread]);
   
   // Store appointment and reasons for modals
   const [appointmentToHandle, setAppointmentToHandle] = useState(null);
