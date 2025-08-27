@@ -376,29 +376,10 @@ function AppRoutes({ bootstrapped }) {
         // - This appears to be an update to an existing message rather than a new message
         // - The comment object structure suggests it's an update, not a new message
         
-        // CRITICAL: Check if this is a reaction update by looking for reactions
-        // If the comment has reactions, it's almost certainly a reaction update to an existing message
-        const hasReactions = data.comment.reactions && data.comment.reactions.length > 0;
-        
-        // Check if this appears to be a reaction update by examining the comment structure
-        const isLikelyReactionUpdate = hasReactions || 
-                                      data.messageId || 
-                                      data.comment._id; // If _id exists, it's likely an update
-        
-        // Additional check: if this has reactions, it's definitely a reaction update
-        // Even if it has message content, reactions indicate it's updating an existing message
-        if (!data.comment.message || 
-            data.comment.message.trim() === '' || 
-            isLikelyReactionUpdate ||
-            hasReactions) { // This is the key fix - if there are reactions, skip notification
-          // This is likely a reaction update, status change, or metadata update, not a new message
-          // Don't show notification for these
-          return;
-        }
-        
-        // Additional safety check: if the message content is very short (like "Cc..."), 
-        // it might be a reaction update with minimal content
-        if (data.comment.message && data.comment.message.trim().length < 10) {
+        // CRITICAL: Only skip if this is clearly a reaction update
+        const hasReactions = Array.isArray(data.comment.reactions) && data.comment.reactions.length > 0;
+        const isUpdateToExisting = Boolean(data.messageId); // server uses messageId for updates
+        if (hasReactions || isUpdateToExisting) {
           return;
         }
         
@@ -429,7 +410,7 @@ function AppRoutes({ bootstrapped }) {
         }
         
         // Show notification for new message
-        playNotification();
+        try { playNotification(); } catch (_) {}
         
         if (isOnMyAppointments) {
           // If on MyAppointments page, dispatch custom event to open chat
@@ -445,7 +426,7 @@ function AppRoutes({ bootstrapped }) {
             },
             autoClose: 5000,
             closeOnClick: true,
-            pauseOnHover: true
+            pauseOnHover: false
           });
         } else {
           // If not on MyAppointments page, navigate to it
@@ -462,7 +443,7 @@ function AppRoutes({ bootstrapped }) {
             },
             autoClose: 5000,
             closeOnClick: true,
-            pauseOnHover: true
+            pauseOnHover: false
           });
         }
       }
