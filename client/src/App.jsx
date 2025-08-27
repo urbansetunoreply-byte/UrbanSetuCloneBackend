@@ -410,12 +410,11 @@ function AppRoutes({ bootstrapped }) {
         }
         
         // Show notification for new message
-       
+        try { playNotification(); } catch (_) {}
         
         if (isOnMyAppointments) {
           // If on MyAppointments page, dispatch custom event to open chat
           toast.info(`New message from ${senderName}`, {
-            try { playNotification(); } catch (_) {};
             onClick: () => {
               // Dispatch custom event to MyAppointments page to open the specific chat
               window.dispatchEvent(new CustomEvent('openChatFromNotification', {
@@ -433,7 +432,6 @@ function AppRoutes({ bootstrapped }) {
         } else {
           // If not on MyAppointments page, navigate to it
           toast.info(`New message from ${senderName}`, {
-            try { playNotification(); } catch (_) {}; 
             onClick: () => {
               // Navigate to MyAppointments page when notification is clicked
               // and pass the appointment ID to open the specific chat
