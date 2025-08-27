@@ -420,7 +420,8 @@ function AppRoutes({ bootstrapped }) {
               window.dispatchEvent(new CustomEvent('openChatFromNotification', {
                 detail: {
                   appointmentId: data.appointmentId,
-                  fromNotification: true
+                  fromNotification: true,
+                  preferUnread: true
                 }
               }));
             },

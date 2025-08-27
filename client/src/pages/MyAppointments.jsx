@@ -122,7 +122,7 @@ export default function MyAppointments() {
   // Listen for notification clicks when already on MyAppointments page
   useEffect(() => {
     const handleNotificationClick = (e) => {
-      const { appointmentId } = e.detail;
+      const { appointmentId, preferUnread } = e.detail || {};
       if (appointmentId) {
         // Find the appointment and set the state directly
         const appointment = appointments.find(appt => appt._id === appointmentId);
@@ -130,6 +130,7 @@ export default function MyAppointments() {
           setNotificationChatData(appointment);
           setShouldOpenChatFromNotification(true);
           setActiveChatAppointmentId(appointmentId);
+          if (preferUnread) setPreferUnreadOnOpen(true);
         }
       }
     };
@@ -1183,6 +1184,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const [unreadNewMessages, setUnreadNewMessages] = useState(0);
   // Show unread divider only right after opening chat when there are unread messages
   const [showUnreadDividerOnOpen, setShowUnreadDividerOnOpen] = useState(false);
+  // Prefer scrolling to unread on open from notification
+  const [preferUnreadOnOpen, setPreferUnreadOnOpen] = useState(false);
   // Infinite scroll/pagination for chat
   const MESSAGES_PAGE_SIZE = 30;
   const [visibleCount, setVisibleCount] = useState(MESSAGES_PAGE_SIZE);
@@ -2204,11 +2207,16 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   useEffect(() => {
     if (!showChatModal) return;
     // Ensure at least unread messages are visible when opening
-    if (unreadNewMessages > 0) {
+    const computedUnread = comments.filter(c => 
+      c.senderEmail !== currentUser.email && 
+      (!c.readBy || !c.readBy.includes(currentUser._id))
+    ).length;
+    const unreadToUse = preferUnreadOnOpen ? (unreadNewMessages || computedUnread) : unreadNewMessages;
+    if (unreadToUse > 0) {
       setVisibleCount(prev => Math.max(MESSAGES_PAGE_SIZE, unreadNewMessages + 5));
       // After next paint, scroll to first unread message instead of bottom
       setTimeout(() => {
-        const targetIndex = Math.max(0, filteredComments.length - unreadNewMessages);
+        const targetIndex = Math.max(0, filteredComments.length - unreadToUse);
         const targetMsg = filteredComments[targetIndex];
         if (targetMsg && messageRefs.current[targetMsg._id]) {
           try {
@@ -2217,6 +2225,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         }
         // Show divider only on open case
         setShowUnreadDividerOnOpen(true);
+        setPreferUnreadOnOpen(false);
       }, 50);
     } else {
       // No unread -> go to bottom as usual
