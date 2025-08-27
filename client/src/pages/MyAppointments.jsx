@@ -7398,7 +7398,7 @@ You can lock this chat again at any time from the options.</p>
             <div className="mb-6">
               <div className="flex items-center gap-2 mb-3">
                 <FaInfoCircle className="text-blue-500 text-sm" />
-                <span className="text-sm font-medium text-gray-700">Last 5 messages will be reported:</span>
+                <span className="text-sm font-medium text-gray-700">The last 5 messages in this chat will be sent to UrbanSetu. This person won't know you reported them:</span>
               </div>
               <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 max-h-48 overflow-y-auto">
                 {filteredComments.slice(-5).map((message, index) => (
