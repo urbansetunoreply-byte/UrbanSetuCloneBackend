@@ -1212,6 +1212,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const [messageToDelete, setMessageToDelete] = useState(null);
   const [deleteForBoth, setDeleteForBoth] = useState(true);
   const [showClearChatModal, setShowClearChatModal] = useState(false);
+  
+  // Undo functionality for messages deleted for me
+  const [recentlyDeletedMessage, setRecentlyDeletedMessage] = useState(null);
+  const [undoTimer, setUndoTimer] = useState(null);
   // Report modal states
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState('');
@@ -1276,6 +1280,26 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       document.body.style.overflow = 'unset';
     };
   }, [showChatLockModal, showChatUnlockModal, showForgotPasswordModal, showRemoveLockModal]);
+  
+  // Cleanup undo timer when chat modal closes or component unmounts
+  useEffect(() => {
+    return () => {
+      if (undoTimer) {
+        clearTimeout(undoTimer);
+      }
+    };
+  }, [undoTimer]);
+  
+  // Clear undo state when chat modal closes
+  useEffect(() => {
+    if (!showChatModal) {
+      setRecentlyDeletedMessage(null);
+      if (undoTimer) {
+        clearTimeout(undoTimer);
+        setUndoTimer(null);
+      }
+    }
+  }, [showChatModal, undoTimer]);
 
   // Handle notification-triggered chat opening
   useEffect(() => {
@@ -2276,6 +2300,46 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       localStorage.setItem(`removedDeletedMsgs_${apptId}`, JSON.stringify(updated));
     }
   }
+  
+  // Undo functionality for messages deleted for me
+  const handleUndoDelete = () => {
+    if (recentlyDeletedMessage) {
+      // Remove from locally removed IDs
+      const ids = getLocallyRemovedIds(appt._id);
+      const updatedIds = ids.filter(id => id !== recentlyDeletedMessage._id);
+      localStorage.setItem(`removedDeletedMsgs_${appt._id}`, JSON.stringify(updatedIds));
+      
+      // Add the message back to comments
+      setComments(prev => [...prev, recentlyDeletedMessage]);
+      
+      // Clear the undo state
+      setRecentlyDeletedMessage(null);
+      if (undoTimer) {
+        clearTimeout(undoTimer);
+        setUndoTimer(null);
+      }
+      
+      toast.success('Message restored!');
+    }
+  };
+  
+  const startUndoTimer = (message) => {
+    // Clear any existing timer
+    if (undoTimer) {
+      clearTimeout(undoTimer);
+    }
+    
+    // Set the recently deleted message
+    setRecentlyDeletedMessage(message);
+    
+    // Start 5 second timer
+    const timer = setTimeout(() => {
+      setRecentlyDeletedMessage(null);
+      setUndoTimer(null);
+    }, 5000);
+    
+    setUndoTimer(timer);
+  };
   // Fetch latest comments when refresh button is clicked
   const fetchLatestComments = async () => {
     try {
@@ -2467,6 +2531,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
             );
             setComments(prev => prev.filter(msg => !ids.includes(msg._id)));
             ids.forEach(cid => addLocallyRemovedId(appt._id, cid));
+            
+            // Start undo timer for the first message (for bulk deletes, we'll show undo for the first one)
+            if (messageToDelete.length > 0) {
+              startUndoTimer(messageToDelete[0]);
+            }
+            
             toast.success(`Deleted ${ids.length} messages for you!`);
           } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to delete selected messages for you.');
@@ -2503,6 +2573,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         } catch {}
         setComments(prev => prev.filter(msg => msg._id !== messageToDelete._id));
         addLocallyRemovedId(appt._id, messageToDelete._id);
+        
+        // Start undo timer for messages deleted for me
+        startUndoTimer(messageToDelete);
+        
         toast.success('Message deleted for you!');
       }
     } catch (err) {
@@ -6554,6 +6628,22 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                     </div>
                   )}
                 </button>
+              </div>
+            )}
+            
+            {/* Undo Delete Message Button - Fixed at bottom */}
+            {recentlyDeletedMessage && (
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30">
+                <div className="bg-gray-800 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-fadeIn">
+                  <FaUndo className="text-white" />
+                  <span className="text-sm font-medium">Message deleted for you</span>
+                  <button
+                    onClick={handleUndoDelete}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors"
+                  >
+                    Undo
+                  </button>
+                </div>
               </div>
             )}
           </div>
