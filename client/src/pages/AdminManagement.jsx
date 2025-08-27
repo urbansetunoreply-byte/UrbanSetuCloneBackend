@@ -23,6 +23,7 @@ export default function AdminManagement() {
   const [accountLoading, setAccountLoading] = useState(false);
   const [accountStats, setAccountStats] = useState({ listings: 0, appointments: 0 });
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [showPasswordModal, setShowPasswordModal] = useState(true);
   const [managementPassword, setManagementPassword] = useState("");
   const [managementPasswordError, setManagementPasswordError] = useState("");
@@ -412,16 +413,26 @@ export default function AdminManagement() {
     }
   };
 
-  // Filter accounts based on search term
+  // Filter accounts based on search term and status
   const filterAccounts = (accounts) => {
-    if (!searchTerm.trim()) return accounts;
+    let filtered = accounts;
     
-    const term = searchTerm.toLowerCase();
-    return accounts.filter(account => 
-      account.username?.toLowerCase().includes(term) ||
-      account.email?.toLowerCase().includes(term) ||
-      account.mobileNumber?.toLowerCase().includes(term)
-    );
+    // Search term filter
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(account => 
+        account.username?.toLowerCase().includes(term) ||
+        account.email?.toLowerCase().includes(term) ||
+        account.mobileNumber?.toLowerCase().includes(term)
+      );
+    }
+    
+    // Status filter
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(account => account.status === statusFilter);
+    }
+    
+    return filtered;
   };
 
   const filteredUsers = filterAccounts(users);
@@ -618,6 +629,7 @@ export default function AdminManagement() {
               setTab("users");
               setShowRestriction(false);
               setSearchTerm("");
+              setStatusFilter("all");
             }}
           >
             Users
@@ -629,10 +641,12 @@ export default function AdminManagement() {
                 setShowRestriction(true);
                 setTab("admins");
                 setSearchTerm("");
+                setStatusFilter("all");
               } else {
                 setShowRestriction(false);
                 setTab("admins");
                 setSearchTerm("");
+                setStatusFilter("all");
               }
             }}
           >
@@ -640,36 +654,84 @@ export default function AdminManagement() {
           </button>
         </div>
 
-        {/* Search Box */}
+        {/* Enhanced Search and Filters */}
         <div className="mb-6 animate-fadeIn">
-          <div className="relative max-w-md">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FaSearch className="h-5 w-5 text-gray-400 group-hover:text-blue-500 transition-colors duration-200" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Main Search */}
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FaSearch className="h-5 w-5 text-gray-400 group-hover:text-blue-500 transition-colors duration-200" />
+              </div>
+              <input
+                id="admin-management-search"
+                type="text"
+                placeholder={`Search ${tab === "users" ? "users" : "admins"} by name, email...`}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                >
+                  <span className="text-xl">&times;</span>
+                </button>
+              )}
             </div>
-            <input
-              id="admin-management-search"
-              type="text"
-              placeholder={`Search ${tab === "users" ? "users" : "admins"} by name, email, or mobile number...`}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm"
-            />
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm("")}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+
+            {/* Status Filter Dropdown */}
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FaCheckCircle className="h-5 w-5 text-gray-400 group-hover:text-green-500 transition-colors duration-200" />
+              </div>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl leading-5 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 shadow-sm appearance-none cursor-pointer"
               >
-                <span className="text-xl">&times;</span>
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="suspended">Suspended</option>
+              </select>
+              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Clear All Filters */}
+            <div className="flex items-center">
+              <button
+                onClick={() => {
+                  setSearchTerm("");
+                  setStatusFilter("all");
+                }}
+                className="w-full px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors duration-200 flex items-center justify-center gap-2"
+              >
+                <FaTimes className="text-sm" />
+                Clear All Filters
               </button>
-            )}
+            </div>
           </div>
-          {searchTerm && (
-            <div className="mt-2 text-sm text-gray-600">
-              Found {tab === "users" ? filteredUsers.length : filteredAdmins.length} {tab === "users" ? "user" : "admin"}{tab === "users" ? (filteredUsers.length !== 1 ? "s" : "") : (filteredAdmins.length !== 1 ? "s" : "")} matching "{searchTerm}"
+
+          {/* Results Summary */}
+          {(searchTerm || statusFilter !== "all") && (
+            <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="text-sm text-blue-800">
+                <span className="font-semibold">Active Filters:</span>
+                {searchTerm && <span className="ml-2 px-2 py-1 bg-blue-200 rounded text-xs">Search: "{searchTerm}"</span>}
+                {statusFilter !== "all" && <span className="ml-2 px-2 py-1 bg-green-200 rounded text-xs">Status: {statusFilter}</span>}
+              </div>
+              <div className="mt-2 text-sm text-blue-700">
+                Found {tab === "users" ? filteredUsers.length : filteredAdmins.length} {tab === "users" ? "user" : "admin"}{tab === "users" ? (filteredUsers.length !== 1 ? "s" : "") : (filteredAdmins.length !== 1 ? "s" : "")} matching your filters
+              </div>
             </div>
           )}
-          <div className="mt-1 text-xs text-gray-400">
-            💡 Tip: Press Ctrl+F to quickly focus the search box
+
+          <div className="mt-2 text-xs text-gray-400">
+            💡 Tip: Press Ctrl+F to quickly focus the search box • Use status filter to view active or suspended accounts
           </div>
         </div>
 
@@ -689,14 +751,17 @@ export default function AdminManagement() {
                   <div className="flex flex-col items-center justify-center py-16 animate-fadeIn">
                     <FaUserLock className="text-6xl text-gray-300 mb-4" />
                     <p className="text-gray-500 text-lg font-medium">
-                      {searchTerm ? `No users found matching "${searchTerm}"` : "No users found."}
+                      {(searchTerm || statusFilter !== "all") ? `No users found matching your filters` : "No users found."}
                     </p>
-                    {searchTerm && (
+                    {(searchTerm || statusFilter !== "all") && (
                       <button
-                        onClick={() => setSearchTerm("")}
+                        onClick={() => {
+                          setSearchTerm("");
+                          setStatusFilter("all");
+                        }}
                         className="mt-4 text-blue-500 hover:text-blue-600 underline"
                       >
-                        Clear search
+                        Clear all filters
                       </button>
                     )}
                   </div>
@@ -782,14 +847,17 @@ export default function AdminManagement() {
                   <div className="flex flex-col items-center justify-center py-16 animate-fadeIn">
                     <FaUserLock className="text-6xl text-gray-300 mb-4" />
                     <p className="text-gray-500 text-lg font-medium">
-                      {searchTerm ? `No admins found matching "${searchTerm}"` : "No admins found."}
+                      {(searchTerm || statusFilter !== "all") ? `No admins found matching your filters` : "No admins found."}
                     </p>
-                    {searchTerm && (
+                    {(searchTerm || statusFilter !== "all") && (
                       <button
-                        onClick={() => setSearchTerm("")}
+                        onClick={() => {
+                          setSearchTerm("");
+                          setStatusFilter("all");
+                        }}
                         className="mt-4 text-blue-500 hover:text-blue-600 underline"
                       >
-                        Clear search
+                        Clear all filters
                       </button>
                     )}
                   </div>
