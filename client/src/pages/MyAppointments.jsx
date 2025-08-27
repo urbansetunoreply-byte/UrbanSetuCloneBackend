@@ -1926,8 +1926,6 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   // Reset chat access when chat modal is closed
   const handleChatModalClose = async () => {
     setShowChatModal(false);
-    // Reset one-time unread divider when closing chat
-    setShowUnreadDividerOnOpen(false);
     
     // Dispatch event to notify App.jsx that chat is closed
     window.dispatchEvent(new CustomEvent('chatClosed'));
@@ -2227,7 +2225,17 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     }
   }, [appt._id, showChatModal]);
 
-  // Keep unread divider visible until chatbox closes (no scroll-based hiding)
+  // Hide the one-time unread divider on first user scroll
+  useEffect(() => {
+    if (!showChatModal) return;
+    const container = chatContainerRef.current;
+    if (!container) return;
+    const handleAnyScroll = () => {
+      if (showUnreadDividerOnOpen) setShowUnreadDividerOnOpen(false);
+    };
+    container.addEventListener('scroll', handleAnyScroll, { passive: true });
+    return () => container.removeEventListener('scroll', handleAnyScroll);
+  }, [showChatModal, showUnreadDividerOnOpen]);
 
   // Removed handleClickOutside functionality - options now only close when clicking three dots again
 
