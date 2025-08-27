@@ -452,12 +452,34 @@ export default function NotificationBell({ mobile = false }) {
       toast.info(`${markedBy} marked all notifications as read for all admins`);
     };
     
+    const handleNotificationMarkedAsRead = (data) => {
+      if (!currentUser || data.notificationId) {
+        // Update the specific notification as read
+        setNotifications(prev => 
+          prev.map(notif => 
+            notif._id === data.notificationId 
+              ? { ...notif, isRead: true, readAt: new Date() }
+              : notif
+          )
+        );
+        
+        // Update unread count
+        setUnreadCount(prev => Math.max(0, prev - 1));
+        
+        // Show toast notification about who marked it as read
+        const markedBy = data.markedBy === currentUser._id ? 'You' : (data.markedByUsername || data.markedByEmail || 'Another admin');
+        toast.info(`${markedBy} marked a notification as read`);
+      }
+    };
+    
     socket.on('notificationCreated', handleNewNotification);
     socket.on('allNotificationsMarkedAsRead', handleAllNotificationsMarkedAsRead);
+    socket.on('notificationMarkedAsRead', handleNotificationMarkedAsRead);
     
     return () => {
       socket.off('notificationCreated', handleNewNotification);
       socket.off('allNotificationsMarkedAsRead', handleAllNotificationsMarkedAsRead);
+      socket.off('notificationMarkedAsRead', handleNotificationMarkedAsRead);
     };
   }, [currentUser]);
 

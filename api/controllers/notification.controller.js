@@ -226,6 +226,56 @@ export const markNotificationAsRead = async (req, res, next) => {
     notification.readAt = new Date();
     await notification.save();
 
+    // If this is an admin marking a notification as read, sync it to all other admins
+    if ((req.user.role === 'admin' || req.user.role === 'rootadmin') && req.user.adminApprovalStatus === 'approved') {
+      // Find all other admins who have the same notification
+      const otherAdmins = await User.find({
+        _id: { $ne: req.user.id },
+        status: { $ne: 'suspended' },
+        $or: [
+          { role: 'rootadmin' },
+          { role: 'admin', adminApprovalStatus: 'approved' },
+        ],
+      }, '_id');
+
+      if (otherAdmins.length > 0) {
+        const otherAdminIds = otherAdmins.map(admin => admin._id);
+        
+        // Find and mark the same notification as read for all other admins
+        const sameNotifications = await Notification.find({
+          _id: { $ne: notificationId },
+          type: notification.type,
+          title: notification.title,
+          message: notification.message,
+          adminId: notification.adminId,
+          listingId: notification.listingId,
+          userId: { $in: otherAdminIds },
+          isRead: false
+        });
+
+        if (sameNotifications.length > 0) {
+          // Mark all matching notifications as read
+          await Notification.updateMany(
+            { _id: { $in: sameNotifications.map(n => n._id) } },
+            { isRead: true, readAt: new Date() }
+          );
+
+          // Emit socket events to all other admins
+          const io = req.app.get('io');
+          if (io) {
+            sameNotifications.forEach(n => {
+              io.to(n.userId.toString()).emit('notificationMarkedAsRead', {
+                notificationId: n._id,
+                markedBy: req.user.id,
+                markedByEmail: req.user.email,
+                markedByUsername: req.user.username
+              });
+            });
+          }
+        }
+      }
+    }
+
     res.status(200).json(notification);
   } catch (error) {
     next(error);
