@@ -7097,10 +7097,62 @@ You can lock this chat again at any time from the options.</p>
       {/* Report Chat Modal */}
       {showReportChatModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 shadow-xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <FaFlag className="text-red-500" /> Report Chat
             </h3>
+            
+            {/* Last 5 Messages Preview */}
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <FaInfoCircle className="text-blue-500 text-sm" />
+                <span className="text-sm font-medium text-gray-700">Last 5 messages will be reported:</span>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 max-h-48 overflow-y-auto">
+                {filteredComments.slice(-5).map((message, index) => (
+                  <div key={message._id || index} className="mb-3 last:mb-0">
+                    <div className="flex items-start gap-2">
+                      <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-xs font-semibold text-blue-600 flex-shrink-0">
+                        {message.senderName ? message.senderName.charAt(0).toUpperCase() : 'U'}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs font-semibold text-gray-600">
+                            {message.senderName || 'Unknown User'}
+                          </span>
+                          <span className="text-xs text-gray-400">
+                            {new Date(message.timestamp).toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="text-sm text-gray-700 bg-white rounded p-2 border border-gray-200">
+                          {message.type === 'image' ? (
+                            <div className="flex items-center gap-2">
+                              <span>📷 Image: {message.message}</span>
+                              {message.imageUrl && (
+                                <img 
+                                  src={message.imageUrl} 
+                                  alt="Reported image" 
+                                  className="w-8 h-8 object-cover rounded"
+                                  onError={(e) => e.target.style.display = 'none'}
+                                />
+                              )}
+                            </div>
+                          ) : (
+                            <span className="whitespace-pre-wrap break-words">{message.message}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {filteredComments.length === 0 && (
+                  <div className="text-center text-gray-500 text-sm py-4">
+                    No messages to report
+                  </div>
+                )}
+              </div>
+            </div>
+            
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Reason</label>
