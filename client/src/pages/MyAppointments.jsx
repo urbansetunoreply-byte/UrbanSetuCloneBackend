@@ -1181,6 +1181,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const chatContainerRef = useRef(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [unreadNewMessages, setUnreadNewMessages] = useState(0);
+  // Show unread divider only right after opening chat when there are unread messages
+  const [showUnreadDividerOnOpen, setShowUnreadDividerOnOpen] = useState(false);
   // Infinite scroll/pagination for chat
   const MESSAGES_PAGE_SIZE = 30;
   const [visibleCount, setVisibleCount] = useState(MESSAGES_PAGE_SIZE);
@@ -2213,6 +2215,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
             messageRefs.current[targetMsg._id].scrollIntoView({ behavior: 'auto', block: 'center' });
           } catch (_) {}
         }
+        // Show divider only on open case
+        setShowUnreadDividerOnOpen(true);
       }, 50);
     } else {
       // No unread -> go to bottom as usual
@@ -2220,6 +2224,18 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       setTimeout(() => scrollToBottom(), 0);
     }
   }, [appt._id, showChatModal]);
+
+  // Hide the one-time unread divider on first user scroll
+  useEffect(() => {
+    if (!showChatModal) return;
+    const container = chatContainerRef.current;
+    if (!container) return;
+    const handleAnyScroll = () => {
+      if (showUnreadDividerOnOpen) setShowUnreadDividerOnOpen(false);
+    };
+    container.addEventListener('scroll', handleAnyScroll, { passive: true });
+    return () => container.removeEventListener('scroll', handleAnyScroll);
+  }, [showChatModal, showUnreadDividerOnOpen]);
 
   // Removed handleClickOutside functionality - options now only close when clicking three dots again
 
@@ -5399,8 +5415,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                             <span className="bg-blue-600 text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white">{getDateLabel(currentDate)}</span>
                           </div>
                         )}
-                        {/* New messages divider - show only when chatbox is not open? Requirement: no divider while chat is open */}
-                        {false && unreadNewMessages > 0 && index === filteredComments.length - unreadNewMessages && (
+                        {/* New messages divider: only right after opening when unread exists */}
+                        {showUnreadDividerOnOpen && unreadNewMessages > 0 && index === filteredComments.length - unreadNewMessages && (
                           <div className="w-full flex items-center my-2">
                             <div className="flex-1 h-px bg-gray-300"></div>
                             <span className="mx-2 text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full border border-red-200">
