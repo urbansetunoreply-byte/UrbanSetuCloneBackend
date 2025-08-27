@@ -273,17 +273,31 @@ export default function NotificationBell({ mobile = false }) {
   // Mark all notifications as read
   const markAllAsRead = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/notifications/user/${currentUser._id}/read-all`, {
+      let endpoint;
+      let successMessage;
+      
+      if (isAdmin()) {
+        // For admins, use the sync endpoint to mark all admins' notifications as read
+        endpoint = `${API_BASE_URL}/api/notifications/admin/read-all`;
+        successMessage = 'All notifications marked as read for all admins';
+      } else {
+        // For regular users, use the individual endpoint
+        endpoint = `${API_BASE_URL}/api/notifications/user/${currentUser._id}/read-all`;
+        successMessage = 'All notifications marked as read';
+      }
+
+      const res = await fetch(endpoint, {
         method: 'PUT',
         credentials: 'include',
       });
 
       if (res.ok) {
+        const data = await res.json();
         setNotifications(prev => 
           prev.map(notif => ({ ...notif, isRead: true, readAt: new Date() }))
         );
         setUnreadCount(0);
-        toast.success('All notifications marked as read');
+        toast.success(successMessage);
       }
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
@@ -423,8 +437,28 @@ export default function NotificationBell({ mobile = false }) {
       setNotifications((prev) => [notification, ...prev]);
       setUnreadCount((count) => count + 1);
     };
+    
+    const handleAllNotificationsMarkedAsRead = (data) => {
+      if (!currentUser || data.adminId !== currentUser._id) return;
+      
+      // Update local state to mark all notifications as read
+      setNotifications(prev => 
+        prev.map(notif => ({ ...notif, isRead: true, readAt: new Date() }))
+      );
+      setUnreadCount(0);
+      
+      // Show toast notification about who marked them as read
+      const markedBy = data.markedBy === currentUser._id ? 'You' : 'Another admin';
+      toast.info(`${markedBy} marked all notifications as read for all admins`);
+    };
+    
     socket.on('notificationCreated', handleNewNotification);
-    return () => socket.off('notificationCreated', handleNewNotification);
+    socket.on('allNotificationsMarkedAsRead', handleAllNotificationsMarkedAsRead);
+    
+    return () => {
+      socket.off('notificationCreated', handleNewNotification);
+      socket.off('allNotificationsMarkedAsRead', handleAllNotificationsMarkedAsRead);
+    };
   }, [currentUser]);
 
   return (

@@ -253,6 +253,63 @@ export const markAllNotificationsAsRead = async (req, res, next) => {
   }
 };
 
+// Mark all notifications as read for all admins (admin sync feature)
+export const markAllNotificationsAsReadForAllAdmins = async (req, res, next) => {
+  try {
+    // Verify the user is an admin
+    if (req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
+      return next(errorHandler(403, 'Only admins can perform this action'));
+    }
+
+    // Find all admins and root admins (active, approved)
+    const admins = await User.find({
+      status: { $ne: 'suspended' },
+      $or: [
+        { role: 'rootadmin' },
+        { role: 'admin', adminApprovalStatus: 'approved' },
+      ],
+    }, '_id');
+
+    if (admins.length === 0) {
+      return res.status(404).json({ success: false, message: 'No admins found' });
+    }
+
+    // Mark all unread notifications as read for all admins
+    const adminIds = admins.map(admin => admin._id);
+    const result = await Notification.updateMany(
+      { 
+        userId: { $in: adminIds }, 
+        isRead: false 
+      },
+      { 
+        isRead: true, 
+        readAt: new Date() 
+      }
+    );
+
+    // Emit socket event to all admins for real-time sync
+    const io = req.app.get('io');
+    if (io) {
+      adminIds.forEach(adminId => {
+        io.to(adminId.toString()).emit('allNotificationsMarkedAsRead', {
+          adminId: adminId.toString(),
+          markedBy: req.user.id,
+          count: result.modifiedCount
+        });
+      });
+    }
+
+    res.status(200).json({ 
+      success: true,
+      message: `All notifications marked as read for ${admins.length} admins`,
+      count: result.modifiedCount,
+      adminCount: admins.length
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Get unread notification count
 export const getUnreadNotificationCount = async (req, res, next) => {
   try {

@@ -4,6 +4,7 @@ import {
   getUserNotifications,
   markNotificationAsRead,
   markAllNotificationsAsRead,
+  markAllNotificationsAsReadForAllAdmins,
   getUnreadNotificationCount,
   deleteNotification,
   deleteAllNotifications,
@@ -28,6 +29,9 @@ router.put('/:notificationId/read', verifyToken, markNotificationAsRead);
 
 // Mark all notifications as read
 router.put('/user/:userId/read-all', verifyToken, markAllNotificationsAsRead);
+
+// Mark all notifications as read for all admins (admin sync)
+router.put('/admin/read-all', verifyToken, markAllNotificationsAsReadForAllAdmins);
 
 // Get unread notification count
 router.get('/user/:userId/unread-count', verifyToken, getUnreadNotificationCount);
