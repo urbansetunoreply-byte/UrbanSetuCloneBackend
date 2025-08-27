@@ -1380,6 +1380,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const [imageCaptions, setImageCaptions] = useState({});
   const [showImagePreviewModal, setShowImagePreviewModal] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  // Enhanced upload tracking
+  const [currentFileIndex, setCurrentFileIndex] = useState(-1);
+  const [currentFileProgress, setCurrentFileProgress] = useState(0);
+  const [failedFiles, setFailedFiles] = useState([]); // store File objects
+  const [isCancellingUpload, setIsCancellingUpload] = useState(false);
+  const currentUploadControllerRef = useRef(null);
   const [detectedUrl, setDetectedUrl] = useState(null);
   const [previewDismissed, setPreviewDismissed] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -1658,38 +1664,68 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     
     setUploadingFile(true);
     setUploadProgress(0);
+    setCurrentFileIndex(-1);
+    setCurrentFileProgress(0);
+    setFailedFiles([]);
+    setIsCancellingUpload(false);
     
     try {
       // Upload images sequentially so we can show progress
       for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i];
+        setCurrentFileIndex(i);
+        setCurrentFileProgress(0);
+
         const uploadFormData = new FormData();
         uploadFormData.append('image', file);
-        
-        const { data } = await axios.post(`${API_BASE_URL}/api/upload/image`, 
-          uploadFormData,
-          { 
-            withCredentials: true,
-            headers: { 'Content-Type': 'multipart/form-data' },
-            onUploadProgress: (evt) => {
-              if (evt.total) {
-                const perFile = Math.round((evt.loaded * 100) / evt.total);
-                const overall = Math.round(((i + perFile / 100) / selectedFiles.length) * 100);
-                setUploadProgress(overall);
+
+        // Abort controller per file
+        const controller = new AbortController();
+        currentUploadControllerRef.current = controller;
+
+        try {
+          const { data } = await axios.post(`${API_BASE_URL}/api/upload/image`, 
+            uploadFormData,
+            { 
+              withCredentials: true,
+              headers: { 'Content-Type': 'multipart/form-data' },
+              signal: controller.signal,
+              onUploadProgress: (evt) => {
+                if (evt.total) {
+                  const perFile = Math.round((evt.loaded * 100) / evt.total);
+                  setCurrentFileProgress(perFile);
+                  const overall = Math.round(((i + perFile / 100) / selectedFiles.length) * 100);
+                  setUploadProgress(overall);
+                }
               }
             }
+          );
+
+          await sendImageMessage(data.imageUrl, file.name, imageCaptions[file.name] || '');
+          setUploadProgress(Math.round(((i + 1) / selectedFiles.length) * 100));
+        } catch (err) {
+          if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') {
+            // Upload cancelled
+            setIsCancellingUpload(true);
+            break;
+          } else {
+            // Mark this file as failed and continue with next
+            setFailedFiles(prev => [...prev, file]);
           }
-        );
-        
-        await sendImageMessage(data.imageUrl, file.name, imageCaptions[file.name] || '');
-        setUploadProgress(Math.round(((i + 1) / selectedFiles.length) * 100));
+        } finally {
+          if (currentUploadControllerRef.current === controller) {
+            currentUploadControllerRef.current = null;
+          }
+        }
       }
       
       // Clear state
-      setSelectedFiles([]);
-      setImageCaptions({});
-      setPreviewIndex(0);
-      setShowImagePreviewModal(false);
+      if (!isCancellingUpload && failedFiles.length === 0) {
+        setSelectedFiles([]);
+        setImageCaptions({});
+        setPreviewIndex(0);
+        setShowImagePreviewModal(false);
+      }
     } catch (error) {
       console.error('File upload error:', error);
       setFileUploadError(error.response?.data?.message || 'Upload failed. Please try again.');
@@ -1699,7 +1735,25 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     } finally {
       setUploadingFile(false);
       setUploadProgress(0);
+      setCurrentFileIndex(-1);
+      setCurrentFileProgress(0);
     }
+  };
+
+  // Cancel in-flight upload
+  const handleCancelInFlightUpload = () => {
+    if (currentUploadControllerRef.current) {
+      try { currentUploadControllerRef.current.abort(); } catch (_) {}
+    }
+  };
+
+  // Retry failed uploads
+  const handleRetryFailedUploads = async () => {
+    if (!failedFiles.length) return;
+    // Move only failed files into selection and try again
+    setSelectedFiles(failedFiles);
+    setFailedFiles([]);
+    await handleSendImagesWithCaptions();
   };
 
   // Chat lock handler functions
@@ -6189,24 +6243,53 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                       
                       <div className="flex justify-between items-center">
                         <div className="text-sm text-gray-600">
-                          {selectedFiles.length} image{selectedFiles.length !== 1 ? 's' : ''} ready to send
+                          {uploadingFile && currentFileIndex >= 0 ? (
+                            <span>
+                              Uploading {currentFileIndex + 1} / {selectedFiles.length}
+                              {` • ${currentFileProgress}%`}
+                            </span>
+                          ) : (
+                            <>
+                              {selectedFiles.length} image{selectedFiles.length !== 1 ? 's' : ''} ready to send
+                              {failedFiles.length > 0 && (
+                                <span className="ml-2 text-red-600">• {failedFiles.length} failed</span>
+                              )}
+                            </>
+                          )}
                         </div>
-                        <button
-                          onClick={handleSendImagesWithCaptions}
-                          disabled={uploadingFile}
-                          className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors flex items-center gap-2"
-                        >
+                        <div className="flex items-center gap-2">
                           {uploadingFile ? (
                             <>
-                              <div className="w-20 h-2 bg-white/30 rounded-full overflow-hidden">
-                                <div className="h-2 bg-white rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
+                              <button
+                                onClick={handleCancelInFlightUpload}
+                                className="bg-red-600 text-white py-2 px-3 rounded-lg hover:bg-red-700 text-sm font-medium transition-colors"
+                              >
+                                Cancel Upload
+                              </button>
+                              <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div className="h-2 bg-blue-600 rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
                               </div>
-                              <span>{uploadProgress}%</span>
+                              <span className="text-sm text-gray-700 w-10 text-right">{uploadProgress}%</span>
                             </>
                           ) : (
-                            `Send ${selectedFiles.length} Image${selectedFiles.length !== 1 ? 's' : ''}`
+                            <>
+                              {failedFiles.length > 0 && (
+                                <button
+                                  onClick={handleRetryFailedUploads}
+                                  className="bg-yellow-500 text-white py-2 px-3 rounded-lg hover:bg-yellow-600 text-sm font-medium transition-colors"
+                                >
+                                  Retry Failed ({failedFiles.length})
+                                </button>
+                              )}
+                              <button
+                                onClick={handleSendImagesWithCaptions}
+                                className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors"
+                              >
+                                {`Send ${selectedFiles.length} Image${selectedFiles.length !== 1 ? 's' : ''}`}
+                              </button>
+                            </>
                           )}
-                        </button>
+                        </div>
                       </div>
                     </div>
                   </div>
