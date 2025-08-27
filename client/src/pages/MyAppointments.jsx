@@ -1808,7 +1808,6 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       setLockingChat(false);
     }
   };
-
   const handleChatUnlock = async () => {
     if (!unlockPassword) {
       toast.error('Please enter your password');
@@ -2185,9 +2184,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     const container = chatContainerRef.current;
     if (!container) return;
     const onScrollTopLoadMore = () => {
-      if (container.scrollTop <= 0 && filteredComments.length > visibleCount) {
+      if (container.scrollTop <= 0 && comments.length > visibleCount) {
         const prevHeight = container.scrollHeight;
-        setVisibleCount(prev => Math.min(prev + MESSAGES_PAGE_SIZE, filteredComments.length));
+        setVisibleCount(prev => Math.min(prev + MESSAGES_PAGE_SIZE, comments.length));
         // Maintain scroll position after increasing items
         setTimeout(() => {
           const newHeight = container.scrollHeight;
@@ -2197,7 +2196,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     };
     container.addEventListener('scroll', onScrollTopLoadMore);
     return () => container.removeEventListener('scroll', onScrollTopLoadMore);
-  }, [filteredComments.length, visibleCount]);
+  }, [comments.length, visibleCount]);
 
   // Reset visible count when opening chat or comments change drastically
   useEffect(() => {
@@ -2373,7 +2372,6 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     setDeleteForBoth(false); // For received messages, only delete locally
     setShowDeleteModal(true);
   };
-
   const handleConfirmDelete = async () => {
     if (!messageToDelete) return;
     
@@ -2998,7 +2996,6 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     setCancelReason('');
     setShowCancelModal(true);
   };
-
   const confirmUserCancel = async () => {
     if (!cancelReason.trim()) {
       toast.error('Reason is required for cancellation.');
@@ -3627,7 +3624,6 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       document.body.style.overflow = '';
     };
   }, [showChatModal, unreadCount]);
-
   // Filter out locally removed deleted messages
   const filteredComments = comments.filter(c => new Date(c.timestamp).getTime() > clearTime && !locallyRemovedIds.includes(c._id) && !(c.removedFor?.includes?.(currentUser._id)));
 
@@ -5369,7 +5365,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                     </div>
                   ) : (
                     // Visible window for infinite scroll
-                    (filteredComments.slice(Math.max(0, filteredComments.length - visibleCount))).map((c, mapIndex, arr) => {
+                    (filteredComments.slice(Math.max(0, filteredComments.length - Math.min(visibleCount, filteredComments.length)))).map((c, mapIndex, arr) => {
                     const index = filteredComments.length - arr.length + mapIndex;
                     const isMe = c.senderEmail === currentUser.email;
                     const isEditing = editingComment === c._id;
@@ -6145,7 +6141,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                             >
                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
+                              </svg>
                             </button>
                           </>
                         )}
@@ -6507,7 +6503,6 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
           </div>
         </div>
       )}
-
       {/* Chat Lock Modal */}
       {showChatLockModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -7141,7 +7136,6 @@ You can lock this chat again at any time from the options.</p>
           </div>
         </div>
       )}
-
       {/* Report Message Modal */}
       {showReportModal && reportingMessage && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -7695,7 +7689,6 @@ You can lock this chat again at any time from the options.</p>
           </div>
         </div>
       )}
-
       {/* Pin Message Modal */}
       {showPinModal && messageToPin && (
         <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
