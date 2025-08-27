@@ -47,6 +47,8 @@ export default function MyAppointments() {
   const [notificationChatData, setNotificationChatData] = useState(null);
   const [shouldOpenChatFromNotification, setShouldOpenChatFromNotification] = useState(false);
   const [activeChatAppointmentId, setActiveChatAppointmentId] = useState(null);
+  // Preference to open specific chat at unread divider (set by notification click)
+  const [preferUnreadForAppointmentId, setPreferUnreadForAppointmentId] = useState(null);
 
   // Export chat modal state
   const [showExportModal, setShowExportModal] = useState(false);
@@ -130,7 +132,7 @@ export default function MyAppointments() {
           setNotificationChatData(appointment);
           setShouldOpenChatFromNotification(true);
           setActiveChatAppointmentId(appointmentId);
-          if (preferUnread) setPreferUnreadOnOpen(true);
+          if (preferUnread) setPreferUnreadForAppointmentId(appointmentId);
         }
       }
     };
@@ -2211,7 +2213,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       c.senderEmail !== currentUser.email && 
       (!c.readBy || !c.readBy.includes(currentUser._id))
     ).length;
-    const unreadToUse = preferUnreadOnOpen ? (unreadNewMessages || computedUnread) : unreadNewMessages;
+    const shouldPreferUnread = preferUnreadOnOpen || (preferUnreadForAppointmentId === appt._id);
+    const unreadToUse = shouldPreferUnread ? (unreadNewMessages || computedUnread) : unreadNewMessages;
     if (unreadToUse > 0) {
       setVisibleCount(prev => Math.max(MESSAGES_PAGE_SIZE, unreadNewMessages + 5));
       // After next paint, scroll to first unread message instead of bottom
@@ -2226,6 +2229,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         // Show divider only on open case
         setShowUnreadDividerOnOpen(true);
         setPreferUnreadOnOpen(false);
+        if (preferUnreadForAppointmentId === appt._id) setPreferUnreadForAppointmentId(null);
       }, 50);
     } else {
       // No unread -> go to bottom as usual
