@@ -571,7 +571,7 @@ export default function NotificationBell({ mobile = false }) {
                               onClick={markAllAsRead}
                               className="text-sm text-blue-600 hover:text-blue-800 font-medium"
                             >
-                              Mark all read
+                              {isAdmin() ? 'Mark all resolved' : 'Mark all read'}
                             </button>
                           )}
                           <button
@@ -954,15 +954,15 @@ export default function NotificationBell({ mobile = false }) {
             <>
               {/* Notifications Header Actions */}
               <div className="flex items-center justify-between p-4 border-b border-gray-100">
-                <div className="flex items-center gap-2">
-                  {unreadCount > 0 && (
-                    <button
-                      onClick={markAllAsRead}
-                      className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                    >
-                      Mark all read
-                    </button>
-                  )}
+                                        <div className="flex items-center gap-2">
+                          {unreadCount > 0 && (
+                            <button
+                              onClick={markAllAsRead}
+                              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                            >
+                              {isAdmin() ? 'Mark all resolved' : 'Mark all read'}
+                            </button>
+                          )}
                   <button
                     onClick={() => fetchNotifications(true)}
                     className="ml-2 text-sm text-gray-500 hover:text-blue-600 flex items-center gap-1"
