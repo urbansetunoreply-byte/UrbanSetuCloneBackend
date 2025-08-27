@@ -1181,6 +1181,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const chatContainerRef = useRef(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [unreadNewMessages, setUnreadNewMessages] = useState(0);
+  // Infinite scroll/pagination for chat
+  const MESSAGES_PAGE_SIZE = 30;
+  const [visibleCount, setVisibleCount] = useState(MESSAGES_PAGE_SIZE);
   const [currentFloatingDate, setCurrentFloatingDate] = useState('');
   const [isScrolling, setIsScrolling] = useState(false);
   const [isOtherPartyOnline, setIsOtherPartyOnline] = useState(false);
@@ -2176,6 +2179,30 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       scrollToSearchResult(searchResults[currentSearchIndex]._id);
     }
   }, [currentSearchIndex, searchResults]);
+
+  // Increase visible messages when scrolled to top
+  useEffect(() => {
+    const container = chatContainerRef.current;
+    if (!container) return;
+    const onScrollTopLoadMore = () => {
+      if (container.scrollTop <= 0 && filteredComments.length > visibleCount) {
+        const prevHeight = container.scrollHeight;
+        setVisibleCount(prev => Math.min(prev + MESSAGES_PAGE_SIZE, filteredComments.length));
+        // Maintain scroll position after increasing items
+        setTimeout(() => {
+          const newHeight = container.scrollHeight;
+          container.scrollTop = newHeight - prevHeight;
+        }, 0);
+      }
+    };
+    container.addEventListener('scroll', onScrollTopLoadMore);
+    return () => container.removeEventListener('scroll', onScrollTopLoadMore);
+  }, [filteredComments.length, visibleCount]);
+
+  // Reset visible count when opening chat or comments change drastically
+  useEffect(() => {
+    setVisibleCount(MESSAGES_PAGE_SIZE);
+  }, [appt._id, showChatModal]);
 
   // Removed handleClickOutside functionality - options now only close when clicking three dots again
 
@@ -5341,7 +5368,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                       <p className="text-gray-400 text-xs mt-1">Start the conversation and connect with the other party</p>
                     </div>
                   ) : (
-                    filteredComments.map((c, index) => {
+                    // Visible window for infinite scroll
+                    (filteredComments.slice(Math.max(0, filteredComments.length - visibleCount))).map((c, mapIndex, arr) => {
+                    const index = filteredComments.length - arr.length + mapIndex;
                     const isMe = c.senderEmail === currentUser.email;
                     const isEditing = editingComment === c._id;
                     const currentDate = new Date(c.timestamp);
@@ -5354,6 +5383,16 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         {isNewDay && (
                           <div className="w-full flex justify-center my-2">
                             <span className="bg-blue-600 text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white">{getDateLabel(currentDate)}</span>
+                          </div>
+                        )}
+                        {/* New messages divider */}
+                        {unreadNewMessages > 0 && index === filteredComments.length - unreadNewMessages && (
+                          <div className="w-full flex items-center my-2">
+                            <div className="flex-1 h-px bg-gray-300"></div>
+                            <span className="mx-2 text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full border border-red-200">
+                              New messages
+                            </span>
+                            <div className="flex-1 h-px bg-gray-300"></div>
                           </div>
                         )}
                         <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-fadeInChatBubble`} style={{ animationDelay: `${0.03 * index}s` }}>
@@ -6440,10 +6479,13 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
             {!isAtBottom && !isChatDisabled && !editingComment && !replyTo && (
               <div className="absolute bottom-20 right-6 z-20">
                 <button
-                  onClick={scrollToBottom}
+                  onClick={() => {
+                    setVisibleCount(Math.max(MESSAGES_PAGE_SIZE, filteredComments.length));
+                    scrollToBottom();
+                  }}
                   className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-full p-3 shadow-xl transition-all duration-200 hover:scale-110 relative transform hover:shadow-2xl"
-                  title={unreadNewMessages > 0 ? `${unreadNewMessages} new message${unreadNewMessages > 1 ? 's' : ''}` : "Scroll to bottom"}
-                  aria-label={unreadNewMessages > 0 ? `${unreadNewMessages} new messages, scroll to bottom` : "Scroll to bottom"}
+                  title={unreadNewMessages > 0 ? `${unreadNewMessages} new message${unreadNewMessages > 1 ? 's' : ''}` : "Jump to latest"}
+                  aria-label={unreadNewMessages > 0 ? `${unreadNewMessages} new messages, jump to latest` : "Jump to latest"}
                 >
                   <svg
                     width="16"

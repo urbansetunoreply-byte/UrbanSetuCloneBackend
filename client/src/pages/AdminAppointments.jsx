@@ -1263,6 +1263,9 @@ function AdminAppointmentRow({
   const messageRefs = React.useRef({});
   const [isAtBottom, setIsAtBottom] = useLocalState(true);
   const [unreadNewMessages, setUnreadNewMessages] = useLocalState(0);
+  // Infinite scroll/pagination for chat
+  const MESSAGES_PAGE_SIZE = 30;
+  const [visibleCount, setVisibleCount] = useLocalState(MESSAGES_PAGE_SIZE);
   const [currentFloatingDate, setCurrentFloatingDate] = useLocalState('');
   const [isScrolling, setIsScrolling] = useLocalState(false);
   const [showShortcutTip, setShowShortcutTip] = useLocalState(false);
@@ -1693,6 +1696,29 @@ function AdminAppointmentRow({
       chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [showChatModal]);
+
+  // Increase visible messages when scrolled to top
+  React.useEffect(() => {
+    const container = chatContainerRef.current;
+    if (!container) return;
+    const onScrollTopLoadMore = () => {
+      if (container.scrollTop <= 0 && localComments.length > visibleCount) {
+        const prevHeight = container.scrollHeight;
+        setVisibleCount(prev => Math.min(prev + MESSAGES_PAGE_SIZE, localComments.length));
+        setTimeout(() => {
+          const newHeight = container.scrollHeight;
+          container.scrollTop = newHeight - prevHeight;
+        }, 0);
+      }
+    };
+    container.addEventListener('scroll', onScrollTopLoadMore);
+    return () => container.removeEventListener('scroll', onScrollTopLoadMore);
+  }, [localComments.length, visibleCount]);
+
+  // Reset visible count when opening chat or switching appointments
+  React.useEffect(() => {
+    setVisibleCount(MESSAGES_PAGE_SIZE);
+  }, [appt._id, showChatModal]);
  
 
 
@@ -4128,7 +4154,8 @@ function AdminAppointmentRow({
                     <p className="text-gray-400 text-xs mt-1">Start a conversation to communicate with the parties</p>
                   </div>
                 ) : (
-                  localComments.map((c, index) => {
+                  (localComments.slice(Math.max(0, localComments.length - visibleCount))).map((c, mapIndex, arr) => {
+                  const index = localComments.length - arr.length + mapIndex;
                   const isMe = c.senderEmail === currentUser.email;
                   const isEditing = editingComment === c._id;
                   const currentDate = new Date(c.timestamp);
@@ -4139,7 +4166,17 @@ function AdminAppointmentRow({
                     <React.Fragment key={c._id || index}>
                       {isNewDay && (
                         <div className="w-full flex justify-center my-2">
-                                                      <span className="bg-blue-600 text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white">{getDateLabel(currentDate)}</span>
+                          <span className="bg-blue-600 text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white">{getDateLabel(currentDate)}</span>
+                        </div>
+                      )}
+                      {/* New messages divider */}
+                      {unreadNewMessages > 0 && index === localComments.length - unreadNewMessages && (
+                        <div className="w-full flex items-center my-2">
+                          <div className="flex-1 h-px bg-gray-300"></div>
+                          <span className="mx-2 text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full border border-red-200">
+                            New messages
+                          </span>
+                          <div className="flex-1 h-px bg-gray-300"></div>
                         </div>
                       )}
                       <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-fadeInChatBubble`} style={{ animationDelay: `${0.03 * index}s` }}>
@@ -5478,10 +5515,10 @@ function AdminAppointmentRow({
                {!isAtBottom && !editingComment && !replyTo && (
                  <div className="absolute bottom-20 right-6 z-20">
                    <button
-                     onClick={scrollToBottom}
+                     onClick={() => { setVisibleCount(Math.max(MESSAGES_PAGE_SIZE, localComments.length)); scrollToBottom(); }}
                      className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-full p-3 shadow-xl transition-all duration-200 hover:scale-110 relative transform hover:shadow-2xl"
-                     title={unreadNewMessages > 0 ? `${unreadNewMessages} new message${unreadNewMessages > 1 ? 's' : ''}` : "Scroll to bottom"}
-                     aria-label={unreadNewMessages > 0 ? `${unreadNewMessages} new messages, scroll to bottom` : "Scroll to bottom"}
+                     title={unreadNewMessages > 0 ? `${unreadNewMessages} new message${unreadNewMessages > 1 ? 's' : ''}` : "Jump to latest"}
+                     aria-label={unreadNewMessages > 0 ? `${unreadNewMessages} new messages, jump to latest` : "Jump to latest"}
                    >
                      <svg
                        width="16"
