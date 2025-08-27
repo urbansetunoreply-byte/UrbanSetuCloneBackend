@@ -2200,7 +2200,25 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
 
   // Reset visible count when opening chat or comments change drastically
   useEffect(() => {
-    setVisibleCount(MESSAGES_PAGE_SIZE);
+    if (!showChatModal) return;
+    // Ensure at least unread messages are visible when opening
+    if (unreadNewMessages > 0) {
+      setVisibleCount(prev => Math.max(MESSAGES_PAGE_SIZE, unreadNewMessages + 5));
+      // After next paint, scroll to first unread message instead of bottom
+      setTimeout(() => {
+        const targetIndex = Math.max(0, filteredComments.length - unreadNewMessages);
+        const targetMsg = filteredComments[targetIndex];
+        if (targetMsg && messageRefs.current[targetMsg._id]) {
+          try {
+            messageRefs.current[targetMsg._id].scrollIntoView({ behavior: 'auto', block: 'center' });
+          } catch (_) {}
+        }
+      }, 50);
+    } else {
+      // No unread -> go to bottom as usual
+      setVisibleCount(MESSAGES_PAGE_SIZE);
+      setTimeout(() => scrollToBottom(), 0);
+    }
   }, [appt._id, showChatModal]);
 
   // Removed handleClickOutside functionality - options now only close when clicking three dots again
@@ -5381,12 +5399,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                             <span className="bg-blue-600 text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white">{getDateLabel(currentDate)}</span>
                           </div>
                         )}
-                        {/* New messages divider */}
-                        {unreadNewMessages > 0 && index === filteredComments.length - unreadNewMessages && (
+                        {/* New messages divider - show only when chatbox is not open? Requirement: no divider while chat is open */}
+                        {false && unreadNewMessages > 0 && index === filteredComments.length - unreadNewMessages && (
                           <div className="w-full flex items-center my-2">
                             <div className="flex-1 h-px bg-gray-300"></div>
                             <span className="mx-2 text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full border border-red-200">
-                              New messages
+                              {unreadNewMessages} unread message{unreadNewMessages > 1 ? 's' : ''}
                             </span>
                             <div className="flex-1 h-px bg-gray-300"></div>
                           </div>
