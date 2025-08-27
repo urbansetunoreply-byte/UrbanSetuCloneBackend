@@ -2309,8 +2309,24 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       const updatedIds = ids.filter(id => id !== recentlyDeletedMessage._id);
       localStorage.setItem(`removedDeletedMsgs_${appt._id}`, JSON.stringify(updatedIds));
       
-      // Add the message back to comments
-      setComments(prev => [...prev, recentlyDeletedMessage]);
+      // Find the correct position to insert the message back
+      setComments(prev => {
+        const newComments = [...prev];
+        // Find where this message should be inserted based on timestamp
+        const insertIndex = newComments.findIndex(msg => 
+          new Date(msg.timestamp) > new Date(recentlyDeletedMessage.timestamp)
+        );
+        
+        if (insertIndex === -1) {
+          // If no message is newer, add to the end
+          newComments.push(recentlyDeletedMessage);
+        } else {
+          // Insert at the correct position
+          newComments.splice(insertIndex, 0, recentlyDeletedMessage);
+        }
+        
+        return newComments;
+      });
       
       // Clear the undo state
       setRecentlyDeletedMessage(null);
