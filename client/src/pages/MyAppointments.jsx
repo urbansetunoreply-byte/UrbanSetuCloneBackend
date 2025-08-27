@@ -1671,6 +1671,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     
     try {
       // Upload images sequentially so we can show progress
+      let cancelledByUser = false;
+      const failedLocal = [];
       for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i];
         setCurrentFileIndex(i);
@@ -1706,11 +1708,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         } catch (err) {
           if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') {
             // Upload cancelled
+            cancelledByUser = true;
             setIsCancellingUpload(true);
             break;
           } else {
             // Mark this file as failed and continue with next
-            setFailedFiles(prev => [...prev, file]);
+            failedLocal.push(file);
           }
         } finally {
           if (currentUploadControllerRef.current === controller) {
@@ -1719,8 +1722,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         }
       }
       
-      // Clear state
-      if (!isCancellingUpload && failedFiles.length === 0) {
+      // Persist failed files to state
+      if (failedLocal.length) setFailedFiles(failedLocal);
+
+      // Clear state only if fully successful and not cancelled
+      if (!cancelledByUser && failedLocal.length === 0) {
         setSelectedFiles([]);
         setImageCaptions({});
         setPreviewIndex(0);
@@ -1745,6 +1751,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     if (currentUploadControllerRef.current) {
       try { currentUploadControllerRef.current.abort(); } catch (_) {}
     }
+    // Do not close preview; ensure send button remains available
+    setUploadingFile(false);
+    setCurrentFileIndex(-1);
+    setCurrentFileProgress(0);
+    // Keep already selected files; allow retry of any partially attempted file
   };
 
   // Retry failed uploads
