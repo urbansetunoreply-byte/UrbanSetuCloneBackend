@@ -571,7 +571,7 @@ export default function NotificationBell({ mobile = false }) {
                               onClick={markAllAsRead}
                               className="text-sm text-blue-600 hover:text-blue-800 font-medium"
                             >
-                              Mark all resolved
+                              Mark all read
                             </button>
                           )}
                           <button
