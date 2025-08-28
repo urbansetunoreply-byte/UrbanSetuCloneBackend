@@ -3578,7 +3578,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                       // If this is a new message from another user and chat is not open, increment unread count
             if (data.comment.senderEmail !== currentUser.email && !showChatModal && !data.comment.readBy?.includes(currentUser._id)) {
               setUnreadNewMessages(prev => prev + 1);
-              playNotification(); // Play notification sound
+              // Do not play notification sound here; App.jsx handles global notifications
             } else {
               playMessageReceived(); // Play receive sound
             }
