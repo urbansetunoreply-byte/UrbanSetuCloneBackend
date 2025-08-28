@@ -3293,11 +3293,46 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     }
   };
 
+  const [emojiPickerMode, setEmojiPickerMode] = useState('react'); // 'react' | 'insert'
+  const [emojiSearchTerm, setEmojiSearchTerm] = useState('');
+  
   const toggleReactionsEmojiPicker = () => {
     const newState = !showReactionsEmojiPicker;
     setShowReactionsEmojiPicker(newState);
   };
 
+  const openEmojiInsertModal = () => {
+    setEmojiPickerMode('insert');
+    setShowReactionsEmojiPicker(true);
+  };
+
+  const insertEmojiIntoInput = (emoji) => {
+    const el = inputRef?.current;
+    const baseText = el ? el.value : comment;
+    let start = baseText.length;
+    let end = baseText.length;
+    try {
+      if (el && typeof el.selectionStart === 'number' && typeof el.selectionEnd === 'number') {
+        start = el.selectionStart;
+        end = el.selectionEnd;
+      }
+    } catch (_) {}
+    const newText = baseText.slice(0, start) + emoji + baseText.slice(end);
+    setComment(newText);
+    if (editingComment) {
+      setEditText(newText);
+    }
+    setTimeout(() => {
+      try {
+        if (el) {
+          const caretPos = start + emoji.length;
+          el.focus();
+          el.setSelectionRange(caretPos, caretPos);
+        }
+      } catch (_) {}
+    }, 0);
+  };
+  
   // Prevent quick reactions model from closing unexpectedly
   const preventModalClose = useCallback((e) => {
     if (showReactionsEmojiPicker) {
