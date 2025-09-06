@@ -359,6 +359,12 @@ export default function AdminListing() {
           onClose={() => setShowImagePreview(false)}
           images={listing.imageUrls}
           initialIndex={selectedImageIndex}
+          listingId={listing._id}
+          metadata={{
+            addedFrom: 'listing',
+            listingName: listing.name,
+            listingType: listing.type
+          }}
         />
       )}
     </div>

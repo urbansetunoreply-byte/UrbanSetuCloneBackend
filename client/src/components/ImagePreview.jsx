@@ -17,6 +17,7 @@ import {
   FaEye,
   FaEyeSlash
 } from 'react-icons/fa';
+import { useImageFavorites } from '../contexts/ImageFavoritesContext';
 
 // Helper function to show toast messages
 const showToast = (message, type = 'info') => {
@@ -50,7 +51,7 @@ const showToast = (message, type = 'info') => {
   }
 };
 
-const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0 }) => {
+const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = null, metadata = {} }) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [scale, setScale] = useState(1);
   const [rotation, setRotation] = useState(0);
@@ -62,7 +63,6 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0 }) => {
   const [slideshowSpeed, setSlideshowSpeed] = useState(3000);
   const [showControls, setShowControls] = useState(true);
   const [showInfo, setShowInfo] = useState(false);
-  const [isFavorited, setIsFavorited] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -73,6 +73,32 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0 }) => {
   const imageRef = useRef(null);
   const slideshowRef = useRef(null);
   const settingsRef = useRef(null);
+
+  // Use image favorites context
+  const { isFavorite, toggleFavorite } = useImageFavorites();
+
+  // Get current image URL and check if it's favorited
+  const currentImageUrl = images[currentIndex];
+  const isCurrentImageFavorited = currentImageUrl ? isFavorite(currentImageUrl) : false;
+
+  // Handle favorite toggle
+  const handleToggleFavorite = async () => {
+    if (!currentImageUrl) return;
+
+    const imageMetadata = {
+      listingId,
+      imageName: `image-${currentIndex + 1}`,
+      imageType: 'property-image',
+      addedFrom: metadata.addedFrom || 'preview',
+      ...metadata
+    };
+
+    try {
+      await toggleFavorite(currentImageUrl, imageMetadata);
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error);
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -625,15 +651,15 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0 }) => {
           {isSlideshow ? <FaPause size={16} /> : <FaPlay size={16} />}
         </button>
         <button
-          onClick={() => setIsFavorited(prev => !prev)}
+          onClick={handleToggleFavorite}
           className={`p-2 rounded-lg transition-all duration-200 ${
-            isFavorited 
+            isCurrentImageFavorited 
               ? 'text-red-400 hover:text-red-300' 
               : 'text-white hover:text-red-300 hover:bg-white hover:bg-opacity-20'
           }`}
           title="Toggle Favorite"
         >
-          {isFavorited ? <FaHeart size={16} /> : <FaRegHeart size={16} />}
+          {isCurrentImageFavorited ? <FaHeart size={16} /> : <FaRegHeart size={16} />}
         </button>
         <button
           onClick={handleDownload}
@@ -721,15 +747,15 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0 }) => {
           {isSlideshow ? <FaPause size={14} /> : <FaPlay size={14} />}
         </button>
         <button
-          onClick={() => setIsFavorited(prev => !prev)}
+          onClick={handleToggleFavorite}
           className={`p-1.5 rounded-lg transition-all duration-200 ${
-            isFavorited 
+            isCurrentImageFavorited 
               ? 'text-red-400 hover:text-red-300' 
               : 'text-white hover:text-red-300 hover:bg-white hover:bg-opacity-20'
           }`}
           title="Favorite"
         >
-          {isFavorited ? <FaHeart size={14} /> : <FaRegHeart size={14} />}
+          {isCurrentImageFavorited ? <FaHeart size={14} /> : <FaRegHeart size={14} />}
         </button>
         <button
           onClick={handleDownload}
@@ -905,8 +931,8 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0 }) => {
             </div>
             <div className="flex justify-between">
               <span>Status:</span>
-              <span className={isFavorited ? 'text-red-400' : 'text-gray-400'}>
-                {isFavorited ? 'Favorited' : 'Not favorited'}
+              <span className={isCurrentImageFavorited ? 'text-red-400' : 'text-gray-400'}>
+                {isCurrentImageFavorited ? 'Favorited' : 'Not favorited'}
               </span>
             </div>
           </div>

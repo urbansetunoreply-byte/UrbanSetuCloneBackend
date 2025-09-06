@@ -8,6 +8,7 @@ import AdminHeader from './components/AdminHeader';
 import Private from "./components/Private";
 import AdminRoute from "./components/AdminRoute";
 import WishlistProvider from "./WishlistContext";
+import { ImageFavoritesProvider } from "./contexts/ImageFavoritesContext";
 import ContactSupportWrapper from "./components/ContactSupportWrapper";
 import NetworkStatus from "./components/NetworkStatus";
 import UserChangePassword from './pages/UserChangePassword';
@@ -605,9 +606,11 @@ export default function App() {
 
   return (
     <WishlistProvider>
-      <BrowserRouter>
-        <AppRoutes bootstrapped={bootstrapped} />
-      </BrowserRouter>
+      <ImageFavoritesProvider>
+        <BrowserRouter>
+          <AppRoutes bootstrapped={bootstrapped} />
+        </BrowserRouter>
+      </ImageFavoritesProvider>
     </WishlistProvider>
   );
 }

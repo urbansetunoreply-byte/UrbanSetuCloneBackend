@@ -8174,6 +8174,11 @@ You can lock this chat again at any time from the options.</p>
         onClose={() => setShowImagePreview(false)}
         images={previewImages}
         initialIndex={previewIndex}
+        listingId={null}
+        metadata={{
+          addedFrom: 'chat',
+          chatType: 'appointment'
+        }}
       />
 
     </>

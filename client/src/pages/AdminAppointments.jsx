@@ -6233,6 +6233,11 @@ function AdminAppointmentRow({
         onClose={() => setShowImagePreview(false)}
         images={previewImages}
         initialIndex={previewIndex}
+        listingId={null}
+        metadata={{
+          addedFrom: 'chat',
+          chatType: 'appointment'
+        }}
       />
 
       </td>
