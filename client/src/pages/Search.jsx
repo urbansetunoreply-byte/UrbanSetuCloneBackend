@@ -32,6 +32,7 @@ export default function Search() {
     const [error, setError] = useState(null);
     const [locationFilter, setLocationFilter] = useState({ state: "", district: "", city: "" });
     const [recommendations, setRecommendations] = useState([]);
+    const [smartQuery, setSmartQuery] = useState("");
 
     useEffect(() => {
         const urlParams = new URLSearchParams(location.search);
@@ -98,6 +99,33 @@ export default function Search() {
         if (nearMatch) extracted.city = nearMatch[1].trim();
         const typeMatch = natural.match(/\b(rent|sale)\b/i);
         if (typeMatch) extracted.type = typeMatch[1].toLowerCase();
+        const urlParams = new URLSearchParams(extracted);
+        navigate(`?${urlParams.toString()}`);
+    };
+
+    const applySmartQuery = (e) => {
+        e.preventDefault();
+        const natural = (smartQuery || '').trim();
+        if (!natural) return;
+        const extracted = { ...formData };
+        const bedsMatch = natural.match(/(\d+)\s*(bhk|bed|beds)/i);
+        if (bedsMatch) extracted.bedrooms = bedsMatch[1];
+        const priceMatch = natural.match(/(?:under|below|within)\s*(\d[\d,]*)/i);
+        if (priceMatch) extracted.maxPrice = priceMatch[1].replace(/,/g,'');
+        const minPriceMatch = natural.match(/above\s*(\d[\d,]*)/i);
+        if (minPriceMatch) extracted.minPrice = minPriceMatch[1].replace(/,/g,'');
+        const nearMatch = natural.match(/near\s+([a-zA-Z ]+)/i);
+        if (nearMatch) extracted.city = nearMatch[1].trim();
+        const inCity = natural.match(/in\s+([a-zA-Z ]+)/i);
+        if (inCity) extracted.city = inCity[1].trim();
+        const typeMatch = natural.match(/\b(rent|rental|sale|buy)\b/i);
+        if (typeMatch) extracted.type = /rent/.test(typeMatch[1].toLowerCase()) ? 'rent' : 'sale';
+        const offerMatch = natural.match(/offer|discount|deal/i);
+        if (offerMatch) extracted.offer = true;
+        const furnishedMatch = natural.match(/furnished/i);
+        if (furnishedMatch) extracted.furnished = true;
+        const parkingMatch = natural.match(/parking/i);
+        if (parkingMatch) extracted.parking = true;
         const urlParams = new URLSearchParams(extracted);
         navigate(`?${urlParams.toString()}`);
     };
@@ -293,6 +321,20 @@ export default function Search() {
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4-4m0 0A7 7 0 104 4a7 7 0 0013 13z" /></svg>
                         Search
                     </button>
+                </form>
+
+                {/* Smart (NLP) Search */}
+                <form onSubmit={applySmartQuery} className="bg-blue-50 p-4 rounded-lg mb-6">
+                    <label className="block text-sm font-medium text-blue-800 mb-2">Smart Search (natural language)</label>
+                    <div className="flex gap-2">
+                        <input
+                          value={smartQuery}
+                          onChange={(e) => setSmartQuery(e.target.value)}
+                          placeholder="e.g., 2BHK under 15k near Delhi Metro, furnished with parking"
+                          className="flex-1 p-2 border rounded-md"
+                        />
+                        <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg">Apply</button>
+                    </div>
                 </form>
 
                 {/* Listings Display */}

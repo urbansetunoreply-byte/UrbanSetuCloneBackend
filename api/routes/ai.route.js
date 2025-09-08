@@ -43,12 +43,48 @@ router.get('/neighborhood/:listingId', async (req, res) => {
   }
 });
 
-// Fraud detection stub: naive checks
+// Fraud detection heuristic: flag listings with extreme price outliers or duplicate images, and repetitive reviews
 router.get('/fraud/stats', async (_req, res) => {
   try {
-    const suspiciousListings = 0;
-    const suspectedFakeReviews = 0;
-    res.json({ suspiciousListings, suspectedFakeReviews, lastScan: new Date().toISOString() });
+    const listings = await Listing.find({}).limit(2000);
+    const prices = listings.map(l => (l.offer && l.discountPrice) ? l.discountPrice : l.regularPrice).filter(Boolean);
+    const mean = prices.length ? prices.reduce((a,b)=>a+b,0)/prices.length : 0;
+    const variance = prices.length ? prices.reduce((a,b)=>a+Math.pow(b-mean,2),0)/prices.length : 0;
+    const std = Math.sqrt(variance);
+    const upper = mean + 3*std;
+    const lower = Math.max(0, mean - 3*std);
+
+    // Duplicate image heuristic
+    const imageHash = new Map();
+    let duplicateImageCount = 0;
+    listings.forEach(l => {
+      (l.imageUrls||[]).forEach(u => {
+        if (!u) return;
+        const key = u.split('?')[0];
+        imageHash.set(key, (imageHash.get(key)||0)+1);
+      });
+    });
+    duplicateImageCount = Array.from(imageHash.values()).filter(v => v>3).length;
+
+    const suspiciousListings = listings.filter(l => {
+      const p = (l.offer && l.discountPrice) ? l.discountPrice : l.regularPrice;
+      if (!p) return false;
+      const outlier = p > upper || p < lower;
+      const fewImages = !l.imageUrls || l.imageUrls.length === 0;
+      return outlier || fewImages;
+    }).length + duplicateImageCount;
+
+    // Simple repetitive review text heuristic
+    const recentReviews = await Review.find({}).sort({ createdAt: -1 }).limit(1000);
+    const textMap = new Map();
+    recentReviews.forEach(r => {
+      const t = (r.comment||'').trim().toLowerCase();
+      if (!t) return;
+      textMap.set(t, (textMap.get(t)||0)+1);
+    });
+    const suspectedFakeReviews = Array.from(textMap.values()).filter(v => v>=3).length;
+
+    res.json({ suspiciousListings, suspectedFakeReviews, lastScan: new Date().toISOString(), bounds: { mean, std, lower, upper } });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Failed to fetch fraud stats' });
   }
