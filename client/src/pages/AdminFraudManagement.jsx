@@ -32,11 +32,66 @@ export default function AdminFraudManagement() {
       const std = Math.sqrt(variance) || 1;
       const upper = mean + 3*std; const lower = Math.max(0, mean - 3*std);
 
+      // Precompute maps for cross-listing checks
+      const descMap = new Map();
+      const addressToCities = new Map();
+      const contactMap = new Map(); // phone/email -> set of userRefs
+      const ownerRecentCounts = new Map(); // userRef -> listings created in last 24h
+      const now = Date.now();
+      const phoneRegex = /\b(?:\+?\d[\s-]?){7,15}\b/g;
+      const emailRegex = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
+      const norm = (s) => (s||'').toLowerCase().replace(/\s+/g,' ').trim();
+
+      (allListings || []).forEach(l => {
+        const d = norm(l.description||'');
+        if (d) descMap.set(d, (descMap.get(d)||0)+1);
+        const addr = norm(l.address || `${l.propertyNumber||''} ${l.landmark||''}`);
+        const cityKey = `${l.city||''},${l.state||''}`;
+        if (addr) {
+          const set = addressToCities.get(addr) || new Set();
+          set.add(cityKey);
+          addressToCities.set(addr, set);
+        }
+        const contacts = new Set([...(d.match(phoneRegex)||[]), ...(d.match(emailRegex)||[])]);
+        contacts.forEach(c => {
+          const key = c;
+          const set = contactMap.get(key) || new Set();
+          set.add((l.userRef && (l.userRef._id||l.userRef)) || 'unknown');
+          contactMap.set(key, set);
+        });
+        const createdAt = new Date(l.createdAt||0).getTime();
+        if (now - createdAt <= 24*60*60*1000) {
+          const owner = (l.userRef && (l.userRef._id||l.userRef)) || 'unknown';
+          ownerRecentCounts.set(owner, (ownerRecentCounts.get(owner)||0)+1);
+        }
+      });
+
+      const suspiciousPhrases = [
+        'advance payment only', 'send money before visit', 'contact on whatsapp only',
+        'no site visit', 'only online deal', 'pay booking amount first'
+      ];
+
       const flaggedListings = allListings.map(l => {
         const price = (l.offer && l.discountPrice) ? l.discountPrice : l.regularPrice;
         const reasons = [];
         if (!l.imageUrls || l.imageUrls.length === 0) reasons.push('No images');
         if (price && (price > upper || price < lower)) reasons.push('Price outlier');
+        // Duplicate / fake content: description reused
+        const d = norm(l.description||'');
+        if (d && (descMap.get(d)||0) >= 2) reasons.push('Description duplicated');
+        // Suspicious language in description
+        if (d && suspiciousPhrases.some(p => d.includes(p))) reasons.push('Suspicious language');
+        // Same contact used across different owners
+        const contacts = new Set([...(d.match(phoneRegex)||[]), ...(d.match(emailRegex)||[])]);
+        const owner = (l.userRef && (l.userRef._id||l.userRef)) || 'unknown';
+        let reusedContact = false;
+        contacts.forEach(c => { if ((contactMap.get(c)||new Set()).size > 1) reusedContact = true; });
+        if (reusedContact) reasons.push('Contact reused across accounts');
+        // Address used in multiple cities
+        const addr = norm(l.address || `${l.propertyNumber||''} ${l.landmark||''}`);
+        if (addr && (addressToCities.get(addr)||new Set()).size > 1) reasons.push('Same address in different cities');
+        // Owner risk: many listings in short time
+        if ((ownerRecentCounts.get(owner)||0) >= 5) reasons.push('High posting velocity');
         return { ...l, _fraudReasons: reasons };
       }).filter(l => l._fraudReasons.length > 0);
 
@@ -46,7 +101,74 @@ export default function AdminFraudManagement() {
         if (!t) return; reviewMap.set(t, (reviewMap.get(t)||0)+1);
       });
       const repetitiveTexts = new Set(Array.from(reviewMap.entries()).filter(([,c])=>c>=3).map(([t])=>t));
-      const flaggedReviews = (allReviews.reviews || allReviews || []).filter(r => repetitiveTexts.has((r.comment||'').trim().toLowerCase()));
+      const suspiciousReviewPhrases = ['scam','fraud','don\'t book','best deal','don\'t miss','very cheap'];
+      const reviewsArr = (allReviews.reviews || allReviews || []);
+      // Build maps for burst/time/city behaviors
+      const byListing = new Map();
+      const byUser = new Map();
+      reviewsArr.forEach(r => {
+        const lid = (r.listingId && (r.listingId._id||r.listingId)) || r.listingId;
+        const uid = (r.userId && (r.userId._id||r.userId)) || r.userId;
+        const created = new Date(r.createdAt||0).getTime();
+        if (!byListing.has(lid)) byListing.set(lid, []);
+        byListing.get(lid).push(r);
+        if (!byUser.has(uid)) byUser.set(uid, []);
+        byUser.get(uid).push(r);
+        r._created = created;
+      });
+      // Rating flood detection per listing (last 3 days)
+      const threeDaysAgo = Date.now() - 3*24*60*60*1000;
+      const listingFlood = new Map();
+      byListing.forEach((arr, lid) => {
+        const recent = arr.filter(r => r._created >= threeDaysAgo);
+        const fiveStar = recent.filter(r => (r.rating||0) >= 5).length;
+        const oneStar = recent.filter(r => (r.rating||0) <= 1).length;
+        listingFlood.set(lid, { fiveStar, oneStar });
+      });
+      // Burst activity: >5 reviews within 30 minutes per listing
+      const burstByListing = new Map();
+      byListing.forEach((arr, lid) => {
+        const sorted = [...arr].sort((a,b)=>a._created-b._created);
+        let burst = false;
+        for (let i=0;i<sorted.length;i++){
+          const start = sorted[i]._created;
+          let count = 1;
+          for (let j=i+1;j<sorted.length;j++){
+            if (sorted[j]._created - start <= 30*60*1000) count++; else break;
+          }
+          if (count >= 5) { burst = true; break; }
+        }
+        burstByListing.set(lid, burst);
+      });
+      // Reviewer behavior: multi-city within 60 minutes
+      const userCityTimeFlag = new Map();
+      byUser.forEach((arr, uid) => {
+        const sorted = [...arr].sort((a,b)=>a._created-b._created);
+        let flag = false;
+        for (let i=0;i<sorted.length;i++){
+          const cityA = (sorted[i].listingId && sorted[i].listingId.city) || '';
+          for (let j=i+1;j<sorted.length;j++){
+            const cityB = (sorted[j].listingId && sorted[j].listingId.city) || '';
+            if (cityA && cityB && cityA !== cityB && (sorted[j]._created - sorted[i]._created) <= 60*60*1000) { flag = true; break; }
+          }
+          if (flag) break;
+        }
+        userCityTimeFlag.set(uid, flag);
+      });
+
+      const flaggedReviews = reviewsArr.map(r => {
+        const reasons = [];
+        const text = (r.comment||'').trim().toLowerCase();
+        if (repetitiveTexts.has(text)) reasons.push('Identical text across accounts');
+        if (suspiciousReviewPhrases.some(p => text.includes(p))) reasons.push('Suspicious language');
+        const lid = (r.listingId && (r.listingId._id||r.listingId)) || r.listingId;
+        const flood = listingFlood.get(lid) || { fiveStar:0, oneStar:0 };
+        if (flood.fiveStar >= 10) reasons.push('5-star flood');
+        if (flood.oneStar >= 10) reasons.push('1-star flood');
+        const uid = (r.userId && (r.userId._id||r.userId)) || r.userId;
+        if (userCityTimeFlag.get(uid)) reasons.push('Reviewer multi-city in short time');
+        return { ...r, _fraudReasons: reasons };
+      }).filter(r => r._fraudReasons.length > 0);
 
       setListings(flaggedListings);
       setReviews(flaggedReviews);
