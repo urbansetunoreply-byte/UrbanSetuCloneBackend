@@ -110,8 +110,15 @@ export default function Search() {
         const extracted = { ...formData };
         const bedsMatch = natural.match(/(\d+)\s*(bhk|bed|beds)/i);
         if (bedsMatch) extracted.bedrooms = bedsMatch[1];
-        const priceMatch = natural.match(/(?:under|below|within)\s*(\d[\d,]*)/i);
+        const priceMatch = natural.match(/(?:under|below|within)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore)?/i);
         if (priceMatch) extracted.maxPrice = priceMatch[1].replace(/,/g,'');
+        if (priceMatch && priceMatch[2]) {
+          const unit = priceMatch[2].toLowerCase();
+          const val = Number(extracted.maxPrice||0);
+          if (unit==='k') extracted.maxPrice = String(val*1000);
+          if (unit==='l' || unit==='lac' || unit==='lakh') extracted.maxPrice = String(val*100000);
+          if (unit==='cr' || unit==='crore') extracted.maxPrice = String(val*10000000);
+        }
         const minPriceMatch = natural.match(/above\s*(\d[\d,]*)/i);
         if (minPriceMatch) extracted.minPrice = minPriceMatch[1].replace(/,/g,'');
         const nearMatch = natural.match(/near\s+([a-zA-Z ]+)/i);
@@ -120,6 +127,9 @@ export default function Search() {
         if (inCity) extracted.city = inCity[1].trim();
         const typeMatch = natural.match(/\b(rent|rental|sale|buy)\b/i);
         if (typeMatch) extracted.type = /rent/.test(typeMatch[1].toLowerCase()) ? 'rent' : 'sale';
+        // Negations
+        if (/no parking/i.test(natural)) extracted.parking = false; else if (/parking/i.test(natural)) extracted.parking = true;
+        if (/unfurnished/i.test(natural)) extracted.furnished = false; else if (/furnished/i.test(natural)) extracted.furnished = true;
         const offerMatch = natural.match(/offer|discount|deal/i);
         if (offerMatch) extracted.offer = true;
         const furnishedMatch = natural.match(/furnished/i);

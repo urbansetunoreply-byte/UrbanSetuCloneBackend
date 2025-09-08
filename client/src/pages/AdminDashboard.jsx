@@ -81,6 +81,7 @@ export default function AdminDashboard() {
     pending: 0,
     rejected: 0
   });
+  const [fraudTimeline, setFraudTimeline] = useState([]);
 
   const [showReasonModal, setShowReasonModal] = useState(false);
   const [deleteReason, setDeleteReason] = useState("");
@@ -366,6 +367,23 @@ export default function AdminDashboard() {
         }
       } catch (_) {}
 
+      // Build simple monthly fraud timeline using review floods and duplicates as proxies
+      try {
+        const monthKey = (d) => {
+          const dt = new Date(d||Date.now());
+          return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
+        };
+        const timeline = {};
+        (allApprovedReviews || []).forEach(r => {
+          const key = monthKey(r.createdAt);
+          const t = (r.comment||'').toLowerCase();
+          const suspicious = t.includes('scam') || t.includes('fraud');
+          if (suspicious) timeline[key] = (timeline[key]||0)+1;
+        });
+        const series = Object.entries(timeline).sort(([a],[b])=>a.localeCompare(b)).map(([month,count])=>({ month, count }));
+        setFraudTimeline(series);
+      } catch(_) {}
+
       setAnalytics({
         totalUsers: usersData.length,
         totalAdmins: adminsData.length,
@@ -630,6 +648,25 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
+
+        {/* Fraud Activity Timeline */}
+        {fraudTimeline.length > 0 && (
+          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow mb-8">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaExclamationTriangle className="text-red-600 mr-2" /> Fraud Activity (monthly)</h3>
+            <div className="mt-3 flex items-end gap-1 h-20">
+              {fraudTimeline.map((pt, i, arr) => {
+                const max = Math.max(...arr.map(x => x.count || 1));
+                const h = Math.max(2, Math.round((pt.count / (max || 1)) * 56));
+                return (
+                  <div key={pt.month} className="flex flex-col items-center" title={`${pt.month}: ${pt.count}`}>
+                    <div className="w-3 bg-red-500 rounded-t" style={{ height: `${h}px` }} />
+                    <div className="mt-1 text-[10px] text-gray-500 rotate-0">{pt.month.split('-')[1]}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Market Insights */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">

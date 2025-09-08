@@ -11,6 +11,12 @@ export default function AdminFraudManagement() {
   const [reviews, setReviews] = useState([]);
   const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [reasonFilter, setReasonFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('severity');
+  const [pageL, setPageL] = useState(1);
+  const [pageR, setPageR] = useState(1);
+  const pageSize = 10;
+  const [selectedRows, setSelectedRows] = useState({ listings: new Set(), reviews: new Set() });
   const navigate = useNavigate();
 
   const fetchData = async () => {
@@ -222,6 +228,25 @@ export default function AdminFraudManagement() {
                 <option value="listings">Suspicious Listings</option>
                 <option value="reviews">Suspected Fake Reviews</option>
               </select>
+              <select value={reasonFilter} onChange={(e)=>{setReasonFilter(e.target.value); setPageL(1); setPageR(1);}} className="border rounded p-2 text-sm">
+                <option value="all">All reasons</option>
+                <option value="Price outlier">Price outlier</option>
+                <option value="Description duplicated">Description duplicated</option>
+                <option value="Suspicious language">Suspicious language</option>
+                <option value="Contact reused across accounts">Contact reused</option>
+                <option value="Same address in different cities">Address conflict</option>
+                <option value="High posting velocity">High posting velocity</option>
+                <option value="No images">No images</option>
+                <option value="Identical text across accounts">Identical text</option>
+                <option value="5-star flood">5-star flood</option>
+                <option value="1-star flood">1-star flood</option>
+                <option value="Reviewer multi-city in short time">Reviewer anomaly</option>
+              </select>
+              <select value={sortBy} onChange={(e)=>{setSortBy(e.target.value);}} className="border rounded p-2 text-sm">
+                <option value="severity">Sort: Severity</option>
+                <option value="recent">Sort: Most Recent</option>
+                <option value="alpha">Sort: Alphabetical</option>
+              </select>
               {/* Search and Sort */}
               <input
                 className="border rounded p-2 text-sm flex-1 min-w-[180px]"
@@ -243,6 +268,12 @@ export default function AdminFraudManagement() {
                 a.href = url; a.download = 'fraud-report.csv'; a.click();
                 URL.revokeObjectURL(url);
               }}>Export CSV</button>
+              <button className="px-3 py-2 bg-gray-800 text-white rounded-lg text-sm" onClick={()=>{
+                // Bulk resolve: hide selected items locally
+                setListings(prev => prev.filter(x => !selectedRows.listings.has(x._id)));
+                setReviews(prev => prev.filter(x => !selectedRows.reviews.has(x._id)));
+                setSelectedRows({ listings: new Set(), reviews: new Set() });
+              }}>Resolve Selected</button>
             </div>
 
             {(filter==='all' || filter==='listings') && (
@@ -259,7 +290,8 @@ export default function AdminFraudManagement() {
                       </tr>
                     </thead>
                     <tbody>
-                      {listings.filter(l => {
+                      {listings
+                        .filter(l => {
                         const q = searchQuery.trim().toLowerCase();
                         if (!q) return true;
                         const fields = [
@@ -270,8 +302,22 @@ export default function AdminFraudManagement() {
                           (l._fraudReasons||[]).join(' ')
                         ].join(' ').toLowerCase();
                         return fields.includes(q);
-                      }).map(l => (
+                      })
+                        .filter(l => reasonFilter==='all' ? true : (l._fraudReasons||[]).includes(reasonFilter))
+                        .sort((a,b)=>{
+                          if (sortBy==='alpha') return String(a.name||'').localeCompare(String(b.name||''));
+                          if (sortBy==='recent') return new Date(b.createdAt||0) - new Date(a.createdAt||0);
+                          const sa=(a._fraudReasons||[]).length, sb=(b._fraudReasons||[]).length; return sb-sa;
+                        })
+                        .slice((pageL-1)*pageSize, pageL*pageSize)
+                        .map(l => (
                         <tr key={l._id} className="border-t">
+                          <td className="p-2 text-sm">
+                            <input type="checkbox" checked={selectedRows.listings.has(l._id)} onChange={(e)=>{
+                              const ns = new Set(selectedRows.listings); if (e.target.checked) ns.add(l._id); else ns.delete(l._id);
+                              setSelectedRows(s => ({ ...s, listings: ns }));
+                            }} />
+                          </td>
                           <td className="p-2 text-sm">{l.name}</td>
                           <td className="p-2 text-sm">{l.city}, {l.state}</td>
                           <td className="p-2 text-sm">{(l._fraudReasons||[]).join(', ')}</td>
@@ -281,16 +327,25 @@ export default function AdminFraudManagement() {
                           </td>
                         </tr>
                       ))}
-                      {listings.filter(l => {
+                      {listings
+                        .filter(l => {
                         const q = searchQuery.trim().toLowerCase();
                         if (!q) return true;
                         const fields = [l.name,l.city,l.state,(l.description||''),(l._fraudReasons||[]).join(' ')].join(' ').toLowerCase();
                         return fields.includes(q);
-                      }).length === 0 && (
+                      })
+                        .filter(l => reasonFilter==='all' ? true : (l._fraudReasons||[]).includes(reasonFilter))
+                        .length === 0 && (
                         <tr><td className="p-3 text-sm text-gray-500" colSpan={4}>No suspicious listings</td></tr>
                       )}
                     </tbody>
                   </table>
+                </div>
+                {/* Pagination for listings */}
+                <div className="flex items-center justify-end gap-2 mt-3">
+                  <button className="px-2 py-1 bg-gray-200 rounded text-xs" onClick={()=>setPageL(p=>Math.max(1,p-1))}>Prev</button>
+                  <span className="text-xs">Page {pageL}</span>
+                  <button className="px-2 py-1 bg-gray-200 rounded text-xs" onClick={()=>setPageL(p=>p+1)}>Next</button>
                 </div>
               </div>
             )}
@@ -309,7 +364,8 @@ export default function AdminFraudManagement() {
                       </tr>
                     </thead>
                     <tbody>
-                      {reviews.filter(r => {
+                      {reviews
+                        .filter(r => {
                         const q = searchQuery.trim().toLowerCase();
                         if (!q) return true;
                         const fields = [
@@ -319,8 +375,22 @@ export default function AdminFraudManagement() {
                           (r._fraudReasons||[]).join(' ')
                         ].join(' ').toLowerCase();
                         return fields.includes(q);
-                      }).map(r => (
+                      })
+                        .filter(r => reasonFilter==='all' ? true : (r._fraudReasons||[]).includes(reasonFilter))
+                        .sort((a,b)=>{
+                          if (sortBy==='alpha') return String(a.listingId?.name||'').localeCompare(String(b.listingId?.name||''));
+                          if (sortBy==='recent') return new Date(b.createdAt||0) - new Date(a.createdAt||0);
+                          const sa=(a._fraudReasons||[]).length, sb=(b._fraudReasons||[]).length; return sb-sa;
+                        })
+                        .slice((pageR-1)*pageSize, pageR*pageSize)
+                        .map(r => (
                         <tr key={r._id} className="border-t">
+                          <td className="p-2 text-sm">
+                            <input type="checkbox" checked={selectedRows.reviews.has(r._id)} onChange={(e)=>{
+                              const ns = new Set(selectedRows.reviews); if (e.target.checked) ns.add(r._id); else ns.delete(r._id);
+                              setSelectedRows(s => ({ ...s, reviews: ns }));
+                            }} />
+                          </td>
                           <td className="p-2 text-sm">{r.listingId?.name || r.listingId}</td>
                           <td className="p-2 text-sm">{r.userId?.email || r.userId}</td>
                           <td className="p-2 text-sm max-w-md truncate" title={r.comment}>{r.comment}</td>
@@ -330,7 +400,8 @@ export default function AdminFraudManagement() {
                           </td>
                         </tr>
                       ))}
-                      {reviews.filter(r => {
+                      {reviews
+                        .filter(r => {
                         const q = searchQuery.trim().toLowerCase();
                         if (!q) return true;
                         const fields = [
@@ -340,11 +411,19 @@ export default function AdminFraudManagement() {
                           (r._fraudReasons||[]).join(' ')
                         ].join(' ').toLowerCase();
                         return fields.includes(q);
-                      }).length === 0 && (
+                      })
+                        .filter(r => reasonFilter==='all' ? true : (r._fraudReasons||[]).includes(reasonFilter))
+                        .length === 0 && (
                         <tr><td className="p-3 text-sm text-gray-500" colSpan={4}>No suspected fake reviews</td></tr>
                       )}
                     </tbody>
                   </table>
+                </div>
+                {/* Pagination for reviews */}
+                <div className="flex items-center justify-end gap-2 mt-3">
+                  <button className="px-2 py-1 bg-gray-200 rounded text-xs" onClick={()=>setPageR(p=>Math.max(1,p-1))}>Prev</button>
+                  <span className="text-xs">Page {pageR}</span>
+                  <button className="px-2 py-1 bg-gray-200 rounded text-xs" onClick={()=>setPageR(p=>p+1)}>Next</button>
                 </div>
               </div>
             )}
