@@ -3906,6 +3906,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       if (event.ctrlKey && event.key === 'f') {
         event.preventDefault(); // Prevent browser find dialog
         inputRef.current?.focus();
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        setShowChatModal(false);
       }
     };
     
