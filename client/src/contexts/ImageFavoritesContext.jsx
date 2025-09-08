@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const ImageFavoritesContext = createContext();
 
 export const useImageFavorites = () => {
@@ -36,7 +38,7 @@ export const ImageFavoritesProvider = ({ children }) => {
 
         try {
             setLoading(true);
-            const response = await axios.get(`/api/image-favorites/user/${currentUser._id}`, {
+            const response = await axios.get(`${API_BASE_URL}/api/image-favorites/user/${currentUser._id}`, {
                 withCredentials: true
             });
 
@@ -95,7 +97,7 @@ export const ImageFavoritesProvider = ({ children }) => {
         try {
             if (isFav) {
                 // Remove from favorites
-                await axios.delete(`/api/image-favorites/remove/${imageId}`, {
+                await axios.delete(`${API_BASE_URL}/api/image-favorites/remove/${imageId}`, {
                     withCredentials: true
                 });
 
@@ -123,7 +125,7 @@ export const ImageFavoritesProvider = ({ children }) => {
                     }
                 };
 
-                const response = await axios.post('/api/image-favorites/add', favoriteData, {
+                const response = await axios.post(`${API_BASE_URL}/api/image-favorites/add`, favoriteData, {
                     withCredentials: true
                 });
 
@@ -191,7 +193,7 @@ export const ImageFavoritesProvider = ({ children }) => {
                 }
             })).filter(img => img.imageId);
 
-            const response = await axios.post('/api/image-favorites/bulk/add', {
+            const response = await axios.post(`${API_BASE_URL}/api/image-favorites/bulk/add`, {
                 images: imageData
             }, {
                 withCredentials: true
@@ -215,7 +217,7 @@ export const ImageFavoritesProvider = ({ children }) => {
         try {
             const imageIds = imageUrls.map(url => generateImageId(url)).filter(Boolean);
             
-            const response = await axios.post('/api/image-favorites/bulk/remove', {
+            const response = await axios.post(`${API_BASE_URL}/api/image-favorites/bulk/remove`, {
                 imageIds
             }, {
                 withCredentials: true
