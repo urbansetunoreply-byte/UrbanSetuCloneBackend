@@ -142,7 +142,7 @@ export default function Appointment() {
           } else {
             navigate('/user/my-appointments');
           }
-        }, 2000); // 2 seconds delay
+        }, 5000); // 5 seconds delay
       } else {
         toast.error(data.message || "Failed to book appointment.");
       }
