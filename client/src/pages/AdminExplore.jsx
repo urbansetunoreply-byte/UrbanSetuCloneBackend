@@ -144,6 +144,20 @@ export default function AdminExplore() {
           </h3>
           <p className="text-center text-gray-600 mb-6">Search and filter all properties across the platform</p>
           
+          {/* Smart (NLP) Search - moved to top */}
+          <form onSubmit={applySmartQuery} className="bg-blue-50 p-4 rounded-lg mb-6">
+            <label className="block text-sm font-medium text-blue-800 mb-2">Smart Search (natural language)</label>
+            <div className="flex gap-2">
+              <input
+                value={smartQuery}
+                onChange={(e) => setSmartQuery(e.target.value)}
+                placeholder="e.g., 3BHK above 50L in Bengaluru with parking"
+                className="flex-1 p-2 border rounded-md"
+              />
+              <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg">Apply</button>
+            </div>
+          </form>
+
           <form
             onSubmit={handleSubmit}
             className="grid md:grid-cols-2 gap-4 bg-gray-100 p-4 rounded-lg mb-6"
@@ -297,19 +311,7 @@ export default function AdminExplore() {
             </button>
           </form>
 
-          {/* Smart (NLP) Search */}
-          <form onSubmit={applySmartQuery} className="bg-blue-50 p-4 rounded-lg mb-6">
-            <label className="block text-sm font-medium text-blue-800 mb-2">Smart Search (natural language)</label>
-            <div className="flex gap-2">
-              <input
-                value={smartQuery}
-                onChange={(e) => setSmartQuery(e.target.value)}
-                placeholder="e.g., 3BHK above 50L in Bengaluru with parking"
-                className="flex-1 p-2 border rounded-md"
-              />
-              <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg">Apply</button>
-            </div>
-          </form>
+          
 
           {/* Listings Display */}
           <div className="mt-4">

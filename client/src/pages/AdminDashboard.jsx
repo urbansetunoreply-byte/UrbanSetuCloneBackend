@@ -533,8 +533,8 @@ export default function AdminDashboard() {
             </div>
           </div>
           {/* Fraud Detection Card */}
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between">
+          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow relative group">
+            <div className="flex items-center justify-between cursor-pointer">
               <div>
                 <p className="text-sm font-medium text-gray-600">Fraud Watch</p>
                 <p className="text-sm text-gray-500">Last Scan: {fraudStats.lastScan ? new Date(fraudStats.lastScan).toLocaleString() : 'N/A'}</p>
@@ -546,6 +546,14 @@ export default function AdminDashboard() {
             <div className="mt-4 space-y-1">
               <p className="text-sm text-gray-700">Suspicious Listings: <span className="font-bold text-red-600">{fraudStats.suspiciousListings}</span></p>
               <p className="text-sm text-gray-700">Suspected Fake Reviews: <span className="font-bold text-red-600">{fraudStats.suspectedFakeReviews}</span></p>
+            </div>
+            {/* Hover/Click Popover */}
+            <div className="hidden group-hover:block absolute top-full left-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-10">
+              <p className="text-xs text-gray-600">Details</p>
+              <ul className="mt-1 text-sm text-gray-800 space-y-1">
+                <li>Suspicious Listings: <span className="font-semibold text-red-600">{fraudStats.suspiciousListings}</span></li>
+                <li>Suspected Fake Reviews: <span className="font-semibold text-red-600">{fraudStats.suspectedFakeReviews}</span></li>
+              </ul>
             </div>
           </div>
         </div>
