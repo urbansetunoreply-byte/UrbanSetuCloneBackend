@@ -229,17 +229,19 @@ const GeminiChatbox = () => {
         }
     }, [isOpen]);
 
-    // Track scroll to bottom detection
+    // Track scroll to bottom detection and compute initial state on open and updates
     useEffect(() => {
         const el = messagesContainerRef.current;
         if (!el) return;
-        const onScroll = () => {
+        const compute = () => {
             const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
             setIsScrolledUp(distanceFromBottom > 80);
         };
+        compute();
+        const onScroll = () => compute();
         el.addEventListener('scroll', onScroll);
         return () => el.removeEventListener('scroll', onScroll);
-    }, [messagesContainerRef]);
+    }, [isOpen, messages]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -390,7 +392,7 @@ const GeminiChatbox = () => {
             {/* Chat Window */}
             {isOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4 md:p-0 md:items-end md:justify-end gemini-chatbox-modal">
-                    <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col w-full max-w-md h-full max-h-[90vh] md:w-96 md:h-[500px] md:mb-32 md:mr-6 md:max-h-[500px]">
+                    <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col w-full max-w-md h-full max-h-[90vh] md:w-96 md:h-[500px] md:mb-32 md:mr-6 md:max-h-[500px] relative">
                         {/* Header */}
                         <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-t-2xl flex items-center justify-between flex-shrink-0">
                             <div className="flex items-center space-x-3">
@@ -422,7 +424,7 @@ const GeminiChatbox = () => {
                         </div>
 
                         {/* Messages */}
-                        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 relative">
+                        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
                             {messages.map((message, index) => (
                                 <div
                                     key={index}
@@ -469,21 +471,24 @@ const GeminiChatbox = () => {
                                 </div>
                             )}
                             <div ref={messagesEndRef} />
-                            {isScrolledUp && (
-                                <div className="absolute bottom-20 right-4 z-20">
-                                    <button
-                                        onClick={() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })}
-                                        className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-full p-3 shadow-xl transition-all duration-200 hover:scale-110 relative transform hover:shadow-2xl"
-                                        title="Jump to latest"
-                                        aria-label="Jump to latest"
-                                    >
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="transform">
-                                            <path d="M12 16l-6-6h12l-6 6z" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            )}
+                            {/* scroll button moved to container-level absolute positioning */}
                         </div>
+
+                        {/* Floating Scroll to bottom button - container-level absolute */}
+                        {isScrolledUp && (
+                            <div className="absolute bottom-20 right-4 z-30">
+                                <button
+                                    onClick={() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })}
+                                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-full p-3 shadow-xl transition-all duration-200 hover:scale-110 relative transform hover:shadow-2xl"
+                                    title="Jump to latest"
+                                    aria-label="Jump to latest"
+                                >
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="transform">
+                                        <path d="M12 16l-6-6h12l-6 6z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        )}
 
                         {/* Quick suggestion prompts when conversation is empty */}
                         {messages && (messages.length === 1 && !messages.some(m => m.role === 'user')) && (
