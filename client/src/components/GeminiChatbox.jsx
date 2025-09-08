@@ -90,6 +90,38 @@ const GeminiChatbox = () => {
         setSessionId(newSessionId);
     };
 
+    // Clear chat history (server + local) from within the chatbox header
+    const handleClearChatHistory = async () => {
+        try {
+            // If user is not authenticated, just clear local chat
+            if (!currentUser) {
+                clearLocalChatHistory();
+                toast.success('Chat cleared');
+                return;
+            }
+
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+            const response = await fetch(`${API_BASE_URL}/api/chat-history/clear-all`, {
+                method: 'DELETE',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (response.ok) {
+                toast.success('Chat history cleared');
+                clearLocalChatHistory();
+            } else {
+                const errorData = await response.json();
+                toast.error(errorData.message || 'Failed to clear chat history');
+            }
+        } catch (error) {
+            console.error('Error clearing chat history:', error);
+            toast.error('Failed to clear chat history');
+        }
+    };
+
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
@@ -343,12 +375,22 @@ const GeminiChatbox = () => {
                                     <p className="text-xs opacity-90">Real Estate Helper</p>
                                 </div>
                             </div>
-                            <button
-                                onClick={() => setIsOpen(false)}
-                                className="text-white hover:text-gray-200 transition-colors"
-                            >
-                                <FaTimes size={16} />
-                            </button>
+                            <div className="flex items-center gap-3">
+                                <button
+                                    onClick={handleClearChatHistory}
+                                    className="text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
+                                    title="Clear Chat"
+                                    aria-label="Clear Chat"
+                                >
+                                    Clear
+                                </button>
+                                <button
+                                    onClick={() => setIsOpen(false)}
+                                    className="text-white hover:text-gray-200 transition-colors"
+                                >
+                                    <FaTimes size={16} />
+                                </button>
+                            </div>
                         </div>
 
                         {/* Messages */}
