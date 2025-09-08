@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FaBroom, FaBolt, FaWrench, FaBug, FaTools } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { useSelector } from 'react-redux';
 
 const services = [
   { key: 'cleaning', name: 'Cleaning', icon: <FaBroom className="text-blue-600"/> },
@@ -11,20 +12,45 @@ const services = [
 ];
 
 export default function OnDemandServices() {
-  const [selected, setSelected] = useState(null);
+  const { currentUser } = useSelector((state) => state.user);
+  const [selected, setSelected] = useState([]);
   const [details, setDetails] = useState({ date: '', address: '', notes: '' });
   const [loading, setLoading] = useState(false);
 
+  const toggleService = (key) => {
+    setSelected(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
+  };
+
   const submit = async () => {
-    if (!selected || !details.date || !details.address) {
-      toast.error('Select a service and fill required fields');
+    if (selected.length === 0 || !details.date || !details.address) {
+      toast.error('Select at least one service and fill required fields');
       return;
     }
     setLoading(true);
     try {
-      await new Promise(r => setTimeout(r, 600));
-      toast.success('Service request submitted');
-      setSelected(null);
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+      const title = `On-Demand Services Request`;
+      const requester = currentUser ? `${currentUser.username} (${currentUser.email})` : 'Unknown user';
+      const bodyLines = [
+        `Requester: ${requester}`,
+        `Services: ${selected.join(', ')}`,
+        `Preferred Date: ${details.date}`,
+        `Address: ${details.address}`,
+        details.notes ? `Notes: ${details.notes}` : null,
+      ].filter(Boolean);
+      const message = bodyLines.join('\n');
+      const res = await fetch(`${API_BASE_URL}/api/notifications/notify-admins`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, message })
+      });
+      if (res.ok) {
+        toast.success('Service request submitted');
+      } else {
+        toast.error('Failed to submit request');
+      }
+      setSelected([]);
       setDetails({ date: '', address: '', notes: '' });
     } catch (e) { toast.error('Failed'); } finally { setLoading(false); }
   };
@@ -34,7 +60,7 @@ export default function OnDemandServices() {
       <h1 className="text-2xl font-bold mb-6">On-Demand Services</h1>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
         {services.map(s => (
-          <button key={s.key} onClick={()=>setSelected(s.key)} className={`bg-white rounded-xl shadow p-4 flex flex-col items-center gap-2 hover:shadow-lg ${selected===s.key?'ring-2 ring-blue-500':''}`}>
+          <button key={s.key} onClick={()=>toggleService(s.key)} className={`bg-white rounded-xl shadow p-4 flex flex-col items-center gap-2 hover:shadow-lg ${selected.includes(s.key)?'ring-2 ring-blue-500':''}`}>
             {s.icon}
             <span className="text-sm font-semibold">{s.name}</span>
           </button>

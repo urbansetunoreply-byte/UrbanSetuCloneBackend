@@ -13,6 +13,7 @@ import {
   adminSendNotificationToAll,
   reportChatMessage,
   reportChatConversation,
+  notifyAdminsGeneric,
 } from '../controllers/notification.controller.js';
 import { verifyToken } from '../utils/verify.js';
 
@@ -52,5 +53,8 @@ router.post('/report-chat', verifyToken, reportChatMessage);
 
 // Report entire chat conversation (any authenticated user)
 router.post('/report-chat-conversation', verifyToken, reportChatConversation);
+
+// Generic: notify all admins (user-initiated requests)
+router.post('/notify-admins', verifyToken, notifyAdminsGeneric);
 
 export default router; 

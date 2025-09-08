@@ -526,3 +526,48 @@ export const adminSendNotificationToAll = async (req, res, next) => {
     next(error);
   }
 }; 
+
+// Notify all admins: generic helper for user-initiated requests (e.g., services/movers)
+export const notifyAdminsGeneric = async (req, res, next) => {
+  try {
+    const { title, message } = req.body;
+    if (!title || !message) {
+      return res.status(400).json({ success: false, message: 'title and message are required' });
+    }
+
+    // Find all admins and rootadmins (active, approved)
+    const admins = await User.find({
+      status: { $ne: 'suspended' },
+      $or: [
+        { role: 'rootadmin' },
+        { role: 'admin', adminApprovalStatus: 'approved' },
+      ],
+    }, '_id');
+
+    if (admins.length === 0) {
+      return res.status(200).json({ success: true, message: 'No admins found to notify' });
+    }
+
+    const notifications = admins.map(a => ({
+      userId: a._id,
+      type: 'admin_message',
+      title,
+      message,
+      adminId: null,
+    }));
+
+    const created = await Notification.insertMany(notifications);
+
+    // Emit socket events to each admin
+    const io = req.app.get('io');
+    if (io) {
+      created.forEach(n => {
+        io.to(n.userId.toString()).emit('notificationCreated', n);
+      });
+    }
+
+    res.status(201).json({ success: true, count: created.length });
+  } catch (error) {
+    next(error);
+  }
+};

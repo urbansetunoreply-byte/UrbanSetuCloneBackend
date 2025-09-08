@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { FaTruckMoving, FaMapMarkerAlt, FaCalendarAlt } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { useSelector } from 'react-redux';
 
 export default function PackersMovers() {
+  const { currentUser } = useSelector((state) => state.user);
   const [form, setForm] = useState({ from: '', to: '', date: '', size: '1BHK', notes: '' });
   const [submitting, setSubmitting] = useState(false);
 
@@ -14,9 +16,29 @@ export default function PackersMovers() {
     }
     setSubmitting(true);
     try {
-      // Placeholder: send request to backend integration/provider webhook
-      await new Promise(r => setTimeout(r, 600));
-      toast.success('Request submitted. A partner will contact you.');
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+      const title = 'Packers & Movers Request';
+      const requester = currentUser ? `${currentUser.username} (${currentUser.email})` : 'Unknown user';
+      const lines = [
+        `Requester: ${requester}`,
+        `From: ${form.from}`,
+        `To: ${form.to}`,
+        `Date: ${form.date}`,
+        `Size: ${form.size}`,
+        form.notes ? `Notes: ${form.notes}` : null,
+      ].filter(Boolean);
+      const message = lines.join('\n');
+      const res = await fetch(`${API_BASE_URL}/api/notifications/notify-admins`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, message })
+      });
+      if (res.ok) {
+        toast.success('Request submitted. Admin will contact you.');
+      } else {
+        toast.error('Failed to submit request');
+      }
       setForm({ from: '', to: '', date: '', size: '1BHK', notes: '' });
     } catch (e) {
       toast.error('Failed to submit request');
