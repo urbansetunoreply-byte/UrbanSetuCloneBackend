@@ -10,7 +10,8 @@ const GeminiChatbox = () => {
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
-            content: 'Hello! I\'m your AI assistant powered by Gemini. How can I help you with your real estate needs today?'
+            content: 'Hello! I\'m your AI assistant powered by Gemini. How can I help you with your real estate needs today?',
+            timestamp: new Date().toISOString()
         }
     ]);
     const [inputMessage, setInputMessage] = useState('');
@@ -21,6 +22,9 @@ const GeminiChatbox = () => {
     const inputRef = useRef(null);
     const [sendIconAnimating, setSendIconAnimating] = useState(false);
     const [sendIconSent, setSendIconSent] = useState(false);
+    const messagesContainerRef = useRef(null);
+    const [isScrolledUp, setIsScrolledUp] = useState(false);
+    const [showConfirmClear, setShowConfirmClear] = useState(false);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -81,7 +85,8 @@ const GeminiChatbox = () => {
         setMessages([
             {
                 role: 'assistant',
-                content: 'Hello! I\'m your AI assistant powered by Gemini. How can I help you with your real estate needs today?'
+                content: 'Hello! I\'m your AI assistant powered by Gemini. How can I help you with your real estate needs today?',
+                timestamp: new Date().toISOString()
             }
         ]);
         // Generate new session ID
@@ -217,6 +222,25 @@ const GeminiChatbox = () => {
         window.dispatchEvent(event);
     }, [isOpen]);
 
+    // Autofocus input when opening
+    useEffect(() => {
+        if (isOpen) {
+            setTimeout(() => inputRef.current?.focus(), 50);
+        }
+    }, [isOpen]);
+
+    // Track scroll to bottom detection
+    useEffect(() => {
+        const el = messagesContainerRef.current;
+        if (!el) return;
+        const onScroll = () => {
+            const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+            setIsScrolledUp(distanceFromBottom > 80);
+        };
+        el.addEventListener('scroll', onScroll);
+        return () => el.removeEventListener('scroll', onScroll);
+    }, [messagesContainerRef]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!inputMessage.trim() || isLoading) return;
@@ -227,7 +251,7 @@ const GeminiChatbox = () => {
 
         const userMessage = inputMessage.trim();
         setInputMessage('');
-        setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+        setMessages(prev => [...prev, { role: 'user', content: userMessage, timestamp: new Date().toISOString() }]);
         setIsLoading(true);
 
         try {
@@ -264,7 +288,7 @@ const GeminiChatbox = () => {
             if (data && data.response && typeof data.response === 'string') {
                 const trimmedResponse = data.response.trim();
                 console.log('Setting message with response length:', trimmedResponse.length);
-                setMessages(prev => [...prev, { role: 'assistant', content: trimmedResponse }]);
+                setMessages(prev => [...prev, { role: 'assistant', content: trimmedResponse, timestamp: new Date().toISOString() }]);
 
                 // Update session ID if provided in response
                 if (data.sessionId && data.sessionId !== sessionId) {
@@ -295,7 +319,8 @@ const GeminiChatbox = () => {
             
             setMessages(prev => [...prev, { 
                 role: 'assistant', 
-                content: errorMessage
+                content: errorMessage,
+                timestamp: new Date().toISOString()
             }]);
         } finally {
             setIsLoading(false);
@@ -376,14 +401,17 @@ const GeminiChatbox = () => {
                                 </div>
                             </div>
                             <div className="flex items-center gap-3">
-                                <button
-                                    onClick={handleClearChatHistory}
-                                    className="text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
-                                    title="Clear Chat"
-                                    aria-label="Clear Chat"
-                                >
-                                    Clear
-                                </button>
+                                {/* Hide clear button when no user messages */}
+                                {messages && (messages.length > 1 || messages.some(m => m.role === 'user')) && (
+                                    <button
+                                        onClick={() => setShowConfirmClear(true)}
+                                        className="text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
+                                        title="Clear Chat"
+                                        aria-label="Clear Chat"
+                                    >
+                                        Clear
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => setIsOpen(false)}
                                     className="text-white hover:text-gray-200 transition-colors"
@@ -394,7 +422,7 @@ const GeminiChatbox = () => {
                         </div>
 
                         {/* Messages */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
+                        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 relative">
                             {messages.map((message, index) => (
                                 <div
                                     key={index}
@@ -408,6 +436,11 @@ const GeminiChatbox = () => {
                                         }`}
                                     >
                                         <p className="text-sm whitespace-pre-wrap leading-relaxed pr-8">{formatLinksInText(message.content, message.role === 'user')}</p>
+                                        {message.timestamp && (
+                                            <div className={`${message.role === 'user' ? 'text-white/80' : 'text-gray-500'} text-[10px] mt-1`}>
+                                                {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </div>
+                                        )}
 
                                         {/* Copy icon for all messages (sent and received) */}
                                         <button
@@ -436,7 +469,37 @@ const GeminiChatbox = () => {
                                 </div>
                             )}
                             <div ref={messagesEndRef} />
+                            {isScrolledUp && (
+                                <button
+                                    onClick={() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })}
+                                    className="absolute right-4 bottom-4 bg-white text-gray-700 border border-gray-200 rounded-full px-3 py-1 text-xs shadow hover:shadow-md"
+                                >
+                                    Jump to latest
+                                </button>
+                            )}
                         </div>
+
+                        {/* Quick suggestion prompts when conversation is empty */}
+                        {messages && (messages.length === 1 && !messages.some(m => m.role === 'user')) && (
+                            <div className="px-4 pb-2 pt-2 border-t border-gray-100 flex-shrink-0">
+                                <div className="flex flex-wrap gap-2">
+                                    {[
+                                        'Show trending properties',
+                                        'How do I schedule a viewing?',
+                                        'What are popular areas near me?',
+                                        'Explain mortgage basics'
+                                    ].map((prompt) => (
+                                        <button
+                                            key={prompt}
+                                            onClick={() => { setInputMessage(prompt); setTimeout(() => handleSubmit(new Event('submit')), 0); }}
+                                            className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded-full"
+                                        >
+                                            {prompt}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
                         {/* Input */}
                         <div className="p-4 border-t border-gray-200 flex-shrink-0">
@@ -466,6 +529,19 @@ const GeminiChatbox = () => {
                                 </button>
                             </form>
                         </div>
+                        {/* Clear confirmation modal */}
+                        {showConfirmClear && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                                <div className="bg-white rounded-xl shadow-xl p-5 w-80">
+                                    <h4 className="font-semibold mb-2">Clear chat?</h4>
+                                    <p className="text-sm text-gray-600 mb-4">This will remove your conversation here. This action cannot be undone.</p>
+                                    <div className="flex justify-end gap-2">
+                                        <button onClick={() => setShowConfirmClear(false)} className="px-3 py-1.5 text-sm rounded border border-gray-300 text-gray-700">Cancel</button>
+                                        <button onClick={() => { setShowConfirmClear(false); handleClearChatHistory(); }} className="px-3 py-1.5 text-sm rounded bg-red-600 text-white hover:bg-red-700">Clear</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
