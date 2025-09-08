@@ -470,12 +470,18 @@ const GeminiChatbox = () => {
                             )}
                             <div ref={messagesEndRef} />
                             {isScrolledUp && (
-                                <button
-                                    onClick={() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })}
-                                    className="absolute right-4 bottom-4 bg-white text-gray-700 border border-gray-200 rounded-full px-3 py-1 text-xs shadow hover:shadow-md"
-                                >
-                                    Jump to latest
-                                </button>
+                                <div className="absolute bottom-20 right-4 z-20">
+                                    <button
+                                        onClick={() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })}
+                                        className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-full p-3 shadow-xl transition-all duration-200 hover:scale-110 relative transform hover:shadow-2xl"
+                                        title="Jump to latest"
+                                        aria-label="Jump to latest"
+                                    >
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="transform">
+                                            <path d="M12 16l-6-6h12l-6 6z" />
+                                        </svg>
+                                    </button>
+                                </div>
                             )}
                         </div>
 
