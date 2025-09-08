@@ -14,7 +14,6 @@ export default function RoutePlanner() {
   const placesServiceRef = useRef(null);
   const autocompleteServiceRef = useRef(null);
   const [predictions, setPredictions] = useState([]); // array of arrays per stop index
-  const [mapsReady, setMapsReady] = useState(() => Boolean(typeof window !== 'undefined' && window.google && window.google.maps));
 
   const addStop = () => setStops(s => [...s, { address: '' }]);
   const removeStop = (i) => setStops(s => s.filter((_, idx) => idx !== i));
@@ -23,23 +22,20 @@ export default function RoutePlanner() {
   // Load Google Maps script once
   useEffect(() => {
     if (!GOOGLE_MAPS_API_KEY) return;
-    if (window.google && window.google.maps && window.google.maps.places) {
-      setMapsReady(true);
-      return;
-    }
+    if (window.google && window.google.maps) return;
     const script = document.createElement('script');
     script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
     script.async = true;
-    script.defer = true;
-    script.onload = () => setMapsReady(true);
     document.body.appendChild(script);
-    // do not remove to keep cached
-  }, [GOOGLE_MAPS_API_KEY]);
+    return () => {
+      // Optional: don't remove to allow caching across pages
+    };
+  }, []);
 
   // Initialize map when API is ready
   useEffect(() => {
-    if (!mapsReady) return;
     if (!mapRef.current) return;
+    if (!window.google || !window.google.maps) return;
     if (mapInstanceRef.current) return;
     mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
       center: { lat: 28.6139, lng: 77.2090 },
@@ -50,7 +46,7 @@ export default function RoutePlanner() {
     directionsRendererRef.current.setMap(mapInstanceRef.current);
     placesServiceRef.current = new window.google.maps.places.PlacesService(mapInstanceRef.current);
     autocompleteServiceRef.current = new window.google.maps.places.AutocompleteService();
-  }, [mapsReady]);
+  }, [mapRef.current, window.google && window.google.maps]);
 
   const computePlanFallback = () => {
     const valid = stops.map(s => s.address.trim()).filter(Boolean);
@@ -194,4 +190,3 @@ export default function RoutePlanner() {
     </div>
   );
 }
-
