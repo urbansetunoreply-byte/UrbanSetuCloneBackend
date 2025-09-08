@@ -43,26 +43,6 @@ export default function Header() {
       const prevWidth = document.body.style.width;
       const prevTop = document.body.style.top;
       
-      {/* New services quick links (visible to signed-in users) */}
-      {currentUser && !mobile && (
-        <>
-          <Link to="/user/movers" onClick={onNavigate}>
-            <li className="hover:text-yellow-300 hover:scale-110 flex items-center gap-1 transition-all">
-              <span>Movers</span>
-            </li>
-          </Link>
-          <Link to="/user/services" onClick={onNavigate}>
-            <li className="hover:text-yellow-300 hover:scale-110 flex items-center gap-1 transition-all">
-              <span>Services</span>
-            </li>
-          </Link>
-          <Link to="/user/route-planner" onClick={onNavigate}>
-            <li className="hover:text-yellow-300 hover:scale-110 flex items-center gap-1 transition-all">
-              <span>Route</span>
-            </li>
-          </Link>
-        </>
-      )}
       // Lock body scroll
       document.body.style.overflow = 'hidden';
       document.body.style.position = 'fixed';
@@ -380,6 +360,26 @@ function UserNavLinks({ mobile = false, onNavigate }) {
           <span>Explore</span>
         </li>
       </Link>
+      {/* Services quick links */}
+      {currentUser && !mobile && (
+        <>
+          <Link to="/user/movers" onClick={onNavigate}>
+            <li className="hover:text-yellow-300 hover:scale-110 flex items-center gap-1 transition-all">
+              <span>Movers</span>
+            </li>
+          </Link>
+          <Link to="/user/services" onClick={onNavigate}>
+            <li className="hover:text-yellow-300 hover:scale-110 flex items-center gap-1 transition-all">
+              <span>Services</span>
+            </li>
+          </Link>
+          <Link to="/user/route-planner" onClick={onNavigate}>
+            <li className="hover:text-yellow-300 hover:scale-110 flex items-center gap-1 transition-all">
+              <span>Route</span>
+            </li>
+          </Link>
+        </>
+      )}
       
       {currentUser && (
         <>
