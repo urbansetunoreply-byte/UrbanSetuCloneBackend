@@ -1280,6 +1280,30 @@ function AdminAppointmentRow({
   // Message info modal state
   const [showMessageInfoModal, setShowMessageInfoModal] = useLocalState(false);
   const [selectedMessageForInfo, setSelectedMessageForInfo] = useLocalState(null);
+  // Persist draft per appointment when chat is open
+  React.useEffect(() => {
+    if (!showChatModal || !appt?._id) return;
+    const draftKey = `admin_appt_draft_${appt._id}`;
+    const saved = localStorage.getItem(draftKey);
+    if (saved !== null && saved !== undefined) {
+      setNewComment(saved);
+      setTimeout(() => {
+        try {
+          if (inputRef.current) {
+            const length = inputRef.current.value.length;
+            inputRef.current.focus();
+            inputRef.current.setSelectionRange(length, length);
+          }
+        } catch(_) {}
+      }, 0);
+    }
+  }, [showChatModal, appt?._id]);
+
+  React.useEffect(() => {
+    if (!showChatModal || !appt?._id) return;
+    const draftKey = `admin_appt_draft_${appt._id}`;
+    localStorage.setItem(draftKey, newComment);
+  }, [newComment, showChatModal, appt?._id]);
   
   // Starred messages states
   const [showStarredModal, setShowStarredModal] = useLocalState(false);
@@ -2446,6 +2470,10 @@ function AdminAppointmentRow({
     setLocalComments(prev => [...prev, tempMessage]);
     try { playMessageSent(); } catch(_) {}
     setNewComment("");
+    try {
+      const draftKey = `admin_appt_draft_${appt._id}`;
+      localStorage.removeItem(draftKey);
+    } catch(_) {}
     setDetectedUrl(null);
     setPreviewDismissed(false);
     setReplyTo(null);
