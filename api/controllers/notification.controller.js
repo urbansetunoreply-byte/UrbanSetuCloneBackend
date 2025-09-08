@@ -8,6 +8,12 @@ import Booking from '../models/booking.model.js';
 export const createNotification = async (req, res, next) => {
   try {
     const { userId, type, title, message, listingId, adminId } = req.body;
+    // Allow user to create their own notification; otherwise require admin
+    const isSelf = req.user && (req.user.id === userId);
+    const isAdmin = req.user && (req.user.role === 'admin' || req.user.role === 'rootadmin');
+    if (!isSelf && !isAdmin) {
+      return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
 
     const notification = new Notification({
       userId,
