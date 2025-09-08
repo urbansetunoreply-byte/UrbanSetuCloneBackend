@@ -533,7 +533,7 @@ export default function AdminDashboard() {
             </div>
           </div>
           {/* Fraud Detection Card */}
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow relative group">
+          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow relative group" onClick={() => navigate('/admin/fraudmanagement')} role="button" title="Manage fraud detections">
             <div className="flex items-center justify-between cursor-pointer">
               <div>
                 <p className="text-sm font-medium text-gray-600">Fraud Watch</p>

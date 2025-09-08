@@ -65,6 +65,7 @@ const PackersMovers = lazy(() => import('./pages/PackersMovers'));
 const OnDemandServices = lazy(() => import('./pages/OnDemandServices'));
 const RoutePlanner = lazy(() => import('./pages/RoutePlanner'));
 const UserReviews = lazy(() => import("./pages/UserReviews"));
+const AdminFraudManagement = lazy(() => import('./pages/AdminFraudManagement'));
 
 // Loading component
 const LoadingSpinner = () => (
@@ -568,6 +569,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/admin/reviews" element={<AdminReviews />} />
             <Route path="/admin/movers" element={<AdminMovers />} />
             <Route path="/admin/services" element={<AdminServices />} />
+            <Route path="/admin/fraudmanagement" element={<AdminFraudManagement />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
