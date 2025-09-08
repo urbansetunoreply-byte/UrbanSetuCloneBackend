@@ -91,7 +91,7 @@ export default function AdminFraudManagement() {
           if (pctOfMean <= 0.4) reasons.push('Unrealistically low price');
         }
         // Absolute unrealistic threshold as safety net (currency INR)
-        if (price && price <= 10000) reasons.push('Suspiciously low absolute price');
+        if (price && price <= 1000) reasons.push('Suspiciously low absolute price');
         // Duplicate / fake content: description reused
         const d = norm(l.description||'');
         if (d && (descMap.get(d)||0) >= 2) reasons.push('Description duplicated');
