@@ -77,7 +77,10 @@ export default function AdminFraudManagement() {
 
       const suspiciousPhrases = [
         'advance payment only', 'send money before visit', 'contact on whatsapp only',
-        'no site visit', 'only online deal', 'pay booking amount first'
+        'no site visit', 'only online deal', 'pay booking amount first', 'urgent sale',
+        'quick deal', 'cash only', 'no broker', 'direct owner', 'immediate possession',
+        'bank loan not required', 'black money accepted', 'under table', 'negotiable',
+        'call now', 'whatsapp me', 'serious buyers only', 'time wasters stay away'
       ];
 
       const flaggedListings = allListings.map(l => {
@@ -85,11 +88,8 @@ export default function AdminFraudManagement() {
         const reasons = [];
         if (!l.imageUrls || l.imageUrls.length === 0) reasons.push('No images');
         if (price && (price > upper || price < lower)) reasons.push('Price outlier');
-        // Extra strict low-price detection (potential scam)
-        if (price && mean > 0) {
-          const pctOfMean = price / mean;
-          if (pctOfMean <= 0.4) reasons.push('Unrealistically low price');
-        }
+        // Extra strict low-price detection (potential scam) - below 1 lakh
+        if (price && price < 100000) reasons.push('Unrealistically low price');
         // Absolute unrealistic threshold as safety net (currency INR)
         if (price && price <= 1000) reasons.push('Suspiciously low absolute price');
         // Duplicate / fake content: description reused
@@ -108,6 +108,30 @@ export default function AdminFraudManagement() {
         if (addr && (addressToCities.get(addr)||new Set()).size > 1) reasons.push('Same address in different cities');
         // Owner risk: many listings in short time
         if ((ownerRecentCounts.get(owner)||0) >= 5) reasons.push('High posting velocity');
+        
+        // Additional fraud detection criteria
+        // Very short description (potential spam)
+        if (d && d.length < 20) reasons.push('Very short description');
+        
+        // All caps description (spam indicator)
+        if (d && d === d.toUpperCase() && d.length > 10) reasons.push('All caps description');
+        
+        // Multiple exclamation marks (spam indicator)
+        if (d && (d.match(/!/g) || []).length >= 3) reasons.push('Excessive exclamation marks');
+        
+        // Suspicious contact patterns
+        const phoneCount = (d.match(phoneRegex) || []).length;
+        const emailCount = (d.match(emailRegex) || []).length;
+        if (phoneCount >= 2 || emailCount >= 2) reasons.push('Multiple contact methods');
+        
+        // Price inconsistency with property details
+        if (price && l.bedrooms && l.bedrooms >= 3 && price < 500000) {
+          reasons.push('Low price for multi-bedroom property');
+        }
+        
+        // Suspicious location patterns
+        if (l.city && l.city.toLowerCase().includes('test')) reasons.push('Test city name');
+        
         return { ...l, _fraudReasons: reasons };
       }).filter(l => l._fraudReasons.length > 0);
 
@@ -121,7 +145,9 @@ export default function AdminFraudManagement() {
         'scam','fraud','don\'t book','best deal','don\'t miss','very cheap','cheat','fake','beware',
         'don\'t trust','spam','promotion','too good to be true','advance payment','deposit first','pay first',
         'upi','gpay','paytm','whatsapp only','no visit','online only','deal outside platform','refund for review',
-        'cashback for review','5 star for discount','paid review','incentivized review'
+        'cashback for review','5 star for discount','paid review','incentivized review','excellent service',
+        'highly recommended','must try','amazing experience','perfect','outstanding','brilliant','fantastic',
+        'wonderful','incredible','superb','exceptional','marvelous','phenomenal','extraordinary','remarkable'
       ];
       const reviewsArr = (allReviews.reviews || allReviews || []);
       // Build maps for burst/time/city behaviors
@@ -188,6 +214,52 @@ export default function AdminFraudManagement() {
         if (flood.oneStar >= 10) reasons.push('1-star flood');
         const uid = (r.userId && (r.userId._id||r.userId)) || r.userId;
         if (userCityTimeFlag.get(uid)) reasons.push('Reviewer multi-city in short time');
+        
+        // Additional review fraud detection criteria
+        // Very short reviews (potential spam)
+        if (text.length < 10) reasons.push('Very short review');
+        
+        // All caps reviews (spam indicator)
+        if (r.comment && r.comment === r.comment.toUpperCase() && r.comment.length > 10) {
+          reasons.push('All caps review');
+        }
+        
+        // Excessive punctuation
+        if (r.comment && ((r.comment.match(/!/g) || []).length >= 3 || (r.comment.match(/\?/g) || []).length >= 3)) {
+          reasons.push('Excessive punctuation');
+        }
+        
+        // Rating inconsistency with comment sentiment
+        const rating = r.rating || 0;
+        const positiveWords = ['good','great','excellent','amazing','love','nice','helpful','fast','clean','spacious','recommended'];
+        const negativeWords = ['bad','poor','terrible','awful','hate','dirty','small','slow','rude','noisy','not recommended','worst'];
+        
+        let sentimentScore = 0;
+        positiveWords.forEach(w => { if (text.includes(w)) sentimentScore++; });
+        negativeWords.forEach(w => { if (text.includes(w)) sentimentScore--; });
+        
+        if (rating >= 4 && sentimentScore < 0) reasons.push('Rating-comment mismatch (high rating, negative sentiment)');
+        if (rating <= 2 && sentimentScore > 0) reasons.push('Rating-comment mismatch (low rating, positive sentiment)');
+        
+        // Generic template reviews
+        const genericTemplates = [
+          'good property', 'nice place', 'worth it', 'satisfied', 'happy with',
+          'recommended', 'good service', 'nice experience', 'will visit again'
+        ];
+        if (genericTemplates.some(template => text.includes(template)) && text.length < 30) {
+          reasons.push('Generic template review');
+        }
+        
+        // Suspicious rating patterns (all 5-star or all 1-star from same user)
+        const userReviews = byUser.get(uid) || [];
+        if (userReviews.length >= 3) {
+          const userRatings = userReviews.map(ur => ur.rating || 0);
+          const allSameRating = userRatings.every(rating => rating === userRatings[0]);
+          if (allSameRating && (userRatings[0] === 5 || userRatings[0] === 1)) {
+            reasons.push('Suspicious rating pattern');
+          }
+        }
+        
         return { ...r, _fraudReasons: reasons };
       }).filter(r => r._fraudReasons.length > 0);
 
@@ -252,16 +324,30 @@ export default function AdminFraudManagement() {
               <select value={reasonFilter} onChange={(e)=>{setReasonFilter(e.target.value); setPageL(1); setPageR(1);}} className="border rounded p-2 text-sm">
                 <option value="all">All reasons</option>
                 <option value="Price outlier">Price outlier</option>
+                <option value="Unrealistically low price">Unrealistically low price</option>
+                <option value="Suspiciously low absolute price">Suspiciously low absolute price</option>
                 <option value="Description duplicated">Description duplicated</option>
                 <option value="Suspicious language">Suspicious language</option>
                 <option value="Contact reused across accounts">Contact reused</option>
                 <option value="Same address in different cities">Address conflict</option>
                 <option value="High posting velocity">High posting velocity</option>
                 <option value="No images">No images</option>
+                <option value="Very short description">Very short description</option>
+                <option value="All caps description">All caps description</option>
+                <option value="Excessive exclamation marks">Excessive exclamation marks</option>
+                <option value="Multiple contact methods">Multiple contact methods</option>
+                <option value="Low price for multi-bedroom property">Low price for multi-bedroom</option>
+                <option value="Test city name">Test city name</option>
                 <option value="Identical text across accounts">Identical text</option>
                 <option value="5-star flood">5-star flood</option>
                 <option value="1-star flood">1-star flood</option>
                 <option value="Reviewer multi-city in short time">Reviewer anomaly</option>
+                <option value="Very short review">Very short review</option>
+                <option value="All caps review">All caps review</option>
+                <option value="Excessive punctuation">Excessive punctuation</option>
+                <option value="Rating-comment mismatch (high rating, negative sentiment)">Rating-comment mismatch</option>
+                <option value="Generic template review">Generic template review</option>
+                <option value="Suspicious rating pattern">Suspicious rating pattern</option>
               </select>
               <select value={sortBy} onChange={(e)=>{setSortBy(e.target.value);}} className="border rounded p-2 text-sm">
                 <option value="severity">Sort: Severity</option>

@@ -378,8 +378,8 @@ export default function AdminDashboard() {
           const p = (l.offer && l.discountPrice) ? l.discountPrice : l.regularPrice;
           if (!p) return false;
           if (p > upperAll || p < lowerAll) return true;
-          if (meanAll > 0 && p/meanAll <= 0.4) return true;
-          if (p <= 10000) return true;
+          if (p < 100000) return true; // Below 1 lakh
+          if (p <= 1000) return true; // Below 1000
           return false;
         }).length;
         if (localSuspicious > (fraudData.suspiciousListings || 0)) {
