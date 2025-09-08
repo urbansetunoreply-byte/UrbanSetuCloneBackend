@@ -11,6 +11,9 @@ export default function RoutePlanner() {
   const mapInstanceRef = useRef(null);
   const directionsRendererRef = useRef(null);
   const directionsServiceRef = useRef(null);
+  const placesServiceRef = useRef(null);
+  const autocompleteServiceRef = useRef(null);
+  const [predictions, setPredictions] = useState([]); // array of arrays per stop index
 
   const addStop = () => setStops(s => [...s, { address: '' }]);
   const removeStop = (i) => setStops(s => s.filter((_, idx) => idx !== i));
@@ -41,6 +44,8 @@ export default function RoutePlanner() {
     directionsRendererRef.current = new window.google.maps.DirectionsRenderer({ suppressMarkers: false });
     directionsServiceRef.current = new window.google.maps.DirectionsService();
     directionsRendererRef.current.setMap(mapInstanceRef.current);
+    placesServiceRef.current = new window.google.maps.places.PlacesService(mapInstanceRef.current);
+    autocompleteServiceRef.current = new window.google.maps.places.AutocompleteService();
   }, [mapRef.current, window.google && window.google.maps]);
 
   const computePlanFallback = () => {
@@ -93,15 +98,67 @@ export default function RoutePlanner() {
     }
   };
 
+  const ensurePredictionsArray = (len) => {
+    setPredictions(prev => {
+      const copy = prev.slice();
+      while (copy.length < len) copy.push([]);
+      return copy;
+    });
+  };
+
+  const onChangeAddress = (i, value) => {
+    updateStop(i, value);
+    ensurePredictionsArray(stops.length);
+    const svc = autocompleteServiceRef.current;
+    if (!svc || !value || value.length < 3) {
+      setPredictions(prev => {
+        const copy = prev.slice();
+        copy[i] = [];
+        return copy;
+      });
+      return;
+    }
+    svc.getPlacePredictions({ input: value }, (res) => {
+      setPredictions(prev => {
+        const copy = prev.slice();
+        copy[i] = res || [];
+        return copy;
+      });
+    });
+  };
+
+  const pickPrediction = (i, prediction) => {
+    updateStop(i, prediction.description);
+    setPredictions(prev => {
+      const copy = prev.slice();
+      copy[i] = [];
+      return copy;
+    });
+  };
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
       <h1 className="text-2xl font-bold mb-6 flex items-center gap-2"><FaRoute className="text-green-600"/> Property Visit Route Planner</h1>
       <div className="bg-white rounded-xl shadow p-5 space-y-3">
         {stops.map((s, i) => (
-          <div key={i} className="flex gap-2">
-            <input className="flex-1 border rounded p-2" value={s.address} onChange={e=>updateStop(i, e.target.value)} placeholder={`Stop ${i+1} address`}/>
+          <div key={i} className="flex flex-col gap-1 relative">
+            <div className="flex gap-2">
+              <input className="flex-1 border rounded p-2" value={s.address} onChange={e=>onChangeAddress(i, e.target.value)} placeholder={`Stop ${i+1} address`}/>
+              {stops.length > 1 && (
+                <button onClick={()=>removeStop(i)} className="px-3 rounded bg-red-100 text-red-600"><FaTrash/></button>
+              )}
+            </div>
+            {predictions[i] && predictions[i].length > 0 && (
+              <ul className="absolute z-10 top-full left-0 right-0 bg-white border border-gray-200 rounded shadow max-h-56 overflow-auto">
+                {predictions[i].map(p => (
+                  <li key={p.place_id} className="px-3 py-2 text-sm hover:bg-gray-100 cursor-pointer" onMouseDown={() => pickPrediction(i, p)}>
+                    {p.description}
+                  </li>
+                ))}
+              </ul>
+            )}
             {stops.length > 1 && (
-              <button onClick={()=>removeStop(i)} className="px-3 rounded bg-red-100 text-red-600"><FaTrash/></button>
+              null
             )}
           </div>
         ))}
