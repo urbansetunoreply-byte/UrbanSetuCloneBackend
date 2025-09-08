@@ -64,7 +64,7 @@ export default function PackersMovers() {
             <label className="text-sm text-gray-600">Move Date</label>
             <div className="flex items-center gap-2">
               <FaCalendarAlt className="text-gray-500"/>
-              <input type="date" className="w-full border rounded p-2" value={form.date} onChange={e=>setForm(f=>({...f, date:e.target.value}))}/>
+              <input type="date" className="w-full border rounded p-2" value={form.date} onChange={e=>setForm(f=>({...f, date:e.target.value}))} min={new Date().toISOString().split('T')[0]} />
             </div>
           </div>
           <div>

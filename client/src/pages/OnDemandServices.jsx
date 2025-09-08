@@ -71,7 +71,7 @@ export default function OnDemandServices() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="text-sm text-gray-600">Preferred Date</label>
-            <input type="date" className="w-full border rounded p-2" value={details.date} onChange={e=>setDetails(d=>({...d,date:e.target.value}))}/>
+            <input type="date" className="w-full border rounded p-2" value={details.date} onChange={e=>setDetails(d=>({...d,date:e.target.value}))} min={new Date().toISOString().split('T')[0]} />
           </div>
           <div>
             <label className="text-sm text-gray-600">Service Address</label>
