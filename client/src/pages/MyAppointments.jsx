@@ -1207,6 +1207,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const typingTimeoutRef = useRef(null);
   const scrollTimeoutRef = useRef(null);
   const inputRef = useRef(null); // Add inputRef here
+  const [allProperties, setAllProperties] = useState([]);
+  const [propertiesLoaded, setPropertiesLoaded] = useState(false);
 
   // Persist draft per appointment when chat is open (placed after refs/state used)
   useEffect(() => {
@@ -1226,6 +1228,24 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       }, 0);
     }
   }, [showChatModal, appt?._id]);
+
+  // Lazy-load global property list when user starts typing a mention
+  useEffect(() => {
+    if (!showChatModal) return;
+    const hasMentionTrigger = /@[^\s]*$/.test(comment || "");
+    if (!hasMentionTrigger || propertiesLoaded) return;
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/listing/get?limit=300`, { credentials: 'include' });
+        const data = await res.json();
+        const mapped = Array.isArray(data) ? data.map(l => ({ id: l._id, name: l.name || 'Property' })) : [];
+        setAllProperties(mapped);
+        setPropertiesLoaded(true);
+      } catch (_) {
+        // ignore failures; suggestions will fallback to appointments only
+      }
+    })();
+  }, [comment, showChatModal, propertiesLoaded]);
 
   useEffect(() => {
     if (!showChatModal || !appt?._id) return;
@@ -6136,8 +6156,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                       <div className="absolute bottom-16 left-2 right-2 bg-white border rounded shadow-lg max-h-48 overflow-auto z-30">
                         {(() => {
                           const query = (comment.match(/@([^\s]*)$/)?.[1] || '').toLowerCase();
-                          const source = (typeof appointments !== 'undefined' && Array.isArray(appointments) && appointments.length > 0) ? appointments : [appt].filter(Boolean);
-                          const uniqueProps = Array.from(new Set(source.map(a => JSON.stringify({ id: a?.listingId?._id || a?.listingId, name: a?.propertyName || a?.listingId?.name || 'Property' }))))
+                          const apptSource = (typeof appointments !== 'undefined' && Array.isArray(appointments) && appointments.length > 0) ? appointments : [appt].filter(Boolean);
+                          const apptProps = apptSource.map(a => ({ id: a?.listingId?._id || a?.listingId, name: a?.propertyName || a?.listingId?.name || 'Property' }));
+                          const combined = [...apptProps, ...allProperties];
+                          const uniqueProps = Array.from(new Set(combined.filter(p => p.id && p.name).map(p => JSON.stringify(p))))
                             .map(s => JSON.parse(s))
                             .filter(p => p.name && p.name.toLowerCase().includes(query));
                           if (uniqueProps.length === 0) return <div className="px-3 py-2 text-sm text-gray-500">No matches</div>;

@@ -1260,6 +1260,8 @@ function AdminAppointmentRow({
   const chatEndRef = React.useRef(null);
   const chatContainerRef = React.useRef(null);
   const inputRef = React.useRef(null);
+  const [allProperties, setAllProperties] = useState([]);
+  const [propertiesLoaded, setPropertiesLoaded] = useState(false);
   const messageRefs = React.useRef({});
   const [isAtBottom, setIsAtBottom] = useLocalState(true);
   const [unreadNewMessages, setUnreadNewMessages] = useLocalState(0);
@@ -2067,6 +2069,24 @@ function AdminAppointmentRow({
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [showChatModal]);
+
+  // Lazy-load global property list when user starts typing a mention
+  React.useEffect(() => {
+    if (!showChatModal) return;
+    const hasMentionTrigger = /@[^\s]*$/.test(newComment || "");
+    if (!hasMentionTrigger || propertiesLoaded) return;
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/listing/get?limit=300`, { credentials: 'include' });
+        const data = await res.json();
+        const mapped = Array.isArray(data) ? data.map(l => ({ id: l._id, name: l.name || 'Property' })) : [];
+        setAllProperties(mapped);
+        setPropertiesLoaded(true);
+      } catch (_) {
+        // ignore failures
+      }
+    })();
+  }, [newComment, showChatModal, propertiesLoaded]);
 
   // File upload handler
   const handleFileUpload = async (files) => {
@@ -4999,8 +5019,10 @@ function AdminAppointmentRow({
                     <div className="absolute bottom-16 left-2 right-2 bg-white border rounded shadow-lg max-h-48 overflow-auto z-30">
                       {(() => {
                         const query = (newComment.match(/@([^\s]*)$/)?.[1] || '').toLowerCase();
-                        const source = (typeof appointments !== 'undefined' && Array.isArray(appointments) && appointments.length > 0) ? appointments : [appt].filter(Boolean);
-                        const uniqueProps = Array.from(new Set(source.map(a => JSON.stringify({ id: a?.listingId?._id || a?.listingId, name: a?.propertyName || a?.listingId?.name || 'Property' }))))
+                        const apptSource = (typeof appointments !== 'undefined' && Array.isArray(appointments) && appointments.length > 0) ? appointments : [appt].filter(Boolean);
+                        const apptProps = apptSource.map(a => ({ id: a?.listingId?._id || a?.listingId, name: a?.propertyName || a?.listingId?.name || 'Property' }));
+                        const combined = [...apptProps, ...allProperties];
+                        const uniqueProps = Array.from(new Set(combined.filter(p => p.id && p.name).map(p => JSON.stringify(p))))
                           .map(s => JSON.parse(s))
                           .filter(p => p.name && p.name.toLowerCase().includes(query));
                         if (uniqueProps.length === 0) return <div className="px-3 py-2 text-sm text-gray-500">No matches</div>;
