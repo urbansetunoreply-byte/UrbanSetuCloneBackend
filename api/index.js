@@ -316,7 +316,20 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
-    routes: 'image-favorites-enabled'
+    routes: 'image-favorites-enabled',
+    version: '2.0-with-image-favorites'
+  });
+});
+
+// Simple status endpoint to verify deployment
+app.get('/api/status', (req, res) => {
+  res.status(200).json({
+    server: 'UrbanSetu API',
+    status: 'running',
+    features: ['image-favorites', 'wishlist', 'bookings', 'listings'],
+    imageFavoritesEndpoint: '/api/image-favorites/*',
+    timestamp: new Date().toISOString(),
+    deploymentVersion: 'v2.0-image-favorites-fix'
   });
 });
 
