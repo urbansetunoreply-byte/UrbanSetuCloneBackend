@@ -311,6 +311,21 @@ io.on('connection', (socket) => {
   });
 });
 
+// Register all routes before starting the server
+app.use("/api/user",userRouter);
+app.use("/api/auth",authRouter);
+app.use("/api/listing",listingRouter)
+app.use("/api/bookings", bookingRouter);
+app.use("/api/about", aboutRouter);
+app.use("/api/admin", adminRouter);
+app.use("/api/contact", contactRouter);
+app.use("/api/wishlist", wishlistRouter);
+app.use("/api/image-favorites", imageFavoriteRouter);
+app.use("/api/notifications", notificationRouter);
+app.use("/api/review", reviewRouter);
+app.use("/api/gemini", geminiRouter);
+app.use("/api/upload", uploadRouter);
+
 const startServer = () => {
   server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}!!!`);
@@ -326,20 +341,6 @@ const startServer = () => {
 };
 
 startServer();
-
-app.use("/api/user",userRouter);
-app.use("/api/auth",authRouter);
-app.use("/api/listing",listingRouter)
-app.use("/api/bookings", bookingRouter);
-app.use("/api/about", aboutRouter);
-app.use("/api/admin", adminRouter);
-app.use("/api/contact", contactRouter);
-app.use("/api/wishlist", wishlistRouter);
-app.use("/api/image-favorites", imageFavoriteRouter);
-app.use("/api/notifications", notificationRouter);
-app.use("/api/review", reviewRouter);
-app.use("/api/gemini", geminiRouter);
-app.use("/api/upload", uploadRouter);
 
 // Global error handler (should be after all routes)
 app.use((err, req, res, next) => {
