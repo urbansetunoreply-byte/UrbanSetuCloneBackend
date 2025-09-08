@@ -4999,7 +4999,8 @@ function AdminAppointmentRow({
                     <div className="absolute bottom-16 left-2 right-2 bg-white border rounded shadow-lg max-h-48 overflow-auto z-30">
                       {(() => {
                         const query = (newComment.match(/@([^\s]*)$/)?.[1] || '').toLowerCase();
-                        const uniqueProps = Array.from(new Set(appointments.map(a => JSON.stringify({ id: a.listingId?._id || a.listingId, name: a.propertyName || a.listingId?.name || 'Property' }))))
+                        const source = (typeof appointments !== 'undefined' && Array.isArray(appointments) && appointments.length > 0) ? appointments : [appt].filter(Boolean);
+                        const uniqueProps = Array.from(new Set(source.map(a => JSON.stringify({ id: a?.listingId?._id || a?.listingId, name: a?.propertyName || a?.listingId?.name || 'Property' }))))
                           .map(s => JSON.parse(s))
                           .filter(p => p.name && p.name.toLowerCase().includes(query));
                         if (uniqueProps.length === 0) return <div className="px-3 py-2 text-sm text-gray-500">No matches</div>;
