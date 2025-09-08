@@ -48,6 +48,26 @@ export default function AdminServices() {
         </div>
       </div>
 
+      {/* Summary cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div className="bg-white rounded shadow p-3 text-center">
+          <p className="text-xs text-gray-500">Total</p>
+          <p className="text-xl font-bold">{items.length}</p>
+        </div>
+        <div className="bg-white rounded shadow p-3 text-center">
+          <p className="text-xs text-gray-500">Unread</p>
+          <p className="text-xl font-bold text-red-600">{items.filter(i=>!i.isRead).length}</p>
+        </div>
+        <div className="bg-white rounded shadow p-3 text-center">
+          <p className="text-xs text-gray-500">Read</p>
+          <p className="text-xl font-bold text-green-600">{items.filter(i=>i.isRead).length}</p>
+        </div>
+        <div className="bg-white rounded shadow p-3 text-center">
+          <p className="text-xs text-gray-500">Today</p>
+          <p className="text-xl font-bold">{items.filter(i=>new Date(i.createdAt).toDateString()===new Date().toDateString()).length}</p>
+        </div>
+      </div>
+
       {loading ? (
         <div className="text-gray-600">Loading...</div>
       ) : filtered.length === 0 ? (

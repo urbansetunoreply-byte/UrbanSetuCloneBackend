@@ -557,6 +557,10 @@ export default function AdminDashboard() {
                 <div key={beds} className="border border-gray-200 rounded-lg p-4 text-center">
                   <p className="text-sm text-gray-500">{beds} bed{Number(beds) === 1 ? '' : 's'}</p>
                   <p className="text-xl font-bold text-purple-700">{count}</p>
+                  {/* Simple bar viz */}
+                  <div className="h-2 bg-gray-100 rounded mt-2">
+                    <div className="h-2 bg-purple-500 rounded" style={{ width: `${Math.min(100, Math.round((count / Math.max(1, analytics.totalListings)) * 100))}%` }} />
+                  </div>
                 </div>
               ))}
             </div>
@@ -577,6 +581,14 @@ export default function AdminDashboard() {
                     <span className="font-semibold text-gray-800">₹{mp.avg.toLocaleString('en-IN')}</span>
                   </div>
                 ))}
+                {/* Inline spark-bar */}
+                <div className="mt-3 flex items-end gap-1 h-16">
+                  {analytics.marketInsights.monthlyAvgPrices.map((mp, i, arr) => {
+                    const max = Math.max(...arr.map(x => x.avg || 1));
+                    const h = Math.max(2, Math.round((mp.avg / (max || 1)) * 56));
+                    return <div key={mp.month} className="w-2 bg-blue-500 rounded-t" style={{ height: `${h}px` }} />
+                  })}
+                </div>
               </div>
             )}
           </div>
@@ -592,6 +604,19 @@ export default function AdminDashboard() {
                     <span className="text-base font-bold text-indigo-700">{d.count}</span>
                   </div>
                 ))}
+                {/* Pie chart of top 5 demand */}
+                <div className="col-span-1 md:col-span-2 flex items-center justify-center mt-2">
+                  {(() => {
+                    const total = analytics.marketInsights.demandByCity.slice(0,5).reduce((s,x)=>s+x.count,0) || 1;
+                    let acc = 0;
+                    const segments = analytics.marketInsights.demandByCity.slice(0,5).map((x, i) => {
+                      const start = acc / total * 360; acc += x.count; const end = acc / total * 360;
+                      const colors = ['#6366f1','#8b5cf6','#06b6d4','#22c55e','#f59e0b'];
+                      return `${colors[i%colors.length]} ${start}deg ${end}deg`;
+                    }).join(',');
+                    return <div className="w-24 h-24 rounded-full" style={{ background: `conic-gradient(${segments})` }} />
+                  })()}
+                </div>
               </div>
             )}
           </div>
