@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FaBroom, FaBolt, FaWrench, FaBug, FaTools } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
+import { useEffect } from 'react';
 
 const services = [
   { key: 'cleaning', name: 'Cleaning', icon: <FaBroom className="text-blue-600"/> },
@@ -16,6 +17,20 @@ export default function OnDemandServices() {
   const [selected, setSelected] = useState([]);
   const [details, setDetails] = useState({ date: '', address: '', notes: '' });
   const [loading, setLoading] = useState(false);
+  const [myRequests, setMyRequests] = useState([]);
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+  const fetchMyRequests = async () => {
+    if (!currentUser) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/notifications/user/${currentUser._id}`, { credentials: 'include' });
+      const data = await res.json();
+      const mine = Array.isArray(data) ? data.filter(n => (n.title || '').toLowerCase().includes('on-demand services request')) : [];
+      setMyRequests(mine);
+    } catch (_) {}
+  };
+
+  useEffect(() => { fetchMyRequests(); }, [currentUser?._id]);
 
   const toggleService = (key) => {
     setSelected(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
@@ -28,7 +43,6 @@ export default function OnDemandServices() {
     }
     setLoading(true);
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
       const title = `On-Demand Services Request`;
       const requester = currentUser ? `${currentUser.username} (${currentUser.email})` : 'Unknown user';
       const bodyLines = [
@@ -47,6 +61,16 @@ export default function OnDemandServices() {
       });
       if (res.ok) {
         toast.success('Service request submitted');
+        // Store copy for user history
+        if (currentUser) {
+          await fetch(`${API_BASE_URL}/api/notifications/create`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: currentUser._id, type: 'user_request', title, message })
+          });
+          fetchMyRequests();
+        }
       } else {
         toast.error('Failed to submit request');
       }
@@ -84,6 +108,24 @@ export default function OnDemandServices() {
         </div>
         <button onClick={submit} disabled={loading} className="mt-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded">{loading?'Submitting...':'Submit Request'}</button>
       </div>
+      {/* My Requests */}
+      {currentUser && (
+        <div className="mt-8 bg-white rounded-xl shadow p-4">
+          <h3 className="text-lg font-semibold mb-2">My Service Requests</h3>
+          {myRequests.length === 0 ? (
+            <p className="text-sm text-gray-600">No requests yet.</p>
+          ) : (
+            <ul className="divide-y">
+              {myRequests.map(req => (
+                <li key={req._id} className="py-2">
+                  <div className="text-xs text-gray-500">{new Date(req.createdAt).toLocaleString()}</div>
+                  <pre className="text-sm whitespace-pre-wrap text-gray-800">{req.message}</pre>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
     </div>
   );
 }

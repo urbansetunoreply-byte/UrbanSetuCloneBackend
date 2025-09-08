@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { FaTruckMoving, FaMapMarkerAlt, FaCalendarAlt } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
+import { useEffect } from 'react';
 
 export default function PackersMovers() {
   const { currentUser } = useSelector((state) => state.user);
   const [form, setForm] = useState({ from: '', to: '', date: '', size: '1BHK', notes: '' });
   const [submitting, setSubmitting] = useState(false);
+  const [myRequests, setMyRequests] = useState([]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,6 +38,16 @@ export default function PackersMovers() {
       });
       if (res.ok) {
         toast.success('Request submitted. Admin will contact you.');
+        // Store copy for user history
+        if (currentUser) {
+          await fetch(`${API_BASE_URL}/api/notifications/create`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: currentUser._id, type: 'user_request', title, message })
+          });
+          fetchMyRequests();
+        }
       } else {
         toast.error('Failed to submit request');
       }
@@ -46,6 +58,19 @@ export default function PackersMovers() {
       setSubmitting(false);
     }
   };
+
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  const fetchMyRequests = async () => {
+    if (!currentUser) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/notifications/user/${currentUser._id}`, { credentials: 'include' });
+      const data = await res.json();
+      const mine = Array.isArray(data) ? data.filter(n => (n.title || '').toLowerCase().includes('packers & movers request')) : [];
+      setMyRequests(mine);
+    } catch (_) {}
+  };
+
+  useEffect(() => { fetchMyRequests(); }, [currentUser?._id]);
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
@@ -81,6 +106,23 @@ export default function PackersMovers() {
         <button disabled={submitting} className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded hover:from-blue-700 hover:to-purple-700 disabled:opacity-50">{submitting ? 'Submitting...' : 'Request Quote'}</button>
       </form>
       <div className="mt-6 text-sm text-gray-600 flex items-center gap-2"><FaMapMarkerAlt/> Service available in major cities.</div>
+      {currentUser && (
+        <div className="mt-8 bg-white rounded-xl shadow p-4">
+          <h3 className="text-lg font-semibold mb-2">My Movers Requests</h3>
+          {myRequests.length === 0 ? (
+            <p className="text-sm text-gray-600">No requests yet.</p>
+          ) : (
+            <ul className="divide-y">
+              {myRequests.map(req => (
+                <li key={req._id} className="py-2">
+                  <div className="text-xs text-gray-500">{new Date(req.createdAt).toLocaleString()}</div>
+                  <pre className="text-sm whitespace-pre-wrap text-gray-800">{req.message}</pre>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
     </div>
   );
 }

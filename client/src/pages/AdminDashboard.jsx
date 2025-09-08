@@ -582,11 +582,16 @@ export default function AdminDashboard() {
                   </div>
                 ))}
                 {/* Inline spark-bar */}
-                <div className="mt-3 flex items-end gap-1 h-16">
+                <div className="mt-3 flex items-end gap-1 h-20">
                   {analytics.marketInsights.monthlyAvgPrices.map((mp, i, arr) => {
                     const max = Math.max(...arr.map(x => x.avg || 1));
                     const h = Math.max(2, Math.round((mp.avg / (max || 1)) * 56));
-                    return <div key={mp.month} className="w-2 bg-blue-500 rounded-t" style={{ height: `${h}px` }} />
+                    return (
+                      <div key={mp.month} className="flex flex-col items-center" title={`${mp.month}: ₹${mp.avg.toLocaleString('en-IN')}`}>
+                        <div className="w-3 bg-blue-500 rounded-t" style={{ height: `${h}px` }} />
+                        <div className="mt-1 text-[10px] text-gray-500 rotate-0">{mp.month.split('-')[1]}</div>
+                      </div>
+                    );
                   })}
                 </div>
               </div>
@@ -614,7 +619,24 @@ export default function AdminDashboard() {
                       const colors = ['#6366f1','#8b5cf6','#06b6d4','#22c55e','#f59e0b'];
                       return `${colors[i%colors.length]} ${start}deg ${end}deg`;
                     }).join(',');
-                    return <div className="w-24 h-24 rounded-full" style={{ background: `conic-gradient(${segments})` }} />
+                    return (
+                      <div className="flex flex-col items-center">
+                        <div className="w-28 h-28 rounded-full" style={{ background: `conic-gradient(${segments})` }} />
+                        <div className="mt-2 space-y-1">
+                          {analytics.marketInsights.demandByCity.slice(0,5).map((x,i)=>{
+                            const colors = ['#6366f1','#8b5cf6','#06b6d4','#22c55e','#f59e0b'];
+                            const pct = Math.round((x.count/total)*100);
+                            return (
+                              <div key={i} className="flex items-center gap-2 text-xs text-gray-700">
+                                <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: colors[i%colors.length] }} />
+                                <span>{x.city}</span>
+                                <span className="text-gray-500">({pct}% - {x.count})</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
                   })()}
                 </div>
               </div>
