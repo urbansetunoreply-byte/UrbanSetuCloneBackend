@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from "../redux/user/userSlice";
-import { FaHome, FaCalendarAlt, FaPlus, FaSignOutAlt, FaSearch, FaUserCheck, FaList, FaInfoCircle, FaCompass, FaBars, FaTimes, FaUser } from "react-icons/fa";
+import { FaHome, FaCalendarAlt, FaPlus, FaSignOutAlt, FaSearch, FaUserCheck, FaList, FaInfoCircle, FaCompass, FaBars, FaTimes, FaUser, FaTruckMoving, FaTools } from "react-icons/fa";
 import UserAvatar from "./UserAvatar";
 import NotificationBell from "./NotificationBell.jsx";
 import { persistor } from '../redux/store';
@@ -335,6 +335,20 @@ function AdminNavLinks({ mobile = false, onNavigate, pendingCount, handleSignout
         <li className={`mobile-menu-item ${mobile ? 'animate-menu-item-in-delay-2 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium' : 'hover:text-purple-300 transition-all duration-200 flex items-center gap-2'}`}>
           <FaList className="text-xl text-purple-500" /> 
           <span>All Listings</span>
+        </li>
+      </Link>
+
+      {/* New: Movers and Services management links */}
+      <Link to="/admin/movers" onClick={onNavigate}>
+        <li className={`mobile-menu-item ${mobile ? 'animate-menu-item-in-delay-3 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium' : 'hover:text-blue-300 transition-all duration-200 flex items-center gap-2'}`}>
+          <FaTruckMoving className="text-xl text-blue-500" />
+          <span>Movers</span>
+        </li>
+      </Link>
+      <Link to="/admin/services" onClick={onNavigate}>
+        <li className={`mobile-menu-item ${mobile ? 'animate-menu-item-in-delay-3 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium' : 'hover:text-purple-300 transition-all duration-200 flex items-center gap-2'}`}>
+          <FaTools className="text-xl text-purple-600" />
+          <span>Services</span>
         </li>
       </Link>
       
