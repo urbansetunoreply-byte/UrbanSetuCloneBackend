@@ -17,6 +17,8 @@ export default function AdminFraudManagement() {
   const [pageR, setPageR] = useState(1);
   const pageSize = 10;
   const [selectedRows, setSelectedRows] = useState({ listings: new Set(), reviews: new Set() });
+  const [resolvedListings, setResolvedListings] = useState(() => new Set(JSON.parse(localStorage.getItem('fraud_resolved_listings') || '[]')));
+  const [resolvedReviews, setResolvedReviews] = useState(() => new Set(JSON.parse(localStorage.getItem('fraud_resolved_reviews') || '[]')));
   const navigate = useNavigate();
 
   const fetchData = async () => {
@@ -177,8 +179,10 @@ export default function AdminFraudManagement() {
         return { ...r, _fraudReasons: reasons };
       }).filter(r => r._fraudReasons.length > 0);
 
-      setListings(flaggedListings);
-      setReviews(flaggedReviews);
+      const filteredListings = flaggedListings.filter(l => !resolvedListings.has(String(l._id)));
+      const filteredReviews = flaggedReviews.filter(r => !resolvedReviews.has(String(r._id)));
+      setListings(filteredListings);
+      setReviews(filteredReviews);
       // Ensure dashboard counters reflect computed reviews when backend undercounts
       setStats(prev => ({ ...prev, suspectedFakeReviews: flaggedReviews.length }));
     } catch (e) {
@@ -269,7 +273,13 @@ export default function AdminFraudManagement() {
                 URL.revokeObjectURL(url);
               }}>Export CSV</button>
               <button className="px-3 py-2 bg-gray-800 text-white rounded-lg text-sm" onClick={()=>{
-                // Bulk resolve: hide selected items locally
+                // Bulk resolve: persist hidden IDs and remove from current view
+                const newResolvedListings = new Set(JSON.parse(localStorage.getItem('fraud_resolved_listings') || '[]'));
+                selectedRows.listings.forEach(id => newResolvedListings.add(String(id)));
+                localStorage.setItem('fraud_resolved_listings', JSON.stringify(Array.from(newResolvedListings)));
+                const newResolvedReviews = new Set(JSON.parse(localStorage.getItem('fraud_resolved_reviews') || '[]'));
+                selectedRows.reviews.forEach(id => newResolvedReviews.add(String(id)));
+                localStorage.setItem('fraud_resolved_reviews', JSON.stringify(Array.from(newResolvedReviews)));
                 setListings(prev => prev.filter(x => !selectedRows.listings.has(x._id)));
                 setReviews(prev => prev.filter(x => !selectedRows.reviews.has(x._id)));
                 setSelectedRows({ listings: new Set(), reviews: new Set() });
@@ -280,9 +290,10 @@ export default function AdminFraudManagement() {
               <div className="mb-8">
                 <h4 className="text-xl font-bold text-gray-800 mb-3">Suspicious Listings</h4>
                 <div className="overflow-x-auto">
-                  <table className="min-w-full border">
+                  <table className="min-w-full border table-fixed">
                     <thead className="bg-gray-100">
                       <tr>
+                        <th className="p-2 text-left text-sm w-8">Select</th>
                         <th className="p-2 text-left text-sm">Name</th>
                         <th className="p-2 text-left text-sm">City</th>
                         <th className="p-2 text-left text-sm">Reasons</th>
@@ -312,12 +323,10 @@ export default function AdminFraudManagement() {
                         .slice((pageL-1)*pageSize, pageL*pageSize)
                         .map(l => (
                         <tr key={l._id} className="border-t">
-                          <td className="p-2 text-sm">
-                            <input type="checkbox" checked={selectedRows.listings.has(l._id)} onChange={(e)=>{
-                              const ns = new Set(selectedRows.listings); if (e.target.checked) ns.add(l._id); else ns.delete(l._id);
-                              setSelectedRows(s => ({ ...s, listings: ns }));
-                            }} />
-                          </td>
+                          <td className="p-2 text-sm"><input type="checkbox" checked={selectedRows.listings.has(l._id)} onChange={(e)=>{
+                            const ns = new Set(selectedRows.listings); if (e.target.checked) ns.add(l._id); else ns.delete(l._id);
+                            setSelectedRows(s => ({ ...s, listings: ns }));
+                          }} /></td>
                           <td className="p-2 text-sm">{l.name}</td>
                           <td className="p-2 text-sm">{l.city}, {l.state}</td>
                           <td className="p-2 text-sm">{(l._fraudReasons||[]).join(', ')}</td>
@@ -336,7 +345,7 @@ export default function AdminFraudManagement() {
                       })
                         .filter(l => reasonFilter==='all' ? true : (l._fraudReasons||[]).includes(reasonFilter))
                         .length === 0 && (
-                        <tr><td className="p-3 text-sm text-gray-500" colSpan={4}>No suspicious listings</td></tr>
+                        <tr><td className="p-3 text-sm text-gray-500" colSpan={5}>No suspicious listings</td></tr>
                       )}
                     </tbody>
                   </table>
@@ -354,9 +363,10 @@ export default function AdminFraudManagement() {
               <div>
                 <h4 className="text-xl font-bold text-gray-800 mb-3">Suspected Fake Reviews</h4>
                 <div className="overflow-x-auto">
-                  <table className="min-w-full border">
+                  <table className="min-w-full border table-fixed">
                     <thead className="bg-gray-100">
                       <tr>
+                        <th className="p-2 text-left text-sm w-8">Select</th>
                         <th className="p-2 text-left text-sm">Listing</th>
                         <th className="p-2 text-left text-sm">User</th>
                         <th className="p-2 text-left text-sm">Comment</th>
@@ -385,12 +395,10 @@ export default function AdminFraudManagement() {
                         .slice((pageR-1)*pageSize, pageR*pageSize)
                         .map(r => (
                         <tr key={r._id} className="border-t">
-                          <td className="p-2 text-sm">
-                            <input type="checkbox" checked={selectedRows.reviews.has(r._id)} onChange={(e)=>{
-                              const ns = new Set(selectedRows.reviews); if (e.target.checked) ns.add(r._id); else ns.delete(r._id);
-                              setSelectedRows(s => ({ ...s, reviews: ns }));
-                            }} />
-                          </td>
+                          <td className="p-2 text-sm"><input type="checkbox" checked={selectedRows.reviews.has(r._id)} onChange={(e)=>{
+                            const ns = new Set(selectedRows.reviews); if (e.target.checked) ns.add(r._id); else ns.delete(r._id);
+                            setSelectedRows(s => ({ ...s, reviews: ns }));
+                          }} /></td>
                           <td className="p-2 text-sm">{r.listingId?.name || r.listingId}</td>
                           <td className="p-2 text-sm">{r.userId?.email || r.userId}</td>
                           <td className="p-2 text-sm max-w-md truncate" title={r.comment}>{r.comment}</td>
@@ -414,7 +422,7 @@ export default function AdminFraudManagement() {
                       })
                         .filter(r => reasonFilter==='all' ? true : (r._fraudReasons||[]).includes(reasonFilter))
                         .length === 0 && (
-                        <tr><td className="p-3 text-sm text-gray-500" colSpan={4}>No suspected fake reviews</td></tr>
+                        <tr><td className="p-3 text-sm text-gray-500" colSpan={5}>No suspected fake reviews</td></tr>
                       )}
                     </tbody>
                   </table>
