@@ -1177,30 +1177,6 @@ function getDateLabel(date) {
 function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDelete, actionLoading, onShowOtherParty, onOpenReinitiate, handleArchiveAppointment, handleUnarchiveAppointment, isArchived, onCancelRefresh, copyMessageToClipboard, activeChatAppointmentId, shouldOpenChatFromNotification, onChatOpened, onExportChat, preferUnreadForAppointmentId, onConsumePreferUnread }) {
   const [replyTo, setReplyTo] = useState(null);
   const [comment, setComment] = useState("");
-  // Persist draft per appointment when chat is open
-  useEffect(() => {
-    if (!showChatModal || !appt?._id) return;
-    const draftKey = `appt_draft_${appt._id}`;
-    const savedDraft = localStorage.getItem(draftKey);
-    if (savedDraft !== null && savedDraft !== undefined) {
-      setComment(savedDraft);
-      setTimeout(() => {
-        try {
-          if (inputRef.current) {
-            const length = inputRef.current.value.length;
-            inputRef.current.focus();
-            inputRef.current.setSelectionRange(length, length);
-          }
-        } catch (_) {}
-      }, 0);
-    }
-  }, [showChatModal, appt?._id]);
-
-  useEffect(() => {
-    if (!showChatModal || !appt?._id) return;
-    const draftKey = `appt_draft_${appt._id}`;
-    localStorage.setItem(draftKey, comment);
-  }, [comment, showChatModal, appt?._id]);
   const [comments, setComments] = useState(appt.comments || []);
   const [sending, setSending] = useState(false);
   const [editingComment, setEditingComment] = useState(null);
@@ -1231,6 +1207,31 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const typingTimeoutRef = useRef(null);
   const scrollTimeoutRef = useRef(null);
   const inputRef = useRef(null); // Add inputRef here
+
+  // Persist draft per appointment when chat is open (placed after refs/state used)
+  useEffect(() => {
+    if (!showChatModal || !appt?._id) return;
+    const draftKey = `appt_draft_${appt._id}`;
+    const savedDraft = localStorage.getItem(draftKey);
+    if (savedDraft !== null && savedDraft !== undefined) {
+      setComment(savedDraft);
+      setTimeout(() => {
+        try {
+          if (inputRef.current) {
+            const length = inputRef.current.value.length;
+            inputRef.current.focus();
+            inputRef.current.setSelectionRange(length, length);
+          }
+        } catch (_) {}
+      }, 0);
+    }
+  }, [showChatModal, appt?._id]);
+
+  useEffect(() => {
+    if (!showChatModal || !appt?._id) return;
+    const draftKey = `appt_draft_${appt._id}`;
+    localStorage.setItem(draftKey, comment);
+  }, [comment, showChatModal, appt?._id]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [visibleActionsMessageId, setVisibleActionsMessageId] = useState(null);
   const [messageToDelete, setMessageToDelete] = useState(null);
