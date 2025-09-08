@@ -214,7 +214,7 @@ export default function AdminDashboard() {
         allApprovedReviews = temp.reviews || temp; // depending on API shape
       }
       if (listingsRes.ok) listingsData = await listingsRes.json();
-      const fraudData = fraudRes.ok ? await fraudRes.json() : { suspiciousListings: 0, suspectedFakeReviews: 0, lastScan: null };
+      let fraudData = fraudRes.ok ? await fraudRes.json() : { suspiciousListings: 0, suspectedFakeReviews: 0, lastScan: null };
 
       const listingStats = {
         sale: listingsData.filter(l => l.type === 'sale').length,
@@ -330,6 +330,39 @@ export default function AdminDashboard() {
         acc[key] = (acc[key] || 0) + 1;
         return acc;
       }, {});
+
+      // Compute suspected fake reviews locally to improve accuracy
+      // Heuristics: identical text across accounts, simple flood checks in last 3 days
+      try {
+        const reviewsArr = Array.isArray(allApprovedReviews) ? allApprovedReviews : (allApprovedReviews.reviews || []);
+        const textCount = new Map();
+        reviewsArr.forEach(r => {
+          const t = (r.comment || '').trim().toLowerCase();
+          if (!t) return; textCount.set(t, (textCount.get(t)||0)+1);
+        });
+        const repetitiveSet = new Set(Array.from(textCount.entries()).filter(([,c]) => c >= 3).map(([t]) => t));
+        const threeDaysAgo = Date.now() - 3*24*60*60*1000;
+        const byListing = new Map();
+        reviewsArr.forEach(r => {
+          const lid = (r.listingId && (r.listingId._id || r.listingId)) || r.listingId;
+          const created = new Date(r.createdAt || 0).getTime();
+          const entry = { rating: r.rating || 0, created };
+          if (!byListing.has(lid)) byListing.set(lid, []);
+          byListing.get(lid).push(entry);
+        });
+        let floodCount = 0;
+        byListing.forEach(arr => {
+          const recent = arr.filter(x => x.created >= threeDaysAgo);
+          const fiveStar = recent.filter(x => x.rating >= 5).length;
+          const oneStar = recent.filter(x => x.rating <= 1).length;
+          if (fiveStar >= 10 || oneStar >= 10) floodCount += Math.max(fiveStar, oneStar);
+        });
+        const repetitiveReviews = reviewsArr.filter(r => repetitiveSet.has((r.comment||'').trim().toLowerCase()));
+        const computedFakeReviews = Math.max(repetitiveReviews.length, floodCount);
+        if (computedFakeReviews > (fraudData.suspectedFakeReviews || 0)) {
+          fraudData = { ...fraudData, suspectedFakeReviews: computedFakeReviews };
+        }
+      } catch (_) {}
 
       setAnalytics({
         totalUsers: usersData.length,
