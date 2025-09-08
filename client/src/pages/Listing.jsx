@@ -42,6 +42,7 @@ export default function Listing() {
   const [assignOwnerLoading, setAssignOwnerLoading] = useState(false);
   const [selectedNewOwner, setSelectedNewOwner] = useState("");
   const [ownerStatus, setOwnerStatus] = useState({ isActive: false, owner: null });
+  const [neighborhood, setNeighborhood] = useState(null);
   
   // Report property states
   const [showReportModal, setShowReportModal] = useState(false);
@@ -284,6 +285,19 @@ export default function Listing() {
       }
     };
     fetchListing();
+  }, [params.listingId]);
+
+  useEffect(() => {
+    const fetchNeighborhood = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/ai/neighborhood/${params.listingId}`);
+        if (res.ok) {
+          const data = await res.json();
+          setNeighborhood(data);
+        }
+      } catch (_) {}
+    };
+    fetchNeighborhood();
   }, [params.listingId]);
 
   // Fetch owner details after listing is loaded
@@ -592,6 +606,24 @@ export default function Listing() {
               <span className="font-semibold">Description:</span> {listing.description}
             </p>
 
+            {/* VR / Drone media blocks if present */}
+            {(listing.vrTourUrl || listing.droneVideoUrl) && (
+              <div className="space-y-4 mb-4">
+                {listing.vrTourUrl && (
+                  <div className="border rounded-lg p-3 bg-white">
+                    <h4 className="font-semibold text-gray-800 mb-2">Virtual Tour</h4>
+                    <iframe src={listing.vrTourUrl} title="VR Tour" className="w-full h-64 rounded" allowFullScreen />
+                  </div>
+                )}
+                {listing.droneVideoUrl && (
+                  <div className="border rounded-lg p-3 bg-white">
+                    <h4 className="font-semibold text-gray-800 mb-2">Drone View</h4>
+                    <video src={listing.droneVideoUrl} className="w-full h-64 rounded" controls />
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
               <div className="flex items-center p-3 bg-white rounded-lg shadow-sm">
                 <FaBed className="mr-2 text-blue-500" /> {listing.bedrooms} {listing.bedrooms > 1 ? "beds" : "bed"}
@@ -735,6 +767,43 @@ export default function Listing() {
               </button>
             )}
           </div>
+
+          {/* Neighborhood Insights */}
+          {neighborhood && (
+            <div className="mt-8 p-4 bg-white rounded-lg shadow">
+              <h4 className="text-xl font-bold text-gray-800 mb-3">Neighborhood Insights</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-gray-600">City</p>
+                  <p className="font-semibold text-gray-800">{neighborhood.city}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Average Price Nearby</p>
+                  <p className="font-semibold text-gray-800">₹{(neighborhood.averagePriceNearby||0).toLocaleString('en-IN')}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">School Score</p>
+                  <p className="font-semibold text-gray-800">{neighborhood.schoolScore}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Safety Score</p>
+                  <p className="font-semibold text-gray-800">{neighborhood.safetyScore}</p>
+                </div>
+              </div>
+              <div className="mt-3">
+                <p className="text-gray-600">Commute Times</p>
+                <p className="font-semibold text-gray-800">Metro: {neighborhood.commuteTimes?.metro}, Bus: {neighborhood.commuteTimes?.bus}, Car: {neighborhood.commuteTimes?.car}</p>
+              </div>
+              <div className="mt-3">
+                <p className="text-gray-600">Nearby Amenities</p>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {(neighborhood.nearbyAmenities||[]).map((a,i)=>(
+                    <span key={i} className="px-2 py-1 bg-gray-100 rounded text-gray-700">{a}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Reviews Section Toggle Button */}
           <div className="flex justify-center mt-8">

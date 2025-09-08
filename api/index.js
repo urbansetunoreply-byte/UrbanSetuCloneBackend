@@ -14,6 +14,7 @@ import imageFavoriteRouter from "./routes/imageFavorite.route.js";
 import notificationRouter from "./routes/notification.route.js";
 import requestRouter from "./routes/request.route.js";
 import reviewRouter from "./routes/review.route.js";
+import aiRouter from "./routes/ai.route.js";
 import geminiRouter from "./routes/gemini.route.js";
 import chatHistoryRouter from "./routes/chatHistory.route.js";
 import uploadRouter from "./routes/upload.route.js";
@@ -381,6 +382,7 @@ app.use("/api/review", reviewRouter);
 app.use("/api/gemini", geminiRouter);
 app.use("/api/chat-history", chatHistoryRouter);
 app.use("/api/upload", uploadRouter);
+app.use("/api/ai", aiRouter);
 console.log('All API routes registered successfully');
 
 const startServer = () => {

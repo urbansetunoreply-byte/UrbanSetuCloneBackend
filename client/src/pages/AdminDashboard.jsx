@@ -89,6 +89,7 @@ export default function AdminDashboard() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [pendingDelete, setPendingDelete] = useState({ id: null, ownerId: null });
+  const [fraudStats, setFraudStats] = useState({ suspiciousListings: 0, suspectedFakeReviews: 0, lastScan: null });
 
   // Lock body scroll when deletion modals are open on dashboard
   useEffect(() => {
@@ -197,6 +198,7 @@ export default function AdminDashboard() {
       const reviewsAllRes = await fetch(`${API_BASE_URL}/api/review/admin/all?status=approved&limit=1000&sort=date&order=desc`, { credentials: 'include' });
       // Fetch listing statistics
       const listingsRes = await fetch(`${API_BASE_URL}/api/listing/get?limit=10000`, { credentials: 'include' });
+      const fraudRes = await fetch(`${API_BASE_URL}/api/ai/fraud/stats`);
 
       let usersData = [];
       let adminsData = [];
@@ -212,6 +214,7 @@ export default function AdminDashboard() {
         allApprovedReviews = temp.reviews || temp; // depending on API shape
       }
       if (listingsRes.ok) listingsData = await listingsRes.json();
+      const fraudData = fraudRes.ok ? await fraudRes.json() : { suspiciousListings: 0, suspectedFakeReviews: 0, lastScan: null };
 
       const listingStats = {
         sale: listingsData.filter(l => l.type === 'sale').length,
@@ -348,6 +351,8 @@ export default function AdminDashboard() {
         sentiment: { positive: pos, negative: neg, neutral: neu, topWords },
         userBehavior: { popularFilters, dropoffs }
       });
+
+      setFraudStats(fraudData);
     } catch (error) {
       console.error('Failed to fetch analytics:', error);
     }
@@ -525,6 +530,22 @@ export default function AdminDashboard() {
               <p className="text-sm text-green-600">Accepted: {bookingStats.accepted}</p>
               <p className="text-sm text-orange-500">Pending: {bookingStats.pending}</p>
               <p className="text-sm text-red-500">Rejected: {bookingStats.rejected}</p>
+            </div>
+          </div>
+          {/* Fraud Detection Card */}
+          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Fraud Watch</p>
+                <p className="text-sm text-gray-500">Last Scan: {fraudStats.lastScan ? new Date(fraudStats.lastScan).toLocaleString() : 'N/A'}</p>
+              </div>
+              <div className="bg-red-100 p-3 rounded-full">
+                <FaExclamationTriangle className="text-2xl text-red-600" />
+              </div>
+            </div>
+            <div className="mt-4 space-y-1">
+              <p className="text-sm text-gray-700">Suspicious Listings: <span className="font-bold text-red-600">{fraudStats.suspiciousListings}</span></p>
+              <p className="text-sm text-gray-700">Suspected Fake Reviews: <span className="font-bold text-red-600">{fraudStats.suspectedFakeReviews}</span></p>
             </div>
           </div>
         </div>

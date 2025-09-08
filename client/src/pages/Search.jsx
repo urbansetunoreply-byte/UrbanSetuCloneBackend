@@ -31,6 +31,7 @@ export default function Search() {
     const [showMoreListing, setShowMoreListing] = useState(false);
     const [error, setError] = useState(null);
     const [locationFilter, setLocationFilter] = useState({ state: "", district: "", city: "" });
+    const [recommendations, setRecommendations] = useState([]);
 
     useEffect(() => {
         const urlParams = new URLSearchParams(location.search);
@@ -87,7 +88,17 @@ export default function Search() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const urlParams = new URLSearchParams(formData);
+        const natural = (formData.searchTerm || '').trim();
+        const extracted = { ...formData };
+        const bedsMatch = natural.match(/(\d+)\s*(bhk|bed|beds)/i);
+        if (bedsMatch) extracted.bedrooms = bedsMatch[1];
+        const priceMatch = natural.match(/(?:under|below)\s*(\d[\d,]*)/i);
+        if (priceMatch) extracted.maxPrice = priceMatch[1].replace(/,/g,'');
+        const nearMatch = natural.match(/near\s+([a-zA-Z ]+)/i);
+        if (nearMatch) extracted.city = nearMatch[1].trim();
+        const typeMatch = natural.match(/\b(rent|sale)\b/i);
+        if (typeMatch) extracted.type = typeMatch[1].toLowerCase();
+        const urlParams = new URLSearchParams(extracted);
         navigate(`?${urlParams.toString()}`);
     };
 
@@ -313,6 +324,16 @@ export default function Search() {
                         </div>
                     )}
                 </div>
+                {recommendations.length > 0 && (
+                  <div className="mt-10">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Recommended for you</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {recommendations.map((l) => (
+                        <ListingItem key={l._id} listing={l} />
+                      ))}
+                    </div>
+                  </div>
+                )}
             </div>
             <GeminiAIWrapper />
             <ContactSupportWrapper />
