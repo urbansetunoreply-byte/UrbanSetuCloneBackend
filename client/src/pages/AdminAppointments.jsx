@@ -4958,6 +4958,39 @@ function AdminAppointmentRow({
                       />
                     </div>
                   )}
+                  {/* Formatting toolbar */}
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
+                      const el = inputRef.current; if (!el) return; const start = el.selectionStart||0; const end=el.selectionEnd||0; const base=newComment||''; const selected=base.slice(start,end); const wrapped=`**${selected||'bold'}**`; const next=base.slice(0,start)+wrapped+base.slice(end); setNewComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2,start+2+(selected||'bold').length);}catch(_){}} ,0);
+                    }}>B</button>
+                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100 italic" onClick={() => {
+                      const el = inputRef.current; if (!el) return; const start = el.selectionStart||0; const end=el.selectionEnd||0; const base=newComment||''; const selected=base.slice(start,end); const wrapped=`*${selected||'italic'}*`; const next=base.slice(0,start)+wrapped+base.slice(end); setNewComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+1,start+1+(selected||'italic').length);}catch(_){}} ,0);
+                    }}>I</button>
+                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100 underline" onClick={() => {
+                      const el = inputRef.current; if (!el) return; const start = el.selectionStart||0; const end=el.selectionEnd||0; const base=newComment||''; const selected=base.slice(start,end); const wrapped=`__${selected||'underline'}__`; const next=base.slice(0,start)+wrapped+base.slice(end); setNewComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2,start+2+(selected||'underline').length);}catch(_){}} ,0);
+                    }}>U</button>
+                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
+                      const el=inputRef.current; if(!el)return; const start=el.selectionStart||0; const end=el.selectionEnd||0; const base=newComment||''; const selected=base.slice(start,end); const wrapped=`~~${selected||'strike'}~~`; setNewComment(base.slice(0,start)+wrapped+base.slice(end));
+                    }}>S</button>
+                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
+                      const el=inputRef.current; if(!el)return; const base=newComment||''; const start=el.selectionStart||0; setNewComment(base.slice(0,start)+`- `+base.slice(start));
+                    }}>• List</button>
+                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
+                      const el=inputRef.current; if(!el)return; const base=newComment||''; const start=el.selectionStart||0; setNewComment(base.slice(0,start)+`1. `+base.slice(start));
+                    }}>1. List</button>
+                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
+                      const el=inputRef.current; if(!el)return; const base=newComment||''; const start=el.selectionStart||0; setNewComment(base.slice(0,start)+`> `+base.slice(start));
+                    }}>&gt; Quote</button>
+                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" title="Tag Property" onClick={() => {
+                      const el=inputRef.current; if(!el)return; const start=el.selectionStart||0; const base=newComment||''; const insert='@[PropertyName]'; setNewComment(base.slice(0,start)+insert+base.slice(start));
+                    }}>@Prop</button>
+                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" title="Insert appointment card" onClick={() => {
+                      const el=inputRef.current; if(!el)return; const start=el.selectionStart||0; const base=newComment||''; const card='[Appointment: date • time • with]'; setNewComment(base.slice(0,start)+card+base.slice(start));
+                    }}>Appt</button>
+                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" title="Insert service link" onClick={() => {
+                      const el=inputRef.current; if(!el)return; const start=el.selectionStart||0; const base=newComment||''; const link='Book Movers: /user/movers'; setNewComment(base.slice(0,start)+link+base.slice(start));
+                    }}>Service</button>
+                  </div>
                   <textarea
                     rows={1}
                     className="w-full pl-4 pr-20 py-3 border-2 border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 shadow-lg transition-all duration-300 bg-white resize-none whitespace-pre-wrap break-all hover:border-blue-300 hover:shadow-xl focus:shadow-2xl transform hover:scale-[1.01] overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"

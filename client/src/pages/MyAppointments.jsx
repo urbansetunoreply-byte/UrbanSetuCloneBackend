@@ -6095,6 +6095,39 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         />
                       </div>
                     )}
+                    {/* Formatting toolbar */}
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                      <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
+                        const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = comment || ''; const selected = base.slice(start, end); const wrapped = `**${selected || 'bold'}**`; const next = base.slice(0,start)+wrapped+base.slice(end); setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2, start+2+(selected||'bold').length);}catch(_){}} ,0);
+                      }}>B</button>
+                      <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100 italic" onClick={() => {
+                        const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = comment || ''; const selected = base.slice(start, end); const wrapped = `*${selected || 'italic'}*`; const next = base.slice(0,start)+wrapped+base.slice(end); setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+1, start+1+(selected||'italic').length);}catch(_){}} ,0);
+                      }}>I</button>
+                      <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100 underline" onClick={() => {
+                        const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = comment || ''; const selected = base.slice(start, end); const wrapped = `__${selected || 'underline'}__`; const next = base.slice(0,start)+wrapped+base.slice(end); setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2, start+2+(selected||'underline').length);}catch(_){}} ,0);
+                      }}>U</button>
+                      <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
+                        const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = comment || ''; const selected = base.slice(start, end); const wrapped = `~~${selected || 'strike'}~~`; const next = base.slice(0,start)+wrapped+base.slice(end); setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2, start+2+(selected||'strike').length);}catch(_){}} ,0);
+                      }}>S</button>
+                      <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
+                        const el = inputRef.current; if (!el) return; const base = comment || ''; const start = el.selectionStart || 0; const before = base.slice(0,start); const after = base.slice(start); const next = `${before}- ${after}`; setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2, start+2);}catch(_){}} ,0);
+                      }}>• List</button>
+                      <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
+                        const el = inputRef.current; if (!el) return; const base = comment || ''; const start = el.selectionStart || 0; const before = base.slice(0,start); const after = base.slice(start); const next = `${before}1. ${after}`; setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+3, start+3);}catch(_){}} ,0);
+                      }}>1. List</button>
+                      <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
+                        const el = inputRef.current; if (!el) return; const base = comment || ''; const start = el.selectionStart || 0; const before = base.slice(0,start); const after = base.slice(start); const next = `${before}> ${after}`; setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2, start+2);}catch(_){}} ,0);
+                      }}>&gt; Quote</button>
+                      <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" title="Tag Property" onClick={() => {
+                        const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const base = comment || ''; const insert = '@[PropertyName]'; const next = base.slice(0,start)+insert+base.slice(start); setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2, start+2+12);}catch(_){}} ,0);
+                      }}>@Prop</button>
+                      <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" title="Insert appointment card" onClick={() => {
+                        const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const base = comment || ''; const card = '[Appointment: date • time • with]'; const next = base.slice(0,start)+card+base.slice(start); setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+13, start+13);}catch(_){}} ,0);
+                      }}>Appt</button>
+                      <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" title="Insert service link" onClick={() => {
+                        const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const base = comment || ''; const link = 'Book Movers: /user/movers'; const next = base.slice(0,start)+link+base.slice(start); setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start, start);}catch(_){}} ,0);
+                      }}>Service</button>
+                    </div>
                     <textarea
                       rows={1}
                       className="w-full pl-4 pr-20 py-3 border-2 border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 shadow-lg transition-all duration-300 bg-white resize-none whitespace-pre-wrap break-all hover:border-blue-300 hover:shadow-xl focus:shadow-2xl transform hover:scale-[1.01] overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
@@ -6180,6 +6213,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         // Check if this is a desktop viewport only
                         const isDesktop = window.matchMedia('(min-width: 768px)').matches;
                         
+                        if (e.ctrlKey && (e.key === 'b' || e.key === 'B')) { e.preventDefault(); document.querySelector('button:contains("B")'); }
+                        if (e.ctrlKey && (e.key === 'i' || e.key === 'I')) { e.preventDefault(); const el = inputRef.current; if (!el) return; const start = el.selectionStart||0; const end=el.selectionEnd||0; const base=comment||''; const selected=base.slice(start,end); const wrapped=`*${selected||'italic'}*`; setComment(base.slice(0,start)+wrapped+base.slice(end)); return; }
+                        if (e.ctrlKey && (e.key === 'u' || e.key === 'U')) { e.preventDefault(); const el = inputRef.current; if (!el) return; const start = el.selectionStart||0; const end=el.selectionEnd||0; const base=comment||''; const selected=base.slice(start,end); const wrapped=`__${selected||'underline'}__`; setComment(base.slice(0,start)+wrapped+base.slice(end)); return; }
+                        if (e.shiftKey && e.altKey && e.key === '7') { e.preventDefault(); const el=inputRef.current; if(!el)return; const base=comment||''; const start=el.selectionStart||0; setComment(base.slice(0,start)+'> '+base.slice(start)); return; }
+
                         if (e.key === 'Enter') {
                           // Avoid sending while composing (IME)
                           if (e.isComposing || e.keyCode === 229) return;
