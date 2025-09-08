@@ -85,6 +85,7 @@ export default function PackersMovers() {
         <button disabled={submitting} className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded hover:from-blue-700 hover:to-purple-700 disabled:opacity-50">{submitting ? 'Submitting...' : 'Request Quote'}</button>
       </form>
       <div className="mt-6 text-sm text-gray-600 flex items-center gap-2"><FaMapMarkerAlt/> Service available in major cities.</div>
+      <div className="mt-2"><button onClick={fetchMyRequests} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button></div>
       {currentUser && (
         <div className="mt-8 bg-white rounded-xl shadow p-4">
           <h3 className="text-lg font-semibold mb-2">My Movers Requests</h3>

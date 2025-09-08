@@ -1,12 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { FaTruckMoving, FaEnvelope, FaCheckCircle, FaFilter } from 'react-icons/fa';
+import { FaTruckMoving, FaEnvelope, FaCheckCircle } from 'react-icons/fa';
 
 export default function AdminMovers() {
   const { currentUser } = useSelector((state) => state.user);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showUnreadOnly, setShowUnreadOnly] = useState(false);
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -23,7 +22,7 @@ export default function AdminMovers() {
 
   useEffect(() => { fetchNotifications(); }, [currentUser?._id]);
 
-  const filtered = useMemo(() => showUnreadOnly ? items.filter(i => !i.isRead) : items, [items, showUnreadOnly]);
+  const filtered = useMemo(() => items, [items]);
 
   const markAsRead = async (id) => {
     try {
@@ -42,7 +41,6 @@ export default function AdminMovers() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold flex items-center gap-2"><FaTruckMoving className="text-blue-600"/> Movers Requests</h1>
         <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-sm cursor-pointer"><FaFilter/><input type="checkbox" checked={showUnreadOnly} onChange={e=>setShowUnreadOnly(e.target.checked)} /> Unread only</label>
           <button onClick={fetchNotifications} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button>
         </div>
       </div>

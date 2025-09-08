@@ -70,6 +70,7 @@ export default function OnDemandServices() {
           </button>
         ))}
       </div>
+      <div className="mt-2"><button onClick={fetchMyRequests} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button></div>
       <div className="bg-white rounded-xl shadow p-5">
         <h2 className="text-lg font-semibold mb-4">Request Details</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

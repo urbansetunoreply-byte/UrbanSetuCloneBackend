@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { FaTools, FaEnvelope, FaCheckCircle, FaFilter } from 'react-icons/fa';
+import { FaTools, FaEnvelope, FaCheckCircle } from 'react-icons/fa';
 
 export default function AdminServices() {
   const { currentUser } = useSelector((state) => state.user);
@@ -23,7 +23,7 @@ export default function AdminServices() {
 
   useEffect(() => { fetchNotifications(); }, [currentUser?._id]);
 
-  const filtered = useMemo(() => showUnreadOnly ? items.filter(i => !i.isRead) : items, [items, showUnreadOnly]);
+  const filtered = useMemo(() => items, [items]);
 
   const markAsRead = async (id) => {
     try {
@@ -42,7 +42,6 @@ export default function AdminServices() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold flex items-center gap-2"><FaTools className="text-purple-700"/> Service Requests</h1>
         <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-sm cursor-pointer"><FaFilter/><input type="checkbox" checked={showUnreadOnly} onChange={e=>setShowUnreadOnly(e.target.checked)} /> Unread only</label>
           <button onClick={fetchNotifications} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button>
         </div>
       </div>
