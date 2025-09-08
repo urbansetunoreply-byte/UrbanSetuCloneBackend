@@ -59,6 +59,8 @@ const AdminEditListing = lazy(() => import("./pages/AdminEditListing"));
 const Oauth = lazy(() => import("./components/Oauth"));
 const AdminAppointmentListing = lazy(() => import("./pages/AdminAppointmentListing"));
 const AdminReviews = lazy(() => import("./pages/AdminReviews"));
+const AdminMovers = lazy(() => import('./pages/AdminMovers'));
+const AdminServices = lazy(() => import('./pages/AdminServices'));
 const PackersMovers = lazy(() => import('./pages/PackersMovers'));
 const OnDemandServices = lazy(() => import('./pages/OnDemandServices'));
 const RoutePlanner = lazy(() => import('./pages/RoutePlanner'));
@@ -564,6 +566,8 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/admin/privacy" element={<AdminPrivacy />} />
             <Route path="/admin/management" element={<AdminManagement />} />
             <Route path="/admin/reviews" element={<AdminReviews />} />
+            <Route path="/admin/movers" element={<AdminMovers />} />
+            <Route path="/admin/services" element={<AdminServices />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
