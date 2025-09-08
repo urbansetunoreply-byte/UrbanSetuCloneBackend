@@ -1,0 +1,65 @@
+import React, { useState } from 'react';
+import { FaTruckMoving, FaMapMarkerAlt, FaCalendarAlt } from 'react-icons/fa';
+import { toast } from 'react-toastify';
+
+export default function PackersMovers() {
+  const [form, setForm] = useState({ from: '', to: '', date: '', size: '1BHK', notes: '' });
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.from || !form.to || !form.date) {
+      toast.error('Please fill From, To and Date');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      // Placeholder: send request to backend integration/provider webhook
+      await new Promise(r => setTimeout(r, 600));
+      toast.success('Request submitted. A partner will contact you.');
+      setForm({ from: '', to: '', date: '', size: '1BHK', notes: '' });
+    } catch (e) {
+      toast.error('Failed to submit request');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto px-4 py-10">
+      <h1 className="text-2xl font-bold mb-6 flex items-center gap-2"><FaTruckMoving className="text-blue-600"/> Packers & Movers</h1>
+      <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow p-5 space-y-4">
+        <div>
+          <label className="text-sm text-gray-600">From Address</label>
+          <input className="w-full border rounded p-2" value={form.from} onChange={e=>setForm(f=>({...f, from:e.target.value}))} placeholder="Pickup address"/>
+        </div>
+        <div>
+          <label className="text-sm text-gray-600">To Address</label>
+          <input className="w-full border rounded p-2" value={form.to} onChange={e=>setForm(f=>({...f, to:e.target.value}))} placeholder="Drop address"/>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-sm text-gray-600">Move Date</label>
+            <div className="flex items-center gap-2">
+              <FaCalendarAlt className="text-gray-500"/>
+              <input type="date" className="w-full border rounded p-2" value={form.date} onChange={e=>setForm(f=>({...f, date:e.target.value}))}/>
+            </div>
+          </div>
+          <div>
+            <label className="text-sm text-gray-600">Home Size</label>
+            <select className="w-full border rounded p-2" value={form.size} onChange={e=>setForm(f=>({...f, size:e.target.value}))}>
+              {['1RK','1BHK','2BHK','3BHK','Villa','Office'].map(s=> <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+        </div>
+        <div>
+          <label className="text-sm text-gray-600">Notes</label>
+          <textarea className="w-full border rounded p-2" rows={3} value={form.notes} onChange={e=>setForm(f=>({...f, notes:e.target.value}))} placeholder="Additional details"/>
+        </div>
+        <button disabled={submitting} className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded hover:from-blue-700 hover:to-purple-700 disabled:opacity-50">{submitting ? 'Submitting...' : 'Request Quote'}</button>
+      </form>
+      <div className="mt-6 text-sm text-gray-600 flex items-center gap-2"><FaMapMarkerAlt/> Service available in major cities.</div>
+    </div>
+  );
+}
+
