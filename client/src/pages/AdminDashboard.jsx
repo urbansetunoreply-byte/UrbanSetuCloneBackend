@@ -264,16 +264,26 @@ export default function AdminDashboard() {
       const ownerMap = {};
       listingsData.forEach(l => {
         const ownerId = (l.userRef && (l.userRef._id || l.userRef)) || 'unknown';
-        if (!ownerMap[ownerId]) ownerMap[ownerId] = { totalRating: 0, count: 0, ownerId, ownerName: l.ownerName || '', listings: 0 };
+        if (!ownerMap[ownerId]) ownerMap[ownerId] = { totalRating: 0, count: 0, ownerId, ownerName: '', listings: 0 };
         if (typeof l.averageRating === 'number' && l.reviewCount > 0) {
           ownerMap[ownerId].totalRating += l.averageRating;
           ownerMap[ownerId].count += 1;
         }
         ownerMap[ownerId].listings += 1;
       });
+      const userIdToName = {};
+      (usersData || []).forEach(u => {
+        const id = u._id || u.id;
+        if (id) userIdToName[id] = u.username || u.name || u.email || '';
+      });
+
       const topOwnersByRating = Object.values(ownerMap)
         .filter(o => o.count > 0)
-        .map(o => ({ ...o, avgRating: Math.round((o.totalRating / o.count) * 10) / 10 }))
+        .map(o => ({ 
+          ...o, 
+          avgRating: Math.round((o.totalRating / o.count) * 10) / 10,
+          ownerName: userIdToName[o.ownerId] || o.ownerId
+        }))
         .sort((a,b) => b.avgRating - a.avgRating)
         .slice(0, 5);
 
@@ -597,7 +607,7 @@ export default function AdminDashboard() {
               <div className="space-y-2">
                 {analytics.performance.topOwnersByRating.map((o, idx) => (
                   <div key={idx} className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">{o.ownerName || o.ownerId}</span>
+                    <span className="text-gray-600">{o.ownerName}</span>
                     <span className="font-semibold text-gray-800">{o.avgRating} ⭐ ({o.listings} listings)</span>
                   </div>
                 ))}
