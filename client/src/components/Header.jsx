@@ -360,6 +360,27 @@ function UserNavLinks({ mobile = false, onNavigate }) {
           <span>Explore</span>
         </li>
       </Link>
+
+      {/* Services quick links for mobile */}
+      {currentUser && mobile && (
+        <>
+          <Link to="/user/movers" onClick={onNavigate}>
+            <li className={`mobile-menu-item animate-menu-item-in-delay-3 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium`}>
+              <span>Movers</span>
+            </li>
+          </Link>
+          <Link to="/user/services" onClick={onNavigate}>
+            <li className={`mobile-menu-item animate-menu-item-in-delay-4 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium`}>
+              <span>Services</span>
+            </li>
+          </Link>
+          <Link to="/user/route-planner" onClick={onNavigate}>
+            <li className={`mobile-menu-item animate-menu-item-in-delay-5 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium`}>
+              <span>Route Planner</span>
+            </li>
+          </Link>
+        </>
+      )}
       {/* Services quick links */}
       {currentUser && !mobile && (
         <>
