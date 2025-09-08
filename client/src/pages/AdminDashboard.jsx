@@ -704,23 +704,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Top Cities by Listings */}
-        {analytics.topCities.length > 0 && (
-          <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-              <FaChartLine className="text-blue-500 mr-2" />
-              Top Cities by Listings
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-              {analytics.topCities.map((item, idx) => (
-                <div key={idx} className="border border-gray-200 rounded-lg p-4 text-center">
-                  <p className="text-sm text-gray-600">{item.city}</p>
-                  <p className="text-2xl font-bold text-blue-600">{item.count}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        
 
         {/* Recent Listings */}
         {analytics.recentListings.length > 0 && (
