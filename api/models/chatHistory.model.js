@@ -1,0 +1,99 @@
+import mongoose from "mongoose";
+
+const chatHistorySchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+  },
+  sessionId: {
+    type: String,
+    required: true,
+    index: true
+  },
+  messages: [{
+    role: {
+      type: String,
+      enum: ["user", "assistant"],
+      required: true
+    },
+    content: {
+      type: String,
+      required: true
+    },
+    timestamp: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  totalMessages: {
+    type: Number,
+    default: 0
+  },
+  lastActivity: {
+    type: Date,
+    default: Date.now
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  }
+}, { 
+  timestamps: true,
+  // Add indexes for better performance
+  indexes: [
+    { userId: 1, sessionId: 1 },
+    { userId: 1, lastActivity: -1 },
+    { sessionId: 1 }
+  ]
+});
+
+// Update lastActivity and totalMessages before saving
+chatHistorySchema.pre('save', function(next) {
+  this.lastActivity = new Date();
+  this.totalMessages = this.messages.length;
+  next();
+});
+
+// Static method to find or create a chat session
+chatHistorySchema.statics.findOrCreateSession = async function(userId, sessionId) {
+  let chatHistory = await this.findOne({ userId, sessionId, isActive: true });
+  
+  if (!chatHistory) {
+    chatHistory = new this({
+      userId,
+      sessionId,
+      messages: []
+    });
+    await chatHistory.save();
+  }
+  
+  return chatHistory;
+};
+
+// Instance method to add a message
+chatHistorySchema.methods.addMessage = function(role, content) {
+  this.messages.push({
+    role,
+    content,
+    timestamp: new Date()
+  });
+  return this.save();
+};
+
+// Instance method to clear messages
+chatHistorySchema.methods.clearMessages = function() {
+  this.messages = [];
+  this.totalMessages = 0;
+  return this.save();
+};
+
+// Instance method to deactivate session
+chatHistorySchema.methods.deactivate = function() {
+  this.isActive = false;
+  return this.save();
+};
+
+const ChatHistory = mongoose.model("ChatHistory", chatHistorySchema);
+
+export default ChatHistory;

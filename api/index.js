@@ -14,6 +14,7 @@ import imageFavoriteRouter from "./routes/imageFavorite.route.js";
 import notificationRouter from "./routes/notification.route.js";
 import reviewRouter from "./routes/review.route.js";
 import geminiRouter from "./routes/gemini.route.js";
+import chatHistoryRouter from "./routes/chatHistory.route.js";
 import uploadRouter from "./routes/upload.route.js";
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -376,6 +377,7 @@ console.log('✅ Image favorites routes registered at /api/image-favorites');
 app.use("/api/notifications", notificationRouter);
 app.use("/api/review", reviewRouter);
 app.use("/api/gemini", geminiRouter);
+app.use("/api/chat-history", chatHistoryRouter);
 app.use("/api/upload", uploadRouter);
 console.log('All API routes registered successfully');
 

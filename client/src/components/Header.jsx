@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { FaSearch, FaHome, FaInfoCircle, FaCompass, FaPlus, FaList, FaHeart, FaCalendarAlt, FaUser, FaSignOutAlt, FaStar, FaBars, FaTimes } from "react-icons/fa";
+import { FaSearch, FaHome, FaInfoCircle, FaCompass, FaPlus, FaList, FaHeart, FaCalendarAlt, FaUser, FaSignOutAlt, FaStar, FaBars, FaTimes, FaTrash } from "react-icons/fa";
 import UserAvatar from "./UserAvatar";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -300,6 +300,36 @@ function UserNavLinks({ mobile = false, onNavigate }) {
     }
   };
 
+  const handleClearChatHistory = async () => {
+    if (!currentUser) {
+      toast.error("Please sign in to clear chat history");
+      return;
+    }
+
+    try {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+      const response = await fetch(`${API_BASE_URL}/api/chat-history/clear-all`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (response.ok) {
+        toast.success("Chat history cleared successfully!");
+        // Dispatch custom event to notify GeminiChatbox to clear its state
+        window.dispatchEvent(new CustomEvent('clearChatHistory'));
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.message || "Failed to clear chat history");
+      }
+    } catch (error) {
+      console.error('Error clearing chat history:', error);
+      toast.error("Failed to clear chat history");
+    }
+  };
+
   return (
     <ul className={`${mobile ? 'flex flex-col gap-2 text-gray-800' : 'flex space-x-2 sm:space-x-4 items-center text-white text-base font-normal'}`}>
       {/* Search icon/input first, white color */}
@@ -334,6 +364,21 @@ function UserNavLinks({ mobile = false, onNavigate }) {
           )}
         </li>
       ) : null}
+      
+      {/* Clear Chat History button - only show for authenticated users */}
+      {currentUser && (
+        <li className={`${mobile ? 'mobile-menu-item animate-menu-item-in-delay-1 p-4 rounded-xl hover:bg-red-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium cursor-pointer' : 'hover:text-yellow-300 hover:scale-110 flex items-center gap-1 cursor-pointer transition-all'}`}>
+          <button
+            onClick={handleClearChatHistory}
+            className={`${mobile ? 'flex items-center gap-3 text-lg font-medium' : 'flex items-center gap-1'}`}
+            title="Clear Chat History"
+            aria-label="Clear Chat History"
+          >
+            <FaTrash className={`text-xl ${mobile ? 'text-red-500' : ''}`} />
+            <span className={mobile ? '' : 'hidden sm:inline'}>Clear Chat</span>
+          </button>
+        </li>
+      )}
       
       {/* Mobile menu items with staggered animations */}
       <Link to={location.pathname.startsWith('/user') ? '/user' : '/'} onClick={onNavigate}>

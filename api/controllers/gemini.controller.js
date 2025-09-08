@@ -1,4 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
+import ChatHistory from '../models/chatHistory.model.js';
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY || "AIzaSyCDGG9Dsk90Yyim1AXft6jM_mZ7YeR9BhQ"
@@ -6,7 +7,8 @@ const ai = new GoogleGenAI({
 
 export const chatWithGemini = async (req, res) => {
     try {
-        const { message, history = [] } = req.body;
+        const { message, history = [], sessionId } = req.body;
+        const userId = req.user?.id;
 
         if (!message) {
             return res.status(400).json({ 
@@ -14,6 +16,9 @@ export const chatWithGemini = async (req, res) => {
                 message: 'Message is required' 
             });
         }
+
+        // Generate session ID if not provided
+        const currentSessionId = sessionId || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
         // Prepare conversation history for Gemini
         const systemPrompt = `You are a helpful AI assistant specializing in real estate. You help users with:
@@ -57,9 +62,23 @@ export const chatWithGemini = async (req, res) => {
         console.log('Gemini API response received, length:', responseText ? responseText.length : 0);
         console.log('Response preview:', responseText ? responseText.substring(0, 100) + '...' : 'No response');
 
+        // Save chat history if user is authenticated
+        if (userId) {
+            try {
+                const chatHistory = await ChatHistory.findOrCreateSession(userId, currentSessionId);
+                await chatHistory.addMessage('user', message);
+                await chatHistory.addMessage('assistant', responseText);
+                console.log('Chat history saved successfully');
+            } catch (historyError) {
+                console.error('Error saving chat history:', historyError);
+                // Don't fail the request if history saving fails
+            }
+        }
+
         res.status(200).json({
             success: true,
-            response: responseText
+            response: responseText,
+            sessionId: currentSessionId
         });
 
     } catch (error) {

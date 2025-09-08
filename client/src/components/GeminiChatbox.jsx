@@ -2,8 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaCheck } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { formatLinksInText } from '../utils/linkFormatter.jsx';
+import { useSelector } from 'react-redux';
 
 const GeminiChatbox = () => {
+    const { currentUser } = useSelector((state) => state.user);
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([
         {
@@ -13,6 +15,8 @@ const GeminiChatbox = () => {
     ]);
     const [inputMessage, setInputMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [sessionId, setSessionId] = useState(null);
+    const [isHistoryLoaded, setIsHistoryLoaded] = useState(false);
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
     const [sendIconAnimating, setSendIconAnimating] = useState(false);
@@ -22,9 +26,95 @@ const GeminiChatbox = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
+    // Generate or retrieve session ID
+    const getOrCreateSessionId = () => {
+        if (sessionId) return sessionId;
+        
+        // Try to get existing session from localStorage
+        const existingSessionId = localStorage.getItem('gemini_session_id');
+        if (existingSessionId) {
+            setSessionId(existingSessionId);
+            return existingSessionId;
+        }
+        
+        // Create new session ID
+        const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        localStorage.setItem('gemini_session_id', newSessionId);
+        setSessionId(newSessionId);
+        return newSessionId;
+    };
+
+    // Load chat history for authenticated users
+    const loadChatHistory = async (currentSessionId) => {
+        if (!currentUser || !currentSessionId) return;
+
+        try {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+            const response = await fetch(`${API_BASE_URL}/api/chat-history/session/${currentSessionId}`, {
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.data.messages && data.data.messages.length > 0) {
+                    setMessages(data.data.messages);
+                    console.log('Chat history loaded:', data.data.messages.length, 'messages');
+                }
+            } else if (response.status === 404) {
+                // No history found, keep default welcome message
+                console.log('No chat history found for session');
+            } else {
+                console.error('Failed to load chat history:', response.status);
+            }
+        } catch (error) {
+            console.error('Error loading chat history:', error);
+        } finally {
+            setIsHistoryLoaded(true);
+        }
+    };
+
+    // Clear chat history locally
+    const clearLocalChatHistory = () => {
+        setMessages([
+            {
+                role: 'assistant',
+                content: 'Hello! I\'m your AI assistant powered by Gemini. How can I help you with your real estate needs today?'
+            }
+        ]);
+        // Generate new session ID
+        const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        localStorage.setItem('gemini_session_id', newSessionId);
+        setSessionId(newSessionId);
+    };
+
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    // Initialize session and load history when component mounts or user changes
+    useEffect(() => {
+        const currentSessionId = getOrCreateSessionId();
+        if (currentUser && currentSessionId && !isHistoryLoaded) {
+            loadChatHistory(currentSessionId);
+        } else if (!currentUser) {
+            setIsHistoryLoaded(true);
+        }
+    }, [currentUser, isHistoryLoaded]);
+
+    // Listen for clear chat history events from header
+    useEffect(() => {
+        const handleClearChatHistory = () => {
+            clearLocalChatHistory();
+        };
+
+        window.addEventListener('clearChatHistory', handleClearChatHistory);
+        return () => {
+            window.removeEventListener('clearChatHistory', handleClearChatHistory);
+        };
+    }, []);
 
     // Keyboard shortcut Ctrl+F to focus message input
     useEffect(() => {
@@ -110,16 +200,19 @@ const GeminiChatbox = () => {
 
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-            console.log('Sending message to Gemini:', userMessage);
+            const currentSessionId = getOrCreateSessionId();
+            console.log('Sending message to Gemini:', userMessage, 'Session:', currentSessionId);
             
             const response = await fetch(`${API_BASE_URL}/api/gemini/chat`, {
                 method: 'POST',
+                credentials: 'include', // Include cookies for authentication
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     message: userMessage,
-                    history: messages.slice(-10) // Send last 10 messages for context
+                    history: messages.slice(-10), // Send last 10 messages for context
+                    sessionId: currentSessionId
                 })
             });
 
@@ -140,6 +233,12 @@ const GeminiChatbox = () => {
                 const trimmedResponse = data.response.trim();
                 console.log('Setting message with response length:', trimmedResponse.length);
                 setMessages(prev => [...prev, { role: 'assistant', content: trimmedResponse }]);
+
+                // Update session ID if provided in response
+                if (data.sessionId && data.sessionId !== sessionId) {
+                    setSessionId(data.sessionId);
+                    localStorage.setItem('gemini_session_id', data.sessionId);
+                }
 
                 // Show sent success check briefly
                 setSendIconSent(true);
