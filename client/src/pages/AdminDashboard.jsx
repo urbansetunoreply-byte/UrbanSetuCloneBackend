@@ -47,7 +47,14 @@ export default function AdminDashboard() {
       sale: 0,
       rent: 0,
       offer: 0
-    }
+    },
+    priceStats: {
+      min: 0,
+      max: 0,
+      avg: 0,
+      discountedCount: 0
+    },
+    bedroomsDistribution: {}
   });
 
   // Booking statistics state
@@ -210,6 +217,21 @@ export default function AdminDashboard() {
         .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
         .slice(0, 6);
 
+      // Price stats and distributions
+      const prices = listingsData.map(l => (l.offer && l.discountPrice) ? l.discountPrice : l.regularPrice).filter(Boolean);
+      const priceStats = prices.length > 0 ? {
+        min: Math.min(...prices),
+        max: Math.max(...prices),
+        avg: Math.round(prices.reduce((a, b) => a + b, 0) / prices.length),
+        discountedCount: listingsData.filter(l => l.offer && l.discountPrice && l.regularPrice && l.discountPrice < l.regularPrice).length
+      } : { min: 0, max: 0, avg: 0, discountedCount: 0 };
+
+      const bedroomsDistribution = listingsData.reduce((acc, l) => {
+        const key = l.bedrooms || 0;
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      }, {});
+
       setAnalytics({
         totalUsers: usersData.length,
         totalAdmins: adminsData.length,
@@ -222,7 +244,9 @@ export default function AdminDashboard() {
         topCities,
         recentListings,
         recentActivity: [],
-        userGrowth: []
+        userGrowth: [],
+        priceStats,
+        bedroomsDistribution
       });
     } catch (error) {
       console.error('Failed to fetch analytics:', error);
@@ -401,6 +425,40 @@ export default function AdminDashboard() {
               <p className="text-sm text-green-600">Accepted: {bookingStats.accepted}</p>
               <p className="text-sm text-orange-500">Pending: {bookingStats.pending}</p>
               <p className="text-sm text-red-500">Rejected: {bookingStats.rejected}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Price Statistics and Distribution */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-green-600 mr-2" /> Price Statistics</h3>
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <p className="text-sm text-gray-500">Min</p>
+                <p className="text-2xl font-bold text-gray-800">₹{analytics.priceStats.min.toLocaleString('en-IN')}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Avg</p>
+                <p className="text-2xl font-bold text-blue-700">₹{analytics.priceStats.avg.toLocaleString('en-IN')}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Max</p>
+                <p className="text-2xl font-bold text-gray-800">₹{analytics.priceStats.max.toLocaleString('en-IN')}</p>
+              </div>
+            </div>
+            <p className="mt-4 text-sm text-gray-600"><span className="font-semibold text-green-700">{analytics.priceStats.discountedCount}</span> listings currently on discount</p>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-purple-600 mr-2" /> Bedrooms Distribution</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {Object.entries(analytics.bedroomsDistribution).sort((a,b)=>Number(a[0])-Number(b[0])).map(([beds, count]) => (
+                <div key={beds} className="border border-gray-200 rounded-lg p-4 text-center">
+                  <p className="text-sm text-gray-500">{beds} bed{Number(beds) === 1 ? '' : 's'}</p>
+                  <p className="text-xl font-bold text-purple-700">{count}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
