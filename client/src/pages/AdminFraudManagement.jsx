@@ -12,60 +12,62 @@ export default function AdminFraudManagement() {
   const [filter, setFilter] = useState('all');
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError('');
-        const [fraudRes, allListingsRes, allReviewsRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/ai/fraud/stats`),
-          fetch(`${API_BASE_URL}/api/listing/get?limit=10000`),
-          fetch(`${API_BASE_URL}/api/review/admin/all?status=approved&limit=1000&sort=date&order=desc`, { credentials: 'include' })
-        ]);
-        const fraud = await fraudRes.json();
-        const allListings = await allListingsRes.json();
-        const allReviews = await allReviewsRes.json();
-        setStats(fraud);
-        // Heuristic flags in UI
-        const prices = allListings.map(l => (l.offer && l.discountPrice) ? l.discountPrice : l.regularPrice).filter(Boolean);
-        const mean = prices.length ? prices.reduce((a,b)=>a+b,0)/prices.length : 0;
-        const variance = prices.length ? prices.reduce((a,b)=>a+Math.pow(b-mean,2),0)/prices.length : 0;
-        const std = Math.sqrt(variance) || 1;
-        const upper = mean + 3*std; const lower = Math.max(0, mean - 3*std);
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const [fraudRes, allListingsRes, allReviewsRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/ai/fraud/stats`),
+        fetch(`${API_BASE_URL}/api/listing/get?limit=10000`),
+        fetch(`${API_BASE_URL}/api/review/admin/all?status=approved&limit=1000&sort=date&order=desc`, { credentials: 'include' })
+      ]);
+      const fraud = await fraudRes.json();
+      const allListings = await allListingsRes.json();
+      const allReviews = await allReviewsRes.json();
+      setStats(fraud);
+      // Heuristic flags in UI
+      const prices = allListings.map(l => (l.offer && l.discountPrice) ? l.discountPrice : l.regularPrice).filter(Boolean);
+      const mean = prices.length ? prices.reduce((a,b)=>a+b,0)/prices.length : 0;
+      const variance = prices.length ? prices.reduce((a,b)=>a+Math.pow(b-mean,2),0)/prices.length : 0;
+      const std = Math.sqrt(variance) || 1;
+      const upper = mean + 3*std; const lower = Math.max(0, mean - 3*std);
 
-        const flaggedListings = allListings.map(l => {
-          const price = (l.offer && l.discountPrice) ? l.discountPrice : l.regularPrice;
-          const reasons = [];
-          if (!l.imageUrls || l.imageUrls.length === 0) reasons.push('No images');
-          if (price && (price > upper || price < lower)) reasons.push('Price outlier');
-          return { ...l, _fraudReasons: reasons };
-        }).filter(l => l._fraudReasons.length > 0);
+      const flaggedListings = allListings.map(l => {
+        const price = (l.offer && l.discountPrice) ? l.discountPrice : l.regularPrice;
+        const reasons = [];
+        if (!l.imageUrls || l.imageUrls.length === 0) reasons.push('No images');
+        if (price && (price > upper || price < lower)) reasons.push('Price outlier');
+        return { ...l, _fraudReasons: reasons };
+      }).filter(l => l._fraudReasons.length > 0);
 
-        const reviewMap = new Map();
-        (allReviews.reviews || allReviews || []).forEach(r => {
-          const t = (r.comment||'').trim().toLowerCase();
-          if (!t) return; reviewMap.set(t, (reviewMap.get(t)||0)+1);
-        });
-        const repetitiveTexts = new Set(Array.from(reviewMap.entries()).filter(([,c])=>c>=3).map(([t])=>t));
-        const flaggedReviews = (allReviews.reviews || allReviews || []).filter(r => repetitiveTexts.has((r.comment||'').trim().toLowerCase()));
+      const reviewMap = new Map();
+      (allReviews.reviews || allReviews || []).forEach(r => {
+        const t = (r.comment||'').trim().toLowerCase();
+        if (!t) return; reviewMap.set(t, (reviewMap.get(t)||0)+1);
+      });
+      const repetitiveTexts = new Set(Array.from(reviewMap.entries()).filter(([,c])=>c>=3).map(([t])=>t));
+      const flaggedReviews = (allReviews.reviews || allReviews || []).filter(r => repetitiveTexts.has((r.comment||'').trim().toLowerCase()));
 
-        setListings(flaggedListings);
-        setReviews(flaggedReviews);
-      } catch (e) {
-        setError('Failed to load fraud data.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+      setListings(flaggedListings);
+      setReviews(flaggedReviews);
+    } catch (e) {
+      setError('Failed to load fraud data.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchData(); }, []);
 
   return (
     <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
       <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-lg p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-3xl font-extrabold text-blue-700 drop-shadow">Fraud Management</h3>
-          <button className="px-4 py-2 bg-gray-200 rounded-lg" onClick={() => navigate('/admin')}>Back to Dashboard</button>
+          <div className="flex gap-2">
+            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-60" disabled={loading} onClick={fetchData}>{loading ? 'Scanning…' : 'Scan Now'}</button>
+            <button className="px-4 py-2 bg-gray-200 rounded-lg" onClick={() => navigate('/admin')}>Back to Dashboard</button>
+          </div>
         </div>
         {loading ? (
           <p>Loading...</p>
