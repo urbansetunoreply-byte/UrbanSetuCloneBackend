@@ -29,6 +29,9 @@ const GeminiChatbox = () => {
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
+    const scrollToBottomInstant = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+    };
 
     // Generate or retrieve session ID
     const getOrCreateSessionId = () => {
@@ -228,6 +231,20 @@ const GeminiChatbox = () => {
             setTimeout(() => inputRef.current?.focus(), 50);
         }
     }, [isOpen]);
+
+    // Ensure latest content is visible at bottom when opening and after history loads
+    useEffect(() => {
+        if (isOpen) {
+            // Give layout a tick, then jump to bottom instantly
+            setTimeout(() => scrollToBottomInstant(), 50);
+        }
+    }, [isOpen]);
+
+    useEffect(() => {
+        if (isOpen && isHistoryLoaded) {
+            setTimeout(() => scrollToBottomInstant(), 50);
+        }
+    }, [isHistoryLoaded, isOpen]);
 
     // Track scroll to bottom detection and compute initial state on open and updates
     useEffect(() => {
