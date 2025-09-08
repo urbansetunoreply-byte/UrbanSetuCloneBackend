@@ -389,19 +389,19 @@ function UserNavLinks({ mobile = false, onNavigate }) {
         <>
           <Link to="/user/movers" onClick={onNavigate}>
             <li className="hover:text-yellow-300 hover:scale-110 flex items-center gap-2 transition-all">
-              <FaTruckMoving className="text-sm" />
+              <FaTruckMoving className="text-sm text-blue-500" />
               <span>Movers</span>
             </li>
           </Link>
           <Link to="/user/services" onClick={onNavigate}>
             <li className="hover:text-yellow-300 hover:scale-110 flex items-center gap-2 transition-all">
-              <FaTools className="text-sm" />
+              <FaTools className="text-sm text-purple-600" />
               <span>Services</span>
             </li>
           </Link>
           <Link to="/user/route-planner" onClick={onNavigate}>
             <li className="hover:text-yellow-300 hover:scale-110 flex items-center gap-2 transition-all">
-              <FaRoute className="text-sm" />
+              <FaRoute className="text-sm text-green-600" />
               <span>Route</span>
             </li>
           </Link>
