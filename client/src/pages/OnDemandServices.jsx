@@ -61,7 +61,10 @@ export default function OnDemandServices() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
-      <h1 className="text-2xl font-bold mb-6">On-Demand Services</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">On-Demand Services</h1>
+        <button onClick={fetchMyRequests} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button>
+      </div>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
         {services.map(s => (
           <button key={s.key} onClick={()=>toggleService(s.key)} className={`bg-white rounded-xl shadow p-4 flex flex-col items-center gap-2 hover:shadow-lg ${selected.includes(s.key)?'ring-2 ring-blue-500':''}`}>
@@ -70,7 +73,6 @@ export default function OnDemandServices() {
           </button>
         ))}
       </div>
-      <div className="mt-2"><button onClick={fetchMyRequests} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button></div>
       <div className="bg-white rounded-xl shadow p-5">
         <h2 className="text-lg font-semibold mb-4">Request Details</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
