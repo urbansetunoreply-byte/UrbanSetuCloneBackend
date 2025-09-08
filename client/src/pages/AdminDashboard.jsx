@@ -54,7 +54,24 @@ export default function AdminDashboard() {
       avg: 0,
       discountedCount: 0
     },
-    bedroomsDistribution: {}
+    bedroomsDistribution: {},
+    marketInsights: {
+      monthlyAvgPrices: [],
+      demandByCity: []
+    },
+    performance: {
+      topOwnersByRating: []
+    },
+    sentiment: {
+      positive: 0,
+      negative: 0,
+      neutral: 0,
+      topWords: []
+    },
+    userBehavior: {
+      popularFilters: [],
+      dropoffs: []
+    }
   });
 
   // Booking statistics state
@@ -177,17 +194,23 @@ export default function AdminDashboard() {
       const adminsRes = await fetch(`${API_BASE_URL}/api/admin/management/admins`, { credentials: 'include' });
       // Fetch review statistics
       const reviewsRes = await fetch(`${API_BASE_URL}/api/review/admin/stats`, { credentials: 'include' });
+      const reviewsAllRes = await fetch(`${API_BASE_URL}/api/review/admin/all?status=approved&limit=1000&sort=date&order=desc`, { credentials: 'include' });
       // Fetch listing statistics
       const listingsRes = await fetch(`${API_BASE_URL}/api/listing/get?limit=10000`, { credentials: 'include' });
 
       let usersData = [];
       let adminsData = [];
       let reviewsData = { totalReviews: 0, pendingReviews: 0, averageRating: 0 };
+      let allApprovedReviews = [];
       let listingsData = [];
 
       if (usersRes.ok) usersData = await usersRes.json();
       if (adminsRes.ok) adminsData = await adminsRes.json();
       if (reviewsRes.ok) reviewsData = await reviewsRes.json();
+      if (reviewsAllRes.ok) {
+        const temp = await reviewsAllRes.json();
+        allApprovedReviews = temp.reviews || temp; // depending on API shape
+      }
       if (listingsRes.ok) listingsData = await listingsRes.json();
 
       const listingStats = {
@@ -216,6 +239,69 @@ export default function AdminDashboard() {
       const recentListings = [...listingsData]
         .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
         .slice(0, 6);
+
+      // Market Insights: monthly average prices and demand by city (counts)
+      const monthlyMap = {};
+      listingsData.forEach(l => {
+        const dt = new Date(l.createdAt || l.updatedAt || Date.now());
+        const key = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
+        const price = (l.offer && l.discountPrice) ? l.discountPrice : l.regularPrice;
+        if (!price) return;
+        if (!monthlyMap[key]) monthlyMap[key] = { sum: 0, count: 0 };
+        monthlyMap[key].sum += price;
+        monthlyMap[key].count += 1;
+      });
+      const monthlyAvgPrices = Object.entries(monthlyMap)
+        .sort(([a],[b]) => a.localeCompare(b))
+        .map(([month, v]) => ({ month, avg: Math.round(v.sum / v.count) }));
+
+      const demandByCity = Object.entries(cityCounts)
+        .map(([city, count]) => ({ city, count }))
+        .sort((a,b) => b.count - a.count)
+        .slice(0, 10);
+
+      // Performance: top owners by average rating across their listings
+      const ownerMap = {};
+      listingsData.forEach(l => {
+        const ownerId = (l.userRef && (l.userRef._id || l.userRef)) || 'unknown';
+        if (!ownerMap[ownerId]) ownerMap[ownerId] = { totalRating: 0, count: 0, ownerId, ownerName: l.ownerName || '', listings: 0 };
+        if (typeof l.averageRating === 'number' && l.reviewCount > 0) {
+          ownerMap[ownerId].totalRating += l.averageRating;
+          ownerMap[ownerId].count += 1;
+        }
+        ownerMap[ownerId].listings += 1;
+      });
+      const topOwnersByRating = Object.values(ownerMap)
+        .filter(o => o.count > 0)
+        .map(o => ({ ...o, avgRating: Math.round((o.totalRating / o.count) * 10) / 10 }))
+        .sort((a,b) => b.avgRating - a.avgRating)
+        .slice(0, 5);
+
+      // Sentiment Analysis: simple rule-based scoring over review comments
+      const positiveWords = ['good','great','excellent','amazing','love','nice','helpful','fast','clean','spacious','recommended','recommend'];
+      const negativeWords = ['bad','poor','terrible','awful','hate','dirty','small','slow','rude','noisy','not recommended','worst'];
+      let pos = 0, neg = 0, neu = 0;
+      const wordFreq = {};
+      (allApprovedReviews || []).forEach(r => {
+        const text = (r.comment || '').toLowerCase();
+        if (!text.trim()) { neu++; return; }
+        let score = 0;
+        positiveWords.forEach(w => { if (text.includes(w)) score++; });
+        negativeWords.forEach(w => { if (text.includes(w)) score--; });
+        if (score > 0) pos++; else if (score < 0) neg++; else neu++;
+        text.split(/[^a-zA-Z]+/).forEach(t => { if (t.length > 3) wordFreq[t] = (wordFreq[t] || 0) + 1; });
+      });
+      const topWords = Object.entries(wordFreq).sort((a,b) => b[1]-a[1]).slice(0,10).map(([word,count]) => ({ word, count }));
+
+      // User Behavior (lightweight): read optional localStorage keys if present
+      let popularFilters = [];
+      let dropoffs = [];
+      try {
+        const filterData = JSON.parse(localStorage.getItem('search_filter_usage') || '[]');
+        popularFilters = Array.isArray(filterData) ? filterData : [];
+        const dropData = JSON.parse(localStorage.getItem('funnel_dropoffs') || '[]');
+        dropoffs = Array.isArray(dropData) ? dropData : [];
+      } catch(_) {}
 
       // Price stats and distributions
       const prices = listingsData.map(l => (l.offer && l.discountPrice) ? l.discountPrice : l.regularPrice).filter(Boolean);
@@ -246,7 +332,11 @@ export default function AdminDashboard() {
         recentActivity: [],
         userGrowth: [],
         priceStats,
-        bedroomsDistribution
+        bedroomsDistribution,
+        marketInsights: { monthlyAvgPrices, demandByCity },
+        performance: { topOwnersByRating },
+        sentiment: { positive: pos, negative: neg, neutral: neu, topWords },
+        userBehavior: { popularFilters, dropoffs }
       });
     } catch (error) {
       console.error('Failed to fetch analytics:', error);
@@ -460,6 +550,86 @@ export default function AdminDashboard() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+
+        {/* Market Insights */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-blue-600 mr-2" /> Market Price Trends</h3>
+            {analytics.marketInsights.monthlyAvgPrices.length === 0 ? (
+              <p className="text-sm text-gray-500">Not enough data yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {analytics.marketInsights.monthlyAvgPrices.map(mp => (
+                  <div key={mp.month} className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">{mp.month}</span>
+                    <span className="font-semibold text-gray-800">₹{mp.avg.toLocaleString('en-IN')}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-indigo-600 mr-2" /> Demand by City</h3>
+            {analytics.marketInsights.demandByCity.length === 0 ? (
+              <p className="text-sm text-gray-500">Not enough data yet.</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {analytics.marketInsights.demandByCity.map((d, idx) => (
+                  <div key={idx} className="border border-gray-200 rounded-lg p-3 flex items-center justify-between">
+                    <span className="text-sm text-gray-600">{d.city}</span>
+                    <span className="text-base font-bold text-indigo-700">{d.count}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Performance & Sentiment */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-rose-600 mr-2" /> Top Owners by Rating</h3>
+            {analytics.performance.topOwnersByRating.length === 0 ? (
+              <p className="text-sm text-gray-500">Not enough data yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {analytics.performance.topOwnersByRating.map((o, idx) => (
+                  <div key={idx} className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">{o.ownerName || o.ownerId}</span>
+                    <span className="font-semibold text-gray-800">{o.avgRating} ⭐ ({o.listings} listings)</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaStar className="text-yellow-500 mr-2" /> Review Sentiment</h3>
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <p className="text-sm text-gray-500">Positive</p>
+                <p className="text-2xl font-bold text-green-600">{analytics.sentiment.positive}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Neutral</p>
+                <p className="text-2xl font-bold text-gray-600">{analytics.sentiment.neutral}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Negative</p>
+                <p className="text-2xl font-bold text-red-600">{analytics.sentiment.negative}</p>
+              </div>
+            </div>
+            {analytics.sentiment.topWords.length > 0 && (
+              <div className="mt-4">
+                <h4 className="text-sm font-semibold text-gray-700 mb-2">Common Words</h4>
+                <div className="flex flex-wrap gap-2">
+                  {analytics.sentiment.topWords.map((w, idx) => (
+                    <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">{w.word} ({w.count})</span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
