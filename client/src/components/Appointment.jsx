@@ -173,10 +173,14 @@ export default function Appointment() {
           Book Appointment
         </h3>
         {booked ? (
-          <div className="text-center text-green-600 text-xl font-semibold py-10">
-            Appointment booked successfully!<br />
-            The property owner will review your request.<br />
-            Redirecting to your appointments...
+          <div className="text-center py-10">
+            <div className="text-green-600 text-xl font-semibold">Appointment booked successfully!</div>
+            <div className="text-gray-700 mt-1">The property owner will review your request.</div>
+            <div className="text-sm text-gray-500 mt-1">Redirecting to your appointments...</div>
+            <div className="mt-6 flex items-center justify-center gap-3">
+              <button onClick={()=>navigate('/user/movers')} className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 text-sm">Book Packers & Movers</button>
+              <button onClick={()=>navigate('/user/services')} className="px-4 py-2 rounded bg-purple-600 text-white hover:bg-purple-700 text-sm">On-Demand Services</button>
+            </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
