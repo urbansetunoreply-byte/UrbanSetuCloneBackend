@@ -14,10 +14,9 @@ export default function AdminMovers() {
     if (!currentUser) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/notifications/user/${currentUser._id}`, { credentials: 'include' });
+      const res = await fetch(`${API_BASE_URL}/api/requests/movers`, { credentials: 'include' });
       const data = await res.json();
-      const movers = Array.isArray(data) ? data.filter(n => (n.title || '').toLowerCase().includes('packers & movers request')) : [];
-      setItems(movers);
+      setItems(Array.isArray(data) ? data : []);
     } catch (_) {}
     setLoading(false);
   };
@@ -85,25 +84,26 @@ export default function AdminMovers() {
             </thead>
             <tbody>
               {filtered.map(n => {
-                const lines = (n.message || '').split('\n');
-                const requesterLine = lines.find(l => l.toLowerCase().startsWith('requester:')) || '';
-                const emailMatch = requesterLine.match(/\(([^)]+)\)/);
-                const email = emailMatch ? emailMatch[1] : '';
+                const email = n.requesterEmail;
                 return (
                   <tr key={n._id} className="border-t">
                     <td className="px-4 py-3 whitespace-nowrap">{new Date(n.createdAt).toLocaleString()}</td>
-                    <td className="px-4 py-3">{requesterLine.replace('Requester:','').trim()}</td>
+                    <td className="px-4 py-3">{n.requesterName} ({n.requesterEmail})</td>
                     <td className="px-4 py-3">
-                      <pre className="text-xs whitespace-pre-wrap text-gray-700">{n.message}</pre>
+                      <div className="text-xs text-gray-700">From: {n.fromAddress}</div>
+                      <div className="text-xs text-gray-700">To: {n.toAddress}</div>
+                      <div className="text-xs text-gray-700">Date: {n.moveDate}</div>
+                      <div className="text-xs text-gray-700">Size: {n.size}</div>
+                      {n.notes && (<div className="text-xs text-gray-700">Notes: {n.notes}</div>)}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         {email && (
                           <a href={`mailto:${email}`} className="px-2 py-1 rounded bg-blue-600 text-white text-xs inline-flex items-center gap-1"><FaEnvelope/> Email</a>
                         )}
-                        {!n.isRead && (
-                          <button onClick={()=>markAsRead(n._id)} className="px-2 py-1 rounded bg-green-600 text-white text-xs inline-flex items-center gap-1"><FaCheckCircle/> Mark read</button>
-                        )}
+                        <select value={n.status} onChange={async(e)=>{try{await fetch(`${API_BASE_URL}/api/requests/movers/${n._id}`,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:e.target.value})}); fetchNotifications();}catch(_){}}} className="text-xs border rounded px-2 py-1">
+                          {['pending','in_progress','completed','cancelled'].map(s=> <option key={s} value={s}>{s}</option>)}
+                        </select>
                       </div>
                     </td>
                   </tr>

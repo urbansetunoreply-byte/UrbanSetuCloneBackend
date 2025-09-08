@@ -19,36 +19,15 @@ export default function PackersMovers() {
     setSubmitting(true);
     try {
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-      const title = 'Packers & Movers Request';
-      const requester = currentUser ? `${currentUser.username} (${currentUser.email})` : 'Unknown user';
-      const lines = [
-        `Requester: ${requester}`,
-        `From: ${form.from}`,
-        `To: ${form.to}`,
-        `Date: ${form.date}`,
-        `Size: ${form.size}`,
-        form.notes ? `Notes: ${form.notes}` : null,
-      ].filter(Boolean);
-      const message = lines.join('\n');
-      const res = await fetch(`${API_BASE_URL}/api/notifications/notify-admins`, {
+      const res = await fetch(`${API_BASE_URL}/api/requests/movers`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, message })
+        body: JSON.stringify({ fromAddress: form.from, toAddress: form.to, moveDate: form.date, size: form.size, notes: form.notes })
       });
       if (res.ok) {
         toast.success('Request submitted. Admin will contact you.');
-        // Store copy for user history
-        if (currentUser) {
-          const saveRes = await fetch(`${API_BASE_URL}/api/notifications/create`, {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: currentUser._id, type: 'user_request', title, message })
-          });
-          setMyRequests(prev => [{ _id: `temp-${Date.now()}`, createdAt: new Date().toISOString(), message, title, isRead: false }, ...prev]);
-          try { if (saveRes.ok) fetchMyRequests(); } catch(_) {}
-        }
+        fetchMyRequests();
       } else {
         toast.error('Failed to submit request');
       }
@@ -64,10 +43,9 @@ export default function PackersMovers() {
   const fetchMyRequests = async () => {
     if (!currentUser) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/notifications/user/${currentUser._id}`, { credentials: 'include' });
+      const res = await fetch(`${API_BASE_URL}/api/requests/movers`, { credentials: 'include' });
       const data = await res.json();
-      const mine = Array.isArray(data) ? data.filter(n => (n.title || '').toLowerCase().includes('packers & movers request')) : [];
-      setMyRequests(mine);
+      setMyRequests(Array.isArray(data) ? data : []);
     } catch (_) {}
   };
 
@@ -116,8 +94,15 @@ export default function PackersMovers() {
             <ul className="divide-y">
               {myRequests.map(req => (
                 <li key={req._id} className="py-2">
-                  <div className="text-xs text-gray-500">{new Date(req.createdAt).toLocaleString()}</div>
-                  <pre className="text-sm whitespace-pre-wrap text-gray-800">{req.message}</pre>
+                  <div className="text-xs text-gray-500">{new Date(req.createdAt).toLocaleString()} — <span className={`px-2 py-0.5 rounded text-white text-[10px] ${req.status==='completed'?'bg-green-600':req.status==='in_progress'?'bg-blue-600':req.status==='cancelled'?'bg-gray-500':'bg-orange-500'}`}>{req.status}</span></div>
+                  <div className="text-sm text-gray-800">From: {req.fromAddress}</div>
+                  <div className="text-sm text-gray-800">To: {req.toAddress}</div>
+                  <div className="text-sm text-gray-800">Date: {req.moveDate}</div>
+                  <div className="text-sm text-gray-800">Size: {req.size}</div>
+                  {req.notes && (<div className="text-sm text-gray-700">Notes: {req.notes}</div>)}
+                  {req.status==='pending' && (
+                    <button onClick={async()=>{try{await fetch(`${API_BASE_URL}/api/requests/movers/${req._id}`,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'cancelled'})});fetchMyRequests();}catch(_){}}} className="mt-2 text-xs px-2 py-1 rounded bg-gray-200">Cancel</button>
+                  )}
                 </li>
               ))}
             </ul>

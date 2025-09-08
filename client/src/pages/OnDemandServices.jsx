@@ -23,10 +23,9 @@ export default function OnDemandServices() {
   const fetchMyRequests = async () => {
     if (!currentUser) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/notifications/user/${currentUser._id}`, { credentials: 'include' });
+      const res = await fetch(`${API_BASE_URL}/api/requests/services`, { credentials: 'include' });
       const data = await res.json();
-      const mine = Array.isArray(data) ? data.filter(n => (n.title || '').toLowerCase().includes('on-demand services request')) : [];
-      setMyRequests(mine);
+      setMyRequests(Array.isArray(data) ? data : []);
     } catch (_) {}
   };
 
@@ -43,37 +42,15 @@ export default function OnDemandServices() {
     }
     setLoading(true);
     try {
-      const title = `On-Demand Services Request`;
-      const requester = currentUser ? `${currentUser.username} (${currentUser.email})` : 'Unknown user';
-      const bodyLines = [
-        `Requester: ${requester}`,
-        `Services: ${selected.join(', ')}`,
-        `Preferred Date: ${details.date}`,
-        `Address: ${details.address}`,
-        details.notes ? `Notes: ${details.notes}` : null,
-      ].filter(Boolean);
-      const message = bodyLines.join('\n');
-      const res = await fetch(`${API_BASE_URL}/api/notifications/notify-admins`, {
+      const res = await fetch(`${API_BASE_URL}/api/requests/services`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, message })
+        body: JSON.stringify({ services: selected, preferredDate: details.date, address: details.address, notes: details.notes })
       });
       if (res.ok) {
         toast.success('Service request submitted');
-        // Store copy for user history
-        if (currentUser) {
-          const saveRes = await fetch(`${API_BASE_URL}/api/notifications/create`, {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: currentUser._id, type: 'user_request', title, message })
-          });
-          // Optimistically update local list to reflect immediately
-          setMyRequests(prev => [{ _id: `temp-${Date.now()}`, createdAt: new Date().toISOString(), message, title, isRead: false }, ...prev]);
-          // Refresh from server in background
-          try { if (saveRes.ok) fetchMyRequests(); } catch(_) {}
-        }
+        fetchMyRequests();
       } else {
         toast.error('Failed to submit request');
       }
@@ -121,8 +98,14 @@ export default function OnDemandServices() {
             <ul className="divide-y">
               {myRequests.map(req => (
                 <li key={req._id} className="py-2">
-                  <div className="text-xs text-gray-500">{new Date(req.createdAt).toLocaleString()}</div>
-                  <pre className="text-sm whitespace-pre-wrap text-gray-800">{req.message}</pre>
+                  <div className="text-xs text-gray-500">{new Date(req.createdAt).toLocaleString()} — <span className={`px-2 py-0.5 rounded text-white text-[10px] ${req.status==='completed'?'bg-green-600':req.status==='in_progress'?'bg-blue-600':req.status==='cancelled'?'bg-gray-500':'bg-orange-500'}`}>{req.status}</span></div>
+                  <div className="text-sm text-gray-800">Services: {req.services?.join(', ')}</div>
+                  <div className="text-sm text-gray-800">Date: {req.preferredDate}</div>
+                  <div className="text-sm text-gray-800">Address: {req.address}</div>
+                  {req.notes && (<div className="text-sm text-gray-700">Notes: {req.notes}</div>)}
+                  {req.status==='pending' && (
+                    <button onClick={async()=>{try{await fetch(`${API_BASE_URL}/api/requests/services/${req._id}`,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'cancelled'})});fetchMyRequests();}catch(_){}}} className="mt-2 text-xs px-2 py-1 rounded bg-gray-200">Cancel</button>
+                  )}
                 </li>
               ))}
             </ul>
