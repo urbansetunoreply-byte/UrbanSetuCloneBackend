@@ -40,13 +40,14 @@ export default function PackersMovers() {
         toast.success('Request submitted. Admin will contact you.');
         // Store copy for user history
         if (currentUser) {
-          await fetch(`${API_BASE_URL}/api/notifications/create`, {
+          const saveRes = await fetch(`${API_BASE_URL}/api/notifications/create`, {
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId: currentUser._id, type: 'user_request', title, message })
           });
-          fetchMyRequests();
+          setMyRequests(prev => [{ _id: `temp-${Date.now()}`, createdAt: new Date().toISOString(), message, title, isRead: false }, ...prev]);
+          try { if (saveRes.ok) fetchMyRequests(); } catch(_) {}
         }
       } else {
         toast.error('Failed to submit request');

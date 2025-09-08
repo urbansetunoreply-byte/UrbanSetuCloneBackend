@@ -63,13 +63,16 @@ export default function OnDemandServices() {
         toast.success('Service request submitted');
         // Store copy for user history
         if (currentUser) {
-          await fetch(`${API_BASE_URL}/api/notifications/create`, {
+          const saveRes = await fetch(`${API_BASE_URL}/api/notifications/create`, {
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId: currentUser._id, type: 'user_request', title, message })
           });
-          fetchMyRequests();
+          // Optimistically update local list to reflect immediately
+          setMyRequests(prev => [{ _id: `temp-${Date.now()}`, createdAt: new Date().toISOString(), message, title, isRead: false }, ...prev]);
+          // Refresh from server in background
+          try { if (saveRes.ok) fetchMyRequests(); } catch(_) {}
         }
       } else {
         toast.error('Failed to submit request');
