@@ -10,6 +10,7 @@ export default function AdminFraudManagement() {
   const [listings, setListings] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [filter, setFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
   const fetchData = async () => {
@@ -222,17 +223,17 @@ export default function AdminFraudManagement() {
                 <option value="reviews">Suspected Fake Reviews</option>
               </select>
               {/* Search and Sort */}
-              <input className="border rounded p-2 text-sm flex-1 min-w-[180px]" placeholder="Search text, city, user…" onChange={(e)=>{
-                const q = e.target.value.toLowerCase();
-                setListings(prev=>prev.map(x=>x)); // noop to keep state
-                setReviews(prev=>prev.map(x=>x));
-                // Apply client-side filtering by temporarily setting derived arrays if needed in future
-              }} />
+              <input
+                className="border rounded p-2 text-sm flex-1 min-w-[180px]"
+                placeholder="Search text, reasons, city, user, listing…"
+                value={searchQuery}
+                onChange={(e)=>setSearchQuery(e.target.value)}
+              />
               <button className="px-3 py-2 bg-green-600 text-white rounded-lg text-sm" onClick={() => {
                 // CSV export minimal
                 const rows = [
                   ['Type','Listing','User','Reasons','Comment'],
-                  ...listings.map(l=>['listing', l.name, '', (l._fraudReasons||[]).join('|'), '']),
+                  ...listings.map(l=>['listing', l.name, '', (l._fraudReasons||[]).join('|'), (l.description||'').replace(/\n/g,' ')]),
                   ...reviews.map(r=>['review', (r.listingId?.name)||String(r.listingId), (r.userId?.email)||String(r.userId), (r._fraudReasons||[]).join('|'), (r.comment||'').replace(/\n/g,' ')])
                 ];
                 const csv = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
@@ -258,7 +259,18 @@ export default function AdminFraudManagement() {
                       </tr>
                     </thead>
                     <tbody>
-                      {listings.map(l => (
+                      {listings.filter(l => {
+                        const q = searchQuery.trim().toLowerCase();
+                        if (!q) return true;
+                        const fields = [
+                          l.name,
+                          l.city,
+                          l.state,
+                          (l.description||''),
+                          (l._fraudReasons||[]).join(' ')
+                        ].join(' ').toLowerCase();
+                        return fields.includes(q);
+                      }).map(l => (
                         <tr key={l._id} className="border-t">
                           <td className="p-2 text-sm">{l.name}</td>
                           <td className="p-2 text-sm">{l.city}, {l.state}</td>
@@ -269,7 +281,12 @@ export default function AdminFraudManagement() {
                           </td>
                         </tr>
                       ))}
-                      {listings.length === 0 && (
+                      {listings.filter(l => {
+                        const q = searchQuery.trim().toLowerCase();
+                        if (!q) return true;
+                        const fields = [l.name,l.city,l.state,(l.description||''),(l._fraudReasons||[]).join(' ')].join(' ').toLowerCase();
+                        return fields.includes(q);
+                      }).length === 0 && (
                         <tr><td className="p-3 text-sm text-gray-500" colSpan={4}>No suspicious listings</td></tr>
                       )}
                     </tbody>
@@ -292,7 +309,17 @@ export default function AdminFraudManagement() {
                       </tr>
                     </thead>
                     <tbody>
-                      {reviews.map(r => (
+                      {reviews.filter(r => {
+                        const q = searchQuery.trim().toLowerCase();
+                        if (!q) return true;
+                        const fields = [
+                          (r.listingId?.name)||String(r.listingId||''),
+                          (r.userId?.email)||String(r.userId||''),
+                          (r.comment||''),
+                          (r._fraudReasons||[]).join(' ')
+                        ].join(' ').toLowerCase();
+                        return fields.includes(q);
+                      }).map(r => (
                         <tr key={r._id} className="border-t">
                           <td className="p-2 text-sm">{r.listingId?.name || r.listingId}</td>
                           <td className="p-2 text-sm">{r.userId?.email || r.userId}</td>
@@ -303,7 +330,17 @@ export default function AdminFraudManagement() {
                           </td>
                         </tr>
                       ))}
-                      {reviews.length === 0 && (
+                      {reviews.filter(r => {
+                        const q = searchQuery.trim().toLowerCase();
+                        if (!q) return true;
+                        const fields = [
+                          (r.listingId?.name)||String(r.listingId||''),
+                          (r.userId?.email)||String(r.userId||''),
+                          (r.comment||''),
+                          (r._fraudReasons||[]).join(' ')
+                        ].join(' ').toLowerCase();
+                        return fields.includes(q);
+                      }).length === 0 && (
                         <tr><td className="p-3 text-sm text-gray-500" colSpan={4}>No suspected fake reviews</td></tr>
                       )}
                     </tbody>
