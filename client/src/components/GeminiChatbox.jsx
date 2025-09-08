@@ -26,6 +26,9 @@ const GeminiChatbox = () => {
     const [isScrolledUp, setIsScrolledUp] = useState(false);
     const [showConfirmClear, setShowConfirmClear] = useState(false);
     const abortControllerRef = useRef(null);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [isExpanded, setIsExpanded] = useState(false);
+    const lastUserMessageRef = useRef('');
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -238,6 +241,9 @@ const GeminiChatbox = () => {
             detail: { isOpen } 
         });
         window.dispatchEvent(event);
+        if (isOpen) {
+            setUnreadCount(0);
+        }
     }, [isOpen]);
 
     // Autofocus input when opening
@@ -286,6 +292,7 @@ const GeminiChatbox = () => {
         const userMessage = inputMessage.trim();
         setInputMessage('');
         setMessages(prev => [...prev, { role: 'user', content: userMessage, timestamp: new Date().toISOString() }]);
+        lastUserMessageRef.current = userMessage;
         setIsLoading(true);
 
         try {
@@ -327,6 +334,9 @@ const GeminiChatbox = () => {
                 const trimmedResponse = data.response.trim();
                 console.log('Setting message with response length:', trimmedResponse.length);
                 setMessages(prev => [...prev, { role: 'assistant', content: trimmedResponse, timestamp: new Date().toISOString() }]);
+                if (!isOpen) {
+                    setUnreadCount(count => count + 1);
+                }
 
                 // Update session ID if provided in response
                 if (data.sessionId && data.sessionId !== sessionId) {
@@ -366,6 +376,9 @@ const GeminiChatbox = () => {
                 content: errorMessage,
                 timestamp: new Date().toISOString()
             }]);
+            if (!isOpen) {
+                setUnreadCount(count => count + 1);
+            }
         } finally {
             setIsLoading(false);
         }
@@ -418,6 +431,11 @@ const GeminiChatbox = () => {
                     
                     {/* Icon */}
                     {isOpen ? <FaTimes className="w-5 h-5 text-white drop-shadow-lg" /> : <FaComments className="w-5 h-5 text-white drop-shadow-lg" />}
+                    {!isOpen && unreadCount > 0 && (
+                        <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center border-2 border-white shadow-lg">
+                            {unreadCount > 99 ? '99+' : unreadCount}
+                        </div>
+                    )}
                     
                     {/* Enhanced Hover Tooltip */}
                     <div className="absolute bottom-full right-0 mb-3 bg-white text-gray-800 text-sm px-4 py-2 rounded-xl shadow-2xl hidden group-hover:block z-10 whitespace-nowrap border border-gray-100 transform -translate-y-1 transition-all duration-200">
@@ -434,7 +452,7 @@ const GeminiChatbox = () => {
             {/* Chat Window */}
             {isOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4 md:p-0 md:items-end md:justify-end gemini-chatbox-modal">
-                    <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col w-full max-w-md h-full max-h-[90vh] md:w-96 md:h-[500px] md:mb-32 md:mr-6 md:max-h-[500px] relative">
+                    <div className={`bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col relative ${isExpanded ? 'w-full max-w-3xl h-[80vh] md:mb-12 md:mr-12' : 'w-full max-w-md h-full max-h-[90vh] md:w-96 md:h-[500px] md:mb-32 md:mr-6 md:max-h-[500px]'}`}>
                         {/* Header */}
                         <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-t-2xl flex items-center justify-between flex-shrink-0">
                             <div className="flex items-center space-x-3">
@@ -444,7 +462,48 @@ const GeminiChatbox = () => {
                                     <p className="text-xs opacity-90">Real Estate Helper</p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setIsExpanded(expanded => !expanded)}
+                                    className="text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
+                                    title={isExpanded ? 'Collapse' : 'Expand'}
+                                    aria-label={isExpanded ? 'Collapse' : 'Expand'}
+                                >
+                                    {isExpanded ? 'Collapse' : 'Expand'}
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        try {
+                                            const lines = messages.map(m => `${m.role === 'user' ? 'You' : 'Gemini'}: ${m.content}`);
+                                            const blob = new Blob([lines.join('\n\n')], { type: 'text/plain;charset=utf-8' });
+                                            const url = URL.createObjectURL(blob);
+                                            const a = document.createElement('a');
+                                            a.href = url;
+                                            a.download = `gemini_chat_${new Date().toISOString().split('T')[0]}.txt`;
+                                            document.body.appendChild(a);
+                                            a.click();
+                                            document.body.removeChild(a);
+                                            URL.revokeObjectURL(url);
+                                        } catch (e) {
+                                            toast.error('Failed to export transcript');
+                                        }
+                                    }}
+                                    className="text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
+                                    title="Export transcript"
+                                    aria-label="Export transcript"
+                                >
+                                    Export
+                                </button>
+                                {lastUserMessageRef.current && !isLoading && (
+                                    <button
+                                        onClick={() => { setInputMessage(lastUserMessageRef.current); setTimeout(() => handleSubmit(new Event('submit')), 0); }}
+                                        className="text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
+                                        title="Retry last"
+                                        aria-label="Retry last"
+                                    >
+                                        Retry
+                                    </button>
+                                )}
                                 {/* Hide clear button when no user messages */}
                                 {messages && (messages.length > 1 || messages.some(m => m.role === 'user')) && (
                                     <button
