@@ -311,7 +311,45 @@ io.on('connection', (socket) => {
   });
 });
 
+// Health check endpoint for Render deployment
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    routes: 'image-favorites-enabled'
+  });
+});
+
+// Debug endpoint to check routes
+app.get('/api/debug/routes', (req, res) => {
+  const routes = [];
+  app._router.stack.forEach((middleware) => {
+    if (middleware.route) {
+      routes.push({
+        path: middleware.route.path,
+        methods: Object.keys(middleware.route.methods)
+      });
+    } else if (middleware.name === 'router') {
+      middleware.handle.stack.forEach((handler) => {
+        if (handler.route) {
+          routes.push({
+            path: handler.route.path,
+            methods: Object.keys(handler.route.methods)
+          });
+        }
+      });
+    }
+  });
+  res.json({ 
+    message: 'Available routes',
+    routes,
+    imageFavoritesRegistered: true,
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Register all routes before starting the server
+console.log('Registering API routes...');
 app.use("/api/user",userRouter);
 app.use("/api/auth",authRouter);
 app.use("/api/listing",listingRouter)
@@ -321,10 +359,12 @@ app.use("/api/admin", adminRouter);
 app.use("/api/contact", contactRouter);
 app.use("/api/wishlist", wishlistRouter);
 app.use("/api/image-favorites", imageFavoriteRouter);
+console.log('✅ Image favorites routes registered at /api/image-favorites');
 app.use("/api/notifications", notificationRouter);
 app.use("/api/review", reviewRouter);
 app.use("/api/gemini", geminiRouter);
 app.use("/api/upload", uploadRouter);
+console.log('All API routes registered successfully');
 
 const startServer = () => {
   server.listen(PORT, () => {
