@@ -25,6 +25,7 @@ const GeminiChatbox = () => {
     const messagesContainerRef = useRef(null);
     const [isScrolledUp, setIsScrolledUp] = useState(false);
     const [showConfirmClear, setShowConfirmClear] = useState(false);
+    const abortControllerRef = useRef(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -142,7 +143,19 @@ const GeminiChatbox = () => {
         } else if (!currentUser) {
             setIsHistoryLoaded(true);
         }
+        // Restore draft input
+        const draftKey = `gemini_draft_${currentSessionId}`;
+        const savedDraft = localStorage.getItem(draftKey);
+        if (savedDraft) setInputMessage(savedDraft);
     }, [currentUser, isHistoryLoaded]);
+
+    // Persist draft input per session
+    useEffect(() => {
+        const currentSessionId = sessionId || localStorage.getItem('gemini_session_id');
+        if (!currentSessionId) return;
+        const draftKey = `gemini_draft_${currentSessionId}`;
+        localStorage.setItem(draftKey, inputMessage);
+    }, [inputMessage, sessionId]);
 
     // Listen for clear chat history events from header
     useEffect(() => {
@@ -156,7 +169,7 @@ const GeminiChatbox = () => {
         };
     }, []);
 
-    // Keyboard shortcut Ctrl+F to focus message input
+    // Keyboard shortcuts: Ctrl+F focus, Esc close
     useEffect(() => {
         if (!isOpen) return;
         
@@ -164,6 +177,8 @@ const GeminiChatbox = () => {
             if (event.ctrlKey && event.key === 'f') {
                 event.preventDefault(); // Prevent browser find dialog
                 inputRef.current?.focus();
+            } else if (event.key === 'Escape') {
+                setIsOpen(false);
             }
         };
         
@@ -278,6 +293,9 @@ const GeminiChatbox = () => {
             const currentSessionId = getOrCreateSessionId();
             console.log('Sending message to Gemini:', userMessage, 'Session:', currentSessionId);
             
+            // Support cancelling with AbortController
+            abortControllerRef.current?.abort();
+            abortControllerRef.current = new AbortController();
             const response = await fetch(`${API_BASE_URL}/api/gemini/chat`, {
                 method: 'POST',
                 credentials: 'include', // Include cookies for authentication
@@ -288,7 +306,8 @@ const GeminiChatbox = () => {
                     message: userMessage,
                     history: messages.slice(-10), // Send last 10 messages for context
                     sessionId: currentSessionId
-                })
+                }),
+                signal: abortControllerRef.current.signal
             });
 
             console.log('Response status:', response.status);
@@ -326,6 +345,12 @@ const GeminiChatbox = () => {
             console.error('Error in handleSubmit:', error);
             let errorMessage = 'Sorry, I\'m having trouble connecting right now. Please try again later.';
             
+            if (error.name === 'AbortError') {
+                // Do not append error message on cancel
+                setIsLoading(false);
+                return;
+            }
+
             if (error.message.includes('timeout')) {
                 errorMessage = 'Request timed out. The response is taking longer than expected. Please try again.';
             } else if (error.message.includes('HTTP error')) {
@@ -542,19 +567,31 @@ const GeminiChatbox = () => {
                                     className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                     disabled={isLoading}
                                 />
-                                <button
-                                    type="submit"
-                                    disabled={!inputMessage.trim() || isLoading}
-                                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-full hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-110 flex-shrink-0 flex items-center justify-center w-10 h-10 group hover:shadow-xl active:scale-95"
-                                >
-                                    <div className="relative">
-                                        {sendIconSent ? (
-                                            <FaCheck className="text-white send-icon animate-sent" size={16} />
-                                        ) : (
-                                            <FaPaperPlane className={`text-white send-icon ${sendIconAnimating ? 'animate-fly' : ''} group-hover:scale-110 transition-all duration-300`} size={16} />
-                                        )}
-                                    </div>
-                                </button>
+                                {isLoading ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => { abortControllerRef.current?.abort(); toast.info('Generation stopped'); }}
+                                        className="bg-red-600 hover:bg-red-700 text-white px-3 rounded-full h-10 text-xs font-medium shadow"
+                                        title="Stop generating"
+                                        aria-label="Stop generating"
+                                    >
+                                        Stop
+                                    </button>
+                                ) : (
+                                    <button
+                                        type="submit"
+                                        disabled={!inputMessage.trim()}
+                                        className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-full hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-110 flex-shrink-0 flex items-center justify-center w-10 h-10 group hover:shadow-xl active:scale-95"
+                                    >
+                                        <div className="relative">
+                                            {sendIconSent ? (
+                                                <FaCheck className="text-white send-icon animate-sent" size={16} />
+                                            ) : (
+                                                <FaPaperPlane className={`text-white send-icon ${sendIconAnimating ? 'animate-fly' : ''} group-hover:scale-110 transition-all duration-300`} size={16} />
+                                            )}
+                                        </div>
+                                    </button>
+                                )}
                             </form>
                         </div>
                         {/* Clear confirmation modal */}
