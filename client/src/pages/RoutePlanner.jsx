@@ -1,25 +1,96 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FaRoute, FaPlus, FaTrash, FaClock } from 'react-icons/fa';
+
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 export default function RoutePlanner() {
   const [stops, setStops] = useState([{ address: '' }]);
   const [optimizing, setOptimizing] = useState(false);
   const [plan, setPlan] = useState([]);
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const directionsRendererRef = useRef(null);
+  const directionsServiceRef = useRef(null);
 
   const addStop = () => setStops(s => [...s, { address: '' }]);
   const removeStop = (i) => setStops(s => s.filter((_, idx) => idx !== i));
   const updateStop = (i, value) => setStops(s => s.map((st, idx) => idx===i ? { address: value } : st));
 
-  // Simple heuristic: keep order, compute fake ETA 20 mins apart
-  const optimize = async () => {
+  // Load Google Maps script once
+  useEffect(() => {
+    if (!GOOGLE_MAPS_API_KEY) return;
+    if (window.google && window.google.maps) return;
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      // Optional: don't remove to allow caching across pages
+    };
+  }, []);
+
+  // Initialize map when API is ready
+  useEffect(() => {
+    if (!mapRef.current) return;
+    if (!window.google || !window.google.maps) return;
+    if (mapInstanceRef.current) return;
+    mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
+      center: { lat: 28.6139, lng: 77.2090 },
+      zoom: 11,
+    });
+    directionsRendererRef.current = new window.google.maps.DirectionsRenderer({ suppressMarkers: false });
+    directionsServiceRef.current = new window.google.maps.DirectionsService();
+    directionsRendererRef.current.setMap(mapInstanceRef.current);
+  }, [mapRef.current, window.google && window.google.maps]);
+
+  const computePlanFallback = () => {
     const valid = stops.map(s => s.address.trim()).filter(Boolean);
-    if (valid.length < 2) { alert('Add at least 2 addresses'); return; }
-    setOptimizing(true);
-    await new Promise(r => setTimeout(r, 500));
     const now = new Date();
-    const planOut = valid.map((addr, idx) => ({ addr, eta: new Date(now.getTime() + idx * 20 * 60000) }));
-    setPlan(planOut);
-    setOptimizing(false);
+    return valid.map((addr, idx) => ({ addr, eta: new Date(now.getTime() + idx * 20 * 60000) }));
+  };
+
+  // Plan route using Google Directions if available; fallback if not
+  const optimize = async () => {
+    const addresses = stops.map(s => s.address.trim()).filter(Boolean);
+    if (addresses.length < 2) { alert('Add at least 2 addresses'); return; }
+    setOptimizing(true);
+    try {
+      if (window.google && window.google.maps && directionsServiceRef.current && directionsRendererRef.current) {
+        const origin = addresses[0];
+        const destination = addresses[addresses.length - 1];
+        const waypoints = addresses.slice(1, -1).map(a => ({ location: a, stopover: true }));
+
+        const result = await directionsServiceRef.current.route({
+          origin,
+          destination,
+          waypoints,
+          travelMode: window.google.maps.TravelMode.DRIVING,
+          optimizeWaypoints: true,
+        });
+        directionsRendererRef.current.setDirections(result);
+
+        // Build human-readable plan from legs
+        const route = result.routes[0];
+        const order = route.waypoint_order || [];
+        const ordered = [origin, ...order.map(i => addresses.slice(1, -1)[i]), destination];
+        // Approximate ETAs by cumulative leg durations
+        let cumMs = 0;
+        const now = Date.now();
+        const legs = route.legs;
+        const out = ordered.map((addr, idx) => {
+          if (idx > 0) cumMs += (legs[idx - 1]?.duration?.value || 0) * 1000; // seconds to ms
+          return { addr, eta: new Date(now + cumMs) };
+        });
+        setPlan(out);
+      } else {
+        setPlan(computePlanFallback());
+      }
+    } catch (e) {
+      console.error('Route planning failed:', e);
+      setPlan(computePlanFallback());
+    } finally {
+      setOptimizing(false);
+    }
   };
 
   return (
@@ -38,6 +109,13 @@ export default function RoutePlanner() {
           <button onClick={addStop} className="px-3 py-2 rounded bg-gray-100 hover:bg-gray-200 flex items-center gap-2"><FaPlus/> Add Stop</button>
           <button onClick={optimize} disabled={optimizing} className="px-4 py-2 rounded bg-gradient-to-r from-blue-600 to-purple-600 text-white">{optimizing?'Planning...':'Plan Route'}</button>
         </div>
+      </div>
+      <div className="mt-6">
+        {GOOGLE_MAPS_API_KEY ? (
+          <div ref={mapRef} className="w-full h-64 rounded-xl border border-gray-200" />
+        ) : (
+          <div className="text-sm text-gray-500">Tip: Set VITE_GOOGLE_MAPS_API_KEY to enable interactive map and directions.</div>
+        )}
       </div>
       {plan.length > 0 && (
         <div className="mt-6 bg-white rounded-xl shadow p-5">
