@@ -40,6 +40,8 @@ export default function AdminDashboard() {
     averageRating: 0,
     recentActivity: [],
     topProperties: [],
+    topCities: [],
+    recentListings: [],
     userGrowth: [],
     listingStats: {
       sale: 0,
@@ -192,6 +194,22 @@ export default function AdminDashboard() {
         .sort((a, b) => b.averageRating - a.averageRating)
         .slice(0, 5);
 
+      // Top cities by listing count
+      const cityCounts = listingsData.reduce((acc, l) => {
+        const key = `${l.city || 'Unknown'}, ${l.state || ''}`.trim();
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      }, {});
+      const topCities = Object.entries(cityCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([city, count]) => ({ city, count }));
+
+      // Recent listings by createdAt (fallback to id ordering)
+      const recentListings = [...listingsData]
+        .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+        .slice(0, 6);
+
       setAnalytics({
         totalUsers: usersData.length,
         totalAdmins: adminsData.length,
@@ -201,6 +219,8 @@ export default function AdminDashboard() {
         averageRating: reviewsData.averageRating,
         listingStats,
         topProperties,
+        topCities,
+        recentListings,
         recentActivity: [],
         userGrowth: []
       });
@@ -450,6 +470,46 @@ export default function AdminDashboard() {
                   <p className="text-sm text-gray-500">
                     {property.reviewCount} review{property.reviewCount !== 1 ? 's' : ''}
                   </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Top Cities by Listings */}
+        {analytics.topCities.length > 0 && (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+              <FaChartLine className="text-blue-500 mr-2" />
+              Top Cities by Listings
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              {analytics.topCities.map((item, idx) => (
+                <div key={idx} className="border border-gray-200 rounded-lg p-4 text-center">
+                  <p className="text-sm text-gray-600">{item.city}</p>
+                  <p className="text-2xl font-bold text-blue-600">{item.count}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Recent Listings */}
+        {analytics.recentListings.length > 0 && (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+              <FaEye className="text-purple-500 mr-2" />
+              Recently Added Listings
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {analytics.recentListings.map((l) => (
+                <div key={l._id} className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-semibold text-gray-800 truncate">{l.name}</h4>
+                    <span className="text-xs text-gray-500">{l.createdAt ? new Date(l.createdAt).toLocaleDateString() : ''}</span>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-1">{l.city}, {l.state}</p>
+                  <p className="text-sm text-gray-500">Type: {l.type}{l.offer ? ' • Offer' : ''}</p>
                 </div>
               ))}
             </div>
