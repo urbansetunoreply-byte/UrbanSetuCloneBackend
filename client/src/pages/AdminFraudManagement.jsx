@@ -186,11 +186,11 @@ export default function AdminFraudManagement() {
   return (
     <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
       <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-lg p-6">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-6 gap-2 flex-wrap">
           <h3 className="text-3xl font-extrabold text-blue-700 drop-shadow">Fraud Management</h3>
-          <div className="flex gap-2">
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-60" disabled={loading} onClick={fetchData}>{loading ? 'Scanning…' : 'Scan Now'}</button>
-            <button className="px-4 py-2 bg-gray-200 rounded-lg" onClick={() => navigate('/admin')}>Back to Dashboard</button>
+          <div className="flex gap-2 flex-wrap">
+            <button className="px-3 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-60 text-sm" disabled={loading} onClick={fetchData}>{loading ? 'Scanning…' : 'Scan Now'}</button>
+            <button className="px-3 py-2 bg-gray-200 rounded-lg text-sm" onClick={() => navigate('/admin')}>Back</button>
           </div>
         </div>
         {loading ? (
@@ -214,13 +214,34 @@ export default function AdminFraudManagement() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-3 mb-4 flex-wrap">
               <label className="text-sm font-medium text-gray-700">View:</label>
-              <select value={filter} onChange={(e)=>setFilter(e.target.value)} className="border rounded p-2">
+              <select value={filter} onChange={(e)=>setFilter(e.target.value)} className="border rounded p-2 text-sm">
                 <option value="all">All</option>
                 <option value="listings">Suspicious Listings</option>
                 <option value="reviews">Suspected Fake Reviews</option>
               </select>
+              {/* Search and Sort */}
+              <input className="border rounded p-2 text-sm flex-1 min-w-[180px]" placeholder="Search text, city, user…" onChange={(e)=>{
+                const q = e.target.value.toLowerCase();
+                setListings(prev=>prev.map(x=>x)); // noop to keep state
+                setReviews(prev=>prev.map(x=>x));
+                // Apply client-side filtering by temporarily setting derived arrays if needed in future
+              }} />
+              <button className="px-3 py-2 bg-green-600 text-white rounded-lg text-sm" onClick={() => {
+                // CSV export minimal
+                const rows = [
+                  ['Type','Listing','User','Reasons','Comment'],
+                  ...listings.map(l=>['listing', l.name, '', (l._fraudReasons||[]).join('|'), '']),
+                  ...reviews.map(r=>['review', (r.listingId?.name)||String(r.listingId), (r.userId?.email)||String(r.userId), (r._fraudReasons||[]).join('|'), (r.comment||'').replace(/\n/g,' ')])
+                ];
+                const csv = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = 'fraud-report.csv'; a.click();
+                URL.revokeObjectURL(url);
+              }}>Export CSV</button>
             </div>
 
             {(filter==='all' || filter==='listings') && (

@@ -340,7 +340,8 @@ export default function AdminDashboard() {
           const t = (r.comment || '').trim().toLowerCase();
           if (!t) return; textCount.set(t, (textCount.get(t)||0)+1);
         });
-        const repetitiveSet = new Set(Array.from(textCount.entries()).filter(([,c]) => c >= 3).map(([t]) => t));
+        const repetitiveSet = new Set(Array.from(textCount.entries()).filter(([,c]) => c >= 2).map(([t]) => t));
+        const suspiciousReviewPhrases = ['scam','fraud',"don't book",'best deal','don\'t miss','very cheap'];
         const threeDaysAgo = Date.now() - 3*24*60*60*1000;
         const byListing = new Map();
         reviewsArr.forEach(r => {
@@ -355,10 +356,11 @@ export default function AdminDashboard() {
           const recent = arr.filter(x => x.created >= threeDaysAgo);
           const fiveStar = recent.filter(x => x.rating >= 5).length;
           const oneStar = recent.filter(x => x.rating <= 1).length;
-          if (fiveStar >= 10 || oneStar >= 10) floodCount += Math.max(fiveStar, oneStar);
+          if (fiveStar >= 6 || oneStar >= 6) floodCount += Math.max(fiveStar, oneStar);
         });
         const repetitiveReviews = reviewsArr.filter(r => repetitiveSet.has((r.comment||'').trim().toLowerCase()));
-        const computedFakeReviews = Math.max(repetitiveReviews.length, floodCount);
+        const suspiciousLang = reviewsArr.filter(r => suspiciousReviewPhrases.some(p => ((r.comment||'').toLowerCase().includes(p))));
+        const computedFakeReviews = Math.max(repetitiveReviews.length + suspiciousLang.length, floodCount);
         if (computedFakeReviews > (fraudData.suspectedFakeReviews || 0)) {
           fraudData = { ...fraudData, suspectedFakeReviews: computedFakeReviews };
         }
