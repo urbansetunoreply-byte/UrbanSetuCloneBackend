@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { FaSearch, FaHome, FaInfoCircle, FaCompass, FaPlus, FaList, FaHeart, FaCalendarAlt, FaUser, FaSignOutAlt, FaStar, FaBars, FaTimes, FaTrash } from "react-icons/fa";
+import { FaSearch, FaHome, FaInfoCircle, FaCompass, FaPlus, FaList, FaHeart, FaCalendarAlt, FaUser, FaSignOutAlt, FaStar, FaBars, FaTimes, FaTrash, FaTruckMoving, FaTools, FaRoute } from "react-icons/fa";
 import UserAvatar from "./UserAvatar";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -366,16 +366,19 @@ function UserNavLinks({ mobile = false, onNavigate }) {
         <>
           <Link to="/user/movers" onClick={onNavigate}>
             <li className={`mobile-menu-item animate-menu-item-in-delay-3 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium`}>
+              <FaTruckMoving className="text-xl text-blue-500" />
               <span>Movers</span>
             </li>
           </Link>
           <Link to="/user/services" onClick={onNavigate}>
             <li className={`mobile-menu-item animate-menu-item-in-delay-4 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium`}>
+              <FaTools className="text-xl text-purple-600" />
               <span>Services</span>
             </li>
           </Link>
           <Link to="/user/route-planner" onClick={onNavigate}>
             <li className={`mobile-menu-item animate-menu-item-in-delay-5 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium`}>
+              <FaRoute className="text-xl text-green-600" />
               <span>Route Planner</span>
             </li>
           </Link>
@@ -385,17 +388,20 @@ function UserNavLinks({ mobile = false, onNavigate }) {
       {currentUser && !mobile && (
         <>
           <Link to="/user/movers" onClick={onNavigate}>
-            <li className="hover:text-yellow-300 hover:scale-110 flex items-center gap-1 transition-all">
+            <li className="hover:text-yellow-300 hover:scale-110 flex items-center gap-2 transition-all">
+              <FaTruckMoving className="text-sm" />
               <span>Movers</span>
             </li>
           </Link>
           <Link to="/user/services" onClick={onNavigate}>
-            <li className="hover:text-yellow-300 hover:scale-110 flex items-center gap-1 transition-all">
+            <li className="hover:text-yellow-300 hover:scale-110 flex items-center gap-2 transition-all">
+              <FaTools className="text-sm" />
               <span>Services</span>
             </li>
           </Link>
           <Link to="/user/route-planner" onClick={onNavigate}>
-            <li className="hover:text-yellow-300 hover:scale-110 flex items-center gap-1 transition-all">
+            <li className="hover:text-yellow-300 hover:scale-110 flex items-center gap-2 transition-all">
+              <FaRoute className="text-sm" />
               <span>Route</span>
             </li>
           </Link>
