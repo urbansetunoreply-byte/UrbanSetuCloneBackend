@@ -85,6 +85,13 @@ export default function AdminFraudManagement() {
         const reasons = [];
         if (!l.imageUrls || l.imageUrls.length === 0) reasons.push('No images');
         if (price && (price > upper || price < lower)) reasons.push('Price outlier');
+        // Extra strict low-price detection (potential scam)
+        if (price && mean > 0) {
+          const pctOfMean = price / mean;
+          if (pctOfMean <= 0.4) reasons.push('Unrealistically low price');
+        }
+        // Absolute unrealistic threshold as safety net (currency INR)
+        if (price && price <= 10000) reasons.push('Suspiciously low absolute price');
         // Duplicate / fake content: description reused
         const d = norm(l.description||'');
         if (d && (descMap.get(d)||0) >= 2) reasons.push('Description duplicated');
@@ -110,7 +117,12 @@ export default function AdminFraudManagement() {
         if (!t) return; reviewMap.set(t, (reviewMap.get(t)||0)+1);
       });
       const repetitiveTexts = new Set(Array.from(reviewMap.entries()).filter(([,c])=>c>=3).map(([t])=>t));
-      const suspiciousReviewPhrases = ['scam','fraud','don\'t book','best deal','don\'t miss','very cheap'];
+      const suspiciousReviewPhrases = [
+        'scam','fraud','don\'t book','best deal','don\'t miss','very cheap','cheat','fake','beware',
+        'don\'t trust','spam','promotion','too good to be true','advance payment','deposit first','pay first',
+        'upi','gpay','paytm','whatsapp only','no visit','online only','deal outside platform','refund for review',
+        'cashback for review','5 star for discount','paid review','incentivized review'
+      ];
       const reviewsArr = (allReviews.reviews || allReviews || []);
       // Build maps for burst/time/city behaviors
       const byListing = new Map();
