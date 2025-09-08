@@ -72,9 +72,38 @@ export const FormattedTextWithLinksAndSearch = ({ text, isSentMessage = false, c
     }).join('');
   }
 
-  // Then apply link formatting
-  const formattedParts = formatLinksInText(processedText, isSentMessage);
-  
+  // Detect property mention tokens of the form @[Name](listingId)
+  const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
+  const pieces = [];
+  let lastIndex = 0;
+  let match;
+  while ((match = mentionRegex.exec(processedText)) !== null) {
+    const [full, name, listingId] = match;
+    if (match.index > lastIndex) {
+      pieces.push(processedText.slice(lastIndex, match.index));
+    }
+    const basePrefix = window.location.pathname.includes('/admin') ? '/admin/listing/' : '/user/listing/';
+    const href = `${basePrefix}${listingId}`;
+    const linkClasses = isSentMessage 
+      ? "text-white underline decoration-dotted hover:text-blue-200"
+      : "text-blue-600 underline decoration-dotted hover:text-blue-800";
+    pieces.push(
+      <a key={`prop-${listingId}-${match.index}`} href={href} onClick={(e) => e.stopPropagation()} className={linkClasses} title={`Open ${name}`}>@{name}</a>
+    );
+    lastIndex = match.index + full.length;
+  }
+  if (lastIndex < processedText.length) {
+    pieces.push(processedText.slice(lastIndex));
+  }
+
+  // Now apply URL link formatting to non-mention text segments
+  const formattedParts = pieces.flatMap((part, idx) => {
+    if (typeof part === 'string') {
+      return formatLinksInText(part, isSentMessage);
+    }
+    return part;
+  });
+
   return (
     <span className={className}>
       {formattedParts}

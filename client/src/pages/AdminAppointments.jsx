@@ -4991,6 +4991,27 @@ function AdminAppointmentRow({
                       const el=inputRef.current; if(!el)return; const start=el.selectionStart||0; const base=newComment||''; const link='Book Movers: /user/movers'; setNewComment(base.slice(0,start)+link+base.slice(start));
                     }}>Service</button>
                   </div>
+                  {/* Property mention suggestions */}
+                  {newComment && /@[^\s]*$/.test(newComment) && (
+                    <div className="absolute bottom-16 left-2 right-2 bg-white border rounded shadow-lg max-h-48 overflow-auto z-30">
+                      {(() => {
+                        const query = (newComment.match(/@([^\s]*)$/)?.[1] || '').toLowerCase();
+                        const uniqueProps = Array.from(new Set(appointments.map(a => JSON.stringify({ id: a.listingId?._id || a.listingId, name: a.propertyName || a.listingId?.name || 'Property' }))))
+                          .map(s => JSON.parse(s))
+                          .filter(p => p.name && p.name.toLowerCase().includes(query));
+                        if (uniqueProps.length === 0) return <div className="px-3 py-2 text-sm text-gray-500">No matches</div>;
+                        return uniqueProps.slice(0,8).map(p => (
+                          <button key={p.id} type="button" className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100" onClick={() => {
+                            const el = inputRef.current; const base = newComment || ''; const m = base.match(/@([^\s]*)$/); if (!m) return; const start = base.lastIndexOf('@');
+                            const token = `@[${p.name}](${p.id})`;
+                            const next = base.slice(0,start) + token + ' ' + base.slice(start + m[0].length);
+                            setNewComment(next);
+                            setTimeout(()=>{ try{ el?.focus(); el?.setSelectionRange(start+token.length+1, start+token.length+1);}catch(_){}} ,0);
+                          }}>{p.name}</button>
+                        ));
+                      })()}
+                    </div>
+                  )}
                   <textarea
                     rows={1}
                     className="w-full pl-4 pr-20 py-3 border-2 border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 shadow-lg transition-all duration-300 bg-white resize-none whitespace-pre-wrap break-all hover:border-blue-300 hover:shadow-xl focus:shadow-2xl transform hover:scale-[1.01] overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
