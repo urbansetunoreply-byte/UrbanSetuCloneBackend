@@ -536,15 +536,15 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
                 <p className="text-sm text-gray-500">Min</p>
-                <p className="text-2xl font-bold text-gray-800">₹{analytics.priceStats.min.toLocaleString('en-IN')}</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-800 break-all">₹{analytics.priceStats.min.toLocaleString('en-IN')}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Avg</p>
-                <p className="text-2xl font-bold text-blue-700">₹{analytics.priceStats.avg.toLocaleString('en-IN')}</p>
+                <p className="text-xl sm:text-2xl font-bold text-blue-700 break-all">₹{analytics.priceStats.avg.toLocaleString('en-IN')}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Max</p>
-                <p className="text-2xl font-bold text-gray-800">₹{analytics.priceStats.max.toLocaleString('en-IN')}</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-800 break-all">₹{analytics.priceStats.max.toLocaleString('en-IN')}</p>
               </div>
             </div>
             <p className="mt-4 text-sm text-gray-600"><span className="font-semibold text-green-700">{analytics.priceStats.discountedCount}</span> listings currently on discount</p>

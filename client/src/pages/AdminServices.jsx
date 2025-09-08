@@ -53,8 +53,8 @@ export default function AdminServices() {
       ) : filtered.length === 0 ? (
         <div className="text-gray-600">No service requests found.</div>
       ) : (
-        <div className="bg-white rounded-xl shadow overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="bg-white rounded-xl shadow overflow-auto">
+          <table className="min-w-[700px] w-full text-sm">
             <thead className="bg-gray-50 text-gray-600">
               <tr>
                 <th className="text-left px-4 py-3">Requested</th>
