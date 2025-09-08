@@ -195,8 +195,13 @@ export default function AdminFraudManagement() {
       const filteredReviews = flaggedReviews.filter(r => !resolvedReviews.has(String(r._id)));
       setListings(filteredListings);
       setReviews(filteredReviews);
-      // Ensure dashboard counters reflect computed reviews when backend undercounts
-      setStats(prev => ({ ...prev, suspectedFakeReviews: flaggedReviews.length }));
+      // Update visible counters to match current data
+      setStats(prev => ({
+        ...prev,
+        suspiciousListings: filteredListings.length,
+        suspectedFakeReviews: filteredReviews.length,
+        lastScan: new Date().toISOString()
+      }));
     } catch (e) {
       setError('Failed to load fraud data.');
     } finally {

@@ -367,6 +367,26 @@ export default function AdminDashboard() {
         }
       } catch (_) {}
 
+      // Compute suspicious listings locally (strict low-price proxy)
+      try {
+        const pricesAll = listingsData.map(l => (l.offer && l.discountPrice) ? l.discountPrice : l.regularPrice).filter(Boolean);
+        const meanAll = pricesAll.length ? pricesAll.reduce((a,b)=>a+b,0)/pricesAll.length : 0;
+        const varianceAll = pricesAll.length ? pricesAll.reduce((a,b)=>a+Math.pow(b-meanAll,2),0)/pricesAll.length : 0;
+        const stdAll = Math.sqrt(varianceAll) || 1;
+        const upperAll = meanAll + 3*stdAll; const lowerAll = Math.max(0, meanAll - 3*stdAll);
+        const localSuspicious = listingsData.filter(l => {
+          const p = (l.offer && l.discountPrice) ? l.discountPrice : l.regularPrice;
+          if (!p) return false;
+          if (p > upperAll || p < lowerAll) return true;
+          if (meanAll > 0 && p/meanAll <= 0.4) return true;
+          if (p <= 10000) return true;
+          return false;
+        }).length;
+        if (localSuspicious > (fraudData.suspiciousListings || 0)) {
+          fraudData = { ...fraudData, suspiciousListings: localSuspicious };
+        }
+      } catch(_) {}
+
       // Build simple monthly fraud timeline using review floods and duplicates as proxies
       try {
         const monthKey = (d) => {
