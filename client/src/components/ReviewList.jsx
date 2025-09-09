@@ -721,20 +721,29 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
               </div>
             </div>
             
-            {/* Action buttons for user's own reviews */}
-            {(currentUser && (currentUser._id === review.userId || isAdminUser(currentUser)) && review.status !== 'approved') && (
+            {/* Action buttons for user's own reviews and admin delete for all reviews */}
+            {(currentUser && (
+              // User can edit/delete their own reviews (any status)
+              (currentUser._id === review.userId) ||
+              // Admin can delete any review
+              (isAdminUser(currentUser))
+            )) && (
               <div className="flex space-x-2">
-                <button
-                  onClick={() => handleEditReview(review)}
-                  className="text-blue-600 hover:text-blue-800 p-1"
-                  title="Edit review"
-                >
-                  <FaEdit />
-                </button>
+                {/* Edit button - only for user's own reviews */}
+                {currentUser._id === review.userId && (
+                  <button
+                    onClick={() => handleEditReview(review)}
+                    className="text-blue-600 hover:text-blue-800 p-1"
+                    title="Edit review"
+                  >
+                    <FaEdit />
+                  </button>
+                )}
+                {/* Delete button - for user's own reviews or admin */}
                 <button
                   onClick={() => handleDeleteReview(review._id)}
                   className="text-red-600 hover:text-red-800 p-1"
-                  title="Delete review"
+                  title={isAdminUser(currentUser) ? "Delete review (Admin)" : "Delete review"}
                 >
                   <FaTrash />
                 </button>
