@@ -797,7 +797,10 @@ export default function Listing() {
                   <FaBuilding className="mx-auto text-purple-600 mb-1" />
                   <p className="text-xs text-gray-600">Floor</p>
                   <p className="font-semibold">
-                    {listing.floor ? `Floor ${listing.floor}` : 'Not specified'}
+                    {listing.floor !== undefined && listing.floor !== null && listing.floor !== '' ? 
+                      (listing.floor == 0 ? 'Ground Floor' : `Floor ${listing.floor}`) : 
+                      'Not specified'
+                    }
                   </p>
                 </div>
                 <div className="bg-white p-3 rounded-lg shadow-sm text-center">

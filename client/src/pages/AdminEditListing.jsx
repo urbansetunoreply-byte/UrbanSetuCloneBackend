@@ -357,15 +357,15 @@ export default function AdminEditListing() {
                 <input
                   type="number"
                   id="floor"
-                  placeholder="Enter floor number (e.g., 1, 2, 3...)"
+                  placeholder="Enter floor number (e.g., 0, 1, 2...)"
                   required
-                  min="1"
+                  min="0"
                   onChange={onHandleChanges}
                   value={formData.floor}
                   className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Floor number refers to which floor the property is located on (Ground floor = 1, First floor = 2, etc.)
+                  Floor number refers to which floor the property is located on (Ground floor = 0, First floor = 1, Second floor = 2, etc.)
                 </p>
               </div>
             </div>
