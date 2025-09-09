@@ -1681,9 +1681,9 @@ export default function Listing() {
                 )}
               </button>
               {showReviewsTooltip && (
-                <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
+                <div className="absolute bottom-full left-0 mb-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
                   Please sign in to view reviews
-                  <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
+                  <div className="absolute -bottom-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
                 </div>
               )}
             </div>
