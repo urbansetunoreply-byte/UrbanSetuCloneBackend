@@ -69,6 +69,7 @@ export default function Listing() {
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSignInTooltip, setShowSignInTooltip] = useState(false);
 
    // Lock body scroll when deletion/assign/report/calculator/comparison/search modals are open
    useEffect(() => {
@@ -477,6 +478,12 @@ export default function Listing() {
     
     // Remove from search results
     setSearchResults(prev => prev.filter(p => p._id !== property._id));
+  };
+
+  // Function to show sign-in prompt
+  const showSignInPrompt = () => {
+    setShowSignInTooltip(true);
+    setTimeout(() => setShowSignInTooltip(false), 3000);
   };
 
   // Function to get amenities list
@@ -1084,20 +1091,48 @@ export default function Listing() {
                   <FaMapMarkerAlt />
                   <span className="text-sm font-medium">Nearby</span>
                 </button>
-                <button
-                  onClick={() => setShowPriceAnalysis(!showPriceAnalysis)}
-                  className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-3 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all flex items-center justify-center gap-2"
-                >
-                  <FaChartLine />
-                  <span className="text-sm font-medium">Price Analysis</span>
-                </button>
-                <button
-                  onClick={() => setShowContactInfo(!showContactInfo)}
-                  className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-3 rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all flex items-center justify-center gap-2"
-                >
-                  <FaChartLine />
-                  <span className="text-sm font-medium">Insights</span>
-                </button>
+                <div className="relative">
+                  <button
+                    onClick={() => {
+                      if (!currentUser) {
+                        showSignInPrompt();
+                        return;
+                      }
+                      setShowPriceAnalysis(!showPriceAnalysis);
+                    }}
+                    className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-3 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all flex items-center justify-center gap-2"
+                  >
+                    <FaChartLine />
+                    <span className="text-sm font-medium">Price Analysis</span>
+                  </button>
+                  {showSignInTooltip && (
+                    <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
+                      Please sign in to view price analysis
+                      <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
+                    </div>
+                  )}
+                </div>
+                <div className="relative">
+                  <button
+                    onClick={() => {
+                      if (!currentUser) {
+                        showSignInPrompt();
+                        return;
+                      }
+                      setShowContactInfo(!showContactInfo);
+                    }}
+                    className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-3 rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all flex items-center justify-center gap-2"
+                  >
+                    <FaChartLine />
+                    <span className="text-sm font-medium">Insights</span>
+                  </button>
+                  {showSignInTooltip && (
+                    <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
+                      Please sign in to view insights
+                      <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -1154,7 +1189,7 @@ export default function Listing() {
           )}
 
           {/* Price Analysis Section */}
-          {showPriceAnalysis && (
+          {showPriceAnalysis && currentUser && (
             <div className="p-6 bg-white shadow-md rounded-lg mb-6">
               <h4 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <FaChartLine className="text-purple-600" />
@@ -1218,7 +1253,7 @@ export default function Listing() {
           )}
 
           {/* Property Insights Section */}
-          {showContactInfo && (
+          {showContactInfo && currentUser && (
             <div className="p-6 bg-white shadow-md rounded-lg mb-6">
               <h4 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <FaChartLine className="text-orange-600" />
@@ -1559,20 +1594,34 @@ export default function Listing() {
 
           {/* Reviews Section Toggle Button */}
           <div className="flex justify-center mt-8">
-            <button
-              onClick={() => setShowReviews((prev) => !prev)}
-              className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2 hover:from-yellow-500 hover:to-yellow-700 transition-all"
-            >
-              {showReviews ? 'Hide Reviews' : 'Show Reviews'}
-              {listing.reviewCount > 0 && (
-                <span className="ml-2 bg-white text-yellow-700 rounded-full px-2 py-0.5 text-xs font-bold">
-                  {listing.reviewCount}
-                </span>
+            <div className="relative">
+              <button
+                onClick={() => {
+                  if (!currentUser) {
+                    showSignInPrompt();
+                    return;
+                  }
+                  setShowReviews((prev) => !prev);
+                }}
+                className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2 hover:from-yellow-500 hover:to-yellow-700 transition-all"
+              >
+                {showReviews ? 'Hide Reviews' : 'Show Reviews'}
+                {listing.reviewCount > 0 && (
+                  <span className="ml-2 bg-white text-yellow-700 rounded-full px-2 py-0.5 text-xs font-bold">
+                    {listing.reviewCount}
+                  </span>
+                )}
+              </button>
+              {showSignInTooltip && (
+                <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
+                  Please sign in to view reviews
+                  <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
+                </div>
               )}
-            </button>
+            </div>
           </div>
           {/* Reviews Section (collapsible) */}
-          {showReviews && (
+          {showReviews && currentUser && (
             <div className="mt-8">
               <div className="border-t border-gray-200 pt-8">
                 <div className="flex items-center justify-between mb-6">
