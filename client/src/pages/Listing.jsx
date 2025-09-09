@@ -424,6 +424,19 @@ export default function Listing() {
     };
   };
 
+  // Debounced search effect
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchQuery.trim()) {
+        searchProperties(searchQuery);
+      } else {
+        setSearchResults([]);
+      }
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
   // Function to search for properties
   const searchProperties = async (query) => {
     if (!query.trim()) {
@@ -433,15 +446,35 @@ export default function Listing() {
 
     setSearchLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/listing/search?q=${encodeURIComponent(query)}&limit=10`);
+      // Search across all properties, not just same location
+      const res = await fetch(`${API_BASE_URL}/api/listing/get?limit=50`);
       if (res.ok) {
         const data = await res.json();
-        // Filter out current property and already selected properties
-        const filteredResults = data.filter(property => 
-          property._id !== listing._id && 
-          !comparisonProperties.some(p => p._id === property._id)
-        );
-        setSearchResults(filteredResults);
+        
+        // Filter properties based on search query (name, location, type)
+        const filteredResults = data.filter(property => {
+          // Skip current property and already selected properties
+          if (property._id === listing._id || comparisonProperties.some(p => p._id === property._id)) {
+            return false;
+          }
+          
+          // Search in property name, city, state, and type
+          const searchTerm = query.toLowerCase();
+          const propertyName = (property.name || '').toLowerCase();
+          const city = (property.city || '').toLowerCase();
+          const state = (property.state || '').toLowerCase();
+          const type = (property.type || '').toLowerCase();
+          const bhk = (property.bhk || '').toString();
+          
+          return propertyName.includes(searchTerm) || 
+                 city.includes(searchTerm) || 
+                 state.includes(searchTerm) || 
+                 type.includes(searchTerm) ||
+                 bhk.includes(searchTerm);
+        });
+        
+        // Limit to 10 results for better performance
+        setSearchResults(filteredResults.slice(0, 10));
       }
     } catch (error) {
       console.error('Error searching properties:', error);
@@ -2045,12 +2078,9 @@ export default function Listing() {
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder="Search properties by name, location, or type..."
+                    placeholder="Search properties by name, location, type, or BHK..."
                     value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value);
-                      searchProperties(e.target.value);
-                    }}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                   {searchLoading && (
@@ -2076,13 +2106,19 @@ export default function Listing() {
                           <h3 className="font-semibold text-gray-800">{property.name}</h3>
                           <p className="text-gray-600 text-sm">{property.city}, {property.state}</p>
                           <div className="flex items-center gap-4 mt-1">
-                            <span className="text-sm text-gray-500">{property.type}</span>
+                            <span className={`px-2 py-1 text-xs rounded ${property.type === 'rent' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                              {property.type === 'rent' ? 'Rent' : 'Sale'}
+                            </span>
                             <span className="text-sm text-gray-500">{property.bhk} BHK</span>
                             <span className="text-sm text-gray-500">{property.area || 'N/A'} sq ft</span>
+                            {property.furnished && (
+                              <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">Furnished</span>
+                            )}
                           </div>
                           <div className="flex items-center gap-2 mt-2">
                             <span className="font-bold text-green-600">
                               ₹{(property.offer ? property.discountPrice : property.regularPrice).toLocaleString('en-IN')}
+                              {property.type === 'rent' && ' / month'}
                             </span>
                             {property.offer && (
                               <span className="text-sm text-gray-500 line-through">
@@ -2090,6 +2126,14 @@ export default function Listing() {
                               </span>
                             )}
                           </div>
+                          {property.averageRating > 0 && (
+                            <div className="flex items-center gap-1 mt-1">
+                              {[...Array(5)].map((_, i) => (
+                                <FaStar key={i} className={i < property.averageRating ? 'text-yellow-400' : 'text-gray-300'} size={12} />
+                              ))}
+                              <span className="text-xs text-gray-500">({property.averageRating.toFixed(1)})</span>
+                            </div>
+                          )}
                         </div>
                         <button
                           onClick={() => addPropertyFromSearch(property)}
@@ -2104,13 +2148,22 @@ export default function Listing() {
                   <div className="text-center py-8 text-gray-500">
                     <FaChartLine className="text-4xl mx-auto mb-2 text-gray-300" />
                     <p>No properties found matching "{searchQuery}"</p>
-                    <p className="text-sm">Try searching with different keywords</p>
+                    <p className="text-sm">Try searching with different keywords like:</p>
+                    <div className="mt-2 text-xs text-gray-400">
+                      • Property names (e.g., "Villa", "Apartment")<br/>
+                      • Cities (e.g., "Mumbai", "Delhi")<br/>
+                      • Types (e.g., "rent", "sale")<br/>
+                      • BHK (e.g., "2", "3")
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
                     <FaChartLine className="text-4xl mx-auto mb-2 text-gray-300" />
                     <p>Search for properties to add to comparison</p>
-                    <p className="text-sm">Enter property name, location, or type</p>
+                    <p className="text-sm">Enter property name, location, type, or BHK</p>
+                    <div className="mt-2 text-xs text-gray-400">
+                      Start typing to see suggestions...
+                    </div>
                   </div>
                 )}
               </div>
