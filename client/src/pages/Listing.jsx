@@ -61,6 +61,7 @@ export default function Listing() {
   const [loadingSimilar, setLoadingSimilar] = useState(false);
   const [showCalculatorModal, setShowCalculatorModal] = useState(false);
   const [daysListed, setDaysListed] = useState(0);
+  const [viewTracked, setViewTracked] = useState(false);
  
    // Lock body scroll when deletion/assign/report/calculator modals are open
    useEffect(() => {
@@ -298,9 +299,9 @@ export default function Listing() {
     }
   };
 
-  // Function to track property view
+  // Function to track property view (only once per session)
   const trackPropertyView = async () => {
-    if (!listing) return;
+    if (!listing || viewTracked) return;
     
     try {
       const res = await fetch(`${API_BASE_URL}/api/listing/view/${listing._id}`, {
@@ -310,6 +311,8 @@ export default function Listing() {
       
       if (res.ok) {
         const data = await res.json();
+        // Mark as tracked to prevent multiple calls
+        setViewTracked(true);
         // Update the listing state with the new view count
         setListing(prev => ({
           ...prev,
@@ -439,6 +442,11 @@ export default function Listing() {
       } catch (_) {}
     };
     fetchNeighborhood();
+  }, [params.listingId]);
+
+  // Reset view tracking when listing ID changes
+  useEffect(() => {
+    setViewTracked(false);
   }, [params.listingId]);
 
   // Track property view when listing loads
