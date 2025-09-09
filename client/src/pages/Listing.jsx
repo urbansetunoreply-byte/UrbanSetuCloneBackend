@@ -1927,26 +1927,26 @@ export default function Listing() {
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-2 sm:p-4">
           <div className="bg-white rounded-xl max-w-7xl w-full mx-2 sm:mx-4 h-[95vh] flex flex-col overflow-hidden shadow-2xl">
             {/* Header */}
-            <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-4 sm:p-6">
+            <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="p-1.5 sm:p-2 bg-white bg-opacity-20 rounded-lg">
-                    <FaChartLine className="text-lg sm:text-2xl" />
+                  <div className="p-1 sm:p-2 bg-white bg-opacity-20 rounded-lg">
+                    <FaChartLine className="text-base sm:text-2xl" />
                   </div>
                   <div>
-                    <h2 className="text-lg sm:text-2xl font-bold">Property Comparison</h2>
-                    <p className="text-purple-100 text-xs sm:text-sm hidden sm:block">Compare {comparisonProperties.length} properties side by side</p>
+                    <h2 className="text-base sm:text-2xl font-bold">Property Comparison</h2>
+                    <p className="text-purple-100 text-[10px] sm:text-sm hidden sm:block">Compare {comparisonProperties.length} properties side by side</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="bg-white bg-opacity-20 rounded-lg px-2 sm:px-3 py-1">
-                    <span className="text-xs sm:text-sm font-medium">{comparisonProperties.length}/4</span>
+                  <div className="bg-white bg-opacity-20 rounded-lg px-2 sm:px-3 py-0.5 sm:py-1">
+                    <span className="text-[10px] sm:text-sm font-medium">{comparisonProperties.length}/4</span>
                   </div>
                   <button
                     onClick={() => setShowComparisonModal(false)}
-                    className="p-1.5 sm:p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
+                    className="p-1 sm:p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
                   >
-                    <FaTimes className="text-lg sm:text-xl" />
+                    <FaTimes className="text-base sm:text-xl" />
                   </button>
                 </div>
               </div>
@@ -1955,8 +1955,8 @@ export default function Listing() {
             {/* Content */}
             <div className="flex-1 overflow-y-auto">
               {/* Property Cards Header */}
-              <div className="sticky top-0 bg-white border-b border-gray-200 z-10">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 p-3 sm:p-6">
+              <div className="sm:sticky top-0 bg-white border-b border-gray-200 z-10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 p-2 sm:p-4">
                   {comparisonProperties.map((property, index) => {
                     const data = getComparisonData(property);
                     return (
@@ -1974,7 +1974,7 @@ export default function Listing() {
                             alt={property.name}
                             className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg mx-auto mb-2 sm:mb-3 shadow-md"
                           />
-                          <h3 className="font-bold text-gray-800 text-xs sm:text-sm mb-1 line-clamp-2">{property.name}</h3>
+                          <h3 className="font-bold text-gray-800 text-[11px] sm:text-sm mb-1 line-clamp-2">{property.name}</h3>
                           <p className="text-gray-600 text-xs mb-2">{property.city}, {property.state}</p>
                           
                           <div className="space-y-1 mb-2 sm:mb-3">
@@ -1989,11 +1989,11 @@ export default function Listing() {
                           </div>
                           
                           <div className="text-center">
-                            <div className="text-sm sm:text-lg font-bold text-green-600 mb-1">
+                            <div className="text-xs sm:text-lg font-bold text-green-600 mb-1">
                               ₹{data.pricing.price.toLocaleString('en-IN')}
                               {property.type === 'rent' && <span className="text-xs text-gray-500">/month</span>}
                             </div>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-[10px] text-gray-500">
                               ₹{data.pricing.pricePerSqFt}/sq ft
                             </div>
                           </div>
@@ -2007,7 +2007,7 @@ export default function Listing() {
               {/* Comparison Sections */}
               <div className="p-3 sm:p-6 space-y-6 sm:space-y-8">
                 {/* Pricing Analysis */}
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 sm:p-6 border border-green-200">
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-3 sm:p-5 border border-green-200">
                   <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
                     <div className="p-1.5 sm:p-2 bg-green-500 text-white rounded-lg">
                       <FaChartLine className="text-sm sm:text-base" />
@@ -2015,7 +2015,7 @@ export default function Listing() {
                     <h3 className="text-lg sm:text-xl font-bold text-green-800">Pricing Analysis</h3>
                   </div>
                   
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
                     {comparisonProperties.map((property, index) => {
                       const data = getComparisonData(property);
                       const isLowest = comparisonProperties.every(p => {
@@ -2034,14 +2034,14 @@ export default function Listing() {
                           'border-gray-200'
                         }`}>
                           <div className="text-center">
-                            <div className={`text-lg sm:text-2xl font-bold mb-1 sm:mb-2 ${
+                            <div className={`text-base sm:text-2xl font-bold mb-1 sm:mb-2 ${
                               isLowest ? 'text-green-600' : 
                               isHighest ? 'text-red-600' : 
                               'text-gray-800'
                             }`}>
                               ₹{data.pricing.price.toLocaleString('en-IN')}
                             </div>
-                            <div className="text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2">
+                            <div className="text-[11px] sm:text-sm text-gray-600 mb-1 sm:mb-2">
                               ₹{data.pricing.pricePerSqFt}/sq ft
                             </div>
                             {data.pricing.discount > 0 && (
@@ -2064,24 +2064,24 @@ export default function Listing() {
 
                 {/* Detailed Comparison Table */}
                 <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                  <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                  <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-200">
                     <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
                       <FaTable /> Detailed Comparison
                     </h3>
                   </div>
                   
                   <div className="overflow-x-auto">
-                    <table className="w-full">
+                    <table className="w-full text-sm sm:text-base">
                       <tbody>
                         {/* Basic Information */}
                         <tr className="border-b border-gray-100">
-                          <td className="px-6 py-4 font-semibold text-gray-700 bg-gray-50 w-1/4">Basic Information</td>
+                          <td className="px-4 py-3 sm:px-6 sm:py-4 font-semibold text-gray-700 bg-gray-50 w-1/4">Basic Information</td>
                           {comparisonProperties.map((property) => (
-                            <td key={property._id} className="px-6 py-4 text-sm">
+                            <td key={property._id} className="px-4 py-3 sm:px-6 sm:py-4 text-[13px] sm:text-sm">
                               <div className="space-y-2">
                                 <div><span className="font-medium text-gray-600">Location:</span> {property.city}, {property.state}</div>
                                 <div><span className="font-medium text-gray-600">Type:</span> 
-                                  <span className={`ml-2 px-2 py-1 text-xs rounded-full ${
+                                  <span className={`ml-2 px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full ${
                                     property.type === 'rent' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
                                   }`}>
                                     {property.type}
@@ -2089,7 +2089,7 @@ export default function Listing() {
                                 </div>
                                 <div><span className="font-medium text-gray-600">BHK:</span> {property.bhk}</div>
                                 <div><span className="font-medium text-gray-600">Furnished:</span> 
-                                  <span className={`ml-2 px-2 py-1 text-xs rounded-full ${
+                                  <span className={`ml-2 px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full ${
                                     property.furnished ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                                   }`}>
                                     {property.furnished ? 'Yes' : 'No'}
@@ -2102,11 +2102,11 @@ export default function Listing() {
 
                         {/* Size & Layout */}
                         <tr className="border-b border-gray-100 bg-gray-50">
-                          <td className="px-6 py-4 font-semibold text-gray-700">Size & Layout</td>
+                          <td className="px-4 py-3 sm:px-6 sm:py-4 font-semibold text-gray-700">Size & Layout</td>
                           {comparisonProperties.map((property) => {
                             const data = getComparisonData(property);
                             return (
-                              <td key={property._id} className="px-6 py-4 text-sm">
+                              <td key={property._id} className="px-4 py-3 sm:px-6 sm:py-4 text-[13px] sm:text-sm">
                                 <div className="space-y-2">
                                   <div><span className="font-medium text-gray-600">Area:</span> {data.size.area} sq ft</div>
                                   <div><span className="font-medium text-gray-600">Floor:</span> {data.size.floor}</div>
@@ -2119,38 +2119,38 @@ export default function Listing() {
 
                         {/* Amenities */}
                         <tr className="border-b border-gray-100">
-                          <td className="px-6 py-4 font-semibold text-gray-700">Amenities</td>
+                          <td className="px-4 py-3 sm:px-6 sm:py-4 font-semibold text-gray-700">Amenities</td>
                           {comparisonProperties.map((property) => {
                             const data = getComparisonData(property);
                             return (
-                              <td key={property._id} className="px-6 py-4 text-sm">
+                              <td key={property._id} className="px-4 py-3 sm:px-6 sm:py-4 text-[13px] sm:text-sm">
                                 <div className="grid grid-cols-2 gap-2">
-                                  <div className={`px-2 py-1 text-xs rounded-full text-center ${
+                                  <div className={`px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full text-center ${
                                     data.amenities.parking === 'Yes' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
                                   }`}>
                                     🅿️ Parking
                                   </div>
-                                  <div className={`px-2 py-1 text-xs rounded-full text-center ${
+                                  <div className={`px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full text-center ${
                                     data.amenities.wifi === 'Yes' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
                                   }`}>
                                     📶 Wi-Fi
                                   </div>
-                                  <div className={`px-2 py-1 text-xs rounded-full text-center ${
+                                  <div className={`px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full text-center ${
                                     data.amenities.powerBackup === 'Yes' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
                                   }`}>
                                     ⚡ Power Backup
                                   </div>
-                                  <div className={`px-2 py-1 text-xs rounded-full text-center ${
+                                  <div className={`px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full text-center ${
                                     data.amenities.lift === 'Yes' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
                                   }`}>
                                     🛗 Lift
                                   </div>
-                                  <div className={`px-2 py-1 text-xs rounded-full text-center ${
+                                  <div className={`px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full text-center ${
                                     data.amenities.gym === 'Yes' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
                                   }`}>
                                     💪 Gym
                                   </div>
-                                  <div className={`px-2 py-1 text-xs rounded-full text-center ${
+                                  <div className={`px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full text-center ${
                                     data.amenities.security === 'Yes' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
                                   }`}>
                                     🛡️ Security
@@ -2163,17 +2163,17 @@ export default function Listing() {
 
                         {/* Reviews & Ratings */}
                         <tr className="bg-gray-50">
-                          <td className="px-6 py-4 font-semibold text-gray-700">Reviews & Ratings</td>
+                          <td className="px-4 py-3 sm:px-6 sm:py-4 font-semibold text-gray-700">Reviews & Ratings</td>
                           {comparisonProperties.map((property) => {
                             const data = getComparisonData(property);
                             return (
-                              <td key={property._id} className="px-6 py-4 text-sm">
+                              <td key={property._id} className="px-4 py-3 sm:px-6 sm:py-4 text-[13px] sm:text-sm">
                                 <div className="space-y-2">
                                   <div className="flex items-center gap-2">
                                     <span className="font-medium text-gray-600">Rating:</span>
                                     <div className="flex items-center gap-1">
                                       {[...Array(5)].map((_, i) => (
-                                        <FaStar key={i} className={i < data.reviews.rating ? 'text-yellow-400' : 'text-gray-300'} size={14} />
+                                        <FaStar key={i} className={i < data.reviews.rating ? 'text-yellow-400' : 'text-gray-300'} size={12} />
                                       ))}
                                     </div>
                                     <span className="text-gray-600">({data.reviews.rating})</span>
@@ -2232,26 +2232,26 @@ export default function Listing() {
             </div>
 
             {/* Footer Actions */}
-            <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
+            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:py-4 border-t border-gray-200">
               <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-600">
+                <div className="text-xs sm:text-sm text-gray-600">
                   Comparing {comparisonProperties.length} properties • Last updated: {new Date().toLocaleDateString()}
                 </div>
-                <div className="flex gap-3">
+                <div className="flex gap-2 sm:gap-3">
                   <button
                     onClick={() => {
                       setComparisonProperties([]);
                       setShowComparisonModal(false);
                       toast.success('Comparison cleared');
                     }}
-                    className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
+                    className="px-3 py-1.5 sm:px-4 sm:py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2 text-sm"
                   >
                     <FaTrash className="text-sm" />
                     Clear All
                   </button>
                   <button
                     onClick={() => setShowComparisonModal(false)}
-                    className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                    className="px-4 py-1.5 sm:px-6 sm:py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm"
                   >
                     Close
                   </button>
