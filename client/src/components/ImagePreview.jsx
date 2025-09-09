@@ -18,6 +18,7 @@ import {
   FaEyeSlash
 } from 'react-icons/fa';
 import { useImageFavorites } from '../contexts/ImageFavoritesContext';
+import SocialSharePanel from './SocialSharePanel';
 
 // Helper function to show toast messages
 const showToast = (message, type = 'info') => {
@@ -69,6 +70,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
   const [autoHideControls, setAutoHideControls] = useState(true);
   const [controlsTimeout, setControlsTimeout] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [showSocialShare, setShowSocialShare] = useState(false);
   
   const imageRef = useRef(null);
   const slideshowRef = useRef(null);
@@ -488,16 +490,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
   };
 
   const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: 'Property Image',
-        text: 'Check out this property image!',
-        url: images[currentIndex]
-      });
-    } else {
-      navigator.clipboard.writeText(images[currentIndex]);
-      // You could add a toast notification here
-    }
+    setShowSocialShare(true);
   };
 
   const handleImageLoad = () => {
@@ -980,6 +973,15 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
           </div>
         </div>
       )}
+
+      {/* Social Share Panel */}
+      <SocialSharePanel
+        isOpen={showSocialShare}
+        onClose={() => setShowSocialShare(false)}
+        url={images[currentIndex]}
+        title="Check out this property image!"
+        description="Amazing property image from our listing"
+      />
     </div>
   );
 };

@@ -11,6 +11,7 @@ import ReviewForm from "../components/ReviewForm.jsx";
 import ReviewList from "../components/ReviewList.jsx";
 import ImagePreview from "../components/ImagePreview.jsx";
 import EMICalculator from "../components/EMICalculator.jsx";
+import SocialSharePanel from "../components/SocialSharePanel.jsx";
 import { maskAddress, shouldShowLocationLink, getLocationLinkText } from "../utils/addressMasking";
 import { toast } from 'react-toastify';
 import { useWishlist } from '../WishlistContext';
@@ -73,6 +74,9 @@ export default function Listing() {
   const [showInsightsTooltip, setShowInsightsTooltip] = useState(false);
   const [showReviewsTooltip, setShowReviewsTooltip] = useState(false);
   const [confirmModal, setConfirmModal] = useState({ open: false, type: null, propertyId: null, origin: null, message: '' });
+  const [showSocialShare, setShowSocialShare] = useState(false);
+  const [showComparisonSocialShare, setShowComparisonSocialShare] = useState(false);
+  const [selectedComparisonProperty, setSelectedComparisonProperty] = useState(null);
 
   const openConfirm = (type, { propertyId = null, origin = null, message = 'Are you sure?' } = {}) => {
     setConfirmModal({ open: true, type, propertyId, origin, message });
@@ -958,11 +962,7 @@ export default function Listing() {
               </button>
             )}
             <button
-              onClick={() => {
-                navigator.clipboard.writeText(window.location.href);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-              }}
+              onClick={() => setShowSocialShare(true)}
               className="flex items-center gap-2 text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg transition-colors"
               title="Share this property"
             >
@@ -2049,8 +2049,8 @@ export default function Listing() {
                                 </Link>
                                 <button
                                   onClick={() => {
-                                    navigator.clipboard.writeText(`${window.location.origin}/listing/${property._id}`);
-                                    toast.success('Property link copied!');
+                                    setSelectedComparisonProperty(property);
+                                    setShowComparisonSocialShare(true);
                                   }}
                                   className="px-3 py-2 bg-gray-600 text-white text-xs rounded-lg hover:bg-gray-700 transition-colors"
                                 >
@@ -2598,6 +2598,27 @@ export default function Listing() {
           </div>
         </div>
       )}
+
+      {/* Social Share Panel */}
+      <SocialSharePanel
+        isOpen={showSocialShare}
+        onClose={() => setShowSocialShare(false)}
+        url={window.location.href}
+        title={listing ? `${listing.name} - ${listing.type} in ${listing.address}` : "Check out this property!"}
+        description={listing ? `Amazing ${listing.type} property in ${listing.address}. ${listing.description || ''}` : "Amazing property listing"}
+      />
+
+      {/* Property Comparison Social Share Panel */}
+      <SocialSharePanel
+        isOpen={showComparisonSocialShare}
+        onClose={() => {
+          setShowComparisonSocialShare(false);
+          setSelectedComparisonProperty(null);
+        }}
+        url={selectedComparisonProperty ? `${window.location.origin}/listing/${selectedComparisonProperty._id}` : ''}
+        title={selectedComparisonProperty ? `${selectedComparisonProperty.name} - ${selectedComparisonProperty.type} in ${selectedComparisonProperty.address}` : "Check out this property!"}
+        description={selectedComparisonProperty ? `Amazing ${selectedComparisonProperty.type} property in ${selectedComparisonProperty.address}. ${selectedComparisonProperty.description || ''}` : "Amazing property listing"}
+      />
     </>
   );
 }
