@@ -5,11 +5,12 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import { Navigation } from "swiper/modules";
-import { FaBath, FaBed, FaChair, FaMapMarkerAlt, FaParking, FaShare, FaEdit, FaTrash, FaArrowLeft, FaStar, FaLock, FaHeart, FaExpand, FaCheckCircle, FaFlag, FaRuler, FaBuilding, FaTree, FaWifi, FaSwimmingPool, FaCar, FaShieldAlt, FaClock, FaPhone, FaEnvelope, FaCalendarAlt, FaEye, FaThumbsUp, FaThumbsDown, FaComments, FaCalculator, FaChartLine, FaHome, FaUtensils, FaHospital, FaSchool, FaShoppingCart, FaPlane, FaUser } from "react-icons/fa";
+import { FaBath, FaBed, FaChair, FaMapMarkerAlt, FaParking, FaShare, FaEdit, FaTrash, FaArrowLeft, FaStar, FaLock, FaHeart, FaExpand, FaCheckCircle, FaFlag, FaRuler, FaBuilding, FaTree, FaWifi, FaSwimmingPool, FaCar, FaShieldAlt, FaClock, FaPhone, FaEnvelope, FaCalendarAlt, FaEye, FaThumbsUp, FaThumbsDown, FaComments, FaCalculator, FaChartLine, FaHome, FaUtensils, FaHospital, FaSchool, FaShoppingCart, FaPlane, FaUser, FaTimes } from "react-icons/fa";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import ReviewForm from "../components/ReviewForm.jsx";
 import ReviewList from "../components/ReviewList.jsx";
 import ImagePreview from "../components/ImagePreview.jsx";
+import EMICalculator from "../components/EMICalculator.jsx";
 import { maskAddress, shouldShowLocationLink, getLocationLinkText } from "../utils/addressMasking";
 import { toast } from 'react-toastify';
 import { useWishlist } from '../WishlistContext';
@@ -58,10 +59,11 @@ export default function Listing() {
   const [viewCount, setViewCount] = useState(0);
   const [similarProperties, setSimilarProperties] = useState([]);
   const [loadingSimilar, setLoadingSimilar] = useState(false);
+  const [showCalculatorModal, setShowCalculatorModal] = useState(false);
  
-   // Lock body scroll when deletion/assign/report modals are open
+   // Lock body scroll when deletion/assign/report/calculator modals are open
    useEffect(() => {
-     const shouldLock = showReasonModal || showPasswordModal || showAssignOwnerModal || showReportModal;
+     const shouldLock = showReasonModal || showPasswordModal || showAssignOwnerModal || showReportModal || showCalculatorModal;
      if (shouldLock) {
        document.body.classList.add('modal-open');
      } else {
@@ -70,7 +72,7 @@ export default function Listing() {
      return () => {
        document.body.classList.remove('modal-open');
      };
-   }, [showReasonModal, showPasswordModal, showAssignOwnerModal, showReportModal]);
+   }, [showReasonModal, showPasswordModal, showAssignOwnerModal, showReportModal, showCalculatorModal]);
  
    // Check if user is admin
   const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'rootadmin';
@@ -938,7 +940,16 @@ export default function Listing() {
                   
                   {listing.type === "sale" && (
                     <div className="bg-green-50 p-4 rounded-lg">
-                      <h5 className="font-semibold text-green-800 mb-2">EMI Calculator</h5>
+                      <div className="flex items-center justify-between mb-2">
+                        <h5 className="font-semibold text-green-800">EMI Calculator</h5>
+                        <button
+                          onClick={() => setShowCalculatorModal(true)}
+                          className="p-2 text-green-600 hover:text-green-700 hover:bg-green-100 rounded-full transition-colors"
+                          title="Open EMI Calculator"
+                        >
+                          <FaCalculator className="text-lg" />
+                        </button>
+                      </div>
                       <p className="text-lg font-bold text-green-600">
                         ₹{calculateEMI(listing.offer ? listing.discountPrice : listing.regularPrice).toLocaleString('en-IN')} / month
                       </p>
@@ -1513,6 +1524,30 @@ export default function Listing() {
             >
               Cancel
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* EMI Calculator Modal */}
+      {showCalculatorModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-green-700 flex items-center gap-2">
+                <FaCalculator /> EMI Calculator
+              </h3>
+              <button
+                onClick={() => setShowCalculatorModal(false)}
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <FaTimes className="text-lg" />
+              </button>
+            </div>
+            
+            <EMICalculator 
+              propertyPrice={listing.offer ? listing.discountPrice : listing.regularPrice}
+              propertyName={listing.name}
+            />
           </div>
         </div>
       )}
