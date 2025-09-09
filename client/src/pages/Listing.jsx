@@ -1133,7 +1133,7 @@ export default function Listing() {
                       }
                       setShowPriceAnalysis(!showPriceAnalysis);
                     }}
-                    className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-3 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all flex items-center justify-center gap-2"
+                    className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-3 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all flex items-center justify-center gap-2 w-full"
                   >
                     <FaChartLine />
                     <span className="text-sm font-medium">Price Analysis</span>
@@ -1154,7 +1154,7 @@ export default function Listing() {
                       }
                       setShowContactInfo(!showContactInfo);
                     }}
-                    className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-3 rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all flex items-center justify-center gap-2"
+                    className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-3 rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all flex items-center justify-center gap-2 w-full"
                   >
                     <FaChartLine />
                     <span className="text-sm font-medium">Insights</span>
