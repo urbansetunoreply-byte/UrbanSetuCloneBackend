@@ -1887,7 +1887,7 @@ export default function Listing() {
 
       {/* Confirm Modal */}
       {confirmModal.open && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[999] p-4">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-sm">
             <div className="px-4 py-3 border-b border-gray-200 font-semibold">Confirm</div>
             <div className="px-4 py-4 text-gray-700 text-sm">{confirmModal.message}</div>
@@ -2579,7 +2579,10 @@ export default function Listing() {
                       </button>
                       {comparisonProperties.length >= 2 && (
                         <button
-                          onClick={() => setShowComparisonModal(true)}
+                          onClick={() => {
+                            setShowPropertySearch(false);
+                            setTimeout(() => setShowComparisonModal(true), 0);
+                          }}
                           className="w-full sm:w-auto px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all font-medium flex items-center justify-center gap-2"
                         >
                           <FaChartLine />
