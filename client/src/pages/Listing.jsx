@@ -65,10 +65,14 @@ export default function Listing() {
   const [showComparisonModal, setShowComparisonModal] = useState(false);
   const [comparisonProperties, setComparisonProperties] = useState([]);
   const [showComparisonTooltip, setShowComparisonTooltip] = useState(false);
+  const [showPropertySearch, setShowPropertySearch] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
-   // Lock body scroll when deletion/assign/report/calculator/comparison modals are open
+   // Lock body scroll when deletion/assign/report/calculator/comparison/search modals are open
    useEffect(() => {
-     const shouldLock = showReasonModal || showPasswordModal || showAssignOwnerModal || showReportModal || showCalculatorModal || showComparisonModal;
+     const shouldLock = showReasonModal || showPasswordModal || showAssignOwnerModal || showReportModal || showCalculatorModal || showComparisonModal || showPropertySearch;
      if (shouldLock) {
        document.body.classList.add('modal-open');
      } else {
@@ -77,7 +81,7 @@ export default function Listing() {
      return () => {
        document.body.classList.remove('modal-open');
      };
-   }, [showReasonModal, showPasswordModal, showAssignOwnerModal, showReportModal, showCalculatorModal, showComparisonModal]);
+   }, [showReasonModal, showPasswordModal, showAssignOwnerModal, showReportModal, showCalculatorModal, showComparisonModal, showPropertySearch]);
  
    // Check if user is admin
   const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'rootadmin';
@@ -419,6 +423,62 @@ export default function Listing() {
     };
   };
 
+  // Function to search for properties
+  const searchProperties = async (query) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    setSearchLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/listing/search?q=${encodeURIComponent(query)}&limit=10`);
+      if (res.ok) {
+        const data = await res.json();
+        // Filter out current property and already selected properties
+        const filteredResults = data.filter(property => 
+          property._id !== listing._id && 
+          !comparisonProperties.some(p => p._id === property._id)
+        );
+        setSearchResults(filteredResults);
+      }
+    } catch (error) {
+      console.error('Error searching properties:', error);
+      toast.error('Failed to search properties');
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  // Function to open property search modal
+  const openPropertySearch = () => {
+    if (!currentUser) {
+      setShowComparisonTooltip(true);
+      setTimeout(() => setShowComparisonTooltip(false), 3000);
+      return;
+    }
+    setShowPropertySearch(true);
+  };
+
+  // Function to add property from search results
+  const addPropertyFromSearch = (property) => {
+    if (comparisonProperties.length >= 4) {
+      toast.error('You can compare maximum 4 properties');
+      return;
+    }
+
+    if (comparisonProperties.some(p => p._id === property._id)) {
+      toast.error('Property already added to comparison');
+      return;
+    }
+
+    setComparisonProperties(prev => [...prev, property]);
+    toast.success('Property added to comparison');
+    
+    // Remove from search results
+    setSearchResults(prev => prev.filter(p => p._id !== property._id));
+  };
+
   // Function to get amenities list
   const getAmenities = () => {
     const amenities = [];
@@ -706,12 +766,20 @@ export default function Listing() {
                 ))}
               </div>
               
-              <button
-                onClick={openComparisonModal}
-                className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors font-medium"
-              >
-                Compare Now
-              </button>
+              <div className="space-y-2">
+                <button
+                  onClick={openPropertySearch}
+                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
+                >
+                  + Add More Properties
+                </button>
+                <button
+                  onClick={openComparisonModal}
+                  className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors font-medium"
+                >
+                  Compare Now
+                </button>
+              </div>
             </div>
           )}
 
@@ -1459,7 +1527,7 @@ export default function Listing() {
                         {formatINR(property.offer ? property.discountPrice : property.regularPrice)}
                         {property.type === "rent" && " / month"}
                       </p>
-                      <div className="flex items-center justify-between text-sm text-gray-500">
+                      <div className="flex items-center justify-between text-sm text-gray-500 mb-2">
                         <span>{property.bedrooms} bed • {property.bathrooms} bath</span>
                         <Link 
                           to={`/listing/${property._id}`}
@@ -1467,6 +1535,20 @@ export default function Listing() {
                         >
                           View Details →
                         </Link>
+                      </div>
+                      <div className="flex gap-2">
+                        <Link 
+                          to={`/listing/${property._id}`}
+                          className="flex-1 bg-blue-600 text-white text-center py-2 px-3 rounded text-sm hover:bg-blue-700 transition-colors"
+                        >
+                          View Details
+                        </Link>
+                        <button
+                          onClick={() => addPropertyFromSearch(property)}
+                          className="bg-purple-600 text-white py-2 px-3 rounded text-sm hover:bg-purple-700 transition-colors"
+                        >
+                          + Compare
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -1882,6 +1964,172 @@ export default function Listing() {
                 >
                   Clear All
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Property Search Modal */}
+      {showPropertySearch && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2">
+          <div className="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-blue-700 flex items-center gap-2">
+                  <FaChartLine /> Add Properties to Compare
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowPropertySearch(false);
+                    setSearchQuery('');
+                    setSearchResults([]);
+                  }}
+                  className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <FaTimes className="text-lg" />
+                </button>
+              </div>
+
+              {/* Search Input */}
+              <div className="mb-6">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search properties by name, location, or type..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      searchProperties(e.target.value);
+                    }}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  {searchLoading && (
+                    <div className="absolute right-3 top-3">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Search Results */}
+              <div className="space-y-4">
+                {searchResults.length > 0 ? (
+                  searchResults.map((property) => (
+                    <div key={property._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-4">
+                        <img 
+                          src={property.imageUrls?.[0] || '/placeholder-property.jpg'} 
+                          alt={property.name}
+                          className="w-16 h-16 object-cover rounded-lg"
+                        />
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-800">{property.name}</h3>
+                          <p className="text-gray-600 text-sm">{property.city}, {property.state}</p>
+                          <div className="flex items-center gap-4 mt-1">
+                            <span className="text-sm text-gray-500">{property.type}</span>
+                            <span className="text-sm text-gray-500">{property.bhk} BHK</span>
+                            <span className="text-sm text-gray-500">{property.area || 'N/A'} sq ft</span>
+                          </div>
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="font-bold text-green-600">
+                              ₹{(property.offer ? property.discountPrice : property.regularPrice).toLocaleString('en-IN')}
+                            </span>
+                            {property.offer && (
+                              <span className="text-sm text-gray-500 line-through">
+                                ₹{property.regularPrice.toLocaleString('en-IN')}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => addPropertyFromSearch(property)}
+                          className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors font-medium"
+                        >
+                          Add to Compare
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                ) : searchQuery.trim() ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <FaChartLine className="text-4xl mx-auto mb-2 text-gray-300" />
+                    <p>No properties found matching "{searchQuery}"</p>
+                    <p className="text-sm">Try searching with different keywords</p>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <FaChartLine className="text-4xl mx-auto mb-2 text-gray-300" />
+                    <p>Search for properties to add to comparison</p>
+                    <p className="text-sm">Enter property name, location, or type</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Similar Properties Section */}
+              {similarProperties.length > 0 && (
+                <div className="mt-8">
+                  <h3 className="text-lg font-semibold text-gray-700 mb-4">Similar Properties</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {similarProperties.map((property) => (
+                      <div key={property._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div className="flex items-center gap-4">
+                          <img 
+                            src={property.imageUrls?.[0] || '/placeholder-property.jpg'} 
+                            alt={property.name}
+                            className="w-12 h-12 object-cover rounded-lg"
+                          />
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-800 text-sm">{property.name}</h4>
+                            <p className="text-gray-600 text-xs">{property.city}, {property.state}</p>
+                            <p className="text-xs text-gray-500">{property.type} • {property.bhk} BHK</p>
+                            <p className="font-semibold text-green-600 text-sm">
+                              ₹{(property.offer ? property.discountPrice : property.regularPrice).toLocaleString('en-IN')}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => addPropertyFromSearch(property)}
+                            className="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700 transition-colors"
+                          >
+                            Add
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-200">
+                <div className="text-sm text-gray-600">
+                  {comparisonProperties.length} of 4 properties selected
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowPropertySearch(false);
+                      setSearchQuery('');
+                      setSearchResults([]);
+                    }}
+                    className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                  >
+                    Close
+                  </button>
+                  {comparisonProperties.length >= 2 && (
+                    <button
+                      onClick={() => {
+                        setShowPropertySearch(false);
+                        setSearchQuery('');
+                        setSearchResults([]);
+                        setShowComparisonModal(true);
+                      }}
+                      className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                    >
+                      Compare Now
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
