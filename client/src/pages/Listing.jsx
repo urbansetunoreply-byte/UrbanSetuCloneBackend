@@ -1985,7 +1985,11 @@ export default function Listing() {
                                 <img src={property.imageUrls?.[0] || '/placeholder-property.jpg'} alt={property.name} className="w-8 h-8 object-cover rounded" />
                                 <span className="font-semibold text-gray-800 text-[11px] sm:text-sm line-clamp-1 flex-1 min-w-0">{property.name}</span>
                                 <button
-                                  onClick={() => removeFromComparison(property._id)}
+                                  onClick={() => {
+                                    const confirmed = window.confirm('Remove this property from comparison?');
+                                    if (!confirmed) return;
+                                    removeFromComparison(property._id);
+                                  }}
                                   className="ml-auto text-red-600 hover:text-red-700 text-[10px] sm:text-xs bg-red-50 hover:bg-red-100 px-2 py-1 rounded"
                                   title="Remove from comparison"
                                 >
@@ -1997,6 +2001,31 @@ export default function Listing() {
                         </tr>
                       </thead>
                       <tbody>
+                        {/* Quick Actions */}
+                        <tr className="border-b border-gray-100">
+                          <td className="px-4 py-3 sm:px-6 sm:py-4 font-semibold text-gray-700 bg-gray-50">Quick Actions</td>
+                          {comparisonProperties.map((property) => (
+                            <td key={property._id} className="px-4 py-3 sm:px-6 sm:py-4 text-[13px] sm:text-sm">
+                              <div className="flex flex-col sm:flex-row gap-2">
+                                <Link
+                                  to={`/listing/${property._id}`}
+                                  className="px-3 py-2 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors text-center"
+                                >
+                                  View Details
+                                </Link>
+                                <button
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(`${window.location.origin}/listing/${property._id}`);
+                                    toast.success('Property link copied!');
+                                  }}
+                                  className="px-3 py-2 bg-gray-600 text-white text-xs rounded-lg hover:bg-gray-700 transition-colors"
+                                >
+                                  Share Link
+                                </button>
+                              </div>
+                            </td>
+                          ))}
+                        </tr>
                         {/* Pricing */}
                         <tr className="border-b border-gray-100 bg-gray-50">
                           <td className="px-4 py-3 sm:px-6 sm:py-4 font-semibold text-gray-700">Pricing</td>
@@ -2018,8 +2047,8 @@ export default function Listing() {
                                   {data.pricing.discount > 0 && (
                                     <div className="text-xs text-green-600">Save ₹{data.pricing.discount.toLocaleString('en-IN')}</div>
                                   )}
-                                  {isLowest && <div className="text-[10px] sm:text-xs text-green-700 font-semibold">Best Value</div>}
-                                  {isHighest && <div className="text-[10px] sm:text-xs text-red-700 font-semibold">Highest Price</div>}
+                                  {isLowest && <div className="text-[10px] sm:text-xs text-green-700 font-semibold flex items-center gap-1">✅ Best Value</div>}
+                                  {isHighest && <div className="text-[10px] sm:text-xs text-red-700 font-semibold flex items-center gap-1">⚠️ Highest Price</div>}
                                 </div>
                               </td>
                             );
@@ -2142,44 +2171,7 @@ export default function Listing() {
                   </div>
                 </div>
 
-                {/* Quick Actions */}
-                <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-6 border border-purple-200">
-                  <h3 className="text-lg font-bold text-purple-800 mb-4 flex items-center gap-2">
-                    <FaRocket /> Quick Actions
-                  </h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {comparisonProperties.map((property) => (
-                      <div key={property._id} className="bg-white rounded-lg p-4 border border-purple-200">
-                        <div className="text-center">
-                          <img 
-                            src={property.imageUrls?.[0] || '/placeholder-property.jpg'} 
-                            alt={property.name}
-                            className="w-12 h-12 object-cover rounded-lg mx-auto mb-2"
-                          />
-                          <h4 className="font-medium text-gray-800 text-sm mb-2 line-clamp-1">{property.name}</h4>
-                          <div className="space-y-1">
-                            <Link
-                              to={`/listing/${property._id}`}
-                              className="block w-full bg-blue-600 text-white text-xs py-2 px-3 rounded-lg hover:bg-blue-700 transition-colors"
-                            >
-                              View Details
-                            </Link>
-                            <button
-                              onClick={() => {
-                                navigator.clipboard.writeText(`${window.location.origin}/listing/${property._id}`);
-                                toast.success('Property link copied!');
-                              }}
-                              className="block w-full bg-gray-600 text-white text-xs py-2 px-3 rounded-lg hover:bg-gray-700 transition-colors"
-                            >
-                              Share Link
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                {/* Quick Actions merged into table */}
               </div>
             </div>
 
@@ -2192,6 +2184,8 @@ export default function Listing() {
                 <div className="flex gap-2 sm:gap-3 w-full sm:w-auto justify-end">
                   <button
                     onClick={() => {
+                      const confirmed = window.confirm('Clear all compared properties?');
+                      if (!confirmed) return;
                       setComparisonProperties([]);
                       setShowComparisonModal(false);
                       toast.success('Comparison cleared');
