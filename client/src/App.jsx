@@ -26,6 +26,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast } from 'react-toastify';
 import { useSoundEffects } from './components/SoundEffects';
+import RoutePlannerAdmin from './pages/RoutePlannerAdmin';
 
 // Lazy load all pages
 const PublicHome = lazy(() => import('./pages/PublicHome'));
@@ -569,6 +570,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/admin/reviews" element={<AdminReviews />} />
             <Route path="/admin/movers" element={<AdminMovers />} />
             <Route path="/admin/services" element={<AdminServices />} />
+            <Route path="/admin/route-planner" element={<RoutePlannerAdmin />} />
             <Route path="/admin/fraudmanagement" element={<AdminFraudManagement />} />
           </Route>
 
