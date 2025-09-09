@@ -5,7 +5,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import { Navigation } from "swiper/modules";
-import { FaBath, FaBed, FaChair, FaMapMarkerAlt, FaParking, FaShare, FaEdit, FaTrash, FaArrowLeft, FaStar, FaLock, FaHeart, FaExpand, FaCheckCircle, FaFlag } from "react-icons/fa";
+import { FaBath, FaBed, FaChair, FaMapMarkerAlt, FaParking, FaShare, FaEdit, FaTrash, FaArrowLeft, FaStar, FaLock, FaHeart, FaExpand, FaCheckCircle, FaFlag, FaRuler, FaBuilding, FaTree, FaWifi, FaSwimmingPool, FaCar, FaShieldAlt, FaClock, FaPhone, FaEnvelope, FaCalendarAlt, FaEye, FaThumbsUp, FaThumbsDown, FaComments, FaCalculator, FaChartLine, FaHome, FaUtensils, FaHospital, FaSchool, FaShoppingCart, FaPlane, FaUser } from "react-icons/fa";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import ReviewForm from "../components/ReviewForm.jsx";
 import ReviewList from "../components/ReviewList.jsx";
@@ -49,6 +49,15 @@ export default function Listing() {
   const [reportCategory, setReportCategory] = useState('');
   const [reportDetails, setReportDetails] = useState('');
   const [reportLoading, setReportLoading] = useState(false);
+  
+  // Enhanced features states
+  const [showAmenities, setShowAmenities] = useState(false);
+  const [showNearbyPlaces, setShowNearbyPlaces] = useState(false);
+  const [showPriceAnalysis, setShowPriceAnalysis] = useState(false);
+  const [showContactInfo, setShowContactInfo] = useState(false);
+  const [viewCount, setViewCount] = useState(0);
+  const [similarProperties, setSimilarProperties] = useState([]);
+  const [loadingSimilar, setLoadingSimilar] = useState(false);
  
    // Lock body scroll when deletion/assign/report modals are open
    useEffect(() => {
@@ -268,6 +277,72 @@ export default function Listing() {
     }
   };
 
+  // Function to fetch similar properties
+  const fetchSimilarProperties = async () => {
+    if (!listing) return;
+    
+    setLoadingSimilar(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/listing/get?type=${listing.type}&city=${listing.city}&limit=4&exclude=${listing._id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSimilarProperties(data.filter(prop => prop._id !== listing._id).slice(0, 3));
+      }
+    } catch (error) {
+      console.error('Error fetching similar properties:', error);
+    } finally {
+      setLoadingSimilar(false);
+    }
+  };
+
+  // Function to track property view
+  const trackPropertyView = async () => {
+    if (!listing) return;
+    
+    try {
+      await fetch(`${API_BASE_URL}/api/listing/view/${listing._id}`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch (error) {
+      // Silent fail for view tracking
+    }
+  };
+
+  // Function to calculate EMI (for sale properties)
+  const calculateEMI = (principal, rate = 8.5, tenure = 20) => {
+    const monthlyRate = rate / 12 / 100;
+    const months = tenure * 12;
+    const emi = (principal * monthlyRate * Math.pow(1 + monthlyRate, months)) / 
+                (Math.pow(1 + monthlyRate, months) - 1);
+    return Math.round(emi);
+  };
+
+  // Function to get amenities list
+  const getAmenities = () => {
+    const amenities = [];
+    if (listing.parking) amenities.push({ name: 'Parking', icon: <FaCar />, color: 'text-blue-600' });
+    if (listing.furnished) amenities.push({ name: 'Furnished', icon: <FaChair />, color: 'text-green-600' });
+    if (listing.garden) amenities.push({ name: 'Garden', icon: <FaTree />, color: 'text-green-500' });
+    if (listing.swimmingPool) amenities.push({ name: 'Swimming Pool', icon: <FaSwimmingPool />, color: 'text-blue-500' });
+    if (listing.wifi) amenities.push({ name: 'WiFi', icon: <FaWifi />, color: 'text-purple-600' });
+    if (listing.security) amenities.push({ name: '24/7 Security', icon: <FaShieldAlt />, color: 'text-red-600' });
+    if (listing.gym) amenities.push({ name: 'Gym', icon: <FaBuilding />, color: 'text-orange-600' });
+    if (listing.lift) amenities.push({ name: 'Lift', icon: <FaBuilding />, color: 'text-gray-600' });
+    return amenities;
+  };
+
+  // Function to get nearby places
+  const getNearbyPlaces = () => {
+    return [
+      { name: 'Restaurants', icon: <FaUtensils />, distance: '0.5 km', count: '15+' },
+      { name: 'Hospitals', icon: <FaHospital />, distance: '1.2 km', count: '3' },
+      { name: 'Schools', icon: <FaSchool />, distance: '0.8 km', count: '5' },
+      { name: 'Shopping Malls', icon: <FaShoppingCart />, distance: '2.1 km', count: '2' },
+      { name: 'Airport', icon: <FaPlane />, distance: '25 km', count: '1' }
+    ];
+  };
+
   useEffect(() => {
     const fetchListing = async () => {
       setLoading(true);
@@ -299,6 +374,14 @@ export default function Listing() {
     };
     fetchNeighborhood();
   }, [params.listingId]);
+
+  // Track property view when listing loads
+  useEffect(() => {
+    if (listing) {
+      trackPropertyView();
+      fetchSimilarProperties();
+    }
+  }, [listing]);
 
   // Fetch owner details after listing is loaded
   useEffect(() => {
@@ -638,7 +721,212 @@ export default function Listing() {
                 <FaChair className="mr-2 text-blue-500" /> {listing.furnished ? "Furnished" : "Unfurnished"}
               </div>
             </div>
+
+            {/* Enhanced Property Features */}
+            <div className="mt-6 space-y-4">
+              {/* Property Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="bg-white p-3 rounded-lg shadow-sm text-center">
+                  <FaRuler className="mx-auto text-green-600 mb-1" />
+                  <p className="text-xs text-gray-600">Area</p>
+                  <p className="font-semibold">{listing.area || 'N/A'} sq ft</p>
+                </div>
+                <div className="bg-white p-3 rounded-lg shadow-sm text-center">
+                  <FaBuilding className="mx-auto text-purple-600 mb-1" />
+                  <p className="text-xs text-gray-600">Floor</p>
+                  <p className="font-semibold">{listing.floor || 'N/A'}</p>
+                </div>
+                <div className="bg-white p-3 rounded-lg shadow-sm text-center">
+                  <FaEye className="mx-auto text-blue-600 mb-1" />
+                  <p className="text-xs text-gray-600">Views</p>
+                  <p className="font-semibold">{listing.viewCount || '0'}</p>
+                </div>
+                <div className="bg-white p-3 rounded-lg shadow-sm text-center">
+                  <FaCalendarAlt className="mx-auto text-orange-600 mb-1" />
+                  <p className="text-xs text-gray-600">Age</p>
+                  <p className="font-semibold">{listing.propertyAge || 'N/A'} years</p>
+                </div>
+              </div>
+
+              {/* Interactive Feature Toggles */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <button
+                  onClick={() => setShowAmenities(!showAmenities)}
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all flex items-center justify-center gap-2"
+                >
+                  <FaHome />
+                  <span className="text-sm font-medium">Amenities</span>
+                </button>
+                <button
+                  onClick={() => setShowNearbyPlaces(!showNearbyPlaces)}
+                  className="bg-gradient-to-r from-green-500 to-green-600 text-white p-3 rounded-lg hover:from-green-600 hover:to-green-700 transition-all flex items-center justify-center gap-2"
+                >
+                  <FaMapMarkerAlt />
+                  <span className="text-sm font-medium">Nearby</span>
+                </button>
+                <button
+                  onClick={() => setShowPriceAnalysis(!showPriceAnalysis)}
+                  className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-3 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all flex items-center justify-center gap-2"
+                >
+                  <FaChartLine />
+                  <span className="text-sm font-medium">Price Analysis</span>
+                </button>
+                <button
+                  onClick={() => setShowContactInfo(!showContactInfo)}
+                  className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-3 rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all flex items-center justify-center gap-2"
+                >
+                  <FaPhone />
+                  <span className="text-sm font-medium">Contact</span>
+                </button>
+              </div>
+            </div>
           </div>
+
+          {/* Amenities Section */}
+          {showAmenities && (
+            <div className="p-6 bg-white shadow-md rounded-lg mb-6">
+              <h4 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <FaHome className="text-blue-600" />
+                Property Amenities
+              </h4>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {getAmenities().map((amenity, index) => (
+                  <div key={index} className="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <span className={`mr-3 ${amenity.color}`}>{amenity.icon}</span>
+                    <span className="text-sm font-medium text-gray-700">{amenity.name}</span>
+                  </div>
+                ))}
+                {getAmenities().length === 0 && (
+                  <div className="col-span-full text-center text-gray-500 py-4">
+                    No specific amenities listed
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Nearby Places Section */}
+          {showNearbyPlaces && (
+            <div className="p-6 bg-white shadow-md rounded-lg mb-6">
+              <h4 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <FaMapMarkerAlt className="text-green-600" />
+                Nearby Places
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {getNearbyPlaces().map((place, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center">
+                      <span className="mr-3 text-blue-600">{place.icon}</span>
+                      <div>
+                        <p className="font-medium text-gray-800">{place.name}</p>
+                        <p className="text-sm text-gray-600">{place.count} places</p>
+                      </div>
+                    </div>
+                    <span className="text-sm font-semibold text-green-600">{place.distance}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Price Analysis Section */}
+          {showPriceAnalysis && (
+            <div className="p-6 bg-white shadow-md rounded-lg mb-6">
+              <h4 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <FaChartLine className="text-purple-600" />
+                Price Analysis
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <h5 className="font-semibold text-blue-800 mb-2">Current Price</h5>
+                    <p className="text-2xl font-bold text-blue-600">
+                      {formatINR(listing.offer ? listing.discountPrice : listing.regularPrice)}
+                      {listing.type === "rent" && " / month"}
+                    </p>
+                    {listing.offer && (
+                      <p className="text-sm text-green-600 mt-1">
+                        Save {formatINR(listing.regularPrice - listing.discountPrice)} ({getDiscountPercentage()}% off)
+                      </p>
+                    )}
+                  </div>
+                  
+                  {listing.type === "sale" && (
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <h5 className="font-semibold text-green-800 mb-2">EMI Calculator</h5>
+                      <p className="text-lg font-bold text-green-600">
+                        ₹{calculateEMI(listing.offer ? listing.discountPrice : listing.regularPrice).toLocaleString('en-IN')} / month
+                      </p>
+                      <p className="text-xs text-gray-600 mt-1">@ 8.5% for 20 years</p>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h5 className="font-semibold text-gray-800 mb-2">Price per sq ft</h5>
+                    <p className="text-xl font-bold text-gray-700">
+                      ₹{listing.area ? Math.round((listing.offer ? listing.discountPrice : listing.regularPrice) / listing.area).toLocaleString('en-IN') : 'N/A'} / sq ft
+                    </p>
+                  </div>
+                  
+                  {neighborhood && (
+                    <div className="bg-yellow-50 p-4 rounded-lg">
+                      <h5 className="font-semibold text-yellow-800 mb-2">Area Average</h5>
+                      <p className="text-lg font-bold text-yellow-600">
+                        ₹{neighborhood.averagePriceNearby?.toLocaleString('en-IN') || 'N/A'}
+                      </p>
+                      <p className="text-xs text-gray-600 mt-1">Average price in {neighborhood.city}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Contact Information Section */}
+          {showContactInfo && ownerDetails && (
+            <div className="p-6 bg-white shadow-md rounded-lg mb-6">
+              <h4 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <FaPhone className="text-orange-600" />
+                Contact Information
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <FaEnvelope className="mr-3 text-blue-600" />
+                    <div>
+                      <p className="text-sm text-gray-600">Email</p>
+                      <p className="font-medium text-gray-800">{ownerDetails.email}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <FaPhone className="mr-3 text-green-600" />
+                    <div>
+                      <p className="text-sm text-gray-600">Phone</p>
+                      <p className="font-medium text-gray-800">{ownerDetails.mobileNumber || 'Not provided'}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <FaUser className="mr-3 text-purple-600" />
+                    <div>
+                      <p className="text-sm text-gray-600">Owner</p>
+                      <p className="font-medium text-gray-800">{ownerDetails.username}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <FaClock className="mr-3 text-orange-600" />
+                    <div>
+                      <p className="text-sm text-gray-600">Response Time</p>
+                      <p className="font-medium text-gray-800">Usually within 24 hours</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Admin Information - Only show for admins */}
           {isAdmin && isAdminContext && (
@@ -802,6 +1090,48 @@ export default function Listing() {
                   ))}
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Similar Properties Section */}
+          {similarProperties.length > 0 && (
+            <div className="mt-8 p-6 bg-white shadow-md rounded-lg mb-6">
+              <h4 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <FaHome className="text-blue-600" />
+                Similar Properties in {listing.city}
+              </h4>
+              {loadingSimilar ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {similarProperties.map((property) => (
+                    <div key={property._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow">
+                      <div className="flex items-center justify-between mb-2">
+                        <h5 className="font-semibold text-gray-800 truncate">{property.name}</h5>
+                        <span className={`px-2 py-1 text-xs rounded ${property.type === 'rent' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                          {property.type === 'rent' ? 'Rent' : 'Sale'}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-2">{property.city}, {property.state}</p>
+                      <p className="text-lg font-bold text-blue-600 mb-2">
+                        {formatINR(property.offer ? property.discountPrice : property.regularPrice)}
+                        {property.type === "rent" && " / month"}
+                      </p>
+                      <div className="flex items-center justify-between text-sm text-gray-500">
+                        <span>{property.bedrooms} bed • {property.bathrooms} bath</span>
+                        <Link 
+                          to={`/listing/${property._id}`}
+                          className="text-blue-600 hover:text-blue-800 font-medium"
+                        >
+                          View Details →
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
