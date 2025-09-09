@@ -465,7 +465,7 @@ const GeminiChatbox = () => {
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => setIsExpanded(expanded => !expanded)}
-                                    className="text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
+                                    className="hidden md:block text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
                                     title={isExpanded ? 'Collapse' : 'Expand'}
                                     aria-label={isExpanded ? 'Collapse' : 'Expand'}
                                 >
