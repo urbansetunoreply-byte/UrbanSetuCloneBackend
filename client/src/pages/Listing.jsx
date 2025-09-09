@@ -1978,12 +1978,19 @@ export default function Listing() {
                     <table className="w-full text-sm sm:text-base min-w-[640px]">
                       <thead className="bg-gray-50">
                         <tr className="border-b border-gray-200">
-                          <th className="px-4 py-3 sm:px-6 sm:py-4 text-left text-gray-700 w-1/4">Attribute</th>
+                          <th className="px-3 py-2 sm:px-6 sm:py-4 text-left text-gray-700 w-1/4">Attribute</th>
                           {comparisonProperties.map((property) => (
-                            <th key={property._id} className="px-4 py-3 sm:px-6 sm:py-4 text-left">
+                            <th key={property._id} className="px-3 py-2 sm:px-6 sm:py-4 text-left">
                               <div className="flex items-center gap-2">
                                 <img src={property.imageUrls?.[0] || '/placeholder-property.jpg'} alt={property.name} className="w-8 h-8 object-cover rounded" />
-                                <span className="font-semibold text-gray-800 text-xs sm:text-sm line-clamp-1">{property.name}</span>
+                                <span className="font-semibold text-gray-800 text-[11px] sm:text-sm line-clamp-1 flex-1 min-w-0">{property.name}</span>
+                                <button
+                                  onClick={() => removeFromComparison(property._id)}
+                                  className="ml-auto text-red-600 hover:text-red-700 text-[10px] sm:text-xs bg-red-50 hover:bg-red-100 px-2 py-1 rounded"
+                                  title="Remove from comparison"
+                                >
+                                  Remove
+                                </button>
                               </div>
                             </th>
                           ))}
@@ -1995,14 +2002,24 @@ export default function Listing() {
                           <td className="px-4 py-3 sm:px-6 sm:py-4 font-semibold text-gray-700">Pricing</td>
                           {comparisonProperties.map((property) => {
                             const data = getComparisonData(property);
+                            const isLowest = comparisonProperties.every(p => {
+                              const pData = getComparisonData(p);
+                              return data.pricing.price <= pData.pricing.price;
+                            });
+                            const isHighest = comparisonProperties.every(p => {
+                              const pData = getComparisonData(p);
+                              return data.pricing.price >= pData.pricing.price;
+                            });
                             return (
-                              <td key={property._id} className="px-4 py-3 sm:px-6 sm:py-4 text-[13px] sm:text-sm">
+                              <td key={property._id} className="px-4 py-3 sm:px-6 sm:py-4 text-[13px] sm:text-sm align-top">
                                 <div className="space-y-1">
-                                  <div className="font-bold text-green-700">₹{data.pricing.price.toLocaleString('en-IN')}{property.type === 'rent' && <span className="text-xs text-gray-500">/month</span>}</div>
+                                  <div className={`font-bold ${isLowest ? 'text-green-700' : isHighest ? 'text-red-700' : 'text-gray-800'}`}>₹{data.pricing.price.toLocaleString('en-IN')}{property.type === 'rent' && <span className="text-xs text-gray-500">/month</span>}</div>
                                   <div className="text-gray-600">₹{data.pricing.pricePerSqFt}/sq ft</div>
                                   {data.pricing.discount > 0 && (
                                     <div className="text-xs text-green-600">Save ₹{data.pricing.discount.toLocaleString('en-IN')}</div>
                                   )}
+                                  {isLowest && <div className="text-[10px] sm:text-xs text-green-700 font-semibold">Best Value</div>}
+                                  {isHighest && <div className="text-[10px] sm:text-xs text-red-700 font-semibold">Highest Price</div>}
                                 </div>
                               </td>
                             );
