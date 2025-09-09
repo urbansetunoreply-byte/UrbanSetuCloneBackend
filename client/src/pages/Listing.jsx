@@ -1942,6 +1942,17 @@ export default function Listing() {
                   <div className="bg-white bg-opacity-20 rounded-lg px-2 sm:px-3 py-0.5 sm:py-1">
                     <span className="text-[10px] sm:text-sm font-medium">{comparisonProperties.length}/4</span>
                   </div>
+                  {comparisonProperties.length < 4 && (
+                    <button
+                      onClick={() => {
+                        setShowComparisonModal(false);
+                        setShowPropertySearch(true);
+                      }}
+                      className="px-2 py-1 sm:px-3 sm:py-1.5 bg-white bg-opacity-20 hover:bg-opacity-30 rounded text-xs sm:text-sm font-medium"
+                    >
+                      + Add Properties
+                    </button>
+                  )}
                   <button
                     onClick={() => setShowComparisonModal(false)}
                     className="p-1 sm:p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
@@ -1954,114 +1965,7 @@ export default function Listing() {
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto">
-              {/* Property Cards Header */}
-              <div className="sm:sticky top-0 bg-white border-b border-gray-200 z-10">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 p-2 sm:p-4">
-                  {comparisonProperties.map((property, index) => {
-                    const data = getComparisonData(property);
-                    return (
-                      <div key={property._id} className="relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-3 sm:p-4 border-2 border-transparent hover:border-purple-300 transition-all">
-                        <button
-                          onClick={() => removeFromComparison(property._id)}
-                          className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-red-500 text-white rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center hover:bg-red-600 transition-colors z-10"
-                        >
-                          <FaTimes className="text-xs" />
-                        </button>
-                        
-                        <div className="text-center">
-                          <img 
-                            src={property.imageUrls?.[0] || '/placeholder-property.jpg'} 
-                            alt={property.name}
-                            className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg mx-auto mb-2 sm:mb-3 shadow-md"
-                          />
-                          <h3 className="font-bold text-gray-800 text-[11px] sm:text-sm mb-1 line-clamp-2">{property.name}</h3>
-                          <p className="text-gray-600 text-xs mb-2">{property.city}, {property.state}</p>
-                          
-                          <div className="space-y-1 mb-2 sm:mb-3">
-                            <div className="flex items-center justify-center gap-1 sm:gap-2 flex-wrap">
-                              <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs rounded-full font-medium ${
-                                property.type === 'rent' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
-                              }`}>
-                                {property.type === 'rent' ? 'Rent' : 'Sale'}
-                              </span>
-                              <span className="text-xs text-gray-500">{property.bhk} BHK</span>
-                            </div>
-                          </div>
-                          
-                          <div className="text-center">
-                            <div className="text-xs sm:text-lg font-bold text-green-600 mb-1">
-                              ₹{data.pricing.price.toLocaleString('en-IN')}
-                              {property.type === 'rent' && <span className="text-xs text-gray-500">/month</span>}
-                            </div>
-                            <div className="text-[10px] text-gray-500">
-                              ₹{data.pricing.pricePerSqFt}/sq ft
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Comparison Sections */}
               <div className="p-3 sm:p-6 space-y-6 sm:space-y-8">
-                {/* Pricing Analysis */}
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-3 sm:p-5 border border-green-200">
-                  <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-                    <div className="p-1.5 sm:p-2 bg-green-500 text-white rounded-lg">
-                      <FaChartLine className="text-sm sm:text-base" />
-                    </div>
-                    <h3 className="text-lg sm:text-xl font-bold text-green-800">Pricing Analysis</h3>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
-                    {comparisonProperties.map((property, index) => {
-                      const data = getComparisonData(property);
-                      const isLowest = comparisonProperties.every(p => {
-                        const pData = getComparisonData(p);
-                        return data.pricing.price <= pData.pricing.price;
-                      });
-                      const isHighest = comparisonProperties.every(p => {
-                        const pData = getComparisonData(p);
-                        return data.pricing.price >= pData.pricing.price;
-                      });
-                      
-                      return (
-                        <div key={property._id} className={`bg-white rounded-lg p-3 sm:p-4 border-2 ${
-                          isLowest ? 'border-green-400 bg-green-50' : 
-                          isHighest ? 'border-red-400 bg-red-50' : 
-                          'border-gray-200'
-                        }`}>
-                          <div className="text-center">
-                            <div className={`text-base sm:text-2xl font-bold mb-1 sm:mb-2 ${
-                              isLowest ? 'text-green-600' : 
-                              isHighest ? 'text-red-600' : 
-                              'text-gray-800'
-                            }`}>
-                              ₹{data.pricing.price.toLocaleString('en-IN')}
-                            </div>
-                            <div className="text-[11px] sm:text-sm text-gray-600 mb-1 sm:mb-2">
-                              ₹{data.pricing.pricePerSqFt}/sq ft
-                            </div>
-                            {data.pricing.discount > 0 && (
-                              <div className="text-xs text-green-600 font-medium">
-                                Save ₹{data.pricing.discount.toLocaleString('en-IN')}
-                              </div>
-                            )}
-                            {isLowest && (
-                              <div className="text-xs text-green-600 font-bold mt-1">💰 Best Value</div>
-                            )}
-                            {isHighest && (
-                              <div className="text-xs text-red-600 font-bold mt-1">💸 Highest Price</div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
                 {/* Detailed Comparison Table */}
                 <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                   <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-200">
@@ -2086,6 +1990,24 @@ export default function Listing() {
                         </tr>
                       </thead>
                       <tbody>
+                        {/* Pricing */}
+                        <tr className="border-b border-gray-100 bg-gray-50">
+                          <td className="px-4 py-3 sm:px-6 sm:py-4 font-semibold text-gray-700">Pricing</td>
+                          {comparisonProperties.map((property) => {
+                            const data = getComparisonData(property);
+                            return (
+                              <td key={property._id} className="px-4 py-3 sm:px-6 sm:py-4 text-[13px] sm:text-sm">
+                                <div className="space-y-1">
+                                  <div className="font-bold text-green-700">₹{data.pricing.price.toLocaleString('en-IN')}{property.type === 'rent' && <span className="text-xs text-gray-500">/month</span>}</div>
+                                  <div className="text-gray-600">₹{data.pricing.pricePerSqFt}/sq ft</div>
+                                  {data.pricing.discount > 0 && (
+                                    <div className="text-xs text-green-600">Save ₹{data.pricing.discount.toLocaleString('en-IN')}</div>
+                                  )}
+                                </div>
+                              </td>
+                            );
+                          })}
+                        </tr>
                         {/* Basic Information */}
                         <tr className="border-b border-gray-100">
                           <td className="px-4 py-3 sm:px-6 sm:py-4 font-semibold text-gray-700 bg-gray-50 w-1/4">Basic Information</td>
