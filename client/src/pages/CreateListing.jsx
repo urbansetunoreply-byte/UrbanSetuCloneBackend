@@ -358,6 +358,9 @@ export default function CreateListing() {
                   value={formData.area}
                   className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Area refers to the total built-up area of the property including all rooms, kitchen, bathrooms, and common areas
+                </p>
               </div>
             </div>
             
@@ -374,6 +377,9 @@ export default function CreateListing() {
                   value={formData.floor}
                   className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Floor number refers to which floor the property is located on (Ground floor = 1, First floor = 2, etc.)
+                </p>
               </div>
             </div>
             
