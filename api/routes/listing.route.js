@@ -31,6 +31,30 @@ router.get("/user/:userId", verifyToken, async (req, res, next) => {
 });
 router.delete("/delete/:id",verifyToken,deleteListing)
 router.post("/update/:id",verifyToken,updateListing)
+router.post("/view/:listingId",async (req, res, next) => {
+  try {
+    const { listingId } = req.params;
+    
+    // Find the listing and increment view count
+    const listing = await Listing.findByIdAndUpdate(
+      listingId,
+      { $inc: { viewCount: 1 } },
+      { new: true }
+    );
+    
+    if (!listing) {
+      return res.status(404).json({ message: 'Listing not found.' });
+    }
+    
+    res.status(200).json({ 
+      success: true, 
+      message: 'View counted',
+      viewCount: listing.viewCount 
+    });
+  } catch (error) {
+    next(error);
+  }
+})
 router.post("/reassign-owner/:listingId",verifyToken,reassignPropertyOwner)
 router.post("/report/:listingId",verifyToken,async (req, res, next) => {
   try {

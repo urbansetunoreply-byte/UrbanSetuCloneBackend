@@ -300,12 +300,22 @@ export default function Listing() {
     if (!listing) return;
     
     try {
-      await fetch(`${API_BASE_URL}/api/listing/view/${listing._id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/listing/view/${listing._id}`, {
         method: 'POST',
         credentials: 'include'
       });
+      
+      if (res.ok) {
+        const data = await res.json();
+        // Update the listing state with the new view count
+        setListing(prev => ({
+          ...prev,
+          viewCount: data.viewCount
+        }));
+      }
     } catch (error) {
       // Silent fail for view tracking
+      console.log('View tracking failed:', error);
     }
   };
 
