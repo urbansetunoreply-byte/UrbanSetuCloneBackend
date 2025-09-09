@@ -1924,29 +1924,29 @@ export default function Listing() {
 
       {/* Advanced Property Comparison Modal */}
       {showComparisonModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-2">
-          <div className="bg-white rounded-xl max-w-7xl w-full mx-4 max-h-[95vh] overflow-hidden shadow-2xl">
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-white rounded-xl max-w-7xl w-full mx-2 sm:mx-4 max-h-[95vh] overflow-hidden shadow-2xl">
             {/* Header */}
-            <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6">
+            <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-4 sm:p-6">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-white bg-opacity-20 rounded-lg">
-                    <FaChartLine className="text-2xl" />
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="p-1.5 sm:p-2 bg-white bg-opacity-20 rounded-lg">
+                    <FaChartLine className="text-lg sm:text-2xl" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold">Advanced Property Comparison</h2>
-                    <p className="text-purple-100 text-sm">Compare {comparisonProperties.length} properties side by side</p>
+                    <h2 className="text-lg sm:text-2xl font-bold">Property Comparison</h2>
+                    <p className="text-purple-100 text-xs sm:text-sm hidden sm:block">Compare {comparisonProperties.length} properties side by side</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="bg-white bg-opacity-20 rounded-lg px-3 py-1">
-                    <span className="text-sm font-medium">{comparisonProperties.length}/4 Properties</span>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-white bg-opacity-20 rounded-lg px-2 sm:px-3 py-1">
+                    <span className="text-xs sm:text-sm font-medium">{comparisonProperties.length}/4</span>
                   </div>
                   <button
                     onClick={() => setShowComparisonModal(false)}
-                    className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
+                    className="p-1.5 sm:p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
                   >
-                    <FaTimes className="text-xl" />
+                    <FaTimes className="text-lg sm:text-xl" />
                   </button>
                 </div>
               </div>
@@ -1956,14 +1956,14 @@ export default function Listing() {
             <div className="overflow-y-auto max-h-[calc(95vh-120px)]">
               {/* Property Cards Header */}
               <div className="sticky top-0 bg-white border-b border-gray-200 z-10">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 p-3 sm:p-6">
                   {comparisonProperties.map((property, index) => {
                     const data = getComparisonData(property);
                     return (
-                      <div key={property._id} className="relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 border-2 border-transparent hover:border-purple-300 transition-all">
+                      <div key={property._id} className="relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-3 sm:p-4 border-2 border-transparent hover:border-purple-300 transition-all">
                         <button
                           onClick={() => removeFromComparison(property._id)}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors z-10"
+                          className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-red-500 text-white rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center hover:bg-red-600 transition-colors z-10"
                         >
                           <FaTimes className="text-xs" />
                         </button>
@@ -1972,14 +1972,14 @@ export default function Listing() {
                           <img 
                             src={property.imageUrls?.[0] || '/placeholder-property.jpg'} 
                             alt={property.name}
-                            className="w-20 h-20 object-cover rounded-lg mx-auto mb-3 shadow-md"
+                            className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg mx-auto mb-2 sm:mb-3 shadow-md"
                           />
-                          <h3 className="font-bold text-gray-800 text-sm mb-1 line-clamp-2">{property.name}</h3>
+                          <h3 className="font-bold text-gray-800 text-xs sm:text-sm mb-1 line-clamp-2">{property.name}</h3>
                           <p className="text-gray-600 text-xs mb-2">{property.city}, {property.state}</p>
                           
-                          <div className="space-y-1 mb-3">
-                            <div className="flex items-center justify-center gap-2">
-                              <span className={`px-2 py-1 text-xs rounded-full font-medium ${
+                          <div className="space-y-1 mb-2 sm:mb-3">
+                            <div className="flex items-center justify-center gap-1 sm:gap-2 flex-wrap">
+                              <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs rounded-full font-medium ${
                                 property.type === 'rent' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
                               }`}>
                                 {property.type === 'rent' ? 'Rent' : 'Sale'}
@@ -1989,7 +1989,7 @@ export default function Listing() {
                           </div>
                           
                           <div className="text-center">
-                            <div className="text-lg font-bold text-green-600 mb-1">
+                            <div className="text-sm sm:text-lg font-bold text-green-600 mb-1">
                               ₹{data.pricing.price.toLocaleString('en-IN')}
                               {property.type === 'rent' && <span className="text-xs text-gray-500">/month</span>}
                             </div>
@@ -2005,17 +2005,17 @@ export default function Listing() {
               </div>
 
               {/* Comparison Sections */}
-              <div className="p-6 space-y-8">
+              <div className="p-3 sm:p-6 space-y-6 sm:space-y-8">
                 {/* Pricing Analysis */}
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 bg-green-500 text-white rounded-lg">
-                      <FaChartLine />
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 sm:p-6 border border-green-200">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+                    <div className="p-1.5 sm:p-2 bg-green-500 text-white rounded-lg">
+                      <FaChartLine className="text-sm sm:text-base" />
                     </div>
-                    <h3 className="text-xl font-bold text-green-800">Pricing Analysis</h3>
+                    <h3 className="text-lg sm:text-xl font-bold text-green-800">Pricing Analysis</h3>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                     {comparisonProperties.map((property, index) => {
                       const data = getComparisonData(property);
                       const isLowest = comparisonProperties.every(p => {
@@ -2028,20 +2028,20 @@ export default function Listing() {
                       });
                       
                       return (
-                        <div key={property._id} className={`bg-white rounded-lg p-4 border-2 ${
+                        <div key={property._id} className={`bg-white rounded-lg p-3 sm:p-4 border-2 ${
                           isLowest ? 'border-green-400 bg-green-50' : 
                           isHighest ? 'border-red-400 bg-red-50' : 
                           'border-gray-200'
                         }`}>
                           <div className="text-center">
-                            <div className={`text-2xl font-bold mb-2 ${
+                            <div className={`text-lg sm:text-2xl font-bold mb-1 sm:mb-2 ${
                               isLowest ? 'text-green-600' : 
                               isHighest ? 'text-red-600' : 
                               'text-gray-800'
                             }`}>
                               ₹{data.pricing.price.toLocaleString('en-IN')}
                             </div>
-                            <div className="text-sm text-gray-600 mb-2">
+                            <div className="text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2">
                               ₹{data.pricing.pricePerSqFt}/sq ft
                             </div>
                             {data.pricing.discount > 0 && (
