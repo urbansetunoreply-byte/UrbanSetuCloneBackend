@@ -374,7 +374,9 @@ const GeminiChatbox = () => {
             setMessages(prev => [...prev, { 
                 role: 'assistant', 
                 content: errorMessage,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                isError: true,
+                originalUserMessage: lastUserMessageRef.current
             }]);
             if (!isOpen) {
                 setUnreadCount(count => count + 1);
@@ -404,6 +406,90 @@ const GeminiChatbox = () => {
             document.execCommand('copy');
             document.body.removeChild(textArea);
             toast.success('Message copied to clipboard!');
+        }
+    };
+
+    const retryMessage = async (originalMessage, messageIndex) => {
+        if (!originalMessage || isLoading) return;
+        
+        setIsLoading(true);
+        
+        // Remove the error message
+        setMessages(prev => prev.filter((_, index) => index !== messageIndex));
+        
+        try {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+            const currentSessionId = getOrCreateSessionId();
+            
+            // Support cancelling with AbortController
+            abortControllerRef.current?.abort();
+            abortControllerRef.current = new AbortController();
+            
+            const response = await fetch(`${API_BASE_URL}/api/gemini/chat`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: originalMessage,
+                    history: messages.slice(-10), // Send last 10 messages for context
+                    sessionId: currentSessionId
+                }),
+                signal: abortControllerRef.current.signal
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            
+            if (data && data.response && typeof data.response === 'string') {
+                const trimmedResponse = data.response.trim();
+                setMessages(prev => [...prev, { 
+                    role: 'assistant', 
+                    content: trimmedResponse, 
+                    timestamp: new Date().toISOString() 
+                }]);
+                
+                // Update session ID if provided in response
+                if (data.sessionId && data.sessionId !== sessionId) {
+                    setSessionId(data.sessionId);
+                    localStorage.setItem('gemini_session_id', data.sessionId);
+                }
+            } else {
+                throw new Error('Invalid response structure from server');
+            }
+        } catch (error) {
+            console.error('Error in retryMessage:', error);
+            let errorMessage = 'Sorry, I\'m having trouble connecting right now. Please try again later.';
+            
+            if (error.name === 'AbortError') {
+                setIsLoading(false);
+                return;
+            }
+
+            if (error.message.includes('timeout')) {
+                errorMessage = 'Request timed out. The response is taking longer than expected. Please try again.';
+            } else if (error.message.includes('HTTP error')) {
+                errorMessage = 'Server error. Please try again later.';
+            } else if (error.message.includes('Invalid response structure')) {
+                errorMessage = 'I received an invalid response. Please try again.';
+            } else if (error.message.includes('Failed to fetch')) {
+                errorMessage = 'Network error. Please check your connection and try again.';
+            }
+            
+            setMessages(prev => [...prev, { 
+                role: 'assistant', 
+                content: errorMessage,
+                timestamp: new Date().toISOString(),
+                isError: true,
+                originalUserMessage: originalMessage
+            }]);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -494,16 +580,6 @@ const GeminiChatbox = () => {
                                 >
                                     Export
                                 </button>
-                                {lastUserMessageRef.current && !isLoading && (
-                                    <button
-                                        onClick={() => { setInputMessage(lastUserMessageRef.current); setTimeout(() => handleSubmit(new Event('submit')), 0); }}
-                                        className="text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
-                                        title="Retry last"
-                                        aria-label="Retry last"
-                                    >
-                                        Retry
-                                    </button>
-                                )}
                                 {/* Hide clear button when no user messages */}
                                 {messages && (messages.length > 1 || messages.some(m => m.role === 'user')) && (
                                     <button
@@ -535,25 +611,45 @@ const GeminiChatbox = () => {
                                         className={`max-w-[85%] p-3 rounded-2xl break-words relative group ${
                                             message.role === 'user'
                                                 ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
-                                                : 'bg-gray-100 text-gray-800'
+                                                : message.isError 
+                                                    ? 'bg-red-100 text-red-800 border border-red-200'
+                                                    : 'bg-gray-100 text-gray-800'
                                         }`}
                                     >
                                         <p className="text-sm whitespace-pre-wrap leading-relaxed pr-8">{formatLinksInText(message.content, message.role === 'user')}</p>
                                         {message.timestamp && (
-                                            <div className={`${message.role === 'user' ? 'text-white/80' : 'text-gray-500'} text-[10px] mt-1`}>
+                                            <div className={`${message.role === 'user' ? 'text-white/80' : message.isError ? 'text-red-600' : 'text-gray-500'} text-[10px] mt-1`}>
                                                 {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                             </div>
                                         )}
 
-                                        {/* Copy icon for all messages (sent and received) */}
-                                        <button
-                                            onClick={() => copyToClipboard(message.content)}
-                                            className="absolute top-2 right-2 p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-all duration-200 opacity-0 group-hover:opacity-100"
-                                            title="Copy message"
-                                            aria-label="Copy message"
-                                        >
-                                            <FaCopy size={14} />
-                                        </button>
+                                        {/* Action buttons */}
+                                        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                                            {/* Copy icon for all messages */}
+                                            <button
+                                                onClick={() => copyToClipboard(message.content)}
+                                                className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-all duration-200"
+                                                title="Copy message"
+                                                aria-label="Copy message"
+                                            >
+                                                <FaCopy size={14} />
+                                            </button>
+                                            
+                                            {/* Retry button for failed messages */}
+                                            {message.isError && message.originalUserMessage && (
+                                                <button
+                                                    onClick={() => retryMessage(message.originalUserMessage, index)}
+                                                    disabled={isLoading}
+                                                    className="p-1 text-red-600 hover:text-red-700 hover:bg-red-200 rounded transition-all duration-200 disabled:opacity-50"
+                                                    title="Retry message"
+                                                    aria-label="Retry message"
+                                                >
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                                        <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                                                    </svg>
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             ))}
