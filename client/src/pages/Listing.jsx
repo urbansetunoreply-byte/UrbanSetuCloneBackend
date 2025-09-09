@@ -72,6 +72,31 @@ export default function Listing() {
   const [showPriceAnalysisTooltip, setShowPriceAnalysisTooltip] = useState(false);
   const [showInsightsTooltip, setShowInsightsTooltip] = useState(false);
   const [showReviewsTooltip, setShowReviewsTooltip] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({ open: false, type: null, propertyId: null, origin: null, message: '' });
+
+  const openConfirm = (type, { propertyId = null, origin = null, message = 'Are you sure?' } = {}) => {
+    setConfirmModal({ open: true, type, propertyId, origin, message });
+  };
+
+  const closeConfirm = () => setConfirmModal({ open: false, type: null, propertyId: null, origin: null, message: '' });
+
+  const confirmYes = () => {
+    const { type, propertyId, origin } = confirmModal;
+    if (type === 'remove-one' && propertyId) {
+      removeFromComparison(propertyId);
+    }
+    if (type === 'clear-all') {
+      setComparisonProperties([]);
+      if (origin === 'comparison') {
+        setShowComparisonModal(false);
+        setShowPropertySearch(true);
+      } else if (origin === 'search') {
+        // keep search modal open to add more
+        setShowPropertySearch(true);
+      }
+    }
+    closeConfirm();
+  };
 
    // Lock body scroll when deletion/assign/report/calculator/comparison/search modals are open
    useEffect(() => {
@@ -1860,6 +1885,19 @@ export default function Listing() {
         </div>
       )}
 
+      {/* Confirm Modal */}
+      {confirmModal.open && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-sm">
+            <div className="px-4 py-3 border-b border-gray-200 font-semibold">Confirm</div>
+            <div className="px-4 py-4 text-gray-700 text-sm">{confirmModal.message}</div>
+            <div className="px-4 py-3 border-t border-gray-200 flex gap-2 justify-end">
+              <button onClick={closeConfirm} className="px-4 py-2 rounded bg-gray-200 text-gray-800 text-sm">Cancel</button>
+              <button onClick={confirmYes} className="px-4 py-2 rounded bg-red-600 text-white text-sm">Yes</button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Assign New Owner Modal */}
       {showAssignOwnerModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
@@ -1985,11 +2023,7 @@ export default function Listing() {
                                 <img src={property.imageUrls?.[0] || '/placeholder-property.jpg'} alt={property.name} className="w-8 h-8 object-cover rounded" />
                                 <span className="font-semibold text-gray-800 text-[11px] sm:text-sm line-clamp-1 flex-1 min-w-0">{property.name}</span>
                                 <button
-                                  onClick={() => {
-                                    const confirmed = window.confirm('Remove this property from comparison?');
-                                    if (!confirmed) return;
-                                    removeFromComparison(property._id);
-                                  }}
+                                  onClick={() => openConfirm('remove-one', { propertyId: property._id, message: 'Remove this property from comparison?' })}
                                   className="ml-auto text-red-600 hover:text-red-700 text-[10px] sm:text-xs bg-red-50 hover:bg-red-100 px-2 py-1 rounded"
                                   title="Remove from comparison"
                                 >
@@ -2183,13 +2217,7 @@ export default function Listing() {
                 </div>
                 <div className="flex gap-2 sm:gap-3 w-full sm:w-auto justify-end">
                   <button
-                    onClick={() => {
-                      const confirmed = window.confirm('Clear all compared properties?');
-                      if (!confirmed) return;
-                      setComparisonProperties([]);
-                      setShowComparisonModal(false);
-                      toast.success('Comparison cleared');
-                    }}
+                    onClick={() => openConfirm('clear-all', { origin: 'comparison', message: 'Clear all compared properties? You can add new ones next.' })}
                     className="px-3 py-2 sm:px-4 sm:py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2 text-sm"
                   >
                     <FaTrash className="text-sm" />
@@ -2256,7 +2284,7 @@ export default function Listing() {
                       placeholder="Search properties by name, location, type, BHK, or amenities..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-10 pr-12 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg shadow-sm"
+                      className="w-full pl-10 pr-10 py-3 sm:py-4 border border-gray-300 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base sm:text-lg shadow-sm"
                     />
                     {searchLoading && (
                       <div className="absolute right-4 top-4">
@@ -2544,23 +2572,14 @@ export default function Listing() {
                     
                     <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
                       <button
-                        onClick={() => {
-                          setShowPropertySearch(false);
-                          setSearchQuery('');
-                          setSearchResults([]);
-                        }}
+                        onClick={() => setShowPropertySearch(false)}
                         className="w-full sm:w-auto px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
                       >
                         Close
                       </button>
                       {comparisonProperties.length >= 2 && (
                         <button
-                          onClick={() => {
-                            setShowPropertySearch(false);
-                            setSearchQuery('');
-                            setSearchResults([]);
-                            setShowComparisonModal(true);
-                          }}
+                          onClick={() => setShowComparisonModal(true)}
                           className="w-full sm:w-auto px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all font-medium flex items-center justify-center gap-2"
                         >
                           <FaChartLine />
