@@ -2245,26 +2245,26 @@ export default function Listing() {
             </div>
 
             {/* Footer Actions */}
-            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:py-4 border-t border-gray-200">
+            <div className="bg-gray-50 px-3 py-2 sm:px-6 sm:py-4 border-t border-gray-200 sticky bottom-0">
               <div className="flex items-center justify-between">
                 <div className="text-xs sm:text-sm text-gray-600">
                   Comparing {comparisonProperties.length} properties • Last updated: {new Date().toLocaleDateString()}
                 </div>
-                <div className="flex gap-2 sm:gap-3">
+                <div className="flex gap-2 sm:gap-3 w-full sm:w-auto justify-end">
                   <button
                     onClick={() => {
                       setComparisonProperties([]);
                       setShowComparisonModal(false);
                       toast.success('Comparison cleared');
                     }}
-                    className="px-3 py-1.5 sm:px-4 sm:py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2 text-sm"
+                    className="px-3 py-2 sm:px-4 sm:py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2 text-sm"
                   >
                     <FaTrash className="text-sm" />
                     Clear All
                   </button>
                   <button
                     onClick={() => setShowComparisonModal(false)}
-                    className="px-4 py-1.5 sm:px-6 sm:py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm"
+                    className="px-4 py-2 sm:px-6 sm:py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm"
                   >
                     Close
                   </button>
@@ -2280,7 +2280,7 @@ export default function Listing() {
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-2">
           <div className="bg-white rounded-xl max-w-5xl w-full mx-4 h-[90vh] flex flex-col overflow-hidden shadow-2xl">
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 sm:p-4">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 sm:p-4 sticky top-0 z-10">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-white bg-opacity-20 rounded-lg">
@@ -2365,7 +2365,7 @@ export default function Listing() {
                           const canAdd = !isAlreadyAdded && comparisonProperties.length < 4;
                           
                           return (
-                            <div key={property._id} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:border-purple-300">
+                            <div key={property._id} className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 hover:shadow-lg transition-all duration-300 hover:border-purple-300 relative overflow-hidden">
                               <div className="flex gap-4">
                                 <div className="relative">
                                   <img 
@@ -2374,7 +2374,7 @@ export default function Listing() {
                                     className="w-20 h-20 object-cover rounded-lg shadow-md"
                                   />
                                   {property.offer && (
-                                    <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                                    <div className="absolute top-1 right-1 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
                                       OFFER
                                     </div>
                                   )}
@@ -2416,7 +2416,7 @@ export default function Listing() {
                                     )}
                                   </div>
                                   
-                                  <div className="flex items-center justify-between">
+                                  <div className="flex items-center justify-between gap-2">
                                     <div>
                                       <div className="text-xl font-bold text-green-600">
                                         ₹{(property.offer ? property.discountPrice : property.regularPrice).toLocaleString('en-IN')}
@@ -2429,17 +2429,17 @@ export default function Listing() {
                                       )}
                                     </div>
                                     
-                                    <div className="flex gap-2">
+                                    <div className="flex flex-wrap gap-2 min-w-0">
                                       <Link
                                         to={`/listing/${property._id}`}
-                                        className="px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                                        className="px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors w-full sm:w-auto"
                                       >
                                         View
                                       </Link>
                                       <button
                                         onClick={() => addPropertyFromSearch(property)}
                                         disabled={!canAdd}
-                                        className={`px-4 py-2 text-sm rounded-lg font-medium transition-colors ${
+                                        className={`px-4 py-2 text-sm rounded-lg font-medium transition-colors w-full sm:w-auto ${
                                           isAlreadyAdded 
                                             ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
                                             : canAdd 
