@@ -62,10 +62,13 @@ export default function Listing() {
   const [showCalculatorModal, setShowCalculatorModal] = useState(false);
   const [daysListed, setDaysListed] = useState(0);
   const [viewTracked, setViewTracked] = useState(false);
- 
-   // Lock body scroll when deletion/assign/report/calculator modals are open
+  const [showComparisonModal, setShowComparisonModal] = useState(false);
+  const [comparisonProperties, setComparisonProperties] = useState([]);
+  const [showComparisonTooltip, setShowComparisonTooltip] = useState(false);
+
+   // Lock body scroll when deletion/assign/report/calculator/comparison modals are open
    useEffect(() => {
-     const shouldLock = showReasonModal || showPasswordModal || showAssignOwnerModal || showReportModal || showCalculatorModal;
+     const shouldLock = showReasonModal || showPasswordModal || showAssignOwnerModal || showReportModal || showCalculatorModal || showComparisonModal;
      if (shouldLock) {
        document.body.classList.add('modal-open');
      } else {
@@ -74,7 +77,7 @@ export default function Listing() {
      return () => {
        document.body.classList.remove('modal-open');
      };
-   }, [showReasonModal, showPasswordModal, showAssignOwnerModal, showReportModal, showCalculatorModal]);
+   }, [showReasonModal, showPasswordModal, showAssignOwnerModal, showReportModal, showCalculatorModal, showComparisonModal]);
  
    // Check if user is admin
   const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'rootadmin';
@@ -334,6 +337,88 @@ export default function Listing() {
     return Math.round(emi);
   };
 
+  // Function to add property to comparison
+  const addToComparison = (property) => {
+    if (!currentUser) {
+      setShowComparisonTooltip(true);
+      setTimeout(() => setShowComparisonTooltip(false), 3000);
+      return;
+    }
+
+    if (comparisonProperties.length >= 4) {
+      toast.error('You can compare maximum 4 properties');
+      return;
+    }
+
+    if (comparisonProperties.some(p => p._id === property._id)) {
+      toast.error('Property already added to comparison');
+      return;
+    }
+
+    setComparisonProperties(prev => [...prev, property]);
+    toast.success('Property added to comparison');
+  };
+
+  // Function to remove property from comparison
+  const removeFromComparison = (propertyId) => {
+    setComparisonProperties(prev => prev.filter(p => p._id !== propertyId));
+    toast.success('Property removed from comparison');
+  };
+
+  // Function to open comparison modal
+  const openComparisonModal = () => {
+    if (!currentUser) {
+      setShowComparisonTooltip(true);
+      setTimeout(() => setShowComparisonTooltip(false), 3000);
+      return;
+    }
+
+    if (comparisonProperties.length < 2) {
+      toast.error('Please select at least 2 properties to compare');
+      return;
+    }
+
+    setShowComparisonModal(true);
+  };
+
+  // Function to get comparison data for a property
+  const getComparisonData = (property) => {
+    return {
+      basicInfo: {
+        name: property.name,
+        location: `${property.city}, ${property.state}`,
+        type: property.type,
+        bhk: property.bhk,
+        furnished: property.furnished ? 'Furnished' : 'Unfurnished'
+      },
+      pricing: {
+        price: property.offer ? property.discountPrice : property.regularPrice,
+        pricePerSqFt: property.area ? Math.round((property.offer ? property.discountPrice : property.regularPrice) / property.area) : 'N/A',
+        originalPrice: property.regularPrice,
+        discount: property.offer ? property.regularPrice - property.discountPrice : 0
+      },
+      size: {
+        area: property.area || 'N/A',
+        floor: property.floor !== undefined && property.floor !== null && property.floor !== '' ? 
+               (property.floor == 0 ? 'Ground Floor' : `Floor ${property.floor}`) : 'Not specified',
+        age: property.propertyAge || 'N/A'
+      },
+      amenities: {
+        parking: property.parking ? 'Yes' : 'No',
+        wifi: property.wifi ? 'Yes' : 'No',
+        powerBackup: property.powerBackup ? 'Yes' : 'No',
+        lift: property.lift ? 'Yes' : 'No',
+        gym: property.gym ? 'Yes' : 'No',
+        security: property.security ? 'Yes' : 'No'
+      },
+      reviews: {
+        rating: property.averageRating || 0,
+        totalReviews: property.reviewCount || 0,
+        views: property.viewCount || 0
+      }
+    };
+  };
+
   // Function to get amenities list
   const getAmenities = () => {
     const amenities = [];
@@ -534,6 +619,24 @@ export default function Listing() {
               >
                 <FaArrowLeft /> {backButtonInfo.text}
               </button>
+              
+              {/* Comparison Button */}
+              <div className="relative">
+                <button
+                  onClick={() => addToComparison(listing)}
+                  className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-3 py-2 text-sm sm:px-6 sm:py-3 sm:text-base rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2"
+                >
+                  <FaChartLine /> + Compare
+                </button>
+                
+                {/* Comparison Tooltip */}
+                {showComparisonTooltip && (
+                  <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
+                    Please sign in to use comparison tool
+                    <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
+                  </div>
+                )}
+              </div>
             </div>
             
             {/* Owner Edit Button - Show for property owners in non-admin context */}
@@ -566,6 +669,51 @@ export default function Listing() {
               </div>
             )}
           </div>
+
+          {/* Floating Comparison Panel */}
+          {comparisonProperties.length > 0 && (
+            <div className="fixed bottom-4 right-4 bg-white rounded-lg shadow-lg border border-purple-200 p-4 z-40 max-w-sm">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-purple-700 flex items-center gap-2">
+                  <FaChartLine /> Comparison ({comparisonProperties.length}/4)
+                </h3>
+                <button
+                  onClick={() => setComparisonProperties([])}
+                  className="text-red-500 hover:text-red-700 text-sm"
+                >
+                  Clear All
+                </button>
+              </div>
+              
+              <div className="space-y-2 mb-3">
+                {comparisonProperties.map((property) => (
+                  <div key={property._id} className="flex items-center justify-between bg-gray-50 rounded p-2">
+                    <div className="flex items-center gap-2">
+                      <img 
+                        src={property.imageUrls?.[0] || '/placeholder-property.jpg'} 
+                        alt={property.name}
+                        className="w-8 h-8 object-cover rounded"
+                      />
+                      <span className="text-sm font-medium truncate max-w-[150px]">{property.name}</span>
+                    </div>
+                    <button
+                      onClick={() => removeFromComparison(property._id)}
+                      className="text-red-500 hover:text-red-700 text-xs"
+                    >
+                      <FaTimes />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              
+              <button
+                onClick={openComparisonModal}
+                className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors font-medium"
+              >
+                Compare Now
+              </button>
+            </div>
+          )}
 
           <h3 className="text-3xl font-extrabold text-blue-700 mb-6 text-center drop-shadow">
             Property Details {isAdmin && isAdminContext && "(Admin View)"}
@@ -1571,6 +1719,171 @@ export default function Listing() {
               propertyPrice={listing.offer ? listing.discountPrice : listing.regularPrice}
               propertyName={listing.name}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Property Comparison Modal */}
+      {showComparisonModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2">
+          <div className="bg-white rounded-lg max-w-7xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-purple-700 flex items-center gap-2">
+                  <FaChartLine /> Property Comparison Tool
+                </h2>
+                <button
+                  onClick={() => setShowComparisonModal(false)}
+                  className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <FaTimes className="text-lg" />
+                </button>
+              </div>
+
+              {/* Comparison Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-gray-300">
+                  <thead>
+                    <tr className="bg-purple-50">
+                      <th className="border border-gray-300 p-3 text-left font-semibold text-purple-800">Property</th>
+                      {comparisonProperties.map((property, index) => (
+                        <th key={property._id} className="border border-gray-300 p-3 text-center font-semibold text-purple-800 min-w-[200px]">
+                          <div className="flex flex-col items-center">
+                            <img 
+                              src={property.imageUrls?.[0] || '/placeholder-property.jpg'} 
+                              alt={property.name}
+                              className="w-16 h-16 object-cover rounded-lg mb-2"
+                            />
+                            <span className="text-sm font-medium">{property.name}</span>
+                            <button
+                              onClick={() => removeFromComparison(property._id)}
+                              className="mt-1 text-red-500 hover:text-red-700 text-xs"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* Basic Information */}
+                    <tr className="bg-gray-50">
+                      <td className="border border-gray-300 p-3 font-semibold text-gray-700">Basic Information</td>
+                      {comparisonProperties.map((property) => (
+                        <td key={property._id} className="border border-gray-300 p-3 text-sm">
+                          <div className="space-y-1">
+                            <div><strong>Location:</strong> {property.city}, {property.state}</div>
+                            <div><strong>Type:</strong> {property.type}</div>
+                            <div><strong>BHK:</strong> {property.bhk}</div>
+                            <div><strong>Furnished:</strong> {property.furnished ? 'Yes' : 'No'}</div>
+                          </div>
+                        </td>
+                      ))}
+                    </tr>
+
+                    {/* Pricing */}
+                    <tr>
+                      <td className="border border-gray-300 p-3 font-semibold text-gray-700">Pricing</td>
+                      {comparisonProperties.map((property) => {
+                        const data = getComparisonData(property);
+                        return (
+                          <td key={property._id} className="border border-gray-300 p-3 text-sm">
+                            <div className="space-y-1">
+                              <div><strong>Price:</strong> ₹{data.pricing.price.toLocaleString('en-IN')}</div>
+                              <div><strong>Per Sq Ft:</strong> ₹{data.pricing.pricePerSqFt}</div>
+                              {data.pricing.discount > 0 && (
+                                <div className="text-green-600"><strong>Discount:</strong> ₹{data.pricing.discount.toLocaleString('en-IN')}</div>
+                              )}
+                            </div>
+                          </td>
+                        );
+                      })}
+                    </tr>
+
+                    {/* Size & Layout */}
+                    <tr className="bg-gray-50">
+                      <td className="border border-gray-300 p-3 font-semibold text-gray-700">Size & Layout</td>
+                      {comparisonProperties.map((property) => {
+                        const data = getComparisonData(property);
+                        return (
+                          <td key={property._id} className="border border-gray-300 p-3 text-sm">
+                            <div className="space-y-1">
+                              <div><strong>Area:</strong> {data.size.area} sq ft</div>
+                              <div><strong>Floor:</strong> {data.size.floor}</div>
+                              <div><strong>Age:</strong> {data.size.age} years</div>
+                            </div>
+                          </td>
+                        );
+                      })}
+                    </tr>
+
+                    {/* Amenities */}
+                    <tr>
+                      <td className="border border-gray-300 p-3 font-semibold text-gray-700">Amenities</td>
+                      {comparisonProperties.map((property) => {
+                        const data = getComparisonData(property);
+                        return (
+                          <td key={property._id} className="border border-gray-300 p-3 text-sm">
+                            <div className="space-y-1">
+                              <div><strong>Parking:</strong> {data.amenities.parking}</div>
+                              <div><strong>Wi-Fi:</strong> {data.amenities.wifi}</div>
+                              <div><strong>Power Backup:</strong> {data.amenities.powerBackup}</div>
+                              <div><strong>Lift:</strong> {data.amenities.lift}</div>
+                              <div><strong>Gym:</strong> {data.amenities.gym}</div>
+                              <div><strong>Security:</strong> {data.amenities.security}</div>
+                            </div>
+                          </td>
+                        );
+                      })}
+                    </tr>
+
+                    {/* Reviews & Ratings */}
+                    <tr className="bg-gray-50">
+                      <td className="border border-gray-300 p-3 font-semibold text-gray-700">Reviews & Ratings</td>
+                      {comparisonProperties.map((property) => {
+                        const data = getComparisonData(property);
+                        return (
+                          <td key={property._id} className="border border-gray-300 p-3 text-sm">
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-1">
+                                <strong>Rating:</strong>
+                                {[...Array(5)].map((_, i) => (
+                                  <FaStar key={i} className={i < data.reviews.rating ? 'text-yellow-400' : 'text-gray-300'} size={12} />
+                                ))}
+                                <span>({data.reviews.rating})</span>
+                              </div>
+                              <div><strong>Reviews:</strong> {data.reviews.totalReviews}</div>
+                              <div><strong>Views:</strong> {data.reviews.views}</div>
+                            </div>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-center gap-4 mt-6">
+                <button
+                  onClick={() => setShowComparisonModal(false)}
+                  className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    setComparisonProperties([]);
+                    setShowComparisonModal(false);
+                    toast.success('Comparison cleared');
+                  }}
+                  className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                >
+                  Clear All
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
