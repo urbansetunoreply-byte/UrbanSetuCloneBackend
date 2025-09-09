@@ -69,7 +69,9 @@ export default function Listing() {
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showSignInTooltip, setShowSignInTooltip] = useState(false);
+  const [showPriceAnalysisTooltip, setShowPriceAnalysisTooltip] = useState(false);
+  const [showInsightsTooltip, setShowInsightsTooltip] = useState(false);
+  const [showReviewsTooltip, setShowReviewsTooltip] = useState(false);
 
    // Lock body scroll when deletion/assign/report/calculator/comparison/search modals are open
    useEffect(() => {
@@ -513,10 +515,35 @@ export default function Listing() {
     setSearchResults(prev => prev.filter(p => p._id !== property._id));
   };
 
-  // Function to show sign-in prompt
-  const showSignInPrompt = () => {
-    setShowSignInTooltip(true);
-    setTimeout(() => setShowSignInTooltip(false), 3000);
+  // Function to show sign-in prompt for specific features
+  const showSignInPrompt = (tooltipType) => {
+    // Hide all tooltips first
+    setShowPriceAnalysisTooltip(false);
+    setShowInsightsTooltip(false);
+    setShowComparisonTooltip(false);
+    setShowReviewsTooltip(false);
+    
+    // Show the specific tooltip
+    switch(tooltipType) {
+      case 'priceAnalysis':
+        setShowPriceAnalysisTooltip(true);
+        setTimeout(() => setShowPriceAnalysisTooltip(false), 3000);
+        break;
+      case 'insights':
+        setShowInsightsTooltip(true);
+        setTimeout(() => setShowInsightsTooltip(false), 3000);
+        break;
+      case 'comparison':
+        setShowComparisonTooltip(true);
+        setTimeout(() => setShowComparisonTooltip(false), 3000);
+        break;
+      case 'reviews':
+        setShowReviewsTooltip(true);
+        setTimeout(() => setShowReviewsTooltip(false), 3000);
+        break;
+      default:
+        break;
+    }
   };
 
   // Function to get amenities list
@@ -1128,7 +1155,7 @@ export default function Listing() {
                   <button
                     onClick={() => {
                       if (!currentUser) {
-                        showSignInPrompt();
+                        showSignInPrompt('priceAnalysis');
                         return;
                       }
                       setShowPriceAnalysis(!showPriceAnalysis);
@@ -1138,7 +1165,7 @@ export default function Listing() {
                     <FaChartLine />
                     <span className="text-sm font-medium">Price Analysis</span>
                   </button>
-                  {showSignInTooltip && (
+                  {showPriceAnalysisTooltip && (
                     <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
                       Please sign in to view price analysis
                       <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
@@ -1149,7 +1176,7 @@ export default function Listing() {
                   <button
                     onClick={() => {
                       if (!currentUser) {
-                        showSignInPrompt();
+                        showSignInPrompt('insights');
                         return;
                       }
                       setShowContactInfo(!showContactInfo);
@@ -1159,7 +1186,7 @@ export default function Listing() {
                     <FaChartLine />
                     <span className="text-sm font-medium">Insights</span>
                   </button>
-                  {showSignInTooltip && (
+                  {showInsightsTooltip && (
                     <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
                       Please sign in to view insights
                       <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
@@ -1609,7 +1636,7 @@ export default function Listing() {
                           <button
                             onClick={() => {
                               if (!currentUser) {
-                                showSignInPrompt();
+                                showSignInPrompt('comparison');
                                 return;
                               }
                               addPropertyFromSearch(property);
@@ -1618,7 +1645,7 @@ export default function Listing() {
                           >
                             + Compare
                           </button>
-                          {showSignInTooltip && (
+                          {showComparisonTooltip && (
                             <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
                               Please sign in to use comparison tool
                               <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
@@ -1639,7 +1666,7 @@ export default function Listing() {
               <button
                 onClick={() => {
                   if (!currentUser) {
-                    showSignInPrompt();
+                    showSignInPrompt('reviews');
                     return;
                   }
                   setShowReviews((prev) => !prev);
@@ -1653,7 +1680,7 @@ export default function Listing() {
                   </span>
                 )}
               </button>
-              {showSignInTooltip && (
+              {showReviewsTooltip && (
                 <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
                   Please sign in to view reviews
                   <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
@@ -2201,7 +2228,7 @@ export default function Listing() {
                             <button
                               onClick={() => {
                                 if (!currentUser) {
-                                  showSignInPrompt();
+                                  showSignInPrompt('comparison');
                                   return;
                                 }
                                 addPropertyFromSearch(property);
@@ -2210,7 +2237,7 @@ export default function Listing() {
                             >
                               Add
                             </button>
-                            {showSignInTooltip && (
+                            {showComparisonTooltip && (
                               <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
                                 Please sign in to use comparison tool
                                 <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
