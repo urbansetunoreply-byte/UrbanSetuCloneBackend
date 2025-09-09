@@ -1597,12 +1597,6 @@ export default function Listing() {
                       </p>
                       <div className="flex items-center justify-between text-sm text-gray-500 mb-2">
                         <span>{property.bedrooms} bed • {property.bathrooms} bath</span>
-                        <Link 
-                          to={`/listing/${property._id}`}
-                          className="text-blue-600 hover:text-blue-800 font-medium"
-                        >
-                          View Details →
-                        </Link>
                       </div>
                       <div className="flex gap-2">
                         <Link 
@@ -1611,12 +1605,26 @@ export default function Listing() {
                         >
                           View Details
                         </Link>
-                        <button
-                          onClick={() => addPropertyFromSearch(property)}
-                          className="bg-purple-600 text-white py-2 px-3 rounded text-sm hover:bg-purple-700 transition-colors"
-                        >
-                          + Compare
-                        </button>
+                        <div className="relative">
+                          <button
+                            onClick={() => {
+                              if (!currentUser) {
+                                showSignInPrompt();
+                                return;
+                              }
+                              addPropertyFromSearch(property);
+                            }}
+                            className="bg-purple-600 text-white py-2 px-3 rounded text-sm hover:bg-purple-700 transition-colors"
+                          >
+                            + Compare
+                          </button>
+                          {showSignInTooltip && (
+                            <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
+                              Please sign in to use comparison tool
+                              <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -2189,12 +2197,26 @@ export default function Listing() {
                               ₹{(property.offer ? property.discountPrice : property.regularPrice).toLocaleString('en-IN')}
                             </p>
                           </div>
-                          <button
-                            onClick={() => addPropertyFromSearch(property)}
-                            className="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700 transition-colors"
-                          >
-                            Add
-                          </button>
+                          <div className="relative">
+                            <button
+                              onClick={() => {
+                                if (!currentUser) {
+                                  showSignInPrompt();
+                                  return;
+                                }
+                                addPropertyFromSearch(property);
+                              }}
+                              className="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700 transition-colors"
+                            >
+                              Add
+                            </button>
+                            {showSignInTooltip && (
+                              <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
+                                Please sign in to use comparison tool
+                                <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}
