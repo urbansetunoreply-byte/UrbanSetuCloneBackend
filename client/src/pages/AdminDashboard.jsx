@@ -29,6 +29,7 @@ export default function AdminDashboard() {
   const [rentListings, setRentListings] = useState([]);
   const [appointmentCount, setAppointmentCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [sentimentSummary, setSentimentSummary] = useState({ positive:0, negative:0, neutral:0, topWords: [] });
   
   // Enhanced analytics state
   const [analytics, setAnalytics] = useState({
@@ -73,6 +74,21 @@ export default function AdminDashboard() {
       dropoffs: []
     }
   });
+  useEffect(() => {
+    const fetchSentiment = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/ai/sentiment/summary`);
+        const data = await res.json();
+        if (data && typeof data === 'object') setSentimentSummary({
+          positive: data.positive||0,
+          negative: data.negative||0,
+          neutral: data.neutral||0,
+          topWords: Array.isArray(data.topWords)? data.topWords.slice(0,10) : []
+        });
+      } catch (e) {}
+    };
+    fetchSentiment();
+  }, []);
 
   // Booking statistics state
   const [bookingStats, setBookingStats] = useState({
