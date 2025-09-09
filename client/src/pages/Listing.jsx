@@ -1927,7 +1927,7 @@ export default function Listing() {
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-2 sm:p-4">
           <div className="bg-white rounded-xl max-w-7xl w-full mx-2 sm:mx-4 h-[95vh] flex flex-col overflow-hidden shadow-2xl">
             {/* Header */}
-            <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-3 sm:p-4">
+            <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-3 sm:p-4 sticky top-0 z-10">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="p-1 sm:p-2 bg-white bg-opacity-20 rounded-lg">
@@ -2583,9 +2583,9 @@ export default function Listing() {
                 )}
 
                 {/* Enhanced Footer Actions */}
-                <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-6 mt-8 border border-gray-200">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+                <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-4 sm:p-6 mt-8 border border-gray-200">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
+                    <div className="flex items-center gap-3 sm:gap-4">
                       <div className="bg-white rounded-lg px-4 py-2 shadow-sm">
                         <div className="text-sm font-medium text-gray-700">
                           {comparisonProperties.length} of 4 properties selected
@@ -2609,14 +2609,14 @@ export default function Listing() {
                       )}
                     </div>
                     
-                    <div className="flex gap-3">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
                       <button
                         onClick={() => {
                           setShowPropertySearch(false);
                           setSearchQuery('');
                           setSearchResults([]);
                         }}
-                        className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
+                        className="w-full sm:w-auto px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
                       >
                         Close
                       </button>
@@ -2628,7 +2628,7 @@ export default function Listing() {
                             setSearchResults([]);
                             setShowComparisonModal(true);
                           }}
-                          className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all font-medium flex items-center gap-2"
+                          className="w-full sm:w-auto px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all font-medium flex items-center justify-center gap-2"
                         >
                           <FaChartLine />
                           Compare Now
