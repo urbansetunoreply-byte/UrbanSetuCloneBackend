@@ -60,6 +60,7 @@ export default function Listing() {
   const [similarProperties, setSimilarProperties] = useState([]);
   const [loadingSimilar, setLoadingSimilar] = useState(false);
   const [showCalculatorModal, setShowCalculatorModal] = useState(false);
+  const [daysListed, setDaysListed] = useState(0);
  
    // Lock body scroll when deletion/assign/report/calculator modals are open
    useEffect(() => {
@@ -344,23 +345,30 @@ export default function Listing() {
     return amenities;
   };
 
-  // Function to get nearby places with dynamic data
+  // Function to get nearby places with static data based on property
   const getNearbyPlaces = () => {
     if (!listing) return [];
     
-    // Generate dynamic distances based on property location and type
-    const baseDistance = Math.random() * 2 + 0.3; // 0.3 to 2.3 km
-    const hospitalDistance = Math.random() * 3 + 0.5; // 0.5 to 3.5 km
-    const schoolDistance = Math.random() * 2 + 0.2; // 0.2 to 2.2 km
-    const mallDistance = Math.random() * 5 + 1; // 1 to 6 km
-    const airportDistance = Math.random() * 30 + 15; // 15 to 45 km
+    // Use property ID hash to generate consistent values
+    const propertyId = listing._id;
+    const hash = propertyId.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
     
-    // Generate dynamic counts based on city size
-    const citySize = listing.city?.toLowerCase().includes('mumbai') || listing.city?.toLowerCase().includes('delhi') || listing.city?.toLowerCase().includes('bangalore') ? 'large' : 'medium';
-    const restaurantCount = citySize === 'large' ? Math.floor(Math.random() * 20) + 20 : Math.floor(Math.random() * 15) + 10;
-    const hospitalCount = Math.floor(Math.random() * 5) + 2;
-    const schoolCount = Math.floor(Math.random() * 8) + 3;
-    const mallCount = Math.floor(Math.random() * 4) + 1;
+    // Generate consistent distances based on property ID
+    const baseDistance = (Math.abs(hash) % 200) / 100 + 0.3; // 0.3 to 2.3 km
+    const hospitalDistance = (Math.abs(hash * 2) % 300) / 100 + 0.5; // 0.5 to 3.5 km
+    const schoolDistance = (Math.abs(hash * 3) % 200) / 100 + 0.2; // 0.2 to 2.2 km
+    const mallDistance = (Math.abs(hash * 4) % 500) / 100 + 1; // 1 to 6 km
+    const airportDistance = (Math.abs(hash * 5) % 3000) / 100 + 15; // 15 to 45 km
+    
+    // Generate consistent counts based on city and property ID
+    const cityMultiplier = listing.city === 'Mumbai' || listing.city === 'Delhi' || listing.city === 'Bangalore' ? 1.5 : 1;
+    const restaurantCount = Math.floor((Math.abs(hash * 6) % 200) / 10 * cityMultiplier) + 10;
+    const hospitalCount = Math.floor((Math.abs(hash * 7) % 50) / 10 * cityMultiplier) + 3;
+    const schoolCount = Math.floor((Math.abs(hash * 8) % 80) / 10 * cityMultiplier) + 5;
+    const mallCount = Math.floor((Math.abs(hash * 9) % 30) / 10 * cityMultiplier) + 2;
     
     return [
       { 
@@ -438,6 +446,11 @@ export default function Listing() {
     if (listing) {
       trackPropertyView();
       fetchSimilarProperties();
+      // Calculate days listed once
+      const createdDate = new Date(listing.createdAt);
+      const currentDate = new Date();
+      const daysDiff = Math.floor((currentDate - createdDate) / (1000 * 60 * 60 * 24));
+      setDaysListed(daysDiff);
     }
   }, [listing]);
 
@@ -1003,7 +1016,9 @@ export default function Listing() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-600">Days Listed</span>
-                        <span className="font-semibold text-blue-600">{Math.floor((new Date() - new Date(listing.createdAt)) / (1000 * 60 * 60 * 24))} days</span>
+                        <span className="font-semibold text-blue-600">
+                          {daysListed > 0 ? `${daysListed} days` : 'Today'}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-600">Interest Level</span>
