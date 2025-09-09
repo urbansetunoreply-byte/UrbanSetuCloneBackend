@@ -6,6 +6,7 @@ import "swiper/css/bundle";
 import "swiper/css/effect-fade";
 import "swiper/css/pagination";
 import ListingItem from "../components/ListingItem";
+import { useSelector } from "react-redux";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import GeminiAIWrapper from "../components/GeminiAIWrapper";
 
@@ -15,11 +16,13 @@ export default function Home() {
   const [offerListings, setOfferListings] = useState([]);
   const [saleListings, setSaleListings] = useState([]);
   const [rentListings, setRentListings] = useState([]);
+  const [recommendedListings, setRecommendedListings] = useState([]);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isSliderVisible, setIsSliderVisible] = useState(false);
   const swiperRef = useRef(null);
   const navigate = useNavigate();
   const isUser = window.location.pathname.startsWith('/user');
+  const { currentUser } = useSelector((state) => state.user);
 
   useEffect(() => {
     const fetchOfferListings = async () => {
@@ -56,6 +59,25 @@ export default function Home() {
     fetchRentListings();
     fetchSaleListings();
   }, []);
+
+  // Fetch recommended listings for logged-in users
+  useEffect(() => {
+    const fetchRecommended = async () => {
+      if (!currentUser?._id) {
+        setRecommendedListings([]);
+        return;
+      }
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/listing/recommended?userId=${currentUser._id}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        setRecommendedListings(Array.isArray(data) ? data : (data?.listings || []));
+      } catch (error) {
+        console.error("Error fetching recommended listings", error);
+      }
+    };
+    fetchRecommended();
+  }, [currentUser?._id]);
 
   // Trigger slider visibility animation after component mounts
   useEffect(() => {
@@ -221,6 +243,22 @@ export default function Home() {
 
       {/* Listings Section */}
       <div className="max-w-6xl w-full mx-auto px-2 sm:px-4 md:px-8 py-8 overflow-x-hidden">
+        {/* Recommended Listings (signed-in only) */}
+        {currentUser && recommendedListings.length > 0 && (
+          <div className="mb-8 bg-white rounded-xl shadow-lg p-6 animate-fade-in-up">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-blue-700">✨ Recommended for You</h2>
+              <Link to={isUser ? "/user/search" : "/search"} className="text-blue-600 hover:underline">See More</Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+              {recommendedListings.map((listing) => (
+                <div className="transition-transform duration-300 hover:scale-105 hover:shadow-xl" key={listing._id}>
+                  <ListingItem listing={listing} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         {/* Offer Listings */}
         {offerListings.length > 0 && (
           <div className="mb-8 bg-white rounded-xl shadow-lg p-6 animate-fade-in-up delay-800">
