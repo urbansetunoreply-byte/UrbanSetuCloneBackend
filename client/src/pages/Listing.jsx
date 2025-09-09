@@ -1925,7 +1925,7 @@ export default function Listing() {
       {/* Advanced Property Comparison Modal */}
       {showComparisonModal && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-2 sm:p-4">
-          <div className="bg-white rounded-xl max-w-7xl w-full mx-2 sm:mx-4 max-h-[95vh] overflow-hidden shadow-2xl">
+          <div className="bg-white rounded-xl max-w-7xl w-full mx-2 sm:mx-4 h-[95vh] flex flex-col overflow-hidden shadow-2xl">
             {/* Header */}
             <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-4 sm:p-6">
               <div className="flex items-center justify-between">
@@ -1953,7 +1953,7 @@ export default function Listing() {
             </div>
 
             {/* Content */}
-            <div className="overflow-y-auto max-h-[calc(95vh-120px)]">
+            <div className="flex-1 overflow-y-auto">
               {/* Property Cards Header */}
               <div className="sticky top-0 bg-white border-b border-gray-200 z-10">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 p-3 sm:p-6">
