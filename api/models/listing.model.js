@@ -77,6 +77,18 @@ const listingSchema = new mongoose.Schema({
         type: String,
         required: false
     },
+    area: {
+        type: Number,
+        required: false
+    },
+    floor: {
+        type: Number,
+        required: false
+    },
+    propertyAge: {
+        type: Number,
+        required: false
+    },
     userRef: {
         type: String,
         required: true

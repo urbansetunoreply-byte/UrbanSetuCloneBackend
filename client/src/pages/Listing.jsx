@@ -492,7 +492,7 @@ export default function Listing() {
     <>
       <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
         <div className="max-w-4xl w-full mx-auto bg-white rounded-xl shadow-lg p-3 sm:p-6 relative overflow-x-hidden">
-          {/* Header with Back Button and Admin Actions */}
+          {/* Header with Back Button and Actions */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
               <button
@@ -502,6 +502,20 @@ export default function Listing() {
                 <FaArrowLeft /> {backButtonInfo.text}
               </button>
             </div>
+            
+            {/* Owner Edit Button - Show for property owners in non-admin context */}
+            {currentUser && !isAdminContext && (listing.sellerId === currentUser._id || listing.userRef === currentUser._id) && (
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Link
+                  to={`/user/update-listing/${listing._id}`}
+                  className="bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-2 text-sm sm:px-6 sm:py-3 sm:text-base rounded-lg hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2"
+                >
+                  <FaEdit /> Edit Property
+                </Link>
+              </div>
+            )}
+            
+            {/* Admin Actions - Show for admins in admin context */}
             {isAdmin && isAdminContext && (
               <div className="flex items-center gap-2 sm:gap-3">
                 <Link
