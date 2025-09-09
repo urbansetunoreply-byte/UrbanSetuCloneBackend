@@ -2071,7 +2071,20 @@ export default function Listing() {
                   </div>
                   
                   <div className="overflow-x-auto">
-                    <table className="w-full text-sm sm:text-base">
+                    <table className="w-full text-sm sm:text-base min-w-[640px]">
+                      <thead className="bg-gray-50">
+                        <tr className="border-b border-gray-200">
+                          <th className="px-4 py-3 sm:px-6 sm:py-4 text-left text-gray-700 w-1/4">Attribute</th>
+                          {comparisonProperties.map((property) => (
+                            <th key={property._id} className="px-4 py-3 sm:px-6 sm:py-4 text-left">
+                              <div className="flex items-center gap-2">
+                                <img src={property.imageUrls?.[0] || '/placeholder-property.jpg'} alt={property.name} className="w-8 h-8 object-cover rounded" />
+                                <span className="font-semibold text-gray-800 text-xs sm:text-sm line-clamp-1">{property.name}</span>
+                              </div>
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
                       <tbody>
                         {/* Basic Information */}
                         <tr className="border-b border-gray-100">
@@ -2265,17 +2278,17 @@ export default function Listing() {
       {/* Advanced Property Search Modal */}
       {showPropertySearch && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-2">
-          <div className="bg-white rounded-xl max-w-5xl w-full mx-4 max-h-[90vh] overflow-hidden shadow-2xl">
+          <div className="bg-white rounded-xl max-w-5xl w-full mx-4 h-[90vh] flex flex-col overflow-hidden shadow-2xl">
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-white bg-opacity-20 rounded-lg">
                     <FaChartLine className="text-2xl" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold">Add Properties to Compare</h2>
-                    <p className="text-blue-100 text-sm">Search and select properties for detailed comparison</p>
+                    <h2 className="text-lg sm:text-2xl font-bold">Add Properties to Compare</h2>
+                    <p className="text-blue-100 text-xs sm:text-sm">Search and select properties for detailed comparison</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -2297,7 +2310,7 @@ export default function Listing() {
             </div>
 
             {/* Content */}
-            <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
+            <div className="flex-1 overflow-y-auto">
               <div className="p-6">
                 {/* Advanced Search Input */}
                 <div className="mb-6">
