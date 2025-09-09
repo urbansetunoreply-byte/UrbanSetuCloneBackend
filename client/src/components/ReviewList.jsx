@@ -35,6 +35,10 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
   const [reportLoading, setReportLoading] = useState(false);
   const [replyLikeLoading, setReplyLikeLoading] = useState({});
   const [expandedReplies, setExpandedReplies] = useState({});
+  const [showRemovalModal, setShowRemovalModal] = useState(false);
+  const [reviewToRemove, setReviewToRemove] = useState(null);
+  const [removalReason, setRemovalReason] = useState('');
+  const [removalNote, setRemovalNote] = useState('');
 
   useEffect(() => {
     fetchReviews();
@@ -215,6 +219,46 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
         toast.success('Review deleted successfully');
       } else {
         toast.error(data.message || 'Failed to delete review');
+      }
+    } catch (error) {
+      toast.error('Network error. Please try again.');
+    }
+  };
+
+  const handleRemoveReview = async () => {
+    if (!removalReason) {
+      toast.error('Please select a removal reason');
+      return;
+    }
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/review/admin/remove/${reviewToRemove._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ 
+          reason: removalReason, 
+          note: removalNote 
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setReviews(reviews.map(review => 
+          review._id === reviewToRemove._id 
+            ? { ...review, status: 'removed', removalReason, removalNote } 
+            : review
+        ));
+        setShowRemovalModal(false);
+        setReviewToRemove(null);
+        setRemovalReason('');
+        setRemovalNote('');
+        toast.success('Review removed successfully');
+        if (onReviewDeleted) {
+          onReviewDeleted();
+        }
+      } else {
+        toast.error(data.message || 'Failed to remove review');
       }
     } catch (error) {
       toast.error('Network error. Please try again.');
@@ -741,9 +785,18 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                 )}
                 {/* Delete button - for user's own reviews or admin */}
                 <button
-                  onClick={() => handleDeleteReview(review._id)}
+                  onClick={() => {
+                    if (isAdminUser(currentUser)) {
+                      // Admin: Show removal modal
+                      setReviewToRemove(review);
+                      setShowRemovalModal(true);
+                    } else {
+                      // User: Direct delete
+                      handleDeleteReview(review._id);
+                    }
+                  }}
                   className="text-red-600 hover:text-red-800 p-1"
-                  title={isAdminUser(currentUser) ? "Delete review (Admin)" : "Delete review"}
+                  title={isAdminUser(currentUser) ? "Remove review (Admin)" : "Delete review"}
                 >
                   <FaTrash />
                 </button>
@@ -1104,6 +1157,73 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                 disabled={reportLoading || !reportCategory || (reportCategory === 'other' && !reportReason.trim())}
               >
                 {reportLoading ? 'Reporting...' : 'Submit Report'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Removal Modal */}
+      {showRemovalModal && reviewToRemove && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2">
+          <div className="bg-white rounded-lg p-4 sm:p-6 max-w-xs sm:max-w-md w-full mx-2 sm:mx-4">
+            <h2 className="text-xl font-semibold mb-4">Remove Review</h2>
+            <p className="text-gray-600 mb-4">
+              Are you sure you want to remove this review? This action cannot be undone.
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Removal Reason *
+                </label>
+                <select
+                  value={removalReason}
+                  onChange={(e) => {
+                    setRemovalReason(e.target.value);
+                    if (e.target.value) {
+                      toast.info(`Selected removal reason: ${e.target.value}`);
+                    }
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select a reason</option>
+                  <option value="spam">Spam</option>
+                  <option value="inappropriate">Inappropriate content</option>
+                  <option value="fake">Fake review</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Additional Note (Optional)
+                </label>
+                <textarea
+                  value={removalNote}
+                  onChange={(e) => setRemovalNote(e.target.value)}
+                  rows="3"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Provide additional details..."
+                />
+              </div>
+            </div>
+            <div className="flex space-x-3 mt-6">
+              <button
+                onClick={handleRemoveReview}
+                className="flex-1 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+              >
+                Remove Review
+              </button>
+              <button
+                onClick={() => {
+                  setShowRemovalModal(false);
+                  setReviewToRemove(null);
+                  setRemovalReason('');
+                  setRemovalNote('');
+                  toast.info('Review removal cancelled');
+                }}
+                className="flex-1 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+              >
+                Cancel
               </button>
             </div>
           </div>
