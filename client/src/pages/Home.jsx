@@ -68,7 +68,7 @@ export default function Home() {
         return;
       }
       try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/recommended?userId=${currentUser._id}`);
+        const res = await fetch(`${API_BASE_URL}/api/ai/recommendations?userId=${currentUser._id}`);
         if (!res.ok) return;
         const data = await res.json();
         setRecommendedListings(Array.isArray(data) ? data : (data?.listings || []));
