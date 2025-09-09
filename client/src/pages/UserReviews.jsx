@@ -19,6 +19,25 @@ export default function UserReviews() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [reviewToDelete, setReviewToDelete] = useState(null);
 
+  // Lock body scroll when delete modal is open
+  useEffect(() => {
+    if (showDeleteModal) {
+      // Prevent background scroll on all devices
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    };
+  }, [showDeleteModal]);
+
   useEffect(() => {
     fetchUserReviews();
   }, []);

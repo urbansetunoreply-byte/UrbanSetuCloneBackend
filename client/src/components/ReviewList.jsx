@@ -42,6 +42,26 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [reviewToDelete, setReviewToDelete] = useState(null);
 
+  // Lock body scroll when modals are open
+  useEffect(() => {
+    const shouldLock = showRemovalModal || showDeleteModal || reportingReview;
+    if (shouldLock) {
+      // Prevent background scroll on all devices
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    };
+  }, [showRemovalModal, showDeleteModal, reportingReview]);
+
   useEffect(() => {
     fetchReviews();
     // Listen for real-time review updates
