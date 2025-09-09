@@ -29,6 +29,8 @@ export default function AdminCreateListing() {
     furnished: false,
     locationLink: "",
     area: "",
+    floor: "",
+    propertyAge: "",
     assignToEmail: "", // New field for email assignment
   });
 
@@ -478,21 +480,55 @@ export default function AdminCreateListing() {
                 <span className="font-medium">For Rent</span>
               </label>
             </div>
-            {formData.type === "sale" && (
-              <div className="mt-4">
-                <div className="flex flex-col">
-                  <span className="text-gray-700 font-medium mb-1">Area (sq ft)</span>
-                  <input
-                    type="number"
-                    id="area"
-                    placeholder="Enter property area in square feet"
-                    onChange={onHandleChanges}
-                    value={formData.area}
-                    className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
+            <div className="mt-4">
+              <div className="flex flex-col">
+                <span className="text-gray-700 font-medium mb-1">Area (sq ft) *</span>
+                <input
+                  type="number"
+                  id="area"
+                  placeholder="Enter property area in square feet"
+                  required
+                  onChange={onHandleChanges}
+                  value={formData.area}
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
-            )}
+            </div>
+            
+            <div className="mt-4">
+              <div className="flex flex-col">
+                <span className="text-gray-700 font-medium mb-1">Floor Number *</span>
+                <input
+                  type="number"
+                  id="floor"
+                  placeholder="Enter floor number (e.g., 1, 2, 3...)"
+                  required
+                  min="1"
+                  onChange={onHandleChanges}
+                  value={formData.floor}
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+            
+            <div className="mt-4">
+              <div className="flex flex-col">
+                <span className="text-gray-700 font-medium mb-1">Property Age (years) *</span>
+                <input
+                  type="number"
+                  id="propertyAge"
+                  placeholder="Enter property age in years (0 for new construction)"
+                  required
+                  min="0"
+                  onChange={onHandleChanges}
+                  value={formData.propertyAge}
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Property age refers to how many years ago the property was constructed/built
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Property Details */}
