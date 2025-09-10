@@ -6,7 +6,6 @@ import Listing from "../models/listing.model.js";
 import User from "../models/user.model.js";
 import { verifyToken } from '../utils/verify.js';
 import crypto from 'crypto';
-import { toast } from 'react-toastify';
 
 const router = express.Router();
 
