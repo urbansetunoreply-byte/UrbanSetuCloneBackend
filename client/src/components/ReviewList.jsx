@@ -42,9 +42,9 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [reviewToDelete, setReviewToDelete] = useState(null);
 
-  // Lock body scroll when modals are open
+  // Lock body scroll when modals are open (including edit modal)
   useEffect(() => {
-    const shouldLock = showRemovalModal || showDeleteModal || reportingReview;
+    const shouldLock = showRemovalModal || showDeleteModal || reportingReview || editingReview;
     if (shouldLock) {
       // Prevent background scroll on all devices
       document.body.style.overflow = 'hidden';
@@ -60,7 +60,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
       document.body.style.position = '';
       document.body.style.width = '';
     };
-  }, [showRemovalModal, showDeleteModal, reportingReview]);
+  }, [showRemovalModal, showDeleteModal, reportingReview, editingReview]);
 
   useEffect(() => {
     fetchReviews();

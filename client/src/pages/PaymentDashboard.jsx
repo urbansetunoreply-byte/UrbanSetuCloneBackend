@@ -71,6 +71,7 @@ const PaymentDashboard = () => {
             <button
               onClick={fetchPaymentStats}
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+              title="Refresh stats"
             >
               <FaSpinner className="animate-spin" />
               Refresh
@@ -231,6 +232,7 @@ const PaymentDashboard = () => {
                   
                   <button
                     className="bg-green-100 text-green-800 p-4 rounded-lg hover:bg-green-200 transition-colors flex items-center gap-3"
+                    title="Export CSV of payments"
                   >
                     <FaDownload className="text-xl" />
                     <div className="text-left">

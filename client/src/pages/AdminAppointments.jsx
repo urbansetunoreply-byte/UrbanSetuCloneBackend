@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
-import { FaTrash, FaSearch, FaPen, FaPaperPlane, FaUser, FaEnvelope, FaCalendar, FaPhone, FaUserShield, FaArchive, FaUndo, FaCommentDots, FaCheck, FaCheckDouble, FaBan, FaTimes, FaLightbulb, FaCopy, FaEllipsisV, FaInfoCircle, FaSync, FaStar, FaRegStar, FaFlag, FaCalendarAlt, FaCheckSquare, FaDownload } from "react-icons/fa";
+import { FaTrash, FaSearch, FaPen, FaPaperPlane, FaUser, FaEnvelope, FaCalendar, FaPhone, FaUserShield, FaArchive, FaUndo, FaCommentDots, FaCheck, FaCheckDouble, FaBan, FaTimes, FaLightbulb, FaCopy, FaEllipsisV, FaInfoCircle, FaSync, FaStar, FaRegStar, FaFlag, FaCalendarAlt, FaCheckSquare, FaDownload, FaSpinner, FaRupeeSign } from "react-icons/fa";
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch } from '../utils/linkFormatter.jsx';
 import UserAvatar from '../components/UserAvatar';
 import ImagePreview from '../components/ImagePreview';
@@ -900,6 +900,7 @@ export default function AdminAppointments() {
                     <tr className="bg-gradient-to-r from-gray-100 to-gray-200">
                       <th className="border p-2">Date & Time</th>
                       <th className="border p-2">Property</th>
+                      <th className="border p-2">Payment</th>
                       <th className="border p-2">Buyer</th>
                       <th className="border p-2">Seller</th>
                       <th className="border p-2">Purpose</th>
@@ -971,6 +972,7 @@ export default function AdminAppointments() {
                   <tr className="bg-gradient-to-r from-blue-100 to-purple-100">
                     <th className="border p-2">Date & Time</th>
                     <th className="border p-2">Property</th>
+                    <th className="border p-2">Payment</th>
                     <th className="border p-2">Buyer</th>
                     <th className="border p-2">Seller</th>
                     <th className="border p-2">Purpose</th>
@@ -3138,6 +3140,9 @@ function AdminAppointmentRow({
             <div className="font-semibold">{appt.propertyName}</div>
           )}
         </div>
+      </td>
+      <td className="border p-2 text-center">
+        <AdminPaymentStatusCell appointmentId={appt._id} />
       </td>
       <td className="border p-2">
         <button
@@ -6352,3 +6357,73 @@ function AdminAppointmentRow({
     </tr>
   );
 }
+<<<<<<< Current (Your changes)
+=======
+
+function AdminPaymentStatusCell({ appointmentId }) {
+  const [payment, setPayment] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    async function fetchPayment() {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/payments/history?appointmentId=${appointmentId}`, { credentials: 'include' });
+        const data = await res.json();
+        if (res.ok && Array.isArray(data.payments) && data.payments.length > 0) {
+          setPayment(data.payments[0]);
+        } else {
+          setPayment(null);
+        }
+      } catch {
+        setPayment(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchPayment();
+  }, [appointmentId]);
+
+  if (loading) {
+    return <FaSpinner className="animate-spin text-blue-600 mx-auto" />;
+  }
+
+  if (!payment) {
+    return <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">No Payment</span>;
+  }
+
+  const color = payment.status === 'completed'
+    ? 'bg-green-100 text-green-800'
+    : payment.status === 'pending'
+    ? 'bg-yellow-100 text-yellow-800'
+    : payment.status === 'failed'
+    ? 'bg-red-100 text-red-800'
+    : payment.status === 'refunded'
+    ? 'bg-blue-100 text-blue-800'
+    : payment.status === 'partially_refunded'
+    ? 'bg-orange-100 text-orange-800'
+    : 'bg-gray-100 text-gray-800';
+
+  const label = payment.status === 'completed'
+    ? 'Paid'
+    : payment.status === 'pending'
+    ? 'Pending'
+    : payment.status === 'failed'
+    ? 'Failed'
+    : payment.status === 'refunded'
+    ? 'Refunded'
+    : payment.status === 'partially_refunded'
+    ? 'Partial Refund'
+    : payment.status;
+
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${color}`}>{label}</span>
+      {typeof payment.amount === 'number' && (
+        <div className="text-[10px] text-gray-500 inline-flex items-center gap-1">
+          <FaRupeeSign /> {payment.amount}
+        </div>
+      )}
+    </div>
+  );
+}
+>>>>>>> Incoming (Background Agent changes)

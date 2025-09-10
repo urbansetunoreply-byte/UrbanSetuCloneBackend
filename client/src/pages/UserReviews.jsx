@@ -21,7 +21,7 @@ export default function UserReviews() {
 
   // Lock body scroll when delete modal is open
   useEffect(() => {
-    if (showDeleteModal) {
+    if (showDeleteModal || editingReview) {
       // Prevent background scroll on all devices
       document.body.style.overflow = 'hidden';
       document.body.style.position = 'fixed';
@@ -36,7 +36,7 @@ export default function UserReviews() {
       document.body.style.position = '';
       document.body.style.width = '';
     };
-  }, [showDeleteModal]);
+  }, [showDeleteModal, editingReview]);
 
   useEffect(() => {
     fetchUserReviews();
