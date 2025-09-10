@@ -577,3 +577,76 @@ export const notifyAdminsGeneric = async (req, res, next) => {
     next(error);
   }
 };
+
+// Notify watchlist users about property changes
+export const notifyWatchlistUsers = async (app, { listing, changeType, oldPrice, newPrice, oldStatus, newStatus }) => {
+  try {
+    const PropertyWatchlist = (await import('../models/propertyWatchlist.model.js')).default;
+    const watchers = await PropertyWatchlist.find({ listingId: listing._id });
+    if (!watchers.length) return [];
+
+    const io = app.get('io');
+    const notifications = [];
+    
+    for (const w of watchers) {
+      let title, message, type;
+      
+      switch (changeType) {
+        case 'price_drop':
+          title = 'Price Drop Alert! 🎉';
+          message = `Great news! "${listing.name}" price dropped from ₹${oldPrice?.toLocaleString('en-IN')} to ₹${newPrice?.toLocaleString('en-IN')}. Check it out now!`;
+          type = 'watchlist_price_drop';
+          break;
+        case 'price_increase':
+          title = 'Price Update';
+          message = `"${listing.name}" price has been updated from ₹${oldPrice?.toLocaleString('en-IN')} to ₹${newPrice?.toLocaleString('en-IN')}.`;
+          type = 'watchlist_price_update';
+          break;
+        case 'property_sold':
+          title = 'Property No Longer Available';
+          message = `"${listing.name}" has been sold and is no longer available.`;
+          type = 'watchlist_property_sold';
+          break;
+        case 'property_removed':
+          title = 'Property Removed';
+          message = `"${listing.name}" has been removed from our platform.`;
+          type = 'watchlist_property_removed';
+          break;
+        case 'property_trending':
+          title = 'Property is Trending! 🔥';
+          message = `"${listing.name}" is now trending and getting lots of attention. Don't miss out!`;
+          type = 'watchlist_property_trending';
+          break;
+        case 'status_change':
+          title = 'Property Status Updated';
+          message = `"${listing.name}" status changed from ${oldStatus} to ${newStatus}.`;
+          type = 'watchlist_status_update';
+          break;
+        default:
+          title = 'Property Update';
+          message = `"${listing.name}" has been updated. Check it out!`;
+          type = 'watchlist_update';
+      }
+
+      const notification = await Notification.create({
+        userId: w.userId,
+        listingId: listing._id,
+        type,
+        title,
+        message,
+        link: `/listing/${listing._id}`
+      });
+      
+      notifications.push(notification);
+      
+      if (io) {
+        io.to(w.userId.toString()).emit('notificationCreated', notification);
+      }
+    }
+    
+    return notifications;
+  } catch (error) {
+    console.error('Failed to notify watchlist users:', error);
+    return [];
+  }
+};

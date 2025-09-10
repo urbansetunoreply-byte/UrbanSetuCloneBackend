@@ -383,6 +383,21 @@ export default function NotificationBell({ mobile = false }) {
         return <FaTimes className="w-4 h-4 text-red-500" />;
       case 'appointment_reinitiated_by_user':
         return <FaRedo className="w-4 h-4 text-green-500" />;
+      // Watchlist notification types
+      case 'watchlist_price_drop':
+        return <FaEye className="w-4 h-4 text-green-500" />;
+      case 'watchlist_price_update':
+        return <FaEye className="w-4 h-4 text-blue-500" />;
+      case 'watchlist_property_sold':
+        return <FaTimes className="w-4 h-4 text-red-500" />;
+      case 'watchlist_property_removed':
+        return <FaTrash className="w-4 h-4 text-red-500" />;
+      case 'watchlist_property_trending':
+        return <FaEye className="w-4 h-4 text-orange-500" />;
+      case 'watchlist_status_update':
+        return <FaEdit className="w-4 h-4 text-purple-500" />;
+      case 'watchlist_update':
+        return <FaEye className="w-4 h-4 text-indigo-500" />;
       default:
         return <FaBell className="w-4 h-4 text-gray-500" />;
     }

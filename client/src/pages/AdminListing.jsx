@@ -19,6 +19,7 @@ export default function AdminListing() {
   const [loading, setLoading] = useState(true);
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [watchlistCount, setWatchlistCount] = useState(0);
 
   const formatINR = (amount) => {
     return `₹${Number(amount).toLocaleString("en-IN")}`;
@@ -61,6 +62,15 @@ export default function AdminListing() {
           return;
         }
         setListing(data);
+        
+        // Fetch watchlist count
+        const watchlistRes = await fetch(`/api/watchlist/count/${params.listingId}`, {
+          credentials: 'include'
+        });
+        if (watchlistRes.ok) {
+          const watchlistData = await watchlistRes.json();
+          setWatchlistCount(watchlistData.count || 0);
+        }
       } catch (error) {
         console.error("Error fetching listing:", error);
       } finally {
@@ -109,25 +119,42 @@ export default function AdminListing() {
     <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
       <div className="max-w-4xl w-full mx-auto bg-white rounded-xl shadow-lg p-3 sm:p-6 relative overflow-x-hidden">
         {/* Header with Back Button and Admin Actions */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-2 sm:gap-3 w-full">
-          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 w-full">
+        <div className="mb-6 w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 w-full">
             <Link 
               to="/admin"
-              className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 w-full sm:w-auto text-center"
+              className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
             >
-              Back to Dashboard
+              <FaArrowLeft className="text-sm" />
+              <span className="hidden sm:inline">Back to Dashboard</span>
+              <span className="sm:hidden">Back</span>
             </Link>
             <Link
               to={`/admin/update-listing/${listing._id}`}
-              className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 w-full sm:w-auto text-center justify-center"
+              className="bg-gradient-to-r from-green-500 to-teal-500 text-white px-4 py-3 rounded-lg hover:from-green-600 hover:to-teal-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
             >
-              <FaEdit /> Edit Property
+              <FaEdit className="text-sm" />
+              <span className="hidden sm:inline">Edit Property</span>
+              <span className="sm:hidden">Edit</span>
             </Link>
             <button
               onClick={handleDelete}
-              className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-6 py-3 rounded-lg hover:from-red-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 w-full sm:w-auto text-center justify-center"
+              className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-3 rounded-lg hover:from-red-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
             >
-              <FaTrash /> Delete Property
+              <FaTrash className="text-sm" />
+              <span className="hidden sm:inline">Delete Property</span>
+              <span className="sm:hidden">Delete</span>
+            </button>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.href);
+                toast.success('Property link copied to clipboard!');
+              }}
+              className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-4 py-3 rounded-lg hover:from-purple-600 hover:to-indigo-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
+            >
+              <FaShare className="text-sm" />
+              <span className="hidden sm:inline">Share Property</span>
+              <span className="sm:hidden">Share</span>
             </button>
           </div>
         </div>
@@ -327,7 +354,7 @@ export default function AdminListing() {
         {/* Admin Information */}
         <div className="p-6 bg-blue-50 shadow-md rounded-lg mb-6">
           <h4 className="text-xl font-bold text-blue-800 mb-4">Admin Information</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <p className="text-sm text-gray-600">Property ID</p>
               <p className="font-semibold text-gray-800">{listing._id}</p>
@@ -347,6 +374,19 @@ export default function AdminListing() {
             <div>
               <p className="text-sm text-gray-600">Created By</p>
               <p className="font-semibold text-gray-800">{listing.userRef || 'Unknown'}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Watchlist Count</p>
+              <p className="font-semibold text-purple-800 flex items-center gap-1">
+                <FaEye className="text-sm" />
+                {watchlistCount} user{watchlistCount !== 1 ? 's' : ''} watching
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Property Status</p>
+              <p className="font-semibold text-gray-800">
+                {listing.offer ? 'Special Offer' : 'Regular Listing'}
+              </p>
             </div>
           </div>
         </div>

@@ -224,7 +224,7 @@ export default function AdminDashboard() {
       const fraudRes = await fetch(`${API_BASE_URL}/api/ai/fraud/stats`);
       // Fetch watchlist statistics
       const watchlistStatsRes = await fetch(`${API_BASE_URL}/api/watchlist/stats`, { credentials: 'include' });
-      const topWatchedRes = await fetch(`${API_BASE_URL}/api/watchlist/top-watched`, { credentials: 'include' });
+      const topWatchedRes = await fetch(`${API_BASE_URL}/api/watchlist/top`, { credentials: 'include' });
 
       let usersData = [];
       let adminsData = [];

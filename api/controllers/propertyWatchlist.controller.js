@@ -72,9 +72,32 @@ export const getTopWatchedListings = async (req, res, next) => {
     const listingIds = agg.map(a => a._id);
     const listings = await Listing.find({ _id: { $in: listingIds } });
     const listingsById = new Map(listings.map(l => [l._id.toString(), l]));
-    const result = agg.map(a => ({ listing: listingsById.get(a._id.toString()), watchCount: a.count }))
-      .filter(x => !!x.listing);
+    const result = agg.map(a => ({ 
+      _id: a._id,
+      name: listingsById.get(a._id.toString())?.name || 'Unknown',
+      city: listingsById.get(a._id.toString())?.city || 'Unknown',
+      state: listingsById.get(a._id.toString())?.state || 'Unknown',
+      type: listingsById.get(a._id.toString())?.type || 'Unknown',
+      bedrooms: listingsById.get(a._id.toString())?.bedrooms || 0,
+      watchCount: a.count 
+    }))
+      .filter(x => x.name !== 'Unknown');
     res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get watchlist statistics
+export const getWatchlistStats = async (req, res, next) => {
+  try {
+    const totalWatchlists = await PropertyWatchlist.countDocuments();
+    const totalWatchedProperties = await PropertyWatchlist.distinct('listingId').then(ids => ids.length);
+    
+    res.status(200).json({
+      totalWatchlists,
+      totalWatchedProperties
+    });
   } catch (error) {
     next(error);
   }
