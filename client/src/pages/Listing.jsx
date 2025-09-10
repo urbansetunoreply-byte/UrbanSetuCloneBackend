@@ -1005,6 +1005,37 @@ export default function Listing() {
                 >
                   <FaHeart className="text-base sm:text-lg" />
                 </button>
+                
+                {/* Watchlist Eye Icon - for users only */}
+                {currentUser && (
+                  <button
+                    onClick={async () => {
+                      try {
+                        const res = await fetch(`${API_BASE_URL}/api/watchlist/add/${listing._id}`, {
+                          method: 'POST',
+                          credentials: 'include'
+                        });
+                        if (res.ok) {
+                          toast.success('Property added to watchlist! Future price insights of this property will be notified.');
+                        } else {
+                          const data = await res.json();
+                          if (data.message?.includes('already')) {
+                            toast.info('Property is already in your watchlist.');
+                          } else {
+                            toast.error('Failed to add to watchlist.');
+                          }
+                        }
+                      } catch (error) {
+                        toast.error('Failed to add to watchlist.');
+                      }
+                    }}
+                    className="ml-2 p-2 rounded-full transition z-20 bg-gray-200 text-blue-500 hover:text-blue-600 hover:bg-blue-100 focus:outline-none"
+                    title="Add to watchlist"
+                    style={{ lineHeight: 0 }}
+                  >
+                    <FaEye className="text-base sm:text-lg" />
+                  </button>
+                )}
               </h2>
               {/* Offer Badge */}
               {listing.offer && getDiscountPercentage() > 0 && (
@@ -1481,6 +1512,10 @@ export default function Listing() {
                   <div>
                     <p className="text-sm text-gray-600">Created By</p>
                     <p className="font-semibold text-gray-800">{listing.userRef || 'Unknown'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Watchlist Count</p>
+                    <p className="font-semibold text-gray-800">{listing.watchCount || 0} 👁️</p>
                   </div>
                 </div>
               </div>

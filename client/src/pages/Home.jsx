@@ -17,6 +17,7 @@ export default function Home() {
   const [saleListings, setSaleListings] = useState([]);
   const [rentListings, setRentListings] = useState([]);
   const [recommendedListings, setRecommendedListings] = useState([]);
+  const [trendingListings, setTrendingListings] = useState([]);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isSliderVisible, setIsSliderVisible] = useState(false);
   const swiperRef = useRef(null);
@@ -78,6 +79,21 @@ export default function Home() {
     };
     fetchRecommended();
   }, [currentUser?._id]);
+
+  // Fetch trending listings (highly watchlisted properties)
+  useEffect(() => {
+    const fetchTrending = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/watchlist/top-watched?limit=6`);
+        if (!res.ok) return;
+        const data = await res.json();
+        setTrendingListings(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Error fetching trending listings", error);
+      }
+    };
+    fetchTrending();
+  }, []);
 
   // Trigger slider visibility animation after component mounts
   useEffect(() => {
@@ -259,6 +275,27 @@ export default function Home() {
             </div>
           </div>
         )}
+
+        {/* Trending Listings (Popular/Highly Watchlisted) */}
+        {trendingListings.length > 0 && (
+          <div className="mb-8 bg-white rounded-xl shadow-lg p-6 animate-fade-in-up">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-purple-700 flex items-center gap-2">
+                <span className="text-3xl">🔥</span>
+                Popular/Trending Properties
+              </h2>
+              <Link to={isUser ? "/user/search" : "/search"} className="text-purple-600 hover:underline">See More</Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+              {trendingListings.map((listing) => (
+                <div className="transition-transform duration-300 hover:scale-105 hover:shadow-xl" key={listing._id}>
+                  <ListingItem listing={listing} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Offer Listings */}
         {offerListings.length > 0 && (
           <div className="mb-8 bg-white rounded-xl shadow-lg p-6 animate-fade-in-up delay-800">
