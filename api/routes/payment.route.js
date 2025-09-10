@@ -93,7 +93,7 @@ router.post("/create-intent", verifyToken, async (req, res) => {
       message: "Payment intent created successfully",
       payment: payment,
       razorpayOrder: razorpayOrder,
-      key: process.env.RAZORPAY_KEY_ID || 'rzp_test_key' // client uses this to initialize Checkout
+      key: process.env.RAZORPAY_KEY_ID || 'rzp_test_RFphKnf5uivCkc' // client uses this to initialize Checkout
     });
   } catch (err) {
     console.error("Error creating payment intent:", err);
@@ -114,7 +114,7 @@ router.post("/verify", verifyToken, async (req, res) => {
         console.warn('RAZORPAY_KEY_SECRET not configured; rejecting verification in production');
       }
       const expectedSignature = crypto
-        .createHmac('sha256', keySecret || 'test_secret')
+        .createHmac('sha256', keySecret || 'jRZdvqY0GlGVu451jk4oiBPY')
         .update(`${razorpayOrderId}|${razorpayPaymentId}`)
         .digest('hex');
       isSignatureValid = expectedSignature === razorpaySignature;
