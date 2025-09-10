@@ -6424,4 +6424,3 @@ function AdminPaymentStatusCell({ appointmentId }) {
     </div>
   );
 }
->>>>>>> Incoming (Background Agent changes)
