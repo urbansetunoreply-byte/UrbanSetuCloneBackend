@@ -6,7 +6,8 @@ import {
   removeFromWatchlist,
   getListingWatchCount,
   getTopWatchedListings,
-  getWatchlistStats
+  getWatchlistStats,
+  checkWatchlistStatus
 } from '../controllers/propertyWatchlist.controller.js';
 
 const router = express.Router();
@@ -17,6 +18,7 @@ router.get('/user/:userId', getUserWatchlist);
 router.post('/add', addToWatchlist);
 router.delete('/remove/:listingId', removeFromWatchlist);
 router.get('/count/:listingId', getListingWatchCount);
+router.get('/check/:listingId', checkWatchlistStatus);
 router.get('/top', getTopWatchedListings);
 router.get('/stats', getWatchlistStats);
 

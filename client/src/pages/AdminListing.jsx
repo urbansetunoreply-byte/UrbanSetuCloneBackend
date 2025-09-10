@@ -120,7 +120,45 @@ export default function AdminListing() {
       <div className="max-w-4xl w-full mx-auto bg-white rounded-xl shadow-lg p-3 sm:p-6 relative overflow-x-hidden">
         {/* Header with Back Button and Admin Actions */}
         <div className="mb-6 w-full">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 w-full">
+          {/* Mobile Layout - Stack buttons vertically for better mobile experience */}
+          <div className="block sm:hidden space-y-2">
+            <Link 
+              to="/admin"
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm"
+            >
+              <FaArrowLeft className="text-sm" />
+              Back to Dashboard
+            </Link>
+            <div className="grid grid-cols-2 gap-2">
+              <Link
+                to={`/admin/update-listing/${listing._id}`}
+                className="bg-gradient-to-r from-green-500 to-teal-500 text-white px-3 py-2 rounded-lg hover:from-green-600 hover:to-teal-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1 text-center justify-center text-xs"
+              >
+                <FaEdit className="text-xs" />
+                Edit
+              </Link>
+              <button
+                onClick={handleDelete}
+                className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-2 rounded-lg hover:from-red-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1 text-center justify-center text-xs"
+              >
+                <FaTrash className="text-xs" />
+                Delete
+              </button>
+            </div>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.href);
+                toast.success('Property link copied to clipboard!');
+              }}
+              className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-4 py-2 rounded-lg hover:from-purple-600 hover:to-indigo-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm"
+            >
+              <FaShare className="text-sm" />
+              Share Property
+            </button>
+          </div>
+          
+          {/* Desktop Layout - Original grid layout */}
+          <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 w-full">
             <Link 
               to="/admin"
               className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"

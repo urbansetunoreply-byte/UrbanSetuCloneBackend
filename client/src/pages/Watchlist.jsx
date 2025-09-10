@@ -18,6 +18,9 @@ export default function Watchlist() {
   const [propertySearchTerm, setPropertySearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
+  const [searchSuggestions, setSearchSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestionLoading, setSuggestionLoading] = useState(false);
 
   const fetchWatchlist = async () => {
     if (!currentUser?._id) return;
@@ -65,6 +68,42 @@ export default function Watchlist() {
     } finally {
       setSearching(false);
     }
+  };
+
+  const fetchSearchSuggestions = async (query) => {
+    if (!query.trim() || query.length < 2) {
+      setSearchSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    setSuggestionLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/listing/get?search=${encodeURIComponent(query)}&limit=5`, {
+        credentials: 'include'
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSearchSuggestions(data);
+        setShowSuggestions(true);
+      }
+    } catch (error) {
+      console.error('Error fetching suggestions:', error);
+    } finally {
+      setSuggestionLoading(false);
+    }
+  };
+
+  const handleSearchInputChange = (e) => {
+    const value = e.target.value;
+    setPropertySearchTerm(value);
+    fetchSearchSuggestions(value);
+  };
+
+  const selectSuggestion = (listing) => {
+    setPropertySearchTerm(listing.name);
+    setShowSuggestions(false);
+    setSearchSuggestions([]);
   };
 
   const addToWatchlist = async (listing) => {
@@ -218,10 +257,61 @@ export default function Watchlist() {
                   type="text"
                   placeholder="Search properties by name, city, or state..."
                   value={propertySearchTerm}
-                  onChange={(e) => setPropertySearchTerm(e.target.value)}
+                  onChange={handleSearchInputChange}
                   onKeyPress={(e) => e.key === 'Enter' && searchProperties()}
+                  onFocus={() => propertySearchTerm.length >= 2 && setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
+                
+                {/* Search Suggestions Dropdown */}
+                {showSuggestions && (searchSuggestions.length > 0 || suggestionLoading) && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                    {suggestionLoading ? (
+                      <div className="p-3 text-center text-gray-500">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600 mx-auto"></div>
+                        <p className="mt-1 text-sm">Searching...</p>
+                      </div>
+                    ) : (
+                      searchSuggestions.map((listing) => (
+                        <div
+                          key={listing._id}
+                          onClick={() => selectSuggestion(listing)}
+                          className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                        >
+                          <div className="flex items-center gap-3">
+                            {listing.imageUrls && listing.imageUrls.length > 0 ? (
+                              <img
+                                src={listing.imageUrls[0]}
+                                alt={listing.name}
+                                className="w-12 h-12 object-cover rounded-md"
+                                onError={(e) => {
+                                  e.target.src = "https://via.placeholder.com/48x48?text=No+Image";
+                                }}
+                              />
+                            ) : (
+                              <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center">
+                                <span className="text-gray-400 text-lg">🏠</span>
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-gray-800 truncate">{listing.name}</h4>
+                              <p className="text-sm text-gray-600 truncate">{listing.city}, {listing.state}</p>
+                              <p className="text-sm text-gray-500">
+                                {listing.type} • {listing.bedrooms} bed{listing.bedrooms !== 1 ? 's' : ''} • ₹{listing.regularPrice?.toLocaleString('en-IN')}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                    {searchSuggestions.length === 0 && !suggestionLoading && (
+                      <div className="p-3 text-center text-gray-500">
+                        <p className="text-sm">No properties found</p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               <button
                 onClick={searchProperties}
@@ -350,13 +440,13 @@ export default function Watchlist() {
                   <div className="relative">
                     <ListingItem listing={listing} />
                     
-                    {/* Property Features */}
+                    {/* Property Features - positioned to avoid conflicts */}
                     {features.length > 0 && (
-                      <div className="absolute top-2 left-2 flex flex-wrap gap-1 z-10">
+                      <div className="absolute top-2 left-2 flex flex-wrap gap-1 z-30 max-w-[calc(100%-120px)]">
                         {features.map((feature, index) => (
                           <div
                             key={index}
-                            className={`px-2 py-1 rounded-full text-xs font-medium border flex items-center gap-1 ${feature.color}`}
+                            className={`px-2 py-1 rounded-full text-xs font-medium border flex items-center gap-1 ${feature.color} shadow-sm`}
                           >
                             {feature.icon}
                             <span className="hidden sm:inline">{feature.text}</span>
@@ -365,10 +455,10 @@ export default function Watchlist() {
                       </div>
                     )}
                     
-                    {/* Remove Button */}
+                    {/* Remove Button - positioned to avoid conflicts with other buttons */}
                     <button 
                       onClick={() => handleRemove(listing._id)} 
-                      className="absolute top-2 right-2 bg-white/90 hover:bg-white text-red-600 px-2 py-1 rounded shadow-lg hover:shadow-xl transition-all flex items-center gap-1 text-sm z-10"
+                      className="absolute top-2 right-2 bg-white/95 hover:bg-white text-red-600 px-2 py-1 rounded shadow-lg hover:shadow-xl transition-all flex items-center gap-1 text-sm z-30"
                       title="Remove from watchlist"
                     >
                       <FaTrash className="text-xs" />

@@ -77,12 +77,80 @@ export default function Listing() {
   const [showSocialShare, setShowSocialShare] = useState(false);
   const [showComparisonSocialShare, setShowComparisonSocialShare] = useState(false);
   const [selectedComparisonProperty, setSelectedComparisonProperty] = useState(null);
+  const [isInWatchlist, setIsInWatchlist] = useState(false);
+  const [watchlistLoading, setWatchlistLoading] = useState(false);
 
   const openConfirm = (type, { propertyId = null, origin = null, message = 'Are you sure?' } = {}) => {
     setConfirmModal({ open: true, type, propertyId, origin, message });
   };
 
   const closeConfirm = () => setConfirmModal({ open: false, type: null, propertyId: null, origin: null, message: '' });
+
+  // Check if property is in watchlist
+  const checkWatchlistStatus = async () => {
+    if (!currentUser || currentUser.role === 'admin' || currentUser.role === 'rootadmin') return;
+    
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/watchlist/check/${listing._id}`, {
+        credentials: 'include'
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setIsInWatchlist(data.isInWatchlist);
+      }
+    } catch (error) {
+      console.error('Error checking watchlist status:', error);
+    }
+  };
+
+  // Toggle watchlist status
+  const toggleWatchlist = async () => {
+    if (!currentUser || currentUser.role === 'admin' || currentUser.role === 'rootadmin') return;
+    
+    setWatchlistLoading(true);
+    try {
+      if (isInWatchlist) {
+        // Remove from watchlist
+        const res = await fetch(`${API_BASE_URL}/api/watchlist/remove/${listing._id}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+        if (res.ok) {
+          setIsInWatchlist(false);
+          toast.success('Property removed from watchlist');
+        } else {
+          toast.error('Failed to remove from watchlist');
+        }
+      } else {
+        // Add to watchlist
+        const res = await fetch(`${API_BASE_URL}/api/watchlist/add`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({ listingId: listing._id })
+        });
+        if (res.ok) {
+          setIsInWatchlist(true);
+          toast.success('Property added to watchlist! Future price insights of this property will be notified.');
+        } else {
+          const data = await res.json();
+          if (data.message?.includes('already')) {
+            setIsInWatchlist(true);
+            toast.info('Property is already in your watchlist.');
+          } else {
+            toast.error('Failed to add to watchlist.');
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling watchlist:', error);
+      toast.error('Failed to update watchlist.');
+    } finally {
+      setWatchlistLoading(false);
+    }
+  };
 
   const confirmYes = () => {
     const { type, propertyId, origin } = confirmModal;
@@ -672,6 +740,13 @@ export default function Listing() {
     fetchListing();
   }, [params.listingId]);
 
+  // Check watchlist status when listing is loaded
+  useEffect(() => {
+    if (listing && currentUser && currentUser.role !== 'admin' && currentUser.role !== 'rootadmin') {
+      checkWatchlistStatus();
+    }
+  }, [listing, currentUser]);
+
   useEffect(() => {
     const fetchNeighborhood = async () => {
       try {
@@ -1009,35 +1084,21 @@ export default function Listing() {
                 {/* Watchlist Eye Icon - for users only */}
                 {currentUser && !(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
                   <button
-                    onClick={async () => {
-                      try {
-                        const res = await fetch(`${API_BASE_URL}/api/watchlist/add`, {
-                          method: 'POST',
-                          headers: {
-                            'Content-Type': 'application/json',
-                          },
-                          credentials: 'include',
-                          body: JSON.stringify({ listingId: listing._id })
-                        });
-                        if (res.ok) {
-                          toast.success('Property added to watchlist! Future price insights of this property will be notified.');
-                        } else {
-                          const data = await res.json();
-                          if (data.message?.includes('already')) {
-                            toast.info('Property is already in your watchlist.');
-                          } else {
-                            toast.error('Failed to add to watchlist.');
-                          }
-                        }
-                      } catch (error) {
-                        toast.error('Failed to add to watchlist.');
-                      }
-                    }}
-                    className="ml-2 p-2 rounded-full transition z-20 bg-gray-200 text-blue-500 hover:text-blue-600 hover:bg-blue-100 focus:outline-none"
-                    title="Add to watchlist"
+                    onClick={toggleWatchlist}
+                    disabled={watchlistLoading}
+                    className={`ml-2 p-2 rounded-full transition z-20 focus:outline-none ${
+                      isInWatchlist 
+                        ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                        : 'bg-gray-200 text-blue-500 hover:text-blue-600 hover:bg-blue-100'
+                    } ${watchlistLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    title={isInWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}
                     style={{ lineHeight: 0 }}
                   >
-                    <FaEye className="text-base sm:text-lg" />
+                    {watchlistLoading ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                    ) : (
+                      <FaEye className="text-base sm:text-lg" />
+                    )}
                   </button>
                 )}
               </h2>

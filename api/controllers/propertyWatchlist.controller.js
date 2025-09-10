@@ -88,6 +88,18 @@ export const getTopWatchedListings = async (req, res, next) => {
   }
 };
 
+// Check if property is in user's watchlist
+export const checkWatchlistStatus = async (req, res, next) => {
+  try {
+    const { listingId } = req.params;
+    const userId = req.user._id;
+    const exists = await PropertyWatchlist.findOne({ userId, listingId });
+    res.status(200).json({ isInWatchlist: !!exists });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Get watchlist statistics
 export const getWatchlistStats = async (req, res, next) => {
   try {

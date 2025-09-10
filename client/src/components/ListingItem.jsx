@@ -97,13 +97,16 @@ export default function ListingItem({ listing, onDelete }) {
         <FaHeart className="text-base sm:text-lg" />
       </button>
 
-      {/* Admin Delete Button */}
+      {/* Admin Delete Button - positioned to avoid conflicts */}
       {onDelete && (
         <button
           onClick={() => onDelete(listing._id)}
-          className="absolute top-2 sm:top-4 left-2 sm:left-4 p-2 rounded-full bg-red-100 text-red-600 hover:bg-red-500 hover:text-white transition shadow-md z-10"
+          className="absolute top-2 sm:top-4 left-2 sm:left-4 p-2 rounded-full bg-red-100 text-red-600 hover:bg-red-500 hover:text-white transition shadow-md z-20"
           title="Delete Listing"
-          style={{ left: listing.offer && getDiscountPercentage() > 0 ? '4.5rem' : '0.5rem' }}
+          style={{ 
+            left: listing.offer && getDiscountPercentage() > 0 ? '4.5rem' : '0.5rem',
+            top: listing.offer && getDiscountPercentage() > 0 ? '2.5rem' : '0.5rem'
+          }}
         >
           <FaTrash className="text-base sm:text-lg" />
         </button>
@@ -152,14 +155,24 @@ export default function ListingItem({ listing, onDelete }) {
           <p className="text-gray-600 text-xs sm:text-sm mt-2 truncate">{listing.description}</p>
           <div className="mt-2">
             {listing.offer && getDiscountPercentage() > 0 ? (
-              <div className="flex items-center gap-2">
-                <p className="text-base sm:text-lg font-bold text-blue-500">
-                  {formatINR(listing.discountPrice)}
-                  {listing.type === 'rent' && ' / month'}
-                </p>
-                <p className="text-xs sm:text-sm text-gray-500 line-through">
-                  {formatINR(listing.regularPrice)}
-                </p>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <p className="text-base sm:text-lg font-bold text-blue-500">
+                    {formatINR(listing.discountPrice)}
+                    {listing.type === 'rent' && ' / month'}
+                  </p>
+                  <p className="text-xs sm:text-sm text-gray-500 line-through">
+                    {formatINR(listing.regularPrice)}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs sm:text-sm text-green-600 font-semibold bg-green-50 px-2 py-1 rounded-full">
+                    Save ₹{(listing.regularPrice - listing.discountPrice).toLocaleString('en-IN')}
+                  </span>
+                  <span className="text-xs sm:text-sm text-green-600 font-semibold">
+                    ({getDiscountPercentage()}% off)
+                  </span>
+                </div>
               </div>
             ) : (
               <p className="text-base sm:text-lg font-bold text-blue-500">
