@@ -40,11 +40,10 @@ router.post("/create-intent", verifyToken, async (req, res) => {
       return res.status(403).json({ message: "You can only make payments for your own appointments." });
     }
 
-    // Calculate advance amount (10% of property price or minimum 5000)
+    // Advance amount: Flat ₹100 per property (as per requirement)
     const listing = appointment.listingId;
-    const propertyPrice = listing.offer && listing.discountPrice ? listing.discountPrice : listing.regularPrice;
-    const advanceAmount = Math.max(propertyPrice * 0.1, 5000);
-
+    const advanceAmount = 100;
+    
     // Create payment record
     const payment = new Payment({
       paymentId: generatePaymentId(),
@@ -86,13 +85,20 @@ router.post("/verify", verifyToken, async (req, res) => {
   try {
     const { paymentId, razorpayPaymentId, razorpayOrderId, razorpaySignature } = req.body;
 
-    // Verify Razorpay signature (mock implementation)
-    const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET || 'test_secret')
-      .update(`${razorpayOrderId}|${razorpayPaymentId}`)
-      .digest('hex');
+    // Verify Razorpay signature (with dev fallback)
+    let isSignatureValid = false;
+    try {
+      const expectedSignature = crypto
+        .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET || 'test_secret')
+        .update(`${razorpayOrderId}|${razorpayPaymentId}`)
+        .digest('hex');
+      isSignatureValid = expectedSignature === razorpaySignature;
+    } catch (_) {
+      isSignatureValid = false;
+    }
 
-    if (expectedSignature !== razorpaySignature) {
+    const allowDevBypass = process.env.NODE_ENV !== 'production' || process.env.RAZORPAY_MOCK === 'true';
+    if (!isSignatureValid && !allowDevBypass) {
       return res.status(400).json({ message: "Invalid signature" });
     }
 
@@ -117,8 +123,11 @@ router.post("/verify", verifyToken, async (req, res) => {
       paymentId: payment._id
     });
 
-    // Generate receipt URL (mock)
-    const receiptUrl = `${process.env.CLIENT_URL}/receipt/${payment.receiptNumber}`;
+    // Generate receipt URL (mock). Fall back to API URL if CLIENT_URL missing
+    const baseClient = process.env.CLIENT_URL || process.env.FRONTEND_URL || '';
+    const receiptUrl = baseClient
+      ? `${baseClient}/receipt/${payment.receiptNumber}`
+      : `/api/payments/${payment.paymentId}/receipt`;
     payment.receiptUrl = receiptUrl;
     await payment.save();
 
@@ -283,12 +292,13 @@ router.post("/refund", verifyToken, async (req, res) => {
 router.get("/history", verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
-    const { page = 1, limit = 10, status, paymentType } = req.query;
+    const { page = 1, limit = 10, status, paymentType, appointmentId } = req.query;
 
     let query = { userId };
     if (status) query.status = status;
     if (paymentType) query.paymentType = paymentType;
-
+    if (appointmentId) query.appointmentId = appointmentId;
+    
     const payments = await Payment.find(query)
       .populate('appointmentId', 'propertyName date status')
       .populate('listingId', 'name address')
