@@ -73,6 +73,11 @@ export default function AdminDashboard() {
     userBehavior: {
       popularFilters: [],
       dropoffs: []
+    },
+    watchlist: {
+      totalWatchlists: 0,
+      totalWatchedProperties: 0,
+      topWatchedProperties: []
     }
   });
   useEffect(() => {
@@ -217,12 +222,17 @@ export default function AdminDashboard() {
       // Fetch listing statistics
       const listingsRes = await fetch(`${API_BASE_URL}/api/listing/get?limit=10000`, { credentials: 'include' });
       const fraudRes = await fetch(`${API_BASE_URL}/api/ai/fraud/stats`);
+      // Fetch watchlist statistics
+      const watchlistStatsRes = await fetch(`${API_BASE_URL}/api/watchlist/stats`, { credentials: 'include' });
+      const topWatchedRes = await fetch(`${API_BASE_URL}/api/watchlist/top-watched`, { credentials: 'include' });
 
       let usersData = [];
       let adminsData = [];
       let reviewsData = { totalReviews: 0, pendingReviews: 0, averageRating: 0 };
       let allApprovedReviews = [];
       let listingsData = [];
+      let watchlistStats = { totalWatchlists: 0, totalWatchedProperties: 0 };
+      let topWatchedProperties = [];
 
       if (usersRes.ok) usersData = await usersRes.json();
       if (adminsRes.ok) adminsData = await adminsRes.json();
@@ -232,6 +242,8 @@ export default function AdminDashboard() {
         allApprovedReviews = temp.reviews || temp; // depending on API shape
       }
       if (listingsRes.ok) listingsData = await listingsRes.json();
+      if (watchlistStatsRes.ok) watchlistStats = await watchlistStatsRes.json();
+      if (topWatchedRes.ok) topWatchedProperties = await topWatchedRes.json();
       let fraudData = fraudRes.ok ? await fraudRes.json() : { suspiciousListings: 0, suspectedFakeReviews: 0, lastScan: null };
 
       const listingStats = {
@@ -439,7 +451,12 @@ export default function AdminDashboard() {
         marketInsights: { monthlyAvgPrices, demandByCity },
         performance: { topOwnersByRating },
         sentiment: { positive: pos, negative: neg, neutral: neu, topWords },
-        userBehavior: { popularFilters, dropoffs }
+        userBehavior: { popularFilters, dropoffs },
+        watchlist: { 
+          totalWatchlists: watchlistStats.totalWatchlists || 0, 
+          totalWatchedProperties: watchlistStats.totalWatchedProperties || 0, 
+          topWatchedProperties: topWatchedProperties || [] 
+        }
       });
 
       setFraudStats(fraudData);
@@ -622,6 +639,24 @@ export default function AdminDashboard() {
               <p className="text-sm text-red-500">Rejected: {bookingStats.rejected}</p>
             </div>
           </div>
+
+          {/* Watchlist Card */}
+          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Watchlists</p>
+                <p className="text-3xl font-bold text-indigo-600">{analytics.watchlist.totalWatchlists}</p>
+              </div>
+              <div className="bg-indigo-100 p-3 rounded-full">
+                <FaEye className="text-2xl text-indigo-600" />
+              </div>
+            </div>
+            <div className="mt-4 space-y-1">
+              <p className="text-sm text-gray-500">Watched Properties: {analytics.watchlist.totalWatchedProperties}</p>
+              <p className="text-sm text-indigo-500">Top Watched: {analytics.watchlist.topWatchedProperties.length}</p>
+            </div>
+          </div>
+
           {/* Fraud Detection Card */}
           <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow relative group" onClick={() => navigate('/admin/fraudmanagement')} role="button" title="Manage fraud detections">
             <div className="flex items-center justify-between cursor-pointer">
@@ -910,7 +945,31 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        
+        {/* Top Watched Properties */}
+        {analytics.watchlist.topWatchedProperties.length > 0 && (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+              <FaEye className="text-indigo-500 mr-2" />
+              Top Watched Properties
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {analytics.watchlist.topWatchedProperties.map((property) => (
+                <div key={property._id} className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-semibold text-gray-800 truncate">{property.name}</h4>
+                    <span className="text-sm text-indigo-600 font-semibold">
+                      {property.watchCount} 👁️
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">{property.city}, {property.state}</p>
+                  <p className="text-sm text-gray-500">
+                    {property.type} • {property.bedrooms} bed{property.bedrooms !== 1 ? 's' : ''}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Recent Listings */}
         {analytics.recentListings.length > 0 && (

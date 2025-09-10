@@ -2088,6 +2088,14 @@ export default function Profile() {
               <FaHeart className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.heartbeat}`} />
               <span className="font-medium text-xs sm:text-sm">My Wishlist</span>
             </Link>
+            
+            <Link
+              to="/user/watchlist"
+              className={`bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-800`}
+            >
+              <FaEye className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
+              <span className="font-medium text-xs sm:text-sm">My Watchlist</span>
+            </Link>
 
             <Link
               to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? "/admin/reviews" : "/user/reviews"}
