@@ -4,9 +4,8 @@ const paymentSchema = new mongoose.Schema({
   // Basic payment info
   paymentId: {
     type: String,
-    required: true,
-    unique: true
-  },
+    required: true
+  }
   appointmentId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Booking',
@@ -112,7 +111,7 @@ const paymentSchema = new mongoose.Schema({
 });
 
 // Indexes for better performance
-paymentSchema.index({ paymentId: 1 });
+paymentSchema.index({ paymentId: 1 }, { unique: true });
 paymentSchema.index({ appointmentId: 1 });
 paymentSchema.index({ userId: 1 });
 paymentSchema.index({ status: 1 });
