@@ -284,8 +284,8 @@ export default function AdminFraudManagement() {
   useEffect(() => { fetchData(); }, []);
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
-      <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-lg p-6">
+    <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-6 sm:py-10 px-2 md:px-8">
+      <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-lg p-4 sm:p-6">
         <div className="flex items-center justify-between mb-6 gap-2 flex-wrap">
           <h3 className="text-3xl font-extrabold text-blue-700 drop-shadow">Fraud Management</h3>
           <div className="flex gap-2 flex-wrap">
@@ -299,7 +299,7 @@ export default function AdminFraudManagement() {
           <p className="text-red-600">{error}</p>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 mb-6">
               <div className="p-4 bg-blue-50 rounded-lg">
                 <div className="text-sm text-gray-600">Suspicious Listings</div>
                 <div className="text-2xl font-bold text-blue-700">{stats.suspiciousListings}</div>
@@ -314,7 +314,7 @@ export default function AdminFraudManagement() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3 mb-4 flex-wrap">
+            <div className="flex items-center gap-2 sm:gap-3 mb-4 flex-wrap">
               <label className="text-sm font-medium text-gray-700">View:</label>
               <select value={filter} onChange={(e)=>setFilter(e.target.value)} className="border rounded p-2 text-sm">
                 <option value="all">All</option>

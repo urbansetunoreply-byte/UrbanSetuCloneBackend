@@ -56,11 +56,11 @@ const PaymentDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 py-10 px-2 md:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 py-6 sm:py-10 px-2 md:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-          <div className="flex items-center justify-between">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
             <div>
               <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
                 <FaRupeeSign className="text-green-600" />
@@ -70,7 +70,7 @@ const PaymentDashboard = () => {
             </div>
             <button
               onClick={fetchPaymentStats}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+              className="bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
               title="Refresh stats"
             >
               <FaSpinner className="animate-spin" />
@@ -80,7 +80,7 @@ const PaymentDashboard = () => {
         </div>
 
         {/* Tabs */}
-        <div className="bg-white rounded-xl shadow-lg mb-8">
+        <div className="bg-white rounded-xl shadow-lg mb-6 sm:mb-8">
           <div className="border-b border-gray-200">
             <nav className="flex overflow-x-auto no-scrollbar px-2 sm:px-6 gap-4 sm:gap-8">
               {tabs.map((tab) => {
@@ -105,7 +105,7 @@ const PaymentDashboard = () => {
         </div>
 
         {/* Tab Content */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
           {activeTab === 'overview' && (
             <div>
               {/* Stats Cards */}

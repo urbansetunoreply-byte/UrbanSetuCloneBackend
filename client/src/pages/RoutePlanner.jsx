@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { FaRoute, FaPlus, FaTrash, FaClock } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
@@ -96,6 +97,12 @@ export default function RoutePlanner() {
       }
     } catch (e) {
       console.error('Route planning failed:', e);
+      const msg = (e && (e.message || e.status || e)) + '';
+      if (msg && msg.toString().includes('ZERO_RESULTS')) {
+        toast.error('No route found between origin and destination.');
+      } else {
+        toast.error('Route planning failed. Showing approximate itinerary.');
+      }
       setPlan(computePlanFallback());
     } finally {
       setOptimizing(false);
@@ -141,13 +148,13 @@ export default function RoutePlanner() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-10">
+    <div className="max-w-3xl mx-auto px-2 sm:px-4 py-6 sm:py-10">
       <h1 className="text-2xl font-bold mb-6 flex items-center gap-2"><FaRoute className="text-green-600"/> Property Visit Route Planner</h1>
-      <div className="bg-white rounded-xl shadow p-5 space-y-3">
+      <div className="bg-white rounded-xl shadow p-4 sm:p-5 space-y-3">
         {stops.map((s, i) => (
           <div key={i} className="flex flex-col gap-1 relative">
             <div className="flex gap-2">
-              <input className="flex-1 border rounded p-2" value={s.address} onChange={e=>onChangeAddress(i, e.target.value)} placeholder={`Stop ${i+1} address`}/>
+              <input className="flex-1 border rounded p-2 text-sm sm:text-base" value={s.address} onChange={e=>onChangeAddress(i, e.target.value)} placeholder={`Stop ${i+1} address`}/>
               {stops.length > 1 && (
                 <button onClick={()=>removeStop(i)} className="px-3 rounded bg-red-100 text-red-600"><FaTrash/></button>
               )}
@@ -166,14 +173,14 @@ export default function RoutePlanner() {
             )}
           </div>
         ))}
-        <div className="flex gap-2">
-          <button onClick={addStop} className="px-3 py-2 rounded bg-gray-100 hover:bg-gray-200 flex items-center gap-2"><FaPlus/> Add Stop</button>
-          <button onClick={optimize} disabled={optimizing} className="px-4 py-2 rounded bg-gradient-to-r from-blue-600 to-purple-600 text-white">{optimizing?'Planning...':'Plan Route'}</button>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <button onClick={addStop} className="px-3 py-2 rounded bg-gray-100 hover:bg-gray-200 flex items-center gap-2 justify-center"><FaPlus/> Add Stop</button>
+          <button onClick={optimize} disabled={optimizing} className="px-4 py-2 rounded bg-gradient-to-r from-blue-600 to-purple-600 text-white disabled:opacity-60">{optimizing?'Planning...':'Plan Route'}</button>
         </div>
       </div>
       <div className="mt-6">
         {GOOGLE_MAPS_API_KEY ? (
-          <div ref={mapRef} className="w-full h-64 rounded-xl border border-gray-200" />
+          <div ref={mapRef} className="w-full h-64 sm:h-80 rounded-xl border border-gray-200" />
         ) : (
           <div className="text-sm text-gray-500">Tip: Set VITE_GOOGLE_MAPS_API_KEY to enable interactive map and directions.</div>
         )}

@@ -18,6 +18,8 @@ export default function UserReviews() {
   const [statusFilter, setStatusFilter] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [reviewToDelete, setReviewToDelete] = useState(null);
+  const [showPermanentDeleteModal, setShowPermanentDeleteModal] = useState(false);
+  const [reviewToPermanentlyDelete, setReviewToPermanentlyDelete] = useState(null);
 
   // Lock body scroll when delete modal is open
   useEffect(() => {
@@ -147,6 +149,15 @@ export default function UserReviews() {
   };
 
   const handleDeleteReview = (review) => {
+    if (!review || !review._id) {
+      toast.error('This review cannot be deleted (missing identifier).');
+      return;
+    }
+    if (review?.status === 'removed') {
+      setReviewToPermanentlyDelete(review);
+      setShowPermanentDeleteModal(true);
+      return;
+    }
     setReviewToDelete(review);
     setShowDeleteModal(true);
   };
@@ -155,6 +166,10 @@ export default function UserReviews() {
     if (!reviewToDelete) return;
 
     try {
+      if (!reviewToDelete._id) {
+        toast.error('Invalid review. Please refresh and try again.');
+        return;
+      }
       const res = await fetch(`${API_BASE_URL}/api/review/delete/${reviewToDelete._id}`, {
         method: 'DELETE',
         credentials: 'include',
@@ -163,8 +178,16 @@ export default function UserReviews() {
       const data = await res.json();
 
       if (res.ok) {
-        setReviews(reviews.filter(review => review._id !== reviewToDelete._id));
-        toast.success('Review deleted successfully');
+        if (data?.updatedReview?.status === 'removed' || data?.status === 'removed') {
+          setReviews(prev => prev.map(r => r._id === reviewToDelete._id ? { ...r, status: 'removed' } : r));
+          toast.success('Review marked as removed');
+        } else if (data?._deleted || data?.deleted || (typeof data?.message === 'string' && data.message.toLowerCase().includes('deleted'))) {
+          setReviews(prev => prev.filter(review => review._id !== reviewToDelete._id));
+          toast.success('Review deleted successfully');
+        } else {
+          setReviews(prev => prev.map(r => r._id === reviewToDelete._id ? { ...r, status: 'removed' } : r));
+          toast.info('Review tagged as removed');
+        }
       } else {
         toast.error(data.message || 'Failed to delete review');
       }
@@ -174,6 +197,14 @@ export default function UserReviews() {
       setShowDeleteModal(false);
       setReviewToDelete(null);
     }
+  };
+
+  const confirmPermanentDelete = () => {
+    if (!reviewToPermanentlyDelete) return;
+    setReviews(prev => prev.filter(r => r._id !== reviewToPermanentlyDelete._id));
+    setShowPermanentDeleteModal(false);
+    setReviewToPermanentlyDelete(null);
+    toast.success('Review removed from your list');
   };
 
   const handleEditReview = (review) => {
@@ -375,12 +406,12 @@ export default function UserReviews() {
                     {review.listingId && (
                       <div className="bg-gray-50 rounded-lg p-3">
                         <h4 className="font-semibold text-gray-800">
-                          <a href={`/user/listing/${typeof review.listingId === 'object' ? review.listingId._id : review.listingId}`} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
-                            {review.listingId.name}
+                          <a href={`/user/listing/${review.listingId && typeof review.listingId === 'object' ? review.listingId._id : review.listingId}`} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
+                            {review.listingId?.name}
                           </a>
                         </h4>
                         <p className="text-sm text-gray-600">
-                          {review.listingId.city}, {review.listingId.state}
+                          {review.listingId?.city}, {review.listingId?.state}
                         </p>
                       </div>
                     )}
@@ -467,7 +498,7 @@ export default function UserReviews() {
                 <p className="text-sm text-gray-700 line-clamp-3">{reviewToDelete.comment}</p>
                 {reviewToDelete.listingId && (
                   <p className="text-xs text-gray-500 mt-2">
-                    Property: {reviewToDelete.listingId.name}
+                    Property: {reviewToDelete.listingId?.name}
                   </p>
                 )}
               </div>
@@ -490,6 +521,38 @@ export default function UserReviews() {
                 >
                   <FaTrash size={12} />
                   Delete Review
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {showPermanentDeleteModal && reviewToPermanentlyDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-white rounded-lg max-w-md w-full mx-4 shadow-xl">
+            <div className="p-4 sm:p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <FaTrash className="text-red-500" />
+                Remove From List
+              </h3>
+              <p className="text-gray-600 mb-4">
+                This review is already tagged as removed. Do you want to remove it from your reviews list permanently?
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => { setShowPermanentDeleteModal(false); setReviewToPermanentlyDelete(null); }}
+                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmPermanentDelete}
+                  className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors flex items-center gap-2"
+                >
+                  <FaTrash size={12} />
+                  Remove Permanently
                 </button>
               </div>
             </div>

@@ -52,12 +52,12 @@ export default function PackersMovers() {
   useEffect(() => { fetchMyRequests(); }, [currentUser?._id]);
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
-      <div className="flex items-center justify-between mb-6">
+    <div className="max-w-2xl mx-auto px-2 sm:px-4 py-6 sm:py-10">
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
         <h1 className="text-2xl font-bold flex items-center gap-2"><FaTruckMoving className="text-blue-600"/> Packers & Movers</h1>
         <button onClick={fetchMyRequests} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button>
       </div>
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow p-5 space-y-4">
+      <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow p-4 sm:p-5 space-y-4">
         <div>
           <label className="text-sm text-gray-600">From Address</label>
           <input className="w-full border rounded p-2" value={form.from} onChange={e=>setForm(f=>({...f, from:e.target.value}))} placeholder="Pickup address"/>
@@ -66,7 +66,7 @@ export default function PackersMovers() {
           <label className="text-sm text-gray-600">To Address</label>
           <input className="w-full border rounded p-2" value={form.to} onChange={e=>setForm(f=>({...f, to:e.target.value}))} placeholder="Drop address"/>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="text-sm text-gray-600">Move Date</label>
             <div className="flex items-center gap-2">
@@ -90,7 +90,7 @@ export default function PackersMovers() {
       <div className="mt-6 text-sm text-gray-600 flex items-center gap-2"><FaMapMarkerAlt/> Service available in major cities.</div>
       <div className="mt-2"><button onClick={fetchMyRequests} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button></div>
       {currentUser && (
-        <div className="mt-8 bg-white rounded-xl shadow p-4">
+        <div className="mt-6 sm:mt-8 bg-white rounded-xl shadow p-4">
           <h3 className="text-lg font-semibold mb-2">My Movers Requests</h3>
           {myRequests.length === 0 ? (
             <p className="text-sm text-gray-600">No requests yet.</p>

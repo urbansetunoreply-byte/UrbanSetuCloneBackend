@@ -60,12 +60,12 @@ export default function OnDemandServices() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
-      <div className="flex items-center justify-between mb-6">
+    <div className="max-w-5xl mx-auto px-2 sm:px-4 py-6 sm:py-10">
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
         <h1 className="text-2xl font-bold">On-Demand Services</h1>
         <button onClick={fetchMyRequests} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
         {services.map(s => (
           <button key={s.key} onClick={()=>toggleService(s.key)} className={`bg-white rounded-xl shadow p-4 flex flex-col items-center gap-2 hover:shadow-lg ${selected.includes(s.key)?'ring-2 ring-blue-500':''}`}>
             {s.icon}
@@ -73,9 +73,9 @@ export default function OnDemandServices() {
           </button>
         ))}
       </div>
-      <div className="bg-white rounded-xl shadow p-5">
+      <div className="bg-white rounded-xl shadow p-4 sm:p-5">
         <h2 className="text-lg font-semibold mb-4">Request Details</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
           <div>
             <label className="text-sm text-gray-600">Preferred Date</label>
             <input type="date" className="w-full border rounded p-2" value={details.date} onChange={e=>setDetails(d=>({...d,date:e.target.value}))} min={new Date().toISOString().split('T')[0]} />
@@ -89,11 +89,11 @@ export default function OnDemandServices() {
             <textarea className="w-full border rounded p-2" rows={3} value={details.notes} onChange={e=>setDetails(d=>({...d,notes:e.target.value}))} placeholder="Describe the issue"/>
           </div>
         </div>
-        <button onClick={submit} disabled={loading} className="mt-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded">{loading?'Submitting...':'Submit Request'}</button>
+        <button onClick={submit} disabled={loading} className="mt-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded disabled:opacity-60">{loading?'Submitting...':'Submit Request'}</button>
       </div>
       {/* My Requests */}
       {currentUser && (
-        <div className="mt-8 bg-white rounded-xl shadow p-4">
+        <div className="mt-6 sm:mt-8 bg-white rounded-xl shadow p-4">
           <h3 className="text-lg font-semibold mb-2">My Service Requests</h3>
           {myRequests.length === 0 ? (
             <p className="text-sm text-gray-600">No requests yet.</p>
