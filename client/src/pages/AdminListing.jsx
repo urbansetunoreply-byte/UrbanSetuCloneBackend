@@ -11,6 +11,8 @@ import { useWishlist } from '../WishlistContext';
 import { useSelector } from 'react-redux';
 import ImagePreview from "../components/ImagePreview.jsx";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export default function AdminListing() {
   const params = useParams();
   const navigate = useNavigate();
@@ -23,6 +25,20 @@ export default function AdminListing() {
 
   const formatINR = (amount) => {
     return `₹${Number(amount).toLocaleString("en-IN")}`;
+  };
+
+  const refreshWatchlistCount = async () => {
+    try {
+      const watchlistRes = await fetch(`${API_BASE_URL}/api/watchlist/count/${params.listingId}`, {
+        credentials: 'include'
+      });
+      if (watchlistRes.ok) {
+        const watchlistData = await watchlistRes.json();
+        setWatchlistCount(watchlistData.count || 0);
+      }
+    } catch (error) {
+      console.error('Error refreshing watchlist count:', error);
+    }
   };
 
   const handleImageClick = (index) => {
@@ -64,13 +80,7 @@ export default function AdminListing() {
         setListing(data);
         
         // Fetch watchlist count
-        const watchlistRes = await fetch(`/api/watchlist/count/${params.listingId}`, {
-          credentials: 'include'
-        });
-        if (watchlistRes.ok) {
-          const watchlistData = await watchlistRes.json();
-          setWatchlistCount(watchlistData.count || 0);
-        }
+        await refreshWatchlistCount();
       } catch (error) {
         console.error("Error fetching listing:", error);
       } finally {
@@ -414,7 +424,16 @@ export default function AdminListing() {
               <p className="font-semibold text-gray-800">{listing.userRef || 'Unknown'}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Watchlist Count</p>
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-gray-600">Watchlist Count</p>
+                <button
+                  onClick={refreshWatchlistCount}
+                  className="text-xs text-blue-600 hover:text-blue-800 underline"
+                  title="Refresh watchlist count"
+                >
+                  Refresh
+                </button>
+              </div>
               <p className="font-semibold text-purple-800 flex items-center gap-1">
                 <FaEye className="text-sm" />
                 {watchlistCount} user{watchlistCount !== 1 ? 's' : ''} watching

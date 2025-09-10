@@ -132,9 +132,26 @@ export default function ListingItem({ listing, onDelete }) {
           </div>
         )}
         <div className="p-2 sm:p-3">
-          <p className="text-gray-700 font-semibold text-base sm:text-lg truncate">
-            {listing.name}
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-gray-700 font-semibold text-base sm:text-lg truncate flex-1">
+              {listing.name}
+            </p>
+            {/* Remove Button - only show in watchlist context */}
+            {onDelete && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onDelete(listing._id);
+                }}
+                className="ml-2 p-1 rounded-full bg-red-100 text-red-600 hover:bg-red-500 hover:text-white transition-all flex items-center gap-1 text-xs"
+                title="Remove from watchlist"
+              >
+                <FaTrash className="text-xs" />
+                <span className="hidden sm:inline">Remove</span>
+              </button>
+            )}
+          </div>
           <div className="text-sm text-gray-500 flex items-center gap-1 mt-1">
             <MdLocationOn className="text-red-500" />
             <p className="truncate">
@@ -184,6 +201,20 @@ export default function ListingItem({ listing, onDelete }) {
           <div className="flex space-x-2 sm:space-x-4 text-gray-600 text-xs sm:text-sm mt-2">
             <p>{listing.bedrooms > 1 ? `${listing.bedrooms} beds` : `${listing.bedrooms} bed`}</p>
             <p>{listing.bathrooms > 1 ? `${listing.bathrooms} bathrooms` : `${listing.bathrooms} bathroom`}</p>
+          </div>
+          
+          {/* Property Features - Save and Special Offer badges */}
+          <div className="mt-2 flex flex-wrap gap-1">
+            {listing.offer && getDiscountPercentage() > 0 && (
+              <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
+                Save ₹{(listing.regularPrice - listing.discountPrice).toLocaleString('en-IN')}
+              </span>
+            )}
+            {listing.offer && (
+              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
+                Special Offer
+              </span>
+            )}
           </div>
         </div>
       </Link>
