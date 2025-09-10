@@ -945,31 +945,147 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Top Watched Properties */}
-        {analytics.watchlist.topWatchedProperties.length > 0 && (
-          <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-              <FaEye className="text-indigo-500 mr-2" />
-              Top Watched Properties
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {analytics.watchlist.topWatchedProperties.map((property) => (
-                <div key={property._id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold text-gray-800 truncate">{property.name}</h4>
-                    <span className="text-sm text-indigo-600 font-semibold">
-                      {property.watchCount} 👁️
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">{property.city}, {property.state}</p>
-                  <p className="text-sm text-gray-500">
-                    {property.type} • {property.bedrooms} bed{property.bedrooms !== 1 ? 's' : ''}
+        {/* Enhanced Watchlist Analytics */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+          <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+            <FaEye className="text-indigo-500 mr-2" />
+            Watchlist Analytics
+          </h3>
+          
+          {/* Watchlist Overview Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-4 rounded-lg border border-indigo-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-indigo-600 font-medium">Total Watchlists</p>
+                  <p className="text-2xl font-bold text-indigo-700">{analytics.watchlist.totalWatchlists}</p>
+                </div>
+                <div className="bg-indigo-100 p-3 rounded-full">
+                  <FaEye className="text-xl text-indigo-600" />
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-purple-600 font-medium">Watched Properties</p>
+                  <p className="text-2xl font-bold text-purple-700">{analytics.watchlist.totalWatchedProperties}</p>
+                </div>
+                <div className="bg-purple-100 p-3 rounded-full">
+                  <FaHeart className="text-xl text-purple-600" />
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-green-600 font-medium">Avg. Properties/Watchlist</p>
+                  <p className="text-2xl font-bold text-green-700">
+                    {analytics.watchlist.totalWatchlists > 0 
+                      ? Math.round(analytics.watchlist.totalWatchedProperties / analytics.watchlist.totalWatchlists * 10) / 10
+                      : 0
+                    }
                   </p>
                 </div>
-              ))}
+                <div className="bg-green-100 p-3 rounded-full">
+                  <FaChartLine className="text-xl text-green-600" />
+                </div>
+              </div>
             </div>
           </div>
-        )}
+
+          {/* Top Watched Properties */}
+          {analytics.watchlist.topWatchedProperties.length > 0 && (
+            <div>
+              <h4 className="text-lg font-semibold text-gray-700 mb-4">Most Watched Properties</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {analytics.watchlist.topWatchedProperties.map((property, index) => (
+                  <div key={property._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-medium">
+                            #{index + 1}
+                          </span>
+                          <h5 className="font-semibold text-gray-800 truncate">{property.name}</h5>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-1">{property.city}, {property.state}</p>
+                        <p className="text-xs text-gray-500">
+                          {property.type} • {property.bedrooms} bed{property.bedrooms !== 1 ? 's' : ''}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <span className="text-lg font-bold text-indigo-600">
+                          {property.watchCount}
+                        </span>
+                        <span className="text-xs text-gray-500">watchers</span>
+                      </div>
+                    </div>
+                    
+                    {/* Watch count visualization */}
+                    <div className="mt-3">
+                      <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                        <span>Watch popularity</span>
+                        <span>{property.watchCount} watchers</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+                          style={{ 
+                            width: `${Math.min(100, (property.watchCount / Math.max(...analytics.watchlist.topWatchedProperties.map(p => p.watchCount))) * 100)}%` 
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* Watchlist Insights */}
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+            <h4 className="text-lg font-semibold text-gray-700 mb-3">Insights</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                <span className="text-gray-600">
+                  <span className="font-semibold">{analytics.watchlist.totalWatchlists}</span> users have created watchlists
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                <span className="text-gray-600">
+                  <span className="font-semibold">{analytics.watchlist.totalWatchedProperties}</span> unique properties are being watched
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-gray-600">
+                  Average of <span className="font-semibold">
+                    {analytics.watchlist.totalWatchlists > 0 
+                      ? Math.round(analytics.watchlist.totalWatchedProperties / analytics.watchlist.totalWatchlists * 10) / 10
+                      : 0
+                    }
+                  </span> properties per watchlist
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                <span className="text-gray-600">
+                  Most watched property has <span className="font-semibold">
+                    {analytics.watchlist.topWatchedProperties.length > 0 
+                      ? Math.max(...analytics.watchlist.topWatchedProperties.map(p => p.watchCount))
+                      : 0
+                    }
+                  </span> watchers
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Recent Listings */}
         {analytics.recentListings.length > 0 && (

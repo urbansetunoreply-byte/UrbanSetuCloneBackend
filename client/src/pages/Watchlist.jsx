@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import ListingItem from '../components/ListingItem';
 import { toast } from 'react-toastify';
-import { FaEye, FaTrash, FaSearch, FaFilter, FaSort, FaPlus, FaTimes, FaFire, FaArrowDown, FaArrowUp, FaExclamationTriangle, FaCheckCircle } from 'react-icons/fa';
+import { FaEye, FaTrash, FaSearch, FaFilter, FaSort, FaPlus, FaTimes, FaFire, FaArrowDown, FaArrowUp, FaExclamationTriangle, FaCheckCircle, FaDownload, FaShare, FaBookmark, FaCalendarAlt, FaChartLine, FaBars, FaCheck, FaTimes as FaX } from 'react-icons/fa';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -21,6 +21,17 @@ export default function Watchlist() {
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestionLoading, setSuggestionLoading] = useState(false);
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [bulkActionMode, setBulkActionMode] = useState(false);
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [showStats, setShowStats] = useState(false);
+  const [watchlistStats, setWatchlistStats] = useState({
+    totalValue: 0,
+    averagePrice: 0,
+    priceRange: { min: 0, max: 0 },
+    typeDistribution: {},
+    cityDistribution: {}
+  });
 
   const fetchWatchlist = async () => {
     if (!currentUser?._id) return;
@@ -40,6 +51,10 @@ export default function Watchlist() {
   };
 
   useEffect(() => { fetchWatchlist(); }, [currentUser?._id]);
+  
+  useEffect(() => {
+    calculateWatchlistStats();
+  }, [items]);
 
   const handleRemove = async (listingId) => {
     try {
@@ -51,16 +66,18 @@ export default function Watchlist() {
     } catch (_) {}
   };
 
-  const searchProperties = async () => {
-    if (!propertySearchTerm.trim()) return;
+  const searchProperties = async (searchQuery = propertySearchTerm) => {
+    if (!searchQuery.trim()) return;
     setSearching(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/listing/get?search=${encodeURIComponent(propertySearchTerm)}&limit=20`, {
+      const res = await fetch(`${API_BASE_URL}/api/listing/get?search=${encodeURIComponent(searchQuery)}&limit=20`, {
         credentials: 'include'
       });
       if (res.ok) {
         const data = await res.json();
         setSearchResults(data);
+        // Also update suggestions to be the same as search results
+        setSearchSuggestions(data.slice(0, 5));
       }
     } catch (error) {
       console.error('Error searching properties:', error);
@@ -104,6 +121,8 @@ export default function Watchlist() {
     setPropertySearchTerm(listing.name);
     setShowSuggestions(false);
     setSearchSuggestions([]);
+    // Automatically search when suggestion is selected
+    searchProperties(listing.name);
   };
 
   const addToWatchlist = async (listing) => {
@@ -132,53 +151,137 @@ export default function Watchlist() {
     return items.some(item => item._id === listingId);
   };
 
-  const getPropertyFeatures = (listing) => {
-    const features = [];
-    
-    // Check for price drop
-    if (listing.offer && listing.discountPrice && listing.regularPrice && listing.discountPrice < listing.regularPrice) {
-      const savings = listing.regularPrice - listing.discountPrice;
-      const percentage = Math.round((savings / listing.regularPrice) * 100);
-      features.push({
-        type: 'price_drop',
-        icon: <FaArrowDown className="text-green-500" />,
-        text: `Save ₹${savings.toLocaleString('en-IN')} (${percentage}% off)`,
-        color: 'text-green-600 bg-green-50 border-green-200'
+  // Calculate watchlist statistics
+  const calculateWatchlistStats = () => {
+    if (items.length === 0) {
+      setWatchlistStats({
+        totalValue: 0,
+        averagePrice: 0,
+        priceRange: { min: 0, max: 0 },
+        typeDistribution: {},
+        cityDistribution: {}
       });
+      return;
     }
+
+    const prices = items.map(item => item.regularPrice || 0).filter(price => price > 0);
+    const totalValue = prices.reduce((sum, price) => sum + price, 0);
+    const averagePrice = prices.length > 0 ? totalValue / prices.length : 0;
+    const priceRange = {
+      min: prices.length > 0 ? Math.min(...prices) : 0,
+      max: prices.length > 0 ? Math.max(...prices) : 0
+    };
+
+    const typeDistribution = items.reduce((acc, item) => {
+      acc[item.type] = (acc[item.type] || 0) + 1;
+      return acc;
+    }, {});
+
+    const cityDistribution = items.reduce((acc, item) => {
+      const city = item.city || 'Unknown';
+      acc[city] = (acc[city] || 0) + 1;
+      return acc;
+    }, {});
+
+    setWatchlistStats({
+      totalValue,
+      averagePrice,
+      priceRange,
+      typeDistribution,
+      cityDistribution
+    });
+  };
+
+  // Bulk actions
+  const handleSelectItem = (listingId) => {
+    setSelectedItems(prev => 
+      prev.includes(listingId) 
+        ? prev.filter(id => id !== listingId)
+        : [...prev, listingId]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedItems.length === filteredAndSortedItems.length) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(filteredAndSortedItems.map(item => item._id));
+    }
+  };
+
+  const handleBulkRemove = async () => {
+    if (selectedItems.length === 0) return;
     
-    // Check for trending (based on watchlist count or recent activity)
-    if (listing.watchCount && listing.watchCount > 5) {
-      features.push({
-        type: 'trending',
-        icon: <FaFire className="text-orange-500" />,
-        text: `Trending (${listing.watchCount} watching)`,
-        color: 'text-orange-600 bg-orange-50 border-orange-200'
+    try {
+      const promises = selectedItems.map(listingId => 
+        fetch(`${API_BASE_URL}/api/watchlist/remove/${listingId}`, { 
+          method: 'DELETE', 
+          credentials: 'include' 
+        })
+      );
+      
+      await Promise.all(promises);
+      setItems(prev => prev.filter(item => !selectedItems.includes(item._id)));
+      setSelectedItems([]);
+      setBulkActionMode(false);
+      toast.success(`${selectedItems.length} properties removed from watchlist`);
+    } catch (error) {
+      toast.error('Failed to remove some properties');
+    }
+  };
+
+  const handleExportWatchlist = () => {
+    const data = filteredAndSortedItems.map(item => ({
+      name: item.name,
+      type: item.type,
+      price: item.regularPrice,
+      discountPrice: item.discountPrice,
+      city: item.city,
+      state: item.state,
+      bedrooms: item.bedrooms,
+      bathrooms: item.bathrooms,
+      addedDate: new Date(item.createdAt).toLocaleDateString()
+    }));
+
+    const csvContent = [
+      ['Property Name', 'Type', 'Price', 'Discount Price', 'City', 'State', 'Bedrooms', 'Bathrooms', 'Added Date'],
+      ...data.map(item => [
+        item.name,
+        item.type,
+        item.price,
+        item.discountPrice || '',
+        item.city,
+        item.state,
+        item.bedrooms,
+        item.bathrooms,
+        item.addedDate
+      ])
+    ].map(row => row.join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `watchlist-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    toast.success('Watchlist exported successfully');
+  };
+
+  const handleShareWatchlist = () => {
+    const shareText = `Check out my watchlist with ${items.length} properties!`;
+    const shareUrl = window.location.href;
+    
+    if (navigator.share) {
+      navigator.share({
+        title: 'My Property Watchlist',
+        text: shareText,
+        url: shareUrl
       });
+    } else {
+      navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+      toast.success('Watchlist link copied to clipboard');
     }
-    
-    // Check for special offer
-    if (listing.offer) {
-      features.push({
-        type: 'offer',
-        icon: <FaCheckCircle className="text-blue-500" />,
-        text: 'Special Offer',
-        color: 'text-blue-600 bg-blue-50 border-blue-200'
-      });
-    }
-    
-    // Check for new listing (created within last 7 days)
-    const daysSinceCreated = Math.floor((new Date() - new Date(listing.createdAt)) / (1000 * 60 * 60 * 24));
-    if (daysSinceCreated <= 7) {
-      features.push({
-        type: 'new',
-        icon: <FaCheckCircle className="text-purple-500" />,
-        text: 'New Listing',
-        color: 'text-purple-600 bg-purple-50 border-purple-200'
-      });
-    }
-    
-    return features;
   };
 
   // Filter and sort items
@@ -222,19 +325,96 @@ export default function Watchlist() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
           <div className="flex items-center gap-3">
             <FaEye className="text-3xl text-purple-700" />
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-purple-700">My Watchlist</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="text-sm text-gray-600">
-              {filteredAndSortedItems.length} of {items.length} properties
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-purple-700">My Watchlist</h1>
+              <p className="text-sm text-gray-600">
+                {filteredAndSortedItems.length} of {items.length} properties
+                {watchlistStats.totalValue > 0 && (
+                  <span className="ml-2 text-purple-600 font-semibold">
+                    • Total Value: ₹{watchlistStats.totalValue.toLocaleString('en-IN')}
+                  </span>
+                )}
+              </p>
             </div>
-            <button
-              onClick={() => setShowAddProperty(!showAddProperty)}
-              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
-            >
-              <FaPlus className="text-sm" />
-              Add Properties
-            </button>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
+            {/* Mobile: Stack buttons vertically, Desktop: Horizontal */}
+            <div className="flex flex-wrap items-center gap-2">
+              {/* View Mode Toggle */}
+              <div className="flex bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2 rounded ${viewMode === 'grid' ? 'bg-white shadow' : 'text-gray-500'}`}
+                  title="Grid View"
+                >
+                  <FaBars className="text-sm" />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-2 rounded ${viewMode === 'list' ? 'bg-white shadow' : 'text-gray-500'}`}
+                  title="List View"
+                >
+                  <FaBars className="rotate-90 text-sm" />
+                </button>
+              </div>
+              
+              {/* Stats Toggle */}
+              <button
+                onClick={() => setShowStats(!showStats)}
+                className={`px-2 sm:px-3 py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${
+                  showStats ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <FaChartLine className="text-xs sm:text-sm" />
+                <span className="hidden sm:inline">Stats</span>
+              </button>
+              
+              {/* Bulk Actions */}
+              {items.length > 0 && (
+                <button
+                  onClick={() => setBulkActionMode(!bulkActionMode)}
+                  className={`px-2 sm:px-3 py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${
+                    bulkActionMode ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  <FaCheck className="text-xs sm:text-sm" />
+                  <span className="hidden sm:inline">Select</span>
+                </button>
+              )}
+            </div>
+            
+            {/* Second row for mobile */}
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Export */}
+              <button
+                onClick={handleExportWatchlist}
+                className="px-2 sm:px-3 py-2 rounded-lg bg-green-100 text-green-700 hover:bg-green-200 transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
+                disabled={items.length === 0}
+              >
+                <FaDownload className="text-xs sm:text-sm" />
+                <span className="hidden sm:inline">Export</span>
+              </button>
+              
+              {/* Share */}
+              <button
+                onClick={handleShareWatchlist}
+                className="px-2 sm:px-3 py-2 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
+                disabled={items.length === 0}
+              >
+                <FaShare className="text-xs sm:text-sm" />
+                <span className="hidden sm:inline">Share</span>
+              </button>
+              
+              {/* Add Properties */}
+              <button
+                onClick={() => setShowAddProperty(!showAddProperty)}
+                className="bg-purple-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
+              >
+                <FaPlus className="text-xs sm:text-sm" />
+                <span className="hidden sm:inline">Add Properties</span>
+                <span className="sm:hidden">Add</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -362,6 +542,123 @@ export default function Watchlist() {
           </div>
         )}
 
+        {/* Stats Section */}
+        {showStats && items.length > 0 && (
+          <div className="mb-6 bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-lg border border-purple-200">
+            <h3 className="text-lg font-semibold text-purple-800 mb-4 flex items-center gap-2">
+              <FaChartLine className="text-purple-600" />
+              Watchlist Statistics
+            </h3>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm">
+                <p className="text-xs sm:text-sm text-gray-600">Total Properties</p>
+                <p className="text-lg sm:text-2xl font-bold text-purple-600">{items.length}</p>
+              </div>
+              <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm">
+                <p className="text-xs sm:text-sm text-gray-600">Average Price</p>
+                <p className="text-sm sm:text-2xl font-bold text-green-600">₹{watchlistStats.averagePrice.toLocaleString('en-IN')}</p>
+              </div>
+              <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm col-span-2 lg:col-span-1">
+                <p className="text-xs sm:text-sm text-gray-600">Price Range</p>
+                <p className="text-xs sm:text-lg font-bold text-blue-600">
+                  ₹{watchlistStats.priceRange.min.toLocaleString('en-IN')} - ₹{watchlistStats.priceRange.max.toLocaleString('en-IN')}
+                </p>
+              </div>
+              <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm col-span-2 lg:col-span-1">
+                <p className="text-xs sm:text-sm text-gray-600">Total Value</p>
+                <p className="text-sm sm:text-2xl font-bold text-indigo-600">₹{watchlistStats.totalValue.toLocaleString('en-IN')}</p>
+              </div>
+            </div>
+            
+            {/* Distribution Charts */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+              <div className="bg-white p-4 rounded-lg shadow-sm">
+                <h4 className="font-semibold text-gray-800 mb-3">By Type</h4>
+                <div className="space-y-2">
+                  {Object.entries(watchlistStats.typeDistribution).map(([type, count]) => (
+                    <div key={type} className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600 capitalize">{type}</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-20 bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-purple-500 h-2 rounded-full" 
+                            style={{ width: `${(count / items.length) * 100}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-sm font-semibold text-gray-800">{count}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="bg-white p-4 rounded-lg shadow-sm">
+                <h4 className="font-semibold text-gray-800 mb-3">By City</h4>
+                <div className="space-y-2">
+                  {Object.entries(watchlistStats.cityDistribution)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5)
+                    .map(([city, count]) => (
+                    <div key={city} className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">{city}</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-20 bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-pink-500 h-2 rounded-full" 
+                            style={{ width: `${(count / items.length) * 100}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-sm font-semibold text-gray-800">{count}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Bulk Actions Bar */}
+        {bulkActionMode && (
+          <div className="mb-6 bg-red-50 p-3 sm:p-4 rounded-lg border border-red-200">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                <button
+                  onClick={handleSelectAll}
+                  className="flex items-center justify-center gap-2 px-3 py-2 bg-white rounded-lg border border-gray-300 hover:bg-gray-50 text-sm"
+                >
+                  <FaCheck className="text-sm" />
+                  {selectedItems.length === filteredAndSortedItems.length ? 'Deselect All' : 'Select All'}
+                </button>
+                <span className="text-sm text-gray-600 text-center sm:text-left">
+                  {selectedItems.length} of {filteredAndSortedItems.length} selected
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleBulkRemove}
+                  disabled={selectedItems.length === 0}
+                  className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
+                >
+                  <FaTrash className="text-sm" />
+                  <span className="hidden sm:inline">Remove Selected</span>
+                  <span className="sm:hidden">Remove</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setBulkActionMode(false);
+                    setSelectedItems([]);
+                  }}
+                  className="px-3 sm:px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 flex items-center justify-center gap-2 text-sm"
+                >
+                  <FaX className="text-sm" />
+                  <span className="hidden sm:inline">Cancel</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Search and Filter Controls */}
         {items.length > 0 && (
           <div className="mb-6 space-y-4">
@@ -432,42 +729,30 @@ export default function Watchlist() {
             <p className="text-gray-600">Try adjusting your search or filter criteria.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {filteredAndSortedItems.map((listing) => {
-              const features = getPropertyFeatures(listing);
-              return (
-                <div key={listing._id} className="relative group">
-                  <div className="relative">
-                    <ListingItem listing={listing} />
-                    
-                    {/* Property Features - positioned to avoid conflicts */}
-                    {features.length > 0 && (
-                      <div className="absolute top-2 left-2 flex flex-wrap gap-1 z-30 max-w-[calc(100%-120px)]">
-                        {features.map((feature, index) => (
-                          <div
-                            key={index}
-                            className={`px-2 py-1 rounded-full text-xs font-medium border flex items-center gap-1 ${feature.color} shadow-sm`}
-                          >
-                            {feature.icon}
-                            <span className="hidden sm:inline">{feature.text}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    
-                    {/* Remove Button - positioned to avoid conflicts with other buttons */}
-                    <button 
-                      onClick={() => handleRemove(listing._id)} 
-                      className="absolute top-2 right-2 bg-white/95 hover:bg-white text-red-600 px-2 py-1 rounded shadow-lg hover:shadow-xl transition-all flex items-center gap-1 text-sm z-30"
-                      title="Remove from watchlist"
-                    >
-                      <FaTrash className="text-xs" />
-                      <span className="hidden sm:inline">Remove</span>
-                    </button>
+          <div className={viewMode === 'grid' 
+            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" 
+            : "space-y-4"
+          }>
+            {filteredAndSortedItems.map((listing) => (
+              <div key={listing._id} className={`relative group ${viewMode === 'list' ? 'flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm border' : ''}`}>
+                {/* Selection Checkbox */}
+                {bulkActionMode && (
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedItems.includes(listing._id)}
+                      onChange={() => handleSelectItem(listing._id)}
+                      className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500"
+                    />
                   </div>
+                )}
+                
+                {/* Property Content */}
+                <div className={viewMode === 'list' ? 'flex-1' : ''}>
+                  <ListingItem listing={listing} onDelete={handleRemove} />
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         )}
       </div>
