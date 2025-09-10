@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { FaEdit, FaUser, FaEnvelope, FaPhone, FaKey, FaTrash, FaSignOutAlt, FaHome, FaCalendarAlt, FaHeart, FaEye, FaCrown, FaTimes, FaCheck, FaStar, FaRoute, FaCreditCard  } from "react-icons/fa";
+import { FaEdit, FaUser, FaEnvelope, FaPhone, FaKey, FaTrash, FaSignOutAlt, FaHome, FaCalendarAlt, FaHeart, FaEye, FaCrown, FaTimes, FaCheck, FaStar, FaRoute, FaCreditCard, FaShieldAlt } from "react-icons/fa";
 import UserAvatar from "../components/UserAvatar";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import { authenticatedFetch, createAuthenticatedFetchOptions } from '../utils/auth';
