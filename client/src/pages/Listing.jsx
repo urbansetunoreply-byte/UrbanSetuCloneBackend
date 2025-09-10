@@ -1007,13 +1007,17 @@ export default function Listing() {
                 </button>
                 
                 {/* Watchlist Eye Icon - for users only */}
-                {currentUser && (
+                {currentUser && !(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
                   <button
                     onClick={async () => {
                       try {
-                        const res = await fetch(`${API_BASE_URL}/api/watchlist/add/${listing._id}`, {
+                        const res = await fetch(`${API_BASE_URL}/api/watchlist/add`, {
                           method: 'POST',
-                          credentials: 'include'
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                          credentials: 'include',
+                          body: JSON.stringify({ listingId: listing._id })
                         });
                         if (res.ok) {
                           toast.success('Property added to watchlist! Future price insights of this property will be notified.');
