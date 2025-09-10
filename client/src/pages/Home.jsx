@@ -300,7 +300,7 @@ export default function Home() {
         {offerListings.length > 0 && (
           <div className="mb-8 bg-white rounded-xl shadow-lg p-6 animate-fade-in-up delay-800">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-blue-700 animate-slide-in-left">🔥 Exclusive Offers</h2>
+              <h2 className="text-2xl font-bold text-blue-700 animate-slide-in-left">🎁 Exclusive Offers</h2>
               <Link to={isUser ? "/user/search?offer=true" : "/search?offer=true"} className="text-blue-600 hover:underline">View All Offers</Link>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
