@@ -67,6 +67,7 @@ const OnDemandServices = lazy(() => import('./pages/OnDemandServices'));
 const RoutePlanner = lazy(() => import('./pages/RoutePlanner'));
 const UserReviews = lazy(() => import("./pages/UserReviews"));
 const AdminFraudManagement = lazy(() => import('./pages/AdminFraudManagement'));
+const PaymentDashboard = lazy(() => import('./pages/PaymentDashboard'));
 
 // Loading component
 const LoadingSpinner = () => (
@@ -572,6 +573,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/admin/services" element={<AdminServices />} />
             <Route path="/admin/route-planner" element={<RoutePlannerAdmin />} />
             <Route path="/admin/fraudmanagement" element={<AdminFraudManagement />} />
+            <Route path="/admin/payments" element={<PaymentDashboard />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

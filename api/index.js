@@ -18,6 +18,7 @@ import aiRouter from "./routes/ai.route.js";
 import geminiRouter from "./routes/gemini.route.js";
 import chatHistoryRouter from "./routes/chatHistory.route.js";
 import uploadRouter from "./routes/upload.route.js";
+import paymentRouter from "./routes/payment.route.js";
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import http from 'http';
@@ -383,6 +384,7 @@ app.use("/api/gemini", geminiRouter);
 app.use("/api/chat-history", chatHistoryRouter);
 app.use("/api/upload", uploadRouter);
 app.use("/api/ai", aiRouter);
+app.use("/api/payments", paymentRouter);
 console.log('All API routes registered successfully');
 
 const startServer = () => {

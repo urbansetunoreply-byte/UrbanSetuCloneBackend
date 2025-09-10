@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import ContactSupportWrapper from './ContactSupportWrapper';
+import PaymentModal from './PaymentModal';
 import { toast } from 'react-toastify';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -31,6 +32,8 @@ export default function Appointment() {
   const [agreed, setAgreed] = useState(false);
   const [hasActiveAppointment, setHasActiveAppointment] = useState(false);
   const [checkingActive, setCheckingActive] = useState(true);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [appointmentData, setAppointmentData] = useState(null);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -135,14 +138,9 @@ export default function Appointment() {
 
       const data = await res.json();
       if (res.ok) {
-        setBooked(true);
-        setTimeout(() => {
-          if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
-            navigate('/admin/appointments');
-          } else {
-            navigate('/user/my-appointments');
-          }
-        }, 5000); // 5 seconds delay
+        // Store appointment data and show payment modal
+        setAppointmentData(data.appointment);
+        setShowPaymentModal(true);
       } else {
         toast.error(data.message || "Failed to book appointment.");
       }
@@ -152,6 +150,32 @@ export default function Appointment() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePaymentSuccess = (payment) => {
+    setBooked(true);
+    setShowPaymentModal(false);
+    toast.success('Appointment booked and payment confirmed!');
+    setTimeout(() => {
+      if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
+        navigate('/admin/appointments');
+      } else {
+        navigate('/user/my-appointments');
+      }
+    }, 2000);
+  };
+
+  const handlePaymentClose = () => {
+    setShowPaymentModal(false);
+    // If payment is cancelled, show the success message anyway for demo
+    setBooked(true);
+    setTimeout(() => {
+      if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
+        navigate('/admin/appointments');
+      } else {
+        navigate('/user/my-appointments');
+      }
+    }, 2000);
   };
 
   if (!currentUser) {
@@ -284,6 +308,17 @@ export default function Appointment() {
           </form>
         )}
       </div>
+      
+      {/* Payment Modal */}
+      {showPaymentModal && appointmentData && (
+        <PaymentModal
+          isOpen={showPaymentModal}
+          onClose={handlePaymentClose}
+          appointment={appointmentData}
+          onPaymentSuccess={handlePaymentSuccess}
+        />
+      )}
+      
       <ContactSupportWrapper />
     </div>
   );

@@ -15,7 +15,8 @@ import {
   FaTimesCircle,
   FaExclamationTriangle,
   FaTrash,
-  FaLock
+  FaLock,
+  FaRupeeSign
 } from "react-icons/fa";
 import GeminiAIWrapper from "../components/GeminiAIWrapper";
 import { toast } from 'react-toastify';
@@ -867,6 +868,17 @@ export default function AdminDashboard() {
               <div>
                 <h3 className="font-semibold text-gray-800">All Properties</h3>
                 <p className="text-sm text-gray-600">Browse and manage listings</p>
+              </div>
+            </div>
+          </Link>
+          <Link to="/admin/payments" className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all hover:scale-105">
+            <div className="flex items-center space-x-4">
+              <div className="bg-emerald-100 p-3 rounded-full">
+                <FaRupeeSign className="text-2xl text-emerald-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800">Payment Dashboard</h3>
+                <p className="text-sm text-gray-600">Manage payments and refunds</p>
               </div>
             </div>
           </Link>

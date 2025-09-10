@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { FaTrash, FaSearch, FaPen, FaCheck, FaTimes, FaUserShield, FaUser, FaEnvelope, FaPhone, FaArchive, FaUndo, FaCommentDots, FaCheckDouble, FaBan, FaPaperPlane, FaCalendar, FaLightbulb, FaCopy, FaEllipsisV, FaFlag, FaCircle, FaInfoCircle, FaSync, FaStar, FaRegStar, FaThumbtack, FaCalendarAlt, FaCheckSquare, FaDownload } from "react-icons/fa";
+import { FaTrash, FaSearch, FaPen, FaCheck, FaTimes, FaUserShield, FaUser, FaEnvelope, FaPhone, FaArchive, FaUndo, FaCommentDots, FaCheckDouble, FaBan, FaPaperPlane, FaCalendar, FaLightbulb, FaCopy, FaEllipsisV, FaFlag, FaCircle, FaInfoCircle, FaSync, FaStar, FaRegStar, FaThumbtack, FaCalendarAlt, FaCheckSquare, FaDownload, FaRupeeSign, FaCreditCard } from "react-icons/fa";
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch } from '../utils/linkFormatter.jsx';
 import UserAvatar from '../components/UserAvatar';
 import ImagePreview from '../components/ImagePreview';
@@ -844,6 +844,7 @@ export default function MyAppointments() {
                   <th className="border p-2">Purpose</th>
                   <th className="border p-2">Message</th>
                   <th className="border p-2">Status</th>
+                  <th className="border p-2">Payment</th>
                   <th className="border p-2">Actions</th>
                   <th className="border p-2">Connect</th>
                 </tr>
@@ -4056,6 +4057,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
               ? "Cancelled by Admin"
               : appt.status.charAt(0).toUpperCase() + appt.status.slice(1)}
           </span>
+        </td>
+        <td className="border p-2 text-center">
+          <PaymentStatusCell appointment={appt} />
         </td>
         <td className="border p-2 text-center">
           <div className="flex flex-col gap-2">
@@ -8296,5 +8300,93 @@ You can lock this chat again at any time from the options.</p>
       />
 
     </>
+  );
+}
+
+// Payment Status Cell Component
+function PaymentStatusCell({ appointment }) {
+  const [paymentStatus, setPaymentStatus] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchPaymentStatus();
+  }, [appointment._id]);
+
+  const fetchPaymentStatus = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/history?appointmentId=${appointment._id}`, {
+        credentials: 'include'
+      });
+      const data = await response.json();
+      if (response.ok && data.payments.length > 0) {
+        setPaymentStatus(data.payments[0]); // Get the latest payment
+      }
+    } catch (error) {
+      console.error('Error fetching payment status:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <FaSpinner className="animate-spin text-blue-600" />;
+  }
+
+  if (!paymentStatus) {
+    return (
+      <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+        No Payment
+      </span>
+    );
+  }
+
+  const getPaymentStatusColor = (status) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'failed':
+        return 'bg-red-100 text-red-800';
+      case 'refunded':
+        return 'bg-blue-100 text-blue-800';
+      case 'partially_refunded':
+        return 'bg-orange-100 text-orange-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getPaymentStatusText = (status) => {
+    switch (status) {
+      case 'completed':
+        return 'Paid';
+      case 'pending':
+        return 'Pending';
+      case 'failed':
+        return 'Failed';
+      case 'refunded':
+        return 'Refunded';
+      case 'partially_refunded':
+        return 'Partial Refund';
+      default:
+        return status;
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(paymentStatus.status)}`}>
+        {getPaymentStatusText(paymentStatus.status)}
+      </span>
+      <div className="text-xs text-gray-500">
+        ₹{paymentStatus.amount.toLocaleString()}
+      </div>
+      {paymentStatus.refundAmount > 0 && (
+        <div className="text-xs text-red-500">
+          Refunded: ₹{paymentStatus.refundAmount.toLocaleString()}
+        </div>
+      )}
+    </div>
   );
 }
