@@ -15,6 +15,7 @@ import { socket } from "../utils/socket";
 import { exportEnhancedChatToPDF } from '../utils/pdfExport';
 import ExportChatModal from '../components/ExportChatModal';
 import axios from 'axios';
+import PaymentModal from '../components/PaymentModal';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -8307,7 +8308,8 @@ You can lock this chat again at any time from the options.</p>
 function PaymentStatusCell({ appointment }) {
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  const [showPayModal, setShowPayModal] = useState(false);
+  
   useEffect(() => {
     fetchPaymentStatus();
   }, [appointment._id]);
@@ -8374,8 +8376,10 @@ function PaymentStatusCell({ appointment }) {
     }
   };
 
+  const isPending = paymentStatus && paymentStatus.status !== 'completed';
+  
   return (
-    <div className="flex flex-col items-center gap-1">
+    <div className="flex flex-col items-center gap-2">
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(paymentStatus.status)}`}>
         {getPaymentStatusText(paymentStatus.status)}
       </span>
@@ -8386,6 +8390,37 @@ function PaymentStatusCell({ appointment }) {
         <div className="text-xs text-red-500">
           Refunded: ₹{paymentStatus.refundAmount.toLocaleString()}
         </div>
+      )}
+      {!paymentStatus || isPending ? (
+        <button
+          className="mt-1 inline-flex items-center gap-1 text-white bg-blue-600 hover:bg-blue-700 text-xs font-semibold px-3 py-1 rounded"
+          onClick={() => setShowPayModal(true)}
+        >
+          <FaRupeeSign /> Pay Now
+        </button>
+      ) : (
+        paymentStatus.receiptUrl ? (
+          <a
+            href={paymentStatus.receiptUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-1 inline-flex items-center gap-1 text-white bg-green-600 hover:bg-green-700 text-xs font-semibold px-3 py-1 rounded"
+          >
+            <FaDownload /> Receipt
+          </a>
+        ) : null
+      )}
+
+      {showPayModal && (
+        <PaymentModal
+          isOpen={showPayModal}
+          onClose={() => setShowPayModal(false)}
+          appointment={appointment}
+          onPaymentSuccess={(payment) => {
+            setShowPayModal(false);
+            fetchPaymentStatus();
+          }}
+        />
       )}
     </div>
   );
