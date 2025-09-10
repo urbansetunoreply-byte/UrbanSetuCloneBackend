@@ -22,6 +22,12 @@ export default function AdminListing() {
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [watchlistCount, setWatchlistCount] = useState(0);
+  const [showDeassignModal, setShowDeassignModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [deassignReason, setDeassignReason] = useState('');
+  const [deassignPassword, setDeassignPassword] = useState('');
+  const [deassignLoading, setDeassignLoading] = useState(false);
+  const [deassignError, setDeassignError] = useState('');
 
   const formatINR = (amount) => {
     return `₹${Number(amount).toLocaleString("en-IN")}`;
@@ -68,6 +74,73 @@ export default function AdminListing() {
     }
   };
 
+  const handleDeassignOwner = () => {
+    setDeassignReason('');
+    setDeassignError('');
+    setShowDeassignModal(true);
+  };
+
+  const handleDeassignReasonSubmit = (e) => {
+    e.preventDefault();
+    if (!deassignReason.trim()) {
+      setDeassignError('Reason is required');
+      return;
+    }
+    setShowDeassignModal(false);
+    setDeassignError('');
+    setShowPasswordModal(true);
+  };
+
+  const handleDeassignPasswordSubmit = async (e) => {
+    e.preventDefault();
+    if (!deassignPassword) {
+      setDeassignError('Password is required');
+      return;
+    }
+    setDeassignLoading(true);
+    setDeassignError('');
+    
+    try {
+      // Verify password first
+      const verifyRes = await fetch(`${API_BASE_URL}/api/user/verify-password/${currentUser._id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ password: deassignPassword }),
+      });
+      
+      if (!verifyRes.ok) {
+        setDeassignError('Incorrect password. Owner not deassigned.');
+        setDeassignLoading(false);
+        return;
+      }
+      
+      // Proceed to deassign owner
+      const res = await fetch(`${API_BASE_URL}/api/listing/deassign-owner/${listing._id}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: deassignReason }),
+      });
+      
+      const data = await res.json();
+      if (res.ok) {
+        setShowPasswordModal(false);
+        setDeassignPassword('');
+        setDeassignReason('');
+        toast.success(data.message || 'Owner deassigned successfully.');
+        // Refresh the listing data
+        window.location.reload();
+      } else {
+        setDeassignError(data.message || 'Failed to deassign owner.');
+      }
+    } catch (err) {
+      setDeassignError('An error occurred. Please try again.');
+    } finally {
+      setDeassignLoading(false);
+    }
+  };
+
   useEffect(() => {
     const fetchListing = async () => {
       setLoading(true);
@@ -88,6 +161,11 @@ export default function AdminListing() {
       }
     };
     fetchListing();
+
+    // Set up periodic refresh of watchlist count every 30 seconds
+    const interval = setInterval(refreshWatchlistCount, 30000);
+    
+    return () => clearInterval(interval);
   }, [params.listingId]);
 
   if (loading) {
@@ -126,30 +204,30 @@ export default function AdminListing() {
   const { currentUser } = useSelector((state) => state.user);
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
-      <div className="max-w-4xl w-full mx-auto bg-white rounded-xl shadow-lg p-3 sm:p-6 relative overflow-x-hidden">
+    <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-4 sm:py-10 px-1 sm:px-2 md:px-8">
+      <div className="max-w-4xl w-full mx-auto bg-white rounded-xl shadow-lg p-2 sm:p-4 lg:p-6 relative overflow-x-hidden">
         {/* Header with Back Button and Admin Actions */}
         <div className="mb-6 w-full">
           {/* Mobile Layout - Stack buttons vertically for better mobile experience */}
-          <div className="block sm:hidden space-y-2">
+          <div className="block sm:hidden space-y-2 px-1">
             <Link 
               to="/admin"
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm"
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-2 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-xs"
             >
-              <FaArrowLeft className="text-sm" />
+              <FaArrowLeft className="text-xs" />
               Back to Dashboard
             </Link>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-1">
               <Link
                 to={`/admin/update-listing/${listing._id}`}
-                className="bg-gradient-to-r from-green-500 to-teal-500 text-white px-3 py-2 rounded-lg hover:from-green-600 hover:to-teal-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1 text-center justify-center text-xs"
+                className="bg-gradient-to-r from-green-500 to-teal-500 text-white px-2 py-2 rounded-lg hover:from-green-600 hover:to-teal-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1 text-center justify-center text-xs"
               >
                 <FaEdit className="text-xs" />
                 Edit
               </Link>
               <button
                 onClick={handleDelete}
-                className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-2 rounded-lg hover:from-red-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1 text-center justify-center text-xs"
+                className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-2 py-2 rounded-lg hover:from-red-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1 text-center justify-center text-xs"
               >
                 <FaTrash className="text-xs" />
                 Delete
@@ -160,9 +238,9 @@ export default function AdminListing() {
                 navigator.clipboard.writeText(window.location.href);
                 toast.success('Property link copied to clipboard!');
               }}
-              className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-4 py-2 rounded-lg hover:from-purple-600 hover:to-indigo-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm"
+              className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-3 py-2 rounded-lg hover:from-purple-600 hover:to-indigo-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-xs"
             >
-              <FaShare className="text-sm" />
+              <FaShare className="text-xs" />
               Share Property
             </button>
           </div>
@@ -296,19 +374,21 @@ export default function AdminListing() {
               {listing.name}
               {/* Wishlist Heart Icon - match ListingItem style */}
               <button
-                onClick={() => {
+                onClick={async () => {
                   if (!currentUser) {
                     toast.info('Please sign in to add properties to your wishlist.');
                     navigate('/sign-in');
                     return;
                   }
                   if (isInWishlist(listing._id)) {
-                    removeFromWishlist(listing._id);
+                    await removeFromWishlist(listing._id);
                     toast.success('Property removed from your wishlist.');
                   } else {
-                    addToWishlist(listing);
+                    await addToWishlist(listing);
                     //toast.success('Property added to your wishlist.');
                   }
+                  // Refresh watchlist count after wishlist change
+                  await refreshWatchlistCount();
                 }}
                 className={`ml-2 p-2 rounded-full transition z-20 ${isInWishlist(listing._id) ? 'bg-red-500 text-white' : 'bg-gray-200 text-red-500 hover:text-red-600'} focus:outline-none`}
                 title={isInWishlist(listing._id) ? 'Remove from wishlist' : 'Add to wishlist'}
@@ -420,7 +500,18 @@ export default function AdminListing() {
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Created By</p>
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-gray-600">Created By</p>
+                {listing.userRef && (
+                  <button
+                    onClick={handleDeassignOwner}
+                    className="text-xs text-red-600 hover:text-red-800 underline"
+                    title="Deassign owner"
+                  >
+                    Deassign
+                  </button>
+                )}
+              </div>
               <p className="font-semibold text-gray-800">{listing.userRef || 'Unknown'}</p>
             </div>
             <div>
@@ -463,6 +554,83 @@ export default function AdminListing() {
             listingType: listing.type
           }}
         />
+      )}
+
+      {/* Deassign Owner Reason Modal */}
+      {showDeassignModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <form onSubmit={handleDeassignReasonSubmit} className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md flex flex-col gap-4">
+            <h3 className="text-lg font-bold text-red-700 flex items-center gap-2">
+              <FaTrash /> Deassign Owner
+            </h3>
+            <p className="text-sm text-gray-600">
+              Please provide a reason for deassigning the owner of this property.
+            </p>
+            <textarea
+              className="border rounded p-3 w-full"
+              placeholder="Enter reason for deassigning owner..."
+              value={deassignReason}
+              onChange={e => setDeassignReason(e.target.value)}
+              rows={4}
+              autoFocus
+            />
+            {deassignError && <div className="text-red-600 text-sm">{deassignError}</div>}
+            <div className="flex gap-2 justify-end">
+              <button 
+                type="button" 
+                onClick={() => setShowDeassignModal(false)} 
+                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                className="px-4 py-2 rounded bg-red-600 text-white font-semibold"
+              >
+                Next
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Deassign Owner Password Modal */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <form onSubmit={handleDeassignPasswordSubmit} className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md flex flex-col gap-4">
+            <h3 className="text-lg font-bold text-red-700 flex items-center gap-2">
+              <FaTrash /> Confirm Password
+            </h3>
+            <p className="text-sm text-gray-600">
+              Please enter your password to confirm the deassignment of the owner.
+            </p>
+            <input
+              type="password"
+              className="border rounded p-3 w-full"
+              placeholder="Enter your password"
+              value={deassignPassword}
+              onChange={e => setDeassignPassword(e.target.value)}
+              autoFocus
+            />
+            {deassignError && <div className="text-red-600 text-sm">{deassignError}</div>}
+            <div className="flex gap-2 justify-end">
+              <button 
+                type="button" 
+                onClick={() => setShowPasswordModal(false)} 
+                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                className="px-4 py-2 rounded bg-red-600 text-white font-semibold" 
+                disabled={deassignLoading}
+              >
+                {deassignLoading ? 'Deassigning...' : 'Confirm & Deassign'}
+              </button>
+            </div>
+          </form>
+        </div>
       )}
     </div>
   );

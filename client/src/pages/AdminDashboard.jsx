@@ -640,47 +640,6 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Watchlist Card */}
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Watchlists</p>
-                <p className="text-3xl font-bold text-indigo-600">{analytics.watchlist.totalWatchlists}</p>
-              </div>
-              <div className="bg-indigo-100 p-3 rounded-full">
-                <FaEye className="text-2xl text-indigo-600" />
-              </div>
-            </div>
-            <div className="mt-4 space-y-1">
-              <p className="text-sm text-gray-500">Watched Properties: {analytics.watchlist.totalWatchedProperties}</p>
-              <p className="text-sm text-indigo-500">Top Watched: {analytics.watchlist.topWatchedProperties.length}</p>
-            </div>
-          </div>
-
-          {/* Fraud Detection Card */}
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow relative group" onClick={() => navigate('/admin/fraudmanagement')} role="button" title="Manage fraud detections">
-            <div className="flex items-center justify-between cursor-pointer">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Fraud Watch</p>
-                <p className="text-sm text-gray-500">Last Scan: {fraudStats.lastScan ? new Date(fraudStats.lastScan).toLocaleString() : 'N/A'}</p>
-              </div>
-              <div className="bg-red-100 p-3 rounded-full">
-                <FaExclamationTriangle className="text-2xl text-red-600" />
-              </div>
-            </div>
-            <div className="mt-4 space-y-1">
-              <p className="text-sm text-gray-700">Suspicious Listings: <span className="font-bold text-red-600">{fraudStats.suspiciousListings}</span></p>
-              <p className="text-sm text-gray-700">Suspected Fake Reviews: <span className="font-bold text-red-600">{fraudStats.suspectedFakeReviews}</span></p>
-            </div>
-            {/* Hover/Click Popover */}
-            <div className="hidden group-hover:block absolute top-full left-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-10">
-              <p className="text-xs text-gray-600">Details</p>
-              <ul className="mt-1 text-sm text-gray-800 space-y-1">
-                <li>Suspicious Listings: <span className="font-semibold text-red-600">{fraudStats.suspiciousListings}</span></li>
-                <li>Suspected Fake Reviews: <span className="font-semibold text-red-600">{fraudStats.suspectedFakeReviews}</span></li>
-              </ul>
-            </div>
-          </div>
         </div>
 
         {/* Price Statistics and Distribution */}
@@ -864,7 +823,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <button
             className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all hover:scale-105 w-full text-left"
             onClick={() => navigate('/admin/management')}
@@ -914,6 +873,21 @@ export default function AdminDashboard() {
               <div>
                 <h3 className="font-semibold text-gray-800">Payment Dashboard</h3>
                 <p className="text-sm text-gray-600">Manage payments and refunds</p>
+              </div>
+            </div>
+          </Link>
+          <Link to="/admin/fraudmanagement" className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all hover:scale-105">
+            <div className="flex items-center space-x-4">
+              <div className="bg-red-100 p-3 rounded-full">
+                <FaExclamationTriangle className="text-2xl text-red-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800">Fraud Watch</h3>
+                <p className="text-sm text-gray-600">Monitor and manage fraud detections</p>
+                <div className="mt-1 text-xs text-gray-500">
+                  <span className="font-semibold text-red-600">{fraudStats.suspiciousListings}</span> suspicious listings • 
+                  <span className="font-semibold text-red-600 ml-1">{fraudStats.suspectedFakeReviews}</span> fake reviews
+                </div>
               </div>
             </div>
           </Link>

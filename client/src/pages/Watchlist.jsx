@@ -319,8 +319,8 @@ export default function Watchlist() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-purple-50 to-pink-100 min-h-screen py-4 sm:py-10 px-2 md:px-8">
-      <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-4 sm:p-6">
+    <div className="bg-gradient-to-br from-purple-50 to-pink-100 min-h-screen py-2 sm:py-10 px-1 sm:px-2 md:px-8">
+      <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-2 sm:p-4 lg:p-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
           <div className="flex items-center gap-3">
@@ -730,7 +730,7 @@ export default function Watchlist() {
           </div>
         ) : (
           <div className={viewMode === 'grid' 
-            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" 
+            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" 
             : "space-y-4"
           }>
             {filteredAndSortedItems.map((listing) => (

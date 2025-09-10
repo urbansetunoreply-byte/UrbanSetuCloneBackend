@@ -73,7 +73,7 @@ export default function ListingItem({ listing, onDelete }) {
   }
 
   return (
-    <div className="relative bg-white shadow-md rounded-lg overflow-hidden p-2 sm:p-4">
+    <div className="relative bg-white shadow-md rounded-lg overflow-hidden p-1 sm:p-2 lg:p-4">
       {/* Offer Badge */}
       {listing.offer && getDiscountPercentage() > 0 && (
         <div className="absolute top-2 sm:top-4 left-2 sm:left-4 z-20">
@@ -97,34 +97,20 @@ export default function ListingItem({ listing, onDelete }) {
         <FaHeart className="text-base sm:text-lg" />
       </button>
 
-      {/* Admin Delete Button - positioned to avoid conflicts */}
-      {onDelete && (
-        <button
-          onClick={() => onDelete(listing._id)}
-          className="absolute top-2 sm:top-4 left-2 sm:left-4 p-2 rounded-full bg-red-100 text-red-600 hover:bg-red-500 hover:text-white transition shadow-md z-20"
-          title="Delete Listing"
-          style={{ 
-            left: listing.offer && getDiscountPercentage() > 0 ? '4.5rem' : '0.5rem',
-            top: listing.offer && getDiscountPercentage() > 0 ? '2.5rem' : '0.5rem'
-          }}
-        >
-          <FaTrash className="text-base sm:text-lg" />
-        </button>
-      )}
 
       <Link to={listingLink}>
         {listing.imageUrls && listing.imageUrls.length > 0 ? (
           <img
             src={listing.imageUrls[0]}
             alt="home"
-            className="w-full h-32 sm:h-48 object-cover rounded-md"
+            className="w-full h-28 sm:h-40 lg:h-48 object-cover rounded-md"
             onError={(e) => {
               e.target.src = "https://via.placeholder.com/400x300?text=No+Image";
-              e.target.className = "w-full h-32 sm:h-48 object-cover rounded-md opacity-50";
+              e.target.className = "w-full h-28 sm:h-40 lg:h-48 object-cover rounded-md opacity-50";
             }}
           />
         ) : (
-          <div className="w-full h-48 bg-gray-200 rounded-md flex items-center justify-center">
+          <div className="w-full h-28 sm:h-40 lg:h-48 bg-gray-200 rounded-md flex items-center justify-center">
             <div className="text-center text-gray-500">
               <div className="text-4xl mb-2">🏠</div>
               <p className="text-sm">No Image</p>
@@ -203,13 +189,8 @@ export default function ListingItem({ listing, onDelete }) {
             <p>{listing.bathrooms > 1 ? `${listing.bathrooms} bathrooms` : `${listing.bathrooms} bathroom`}</p>
           </div>
           
-          {/* Property Features - Save and Special Offer badges */}
+          {/* Property Features - Special Offer badge */}
           <div className="mt-2 flex flex-wrap gap-1">
-            {listing.offer && getDiscountPercentage() > 0 && (
-              <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
-                Save ₹{(listing.regularPrice - listing.discountPrice).toLocaleString('en-IN')}
-              </span>
-            )}
             {listing.offer && (
               <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
                 Special Offer
