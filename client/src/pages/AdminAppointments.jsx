@@ -6357,8 +6357,6 @@ function AdminAppointmentRow({
     </tr>
   );
 }
-<<<<<<< Current (Your changes)
-=======
 
 function AdminPaymentStatusCell({ appointmentId }) {
   const [payment, setPayment] = React.useState(null);
