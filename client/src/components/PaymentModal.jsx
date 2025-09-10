@@ -69,12 +69,12 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         }
       };
 
-      // Mock payment success for demo
+      // Mock payment success for dev/testing; replace with Razorpay SDK in prod
       setTimeout(async () => {
         const mockResponse = {
           razorpay_payment_id: `pay_${Date.now()}`,
           razorpay_order_id: paymentData.razorpayOrder.id,
-          razorpay_signature: 'mock_signature'
+          razorpay_signature: 'dev_bypass_signature'
         };
         await verifyPayment(mockResponse);
       }, 2000);
@@ -110,6 +110,9 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         onPaymentSuccess(verifyData.payment);
       } else {
         toast.error(verifyData.message || 'Payment verification failed');
+        if (verifyData.message && verifyData.message.toLowerCase().includes('signature')) {
+          toast.info('Dev mode: signature bypass is enabled. Please try again.');
+        }
       }
     } catch (error) {
       console.error('Verification error:', error);
@@ -179,12 +182,12 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                     <h4 className="font-semibold text-blue-800 mb-3">Payment Summary</h4>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Advance Payment (10%)</span>
+                        <span className="text-gray-600">Advance Payment (Flat)</span>
                         <span className="font-medium">₹{paymentData.payment.amount.toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between text-sm text-gray-500">
-                        <span>Property Price</span>
-                        <span>₹{appointment.listingId?.regularPrice?.toLocaleString() || 'N/A'}</span>
+                        <span>Note</span>
+                        <span>₹100 advance to confirm booking</span>
                       </div>
                     </div>
                     <div className="border-t border-blue-200 mt-3 pt-3">
