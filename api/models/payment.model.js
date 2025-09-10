@@ -5,7 +5,7 @@ const paymentSchema = new mongoose.Schema({
   paymentId: {
     type: String,
     required: true
-  }
+  },
   appointmentId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Booking',
