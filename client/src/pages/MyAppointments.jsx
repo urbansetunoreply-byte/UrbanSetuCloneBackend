@@ -8384,7 +8384,7 @@ function PaymentStatusCell({ appointment }) {
         {getPaymentStatusText(paymentStatus.status)}
       </span>
       <div className="text-xs text-gray-500">
-        ₹{paymentStatus.amount.toLocaleString()}
+        ₹{100}
       </div>
       {paymentStatus.refundAmount > 0 && (
         <div className="text-xs text-red-500">
