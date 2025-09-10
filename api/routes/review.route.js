@@ -156,7 +156,14 @@ router.get('/listing/:listingId', async (req, res, next) => {
 // Get user's reviews
 router.get('/user', verifyToken, async (req, res, next) => {
   try {
-    const reviews = await Review.find({ userId: req.user.id })
+    // By default, hide reviews the user has removed for themselves
+    const includeRemoved = req.query.includeRemoved === 'true';
+    const query = { userId: req.user.id };
+    if (!includeRemoved) {
+      query.status = { $ne: 'removed_by_user' };
+    }
+
+    const reviews = await Review.find(query)
       .populate('listingId', 'name imageUrls city state')
       .sort({ createdAt: -1 });
     

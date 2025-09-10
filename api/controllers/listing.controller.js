@@ -1,5 +1,7 @@
 import Listing from "../models/listing.model.js"
 import Wishlist from "../models/wishlist.model.js"
+import PropertyWatchlist from "../models/propertyWatchlist.model.js"
+import { notifyWatchersOnChange } from "./propertyWatchlist.controller.js"
 import User from "../models/user.model.js"
 import Notification from "../models/notification.model.js"
 import { errorHandler } from "../utils/error.js"
@@ -156,6 +158,13 @@ export const deleteListing=async (req,res,next)=>{
         
         // Delete all wishlist items associated with this listing
         await Wishlist.deleteMany({ listingId: req.params.id })
+        // Notify watchers and cleanup watchlist entries
+        try {
+          await notifyWatchersOnChange(req.app, { listing, changeType: 'removed' });
+        } catch (e) {
+          console.error('Failed to notify watchers on removal:', e);
+        }
+        await PropertyWatchlist.deleteMany({ listingId: req.params.id })
         
         res.status(200).json({
           success: true,
@@ -195,7 +204,24 @@ export const updateListing=async (req,res,next)=>{
           updateData = dataWithoutUserRef;
         }
         
+        // Detect price drop before update
+        const oldRegular = listing.regularPrice;
+        const oldDiscount = listing.discountPrice;
+        const oldEffective = (listing.offer && oldDiscount) ? oldDiscount : oldRegular;
+
         const updateListing=await Listing.findByIdAndUpdate(req.params.id, updateData, {new:true})
+
+        // Notify watchers if price dropped
+        try {
+          const newRegular = updateListing.regularPrice;
+          const newDiscount = updateListing.discountPrice;
+          const newEffective = (updateListing.offer && newDiscount) ? newDiscount : newRegular;
+          if (oldEffective && newEffective && newEffective < oldEffective) {
+            await notifyWatchersOnChange(req.app, { listing: updateListing, changeType: 'price_drop', oldPrice: oldEffective, newPrice: newEffective });
+          }
+        } catch (e) {
+          console.error('Failed to notify watchers on price change:', e);
+        }
         
         // Create notification if admin is editing someone else's property
         let notificationMessage = "Property Updated Successfully";
