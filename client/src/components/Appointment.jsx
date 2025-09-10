@@ -166,16 +166,9 @@ export default function Appointment() {
   };
 
   const handlePaymentClose = () => {
+    // Close payment modal without marking as booked or redirecting
     setShowPaymentModal(false);
-    // If payment is cancelled, show the success message anyway for demo
-    setBooked(true);
-    setTimeout(() => {
-      if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
-        navigate('/admin/appointments');
-      } else {
-        navigate('/user/my-appointments');
-      }
-    }, 2000);
+    toast.info('Payment not completed. Appointment remains pending until payment is confirmed.');
   };
 
   if (!currentUser) {

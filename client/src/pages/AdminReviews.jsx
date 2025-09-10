@@ -100,10 +100,10 @@ export default function AdminReviews() {
   const fetchReviews = async () => {
     try {
       const params = new URLSearchParams({
-        page: currentPage,
+        page: 1,
         limit: 10,
-        sort: sortBy,
-        order: sortOrder
+        sort: 'date',
+        order: 'desc'
       });
       
       if (selectedStatus) {
@@ -117,7 +117,9 @@ export default function AdminReviews() {
       const data = await res.json();
 
       if (res.ok) {
-        setReviews(data.reviews);
+        // Ensure latest reviews appear at top even if API doesn't sort correctly
+        const sorted = Array.isArray(data.reviews) ? [...data.reviews].sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt)) : [];
+        setReviews(sorted);
         setTotalPages(data.pages);
       } else {
         setError(data.message || 'Failed to load reviews');

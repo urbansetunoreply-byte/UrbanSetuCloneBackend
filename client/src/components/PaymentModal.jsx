@@ -48,36 +48,34 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
 
     try {
       setLoading(true);
-      
-      // Mock Razorpay integration - replace with actual Razorpay SDK
-      const options = {
-        key: paymentData.key,
-        amount: paymentData.razorpayOrder.amount,
-        currency: paymentData.razorpayOrder.currency,
-        name: "Property Booking",
-        description: `Advance payment for ${appointment.propertyName}`,
-        order_id: paymentData.razorpayOrder.id,
-        handler: async function (response) {
-          await verifyPayment(response);
-        },
-        prefill: {
-          name: appointment.buyerId?.username || '',
-          email: appointment.buyerId?.email || '',
-        },
-        theme: {
-          color: "#3B82F6"
-        }
-      };
-
-      // Mock payment success for dev/testing; replace with Razorpay SDK in prod
-      setTimeout(async () => {
-        const mockResponse = {
-          razorpay_payment_id: `pay_${Date.now()}`,
-          razorpay_order_id: paymentData.razorpayOrder.id,
-          razorpay_signature: 'dev_bypass_signature'
+      // Use Razorpay Checkout if available, else show error
+      if (window && window.Razorpay) {
+        const options = {
+          key: paymentData.key,
+          amount: paymentData.razorpayOrder.amount,
+          currency: paymentData.razorpayOrder.currency,
+          name: "Property Booking",
+          description: `Advance payment for ${appointment.propertyName}`,
+          order_id: paymentData.razorpayOrder.id,
+          handler: async function (response) {
+            await verifyPayment(response);
+          },
+          prefill: {
+            name: appointment.buyerId?.username || '',
+            email: appointment.buyerId?.email || '',
+          },
+          theme: { color: "#3B82F6" }
         };
-        await verifyPayment(mockResponse);
-      }, 2000);
+        const rzp = new window.Razorpay(options);
+        rzp.on('payment.failed', function () {
+          toast.error('Payment failed or cancelled.');
+          setLoading(false);
+        });
+        rzp.open();
+      } else {
+        toast.error('Payment gateway unavailable. Please try again later.');
+        setLoading(false);
+      }
 
     } catch (error) {
       console.error('Payment error:', error);

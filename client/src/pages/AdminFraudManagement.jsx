@@ -473,6 +473,7 @@ export default function AdminFraudManagement() {
                         <th className="p-2 text-left text-sm">Listing</th>
                         <th className="p-2 text-left text-sm">User</th>
                         <th className="p-2 text-left text-sm">Comment</th>
+                        <th className="p-2 text-left text-sm">Reasons</th>
                         <th className="p-2 text-left text-sm">Actions</th>
                       </tr>
                     </thead>
@@ -505,6 +506,7 @@ export default function AdminFraudManagement() {
                           <td className="p-2 text-sm">{r.listingId?.name || r.listingId}</td>
                           <td className="p-2 text-sm">{r.userId?.email || r.userId}</td>
                           <td className="p-2 text-sm max-w-md truncate" title={r.comment}>{r.comment}</td>
+                          <td className="p-2 text-sm">{(r._fraudReasons||[]).join(', ')}</td>
                           <td className="p-2 text-sm flex flex-wrap gap-2">
                             <a href={`/admin/listing/${r.listingId?._id || r.listingId}`} className="px-2 py-1 bg-blue-600 text-white rounded text-xs sm:text-sm">Open</a>
                             <button className="px-2 py-1 bg-gray-200 rounded text-xs sm:text-sm" onClick={() => window.open(`/admin/listing/${r.listingId?._id || r.listingId}`, '_blank')}>New Tab</button>
