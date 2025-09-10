@@ -2115,7 +2115,7 @@ export default function Profile() {
                   <span className="font-medium text-xs sm:text-sm">Payments</span>
                 </Link>
                 <Link
-                  to="/admin/fraud-management"
+                  to="/admin/fraudmanagement"
                   className={`bg-rose-500 text-white p-3 rounded-lg hover:bg-rose-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1050`}
                 >
                   <FaShieldAlt className={`w-4 h-4 mb-1`} />
