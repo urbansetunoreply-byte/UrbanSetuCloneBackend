@@ -104,7 +104,7 @@ router.post("/create-intent", verifyToken, async (req, res) => {
 // POST: Verify payment (Razorpay webhook)
 router.post("/verify", verifyToken, async (req, res) => {
   try {
-    const { paymentId, razorpayPaymentId, razorpayOrderId, razorpaySignature } = req.body;
+    const { paymentId, razorpayPaymentId, razorpayOrderId, razorpaySignature, clientIp, userAgent } = req.body;
 
     // Verify Razorpay signature strictly using configured secret
     let isSignatureValid = false;
@@ -138,6 +138,8 @@ router.post("/verify", verifyToken, async (req, res) => {
     payment.gatewayOrderId = razorpayOrderId;
     payment.gatewaySignature = razorpaySignature;
     payment.completedAt = new Date();
+    payment.clientIp = clientIp || req.ip;
+    payment.userAgent = userAgent || req.headers['user-agent'];
 
     await payment.save();
 

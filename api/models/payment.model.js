@@ -91,6 +91,17 @@ const paymentSchema = new mongoose.Schema({
   // Receipt info
   receiptNumber: String,
   receiptUrl: String,
+  // Security & telemetry
+  clientIp: String,
+  userAgent: String,
+  riskScore: { type: Number, min: 0, max: 100, default: 0 },
+  threeDS: {
+    enrolled: { type: Boolean, default: false },
+    version: String,
+    status: String,
+    eci: String
+  },
+  checksumVerified: { type: Boolean, default: false },
   
   // Timestamps
   createdAt: {
@@ -116,6 +127,7 @@ paymentSchema.index({ appointmentId: 1 });
 paymentSchema.index({ userId: 1 });
 paymentSchema.index({ status: 1 });
 paymentSchema.index({ createdAt: -1 });
+paymentSchema.index({ gatewayPaymentId: 1 });
 
 // Pre-save middleware to update updatedAt
 paymentSchema.pre('save', function(next) {

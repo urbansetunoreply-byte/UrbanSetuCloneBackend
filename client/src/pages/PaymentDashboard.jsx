@@ -82,14 +82,14 @@ const PaymentDashboard = () => {
         {/* Tabs */}
         <div className="bg-white rounded-xl shadow-lg mb-8">
           <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 px-6">
+            <nav className="flex overflow-x-auto no-scrollbar px-2 sm:px-6 gap-4 sm:gap-8">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
+                    className={`shrink-0 py-3 sm:py-4 px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center gap-2 ${
                       activeTab === tab.id
                         ? 'border-blue-500 text-blue-600'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -109,7 +109,7 @@ const PaymentDashboard = () => {
           {activeTab === 'overview' && (
             <div>
               {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-8">
                 <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -207,37 +207,37 @@ const PaymentDashboard = () => {
               {/* Quick Actions */}
               <div className="mt-8">
                 <h3 className="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                   <button
                     onClick={() => setActiveTab('history')}
-                    className="bg-blue-100 text-blue-800 p-4 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-3"
+                    className="bg-blue-100 text-blue-800 p-3 sm:p-4 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-2 sm:gap-3"
                   >
-                    <FaCreditCard className="text-xl" />
+                    <FaCreditCard className="text-lg sm:text-xl" />
                     <div className="text-left">
-                      <div className="font-semibold">View Payment History</div>
-                      <div className="text-sm">Browse all payments</div>
+                      <div className="font-semibold text-sm sm:text-base">View Payment History</div>
+                      <div className="text-xs sm:text-sm">Browse all payments</div>
                     </div>
                   </button>
                   
                   <button
                     onClick={() => setActiveTab('refunds')}
-                    className="bg-red-100 text-red-800 p-4 rounded-lg hover:bg-red-200 transition-colors flex items-center gap-3"
+                    className="bg-red-100 text-red-800 p-3 sm:p-4 rounded-lg hover:bg-red-200 transition-colors flex items-center gap-2 sm:gap-3"
                   >
-                    <FaUndo className="text-xl" />
+                    <FaUndo className="text-lg sm:text-xl" />
                     <div className="text-left">
-                      <div className="font-semibold">Manage Refunds</div>
-                      <div className="text-sm">Process refunds</div>
+                      <div className="font-semibold text-sm sm:text-base">Manage Refunds</div>
+                      <div className="text-xs sm:text-sm">Process refunds</div>
                     </div>
                   </button>
                   
                   <button
-                    className="bg-green-100 text-green-800 p-4 rounded-lg hover:bg-green-200 transition-colors flex items-center gap-3"
+                    className="bg-green-100 text-green-800 p-3 sm:p-4 rounded-lg hover:bg-green-200 transition-colors flex items-center gap-2 sm:gap-3"
                     title="Export CSV of payments"
                   >
-                    <FaDownload className="text-xl" />
+                    <FaDownload className="text-lg sm:text-xl" />
                     <div className="text-left">
-                      <div className="font-semibold">Export Reports</div>
-                      <div className="text-sm">Download financial reports</div>
+                      <div className="font-semibold text-sm sm:text-base">Export Reports</div>
+                      <div className="text-xs sm:text-sm">Download financial reports</div>
                     </div>
                   </button>
                 </div>

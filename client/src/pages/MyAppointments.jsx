@@ -8336,8 +8336,8 @@ function PaymentStatusCell({ appointment }) {
 
   if (!paymentStatus) {
     return (
-      <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-        No Payment
+      <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+        Pending
       </span>
     );
   }

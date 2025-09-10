@@ -7,6 +7,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
   const [paymentData, setPaymentData] = useState(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [receiptUrl, setReceiptUrl] = useState('');
+  const [preferredMethod, setPreferredMethod] = useState('auto'); // auto, card, upi, netbanking
 
   useEffect(() => {
     if (isOpen && appointment) {
@@ -79,7 +80,8 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
             name: appointment.buyerId?.username || '',
             email: appointment.buyerId?.email || '',
           },
-          theme: { color: "#3B82F6" }
+          theme: { color: "#3B82F6" },
+          method: preferredMethod === 'auto' ? undefined : { [preferredMethod]: '1' }
         };
         const rzp = new window.Razorpay(options);
         rzp.on('payment.failed', function () {
@@ -111,7 +113,9 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
           paymentId: paymentData.payment.paymentId,
           razorpayPaymentId: response.razorpay_payment_id,
           razorpayOrderId: response.razorpay_order_id,
-          razorpaySignature: response.razorpay_signature
+          razorpaySignature: response.razorpay_signature,
+          clientIp: (window && window.__CLIENT_IP__) || undefined,
+          userAgent: navigator.userAgent
         })
       });
 
@@ -208,6 +212,19 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                         <span>Total Amount</span>
                         <span>₹{paymentData.payment.amount.toLocaleString()}</span>
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Payment Method Selection */}
+                  <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                    <h5 className="font-semibold text-gray-800 mb-2">Payment Method</h5>
+                    <div className="flex flex-wrap gap-3 text-sm">
+                      {['auto','card','upi','netbanking'].map(method => (
+                        <label key={method} className={`px-3 py-1 rounded-full border cursor-pointer ${preferredMethod===method ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300'}`}>
+                          <input type="radio" name="method" value={method} className="hidden" onChange={()=>setPreferredMethod(method)} checked={preferredMethod===method} />
+                          {method === 'auto' ? 'Auto' : method.charAt(0).toUpperCase()+method.slice(1)}
+                        </label>
+                      ))}
                     </div>
                   </div>
 

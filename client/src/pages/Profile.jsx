@@ -2064,47 +2064,63 @@ export default function Profile() {
               Quick Actions
             </span>
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
             <button
               onClick={handleShowListings}
               className={`bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-450`}
             >
-              <FaHome className={`w-5 h-5 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
-              <span className="font-medium text-sm">My Listings</span>
+              <FaHome className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
+              <span className="font-medium text-xs sm:text-sm">My Listings</span>
             </button>
             
             <Link
               to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? "/admin/appointments" : "/user/my-appointments"}
               className={`bg-green-500 text-white p-3 rounded-lg hover:bg-green-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-600`}
             >
-              <FaCalendarAlt className={`w-5 h-5 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
-              <span className="font-medium text-sm">{(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? 'Appointments' : 'My Appointments'}</span>
+              <FaCalendarAlt className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
+              <span className="font-medium text-xs sm:text-sm">{(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? 'Appointments' : 'My Appointments'}</span>
             </Link>
             
             <Link
               to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? "/admin/wishlist" : "/user/wishlist"}
               className={`bg-red-500 text-white p-3 rounded-lg hover:bg-red-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-750`}
             >
-              <FaHeart className={`w-5 h-5 mb-1 transition-transform duration-300 group-hover:${animationClasses.heartbeat}`} />
-              <span className="font-medium text-sm">My Wishlist</span>
+              <FaHeart className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.heartbeat}`} />
+              <span className="font-medium text-xs sm:text-sm">My Wishlist</span>
             </Link>
 
             <Link
               to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? "/admin/reviews" : "/user/reviews"}
               className={`bg-yellow-500 text-white p-3 rounded-lg hover:bg-yellow-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-900`}
             >
-              <FaStar className={`w-5 h-5 mb-1 transition-transform duration-300 group-hover:${animationClasses.pulse}`} />
-              <span className="font-medium text-sm">{(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? 'Reviews' : 'My Reviews'}</span>
+              <FaStar className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.pulse}`} />
+              <span className="font-medium text-xs sm:text-sm">{(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? 'Reviews' : 'My Reviews'}</span>
             </Link>
             
             {(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? (
-              <Link
-                to="/admin/route-planner"
-                className={`bg-purple-500 text-white p-3 rounded-lg hover:bg-purple-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-900`}
-              >
-                <FaRoute className={`w-5 h-5 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
-                <span className="font-medium text-sm">Route Planner</span>
-              </Link>
+              <>
+                <Link
+                  to="/admin/payments"
+                  className={`bg-emerald-500 text-white p-3 rounded-lg hover:bg-emerald-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-900`}
+                >
+                  <FaCreditCard className={`w-4 h-4 mb-1`} />
+                  <span className="font-medium text-xs sm:text-sm">Payments</span>
+                </Link>
+                <Link
+                  to="/admin/fraud-management"
+                  className={`bg-rose-500 text-white p-3 rounded-lg hover:bg-rose-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1050`}
+                >
+                  <FaShieldAlt className={`w-4 h-4 mb-1`} />
+                  <span className="font-medium text-xs sm:text-sm">Fraud Mgmt</span>
+                </Link>
+                <Link
+                  to="/admin/route-planner"
+                  className={`bg-purple-500 text-white p-3 rounded-lg hover:bg-purple-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1200`}
+                >
+                  <FaRoute className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
+                  <span className="font-medium text-xs sm:text-sm">Route Planner</span>
+                </Link>
+              </>
             ) : null}
           </div>
         </div>
