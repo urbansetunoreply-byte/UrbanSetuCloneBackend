@@ -21,11 +21,3 @@ router.get('/top', getTopWatchedListings);
 router.get('/stats', getWatchlistStats);
 
 export default router;
-
-
-<<<<<<< Current (Your changes)
-export default router;
-
-
-=======
->>>>>>> Incoming (Background Agent changes)
