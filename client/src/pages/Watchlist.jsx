@@ -145,8 +145,13 @@ export default function Watchlist() {
         body: JSON.stringify({ listingId: listing._id })
       });
       if (res.ok) {
+        const data = await res.json();
         setItems(prev => [listing, ...prev]);
         setSearchResults(prev => prev.filter(l => l._id !== listing._id));
+        const effectiveAtAdd = data?.item?.effectivePriceAtAdd ?? data?.wishlistItem?.effectivePriceAtAdd ?? null;
+        if (effectiveAtAdd != null) {
+          setBaselineMap(prev => new Map(prev).set(listing._id, effectiveAtAdd));
+        }
         toast.success('Added to watchlist');
       } else {
         const data = await res.json();
@@ -341,6 +346,20 @@ export default function Watchlist() {
     const baseline = baselineMap.get(l._id);
     if (baseline == null) return false;
     return effective < baseline;
+  };
+
+  const getPerItemStats = (listing) => {
+    const doc = watchlistItems.find(w => (w.listingId?._id || w.listingIdRaw)?.toString() === listing._id);
+    const addedAt = doc?.addedAt || doc?.createdAt || null;
+    const baseline = baselineMap.get(listing._id) ?? doc?.effectivePriceAtAdd ?? null;
+    const current = getEffectivePrice(listing);
+    let change = null;
+    let status = 'neutral';
+    if (baseline != null && current != null) {
+      change = current - baseline;
+      status = change < 0 ? 'dropped' : (change > 0 ? 'increased' : 'neutral');
+    }
+    return { addedAt, baseline, current, change, status };
   };
 
   return (
@@ -780,7 +799,11 @@ export default function Watchlist() {
             ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" 
             : "space-y-4 overflow-x-hidden"
           }>
-            {filteredAndSortedItems.map((listing) => (
+            {filteredAndSortedItems.map((listing) => {
+              const stats = getPerItemStats(listing);
+              const hasChangeInfo = stats && stats.baseline != null && stats.current != null;
+              const statusColor = stats.status === 'dropped' ? 'text-green-600' : (stats.status === 'increased' ? 'text-red-600' : 'text-gray-600');
+              return (
               <div key={listing._id} className={`relative group ${viewMode === 'list' ? 'flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm border w-full overflow-hidden' : ''}`}>
                 {isPriceDropped(listing) && (
                   <div className="absolute top-2 left-2 z-10">
@@ -804,9 +827,35 @@ export default function Watchlist() {
                 {/* Property Content */}
                 <div className={viewMode === 'list' ? 'flex-1' : ''}>
                   <ListingItem listing={listing} onDelete={handleRemove} />
+                  {hasChangeInfo && (
+                    <div className="mt-2 px-2 py-2 bg-gray-50 border rounded-md text-xs sm:text-sm flex flex-wrap items-center gap-3">
+                      <div className="flex items-center gap-1 text-gray-600">
+                        <FaCalendarAlt className="text-gray-500" />
+                        <span>Added: {stats.addedAt ? new Date(stats.addedAt).toLocaleDateString() : '-'}</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-gray-600">
+                        <FaBookmark className="text-gray-500" />
+                        <span>At add: ₹{Number(stats.baseline).toLocaleString('en-IN')}</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-gray-600">
+                        <FaEye className="text-gray-500" />
+                        <span>Today: ₹{Number(stats.current).toLocaleString('en-IN')}</span>
+                      </div>
+                      <div className={`flex items-center gap-1 font-semibold ${statusColor}`}>
+                        {stats.status === 'dropped' && <FaArrowDown />}
+                        {stats.status === 'increased' && <FaArrowUp />}
+                        {stats.status === 'neutral' && <FaCheckCircle className="text-gray-500" />}
+                        <span>
+                          {stats.status === 'dropped' && `Dropped ₹${Math.abs(stats.change).toLocaleString('en-IN')}`}
+                          {stats.status === 'increased' && `Increased ₹${Math.abs(stats.change).toLocaleString('en-IN')}`}
+                          {stats.status === 'neutral' && 'No change'}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
-            ))}
+            );})}
           </div>
         )}
       </div>

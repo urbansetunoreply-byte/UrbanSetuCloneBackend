@@ -14,6 +14,12 @@ const wishlistSchema = new mongoose.Schema({
     addedAt: {
         type: Date,
         default: Date.now
+    },
+    // Effective price at the moment user added to wishlist
+    // (discountPrice if offer is true and available, otherwise regularPrice)
+    effectivePriceAtAdd: {
+        type: Number,
+        default: null
     }
 }, { timestamps: true });
 

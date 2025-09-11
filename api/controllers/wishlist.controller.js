@@ -14,9 +14,18 @@ export const getUserWishlist = async (req, res, next) => {
 
         const wishlistItems = await Wishlist.find({ userId })
             .populate('listingId')
-            .sort({ addedAt: -1 });
+            .sort({ createdAt: -1 });
 
-        res.status(200).json(wishlistItems);
+        // Keep a raw listing ref and return effectivePriceAtAdd
+        const response = wishlistItems.map((doc) => {
+            const obj = doc.toObject({ virtuals: false });
+            return {
+                ...obj,
+                listingIdRaw: obj.listingId?._id || doc.listingId,
+            };
+        });
+
+        res.status(200).json(response);
     } catch (error) {
         next(error);
     }
@@ -41,20 +50,18 @@ export const addToWishlist = async (req, res, next) => {
         }
 
         // Add to wishlist
-        const wishlistItem = new Wishlist({
+        const effective = (listing.offer && listing.discountPrice) ? listing.discountPrice : listing.regularPrice;
+        const wishlistItem = await Wishlist.create({
             userId,
-            listingId
+            listingId,
+            effectivePriceAtAdd: effective ?? null
         });
-
-        await wishlistItem.save();
-
-        // Populate the listing details
         await wishlistItem.populate('listingId');
-
+        const obj = wishlistItem.toObject();
         res.status(201).json({
             success: true,
             message: "Added to wishlist successfully",
-            wishlistItem
+            wishlistItem: { ...obj, listingIdRaw: obj.listingId?._id || listingId }
         });
     } catch (error) {
         next(error);
