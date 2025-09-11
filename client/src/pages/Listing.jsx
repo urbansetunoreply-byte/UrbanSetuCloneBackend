@@ -912,6 +912,38 @@ export default function Listing() {
               )}
             </div>
 
+            {/* Desktop layout for users: Back, Compare, Edit (if owner) */}
+            {!isAdminContext && (
+              <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 w-full mb-2">
+                <button
+                  onClick={() => navigate(backButtonInfo.path)}
+                  className="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-4 py-3 rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
+                >
+                  <FaArrowLeft className="text-sm" />
+                  <span className="hidden sm:inline">{backButtonInfo.text}</span>
+                </button>
+                <button
+                  onClick={() => addToComparison(listing)}
+                  className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-4 py-3 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
+                >
+                  <FaChartLine className="text-sm" />
+                  <span className="hidden sm:inline">+ Compare</span>
+                </button>
+                {currentUser && (listing.sellerId === currentUser._id || listing.userRef === currentUser._id) ? (
+                  <Link
+                    to={`/user/update-listing/${listing._id}`}
+                    className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-3 rounded-lg hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
+                  >
+                    <FaEdit className="text-sm" />
+                    <span className="hidden sm:inline">Edit Property</span>
+                  </Link>
+                ) : (
+                  <div className="hidden lg:block" />
+                )}
+                <div className="hidden lg:block" />
+              </div>
+            )}
+
             {/* Desktop layout for admins: 4 buttons grid like commit b1f11d7 */}
             {isAdmin && isAdminContext && (
               <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 w-full">

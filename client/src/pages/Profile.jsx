@@ -2081,13 +2081,15 @@ export default function Profile() {
               <span className="font-medium text-xs sm:text-sm">{(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? 'Appointments' : 'My Appointments'}</span>
             </Link>
             
-            <Link
-              to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? "/admin/listings" : "/user/wishlist"}
-              className={`bg-red-500 text-white p-3 rounded-lg hover:bg-red-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-750`}
-            >
-              <FaHeart className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.heartbeat}`} />
-              <span className="font-medium text-xs sm:text-sm">My Wishlist</span>
-            </Link>
+            {!(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
+              <Link
+                to="/user/wishlist"
+                className={`bg-red-500 text-white p-3 rounded-lg hover:bg-red-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-750`}
+              >
+                <FaHeart className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.heartbeat}`} />
+                <span className="font-medium text-xs sm:text-sm">My Wishlist</span>
+              </Link>
+            )}
             
             {!(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
               <Link
