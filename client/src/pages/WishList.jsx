@@ -542,22 +542,11 @@ const WishList = () => {
                     </div>
                   )}
                   <div className={viewMode === 'list' ? 'flex-1' : ''}>
-                    <ListingItem listing={listing} onDelete={handleRemove} onWishToggle={handleWishToggle} />
+                    <ListingItem listing={listing} onWishToggle={handleWishToggle} />
                     {has && (
                       <div className="mt-2 px-2 py-2 bg-gray-50 border rounded-md text-xs sm:text-sm flex flex-wrap items-center gap-3">
                         <div className="flex items-center gap-1 text-gray-600"><FaCalendarAlt className="text-gray-500" /><span>Added: {s.addedAt ? new Date(s.addedAt).toLocaleDateString() : '-'}</span></div>
-                        <div className="flex items-center gap-1 text-gray-600"><FaBookmark className="text-gray-500" /><span>At add: ₹{Number(s.baseline).toLocaleString('en-IN')}</span></div>
-                        <div className="flex items-center gap-1 text-gray-600"><FaEye className="text-gray-500" /><span>Today: ₹{Number(s.current).toLocaleString('en-IN')}</span></div>
-                        <div className={`flex items-center gap-1 font-semibold ${statusColor}`}>
-                          {s.status === 'dropped' && <FaArrowDown />}
-                          {s.status === 'increased' && <FaArrowUp />}
-                          {s.status === 'neutral' && <FaCheckCircle className="text-gray-500" />}
-                          <span>
-                            {s.status === 'dropped' && `Dropped ₹${Math.abs(s.change).toLocaleString('en-IN')}`}
-                            {s.status === 'increased' && `Increased ₹${Math.abs(s.change).toLocaleString('en-IN')}`}
-                            {s.status === 'neutral' && 'No change'}
-                          </span>
-                        </div>
+                        {/* Removed At add / Today / No change info as requested */}
                       </div>
                     )}
                   </div>

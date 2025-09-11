@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { FaEdit, FaUser, FaEnvelope, FaPhone, FaKey, FaTrash, FaSignOutAlt, FaHome, FaCalendarAlt, FaHeart, FaEye, FaCrown, FaTimes, FaCheck, FaStar, FaRoute, FaCreditCard, FaShieldAlt } from "react-icons/fa";
+import { FaEdit, FaUser, FaEnvelope, FaPhone, FaKey, FaTrash, FaSignOutAlt, FaHome, FaCalendarAlt, FaHeart, FaEye, FaCrown, FaTimes, FaCheck, FaStar, FaRoute, FaCreditCard, FaShieldAlt, FaTools, FaTruck } from "react-icons/fa";
 import UserAvatar from "../components/UserAvatar";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import { authenticatedFetch, createAuthenticatedFetchOptions } from '../utils/auth';
@@ -2129,12 +2129,14 @@ export default function Profile() {
                   to="/admin/services"
                   className={`bg-indigo-500 text-white p-3 rounded-lg hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1100`}
                 >
+                  <FaTools className={`w-4 h-4 mb-1`} />
                   <span className="font-medium text-xs sm:text-sm">Services</span>
                 </Link>
                 <Link
                   to="/admin/movers"
                   className={`bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1150`}
                 >
+                  <FaTruck className={`w-4 h-4 mb-1`} />
                   <span className="font-medium text-xs sm:text-sm">Movers</span>
                 </Link>
                 <Link
@@ -2154,12 +2156,14 @@ export default function Profile() {
                   to="/user/services"
                   className={`bg-indigo-500 text-white p-3 rounded-lg hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-950`}
                 >
+                  <FaTools className={`w-4 h-4 mb-1`} />
                   <span className="font-medium text-xs sm:text-sm">Services</span>
                 </Link>
                 <Link
                   to="/user/movers"
                   className={`bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1000`}
                 >
+                  <FaTruck className={`w-4 h-4 mb-1`} />
                   <span className="font-medium text-xs sm:text-sm">Movers</span>
                 </Link>
                 <Link
