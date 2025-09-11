@@ -79,6 +79,16 @@ export default function Listing() {
   const [selectedComparisonProperty, setSelectedComparisonProperty] = useState(null);
   const [isInWatchlist, setIsInWatchlist] = useState(false);
   const [watchlistLoading, setWatchlistLoading] = useState(false);
+  const [watchlistCount, setWatchlistCount] = useState(0);
+  const refreshWatchlistCount = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/watchlist/count/${params.listingId}`, { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        setWatchlistCount(data.count || 0);
+      }
+    } catch (e) {}
+  };
 
   const openConfirm = (type, { propertyId = null, origin = null, message = 'Are you sure?' } = {}) => {
     setConfirmModal({ open: true, type, propertyId, origin, message });
@@ -738,6 +748,12 @@ export default function Listing() {
       }
     };
     fetchListing();
+    // Refresh watchlist count for admins
+    if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
+      refreshWatchlistCount();
+      const interval = setInterval(refreshWatchlistCount, 30000);
+      return () => clearInterval(interval);
+    }
   }, [params.listingId]);
 
   // Check watchlist status when listing is loaded
@@ -842,11 +858,11 @@ export default function Listing() {
       <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
         <div className="max-w-4xl w-full mx-auto bg-white rounded-xl shadow-lg p-3 sm:p-6 relative overflow-x-hidden">
           {/* Header with Back Button and Actions */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
+          <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
+            <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
               <button
                 onClick={() => navigate(backButtonInfo.path)}
-                className="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-3 py-2 text-sm sm:px-6 sm:py-3 sm:text-base rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2"
+                className="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-2 py-1 text-xs sm:px-6 sm:py-3 sm:text-base rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1 sm:gap-2"
               >
                 <FaArrowLeft /> {backButtonInfo.text}
               </button>
@@ -855,7 +871,7 @@ export default function Listing() {
               <div className="relative">
                 <button
                   onClick={() => addToComparison(listing)}
-                  className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-3 py-2 text-sm sm:px-6 sm:py-3 sm:text-base rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2"
+                  className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-2 py-1 text-xs sm:px-6 sm:py-3 sm:text-base rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1 sm:gap-2"
                 >
                   <FaChartLine /> + Compare
                 </button>
@@ -884,18 +900,18 @@ export default function Listing() {
             
             {/* Admin Actions - Show for admins in admin context */}
             {isAdmin && isAdminContext && (
-              <div className="flex items-center gap-2 sm:gap-3">
+              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                 <Link
                   to={`/admin/update-listing/${listing._id}`}
-                  className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-2 text-sm sm:px-6 sm:py-3 sm:text-base rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2"
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-2 py-1 text-xs sm:px-6 sm:py-3 sm:text-base rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1 sm:gap-2"
                 >
-                  <FaEdit /> Edit Property
+                  <FaEdit /> <span className="hidden xs:inline">Edit Property</span>
                 </Link>
                 <button
                   onClick={handleDelete}
-                  className="bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-2 text-sm sm:px-6 sm:py-3 sm:text-base rounded-lg hover:from-red-600 hover:to-red-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2"
+                  className="bg-gradient-to-r from-red-500 to-red-600 text-white px-2 py-1 text-xs sm:px-6 sm:py-3 sm:text-base rounded-lg hover:from-red-600 hover:to-red-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1 sm:gap-2"
                 >
-                  <FaTrash /> Delete Property
+                  <FaTrash /> <span className="hidden xs:inline">Delete Property</span>
                 </button>
               </div>
             )}
@@ -1579,8 +1595,14 @@ export default function Listing() {
                     <p className="font-semibold text-gray-800">{listing.userRef || 'Unknown'}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Watchlist Count</p>
-                    <p className="font-semibold text-gray-800">{listing.watchCount || 0} 👁️</p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-gray-600">Watchlist Count</p>
+                      <button onClick={refreshWatchlistCount} className="text-xs text-blue-600 hover:text-blue-800 underline">Refresh</button>
+                    </div>
+                    <p className="font-semibold text-purple-800 flex items-center gap-1">
+                      <FaEye className="text-sm" />
+                      {watchlistCount} user{watchlistCount !== 1 ? 's' : ''} watching
+                    </p>
                   </div>
                 </div>
               </div>

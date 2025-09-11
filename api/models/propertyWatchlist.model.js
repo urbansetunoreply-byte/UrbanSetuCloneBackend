@@ -14,6 +14,12 @@ const propertyWatchlistSchema = new mongoose.Schema({
   addedAt: {
     type: Date,
     default: Date.now
+  },
+  // Effective price at the moment user added to watchlist
+  // (discountPrice if offer is true and available, otherwise regularPrice)
+  effectivePriceAtAdd: {
+    type: Number,
+    default: null
   }
 }, { timestamps: true });
 

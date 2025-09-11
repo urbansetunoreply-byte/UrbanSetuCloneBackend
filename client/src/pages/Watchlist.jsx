@@ -9,7 +9,9 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function Watchlist() {
   const { currentUser } = useSelector((state) => state.user);
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState([]); // available listings
+  const [watchlistItems, setWatchlistItems] = useState([]); // raw docs
+  const [baselineMap, setBaselineMap] = useState(new Map());
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('dateAdded');
@@ -40,8 +42,16 @@ export default function Watchlist() {
       const res = await fetch(`${API_BASE_URL}/api/watchlist/user/${currentUser._id}`, { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
-        const listings = data.map((x) => x.listingId).filter(Boolean);
+        setWatchlistItems(data);
+        const listings = data.filter((x) => x.listingId).map((x) => x.listingId);
         setItems(listings);
+        const map = new Map();
+        data.forEach((x) => {
+          if (x.listingId && x.effectivePriceAtAdd != null) {
+            map.set(x.listingId._id, x.effectivePriceAtAdd);
+          }
+        });
+        setBaselineMap(map);
       }
     } catch (e) {
       // noop
@@ -61,6 +71,7 @@ export default function Watchlist() {
       const res = await fetch(`${API_BASE_URL}/api/watchlist/remove/${listingId}`, { method: 'DELETE', credentials: 'include' });
       if (res.ok) {
         setItems(prev => prev.filter(l => l._id !== listingId));
+        setWatchlistItems(prev => prev.filter(w => (w.listingId?.['_id'] || w.listingIdRaw) !== listingId));
         toast.success('Removed from watchlist');
       }
     } catch (_) {}
@@ -318,8 +329,22 @@ export default function Watchlist() {
     );
   }
 
+  const getEffectivePrice = (l) => {
+    if (!l) return null;
+    const effective = (l.offer && l.discountPrice) ? l.discountPrice : l.regularPrice;
+    return effective ?? null;
+  };
+
+  const isPriceDropped = (l) => {
+    const effective = getEffectivePrice(l);
+    if (effective == null) return false;
+    const baseline = baselineMap.get(l._id);
+    if (baseline == null) return false;
+    return effective < baseline;
+  };
+
   return (
-    <div className="bg-gradient-to-br from-purple-50 to-pink-100 min-h-screen py-2 sm:py-10 px-1 sm:px-2 md:px-8">
+    <div className="bg-gradient-to-br from-purple-50 to-pink-100 min-h-screen py-2 sm:py-10 px-1 sm:px-2 md:px-8 overflow-x-hidden">
       <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-2 sm:p-4 lg:p-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
@@ -708,6 +733,28 @@ export default function Watchlist() {
           </div>
         )}
 
+        {/* Removed/Unavailable Properties */}
+        {watchlistItems.some(w => !w.listingId) && (
+          <div className="mb-6 p-4 rounded-lg border border-yellow-200 bg-yellow-50">
+            <h3 className="font-semibold text-yellow-800 mb-2">Removed or Unavailable</h3>
+            <div className="space-y-2">
+              {watchlistItems.filter(w => !w.listingId).map((w) => (
+                <div key={w._id} className="flex items-center justify-between p-3 bg-white rounded border">
+                  <div>
+                    <p className="text-gray-800 font-medium">This property has been removed or is no longer available.</p>
+                    <p className="text-xs text-gray-500">You can remove it from your watchlist.</p>
+                  </div>
+                  {w.listingIdRaw && (
+                    <button onClick={() => handleRemove(w.listingIdRaw)} className="px-3 py-1 rounded bg-red-600 text-white text-sm flex items-center gap-2">
+                      <FaTrash className="text-xs" /> Remove
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Content */}
         {items.length === 0 ? (
           <div className="text-center py-10 sm:py-16">
@@ -731,10 +778,17 @@ export default function Watchlist() {
         ) : (
           <div className={viewMode === 'grid' 
             ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" 
-            : "space-y-4"
+            : "space-y-4 overflow-x-hidden"
           }>
             {filteredAndSortedItems.map((listing) => (
-              <div key={listing._id} className={`relative group ${viewMode === 'list' ? 'flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm border' : ''}`}>
+              <div key={listing._id} className={`relative group ${viewMode === 'list' ? 'flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm border w-full overflow-hidden' : ''}`}>
+                {isPriceDropped(listing) && (
+                  <div className="absolute top-2 left-2 z-10">
+                    <span className="bg-green-500 text-white text-[10px] sm:text-xs font-semibold px-2 py-1 rounded-full shadow-md flex items-center gap-1">
+                      <FaArrowDown className="text-[10px] sm:text-xs" /> Price dropped
+                    </span>
+                  </div>
+                )}
                 {/* Selection Checkbox */}
                 {bulkActionMode && (
                   <div className="flex items-center">

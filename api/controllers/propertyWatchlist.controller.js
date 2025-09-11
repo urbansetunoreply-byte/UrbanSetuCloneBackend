@@ -13,7 +13,17 @@ export const getUserWatchlist = async (req, res, next) => {
     const items = await PropertyWatchlist.find({ userId })
       .populate('listingId')
       .sort({ createdAt: -1 });
-    res.status(200).json(items);
+
+    // Include original listing ref for removed listings and pass along effectivePriceAtAdd
+    const response = items.map((doc) => {
+      const obj = doc.toObject({ virtuals: false });
+      return {
+        ...obj,
+        listingIdRaw: obj.listingId?._id || doc.listingId,
+      };
+    });
+
+    res.status(200).json(response);
   } catch (error) {
     next(error);
   }
@@ -28,9 +38,11 @@ export const addToWatchlist = async (req, res, next) => {
     if (!listing) return next(errorHandler(404, 'Listing not found'));
     const exists = await PropertyWatchlist.findOne({ userId, listingId });
     if (exists) return next(errorHandler(400, 'Already in watchlist'));
-    const item = await PropertyWatchlist.create({ userId, listingId });
+    const effective = (listing.offer && listing.discountPrice) ? listing.discountPrice : listing.regularPrice;
+    const item = await PropertyWatchlist.create({ userId, listingId, effectivePriceAtAdd: effective ?? null });
     await item.populate('listingId');
-    res.status(201).json({ success: true, item });
+    const obj = item.toObject();
+    res.status(201).json({ success: true, item: { ...obj, listingIdRaw: obj.listingId?._id || listingId } });
   } catch (error) {
     next(error);
   }
