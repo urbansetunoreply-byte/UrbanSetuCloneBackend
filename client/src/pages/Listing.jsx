@@ -41,6 +41,7 @@ export default function Listing() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [showAssignOwnerModal, setShowAssignOwnerModal] = useState(false);
   const [availableUsers, setAvailableUsers] = useState([]);
+  const [assignUserSearch, setAssignUserSearch] = useState("");
   const [assignOwnerLoading, setAssignOwnerLoading] = useState(false);
   const [selectedNewOwner, setSelectedNewOwner] = useState("");
   const [ownerStatus, setOwnerStatus] = useState({ isActive: false, owner: null });
@@ -858,60 +859,89 @@ export default function Listing() {
       <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
         <div className="max-w-4xl w-full mx-auto bg-white rounded-xl shadow-lg p-3 sm:p-6 relative overflow-x-hidden">
           {/* Header with Back Button and Actions */}
-          <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
-            <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
-              <button
-                onClick={() => navigate(backButtonInfo.path)}
-                className="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-2 py-1 text-xs sm:px-6 sm:py-3 sm:text-base rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1 sm:gap-2"
-              >
-                <FaArrowLeft /> {backButtonInfo.text}
-              </button>
-              
-              {/* Comparison Button */}
-              <div className="relative">
+          <div className="mb-6">
+            {/* Mobile layout: keep existing styling */}
+            <div className="flex items-center justify-between flex-wrap gap-2 sm:hidden">
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  onClick={() => navigate(backButtonInfo.path)}
+                  className="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-2 py-1 text-xs rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1"
+                >
+                  <FaArrowLeft /> {backButtonInfo.text}
+                </button>
+                <div className="relative">
+                  <button
+                    onClick={() => addToComparison(listing)}
+                    className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-2 py-1 text-xs rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1"
+                  >
+                    <FaChartLine /> + Compare
+                  </button>
+                  {showComparisonTooltip && (
+                    <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
+                      Please sign in to use comparison tool
+                      <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              {currentUser && !isAdminContext && (listing.sellerId === currentUser._id || listing.userRef === currentUser._id) && (
+                <div className="flex items-center gap-2">
+                  <Link
+                    to={`/user/update-listing/${listing._id}`}
+                    className="bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-2 text-sm rounded-lg hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2"
+                  >
+                    <FaEdit /> Edit Property
+                  </Link>
+                </div>
+              )}
+              {isAdmin && isAdminContext && (
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Link
+                    to={`/admin/update-listing/${listing._id}`}
+                    className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-2 py-1 text-xs rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1"
+                  >
+                    <FaEdit /> <span className="hidden xs:inline">Edit Property</span>
+                  </Link>
+                  <button
+                    onClick={handleDelete}
+                    className="bg-gradient-to-r from-red-500 to-red-600 text-white px-2 py-1 text-xs rounded-lg hover:from-red-600 hover:to-red-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1"
+                  >
+                    <FaTrash /> <span className="hidden xs:inline">Delete Property</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Desktop layout for admins: 4 buttons grid like commit b1f11d7 */}
+            {isAdmin && isAdminContext && (
+              <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 w-full">
+                <button
+                  onClick={() => navigate(backButtonInfo.path)}
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
+                >
+                  <FaArrowLeft className="text-sm" />
+                  <span className="hidden sm:inline">{backButtonInfo.text}</span>
+                </button>
                 <button
                   onClick={() => addToComparison(listing)}
-                  className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-2 py-1 text-xs sm:px-6 sm:py-3 sm:text-base rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1 sm:gap-2"
+                  className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-4 py-3 rounded-lg hover:from-purple-600 hover:to-indigo-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
                 >
-                  <FaChartLine /> + Compare
+                  <FaChartLine className="text-sm" />
+                  <span className="hidden sm:inline">+ Compare</span>
                 </button>
-                
-                {/* Comparison Tooltip */}
-                {showComparisonTooltip && (
-                  <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
-                    Please sign in to use comparison tool
-                    <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            {/* Owner Edit Button - Show for property owners in non-admin context */}
-            {currentUser && !isAdminContext && (listing.sellerId === currentUser._id || listing.userRef === currentUser._id) && (
-              <div className="flex items-center gap-2 sm:gap-3">
-                <Link
-                  to={`/user/update-listing/${listing._id}`}
-                  className="bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-2 text-sm sm:px-6 sm:py-3 sm:text-base rounded-lg hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2"
-                >
-                  <FaEdit /> Edit Property
-                </Link>
-              </div>
-            )}
-            
-            {/* Admin Actions - Show for admins in admin context */}
-            {isAdmin && isAdminContext && (
-              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                 <Link
                   to={`/admin/update-listing/${listing._id}`}
-                  className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-2 py-1 text-xs sm:px-6 sm:py-3 sm:text-base rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1 sm:gap-2"
+                  className="bg-gradient-to-r from-green-500 to-teal-500 text-white px-4 py-3 rounded-lg hover:from-green-600 hover:to-teal-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
                 >
-                  <FaEdit /> <span className="hidden xs:inline">Edit Property</span>
+                  <FaEdit className="text-sm" />
+                  <span className="hidden sm:inline">Edit Property</span>
                 </Link>
                 <button
                   onClick={handleDelete}
-                  className="bg-gradient-to-r from-red-500 to-red-600 text-white px-2 py-1 text-xs sm:px-6 sm:py-3 sm:text-base rounded-lg hover:from-red-600 hover:to-red-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1 sm:gap-2"
+                  className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-3 rounded-lg hover:from-red-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
                 >
-                  <FaTrash /> <span className="hidden xs:inline">Delete Property</span>
+                  <FaTrash className="text-sm" />
+                  <span className="hidden sm:inline">Delete Property</span>
                 </button>
               </div>
             )}
@@ -2026,6 +2056,14 @@ export default function Listing() {
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md flex flex-col gap-4">
             <h3 className="text-lg font-bold text-blue-700 flex items-center gap-2"><FaEdit /> Assign New Owner</h3>
             <p className="text-sm text-gray-600">Select a user to assign as the new owner of this property.</p>
+            <input
+              type="text"
+              value={assignUserSearch}
+              onChange={(e) => setAssignUserSearch(e.target.value)}
+              placeholder="Search users by name, email, or mobile number"
+              className="border rounded p-2 w-full"
+              disabled={assignOwnerLoading}
+            />
             <select
               className="border rounded p-2 w-full"
               value={selectedNewOwner}
@@ -2033,9 +2071,18 @@ export default function Listing() {
               disabled={assignOwnerLoading}
             >
               <option value="">Select a user</option>
-              {availableUsers.map((user) => (
+              {availableUsers
+                .filter((user) => {
+                  const q = assignUserSearch.trim().toLowerCase();
+                  if (!q) return true;
+                  const name = (user.username || user.name || "").toLowerCase();
+                  const email = (user.email || "").toLowerCase();
+                  const mobile = (user.mobileNumber || user.mobile || "").toString().toLowerCase();
+                  return name.includes(q) || email.includes(q) || mobile.includes(q);
+                })
+                .map((user) => (
                 <option key={user._id} value={user._id}>
-                  {user.username} ({user.email})
+                  {user.username || user.name || user.email} ({user.email}{user.mobileNumber ? `, ${user.mobileNumber}` : ''})
                 </option>
               ))}
             </select>
