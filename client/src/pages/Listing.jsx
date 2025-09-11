@@ -1105,27 +1105,29 @@ export default function Listing() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
               <h2 className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-800 break-words flex items-center gap-2">
                 {listing.name}
-                {/* Wishlist Heart Icon - match ListingItem style */}
-                <button
-                  onClick={() => {
-                    if (!currentUser) {
-                      toast.info('Please sign in to add properties to your wishlist.');
-                      navigate('/sign-in');
-                      return;
-                    }
-                    if (isInWishlist(listing._id)) {
-                      removeFromWishlist(listing._id);
-                    } else {
-                      addToWishlist(listing);
-                      //toast.success('Property added to your wishlist.');
-                    }
-                  }}
-                  className={`ml-2 p-2 rounded-full transition z-20 ${isInWishlist(listing._id) ? 'bg-red-500 text-white' : 'bg-gray-200 text-red-500 hover:text-red-600'} focus:outline-none`}
-                  title={isInWishlist(listing._id) ? 'Remove from wishlist' : 'Add to wishlist'}
-                  style={{ lineHeight: 0 }}
-                >
-                  <FaHeart className="text-base sm:text-lg" />
-                </button>
+                {/* Wishlist Heart Icon - hide for admins */}
+                {(!currentUser || (currentUser && !(currentUser.role === 'admin' || currentUser.role === 'rootadmin'))) && (
+                  <button
+                    onClick={() => {
+                      if (!currentUser) {
+                        toast.info('Please sign in to add properties to your wishlist.');
+                        navigate('/sign-in');
+                        return;
+                      }
+                      if (isInWishlist(listing._id)) {
+                        removeFromWishlist(listing._id);
+                      } else {
+                        addToWishlist(listing);
+                        //toast.success('Property added to your wishlist.');
+                      }
+                    }}
+                    className={`ml-2 p-2 rounded-full transition z-20 ${isInWishlist(listing._id) ? 'bg-red-500 text-white' : 'bg-gray-200 text-red-500 hover:text-red-600'} focus:outline-none`}
+                    title={isInWishlist(listing._id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                    style={{ lineHeight: 0 }}
+                  >
+                    <FaHeart className="text-base sm:text-lg" />
+                  </button>
+                )}
                 
                 {/* Watchlist Eye Icon - for users only */}
                 {currentUser && !(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (

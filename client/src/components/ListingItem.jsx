@@ -86,16 +86,28 @@ export default function ListingItem({ listing, onDelete }) {
         </div>
       )}
 
-      {/* Wishlist Icon */}
-      <button
-        onClick={handleWishList}
-        className={`absolute top-2 sm:top-4 right-2 sm:right-4 p-2 rounded-full transition z-20 ${
-          isInWishlistState ? 'bg-red-500 text-white' : 'bg-gray-200 text-red-500'
-        }`}
-        title={isInWishlistState ? 'Remove from wishlist' : 'Add to wishlist'}
-      >
-        <FaHeart className="text-base sm:text-lg" />
-      </button>
+      {/* Top-right action: admin shows Delete (if available), users show Wishlist */}
+      {isAdminContext ? (
+        onDelete ? (
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(listing._id); }}
+            className="absolute top-2 sm:top-4 right-2 sm:right-4 p-2 rounded-full transition z-20 bg-red-100 text-red-600 hover:bg-red-500 hover:text-white"
+            title="Delete property"
+          >
+            <FaTrash className="text-base sm:text-lg" />
+          </button>
+        ) : null
+      ) : (
+        <button
+          onClick={handleWishList}
+          className={`absolute top-2 sm:top-4 right-2 sm:right-4 p-2 rounded-full transition z-20 ${
+            isInWishlistState ? 'bg-red-500 text-white' : 'bg-gray-200 text-red-500'
+          }`}
+          title={isInWishlistState ? 'Remove from wishlist' : 'Add to wishlist'}
+        >
+          <FaHeart className="text-base sm:text-lg" />
+        </button>
+      )}
 
 
       <Link to={listingLink}>
@@ -122,8 +134,8 @@ export default function ListingItem({ listing, onDelete }) {
             <p className="text-gray-700 font-semibold text-base sm:text-lg truncate flex-1">
               {listing.name}
             </p>
-            {/* Remove Button - only show in watchlist context */}
-            {onDelete && (
+            {/* Remove Button - only show in watchlist context (hide for admins to avoid duplicate) */}
+            {onDelete && !isAdminContext && (
               <button
                 onClick={(e) => {
                   e.preventDefault();
