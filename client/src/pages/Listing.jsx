@@ -1540,15 +1540,17 @@ export default function Listing() {
                           {daysListed > 0 ? `${daysListed} days` : 'Today'}
                         </span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Interest Level</span>
-                        <span className="font-semibold text-green-600">
-                          {(() => {
-                            const views = listing.viewCount || 0;
-                            return views > 100 ? 'High' : views > 50 ? 'Medium' : 'Low';
-                          })()}
-                        </span>
-                      </div>
+                      {isAdmin && isAdminContext && (
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">Interest Level</span>
+                          <span className="font-semibold text-green-600">
+                            {(() => {
+                              const views = listing.viewCount || 0;
+                              return views > 100 ? 'High' : views > 50 ? 'Medium' : 'Low';
+                            })()}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                   

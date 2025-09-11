@@ -17,6 +17,7 @@ export default function AdminFraudManagement() {
   const [pageR, setPageR] = useState(1);
   const pageSize = 10;
   const [selectedRows, setSelectedRows] = useState({ listings: new Set(), reviews: new Set() });
+  const [includeLowSeverity, setIncludeLowSeverity] = useState(false);
   const [resolvedListings, setResolvedListings] = useState(() => new Set(JSON.parse(localStorage.getItem('fraud_resolved_listings') || '[]')));
   const [resolvedReviews, setResolvedReviews] = useState(() => new Set(JSON.parse(localStorage.getItem('fraud_resolved_reviews') || '[]')));
   const navigate = useNavigate();
@@ -291,6 +292,10 @@ export default function AdminFraudManagement() {
           <div className="flex gap-2 flex-wrap">
             <button className="px-3 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-60 text-sm" disabled={loading} onClick={fetchData}>{loading ? 'Scanning…' : 'Scan Now'}</button>
             <button className="px-3 py-2 bg-gray-200 rounded-lg text-sm" onClick={() => navigate('/admin')}>Back</button>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={includeLowSeverity} onChange={(e)=>{ setIncludeLowSeverity(e.target.checked); setPageL(1); setPageR(1); }} />
+              Include low severity
+            </label>
           </div>
         </div>
         {loading ? (
@@ -430,6 +435,7 @@ export default function AdminFraudManagement() {
                         ].join(' ').toLowerCase();
                         return fields.includes(q);
                       })
+                        .filter(l => includeLowSeverity ? true : (l._fraudReasons||[]).length >= 2)
                         .filter(l => reasonFilter==='all' ? true : (l._fraudReasons||[]).includes(reasonFilter))
                         .sort((a,b)=>{
                           if (sortBy==='alpha') return String(a.name||'').localeCompare(String(b.name||''));
@@ -503,6 +509,7 @@ export default function AdminFraudManagement() {
                         ].join(' ').toLowerCase();
                         return fields.includes(q);
                       })
+                        .filter(r => includeLowSeverity ? true : (r._fraudReasons||[]).length >= 2)
                         .filter(r => reasonFilter==='all' ? true : (r._fraudReasons||[]).includes(reasonFilter))
                         .sort((a,b)=>{
                           if (sortBy==='alpha') return String(a.listingId?.name||'').localeCompare(String(b.listingId?.name||''));

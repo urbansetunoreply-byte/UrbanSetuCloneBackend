@@ -78,6 +78,9 @@ export default function AdminDashboard() {
       totalWatchlists: 0,
       totalWatchedProperties: 0,
       topWatchedProperties: []
+    },
+    engagement: {
+      avgViewsPerListing: 0
     }
   });
   useEffect(() => {
@@ -267,6 +270,9 @@ export default function AdminDashboard() {
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5)
         .map(([city, count]) => ({ city, count }));
+      // Engagement: average views per listing
+      const views = listingsData.map(l => Number(l.viewCount||0));
+      const avgViewsPerListing = views.length ? Math.round(views.reduce((a,b)=>a+b,0) / views.length) : 0;
 
       // Recent listings by createdAt (fallback to id ordering)
       const recentListings = [...listingsData]
@@ -456,7 +462,8 @@ export default function AdminDashboard() {
           totalWatchlists: watchlistStats.totalWatchlists || 0, 
           totalWatchedProperties: watchlistStats.totalWatchedProperties || 0, 
           topWatchedProperties: topWatchedProperties || [] 
-        }
+        },
+        engagement: { avgViewsPerListing }
       });
 
       setFraudStats(fraudData);
@@ -570,7 +577,7 @@ export default function AdminDashboard() {
         <h2 className="text-2xl font-bold text-gray-800 mb-6">📊 Analytics Overview</h2>
         
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           {/* Users Card */}
           <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between">
@@ -676,6 +683,19 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Engagement Card */}
+          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Avg Views/Listing</p>
+                <p className="text-3xl font-bold text-rose-600">{analytics.engagement.avgViewsPerListing}</p>
+              </div>
+              <div className="bg-rose-100 p-3 rounded-full">
+                <FaEye className="text-2xl text-rose-600" />
+              </div>
             </div>
           </div>
         </div>

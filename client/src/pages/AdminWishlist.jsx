@@ -8,6 +8,8 @@ import { useState } from 'react';
 export default function AdminWishlist() {
   const { wishlist, loading } = useWishlist();
   const [showTooltip, setShowTooltip] = useState(false);
+  const [query, setQuery] = useState('');
+  const [sortBy, setSortBy] = useState('name');
   const navigate = useNavigate(); // Move this hook call before conditional return
 
   if (loading) {
@@ -32,10 +34,32 @@ export default function AdminWishlist() {
         </h3>
         {wishlist.length > 0 ? (
           <div className="mb-8">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="text-sm text-gray-600">Total items: <span className="font-semibold">{wishlist.length}</span></div>
+              <div className="flex items-center gap-2">
+                <input value={query} onChange={(e)=>setQuery(e.target.value)} placeholder="Search name, city..." className="p-2 border rounded-md text-sm" />
+                <select value={sortBy} onChange={(e)=>setSortBy(e.target.value)} className="p-2 border rounded-md text-sm">
+                  <option value="name">Sort: Name</option>
+                  <option value="city">Sort: City</option>
+                  <option value="createdAt">Sort: Recent</option>
+                </select>
+              </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-              {wishlist.map((listing) => (
-                <WishListItem key={listing._id} listing={listing} />
-              ))}
+              {wishlist
+                .filter(l => {
+                  const q = query.trim().toLowerCase();
+                  if (!q) return true;
+                  return [l.name, l.city, l.state].join(' ').toLowerCase().includes(q);
+                })
+                .sort((a,b)=>{
+                  if (sortBy==='name') return String(a.name||'').localeCompare(String(b.name||''));
+                  if (sortBy==='city') return String(a.city||'').localeCompare(String(b.city||''));
+                  return new Date(b.createdAt||0) - new Date(a.createdAt||0);
+                })
+                .map((listing) => (
+                  <WishListItem key={listing._id} listing={listing} />
+                ))}
             </div>
           </div>
         ) : (

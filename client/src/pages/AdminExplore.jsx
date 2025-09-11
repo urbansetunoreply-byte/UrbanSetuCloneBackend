@@ -92,6 +92,24 @@ export default function AdminExplore() {
     e.preventDefault();
     const natural = (formData.searchTerm || '').trim();
     const extracted = { ...formData };
+    const inferStateFromCity = (city) => {
+      const cityToState = {
+        'mumbai': 'Maharashtra', 'pune': 'Maharashtra', 'nagpur': 'Maharashtra',
+        'delhi': 'Delhi', 'new delhi': 'Delhi',
+        'bengaluru': 'Karnataka', 'bangalore': 'Karnataka', 'mysuru': 'Karnataka',
+        'chennai': 'Tamil Nadu', 'coimbatore': 'Tamil Nadu',
+        'kolkata': 'West Bengal',
+        'hyderabad': 'Telangana',
+        'ahmedabad': 'Gujarat', 'surat': 'Gujarat',
+        'jaipur': 'Rajasthan',
+        'lucknow': 'Uttar Pradesh', 'noida': 'Uttar Pradesh', 'kanpur': 'Uttar Pradesh',
+        'gurgaon': 'Haryana', 'gurugram': 'Haryana',
+        'indore': 'Madhya Pradesh', 'bhopal': 'Madhya Pradesh',
+        'patna': 'Bihar'
+      };
+      const key = (city||'').toLowerCase();
+      return cityToState[key] || '';
+    };
     if (natural) {
       const bedsMatch = natural.match(/(\d+)\s*(bhk|bed|beds)/i) || natural.match(/^(\d+)\s*bhk/i);
       if (bedsMatch) extracted.bedrooms = bedsMatch[1];
@@ -110,6 +128,12 @@ export default function AdminExplore() {
       if (nearMatch) extracted.city = nearMatch[1].trim();
       const inCity = natural.match(/in\s+([a-zA-Z ]+)/i);
       if (inCity) extracted.city = inCity[1].trim();
+      if (extracted.city && !extracted.state) extracted.state = inferStateFromCity(extracted.city);
+      // Direct state input (if the query is just a state name)
+      const states = ['andhra pradesh','arunachal pradesh','assam','bihar','chhattisgarh','goa','gujarat','haryana','himachal pradesh','jharkhand','karnataka','kerala','madhya pradesh','maharashtra','manipur','meghalaya','mizoram','nagaland','odisha','punjab','rajasthan','sikkim','tamil nadu','telangana','tripura','uttar pradesh','uttarakhand','west bengal','delhi'];
+      const lower = natural.toLowerCase();
+      const matchedState = states.find(s => new RegExp(`(^|\b)${s}(\b|$)`).test(lower));
+      if (matchedState) extracted.state = matchedState.replace(/\b\w/g, c => c.toUpperCase());
       const typeMatch = natural.match(/\b(rent|rental|sale|buy)\b/i);
       if (typeMatch) extracted.type = /rent/.test(typeMatch[1].toLowerCase()) ? 'rent' : 'sale';
       if (/no parking/i.test(natural)) extracted.parking = false; else if (/parking/i.test(natural)) extracted.parking = true;
@@ -191,6 +215,24 @@ export default function AdminExplore() {
     const natural = (smartQuery || '').trim();
     if (!natural) return;
     const extracted = { ...formData };
+    const inferStateFromCity = (city) => {
+      const cityToState = {
+        'mumbai': 'Maharashtra', 'pune': 'Maharashtra', 'nagpur': 'Maharashtra',
+        'delhi': 'Delhi', 'new delhi': 'Delhi',
+        'bengaluru': 'Karnataka', 'bangalore': 'Karnataka', 'mysuru': 'Karnataka',
+        'chennai': 'Tamil Nadu', 'coimbatore': 'Tamil Nadu',
+        'kolkata': 'West Bengal',
+        'hyderabad': 'Telangana',
+        'ahmedabad': 'Gujarat', 'surat': 'Gujarat',
+        'jaipur': 'Rajasthan',
+        'lucknow': 'Uttar Pradesh', 'noida': 'Uttar Pradesh', 'kanpur': 'Uttar Pradesh',
+        'gurgaon': 'Haryana', 'gurugram': 'Haryana',
+        'indore': 'Madhya Pradesh', 'bhopal': 'Madhya Pradesh',
+        'patna': 'Bihar'
+      };
+      const key = (city||'').toLowerCase();
+      return cityToState[key] || '';
+    };
     const bedsMatch = natural.match(/(\d+)\s*(bhk|bed|beds)/i);
     if (bedsMatch) extracted.bedrooms = bedsMatch[1];
     const priceMatch = natural.match(/(?:under|below|within|upto|up to)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore)?/i);
@@ -208,6 +250,11 @@ export default function AdminExplore() {
     if (nearMatch) extracted.city = nearMatch[1].trim();
     const inCity = natural.match(/in\s+([a-zA-Z ]+)/i);
     if (inCity) extracted.city = inCity[1].trim();
+    if (extracted.city && !extracted.state) extracted.state = inferStateFromCity(extracted.city);
+    const states = ['andhra pradesh','arunachal pradesh','assam','bihar','chhattisgarh','goa','gujarat','haryana','himachal pradesh','jharkhand','karnataka','kerala','madhya pradesh','maharashtra','manipur','meghalaya','mizoram','nagaland','odisha','punjab','rajasthan','sikkim','tamil nadu','telangana','tripura','uttar pradesh','uttarakhand','west bengal','delhi'];
+    const lower = natural.toLowerCase();
+    const matchedState = states.find(s => new RegExp(`(^|\b)${s}(\b|$)`).test(lower));
+    if (matchedState) extracted.state = matchedState.replace(/\b\w/g, c => c.toUpperCase());
     const typeMatch = natural.match(/\b(rent|rental|sale|buy)\b/i);
     if (typeMatch) extracted.type = /rent/.test(typeMatch[1].toLowerCase()) ? 'rent' : 'sale';
     if (/no parking/i.test(natural)) extracted.parking = false; else if (/parking/i.test(natural)) extracted.parking = true;

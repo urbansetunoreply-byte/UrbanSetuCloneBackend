@@ -2156,14 +2156,14 @@ export default function Profile() {
                   to="/user/services"
                   className={`bg-indigo-500 text-white p-3 rounded-lg hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-950`}
                 >
-                  <FaTools className={`w-4 h-4 mb-1`} />
+                  <FaTools className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
                   <span className="font-medium text-xs sm:text-sm">Services</span>
                 </Link>
                 <Link
                   to="/user/movers"
                   className={`bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1000`}
                 >
-                  <FaTruck className={`w-4 h-4 mb-1`} />
+                  <FaTruck className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
                   <span className="font-medium text-xs sm:text-sm">Movers</span>
                 </Link>
                 <Link
