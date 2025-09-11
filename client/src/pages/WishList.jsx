@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import ListingItem from '../components/ListingItem';
 import { toast } from 'react-toastify';
+import { useNavigate, Link } from 'react-router-dom';
 import { FaEye, FaTrash, FaSearch, FaFilter, FaSort, FaPlus, FaTimes, FaArrowDown, FaArrowUp, FaCheckCircle, FaDownload, FaShare, FaBookmark, FaCalendarAlt, FaChartLine, FaBars, FaCheck, FaTimes as FaX } from 'react-icons/fa';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -557,7 +558,6 @@ const WishList = () => {
         )}
       </div>
 
-      {/* Add your floating icon here - just before the final closing div */}
       {/* Floating Watchlist Icon linking to new Watchlist page */}
       <div className="fixed bottom-8 right-8 z-50">
         <button
