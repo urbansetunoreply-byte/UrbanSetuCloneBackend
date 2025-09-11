@@ -446,6 +446,34 @@ const WishList = () => {
           </div>
         )}
 
+        {/* Bulk Actions Bar - mirror watchlist */}
+        {bulkActionMode && (
+          <div className="mb-6 bg-red-50 p-3 sm:p-4 rounded-lg border border-red-200">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                <button onClick={handleSelectAll} className="flex items-center justify-center gap-2 px-3 py-2 bg-white rounded-lg border border-gray-300 hover:bg-gray-50 text-sm">
+                  <FaCheck className="text-sm" />
+                  {selectedItems.length === filteredAndSortedItems.length ? 'Deselect All' : 'Select All'}
+                </button>
+                <span className="text-sm text-gray-600 text-center sm:text-left">
+                  {selectedItems.length} of {filteredAndSortedItems.length} selected
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={handleBulkRemove} disabled={selectedItems.length === 0} className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm">
+                  <FaTrash className="text-sm" />
+                  <span className="hidden sm:inline">Remove Selected</span>
+                  <span className="sm:hidden">Remove</span>
+                </button>
+                <button onClick={() => { setBulkActionMode(false); setSelectedItems([]); }} className="px-3 sm:px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 flex items-center justify-center gap-2 text-sm">
+                  <FaX className="text-sm" />
+                  <span className="hidden sm:inline">Cancel</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* Search and Filter Controls */}
         {items.length > 0 && (
           <div className="mb-6 space-y-4">
@@ -470,34 +498,6 @@ const WishList = () => {
                   <option value="price-high">Price: High to Low</option>
                   <option value="name">Name: A to Z</option>
                 </select>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Bulk Actions Bar - mirror watchlist */}
-        {bulkActionMode && (
-          <div className="mb-6 bg-red-50 p-3 sm:p-4 rounded-lg border border-red-200">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                <button onClick={handleSelectAll} className="flex items-center justify-center gap-2 px-3 py-2 bg-white rounded-lg border border-gray-300 hover:bg-gray-50 text-sm">
-                  <FaCheck className="text-sm" />
-                  {selectedItems.length === filteredAndSortedItems.length ? 'Deselect All' : 'Select All'}
-                </button>
-                <span className="text-sm text-gray-600 text-center sm:text-left">
-                  {selectedItems.length} of {filteredAndSortedItems.length} selected
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <button onClick={handleBulkRemove} disabled={selectedItems.length === 0} className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm">
-                  <FaTrash className="text-sm" />
-                  <span className="hidden sm:inline">Remove Selected</span>
-                  <span className="sm:hidden">Remove</span>
-                </button>
-                <button onClick={() => { setBulkActionMode(false); setSelectedItems([]); }} className="px-3 sm:px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 flex items-center justify-center gap-2 text-sm">
-                  <FaX className="text-sm" />
-                  <span className="hidden sm:inline">Cancel</span>
-                </button>
               </div>
             </div>
           </div>
