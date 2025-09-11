@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 import { maskAddress } from '../utils/addressMasking';
 import { toast } from 'react-toastify';
 
-export default function ListingItem({ listing, onDelete }) {
+export default function ListingItem({ listing, onDelete, onWishToggle }) {
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const [isInWishlistState, setIsInWishlistState] = useState(false);
   const navigate = useNavigate();
@@ -32,10 +32,11 @@ export default function ListingItem({ listing, onDelete }) {
     if (isInWishlistState) {
       await removeFromWishlist(listing._id);
       setIsInWishlistState(false);
+      if (typeof onWishToggle === 'function') onWishToggle(listing._id, false);
     } else {
       await addToWishlist(listing);
       setIsInWishlistState(true);
-      //toast.success('Property added to your wishlist.');
+      if (typeof onWishToggle === 'function') onWishToggle(listing._id, true);
     }
   };
 

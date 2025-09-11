@@ -2126,6 +2126,18 @@ export default function Profile() {
                   <span className="font-medium text-xs sm:text-sm">Fraud Mgmt</span>
                 </Link>
                 <Link
+                  to="/admin/services"
+                  className={`bg-indigo-500 text-white p-3 rounded-lg hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1100`}
+                >
+                  <span className="font-medium text-xs sm:text-sm">Services</span>
+                </Link>
+                <Link
+                  to="/admin/movers"
+                  className={`bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1150`}
+                >
+                  <span className="font-medium text-xs sm:text-sm">Movers</span>
+                </Link>
+                <Link
                   to="/admin/route-planner"
                   className={`bg-purple-500 text-white p-3 rounded-lg hover:bg-purple-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1200`}
                 >
@@ -2134,6 +2146,31 @@ export default function Profile() {
                 </Link>
               </>
             ) : null}
+
+            {/* User-specific quick actions */}
+            {!(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
+              <>
+                <Link
+                  to="/user/services"
+                  className={`bg-indigo-500 text-white p-3 rounded-lg hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-950`}
+                >
+                  <span className="font-medium text-xs sm:text-sm">Services</span>
+                </Link>
+                <Link
+                  to="/user/movers"
+                  className={`bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1000`}
+                >
+                  <span className="font-medium text-xs sm:text-sm">Movers</span>
+                </Link>
+                <Link
+                  to="/user/route-planner"
+                  className={`bg-purple-500 text-white p-3 rounded-lg hover:bg-purple-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1050`}
+                >
+                  <FaRoute className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
+                  <span className="font-medium text-xs sm:text-sm">Route Planner</span>
+                </Link>
+              </>
+            )}
           </div>
         </div>
 

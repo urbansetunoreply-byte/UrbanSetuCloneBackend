@@ -84,12 +84,7 @@ export default function WishListItem ({ listing }) {
         </div>
        
       </Link>
-      <button 
-        onClick={handleRemoveFromWishlist}
-        className="p-2 rounded-full bg-red-500 hover:bg-red-600 transition"
-      >
-        <FaTrash className="text-white text-md" />
-      </button>
+      {/* Removed standalone remove button to avoid duplication; removal happens via heart icon on card */}
     </div>
   )
 }
