@@ -36,33 +36,55 @@ export default function Watchlist() {
     cityDistribution: {}
   });
 
-  const fetchWatchlist = async () => {
+  // Helper functions - defined before they are used
+  const getEffectivePrice = (l) => {
+    if (!l) return null;
+    const effective = (l.offer && l.discountPrice) ? l.discountPrice : l.regularPrice;
+    return effective ?? null;
+  };
+
+  const isPriceDropped = (l) => {
+    const effective = getEffectivePrice(l);
+    if (effective == null) return false;
+    const baseline = baselineMap.get(l._id);
+    if (baseline == null) return false;
+    return effective < baseline;
+  };
+
+  const isPriceIncreased = (l) => {
+    const effective = getEffectivePrice(l);
+    if (effective == null) return false;
+    const baseline = baselineMap.get(l._id);
+    if (baseline == null) return false;
+    return effective > baseline;
+  };
+
+  // Send watchlist notification
+  const sendWatchlistNotification = async (listing, type, message) => {
     if (!currentUser?._id) return;
-    setLoading(true);
+    
     try {
-      const res = await fetch(`${API_BASE_URL}/api/watchlist/user/${currentUser._id}`, { credentials: 'include' });
-      if (res.ok) {
-        const data = await res.json();
-        setWatchlistItems(data);
-        const listings = data.filter((x) => x.listingId).map((x) => x.listingId);
-        setItems(listings);
-        const map = new Map();
-        data.forEach((x) => {
-          if (x.listingId && x.effectivePriceAtAdd != null) {
-            map.set(x.listingId._id, x.effectivePriceAtAdd);
-          }
-        });
-        setBaselineMap(map);
-        
-        // Check for price changes and send notifications
-        setTimeout(() => {
-          checkForPriceChanges(listings, map);
-        }, 1000); // Small delay to ensure state is updated
+      const response = await fetch(`${API_BASE_URL}/api/notifications/watchlist`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          userId: currentUser._id,
+          listingId: listing._id,
+          type: type,
+          message: message,
+          listingTitle: listing.name || 'Property',
+          listingPrice: getEffectivePrice(listing)
+        })
+      });
+      
+      if (response.ok) {
+        console.log('Watchlist notification sent:', type);
       }
-    } catch (e) {
-      // noop
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error('Error sending watchlist notification:', error);
     }
   };
 
@@ -115,6 +137,36 @@ export default function Watchlist() {
         );
       }
     });
+  };
+
+  const fetchWatchlist = async () => {
+    if (!currentUser?._id) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/watchlist/user/${currentUser._id}`, { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        setWatchlistItems(data);
+        const listings = data.filter((x) => x.listingId).map((x) => x.listingId);
+        setItems(listings);
+        const map = new Map();
+        data.forEach((x) => {
+          if (x.listingId && x.effectivePriceAtAdd != null) {
+            map.set(x.listingId._id, x.effectivePriceAtAdd);
+          }
+        });
+        setBaselineMap(map);
+        
+        // Check for price changes and send notifications
+        setTimeout(() => {
+          checkForPriceChanges(listings, map);
+        }, 1000); // Small delay to ensure state is updated
+      }
+    } catch (e) {
+      // noop
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Calculate watchlist statistics
@@ -419,61 +471,6 @@ export default function Watchlist() {
     );
   }
 
-  const getEffectivePrice = (l) => {
-    if (!l) return null;
-    const effective = (l.offer && l.discountPrice) ? l.discountPrice : l.regularPrice;
-    return effective ?? null;
-  };
-
-  const isPriceDropped = (l) => {
-    const effective = getEffectivePrice(l);
-    if (effective == null) return false;
-    const baseline = baselineMap.get(l._id);
-    if (baseline == null) return false;
-    return effective < baseline;
-  };
-
-  const isPriceIncreased = (l) => {
-    const effective = getEffectivePrice(l);
-    if (effective == null) return false;
-    const baseline = baselineMap.get(l._id);
-    if (baseline == null) return false;
-    return effective > baseline;
-  };
-
-  // Send watchlist notification
-  const sendWatchlistNotification = async (listing, type, message) => {
-    if (!currentUser?._id) return;
-    
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/notifications/watchlist`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          userId: currentUser._id,
-          listingId: listing._id,
-          type: type,
-          title: `Watchlist Alert: ${listing.name}`,
-          message: message,
-          link: `/user/listing/${listing._id}`
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        // Emit socket event for real-time notification
-        socket.emit('watchlistNotification', {
-          userId: currentUser._id,
-          notification: data.notification
-        });
-      }
-    } catch (error) {
-      console.error('Error sending watchlist notification:', error);
-    }
-  };
 
   const getPerItemStats = (listing) => {
     const doc = watchlistItems.find(w => (w.listingId?._id || w.listingIdRaw)?.toString() === listing._id);
