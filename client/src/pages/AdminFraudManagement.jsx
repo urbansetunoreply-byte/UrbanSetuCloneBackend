@@ -12,7 +12,6 @@ export default function AdminFraudManagement() {
   const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [reasonFilter, setReasonFilter] = useState('all');
-  const [reasonOptions, setReasonOptions] = useState([]);
   const [sortBy, setSortBy] = useState('severity');
   const [pageL, setPageL] = useState(1);
   const [pageR, setPageR] = useState(1);
@@ -393,11 +392,13 @@ export default function AdminFraudManagement() {
       const filteredReviews = flaggedReviews.filter(r => !resolvedReviews.has(String(r._id)));
       setListings(filteredListings);
       setReviews(filteredReviews);
-      // Build dynamic reasons list from current data
-      const reasonSet = new Set();
-      filteredListings.forEach(l => (l._fraudReasons||[]).forEach(r => reasonSet.add(r)));
-      filteredReviews.forEach(r => (r._fraudReasons||[]).forEach(rr => reasonSet.add(rr)));
-      setReasonOptions(Array.from(reasonSet).sort());
+      // Update visible counters to match current data
+      setStats(prev => ({
+        ...prev,
+        suspiciousListings: filteredListings.length,
+        suspectedFakeReviews: filteredReviews.length,
+        lastScan: new Date().toISOString()
+      }));
     } catch (e) {
       setError('Failed to load fraud data.');
     } finally {
@@ -451,9 +452,44 @@ export default function AdminFraudManagement() {
               </select>
               <select value={reasonFilter} onChange={(e)=>{setReasonFilter(e.target.value); setPageL(1); setPageR(1);}} className="border rounded p-2 text-sm">
                 <option value="all">All reasons</option>
-                {reasonOptions.map(r => (
-                  <option key={r} value={r}>{r}</option>
-                ))}
+                {/* Listing fraud reasons */}
+                <option value="Price outlier">Price outlier</option>
+                <option value="Unrealistically low price">Unrealistically low price</option>
+                <option value="Suspiciously low absolute price">Suspiciously low absolute price</option>
+                <option value="Description duplicated">Description duplicated</option>
+                <option value="Suspicious language">Suspicious language</option>
+                <option value="Contact reused across accounts">Contact reused</option>
+                <option value="Same address in different cities">Address conflict</option>
+                <option value="High posting velocity">High posting velocity</option>
+                <option value="No images">No images</option>
+                <option value="Very short description">Very short description</option>
+                <option value="All caps description">All caps description</option>
+                <option value="Excessive exclamation marks">Excessive exclamation marks</option>
+                <option value="Multiple contact methods">Multiple contact methods</option>
+                <option value="Low price for multi-bedroom property">Low price for multi-bedroom</option>
+                <option value="Test city name">Test city name</option>
+                {/* Review fraud reasons */}
+                <option value="Identical text across accounts">Identical text</option>
+                <option value="5-star flood">5-star flood</option>
+                <option value="1-star flood">1-star flood</option>
+                <option value="Reviewer multi-city in short time">Reviewer anomaly</option>
+                <option value="Very short review">Very short review</option>
+                <option value="All caps review">All caps review</option>
+                <option value="Excessive punctuation">Excessive punctuation</option>
+                <option value="Rating-comment mismatch (high rating, negative sentiment)">Rating-comment mismatch</option>
+                <option value="Generic template review">Generic template review</option>
+                <option value="Suspicious rating pattern">Suspicious rating pattern</option>
+                {/* Additional reasons for fake reviews/listings */}
+                <option value="Incentivized review">Incentivized review</option>
+                <option value="Paid promotion">Paid promotion</option>
+                <option value="External contact promotion">External contact promotion</option>
+                <option value="Coordinated review activity">Coordinated review activity</option>
+                <option value="Unverified owner claim">Unverified owner claim</option>
+                <option value="Stolen images suspected">Stolen images suspected</option>
+                <option value="Image-text mismatch">Image-text mismatch</option>
+                <option value="Contact off-platform">Contact off-platform</option>
+                <option value="Advance payment solicitation">Advance payment solicitation</option>
+                <option value="Third-party payment request">Third-party payment request</option>
               </select>
               <select value={sortBy} onChange={(e)=>{setSortBy(e.target.value);}} className="border rounded p-2 text-sm">
                 <option value="severity">Sort: Severity</option>
@@ -667,4 +703,3 @@ export default function AdminFraudManagement() {
     </div>
   );
 }
-
