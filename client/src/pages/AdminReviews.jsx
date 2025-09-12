@@ -236,40 +236,23 @@ export default function AdminReviews() {
       const reviewsWithResponses = allReviews.filter(review => review.ownerResponse && review.ownerResponse.trim());
       const responseRate = allReviews.length > 0 ? (reviewsWithResponses.length / allReviews.length) * 100 : 0;
 
-      // Sentiment Analysis: simple rule-based scoring over review comments
-      const sentimentWords = {
-        positive: ['excellent', 'amazing', 'wonderful', 'great', 'fantastic', 'perfect', 'love', 'beautiful', 'outstanding', 'superb', 'brilliant', 'marvelous', 'delightful', 'satisfied', 'happy', 'pleased', 'impressed', 'recommend', 'best', 'awesome'],
-        negative: ['terrible', 'awful', 'horrible', 'disappointed', 'bad', 'worst', 'hate', 'disgusting', 'unacceptable', 'poor', 'disappointing', 'frustrated', 'angry', 'annoyed', 'upset', 'displeased', 'unsatisfied', 'regret', 'waste', 'avoid']
-      };
-
+      // Sentiment Analysis: same logic as AdminDashboard
+      const positiveWords = ['good','great','excellent','amazing','love','nice','helpful','fast','clean','spacious','recommended','recommend'];
+      const negativeWords = ['bad','poor','terrible','awful','hate','dirty','small','slow','rude','noisy','not recommended','worst'];
       let pos = 0, neg = 0, neu = 0;
-      const wordCounts = {};
-
-      allReviews.forEach(review => {
-        if (review.comment) {
-          const words = review.comment.toLowerCase().split(/\s+/);
-          let sentiment = 0;
-          
-          words.forEach(word => {
-            if (sentimentWords.positive.includes(word)) sentiment += 1;
-            else if (sentimentWords.negative.includes(word)) sentiment -= 1;
-            
-            wordCounts[word] = (wordCounts[word] || 0) + 1;
-          });
-          
-          if (sentiment > 0) pos++;
-          else if (sentiment < 0) neg++;
-          else neu++;
-        } else {
-          neu++;
-        }
+      const wordFreq = {};
+      
+      allReviews.forEach(r => {
+        const text = (r.comment || '').toLowerCase();
+        if (!text.trim()) { neu++; return; }
+        let score = 0;
+        positiveWords.forEach(w => { if (text.includes(w)) score++; });
+        negativeWords.forEach(w => { if (text.includes(w)) score--; });
+        if (score > 0) pos++; else if (score < 0) neg++; else neu++;
+        text.split(/[^a-zA-Z]+/).forEach(t => { if (t.length > 3) wordFreq[t] = (wordFreq[t] || 0) + 1; });
       });
-
-      const topWords = Object.entries(wordCounts)
-        .filter(([word]) => word.length > 3)
-        .sort(([,a], [,b]) => b - a)
-        .slice(0, 10)
-        .map(([word]) => word);
+      
+      const topWords = Object.entries(wordFreq).sort((a,b) => b[1]-a[1]).slice(0,10).map(([word,count]) => ({ word, count }));
 
       setAnalytics({
         totalReviews: stats.totalReviews || allReviews.length,
@@ -282,7 +265,7 @@ export default function AdminReviews() {
           positive: pos,
           negative: neg,
           neutral: neu,
-          topWords
+          topWords: topWords
         },
         recentActivity: allReviews.slice(0, 10),
         topProperties,

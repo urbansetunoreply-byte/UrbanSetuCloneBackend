@@ -740,7 +740,7 @@ export default function UserReviews() {
             {filteredAndSortedReviews.map((review) => (
               <div key={review._id} className={`relative group ${viewMode === 'list' ? 'flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm border w-full overflow-hidden' : ''}`}>
                 <div className={viewMode === 'list' ? 'flex-1' : ''}>
-                  <div className={`border border-gray-200 rounded-lg hover:shadow-md transition-shadow ${viewMode === 'grid' ? 'p-3 h-full flex flex-col' : 'p-3 sm:p-6 overflow-x-auto'}`}>
+                  <div className={`border border-gray-200 rounded-lg hover:shadow-md transition-shadow ${viewMode === 'grid' ? 'p-3 h-full flex flex-col' : 'p-3 sm:p-6 overflow-x-auto'} mb-4`}>
                     <div className="flex flex-col gap-2 sm:gap-4 lg:flex-row lg:items-start lg:justify-between">
                       {/* Review Content */}
                       <div className="flex-1">
@@ -787,7 +787,7 @@ export default function UserReviews() {
                       </div>
 
                       {/* Action Buttons */}
-                      <div className={`flex gap-2 lg:flex-shrink-0 w-full sm:w-auto ${viewMode === 'grid' ? 'flex-row justify-center mt-3' : 'flex-col'}`}>
+                      <div className={`flex gap-2 lg:flex-shrink-0 w-full sm:w-auto ${viewMode === 'grid' ? 'flex-row justify-center mt-3' : 'flex-col mt-4'}`}>
                         <button
                           onClick={() => handleEditReview(review)}
                           className={`flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition shadow ${viewMode === 'grid' ? 'px-3 py-2 text-sm flex-1' : 'px-4 py-2'}`}

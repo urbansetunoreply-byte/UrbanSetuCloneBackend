@@ -2136,40 +2136,27 @@ export default function Listing() {
                   const q = assignUserSearch.trim().toLowerCase();
                   if (!q) return true;
                   
-                  // Normalize search query - remove spaces, dashes, parentheses, and country codes
-                  const normalizedQuery = q.replace(/[\s\-\(\)\+]/g, '').replace(/^91/, '');
-                  
                   const name = (user.username || user.name || "").toLowerCase();
                   const email = (user.email || "").toLowerCase();
+                  const mobileNumber = (user.mobileNumber || user.mobile || "").toString();
                   
-                  // Enhanced mobile number search
-                  const mobileNumber = user.mobileNumber || user.mobile || "";
-                  const mobileStr = mobileNumber.toString();
+                  // Simple and effective search
+                  const nameMatch = name.includes(q);
+                  const emailMatch = email.includes(q);
                   
-                  // Create multiple mobile number formats for better matching
-                  const mobileFormats = [
-                    mobileStr, // Original format
-                    mobileStr.replace(/[\s\-\(\)]/g, ''), // Without spaces/dashes/parentheses
-                    mobileStr.replace(/^\+91/, ''), // Without +91 country code
-                    mobileStr.replace(/^91/, ''), // Without 91 country code
-                    mobileStr.replace(/^0/, ''), // Without leading 0
-                  ].map(format => format.toLowerCase());
+                  // Mobile number search - check if query contains only digits
+                  let mobileMatch = false;
+                  if (/^\d+$/.test(q)) {
+                    // Query is numeric, search in mobile number
+                    const cleanMobile = mobileNumber.replace(/\D/g, '');
+                    const cleanQuery = q.replace(/\D/g, '');
+                    mobileMatch = cleanMobile.includes(cleanQuery) || cleanQuery.includes(cleanMobile);
+                  } else {
+                    // Query contains text, check if it matches mobile number as string
+                    mobileMatch = mobileNumber.toLowerCase().includes(q);
+                  }
                   
-                  // Check if query matches any mobile format
-                  const mobileMatch = mobileFormats.some(format => {
-                    // Remove all non-numeric characters for comparison
-                    const cleanFormat = format.replace(/\D/g, '');
-                    const cleanQuery = normalizedQuery.replace(/\D/g, '');
-                    
-                    // Debug logging (remove in production)
-                    if (cleanQuery.length >= 3) {
-                      console.log('Mobile search:', { cleanQuery, cleanFormat, mobileStr, user: user.email });
-                    }
-                    
-                    return cleanFormat.includes(cleanQuery) || cleanQuery.includes(cleanFormat);
-                  });
-                  
-                  return name.includes(q) || email.includes(q) || mobileMatch;
+                  return nameMatch || emailMatch || mobileMatch;
                 })
                 .map((user) => {
                   // Format mobile number for display
