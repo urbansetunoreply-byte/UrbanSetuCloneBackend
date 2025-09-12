@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { FaStar, FaEdit, FaTrash, FaCheck, FaTimes, FaSync, FaChartLine, FaChartBar, FaChartPie, FaArrowUp, FaArrowDown, FaUsers, FaComments, FaExclamationTriangle, FaHome, FaFilter, FaSort, FaBars, FaEye, FaHeart, FaDownload, FaShare, FaPlus, FaTimes as FaX } from 'react-icons/fa';
+import { FaStar, FaEdit, FaTrash, FaSearch, FaCheck, FaTimes, FaSync, FaChartLine, FaChartBar, FaChartPie, FaArrowUp, FaArrowDown, FaUsers, FaComments, FaExclamationTriangle, FaHome, FaFilter, FaSort, FaBars, FaEye, FaHeart, FaDownload, FaShare, FaPlus, FaTimes as FaX } from 'react-icons/fa';
 import ReviewForm from '../components/ReviewForm.jsx';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 import { socket } from '../utils/socket.js';
