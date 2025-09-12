@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { FaStar, FaCheck, FaTimes, FaTrash, FaEye, FaBan, FaSort, FaSortUp, FaSortDown, FaCheckCircle, FaThumbsUp, FaReply, FaSync, FaHome, FaUser, FaChartLine, FaChartBar, FaChartPie, FaTrendingUp, FaTrendingDown, FaUsers, FaComments, FaExclamationTriangle } from 'react-icons/fa';
+import { FaStar, FaCheck, FaTimes, FaTrash, FaEye, FaBan, FaSort, FaSortUp, FaSortDown, FaCheckCircle, FaThumbsUp, FaReply, FaSync, FaHome, FaUser, FaChartLine, FaChartBar, FaChartPie, FaArrowUp, FaArrowDown, FaUsers, FaComments, FaExclamationTriangle } from 'react-icons/fa';
 import { socket } from '../utils/socket';
 import { toast } from 'react-toastify';
 import UserAvatar from '../components/UserAvatar';
@@ -726,7 +726,7 @@ export default function AdminReviews() {
             {analytics.monthlyTrends.length > 0 && (
               <div className="mt-6 bg-white rounded-lg p-6 shadow-sm">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <FaTrendingUp className="text-green-600" />
+                  <FaArrowUp className="text-green-600" />
                   Monthly Review Trends
                 </h3>
                 <div className="flex items-end gap-2 h-32">

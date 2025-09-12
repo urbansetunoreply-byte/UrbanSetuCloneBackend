@@ -45,7 +45,6 @@ export default function AdminDashboard() {
     topProperties: [],
     topCities: [],
     recentListings: [],
-    userGrowth: [],
     listingStats: {
       sale: 0,
       rent: 0,
@@ -631,12 +630,6 @@ export default function AdminDashboard() {
           monthlyRevenue,
           revenueByType,
           averageTransactionValue
-        },
-        userGrowth: {
-          dailyRegistrations,
-          weeklyGrowth,
-          monthlyGrowth,
-          userRetention
         },
         propertyPerformance: {
           topViewedProperties,
