@@ -16,7 +16,8 @@ import {
   FaExclamationTriangle,
   FaTrash,
   FaLock,
-  FaRupeeSign
+  FaRupeeSign,
+  FaSync
 } from "react-icons/fa";
 import GeminiAIWrapper from "../components/GeminiAIWrapper";
 import { toast } from 'react-toastify';
@@ -772,27 +773,26 @@ export default function AdminDashboard() {
                 Monitor platform performance, manage properties, and oversee user activities from your comprehensive dashboard.
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Link to="/admin/appointments" className="relative group">
                 <div className="relative">
                   {appointmentCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold z-10 animate-bounce">
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 sm:h-6 sm:w-6 flex items-center justify-center font-bold z-10 animate-bounce">
                       {appointmentCount > 99 ? '99+' : appointmentCount}
                     </span>
                   )}
-                  <button className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all duration-300 transform hover:scale-105 shadow-lg font-semibold flex items-center gap-3 group-hover:shadow-xl">
-                    <FaCalendarAlt className="text-xl" />
-                    <span className="hidden sm:inline">Appointments</span>
-                    <span className="sm:hidden">Apps</span>
+                  <button className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all duration-300 transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 sm:gap-3 group-hover:shadow-xl w-full sm:w-auto justify-center">
+                    <FaCalendarAlt className="text-lg sm:text-xl" />
+                    <span className="text-sm sm:text-base">Appointments</span>
                   </button>
                 </div>
               </Link>
               <button 
                 onClick={() => window.location.reload()}
-                className="bg-white border-2 border-gray-200 text-gray-700 px-6 py-3 rounded-xl hover:border-blue-300 hover:text-blue-600 transition-all duration-300 flex items-center gap-3 shadow-md hover:shadow-lg"
+                className="bg-white border-2 border-gray-200 text-gray-700 px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl hover:border-blue-300 hover:text-blue-600 transition-all duration-300 flex items-center gap-2 sm:gap-3 shadow-md hover:shadow-lg w-full sm:w-auto justify-center"
               >
-                <FaChartLine className="text-xl" />
-                <span className="hidden sm:inline">Refresh</span>
+                <FaSync className="text-lg sm:text-xl" />
+                <span className="text-sm sm:text-base">Refresh</span>
               </button>
             </div>
           </div>
