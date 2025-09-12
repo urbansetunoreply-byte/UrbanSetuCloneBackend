@@ -54,9 +54,9 @@ export default function Watchlist() {
         });
         setBaselineMap(map);
         
-        // Check for price drops and send notifications
+        // Check for price changes and send notifications
         setTimeout(() => {
-          checkForPriceDrops(listings, map);
+          checkForPriceChanges(listings, map);
         }, 1000); // Small delay to ensure state is updated
       }
     } catch (e) {
@@ -66,24 +66,36 @@ export default function Watchlist() {
     }
   };
 
-  // Check for price drops and send notifications
-  const checkForPriceDrops = (listings, baselineMap) => {
+  // Check for price changes and send notifications
+  const checkForPriceChanges = (listings, baselineMap) => {
     if (!currentUser?._id) return;
     
     listings.forEach(listing => {
       const baseline = baselineMap.get(listing._id);
       const current = getEffectivePrice(listing);
       
-      if (baseline != null && current != null && current < baseline) {
-        const dropAmount = baseline - current;
-        const dropPercentage = Math.round((dropAmount / baseline) * 100);
-        
-        // Send price drop notification
-        sendWatchlistNotification(
-          listing,
-          'watchlist_price_drop',
-          `Price dropped by ₹${dropAmount.toLocaleString()} (${dropPercentage}%)! Check it out now.`
-        );
+      if (baseline != null && current != null) {
+        if (current < baseline) {
+          // Price dropped
+          const dropAmount = baseline - current;
+          const dropPercentage = Math.round((dropAmount / baseline) * 100);
+          
+          sendWatchlistNotification(
+            listing,
+            'watchlist_price_drop',
+            `Price dropped by ₹${dropAmount.toLocaleString()} (${dropPercentage}%)! Check it out now.`
+          );
+        } else if (current > baseline) {
+          // Price increased
+          const increaseAmount = current - baseline;
+          const increasePercentage = Math.round((increaseAmount / baseline) * 100);
+          
+          sendWatchlistNotification(
+            listing,
+            'watchlist_price_update',
+            `Price increased by ₹${increaseAmount.toLocaleString()} (${increasePercentage}%).`
+          );
+        }
       }
       
       // Check for other status changes
@@ -106,6 +118,34 @@ export default function Watchlist() {
   };
 
   useEffect(() => { fetchWatchlist(); }, [currentUser?._id]);
+  
+  // Periodic check for price changes (every 5 minutes)
+  useEffect(() => {
+    if (!currentUser?._id || items.length === 0) return;
+    
+    const interval = setInterval(() => {
+      // Re-fetch watchlist to get latest prices and check for changes
+      fetchWatchlist();
+    }, 5 * 60 * 1000); // 5 minutes
+    
+    return () => clearInterval(interval);
+  }, [currentUser?._id, items.length]);
+  
+  // Check for price changes when page becomes visible
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && currentUser?._id && items.length > 0) {
+        // Page became visible, check for price changes
+        fetchWatchlist();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [currentUser?._id, items.length]);
   
   useEffect(() => {
     calculateWatchlistStats();
@@ -391,6 +431,14 @@ export default function Watchlist() {
     const baseline = baselineMap.get(l._id);
     if (baseline == null) return false;
     return effective < baseline;
+  };
+
+  const isPriceIncreased = (l) => {
+    const effective = getEffectivePrice(l);
+    if (effective == null) return false;
+    const baseline = baselineMap.get(l._id);
+    if (baseline == null) return false;
+    return effective > baseline;
   };
 
   // Send watchlist notification
@@ -888,6 +936,13 @@ export default function Watchlist() {
                   <div className="absolute top-2 left-2 z-10">
                     <span className="bg-green-500 text-white text-[10px] sm:text-xs font-semibold px-2 py-1 rounded-full shadow-md flex items-center gap-1">
                       <FaArrowDown className="text-[10px] sm:text-xs" /> Price dropped
+                    </span>
+                  </div>
+                )}
+                {isPriceIncreased(listing) && (
+                  <div className="absolute top-2 left-2 z-10">
+                    <span className="bg-red-500 text-white text-[10px] sm:text-xs font-semibold px-2 py-1 rounded-full shadow-md flex items-center gap-1">
+                      <FaArrowUp className="text-[10px] sm:text-xs" /> Price increased
                     </span>
                   </div>
                 )}
