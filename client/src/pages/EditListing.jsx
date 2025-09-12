@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import LocationSelector from "../components/LocationSelector";
 import { toast } from 'react-toastify';
+import { socket } from '../utils/socket.js';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -234,6 +235,49 @@ export default function EditListing() {
       
       if (res.ok) {
         toast.success(data.message || "Property Details Updated Successfully!!");
+        
+        // Send watchlist notifications to all users who have this property in their watchlist
+        if (socket) {
+          try {
+            // Get the old listing data for comparison
+            const oldListing = location.state?.listing || null;
+            
+            // Check if price changed
+            const oldPrice = oldListing ? (oldListing.offer && oldListing.discountPrice ? oldListing.discountPrice : oldListing.regularPrice) : null;
+            const newPrice = formData.offer && formData.discountPrice ? formData.discountPrice : formData.regularPrice;
+            
+            if (oldPrice && newPrice && oldPrice !== newPrice) {
+              const priceChange = newPrice - oldPrice;
+              const changePercentage = Math.round((Math.abs(priceChange) / oldPrice) * 100);
+              
+              let message = '';
+              let notificationType = '';
+              
+              if (priceChange < 0) {
+                // Price dropped
+                message = `Price dropped by ₹${Math.abs(priceChange).toLocaleString()} (${changePercentage}%)! Check it out now.`;
+                notificationType = 'watchlist_price_drop';
+              } else {
+                // Price increased
+                message = `Price increased by ₹${priceChange.toLocaleString()} (${changePercentage}%).`;
+                notificationType = 'watchlist_price_update';
+              }
+              
+              // Emit socket event to notify all watchlist users
+              socket.emit('listingUpdated', {
+                listingId: params.listingId,
+                listingData: formData,
+                notificationType: notificationType,
+                message: message,
+                oldPrice: oldPrice,
+                newPrice: newPrice
+              });
+            }
+          } catch (error) {
+            console.error('Error sending watchlist notification:', error);
+          }
+        }
+        
         navigate(getPreviousPath());
       } else {
         const errorMessage = data.message || "Failed to update listing";

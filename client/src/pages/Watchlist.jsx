@@ -59,85 +59,6 @@ export default function Watchlist() {
     return effective > baseline;
   };
 
-  // Send watchlist notification
-  const sendWatchlistNotification = async (listing, type, message) => {
-    if (!currentUser?._id) return;
-    
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/notifications/watchlist`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          userId: currentUser._id,
-          listingId: listing._id,
-          type: type,
-          message: message,
-          listingTitle: listing.name || 'Property',
-          listingPrice: getEffectivePrice(listing)
-        })
-      });
-      
-      if (response.ok) {
-        console.log('Watchlist notification sent:', type);
-      }
-    } catch (error) {
-      console.error('Error sending watchlist notification:', error);
-    }
-  };
-
-  // Check for price changes and send notifications
-  const checkForPriceChanges = (listings, baselineMap) => {
-    if (!currentUser?._id) return;
-    
-    listings.forEach(listing => {
-      const baseline = baselineMap.get(listing._id);
-      const current = getEffectivePrice(listing);
-      
-      if (baseline != null && current != null) {
-        if (current < baseline) {
-          // Price dropped
-          const dropAmount = baseline - current;
-          const dropPercentage = Math.round((dropAmount / baseline) * 100);
-          
-          sendWatchlistNotification(
-            listing,
-            'watchlist_price_drop',
-            `Price dropped by ₹${dropAmount.toLocaleString()} (${dropPercentage}%)! Check it out now.`
-          );
-        } else if (current > baseline) {
-          // Price increased
-          const increaseAmount = current - baseline;
-          const increasePercentage = Math.round((increaseAmount / baseline) * 100);
-          
-          sendWatchlistNotification(
-            listing,
-            'watchlist_price_update',
-            `Price increased by ₹${increaseAmount.toLocaleString()} (${increasePercentage}%).`
-          );
-        }
-      }
-      
-      // Check for other status changes
-      if (listing.status === 'sold' || listing.status === 'unavailable') {
-        sendWatchlistNotification(
-          listing,
-          'watchlist_property_sold',
-          `This property is no longer available. Status: ${listing.status}`
-        );
-      }
-      
-      if (listing.status === 'removed') {
-        sendWatchlistNotification(
-          listing,
-          'watchlist_property_removed',
-          `This property has been removed from listings.`
-        );
-      }
-    });
-  };
 
   const fetchWatchlist = async () => {
     if (!currentUser?._id) return;
@@ -157,10 +78,7 @@ export default function Watchlist() {
         });
         setBaselineMap(map);
         
-        // Check for price changes and send notifications
-        setTimeout(() => {
-          checkForPriceChanges(listings, map);
-        }, 1000); // Small delay to ensure state is updated
+        // Update baseline map for future comparisons (no notifications on page load)
       }
     } catch (e) {
       // noop
@@ -212,33 +130,42 @@ export default function Watchlist() {
 
   useEffect(() => { fetchWatchlist(); }, [currentUser?._id]);
   
-  // Periodic check for price changes (every 5 minutes)
+  // Socket listener for real-time watchlist notifications from owner updates
   useEffect(() => {
-    if (!currentUser?._id || items.length === 0) return;
-    
-    const interval = setInterval(() => {
-      // Re-fetch watchlist to get latest prices and check for changes
-      fetchWatchlist();
-    }, 5 * 60 * 1000); // 5 minutes
-    
-    return () => clearInterval(interval);
-  }, [currentUser?._id, items.length]);
-  
-  // Check for price changes when page becomes visible
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden && currentUser?._id && items.length > 0) {
-        // Page became visible, check for price changes
-        fetchWatchlist();
-      }
+    if (!currentUser?._id || !socket) return;
+
+    const handleWatchlistNotification = (data) => {
+      if (data.userId !== currentUser._id) return;
+      
+      // Update the specific listing in the watchlist
+      setItems(prevItems => {
+        return prevItems.map(item => {
+          if (item._id === data.listingId) {
+            // Update the listing with new data
+            return { ...item, ...data.listingData };
+          }
+          return item;
+        });
+      });
+      
+      // Show toast notification
+      toast.info(data.message, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     };
-    
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    
+
+    // Listen for watchlist notifications
+    socket.on('watchlistNotification', handleWatchlistNotification);
+
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      socket.off('watchlistNotification', handleWatchlistNotification);
     };
-  }, [currentUser?._id, items.length]);
+  }, [currentUser?._id, socket]);
   
   useEffect(() => {
     calculateWatchlistStats();
