@@ -425,12 +425,12 @@ export default function AdminFraudManagement() {
               <div className="mb-8">
                 <h4 className="text-xl font-bold text-gray-800 mb-3">Suspicious Listings</h4>
                 <div className="overflow-x-auto">
-                  <table className="min-w-full border table-fixed text-xs sm:text-sm">
+                  <table className="min-w-full border text-xs sm:text-sm" style={{ minWidth: '800px' }}>
                     <thead className="bg-gray-100">
                       <tr>
                         {showSelectMode && <th className="p-2 text-left w-8">Select</th>}
                         <th className="p-2 text-left">Name</th>
-                        <th className="p-2 text-left hidden md:table-cell">City</th>
+                        <th className="p-2 text-left">City</th>
                         <th className="p-2 text-left">Reasons</th>
                         <th className="p-2 text-left">Actions</th>
                       </tr>
@@ -464,7 +464,7 @@ export default function AdminFraudManagement() {
                             setSelectedRows(s => ({ ...s, listings: ns }));
                           }} /></td>}
                           <td className="p-2">{l.name}</td>
-                          <td className="p-2 hidden md:table-cell">{l.city}, {l.state}</td>
+                          <td className="p-2">{l.city}, {l.state}</td>
                           <td className="p-2">{(l._fraudReasons||[]).join(', ')}</td>
                           <td className="p-2"><div className="flex flex-wrap gap-2">
                             <Link to={`/admin/listing/${l._id}`} className="px-2 py-1 bg-blue-600 text-white rounded text-xs sm:text-sm">Open</Link>
@@ -499,12 +499,12 @@ export default function AdminFraudManagement() {
               <div>
                 <h4 className="text-xl font-bold text-gray-800 mb-3">Suspected Fake Reviews</h4>
                 <div className="overflow-x-auto">
-                  <table className="min-w-full border table-fixed text-xs sm:text-sm">
+                  <table className="min-w-full border text-xs sm:text-sm" style={{ minWidth: '800px' }}>
                     <thead className="bg-gray-100">
                       <tr>
                         {showSelectMode && <th className="p-2 text-left w-8">Select</th>}
                         <th className="p-2 text-left">Listing</th>
-                        <th className="p-2 text-left hidden md:table-cell">User</th>
+                        <th className="p-2 text-left">User</th>
                         <th className="p-2 text-left">Comment</th>
                         <th className="p-2 text-left">Reasons</th>
                         <th className="p-2 text-left">Actions</th>
@@ -538,7 +538,7 @@ export default function AdminFraudManagement() {
                             setSelectedRows(s => ({ ...s, reviews: ns }));
                           }} /></td>}
                           <td className="p-2">{r.listingId?.name || r.listingId}</td>
-                          <td className="p-2 hidden md:table-cell">{r.userId?.email || r.userId}</td>
+                          <td className="p-2">{r.userId?.email || r.userId}</td>
                           <td className="p-2 max-w-[10rem] sm:max-w-md truncate" title={r.comment}>{r.comment}</td>
                           <td className="p-2">{(r._fraudReasons||[]).join(', ')}</td>
                           <td className="p-2"><div className="flex flex-wrap gap-2">

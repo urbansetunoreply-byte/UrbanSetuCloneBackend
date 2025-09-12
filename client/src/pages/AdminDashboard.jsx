@@ -137,8 +137,8 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchSentiment = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/ai/sentiment/summary`);
-        const data = await res.json();
+        const res = await axios.get(`${API_BASE_URL}/api/ai/sentiment/summary`);
+        const data = res.data;
         if (data && typeof data === 'object') setSentimentSummary({
           positive: data.positive||0,
           negative: data.negative||0,
