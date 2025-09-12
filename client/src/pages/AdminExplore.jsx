@@ -446,19 +446,50 @@ export default function AdminExplore() {
           </h3>
           <p className="text-center text-gray-600 mb-6">Search and filter all properties across the platform</p>
           
-          {/* Smart (NLP) Search - moved to top */}
-          <form onSubmit={applySmartQuery} className="bg-blue-50 p-4 rounded-lg mb-6">
-            <label className="block text-sm font-medium text-blue-800 mb-2">Smart Search (natural language)</label>
-            <div className="flex gap-2">
-              <input
-                value={smartQuery}
-                onChange={(e) => setSmartQuery(e.target.value)}
-                placeholder="e.g., 3BHK above 50L in Bengaluru with parking"
-                className="flex-1 p-2 border rounded-md"
-              />
-              <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg">Apply</button>
+          {/* Enhanced Smart (NLP) Search */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl mb-6 border border-blue-200">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="p-2 bg-blue-500 rounded-lg">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+              </div>
+              <label className="text-lg font-semibold text-blue-800">Smart Search (Natural Language)</label>
             </div>
-          </form>
+            <form onSubmit={applySmartQuery} className="space-y-4">
+              <div className="relative">
+                <input
+                  value={smartQuery}
+                  onChange={(e) => setSmartQuery(e.target.value)}
+                  placeholder="e.g., 3BHK above 50L in Bengaluru with parking"
+                  className="w-full p-4 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-lg"
+                />
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <button type="submit" className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-6 py-2 rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 transform hover:scale-105 shadow-lg font-semibold">
+                    Search
+                  </button>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <span className="text-sm text-gray-600">Try:</span>
+                {[
+                  "3BHK above 50L in Mumbai",
+                  "2BHK with parking in Delhi", 
+                  "Furnished apartment in Bangalore",
+                  "Budget house for sale in Pune"
+                ].map((suggestion, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => setSmartQuery(suggestion)}
+                    className="text-xs bg-white border border-blue-300 text-blue-700 px-3 py-1 rounded-full hover:bg-blue-50 transition-colors duration-200"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            </form>
+          </div>
 
           <form
             onSubmit={handleSubmit}

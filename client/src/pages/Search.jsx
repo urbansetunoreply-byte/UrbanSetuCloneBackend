@@ -132,23 +132,128 @@ export default function Search() {
         if (!natural) return;
         const extracted = { ...formData };
         
-        // Enhanced city to state mapping
+        // Enhanced city to state mapping with more cities and landmarks
         const inferStateFromCity = (city) => {
             const cityToState = {
-                'mumbai': 'Maharashtra', 'pune': 'Maharashtra', 'nagpur': 'Maharashtra', 'nashik': 'Maharashtra', 'aurangabad': 'Maharashtra',
-                'delhi': 'Delhi', 'new delhi': 'Delhi', 'noida': 'Uttar Pradesh', 'gurgaon': 'Haryana', 'gurugram': 'Haryana', 'faridabad': 'Haryana',
-                'bengaluru': 'Karnataka', 'bangalore': 'Karnataka', 'mysuru': 'Karnataka', 'mysore': 'Karnataka', 'mangalore': 'Karnataka', 'hubli': 'Karnataka',
-                'chennai': 'Tamil Nadu', 'coimbatore': 'Tamil Nadu', 'madurai': 'Tamil Nadu', 'tiruchirapalli': 'Tamil Nadu', 'salem': 'Tamil Nadu',
+                // Maharashtra
+                'mumbai': 'Maharashtra', 'pune': 'Maharashtra', 'nagpur': 'Maharashtra', 'nashik': 'Maharashtra', 
+                'aurangabad': 'Maharashtra', 'solapur': 'Maharashtra', 'amravati': 'Maharashtra', 'kolhapur': 'Maharashtra',
+                'sangli': 'Maharashtra', 'malegaon': 'Maharashtra', 'ulhasnagar': 'Maharashtra', 'jalgaon': 'Maharashtra',
+                'akola': 'Maharashtra', 'latur': 'Maharashtra', 'dhule': 'Maharashtra', 'ahmednagar': 'Maharashtra',
+                'chandrapur': 'Maharashtra', 'parbhani': 'Maharashtra', 'ichalkaranji': 'Maharashtra', 'jalna': 'Maharashtra',
+                'bhusawal': 'Maharashtra', 'ambad': 'Maharashtra', 'yavatmal': 'Maharashtra', 'kamptee': 'Maharashtra',
+                'gondia': 'Maharashtra', 'barshi': 'Maharashtra', 'achalpur': 'Maharashtra', 'osmanabad': 'Maharashtra',
+                'nandurbar': 'Maharashtra', 'wardha': 'Maharashtra', 'udgir': 'Maharashtra', 'hinganghat': 'Maharashtra',
+                
+                // Delhi & NCR
+                'delhi': 'Delhi', 'new delhi': 'Delhi', 'noida': 'Uttar Pradesh', 'gurgaon': 'Haryana', 
+                'gurugram': 'Haryana', 'faridabad': 'Haryana', 'ghaziabad': 'Uttar Pradesh', 'meerut': 'Uttar Pradesh',
+                'sonipat': 'Haryana', 'panipat': 'Haryana', 'rohtak': 'Haryana', 'karnal': 'Haryana',
+                'hisar': 'Haryana', 'ambala': 'Haryana', 'yamunanagar': 'Haryana', 'bhiwani': 'Haryana',
+                'rewari': 'Haryana', 'palwal': 'Haryana', 'mahendragarh': 'Haryana', 'jind': 'Haryana',
+                'kaithal': 'Haryana', 'fatehabad': 'Haryana', 'sirsa': 'Haryana', 'mewat': 'Haryana',
+                
+                // Karnataka
+                'bengaluru': 'Karnataka', 'bangalore': 'Karnataka', 'mysuru': 'Karnataka', 'mysore': 'Karnataka', 
+                'mangalore': 'Karnataka', 'hubli': 'Karnataka', 'belgaum': 'Karnataka', 'gulbarga': 'Karnataka',
+                'davangere': 'Karnataka', 'bellary': 'Karnataka', 'bijapur': 'Karnataka', 'shimoga': 'Karnataka',
+                'tumkur': 'Karnataka', 'raichur': 'Karnataka', 'bidar': 'Karnataka', 'hospet': 'Karnataka',
+                'hassan': 'Karnataka', 'gadag': 'Karnataka', 'udupi': 'Karnataka', 'karwar': 'Karnataka',
+                'chitradurga': 'Karnataka', 'kolar': 'Karnataka', 'mandya': 'Karnataka', 'chikmagalur': 'Karnataka',
+                'gangavati': 'Karnataka', 'bagalkot': 'Karnataka', 'ranebennur': 'Karnataka', 'athani': 'Karnataka',
+                
+                // Tamil Nadu
+                'chennai': 'Tamil Nadu', 'coimbatore': 'Tamil Nadu', 'madurai': 'Tamil Nadu', 'tiruchirapalli': 'Tamil Nadu', 
+                'salem': 'Tamil Nadu', 'tirunelveli': 'Tamil Nadu', 'tiruppur': 'Tamil Nadu', 'erode': 'Tamil Nadu',
+                'vellore': 'Tamil Nadu', 'thoothukkudi': 'Tamil Nadu', 'dindigul': 'Tamil Nadu', 'thanjavur': 'Tamil Nadu',
+                'ranipet': 'Tamil Nadu', 'sivakasi': 'Tamil Nadu', 'karur': 'Tamil Nadu', 'udhagamandalam': 'Tamil Nadu',
+                'hosur': 'Tamil Nadu', 'nagercoil': 'Tamil Nadu', 'kanchipuram': 'Tamil Nadu', 'cuddalore': 'Tamil Nadu',
+                'kumbakonam': 'Tamil Nadu', 'tiruvannamalai': 'Tamil Nadu', 'pollachi': 'Tamil Nadu', 'rajapalayam': 'Tamil Nadu',
+                'gudiyatham': 'Tamil Nadu', 'pudukkottai': 'Tamil Nadu', 'neyveli': 'Tamil Nadu', 'ambattur': 'Tamil Nadu',
+                
+                // West Bengal
                 'kolkata': 'West Bengal', 'howrah': 'West Bengal', 'durgapur': 'West Bengal', 'asansol': 'West Bengal',
-                'hyderabad': 'Telangana', 'warangal': 'Telangana', 'nizamabad': 'Telangana',
-                'ahmedabad': 'Gujarat', 'surat': 'Gujarat', 'vadodara': 'Gujarat', 'rajkot': 'Gujarat', 'bhavnagar': 'Gujarat',
-                'jaipur': 'Rajasthan', 'jodhpur': 'Rajasthan', 'udaipur': 'Rajasthan', 'kota': 'Rajasthan', 'bikaner': 'Rajasthan',
-                'lucknow': 'Uttar Pradesh', 'kanpur': 'Uttar Pradesh', 'agra': 'Uttar Pradesh', 'varanasi': 'Uttar Pradesh', 'meerut': 'Uttar Pradesh',
+                'siliguri': 'West Bengal', 'malda': 'West Bengal', 'berhampore': 'West Bengal', 'habra': 'West Bengal',
+                'kharagpur': 'West Bengal', 'shantipur': 'West Bengal', 'dankuni': 'West Bengal', 'dhulian': 'West Bengal',
+                'ranaghat': 'West Bengal', 'haldia': 'West Bengal', 'raiganj': 'West Bengal', 'krishnanagar': 'West Bengal',
+                'nabadwip': 'West Bengal', 'medinipur': 'West Bengal', 'jalpaiguri': 'West Bengal', 'balurghat': 'West Bengal',
+                'basirhat': 'West Bengal', 'bankura': 'West Bengal', 'chakdaha': 'West Bengal', 'darjeeling': 'West Bengal',
+                
+                // Telangana
+                'hyderabad': 'Telangana', 'warangal': 'Telangana', 'nizamabad': 'Telangana', 'khammam': 'Telangana',
+                'karimnagar': 'Telangana', 'ramagundam': 'Telangana', 'mahbubnagar': 'Telangana', 'nalgonda': 'Telangana',
+                'adilabad': 'Telangana', 'suryapet': 'Telangana', 'miryalaguda': 'Telangana', 'tadepalligudem': 'Telangana',
+                'mancherial': 'Telangana', 'kothagudem': 'Telangana', 'dharmabad': 'Telangana', 'bhongir': 'Telangana',
+                'bodhan': 'Telangana', 'palwancha': 'Telangana', 'mandamarri': 'Telangana', 'koratla': 'Telangana',
+                'sircilla': 'Telangana', 'tandur': 'Telangana', 'siddipet': 'Telangana', 'wanaparthy': 'Telangana',
+                
+                // Gujarat
+                'ahmedabad': 'Gujarat', 'surat': 'Gujarat', 'vadodara': 'Gujarat', 'rajkot': 'Gujarat', 
+                'bhavnagar': 'Gujarat', 'jamnagar': 'Gujarat', 'nadiad': 'Gujarat', 'porbandar': 'Gujarat',
+                'anand': 'Gujarat', 'morbi': 'Gujarat', 'mahesana': 'Gujarat', 'bharuch': 'Gujarat',
+                'veraval': 'Gujarat', 'navsari': 'Gujarat', 'bharuch': 'Gujarat', 'gandhidham': 'Gujarat',
+                'veraval': 'Gujarat', 'navsari': 'Gujarat', 'bharuch': 'Gujarat', 'gandhidham': 'Gujarat',
+                'veraval': 'Gujarat', 'navsari': 'Gujarat', 'bharuch': 'Gujarat', 'gandhidham': 'Gujarat',
+                'veraval': 'Gujarat', 'navsari': 'Gujarat', 'bharuch': 'Gujarat', 'gandhidham': 'Gujarat',
+                
+                // Rajasthan
+                'jaipur': 'Rajasthan', 'jodhpur': 'Rajasthan', 'udaipur': 'Rajasthan', 'kota': 'Rajasthan', 
+                'bikaner': 'Rajasthan', 'ajmer': 'Rajasthan', 'bharatpur': 'Rajasthan', 'bhiwadi': 'Rajasthan',
+                'alwar': 'Rajasthan', 'beawar': 'Rajasthan', 'dungarpur': 'Rajasthan', 'hindaun': 'Rajasthan',
+                'gangapur': 'Rajasthan', 'laxmangarh': 'Rajasthan', 'sikar': 'Rajasthan', 'pali': 'Rajasthan',
+                'tonk': 'Rajasthan', 'kishangarh': 'Rajasthan', 'banswara': 'Rajasthan', 'hanumangarh': 'Rajasthan',
+                'dausa': 'Rajasthan', 'churu': 'Rajasthan', 'bundi': 'Rajasthan', 'sawai madhopur': 'Rajasthan',
+                
+                // Uttar Pradesh
+                'lucknow': 'Uttar Pradesh', 'kanpur': 'Uttar Pradesh', 'agra': 'Uttar Pradesh', 'varanasi': 'Uttar Pradesh', 
+                'meerut': 'Uttar Pradesh', 'allahabad': 'Uttar Pradesh', 'bareilly': 'Uttar Pradesh', 'gorakhpur': 'Uttar Pradesh',
+                'moradabad': 'Uttar Pradesh', 'aligarh': 'Uttar Pradesh', 'saharanpur': 'Uttar Pradesh', 'noida': 'Uttar Pradesh',
+                'firozabad': 'Uttar Pradesh', 'jhansi': 'Uttar Pradesh', 'muzaffarnagar': 'Uttar Pradesh', 'mathura': 'Uttar Pradesh',
+                'shahjahanpur': 'Uttar Pradesh', 'rampur': 'Uttar Pradesh', 'modinagar': 'Uttar Pradesh', 'hapur': 'Uttar Pradesh',
+                'etawah': 'Uttar Pradesh', 'mirzapur': 'Uttar Pradesh', 'bulandshahr': 'Uttar Pradesh', 'sambhal': 'Uttar Pradesh',
+                'amroha': 'Uttar Pradesh', 'hardoi': 'Uttar Pradesh', 'fatehpur': 'Uttar Pradesh', 'raebareli': 'Uttar Pradesh',
+                
+                // Madhya Pradesh
                 'indore': 'Madhya Pradesh', 'bhopal': 'Madhya Pradesh', 'gwalior': 'Madhya Pradesh', 'jabalpur': 'Madhya Pradesh',
+                'ujjain': 'Madhya Pradesh', 'sagar': 'Madhya Pradesh', 'dewas': 'Madhya Pradesh', 'satna': 'Madhya Pradesh',
+                'ratlam': 'Madhya Pradesh', 'rewa': 'Madhya Pradesh', 'murwara': 'Madhya Pradesh', 'singrauli': 'Madhya Pradesh',
+                'burhanpur': 'Madhya Pradesh', 'khandwa': 'Madhya Pradesh', 'morena': 'Madhya Pradesh', 'bhind': 'Madhya Pradesh',
+                'vidisha': 'Madhya Pradesh', 'chhindwara': 'Madhya Pradesh', 'guna': 'Madhya Pradesh', 'shivpuri': 'Madhya Pradesh',
+                'mandsaur': 'Madhya Pradesh', 'neemuch': 'Madhya Pradesh', 'pithampur': 'Madhya Pradesh', 'itarsi': 'Madhya Pradesh',
+                
+                // Bihar
                 'patna': 'Bihar', 'gaya': 'Bihar', 'bhagalpur': 'Bihar', 'muzaffarpur': 'Bihar',
+                'purnia': 'Bihar', 'darbhanga': 'Bihar', 'bihar sharif': 'Bihar', 'arrah': 'Bihar',
+                'begusarai': 'Bihar', 'katihar': 'Bihar', 'munger': 'Bihar', 'chapra': 'Bihar',
+                'sasaram': 'Bihar', 'hajipur': 'Bihar', 'dehri': 'Bihar', 'bettiah': 'Bihar',
+                'motihari': 'Bihar', 'siwan': 'Bihar', 'kishanganj': 'Bihar', 'saharsa': 'Bihar',
+                'saharsa': 'Bihar', 'kishanganj': 'Bihar', 'saharsa': 'Bihar', 'kishanganj': 'Bihar',
+                
+                // Kerala
                 'kochi': 'Kerala', 'thiruvananthapuram': 'Kerala', 'kozhikode': 'Kerala', 'thrissur': 'Kerala',
+                'kollam': 'Kerala', 'palakkad': 'Kerala', 'alappuzha': 'Kerala', 'malappuram': 'Kerala',
+                'kannur': 'Kerala', 'kasaragod': 'Kerala', 'pathanamthitta': 'Kerala', 'idukki': 'Kerala',
+                'wayanad': 'Kerala', 'ernakulam': 'Kerala', 'kottayam': 'Kerala', 'tirur': 'Kerala',
+                'koyilandy': 'Kerala', 'kannur': 'Kerala', 'kasaragod': 'Kerala', 'pathanamthitta': 'Kerala',
+                
+                // Andhra Pradesh
                 'visakhapatnam': 'Andhra Pradesh', 'vijayawada': 'Andhra Pradesh', 'guntur': 'Andhra Pradesh', 'nellore': 'Andhra Pradesh',
-                'chandigarh': 'Chandigarh', 'panchkula': 'Haryana', 'mohali': 'Punjab'
+                'kurnool': 'Andhra Pradesh', 'rajahmundry': 'Andhra Pradesh', 'tirupati': 'Andhra Pradesh', 'kadapa': 'Andhra Pradesh',
+                'anantapur': 'Andhra Pradesh', 'chittoor': 'Andhra Pradesh', 'proddatur': 'Andhra Pradesh', 'nandyal': 'Andhra Pradesh',
+                'eluru': 'Andhra Pradesh', 'ongole': 'Andhra Pradesh', 'chilakaluripet': 'Andhra Pradesh', 'kadiri': 'Andhra Pradesh',
+                'adoni': 'Andhra Pradesh', 'tenali': 'Andhra Pradesh', 'chirala': 'Andhra Pradesh', 'bapatla': 'Andhra Pradesh',
+                'srikakulam': 'Andhra Pradesh', 'vizianagaram': 'Andhra Pradesh', 'parvathipuram': 'Andhra Pradesh', 'bobbili': 'Andhra Pradesh',
+                
+                // Union Territories
+                'chandigarh': 'Chandigarh', 'panchkula': 'Haryana', 'mohali': 'Punjab',
+                'jammu': 'Jammu and Kashmir', 'srinagar': 'Jammu and Kashmir', 'leh': 'Ladakh',
+                'kargil': 'Ladakh', 'anantnag': 'Jammu and Kashmir', 'baramulla': 'Jammu and Kashmir',
+                'udhampur': 'Jammu and Kashmir', 'kathua': 'Jammu and Kashmir', 'rajouri': 'Jammu and Kashmir',
+                'punch': 'Jammu and Kashmir', 'doda': 'Jammu and Kashmir', 'kishtwar': 'Jammu and Kashmir',
+                'ramban': 'Jammu and Kashmir', 'reasi': 'Jammu and Kashmir', 'samba': 'Jammu and Kashmir',
+                'bandipora': 'Jammu and Kashmir', 'ganderbal': 'Jammu and Kashmir', 'kulgam': 'Jammu and Kashmir',
+                'pulwama': 'Jammu and Kashmir', 'shopian': 'Jammu and Kashmir', 'budgam': 'Jammu and Kashmir',
+                'kupwara': 'Jammu and Kashmir', 'handwara': 'Jammu and Kashmir', 'karnah': 'Jammu and Kashmir'
             };
             const key = (city||'').toLowerCase().trim();
             return cityToState[key] || '';
@@ -162,12 +267,15 @@ export default function Search() {
         const bathMatch = natural.match(/(\d+)\s*(bath|baths|bathroom|bathrooms|toilet|toilets)/i);
         if (bathMatch) extracted.bathrooms = bathMatch[1];
 
-        // Enhanced price detection with more patterns
+        // Enhanced price detection with more patterns and intelligent parsing
         const pricePatterns = [
-            /(?:under|below|upto|max|maximum)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
-            /(?:within|around|about)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
-            /(?:budget|budget of)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
-            /(?:less than|not more than)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i
+            /(?:under|below|upto|max|maximum|up to)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores|rs|rupees?)?/i,
+            /(?:within|around|about|approximately|approx)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores|rs|rupees?)?/i,
+            /(?:budget|budget of|my budget is|looking for)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores|rs|rupees?)?/i,
+            /(?:less than|not more than|below|under)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores|rs|rupees?)?/i,
+            /(?:price|cost|rent|sale price)\s*(?:is|should be|around|about)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores|rs|rupees?)?/i,
+            /(?:affordable|cheap|low cost|economical)\s*(?:under|below|within)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores|rs|rupees?)?/i,
+            /(?:₹|rs\.?|rupees?)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i
         ];
         
         for (const pattern of pricePatterns) {
@@ -254,24 +362,39 @@ export default function Search() {
             }
         }
 
-        // Enhanced amenities detection
+        // Enhanced amenities detection with more comprehensive patterns
         const amenityPatterns = {
             parking: [
                 /(?:with|having|includes?)\s+parking/i,
-                /parking\s+(?:available|included|provided)/i,
+                /parking\s+(?:available|included|provided|space)/i,
                 /(?:car\s+)?parking/i,
-                /garage/i
+                /garage/i,
+                /(?:covered|open)\s+parking/i,
+                /(?:two|2)\s+wheelers?\s+parking/i,
+                /(?:four|4)\s+wheelers?\s+parking/i,
+                /vehicle\s+parking/i,
+                /parking\s+lot/i,
+                /parking\s+space/i
             ],
             furnished: [
                 /(?:fully\s+)?furnished/i,
                 /(?:with|having|includes?)\s+furniture/i,
                 /furniture\s+(?:included|provided|available)/i,
-                /(?:semi\s+)?furnished/i
+                /(?:semi\s+)?furnished/i,
+                /(?:partially\s+)?furnished/i,
+                /(?:well\s+)?furnished/i,
+                /(?:beautifully\s+)?furnished/i,
+                /(?:modern\s+)?furniture/i,
+                /(?:wooden\s+)?furniture/i,
+                /(?:ready\s+to\s+move\s+in|rtmi)/i
             ],
             unfurnished: [
                 /unfurnished/i,
                 /(?:without|no)\s+furniture/i,
-                /bare\s+apartment/i
+                /bare\s+apartment/i,
+                /(?:empty|vacant)\s+apartment/i,
+                /(?:not\s+)?furnished/i,
+                /(?:without\s+)?furniture/i
             ],
             offer: [
                 /(?:special\s+)?offer/i,
@@ -279,7 +402,47 @@ export default function Search() {
                 /deal/i,
                 /promotion/i,
                 /(?:reduced|lower)\s+price/i,
-                /(?:cheap|affordable|budget)/i
+                /(?:cheap|affordable|budget)/i,
+                /(?:best\s+)?deal/i,
+                /(?:great\s+)?offer/i,
+                /(?:limited\s+time\s+)?offer/i,
+                /(?:exclusive\s+)?offer/i,
+                /(?:flash\s+)?sale/i,
+                /(?:clearance\s+)?sale/i
+            ],
+            // New amenity patterns
+            balcony: [
+                /(?:with|having)\s+balcony/i,
+                /balcony/i,
+                /(?:private\s+)?balcony/i,
+                /(?:beautiful\s+)?balcony/i
+            ],
+            garden: [
+                /(?:with|having)\s+garden/i,
+                /garden/i,
+                /(?:private\s+)?garden/i,
+                /(?:beautiful\s+)?garden/i,
+                /(?:rooftop\s+)?garden/i
+            ],
+            security: [
+                /(?:with|having)\s+security/i,
+                /security/i,
+                /(?:24\s*\/\s*7\s+)?security/i,
+                /(?:gated\s+)?security/i,
+                /(?:cctv\s+)?security/i,
+                /(?:round\s+the\s+clock\s+)?security/i
+            ],
+            lift: [
+                /(?:with|having)\s+lift/i,
+                /lift/i,
+                /elevator/i,
+                /(?:modern\s+)?lift/i
+            ],
+            ac: [
+                /(?:with|having)\s+ac/i,
+                /(?:air\s+conditioning|air\s+conditioner)/i,
+                /(?:central\s+)?ac/i,
+                /(?:split\s+)?ac/i
             ]
         };
 
@@ -375,19 +538,50 @@ export default function Search() {
                 <h3 className="text-3xl font-extrabold text-blue-700 mb-6 text-center drop-shadow">
                     Explore Properties
                 </h3>
-                {/* Smart (NLP) Search - moved to top */}
-                <form onSubmit={applySmartQuery} className="bg-blue-50 p-4 rounded-lg mb-6">
-                    <label className="block text-sm font-medium text-blue-800 mb-2">Smart Search (natural language)</label>
-                    <div className="flex gap-2">
-                        <input
-                          value={smartQuery}
-                          onChange={(e) => setSmartQuery(e.target.value)}
-                          placeholder="e.g., 2BHK under 15k near Delhi Metro, furnished with parking"
-                          className="flex-1 p-2 border rounded-md"
-                        />
-                        <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg">Apply</button>
+                {/* Enhanced Smart (NLP) Search */}
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl mb-6 border border-blue-200">
+                    <div className="flex items-center gap-2 mb-4">
+                        <div className="p-2 bg-blue-500 rounded-lg">
+                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                            </svg>
+                        </div>
+                        <label className="text-lg font-semibold text-blue-800">Smart Search (Natural Language)</label>
                     </div>
-                </form>
+                    <form onSubmit={applySmartQuery} className="space-y-4">
+                        <div className="relative">
+                            <input
+                              value={smartQuery}
+                              onChange={(e) => setSmartQuery(e.target.value)}
+                              placeholder="e.g., 2BHK under 15k near Delhi Metro, furnished with parking"
+                              className="w-full p-4 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-lg"
+                            />
+                            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                <button type="submit" className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-6 py-2 rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 transform hover:scale-105 shadow-lg font-semibold">
+                                    Search
+                                </button>
+                            </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            <span className="text-sm text-gray-600">Try:</span>
+                            {[
+                                "3BHK under 25L in Mumbai",
+                                "2BHK with parking in Bangalore", 
+                                "Furnished apartment near metro",
+                                "Budget house for rent in Pune"
+                            ].map((suggestion, index) => (
+                                <button
+                                    key={index}
+                                    type="button"
+                                    onClick={() => setSmartQuery(suggestion)}
+                                    className="text-xs bg-white border border-blue-300 text-blue-700 px-3 py-1 rounded-full hover:bg-blue-50 transition-colors duration-200"
+                                >
+                                    {suggestion}
+                                </button>
+                            ))}
+                        </div>
+                    </form>
+                </div>
                 <form
                     onSubmit={handleSubmit}
                     className="grid md:grid-cols-2 gap-4 bg-gray-100 p-4 rounded-lg mb-6"

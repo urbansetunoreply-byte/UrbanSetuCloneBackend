@@ -750,102 +750,157 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen">
-      {/* Header Section */}
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between mb-10 gap-6 animate-fade-in-down bg-white rounded-xl shadow-lg p-8 mt-10">
-        <div className="text-left w-full md:w-auto flex flex-col items-start">
-          <h2 className="text-4xl font-extrabold text-blue-700 animate-fade-in mb-2 drop-shadow">Welcome, Admin!</h2>
-          <p className="mt-2 text-lg text-blue-600 animate-fade-in delay-200">Manage all properties and appointments from your dashboard.</p>
-        </div>
-        <div className="w-full md:w-auto flex justify-end">
-          <Link to="/admin/appointments">
-            <div className="relative">
-              {appointmentCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold z-10">
-                  {appointmentCount > 99 ? '99+' : appointmentCount}
-                </span>
-              )}
-              <button className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 mt-4 md:mt-0">
-                <FaCalendarAlt className="text-2xl drop-shadow-lg animate-pulse" />
-                <span className="tracking-wide">Appointments</span>
+    <div className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen">
+      {/* Enhanced Header Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative overflow-hidden bg-white rounded-2xl shadow-2xl mb-8 mt-6">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5"></div>
+          <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between p-6 lg:p-10 gap-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="p-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl shadow-lg">
+                  <FaUsers className="text-2xl text-white" />
+                </div>
+                <div>
+                  <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    Admin Dashboard
+                  </h1>
+                  <p className="text-gray-600 mt-1">Welcome back, {currentUser?.username || 'Admin'}!</p>
+                </div>
+              </div>
+              <p className="text-lg text-gray-700 max-w-2xl">
+                Monitor platform performance, manage properties, and oversee user activities from your comprehensive dashboard.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link to="/admin/appointments" className="relative group">
+                <div className="relative">
+                  {appointmentCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold z-10 animate-bounce">
+                      {appointmentCount > 99 ? '99+' : appointmentCount}
+                    </span>
+                  )}
+                  <button className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all duration-300 transform hover:scale-105 shadow-lg font-semibold flex items-center gap-3 group-hover:shadow-xl">
+                    <FaCalendarAlt className="text-xl" />
+                    <span className="hidden sm:inline">Appointments</span>
+                    <span className="sm:hidden">Apps</span>
+                  </button>
+                </div>
+              </Link>
+              <button 
+                onClick={() => window.location.reload()}
+                className="bg-white border-2 border-gray-200 text-gray-700 px-6 py-3 rounded-xl hover:border-blue-300 hover:text-blue-600 transition-all duration-300 flex items-center gap-3 shadow-md hover:shadow-lg"
+              >
+                <FaChartLine className="text-xl" />
+                <span className="hidden sm:inline">Refresh</span>
               </button>
             </div>
-          </Link>
+          </div>
         </div>
       </div>
 
-      {/* Analytics Dashboard */}
-      <div className="max-w-7xl mx-auto px-4 mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">📊 Analytics Overview</h2>
+      {/* Enhanced Analytics Dashboard */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg">
+            <FaChartLine className="text-white text-xl" />
+          </div>
+          <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Analytics Overview</h2>
+        </div>
         
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        {/* Enhanced Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-6 mb-8">
           {/* Users Card */}
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Users</p>
-                <p className="text-3xl font-bold text-blue-600">{analytics.totalUsers}</p>
+          <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-blue-200">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-600 mb-1">Total Users</p>
+                <p className="text-3xl font-bold text-blue-600 group-hover:scale-105 transition-transform duration-200">{analytics.totalUsers}</p>
               </div>
-              <div className="bg-blue-100 p-3 rounded-full">
+              <div className="bg-gradient-to-r from-blue-100 to-blue-200 p-3 rounded-xl group-hover:from-blue-200 group-hover:to-blue-300 transition-all duration-300">
                 <FaUsers className="text-2xl text-blue-600" />
               </div>
             </div>
-            <div className="mt-4">
-              <p className="text-sm text-gray-500">Admins: {analytics.totalAdmins}</p>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-500">Admins:</span>
+              <span className="font-semibold text-blue-600">{analytics.totalAdmins}</span>
             </div>
           </div>
 
           {/* Properties Card */}
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Properties</p>
-                <p className="text-3xl font-bold text-green-600">{analytics.totalListings}</p>
+          <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-green-200">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-600 mb-1">Total Properties</p>
+                <p className="text-3xl font-bold text-green-600 group-hover:scale-105 transition-transform duration-200">{analytics.totalListings}</p>
               </div>
-              <div className="bg-green-100 p-3 rounded-full">
+              <div className="bg-gradient-to-r from-green-100 to-green-200 p-3 rounded-xl group-hover:from-green-200 group-hover:to-green-300 transition-all duration-300">
                 <FaHome className="text-2xl text-green-600" />
               </div>
             </div>
-            <div className="mt-4 space-y-1">
-              <p className="text-sm text-gray-500">For Sale: {analytics.listingStats.sale}</p>
-              <p className="text-sm text-gray-500">For Rent: {analytics.listingStats.rent}</p>
-              <p className="text-sm text-gray-500">Offers: {analytics.listingStats.offer}</p>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">For Sale:</span>
+                <span className="font-semibold text-green-600">{analytics.listingStats.sale}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">For Rent:</span>
+                <span className="font-semibold text-green-600">{analytics.listingStats.rent}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">Offers:</span>
+                <span className="font-semibold text-orange-600">{analytics.listingStats.offer}</span>
+              </div>
             </div>
           </div>
 
           {/* Reviews Card */}
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Reviews</p>
-                <p className="text-3xl font-bold text-yellow-600">{analytics.totalReviews}</p>
+          <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-yellow-200">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-600 mb-1">Reviews</p>
+                <p className="text-3xl font-bold text-yellow-600 group-hover:scale-105 transition-transform duration-200">{analytics.totalReviews}</p>
               </div>
-              <div className="bg-yellow-100 p-3 rounded-full">
+              <div className="bg-gradient-to-r from-yellow-100 to-yellow-200 p-3 rounded-xl group-hover:from-yellow-200 group-hover:to-yellow-300 transition-all duration-300">
                 <FaStar className="text-2xl text-yellow-600" />
               </div>
             </div>
-            <div className="mt-4 space-y-1">
-              <p className="text-sm text-gray-500">Avg Rating: {analytics.averageRating.toFixed(1)} ⭐</p>
-              <p className="text-sm text-orange-500">Pending: {analytics.pendingReviews}</p>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">Avg Rating:</span>
+                <span className="font-semibold text-yellow-600">{analytics.averageRating.toFixed(1)} ⭐</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">Pending:</span>
+                <span className="font-semibold text-orange-600">{analytics.pendingReviews}</span>
+              </div>
             </div>
           </div>
 
           {/* Appointments Card */}
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Appointments</p>
-                <p className="text-3xl font-bold text-purple-600">{bookingStats.total}</p>
+          <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-purple-200">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-600 mb-1">Appointments</p>
+                <p className="text-3xl font-bold text-purple-600 group-hover:scale-105 transition-transform duration-200">{bookingStats.total}</p>
               </div>
-              <div className="bg-purple-100 p-3 rounded-full">
+              <div className="bg-gradient-to-r from-purple-100 to-purple-200 p-3 rounded-xl group-hover:from-purple-200 group-hover:to-purple-300 transition-all duration-300">
                 <FaCalendarAlt className="text-2xl text-purple-600" />
               </div>
             </div>
-            <div className="mt-4 space-y-1">
-              <p className="text-sm text-green-600">Accepted: {bookingStats.accepted}</p>
-              <p className="text-sm text-orange-500">Pending: {bookingStats.pending}</p>
-              <p className="text-sm text-red-500">Rejected: {bookingStats.rejected}</p>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">Accepted:</span>
+                <span className="font-semibold text-green-600">{bookingStats.accepted}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">Pending:</span>
+                <span className="font-semibold text-orange-600">{bookingStats.pending}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">Rejected:</span>
+                <span className="font-semibold text-red-600">{bookingStats.rejected}</span>
+              </div>
             </div>
           </div>
 
@@ -1187,75 +1242,82 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <button
-            className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all hover:scale-105 w-full text-left"
-            onClick={() => navigate('/admin/management')}
-          >
-            <div className="flex items-center space-x-4">
-              <div className="bg-blue-100 p-3 rounded-full">
-                <FaUsers className="text-2xl text-blue-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-800">Manage Users</h3>
-                <p className="text-sm text-gray-600">View and manage user accounts</p>
-              </div>
+        {/* Enhanced Quick Actions */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg">
+              <FaChartLine className="text-white text-xl" />
             </div>
-          </button>
-          <Link to="/admin/reviews" className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all hover:scale-105">
-            <div className="flex items-center space-x-4">
-              <div className="bg-yellow-100 p-3 rounded-full">
-                <FaStar className="text-2xl text-yellow-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-800">Review Management</h3>
-                <p className="text-sm text-gray-600">Approve and manage reviews</p>
-                {analytics.pendingReviews > 0 && (
-                  <span className="inline-block bg-orange-500 text-white text-xs px-2 py-1 rounded-full mt-1">
-                    {analytics.pendingReviews} pending
-                  </span>
-                )}
-              </div>
-            </div>
-          </Link>
-          <Link to="/admin/explore" className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all hover:scale-105">
-            <div className="flex items-center space-x-4">
-              <div className="bg-green-100 p-3 rounded-full">
-                <FaHome className="text-2xl text-green-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-800">All Properties</h3>
-                <p className="text-sm text-gray-600">Browse and manage listings</p>
-              </div>
-            </div>
-          </Link>
-          <Link to="/admin/payments" className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all hover:scale-105">
-            <div className="flex items-center space-x-4">
-              <div className="bg-emerald-100 p-3 rounded-full">
-                <FaRupeeSign className="text-2xl text-emerald-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-800">Payment Dashboard</h3>
-                <p className="text-sm text-gray-600">Manage payments and refunds</p>
-              </div>
-            </div>
-          </Link>
-          <Link to="/admin/fraudmanagement" className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all hover:scale-105">
-            <div className="flex items-center space-x-4">
-              <div className="bg-red-100 p-3 rounded-full">
-                <FaExclamationTriangle className="text-2xl text-red-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-800">Fraud Watch</h3>
-                <p className="text-sm text-gray-600">Monitor and manage fraud detections</p>
-                <div className="mt-1 text-xs text-gray-500">
-                  <span className="font-semibold text-red-600">{fraudStats.suspiciousListings}</span> suspicious listings • 
-                  <span className="font-semibold text-red-600 ml-1">{fraudStats.suspectedFakeReviews}</span> fake reviews
+            <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Quick Actions</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 lg:gap-6">
+            <button
+              className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 w-full text-left border border-gray-100 hover:border-blue-200"
+              onClick={() => navigate('/admin/management')}
+            >
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="bg-gradient-to-r from-blue-100 to-blue-200 p-4 rounded-xl group-hover:from-blue-200 group-hover:to-blue-300 transition-all duration-300">
+                  <FaUsers className="text-2xl text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-800 mb-1">Manage Users</h3>
+                  <p className="text-sm text-gray-600">View and manage user accounts</p>
                 </div>
               </div>
-            </div>
-          </Link>
+            </button>
+            <Link to="/admin/reviews" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-gray-100 hover:border-yellow-200">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="bg-gradient-to-r from-yellow-100 to-yellow-200 p-4 rounded-xl group-hover:from-yellow-200 group-hover:to-yellow-300 transition-all duration-300">
+                  <FaStar className="text-2xl text-yellow-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-800 mb-1">Review Management</h3>
+                  <p className="text-sm text-gray-600 mb-2">Approve and manage reviews</p>
+                  {analytics.pendingReviews > 0 && (
+                    <span className="inline-block bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
+                      {analytics.pendingReviews} pending
+                    </span>
+                  )}
+                </div>
+              </div>
+            </Link>
+            <Link to="/admin/explore" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-gray-100 hover:border-green-200">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="bg-gradient-to-r from-green-100 to-green-200 p-4 rounded-xl group-hover:from-green-200 group-hover:to-green-300 transition-all duration-300">
+                  <FaHome className="text-2xl text-green-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-800 mb-1">All Properties</h3>
+                  <p className="text-sm text-gray-600">Browse and manage listings</p>
+                </div>
+              </div>
+            </Link>
+            <Link to="/admin/payments" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-gray-100 hover:border-emerald-200">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="bg-gradient-to-r from-emerald-100 to-emerald-200 p-4 rounded-xl group-hover:from-emerald-200 group-hover:to-emerald-300 transition-all duration-300">
+                  <FaRupeeSign className="text-2xl text-emerald-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-800 mb-1">Payment Dashboard</h3>
+                  <p className="text-sm text-gray-600">Manage payments and refunds</p>
+                </div>
+              </div>
+            </Link>
+            <Link to="/admin/fraudmanagement" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-gray-100 hover:border-red-200">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="bg-gradient-to-r from-red-100 to-red-200 p-4 rounded-xl group-hover:from-red-200 group-hover:to-red-300 transition-all duration-300">
+                  <FaExclamationTriangle className="text-2xl text-red-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-800 mb-1">Fraud Watch</h3>
+                  <p className="text-sm text-gray-600 mb-2">Monitor and manage fraud detections</p>
+                  <div className="text-xs text-gray-500">
+                    <span className="font-semibold text-red-600">{fraudStats.suspiciousListings}</span> suspicious • 
+                    <span className="font-semibold text-red-600 ml-1">{fraudStats.suspectedFakeReviews}</span> fake reviews
+                  </div>
+                </div>
+              </div>
+            </Link>
         </div>
 
         {/* Top Rated Properties */}
