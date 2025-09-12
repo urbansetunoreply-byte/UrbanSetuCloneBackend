@@ -1566,6 +1566,7 @@ export default function AdminDashboard() {
       </div>
       <GeminiAIWrapper />
       <ContactSupportWrapper />
+      </div>
 
       {/* Reason Modal */}
       {showReasonModal && (

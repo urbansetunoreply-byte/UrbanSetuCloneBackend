@@ -101,7 +101,7 @@ export default function Search() {
                 'hyderabad': 'Telangana',
                 'ahmedabad': 'Gujarat', 'surat': 'Gujarat',
                 'jaipur': 'Rajasthan',
-                'lucknow': 'Uttar Pradesh', 'noida': 'Uttar Pradesh', 'kanpur': 'Uttar Pradesh',
+                'lucknow': 'Uttar Pradesh', 'kanpur': 'Uttar Pradesh',
                 'gurgaon': 'Haryana', 'gurugram': 'Haryana',
                 'indore': 'Madhya Pradesh', 'bhopal': 'Madhya Pradesh',
                 'patna': 'Bihar'
@@ -146,8 +146,8 @@ export default function Search() {
                 'nandurbar': 'Maharashtra', 'wardha': 'Maharashtra', 'udgir': 'Maharashtra', 'hinganghat': 'Maharashtra',
                 
                 // Delhi & NCR
-                'delhi': 'Delhi', 'new delhi': 'Delhi', 'noida': 'Uttar Pradesh', 'gurgaon': 'Haryana', 
-                'gurugram': 'Haryana', 'faridabad': 'Haryana', 'ghaziabad': 'Uttar Pradesh', 'meerut': 'Uttar Pradesh',
+                'delhi': 'Delhi', 'new delhi': 'Delhi', 'gurgaon': 'Haryana', 
+                'gurugram': 'Haryana', 'faridabad': 'Haryana', 'ghaziabad': 'Uttar Pradesh',
                 'sonipat': 'Haryana', 'panipat': 'Haryana', 'rohtak': 'Haryana', 'karnal': 'Haryana',
                 'hisar': 'Haryana', 'ambala': 'Haryana', 'yamunanagar': 'Haryana', 'bhiwani': 'Haryana',
                 'rewari': 'Haryana', 'palwal': 'Haryana', 'mahendragarh': 'Haryana', 'jind': 'Haryana',
@@ -191,10 +191,7 @@ export default function Search() {
                 'ahmedabad': 'Gujarat', 'surat': 'Gujarat', 'vadodara': 'Gujarat', 'rajkot': 'Gujarat', 
                 'bhavnagar': 'Gujarat', 'jamnagar': 'Gujarat', 'nadiad': 'Gujarat', 'porbandar': 'Gujarat',
                 'anand': 'Gujarat', 'morbi': 'Gujarat', 'mahesana': 'Gujarat', 'bharuch': 'Gujarat',
-                'veraval': 'Gujarat', 'navsari': 'Gujarat', 'bharuch': 'Gujarat', 'gandhidham': 'Gujarat',
-                'veraval': 'Gujarat', 'navsari': 'Gujarat', 'bharuch': 'Gujarat', 'gandhidham': 'Gujarat',
-                'veraval': 'Gujarat', 'navsari': 'Gujarat', 'bharuch': 'Gujarat', 'gandhidham': 'Gujarat',
-                'veraval': 'Gujarat', 'navsari': 'Gujarat', 'bharuch': 'Gujarat', 'gandhidham': 'Gujarat',
+                'veraval': 'Gujarat', 'navsari': 'Gujarat', 'gandhidham': 'Gujarat',
                 
                 // Rajasthan
                 'jaipur': 'Rajasthan', 'jodhpur': 'Rajasthan', 'udaipur': 'Rajasthan', 'kota': 'Rajasthan', 
@@ -227,14 +224,13 @@ export default function Search() {
                 'begusarai': 'Bihar', 'katihar': 'Bihar', 'munger': 'Bihar', 'chapra': 'Bihar',
                 'sasaram': 'Bihar', 'hajipur': 'Bihar', 'dehri': 'Bihar', 'bettiah': 'Bihar',
                 'motihari': 'Bihar', 'siwan': 'Bihar', 'kishanganj': 'Bihar', 'saharsa': 'Bihar',
-                'saharsa': 'Bihar', 'kishanganj': 'Bihar', 'saharsa': 'Bihar', 'kishanganj': 'Bihar',
                 
                 // Kerala
                 'kochi': 'Kerala', 'thiruvananthapuram': 'Kerala', 'kozhikode': 'Kerala', 'thrissur': 'Kerala',
                 'kollam': 'Kerala', 'palakkad': 'Kerala', 'alappuzha': 'Kerala', 'malappuram': 'Kerala',
                 'kannur': 'Kerala', 'kasaragod': 'Kerala', 'pathanamthitta': 'Kerala', 'idukki': 'Kerala',
                 'wayanad': 'Kerala', 'ernakulam': 'Kerala', 'kottayam': 'Kerala', 'tirur': 'Kerala',
-                'koyilandy': 'Kerala', 'kannur': 'Kerala', 'kasaragod': 'Kerala', 'pathanamthitta': 'Kerala',
+                'koyilandy': 'Kerala',
                 
                 // Andhra Pradesh
                 'visakhapatnam': 'Andhra Pradesh', 'vijayawada': 'Andhra Pradesh', 'guntur': 'Andhra Pradesh', 'nellore': 'Andhra Pradesh',
