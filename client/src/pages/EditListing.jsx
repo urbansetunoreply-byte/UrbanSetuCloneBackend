@@ -3,7 +3,6 @@ import { useSelector } from "react-redux";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import LocationSelector from "../components/LocationSelector";
 import { toast } from 'react-toastify';
-import { socket } from '../utils/socket.js';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -237,45 +236,57 @@ export default function EditListing() {
         toast.success(data.message || "Property Details Updated Successfully!!");
         
         // Send watchlist notifications to all users who have this property in their watchlist
-        if (socket) {
-          try {
-            // Get the old listing data for comparison
-            const oldListing = location.state?.listing || null;
+        try {
+          // Get the old listing data for comparison
+          const oldListing = location.state?.listing || null;
+          
+          // Check if price changed
+          const oldPrice = oldListing ? (oldListing.offer && oldListing.discountPrice ? oldListing.discountPrice : oldListing.regularPrice) : null;
+          const newPrice = formData.offer && formData.discountPrice ? formData.discountPrice : formData.regularPrice;
+          
+          if (oldPrice && newPrice && oldPrice !== newPrice) {
+            const priceChange = newPrice - oldPrice;
+            const changePercentage = Math.round((Math.abs(priceChange) / oldPrice) * 100);
             
-            // Check if price changed
-            const oldPrice = oldListing ? (oldListing.offer && oldListing.discountPrice ? oldListing.discountPrice : oldListing.regularPrice) : null;
-            const newPrice = formData.offer && formData.discountPrice ? formData.discountPrice : formData.regularPrice;
+            let message = '';
+            let notificationType = '';
             
-            if (oldPrice && newPrice && oldPrice !== newPrice) {
-              const priceChange = newPrice - oldPrice;
-              const changePercentage = Math.round((Math.abs(priceChange) / oldPrice) * 100);
-              
-              let message = '';
-              let notificationType = '';
-              
-              if (priceChange < 0) {
-                // Price dropped
-                message = `Price dropped by ₹${Math.abs(priceChange).toLocaleString()} (${changePercentage}%)! Check it out now.`;
-                notificationType = 'watchlist_price_drop';
-              } else {
-                // Price increased
-                message = `Price increased by ₹${priceChange.toLocaleString()} (${changePercentage}%).`;
-                notificationType = 'watchlist_price_update';
-              }
-              
-              // Emit socket event to notify all watchlist users
-              socket.emit('listingUpdated', {
+            if (priceChange < 0) {
+              // Price dropped
+              message = `Price dropped by ₹${Math.abs(priceChange).toLocaleString()} (${changePercentage}%)! Check it out now.`;
+              notificationType = 'watchlist_price_drop';
+            } else {
+              // Price increased
+              message = `Price increased by ₹${priceChange.toLocaleString()} (${changePercentage}%).`;
+              notificationType = 'watchlist_price_update';
+            }
+            
+            // Send watchlist notification via API
+            const notificationResponse = await fetch(`${API_BASE_URL}/api/notifications/watchlist`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              credentials: 'include',
+              body: JSON.stringify({
                 listingId: params.listingId,
                 listingData: formData,
                 notificationType: notificationType,
                 message: message,
                 oldPrice: oldPrice,
-                newPrice: newPrice
-              });
+                newPrice: newPrice,
+                listingTitle: formData.name || 'Property'
+              }),
+            });
+            
+            if (notificationResponse.ok) {
+              console.log('Watchlist notifications sent successfully');
+            } else {
+              console.error('Failed to send watchlist notifications');
             }
-          } catch (error) {
-            console.error('Error sending watchlist notification:', error);
           }
+        } catch (error) {
+          console.error('Error sending watchlist notification:', error);
         }
         
         navigate(getPreviousPath());
