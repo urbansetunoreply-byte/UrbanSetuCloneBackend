@@ -790,7 +790,7 @@ export default function UserReviews() {
                       <div className={`flex gap-2 lg:flex-shrink-0 w-full sm:w-auto ${viewMode === 'grid' ? 'flex-row justify-center mt-3' : 'flex-col mt-4'}`}>
                         <button
                           onClick={() => handleEditReview(review)}
-                          className={`flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition shadow ${viewMode === 'grid' ? 'px-3 py-2 text-sm flex-1' : 'px-4 py-2'}`}
+                          className={`flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition shadow ${viewMode === 'grid' ? 'px-3 py-2 text-sm w-20' : 'px-4 py-2'}`}
                         >
                           <FaEdit />
                           Edit
@@ -798,7 +798,7 @@ export default function UserReviews() {
                         
                         <button
                           onClick={() => handleDeleteReview(review)}
-                          className={`flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg hover:from-red-600 hover:to-pink-600 transition shadow ${viewMode === 'grid' ? 'px-3 py-2 text-sm flex-1' : 'px-4 py-2'}`}
+                          className={`flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg hover:from-red-600 hover:to-pink-600 transition shadow ${viewMode === 'grid' ? 'px-3 py-2 text-sm w-20' : 'px-4 py-2'}`}
                         >
                           <FaTrash />
                           Delete

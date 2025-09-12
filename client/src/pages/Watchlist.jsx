@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import ListingItem from '../components/ListingItem';
 import { toast } from 'react-toastify';
+import { socket } from '../utils/socket.js';
 import { FaEye, FaTrash, FaSearch, FaFilter, FaSort, FaPlus, FaTimes, FaFire, FaArrowDown, FaArrowUp, FaExclamationTriangle, FaCheckCircle, FaDownload, FaShare, FaBookmark, FaCalendarAlt, FaChartLine, FaBars, FaCheck, FaTimes as FaX } from 'react-icons/fa';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -52,12 +53,56 @@ export default function Watchlist() {
           }
         });
         setBaselineMap(map);
+        
+        // Check for price drops and send notifications
+        setTimeout(() => {
+          checkForPriceDrops(listings, map);
+        }, 1000); // Small delay to ensure state is updated
       }
     } catch (e) {
       // noop
     } finally {
       setLoading(false);
     }
+  };
+
+  // Check for price drops and send notifications
+  const checkForPriceDrops = (listings, baselineMap) => {
+    if (!currentUser?._id) return;
+    
+    listings.forEach(listing => {
+      const baseline = baselineMap.get(listing._id);
+      const current = getEffectivePrice(listing);
+      
+      if (baseline != null && current != null && current < baseline) {
+        const dropAmount = baseline - current;
+        const dropPercentage = Math.round((dropAmount / baseline) * 100);
+        
+        // Send price drop notification
+        sendWatchlistNotification(
+          listing,
+          'watchlist_price_drop',
+          `Price dropped by ₹${dropAmount.toLocaleString()} (${dropPercentage}%)! Check it out now.`
+        );
+      }
+      
+      // Check for other status changes
+      if (listing.status === 'sold' || listing.status === 'unavailable') {
+        sendWatchlistNotification(
+          listing,
+          'watchlist_property_sold',
+          `This property is no longer available. Status: ${listing.status}`
+        );
+      }
+      
+      if (listing.status === 'removed') {
+        sendWatchlistNotification(
+          listing,
+          'watchlist_property_removed',
+          `This property has been removed from listings.`
+        );
+      }
+    });
   };
 
   useEffect(() => { fetchWatchlist(); }, [currentUser?._id]);
@@ -346,6 +391,40 @@ export default function Watchlist() {
     const baseline = baselineMap.get(l._id);
     if (baseline == null) return false;
     return effective < baseline;
+  };
+
+  // Send watchlist notification
+  const sendWatchlistNotification = async (listing, type, message) => {
+    if (!currentUser?._id) return;
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/notifications/watchlist`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          userId: currentUser._id,
+          listingId: listing._id,
+          type: type,
+          title: `Watchlist Alert: ${listing.name}`,
+          message: message,
+          link: `/user/listing/${listing._id}`
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Emit socket event for real-time notification
+        socket.emit('watchlistNotification', {
+          userId: currentUser._id,
+          notification: data.notification
+        });
+      }
+    } catch (error) {
+      console.error('Error sending watchlist notification:', error);
+    }
   };
 
   const getPerItemStats = (listing) => {

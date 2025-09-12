@@ -487,14 +487,23 @@ export default function NotificationBell({ mobile = false }) {
       }
     };
     
+    const handleWatchlistNotification = (data) => {
+      if (!currentUser || data.userId !== currentUser._id) return;
+      setNotifications((prev) => [data.notification, ...prev]);
+      setUnreadCount((count) => count + 1);
+      triggerBellRing(); // Ring bell for watchlist notifications
+    };
+    
     socket.on('notificationCreated', handleNewNotification);
     socket.on('allNotificationsMarkedAsRead', handleAllNotificationsMarkedAsRead);
     socket.on('notificationMarkedAsRead', handleNotificationMarkedAsRead);
+    socket.on('watchlistNotification', handleWatchlistNotification);
     
     return () => {
       socket.off('notificationCreated', handleNewNotification);
       socket.off('allNotificationsMarkedAsRead', handleAllNotificationsMarkedAsRead);
       socket.off('notificationMarkedAsRead', handleNotificationMarkedAsRead);
+      socket.off('watchlistNotification', handleWatchlistNotification);
     };
   }, [currentUser]);
 

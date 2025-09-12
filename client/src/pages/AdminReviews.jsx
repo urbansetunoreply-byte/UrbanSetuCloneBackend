@@ -242,7 +242,9 @@ export default function AdminReviews() {
       let pos = 0, neg = 0, neu = 0;
       const wordFreq = {};
       
-      allReviews.forEach(r => {
+      // Use only approved reviews for sentiment analysis (same as AdminDashboard)
+      const approvedReviews = allReviews.filter(r => r.status === 'approved');
+      approvedReviews.forEach(r => {
         const text = (r.comment || '').toLowerCase();
         if (!text.trim()) { neu++; return; }
         let score = 0;
