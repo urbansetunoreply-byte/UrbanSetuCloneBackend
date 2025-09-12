@@ -2056,18 +2056,18 @@ function AdminAppointmentRow({
   React.useEffect(() => {
     if (!showChatModal) return;
     
-    // Removed auto-focus to prevent keyboard opening on mobile
-    // const focusInput = () => {
-    //   if (inputRef.current) {
-    //     inputRef.current.focus();
-    //     // Place cursor at end of text
-    //     const length = inputRef.current.value.length;
-    //     inputRef.current.setSelectionRange(length, length);
-    //   }
-    // };
+    // Focus input when chat modal opens
+    const focusInput = () => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+        // Place cursor at end of text
+        const length = inputRef.current.value.length;
+        inputRef.current.setSelectionRange(length, length);
+      }
+    };
     
     // Focus input after a short delay to ensure modal is fully rendered
-    // setTimeout(focusInput, 100);
+    setTimeout(focusInput, 100);
     
     const handleKeyDown = (event) => {
       if (event.ctrlKey && event.key === 'f') {
