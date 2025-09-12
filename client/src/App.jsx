@@ -215,38 +215,99 @@ function AppRoutes({ bootstrapped }) {
   const navigate = useNavigate(); // Fix: ensure navigate is defined
   const { playNotification } = useSoundEffects();
 
-  // Auto-refresh on return after long inactivity
+  // Enhanced auto-refresh logic using Page Visibility API + Focus/Blur Events
   useEffect(() => {
-    // Use Page Visibility API to detect return to tab
-    const INACTIVITY_MS = 5 * 60 * 1000; // 5 minutes default threshold
-    let lastHiddenAt = null;
+    const REFRESH_AFTER_MINUTES = 5; // Configurable refresh threshold
+    const INACTIVITY_MS = REFRESH_AFTER_MINUTES * 60 * 1000;
+    let lastHidden = null;
+    let lastBlur = null;
+    let inactivityTimer = null;
 
+    // Reset inactivity timer when user is active
+    const resetInactivityTimer = () => {
+      if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+      }
+      inactivityTimer = setTimeout(() => {
+        // Force refresh after inactivity period
+        window.location.reload();
+      }, INACTIVITY_MS);
+    };
+
+    // Handle Page Visibility API - detects when tab becomes visible/invisible
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        lastHiddenAt = Date.now();
+        // Tab is going inactive
+        lastHidden = Date.now();
+        // Start inactivity timer
+        resetInactivityTimer();
       } else {
-        // Visible again
-        if (lastHiddenAt) {
-          const awayMs = Date.now() - lastHiddenAt;
-          if (awayMs >= INACTIVITY_MS) {
+        // Tab is active again
+        if (lastHidden) {
+          const diffMinutes = (Date.now() - lastHidden) / 60000;
+          if (diffMinutes >= REFRESH_AFTER_MINUTES) {
             // Avoid refreshing immediately on the very first load/open
             const hasVisitedBefore = sessionStorage.getItem('has_visited') === '1';
             sessionStorage.setItem('has_visited', '1');
             if (hasVisitedBefore) {
-              window.location.reload();
+              window.location.reload(); // Force full page refresh
             }
           }
+        }
+        // Clear inactivity timer when tab becomes visible
+        if (inactivityTimer) {
+          clearTimeout(inactivityTimer);
         }
       }
     };
 
+    // Handle Focus/Blur Events - detect when user leaves/returns to window
+    const handleFocus = () => {
+      // User returned to window
+      if (lastBlur) {
+        const diffMinutes = (Date.now() - lastBlur) / 60000;
+        if (diffMinutes >= REFRESH_AFTER_MINUTES) {
+          const hasVisitedBefore = sessionStorage.getItem('has_visited') === '1';
+          sessionStorage.setItem('has_visited', '1');
+          if (hasVisitedBefore) {
+            window.location.reload();
+          }
+        }
+      }
+      // Clear inactivity timer when user focuses
+      if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+      }
+    };
+
+    const handleBlur = () => {
+      // User left the window
+      lastBlur = Date.now();
+      // Start inactivity timer
+      resetInactivityTimer();
+    };
+
+    // Add event listeners
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('blur', handleBlur);
+
     // Mark initial visit
     if (!sessionStorage.getItem('has_visited')) {
       sessionStorage.setItem('has_visited', '1');
     }
+
+    // Start initial inactivity timer
+    resetInactivityTimer();
+
+    // Cleanup
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('blur', handleBlur);
+      if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+      }
     };
   }, []);
 
