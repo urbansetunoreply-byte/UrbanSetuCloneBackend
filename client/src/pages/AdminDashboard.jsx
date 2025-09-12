@@ -821,10 +821,12 @@ export default function AdminDashboard() {
                 <FaUsers className="text-2xl text-blue-600" />
               </div>
             </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-500">Admins:</span>
-              <span className="font-semibold text-blue-600">{analytics.totalAdmins}</span>
-            </div>
+            {currentUser?.role === 'rootadmin' && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">Admins:</span>
+                <span className="font-semibold text-blue-600">{analytics.totalAdmins}</span>
+              </div>
+            )}
           </div>
 
           {/* Properties Card */}

@@ -739,6 +739,56 @@ export default function Search() {
                             min={1}
                         />
                     </div>
+
+                    {/* Advanced Filters */}
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        name="minPrice"
+                        placeholder="Min Price"
+                        value={formData.minPrice}
+                        onChange={handleChanges}
+                        className="p-2 border rounded-md w-full"
+                        min={0}
+                      />
+                      <input
+                        type="number"
+                        name="maxPrice"
+                        placeholder="Max Price"
+                        value={formData.maxPrice}
+                        onChange={handleChanges}
+                        className="p-2 border rounded-md w-full"
+                        min={0}
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        name="bedrooms"
+                        placeholder="Bedrooms"
+                        value={formData.bedrooms}
+                        onChange={handleChanges}
+                        className="p-2 border rounded-md w-full"
+                        min={1}
+                      />
+                      <input
+                        type="number"
+                        name="bathrooms"
+                        placeholder="Bathrooms"
+                        value={formData.bathrooms}
+                        onChange={handleChanges}
+                        className="p-2 border rounded-md w-full"
+                        min={1}
+                      />
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="md:col-span-2 w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center justify-center gap-2"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4-4m0 0A7 7 0 104 4a7 7 0 0013 13z" /></svg>
+                        Search
+                    </button>
                 </form>
 
 
