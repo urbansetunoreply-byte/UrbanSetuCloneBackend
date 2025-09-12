@@ -8,6 +8,7 @@ import Oauth from "../components/Oauth.jsx";
 import { reconnectSocket } from "../utils/socket";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { areCookiesEnabled, createAuthenticatedFetchOptions } from '../utils/auth';
+import { focusWithoutKeyboard } from '../utils/mobileUtils';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -39,7 +40,9 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
 
     // Autofocus email field on mount
     useEffect(() => {
-        emailInputRef.current?.focus();
+        if (emailInputRef.current) {
+            focusWithoutKeyboard(emailInputRef.current);
+        }
     }, []);
 
     // Block access if already signed in

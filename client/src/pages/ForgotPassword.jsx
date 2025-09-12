@@ -4,6 +4,7 @@ import { FaEye, FaEyeSlash, FaCheck, FaEdit } from "react-icons/fa";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import { useSelector } from "react-redux";
 import NotFound from "./NotFound";
+import { focusWithoutKeyboard } from '../utils/mobileUtils';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -58,8 +59,8 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
 
   // Autofocus email field on initial page (step 1)
   useEffect(() => {
-    if (step === 1) {
-      emailInputRef.current?.focus();
+    if (step === 1 && emailInputRef.current) {
+      focusWithoutKeyboard(emailInputRef.current);
     }
   }, [step]);
 

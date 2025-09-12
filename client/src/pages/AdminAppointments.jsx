@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useMemo, useRef } from "react"
 import { FaTrash, FaSearch, FaPen, FaPaperPlane, FaUser, FaEnvelope, FaCalendar, FaPhone, FaUserShield, FaArchive, FaUndo, FaCommentDots, FaCheck, FaCheckDouble, FaBan, FaTimes, FaLightbulb, FaCopy, FaEllipsisV, FaInfoCircle, FaSync, FaStar, FaRegStar, FaFlag, FaCalendarAlt, FaCheckSquare, FaDownload, FaSpinner, FaRupeeSign } from "react-icons/fa";
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch } from '../utils/linkFormatter.jsx';
 import UserAvatar from '../components/UserAvatar';
+import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
 import ImagePreview from '../components/ImagePreview';
 import LinkPreview from '../components/LinkPreview';
 import { EmojiButton } from '../components/EmojiPicker';
@@ -2059,10 +2060,8 @@ function AdminAppointmentRow({
     // Focus input when chat modal opens
     const focusInput = () => {
       if (inputRef.current) {
-        inputRef.current.focus();
-        // Place cursor at end of text
-        const length = inputRef.current.value.length;
-        inputRef.current.setSelectionRange(length, length);
+        // Use focusWithoutKeyboard to prevent keyboard from opening on mobile
+        focusWithoutKeyboard(inputRef.current, inputRef.current.value.length);
       }
     };
     
@@ -2072,7 +2071,9 @@ function AdminAppointmentRow({
     const handleKeyDown = (event) => {
       if (event.ctrlKey && event.key === 'f') {
         event.preventDefault(); // Prevent browser find dialog
-        inputRef.current?.focus();
+        if (inputRef.current) {
+          focusWithKeyboard(inputRef.current, inputRef.current.value.length);
+        }
       } else if (event.key === 'Escape') {
         event.preventDefault();
         setShowChatModal(false);
