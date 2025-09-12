@@ -405,7 +405,9 @@ export default function Listing() {
     
     setLoadingSimilar(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/listing/get?type=${listing.type}&city=${listing.city}&limit=4&exclude=${listing._id}`);
+      const res = await fetch(`${API_BASE_URL}/api/listing/get?type=${listing.type}&city=${listing.city}&limit=4&exclude=${listing._id}`, {
+        credentials: 'include'
+      });
       if (res.ok) {
         const data = await res.json();
         setSimilarProperties(data.filter(prop => prop._id !== listing._id).slice(0, 3));
@@ -557,7 +559,9 @@ export default function Listing() {
     setSearchLoading(true);
     try {
       // Search across all properties, not just same location
-      const res = await fetch(`${API_BASE_URL}/api/listing/get?limit=50`);
+      const res = await fetch(`${API_BASE_URL}/api/listing/get?limit=50`, {
+        credentials: 'include'
+      });
       if (res.ok) {
         const data = await res.json();
         
@@ -736,7 +740,9 @@ export default function Listing() {
     const fetchListing = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/get/${params.listingId}`);
+        const res = await fetch(`${API_BASE_URL}/api/listing/get/${params.listingId}`, {
+          credentials: 'include'
+        });
         const data = await res.json();
         if (data.success === false) {
           return;
@@ -767,7 +773,9 @@ export default function Listing() {
   useEffect(() => {
     const fetchNeighborhood = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/ai/neighborhood/${params.listingId}`);
+        const res = await fetch(`${API_BASE_URL}/api/ai/neighborhood/${params.listingId}`, {
+          credentials: 'include'
+        });
         if (res.ok) {
           const data = await res.json();
           setNeighborhood(data);

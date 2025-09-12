@@ -28,7 +28,9 @@ export default function Home() {
   useEffect(() => {
     const fetchOfferListings = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/get?offer=true`); // removed &limit=6
+        const res = await fetch(`${API_BASE_URL}/api/listing/get?offer=true`, {
+          credentials: 'include'
+        }); // removed &limit=6
         const data = await res.json();
         setOfferListings(data);
       } catch (error) {
@@ -38,7 +40,9 @@ export default function Home() {
 
     const fetchRentListings = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/get?type=rent`); // removed &limit=6
+        const res = await fetch(`${API_BASE_URL}/api/listing/get?type=rent`, {
+          credentials: 'include'
+        }); // removed &limit=6
         const data = await res.json();
         setRentListings(data);
       } catch (error) {
@@ -48,7 +52,9 @@ export default function Home() {
 
     const fetchSaleListings = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/get?type=sale`); // removed &limit=6
+        const res = await fetch(`${API_BASE_URL}/api/listing/get?type=sale`, {
+          credentials: 'include'
+        }); // removed &limit=6
         const data = await res.json();
         setSaleListings(data);
       } catch (error) {
@@ -69,7 +75,9 @@ export default function Home() {
         return;
       }
       try {
-        const res = await fetch(`${API_BASE_URL}/api/ai/recommendations?userId=${currentUser._id}`);
+        const res = await fetch(`${API_BASE_URL}/api/ai/recommendations?userId=${currentUser._id}`, {
+          credentials: 'include'
+        });
         if (!res.ok) return;
         const data = await res.json();
         setRecommendedListings(Array.isArray(data) ? data : (data?.listings || []));
@@ -84,7 +92,9 @@ export default function Home() {
   useEffect(() => {
     const fetchTrending = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/watchlist/top-watched?limit=6`);
+        const res = await fetch(`${API_BASE_URL}/api/watchlist/top-watched?limit=6`, {
+          credentials: 'include'
+        });
         if (!res.ok) return;
         const data = await res.json();
         setTrendingListings(Array.isArray(data) ? data : []);
