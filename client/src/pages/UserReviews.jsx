@@ -91,31 +91,34 @@ export default function UserReviews() {
         );
       });
     };
-    socket.on('reviewUpdated', handleSocketReviewUpdate);
-    
-    // Listen for profile updates to update user info in reviews
-    const handleProfileUpdate = (profileData) => {
-      setReviews(prevReviews => {
-        const updated = prevReviews.map(review => {
-          if (review.userId === profileData.userId) {
-            return {
-              ...review,
-              userName: profileData.username,
-              userAvatar: profileData.avatar
-            };
-          }
-          return review;
+    if (socket) {
+      socket.on('reviewUpdated', handleSocketReviewUpdate);
+      
+      // Listen for profile updates to update user info in reviews
+      const handleProfileUpdate = (profileData) => {
+        setReviews(prevReviews => {
+          const updated = prevReviews.map(review => {
+            if (review.userId === profileData.userId) {
+              return {
+                ...review,
+                userName: profileData.username,
+                userAvatar: profileData.avatar
+              };
+            }
+            return review;
+          });
+          return updated;
         });
-        return updated;
-      });
-    };
-    socket.on('profileUpdated', handleProfileUpdate);
+      };
+      socket.on('profileUpdated', handleProfileUpdate);
+    }
 
     
     return () => {
-      socket.off('reviewUpdated', handleSocketReviewUpdate);
-      socket.off('profileUpdated', handleProfileUpdate);
-
+      if (socket) {
+        socket.off('reviewUpdated', handleSocketReviewUpdate);
+        socket.off('profileUpdated', handleProfileUpdate);
+      }
     };
   }, [currentUser]);
 

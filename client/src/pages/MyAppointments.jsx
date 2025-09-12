@@ -209,9 +209,13 @@ export default function MyAppointments() {
         )
       );
     }
-    socket.on('appointmentUpdate', handleAppointmentUpdate);
+    if (socket) {
+      socket.on('appointmentUpdate', handleAppointmentUpdate);
+    }
     return () => {
-      socket.off('appointmentUpdate', handleAppointmentUpdate);
+      if (socket) {
+        socket.off('appointmentUpdate', handleAppointmentUpdate);
+      }
     };
   }, []);
 
@@ -226,43 +230,47 @@ export default function MyAppointments() {
       }
       setAppointments((prev) => [appt, ...prev]);
     }
-    socket.on('appointmentCreated', handleAppointmentCreated);
-    
-    // Listen for profile updates to update user info in appointments
-    const handleProfileUpdate = (profileData) => {
-      setAppointments(prevAppointments => prevAppointments.map(appt => {
-        const updated = { ...appt };
-        
-        // Update buyer info if the updated user is the buyer
-        if (appt.buyerId && (appt.buyerId._id === profileData.userId || appt.buyerId === profileData.userId)) {
-          updated.buyerId = {
-            ...updated.buyerId,
-            username: profileData.username,
-            email: profileData.email,
-            mobileNumber: profileData.mobileNumber,
-            avatar: profileData.avatar
-          };
-        }
-        
-        // Update seller info if the updated user is the seller
-        if (appt.sellerId && (appt.sellerId._id === profileData.userId || appt.sellerId === profileData.userId)) {
-          updated.sellerId = {
-            ...updated.sellerId,
-            username: profileData.username,
-            email: profileData.email,
-            mobileNumber: profileData.mobileNumber,
-            avatar: profileData.avatar
-          };
-        }
-        
-        return updated;
-      }));
-    };
-    socket.on('profileUpdated', handleProfileUpdate);
+    if (socket) {
+      socket.on('appointmentCreated', handleAppointmentCreated);
+      
+      // Listen for profile updates to update user info in appointments
+      const handleProfileUpdate = (profileData) => {
+        setAppointments(prevAppointments => prevAppointments.map(appt => {
+          const updated = { ...appt };
+          
+          // Update buyer info if the updated user is the buyer
+          if (appt.buyerId && (appt.buyerId._id === profileData.userId || appt.buyerId === profileData.userId)) {
+            updated.buyerId = {
+              ...updated.buyerId,
+              username: profileData.username,
+              email: profileData.email,
+              mobileNumber: profileData.mobileNumber,
+              avatar: profileData.avatar
+            };
+          }
+          
+          // Update seller info if the updated user is the seller
+          if (appt.sellerId && (appt.sellerId._id === profileData.userId || appt.sellerId === profileData.userId)) {
+            updated.sellerId = {
+              ...updated.sellerId,
+              username: profileData.username,
+              email: profileData.email,
+              mobileNumber: profileData.mobileNumber,
+              avatar: profileData.avatar
+            };
+          }
+          
+          return updated;
+        }));
+      };
+      socket.on('profileUpdated', handleProfileUpdate);
+    }
     
     return () => {
-      socket.off('appointmentCreated', handleAppointmentCreated);
-      socket.off('profileUpdated', handleProfileUpdate);
+      if (socket) {
+        socket.off('appointmentCreated', handleAppointmentCreated);
+        socket.off('profileUpdated', handleProfileUpdate);
+      }
     };
   }, [currentUser]);
 
@@ -3696,13 +3704,17 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       addLocallyRemovedId(appt._id, commentId);
     }
 
-    socket.on('commentUpdate', handleCommentUpdate);
-    socket.on('chatClearedForUser', handleChatClearedForUser);
-    socket.on('commentRemovedForUser', handleCommentRemovedForUser);
+    if (socket) {
+      socket.on('commentUpdate', handleCommentUpdate);
+      socket.on('chatClearedForUser', handleChatClearedForUser);
+      socket.on('commentRemovedForUser', handleCommentRemovedForUser);
+    }
     return () => {
-      socket.off('commentUpdate', handleCommentUpdate);
-      socket.off('chatClearedForUser', handleChatClearedForUser);
-      socket.off('commentRemovedForUser', handleCommentRemovedForUser);
+      if (socket) {
+        socket.off('commentUpdate', handleCommentUpdate);
+        socket.off('chatClearedForUser', handleChatClearedForUser);
+        socket.off('commentRemovedForUser', handleCommentRemovedForUser);
+      }
     };
   }, [appt._id, currentUser.email, currentUser._id, showChatModal, playNotification, playMessageReceived]);
 
@@ -3766,11 +3778,15 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         );
       }
     }
-    socket.on('commentDelivered', handleCommentDelivered);
-    socket.on('commentRead', handleCommentRead);
+    if (socket) {
+      socket.on('commentDelivered', handleCommentDelivered);
+      socket.on('commentRead', handleCommentRead);
+    }
     return () => {
-      socket.off('commentDelivered', handleCommentDelivered);
-      socket.off('commentRead', handleCommentRead);
+      if (socket) {
+        socket.off('commentDelivered', handleCommentDelivered);
+        socket.off('commentRead', handleCommentRead);
+      }
     };
   }, [appt._id, setComments]);
 
@@ -3872,11 +3888,15 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         setOtherPartyLastSeen(data.lastSeen || null);
       }
     }
-    socket.on('userOnlineStatus', handleUserOnlineStatus);
-    socket.on('userOnlineUpdate', handleUserOnlineStatus);
+    if (socket) {
+      socket.on('userOnlineStatus', handleUserOnlineStatus);
+      socket.on('userOnlineUpdate', handleUserOnlineStatus);
+    }
     return () => {
-      socket.off('userOnlineStatus', handleUserOnlineStatus);
-      socket.off('userOnlineUpdate', handleUserOnlineStatus);
+      if (socket) {
+        socket.off('userOnlineStatus', handleUserOnlineStatus);
+        socket.off('userOnlineUpdate', handleUserOnlineStatus);
+      }
     };
   }, [showChatModal, otherParty?._id]);
 
@@ -3895,12 +3915,16 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       }
     }
     
-    socket.on('userOnlineStatus', handleTableUserOnlineStatus);
-    socket.on('userOnlineUpdate', handleTableUserOnlineStatus);
+    if (socket) {
+      socket.on('userOnlineStatus', handleTableUserOnlineStatus);
+      socket.on('userOnlineUpdate', handleTableUserOnlineStatus);
+    }
     
     return () => {
-      socket.off('userOnlineStatus', handleTableUserOnlineStatus);
-      socket.off('userOnlineUpdate', handleTableUserOnlineStatus);
+      if (socket) {
+        socket.off('userOnlineStatus', handleTableUserOnlineStatus);
+        socket.off('userOnlineUpdate', handleTableUserOnlineStatus);
+      }
     };
   }, [otherParty?._id]);
 
@@ -3913,9 +3937,13 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         typingTimeoutRef.current = setTimeout(() => setIsOtherPartyTyping(false), 1000);
       }
     }
-    socket.on('typing', handleTyping);
+    if (socket) {
+      socket.on('typing', handleTyping);
+    }
     return () => {
-      socket.off('typing', handleTyping);
+      if (socket) {
+        socket.off('typing', handleTyping);
+      }
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     };
   }, [otherParty?._id, appt._id]);

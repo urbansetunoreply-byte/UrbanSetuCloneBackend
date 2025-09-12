@@ -233,7 +233,9 @@ export default function AdminAppointments() {
         return updated;
       }));
     };
-    socket.on('profileUpdated', handleProfileUpdate);
+    if (socket) {
+      socket.on('profileUpdated', handleProfileUpdate);
+    }
 
     // Listen for real-time comment updates to refresh appointments
     const handleCommentUpdate = (data) => {
@@ -322,29 +324,31 @@ export default function AdminAppointments() {
         };
       });
     };
-    socket.on('commentUpdate', handleCommentUpdate);
+    if (socket) {
+      socket.on('commentUpdate', handleCommentUpdate);
 
-    // Listen for appointment updates
-    const handleAppointmentUpdate = (data) => {
-      setAppointments(prev => 
-        prev.map(appt => 
-          appt._id === data.appointmentId ? { ...appt, ...data.updatedAppointment } : appt
-        )
-      );
-      setArchivedAppointments(prev => 
-        prev.map(appt => 
-          appt._id === data.appointmentId ? { ...appt, ...data.updatedAppointment } : appt
-        )
-      );
-    };
-    socket.on('appointmentUpdate', handleAppointmentUpdate);
+      // Listen for appointment updates
+      const handleAppointmentUpdate = (data) => {
+        setAppointments(prev => 
+          prev.map(appt => 
+            appt._id === data.appointmentId ? { ...appt, ...data.updatedAppointment } : appt
+          )
+        );
+        setArchivedAppointments(prev => 
+          prev.map(appt => 
+            appt._id === data.appointmentId ? { ...appt, ...data.updatedAppointment } : appt
+          )
+        );
+      };
+      socket.on('appointmentUpdate', handleAppointmentUpdate);
 
-    // Listen for new appointments
-    const handleAppointmentCreated = (data) => {
-      const newAppt = data.appointment;
-      setAppointments(prev => [newAppt, ...prev]);
-    };
-    socket.on('appointmentCreated', handleAppointmentCreated);
+      // Listen for new appointments
+      const handleAppointmentCreated = (data) => {
+        const newAppt = data.appointment;
+        setAppointments(prev => [newAppt, ...prev]);
+      };
+      socket.on('appointmentCreated', handleAppointmentCreated);
+    }
 
     // Listen for socket connection events
     const handleConnect = () => {
@@ -359,18 +363,22 @@ export default function AdminAppointments() {
     const handleDisconnect = () => {
       // Socket disconnected - will auto-reconnect
     };
-    socket.on('connect', handleConnect);
-    socket.on('disconnect', handleDisconnect);
+    if (socket) {
+      socket.on('connect', handleConnect);
+      socket.on('disconnect', handleDisconnect);
+    }
     
     return () => {
       clearInterval(interval);
       clearInterval(adminInterval);
-      socket.off('profileUpdated', handleProfileUpdate);
-      socket.off('commentUpdate', handleCommentUpdate);
-      socket.off('appointmentUpdate', handleAppointmentUpdate);
-      socket.off('appointmentCreated', handleAppointmentCreated);
-      socket.off('connect', handleConnect);
-      socket.off('disconnect', handleDisconnect);
+      if (socket) {
+        socket.off('profileUpdated', handleProfileUpdate);
+        socket.off('commentUpdate', handleCommentUpdate);
+        socket.off('appointmentUpdate', handleAppointmentUpdate);
+        socket.off('appointmentCreated', handleAppointmentCreated);
+        socket.off('connect', handleConnect);
+        socket.off('disconnect', handleDisconnect);
+      }
     };
   }, [fetchAppointments, fetchArchivedAppointments, currentUser]);
 
@@ -1974,9 +1982,13 @@ function AdminAppointmentRow({
         toast.info(`New message from ${senderName}`);
       }
     }
-    socket.on('commentUpdate', handleCommentUpdateNotify);
+    if (socket) {
+      socket.on('commentUpdate', handleCommentUpdateNotify);
+    }
     return () => {
-      socket.off('commentUpdate', handleCommentUpdateNotify);
+      if (socket) {
+        socket.off('commentUpdate', handleCommentUpdateNotify);
+      }
     };
   }, [appt._id, showChatModal]);
 
@@ -1999,11 +2011,15 @@ function AdminAppointmentRow({
       setReactionsMessageId(null);
     }
 
-    socket.on('chatClearedForUser', handleChatClearedForUser);
-    socket.on('commentRemovedForUser', handleCommentRemovedForUser);
+    if (socket) {
+      socket.on('chatClearedForUser', handleChatClearedForUser);
+      socket.on('commentRemovedForUser', handleCommentRemovedForUser);
+    }
     return () => {
-      socket.off('chatClearedForUser', handleChatClearedForUser);
-      socket.off('commentRemovedForUser', handleCommentRemovedForUser);
+      if (socket) {
+        socket.off('chatClearedForUser', handleChatClearedForUser);
+        socket.off('commentRemovedForUser', handleCommentRemovedForUser);
+      }
     };
   }, [appt._id]);
 
@@ -2041,14 +2057,18 @@ function AdminAppointmentRow({
         setReactionsMessageId(null);
       }
     };
-    socket.on('chatCleared', handleChatCleared);
-    socket.on('commentDelivered', handleCommentDelivered);
-    socket.on('commentRead', handleCommentRead);
+    if (socket) {
+      socket.on('chatCleared', handleChatCleared);
+      socket.on('commentDelivered', handleCommentDelivered);
+      socket.on('commentRead', handleCommentRead);
+    }
     
     return () => {
-      socket.off('chatCleared', handleChatCleared);
-      socket.off('commentDelivered', handleCommentDelivered);
-      socket.off('commentRead', handleCommentRead);
+      if (socket) {
+        socket.off('chatCleared', handleChatCleared);
+        socket.off('commentDelivered', handleCommentDelivered);
+        socket.off('commentRead', handleCommentRead);
+      }
     };
   }, [appt._id, showChatModal, currentUser.email, isAtBottom]);
 

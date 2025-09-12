@@ -66,9 +66,13 @@ const WishlistProvider = ({ children }) => {
         return prev;
       });
     }
-    socket.on('wishlist_update', handleWishlistUpdate);
+    if (socket) {
+      socket.on('wishlist_update', handleWishlistUpdate);
+    }
     return () => {
-      socket.off('wishlist_update', handleWishlistUpdate);
+      if (socket) {
+        socket.off('wishlist_update', handleWishlistUpdate);
+      }
     };
   }, []);
 

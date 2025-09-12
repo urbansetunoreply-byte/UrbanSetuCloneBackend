@@ -63,11 +63,15 @@ export default function AdminManagement() {
         return prev;
       });
     }
-    socket.on('user_update', handleUserUpdate);
-    socket.on('admin_update', handleAdminUpdate);
+    if (socket) {
+      socket.on('user_update', handleUserUpdate);
+      socket.on('admin_update', handleAdminUpdate);
+    }
     return () => {
-      socket.off('user_update', handleUserUpdate);
-      socket.off('admin_update', handleAdminUpdate);
+      if (socket) {
+        socket.off('user_update', handleUserUpdate);
+        socket.off('admin_update', handleAdminUpdate);
+      }
     };
   }, []);
 

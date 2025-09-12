@@ -160,10 +160,14 @@ export default function Watchlist() {
     };
 
     // Listen for watchlist notifications
-    socket.on('watchlistNotification', handleWatchlistNotification);
+    if (socket) {
+      socket.on('watchlistNotification', handleWatchlistNotification);
+    }
 
     return () => {
-      socket.off('watchlistNotification', handleWatchlistNotification);
+      if (socket) {
+        socket.off('watchlistNotification', handleWatchlistNotification);
+      }
     };
   }, [currentUser?._id, socket]);
   

@@ -494,16 +494,20 @@ export default function NotificationBell({ mobile = false }) {
       triggerBellRing(); // Ring bell for watchlist notifications
     };
     
-    socket.on('notificationCreated', handleNewNotification);
-    socket.on('allNotificationsMarkedAsRead', handleAllNotificationsMarkedAsRead);
-    socket.on('notificationMarkedAsRead', handleNotificationMarkedAsRead);
-    socket.on('watchlistNotification', handleWatchlistNotification);
+    if (socket) {
+      socket.on('notificationCreated', handleNewNotification);
+      socket.on('allNotificationsMarkedAsRead', handleAllNotificationsMarkedAsRead);
+      socket.on('notificationMarkedAsRead', handleNotificationMarkedAsRead);
+      socket.on('watchlistNotification', handleWatchlistNotification);
+    }
     
     return () => {
-      socket.off('notificationCreated', handleNewNotification);
-      socket.off('allNotificationsMarkedAsRead', handleAllNotificationsMarkedAsRead);
-      socket.off('notificationMarkedAsRead', handleNotificationMarkedAsRead);
-      socket.off('watchlistNotification', handleWatchlistNotification);
+      if (socket) {
+        socket.off('notificationCreated', handleNewNotification);
+        socket.off('allNotificationsMarkedAsRead', handleAllNotificationsMarkedAsRead);
+        socket.off('notificationMarkedAsRead', handleNotificationMarkedAsRead);
+        socket.off('watchlistNotification', handleWatchlistNotification);
+      }
     };
   }, [currentUser]);
 

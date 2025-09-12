@@ -80,7 +80,8 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
         fetchReplies(updatedReview._id);
       }
     };
-    socket.on('reviewUpdated', handleSocketReviewUpdate);
+    if (socket) {
+      socket.on('reviewUpdated', handleSocketReviewUpdate);
     // Listen for real-time reply updates
     const handleSocketReplyUpdate = ({ action, replies, reviewId, reply, replyId }) => {
       if (action === 'updatedAll' && reviewId && replies) {
@@ -91,7 +92,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
         fetchReplies(reply.reviewId);
       }
     };
-    socket.on('reviewReplyUpdated', handleSocketReplyUpdate);
+      socket.on('reviewReplyUpdated', handleSocketReplyUpdate);
     
     // Listen for profile updates to update user info in reviews and replies
     const handleProfileUpdate = (profileData) => {
@@ -126,16 +127,19 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
         return updated;
       });
     };
-    socket.on('profileUpdated', handleProfileUpdate);
+      socket.on('profileUpdated', handleProfileUpdate);
 
-    
-    // Test socket connection with a simple event
-    socket.emit('testConnection', { message: 'ReviewList component connected' });
+      
+      // Test socket connection with a simple event
+      socket.emit('testConnection', { message: 'ReviewList component connected' });
+    }
     
     return () => {
-      socket.off('reviewUpdated', handleSocketReviewUpdate);
-      socket.off('reviewReplyUpdated', handleSocketReplyUpdate);
-      socket.off('profileUpdated', handleProfileUpdate);
+      if (socket) {
+        socket.off('reviewUpdated', handleSocketReviewUpdate);
+        socket.off('reviewReplyUpdated', handleSocketReplyUpdate);
+        socket.off('profileUpdated', handleProfileUpdate);
+      }
 
       // Restore body scroll when component unmounts
       document.body.style.overflow = 'unset';
