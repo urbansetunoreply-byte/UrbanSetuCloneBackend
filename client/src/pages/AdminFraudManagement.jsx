@@ -88,8 +88,20 @@ export default function AdminFraudManagement() {
       // Pre-hash images for duplicate detection using a simple perceptual hash (average hash)
       const imageHashMap = new Map(); // hash -> list of listingIds
       const listingIdToImageHashes = new Map();
+      const isSameOrigin = (src) => {
+        try {
+          const url = new URL(src, window.location.origin);
+          return url.origin === window.location.origin;
+        } catch {
+          return false;
+        }
+      };
+
       const computeAverageHash = async (src) => {
         try {
+          if (!isSameOrigin(src)) {
+            return null; // Skip cross-origin images to avoid CORS taint and console errors
+          }
           // Use offscreen canvas for quick aHash (8x8 grayscale)
           const img = new Image();
           img.crossOrigin = 'anonymous';
@@ -130,6 +142,9 @@ export default function AdminFraudManagement() {
 
       const simpleWatermarkDetected = async (src) => {
         try {
+          if (!isSameOrigin(src)) {
+            return false; // Skip cross-origin images
+          }
           const img = new Image();
           img.crossOrigin = 'anonymous';
           await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = src; });

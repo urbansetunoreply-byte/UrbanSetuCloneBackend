@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FaEye, FaEyeSlash, FaCheck, FaEdit } from "react-icons/fa";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
@@ -8,6 +8,7 @@ import NotFound from "./NotFound";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function ForgotPassword({ bootstrapped, sessionChecked }) {
+  const emailInputRef = useRef(null);
   const [step, setStep] = useState(1); // 1: verification, 2: reset password
   const [formData, setFormData] = useState({
     email: "",
@@ -54,6 +55,13 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
       setStep(2);
     }
   }, [location.search]);
+
+  // Autofocus email field on initial page (step 1)
+  useEffect(() => {
+    if (step === 1) {
+      emailInputRef.current?.focus();
+    }
+  }, [step]);
 
   // Timer effect for resend OTP
   useEffect(() => {
@@ -397,6 +405,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                       type="email"
                       placeholder="Enter your email"
                       id="email"
+                      ref={emailInputRef}
                       value={formData.email}
                       onChange={handleChange}
                       readOnly={emailVerified && !emailEditMode}

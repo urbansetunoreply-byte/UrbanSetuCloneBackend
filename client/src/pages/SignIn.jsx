@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { signInFailure, signInStart, signInSuccess } from "../redux/user/userSlice.js";
@@ -12,6 +12,7 @@ import { areCookiesEnabled, createAuthenticatedFetchOptions } from '../utils/aut
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function SignIn({ bootstrapped, sessionChecked }) {
+    const emailInputRef = useRef(null);
     const [formData, setFormData] = useState({
         email: "",
         password: ""
@@ -35,6 +36,11 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             navigate('/sign-in', { replace: true });
         }
     }, [location.search, navigate]);
+
+    // Autofocus email field on mount
+    useEffect(() => {
+        emailInputRef.current?.focus();
+    }, []);
 
     // Block access if already signed in
     useEffect(() => {
@@ -192,6 +198,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                     placeholder="Enter your email" 
                                     id="email" 
                                     onChange={handleChange} 
+                                    ref={emailInputRef}
                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                     required
                                 />
