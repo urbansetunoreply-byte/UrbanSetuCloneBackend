@@ -529,86 +529,127 @@ export default function Search() {
     }
 
     return (
-        <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
-            <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6 relative">
-                <h3 className="text-3xl font-extrabold text-blue-700 mb-6 text-center drop-shadow">
-                    Explore Properties
-                </h3>
+        <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
+            <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-2xl p-6 relative overflow-hidden">
+                {/* Animated background elements */}
+                <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                    <div className="absolute top-10 left-10 w-20 h-20 bg-blue-200 rounded-full opacity-20 animate-pulse"></div>
+                    <div className="absolute top-32 right-20 w-16 h-16 bg-purple-200 rounded-full opacity-20 animate-bounce"></div>
+                    <div className="absolute bottom-20 left-1/4 w-12 h-12 bg-indigo-200 rounded-full opacity-20 animate-ping"></div>
+                    <div className="absolute bottom-32 right-1/3 w-24 h-24 bg-pink-200 rounded-full opacity-20 animate-pulse"></div>
+                </div>
+                
+                <div className="relative z-10">
+                    <div className="text-center mb-8">
+                        <h3 className="text-4xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-4 animate-fade-in">
+                            🏠 Explore Properties
+                        </h3>
+                        <p className="text-gray-600 text-lg">Discover your perfect home with our advanced search</p>
+                    </div>
                 {/* Enhanced Smart (NLP) Search */}
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl mb-6 border border-blue-200">
-                    <div className="flex items-center gap-2 mb-4">
-                        <div className="p-2 bg-blue-500 rounded-lg">
-                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 p-8 rounded-2xl mb-8 border-2 border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="p-3 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl shadow-lg animate-pulse">
+                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                             </svg>
                         </div>
-                        <label className="text-lg font-semibold text-blue-800">Smart Search (Natural Language)</label>
+                        <div>
+                            <label className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">✨ Smart Search (Natural Language)</label>
+                            <p className="text-sm text-gray-600">Just describe what you're looking for in plain English</p>
+                        </div>
                     </div>
-                    <form onSubmit={applySmartQuery} className="space-y-4">
-                        <div className="relative">
+                    <form onSubmit={applySmartQuery} className="space-y-6">
+                        <div className="relative group">
                             <input
                               value={smartQuery}
                               onChange={(e) => setSmartQuery(e.target.value)}
                               placeholder="e.g., 2BHK under 15k near Delhi Metro, furnished with parking"
-                              className="w-full p-4 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-lg"
+                              className="w-full p-5 border-2 border-blue-200 rounded-2xl focus:border-blue-500 focus:ring-4 focus:ring-blue-200 transition-all duration-300 text-lg bg-white shadow-lg hover:shadow-xl group-hover:scale-[1.01]"
                             />
-                            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                                <button type="submit" className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-6 py-2 rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 transform hover:scale-105 shadow-lg font-semibold">
+                            <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                                <button type="submit" className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white px-8 py-3 rounded-xl hover:from-blue-600 hover:via-indigo-600 hover:to-purple-600 transition-all duration-300 transform hover:scale-110 shadow-lg font-bold flex items-center gap-2">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4-4m0 0A7 7 0 104 4a7 7 0 0013 13z" />
+                                    </svg>
                                     Search
                                 </button>
                             </div>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                            <span className="text-sm text-gray-600">Try:</span>
-                            {[
-                                "3BHK under 25L in Mumbai",
-                                "2BHK with parking in Bangalore", 
-                                "Furnished apartment near metro",
-                                "Budget house for rent in Pune"
-                            ].map((suggestion, index) => (
-                                <button
-                                    key={index}
-                                    type="button"
-                                    onClick={() => setSmartQuery(suggestion)}
-                                    className="text-xs bg-white border border-blue-300 text-blue-700 px-3 py-1 rounded-full hover:bg-blue-50 transition-colors duration-200"
-                                >
-                                    {suggestion}
-                                </button>
-                            ))}
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-semibold text-gray-700">💡 Quick suggestions:</span>
+                            </div>
+                            <div className="flex flex-wrap gap-3">
+                                {[
+                                    "3BHK under 25L in Mumbai",
+                                    "2BHK with parking in Bangalore", 
+                                    "Furnished apartment near metro",
+                                    "Budget house for rent in Pune"
+                                ].map((suggestion, index) => (
+                                    <button
+                                        key={index}
+                                        type="button"
+                                        onClick={() => setSmartQuery(suggestion)}
+                                        className="text-sm bg-gradient-to-r from-white to-blue-50 border-2 border-blue-200 text-blue-700 px-4 py-2 rounded-full hover:from-blue-50 hover:to-blue-100 hover:border-blue-400 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg font-medium"
+                                    >
+                                        {suggestion}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </form>
                 </div>
+                {/* Traditional Search Form */}
+                <div className="bg-gradient-to-r from-gray-50 to-blue-50 p-8 rounded-2xl mb-8 border-2 border-gray-200 shadow-lg">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="p-3 bg-gradient-to-r from-gray-500 to-blue-500 rounded-xl shadow-lg">
+                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <label className="text-xl font-bold bg-gradient-to-r from-gray-600 to-blue-600 bg-clip-text text-transparent">🔍 Advanced Filters</label>
+                            <p className="text-sm text-gray-600">Use detailed filters to find exactly what you need</p>
+                        </div>
+                    </div>
                 <form
                     onSubmit={handleSubmit}
-                    className="grid md:grid-cols-2 gap-4 bg-gray-100 p-4 rounded-lg mb-6"
+                    className="grid md:grid-cols-2 gap-6"
                 >
-                    <input
-                        type="text"
-                        name="searchTerm"
-                        placeholder="Search..."
-                        value={formData.searchTerm}
-                        onChange={handleChanges}
-                        className="p-2 border rounded-md w-full"
-                    />
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-gray-700">🔍 Search Term</label>
+                        <input
+                            type="text"
+                            name="searchTerm"
+                            placeholder="Enter keywords..."
+                            value={formData.searchTerm}
+                            onChange={handleChanges}
+                            className="p-3 border-2 border-gray-200 rounded-xl w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 shadow-sm hover:shadow-md"
+                        />
+                    </div>
 
-                    <select
-                        name="sort_order"
-                        onChange={(e) => {
-                            const [sort, order] = e.target.value.split("_");
-                            setFormData((prev) => ({
-                                ...prev,
-                                sort,
-                                order,
-                            }));
-                        }}
-                        value={`${formData.sort}_${formData.order}`}
-                        className="p-2 border rounded-md w-full"
-                    >
-                        <option value="regularPrice_desc">Price high to low</option>
-                        <option value="regularPrice_asc">Price low to high</option>
-                        <option value="createdAt_desc">Latest</option>
-                        <option value="createdAt_asc">Oldest</option>
-                    </select>
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-gray-700">📊 Sort By</label>
+                        <select
+                            name="sort_order"
+                            onChange={(e) => {
+                                const [sort, order] = e.target.value.split("_");
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    sort,
+                                    order,
+                                }));
+                            }}
+                            value={`${formData.sort}_${formData.order}`}
+                            className="p-3 border-2 border-gray-200 rounded-xl w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 shadow-sm hover:shadow-md"
+                        >
+                            <option value="regularPrice_desc">💰 Price high to low</option>
+                            <option value="regularPrice_asc">💰 Price low to high</option>
+                            <option value="createdAt_desc">🆕 Latest</option>
+                            <option value="createdAt_asc">📅 Oldest</option>
+                        </select>
+                    </div>
 
                     {/* LocationSelector for search */}
                     <div className="md:col-span-2">
@@ -616,161 +657,208 @@ export default function Search() {
                     </div>
 
                     {/* Radio Buttons for Type Selection */}
-                    <div className="flex gap-4">
-                        <label>
-                            <input
-                                type="radio"
-                                name="type"
-                                value="all"
-                                checked={formData.type === "all"}
-                                onChange={handleChanges}
-                            />{" "}
-                            All
-                        </label>
-                        <label>
-                            <input
-                                type="radio"
-                                name="type"
-                                value="rent"
-                                checked={formData.type === "rent"}
-                                onChange={handleChanges}
-                            />{" "}
-                            Rent
-                        </label>
-                        <label>
-                            <input
-                                type="radio"
-                                name="type"
-                                value="sale"
-                                checked={formData.type === "sale"}
-                                onChange={handleChanges}
-                            />{" "}
-                            Sale
-                        </label>
+                    <div className="md:col-span-2 space-y-3">
+                        <label className="text-sm font-semibold text-gray-700">🏠 Property Type</label>
+                        <div className="flex flex-wrap gap-4">
+                            {[
+                                { value: "all", label: "All", icon: "🏘️" },
+                                { value: "rent", label: "Rent", icon: "🏠" },
+                                { value: "sale", label: "Sale", icon: "💰" }
+                            ].map((option) => (
+                                <label key={option.value} className="flex items-center gap-2 cursor-pointer group">
+                                    <input
+                                        type="radio"
+                                        name="type"
+                                        value={option.value}
+                                        checked={formData.type === option.value}
+                                        onChange={handleChanges}
+                                        className="w-4 h-4 text-blue-600 border-2 border-gray-300 focus:ring-blue-500"
+                                    />
+                                    <span className="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition-colors">
+                                        {option.icon} {option.label}
+                                    </span>
+                                </label>
+                            ))}
+                        </div>
                     </div>
 
                     {/* Checkboxes for Filters */}
-                    <div className="flex gap-4">
-                        <label>
-                            <input
-                                type="checkbox"
-                                name="parking"
-                                onChange={handleChanges}
-                                checked={formData.parking}
-                            />{" "}
-                            Parking
-                        </label>
-                        <label>
-                            <input
-                                type="checkbox"
-                                name="furnished"
-                                onChange={handleChanges}
-                                checked={formData.furnished}
-                            />{" "}
-                            Furnished
-                        </label>
-                        <label>
-                            <input
-                                type="checkbox"
-                                name="offer"
-                                onChange={handleChanges}
-                                checked={formData.offer}
-                            />{" "}
-                            Offer
-                        </label>
+                    <div className="md:col-span-2 space-y-3">
+                        <label className="text-sm font-semibold text-gray-700">✨ Amenities</label>
+                        <div className="flex flex-wrap gap-6">
+                            {[
+                                { name: "parking", label: "Parking", icon: "🚗" },
+                                { name: "furnished", label: "Furnished", icon: "🛋️" },
+                                { name: "offer", label: "Special Offer", icon: "🎯" }
+                            ].map((option) => (
+                                <label key={option.name} className="flex items-center gap-2 cursor-pointer group">
+                                    <input
+                                        type="checkbox"
+                                        name={option.name}
+                                        onChange={handleChanges}
+                                        checked={formData[option.name]}
+                                        className="w-4 h-4 text-blue-600 border-2 border-gray-300 rounded focus:ring-blue-500"
+                                    />
+                                    <span className="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition-colors">
+                                        {option.icon} {option.label}
+                                    </span>
+                                </label>
+                            ))}
+                        </div>
                     </div>
 
                     {/* Advanced Filters */}
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        name="minPrice"
-                        placeholder="Min Price"
-                        value={formData.minPrice}
-                        onChange={handleChanges}
-                        className="p-2 border rounded-md w-full"
-                        min={0}
-                      />
-                      <input
-                        type="number"
-                        name="maxPrice"
-                        placeholder="Max Price"
-                        value={formData.maxPrice}
-                        onChange={handleChanges}
-                        className="p-2 border rounded-md w-full"
-                        min={0}
-                      />
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-gray-700">💰 Price Range</label>
+                        <div className="flex gap-3">
+                            <input
+                                type="number"
+                                name="minPrice"
+                                placeholder="Min Price (₹)"
+                                value={formData.minPrice}
+                                onChange={handleChanges}
+                                className="p-3 border-2 border-gray-200 rounded-xl w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 shadow-sm hover:shadow-md"
+                                min={0}
+                            />
+                            <input
+                                type="number"
+                                name="maxPrice"
+                                placeholder="Max Price (₹)"
+                                value={formData.maxPrice}
+                                onChange={handleChanges}
+                                className="p-3 border-2 border-gray-200 rounded-xl w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 shadow-sm hover:shadow-md"
+                                min={0}
+                            />
+                        </div>
                     </div>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        name="bedrooms"
-                        placeholder="Bedrooms"
-                        value={formData.bedrooms}
-                        onChange={handleChanges}
-                        className="p-2 border rounded-md w-full"
-                        min={1}
-                      />
-                      <input
-                        type="number"
-                        name="bathrooms"
-                        placeholder="Bathrooms"
-                        value={formData.bathrooms}
-                        onChange={handleChanges}
-                        className="p-2 border rounded-md w-full"
-                        min={1}
-                      />
+                    
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-gray-700">🏠 Rooms</label>
+                        <div className="flex gap-3">
+                            <input
+                                type="number"
+                                name="bedrooms"
+                                placeholder="Bedrooms"
+                                value={formData.bedrooms}
+                                onChange={handleChanges}
+                                className="p-3 border-2 border-gray-200 rounded-xl w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 shadow-sm hover:shadow-md"
+                                min={1}
+                            />
+                            <input
+                                type="number"
+                                name="bathrooms"
+                                placeholder="Bathrooms"
+                                value={formData.bathrooms}
+                                onChange={handleChanges}
+                                className="p-3 border-2 border-gray-200 rounded-xl w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 shadow-sm hover:shadow-md"
+                                min={1}
+                            />
+                        </div>
                     </div>
 
                     <button
                         type="submit"
-                        className="md:col-span-2 w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center justify-center gap-2"
+                        className="md:col-span-2 w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white px-8 py-4 rounded-2xl hover:from-blue-600 hover:via-indigo-600 hover:to-purple-600 transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl font-bold text-lg flex items-center justify-center gap-3"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4-4m0 0A7 7 0 104 4a7 7 0 0013 13z" /></svg>
-                        Search
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4-4m0 0A7 7 0 104 4a7 7 0 0013 13z" />
+                        </svg>
+                        🔍 Search Properties
                     </button>
                 </form>
-
+                </div>
 
                 {/* Listings Display */}
-                <div className="mt-4">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Listings</h2>
-                    {loading && <p className="text-center text-lg font-semibold text-blue-600 animate-pulse">Loading...</p>}
-                    {error && <p className="text-center text-red-600 text-lg mb-4">{error}</p>}
+                <div className="mt-8">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-700 to-blue-700 bg-clip-text text-transparent">
+                            🏘️ Property Listings
+                        </h2>
+                        {listings.length > 0 && (
+                            <span className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
+                                {listings.length} properties found
+                            </span>
+                        )}
+                    </div>
+                    
+                    {loading && (
+                        <div className="text-center py-12">
+                            <div className="inline-flex items-center gap-3">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                                <p className="text-lg font-semibold text-blue-600">Searching properties...</p>
+                            </div>
+                        </div>
+                    )}
+                    
+                    {error && (
+                        <div className="text-center py-8">
+                            <div className="bg-red-50 border-2 border-red-200 rounded-xl p-6 max-w-md mx-auto">
+                                <div className="text-red-500 text-4xl mb-3">⚠️</div>
+                                <h3 className="text-lg font-bold text-red-700 mb-2">Search Error</h3>
+                                <p className="text-red-600">{error}</p>
+                            </div>
+                        </div>
+                    )}
+                    
                     {!loading && !error && listings.length === 0 && (
-                      <div className="text-center py-8">
-                        <img src={duckImg} alt="No listings found" className="w-72 h-72 object-contain mx-auto mb-0" />
-                        <h3 className="text-xl font-bold text-gray-700 mb-2">No Listings Found</h3>
-                        <p className="text-gray-500 mb-4">Try adjusting your search criteria or filters</p>
+                      <div className="text-center py-12">
+                        <img src={duckImg} alt="No listings found" className="w-72 h-72 object-contain mx-auto mb-6 animate-bounce" />
+                        <h3 className="text-2xl font-bold text-gray-700 mb-3">No Properties Found</h3>
+                        <p className="text-gray-500 mb-6 text-lg">Try adjusting your search criteria or filters to find more properties</p>
+                        <div className="flex flex-wrap justify-center gap-3">
+                            <button 
+                                onClick={() => setFormData(prev => ({ ...prev, searchTerm: '', type: 'all', parking: false, furnished: false, offer: false }))}
+                                className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all duration-300 transform hover:scale-105 shadow-lg font-semibold"
+                            >
+                                🔄 Clear Filters
+                            </button>
+                        </div>
                       </div>
                     )}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {listings && listings.map((listing) => (
-                            <ListingItem key={listing._id} listing={listing} />
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {listings && listings.map((listing, index) => (
+                            <div key={listing._id} className="transform transition-all duration-300 hover:scale-105">
+                                <ListingItem listing={listing} />
+                            </div>
                         ))}
                     </div>
+                    
                     {showMoreListing && (
-                        <div className="flex justify-center mt-4">
-                        <button
-                            type="button"
-                            onClick={showMoreListingClick}
-                            className="mt-4 bg-gray-600 text-white p-2 rounded-md w-500"
-                        >
-                            Show More
-                        </button>
+                        <div className="flex justify-center mt-8">
+                            <button
+                                type="button"
+                                onClick={showMoreListingClick}
+                                className="bg-gradient-to-r from-gray-600 to-blue-600 text-white px-8 py-3 rounded-xl hover:from-gray-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                                Show More Properties
+                            </button>
                         </div>
                     )}
                 </div>
                 {recommendations.length > 0 && (
-                  <div className="mt-10">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Recommended for you</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="mt-12">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="p-2 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl">
+                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                            </svg>
+                        </div>
+                        <h2 className="text-2xl font-bold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">⭐ Recommended for You</h2>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {recommendations.map((l) => (
-                        <ListingItem key={l._id} listing={l} />
+                        <div key={l._id} className="transform transition-all duration-300 hover:scale-105">
+                            <ListingItem listing={l} />
+                        </div>
                       ))}
                     </div>
                   </div>
                 )}
+                </div>
             </div>
             <GeminiAIWrapper />
             <ContactSupportWrapper />
