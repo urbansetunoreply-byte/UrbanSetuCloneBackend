@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { FaStar, FaCheck, FaTimes, FaTrash, FaEye, FaBan, FaSort, FaSortUp, FaSortDown, FaCheckCircle, FaThumbsUp, FaReply, FaSync, FaHome, FaUser } from 'react-icons/fa';
+import { FaStar, FaCheck, FaTimes, FaTrash, FaEye, FaBan, FaSort, FaSortUp, FaSortDown, FaCheckCircle, FaThumbsUp, FaReply, FaSync, FaHome, FaUser, FaChartLine, FaChartBar, FaChartPie, FaTrendingUp, FaTrendingDown, FaUsers, FaComments, FaExclamationTriangle } from 'react-icons/fa';
 import { socket } from '../utils/socket';
 import { toast } from 'react-toastify';
 import UserAvatar from '../components/UserAvatar';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
+import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -34,10 +35,34 @@ export default function AdminReviews() {
   const [responseLoading, setResponseLoading] = useState({});
   const [responseError, setResponseError] = useState({});
   const [search, setSearch] = useState('');
+  
+  // Analytics state
+  const [analytics, setAnalytics] = useState({
+    totalReviews: 0,
+    pendingReviews: 0,
+    approvedReviews: 0,
+    rejectedReviews: 0,
+    removedReviews: 0,
+    averageRating: 0,
+    sentiment: {
+      positive: 0,
+      negative: 0,
+      neutral: 0,
+      topWords: []
+    },
+    recentActivity: [],
+    topProperties: [],
+    topUsers: [],
+    ratingDistribution: {},
+    monthlyTrends: [],
+    responseRate: 0
+  });
+  const [showAnalytics, setShowAnalytics] = useState(false);
 
   useEffect(() => {
     if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
       fetchReviews();
+      fetchAnalytics();
     }
     // Listen for real-time review updates
     const handleSocketReviewUpdate = (updatedReview) => {
@@ -128,6 +153,115 @@ export default function AdminReviews() {
       setError('Network error. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAnalytics = async () => {
+    try {
+      // Fetch review statistics
+      const statsRes = await axios.get(`${API_BASE_URL}/api/review/admin/stats`, {
+        withCredentials: true
+      });
+      
+      // Fetch all reviews for analytics
+      const allReviewsRes = await axios.get(`${API_BASE_URL}/api/review/admin/all?limit=1000&sort=date&order=desc`, {
+        withCredentials: true
+      });
+      
+      // Fetch sentiment analysis
+      const sentimentRes = await axios.get(`${API_BASE_URL}/api/ai/sentiment/summary`, {
+        withCredentials: true
+      });
+
+      const allReviews = allReviewsRes.data.reviews || allReviewsRes.data || [];
+      const stats = statsRes.data;
+      const sentimentData = sentimentRes.data || { positive: 0, negative: 0, neutral: 0, topWords: [] };
+
+      // Calculate rating distribution
+      const ratingDistribution = {};
+      allReviews.forEach(review => {
+        const rating = review.rating || 0;
+        ratingDistribution[rating] = (ratingDistribution[rating] || 0) + 1;
+      });
+
+      // Calculate monthly trends
+      const monthlyTrends = {};
+      allReviews.forEach(review => {
+        const month = new Date(review.createdAt).toISOString().substring(0, 7);
+        monthlyTrends[month] = (monthlyTrends[month] || 0) + 1;
+      });
+
+      // Top properties by review count
+      const propertyCounts = {};
+      allReviews.forEach(review => {
+        if (review.listingId) {
+          const propId = typeof review.listingId === 'object' ? review.listingId._id : review.listingId;
+          const propName = typeof review.listingId === 'object' ? review.listingId.name : 'Unknown Property';
+          if (!propertyCounts[propId]) {
+            propertyCounts[propId] = { name: propName, count: 0, avgRating: 0, totalRating: 0 };
+          }
+          propertyCounts[propId].count++;
+          propertyCounts[propId].totalRating += review.rating || 0;
+        }
+      });
+
+      // Calculate average ratings for properties
+      Object.values(propertyCounts).forEach(prop => {
+        prop.avgRating = prop.totalRating / prop.count;
+      });
+
+      const topProperties = Object.values(propertyCounts)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+
+      // Top users by review count
+      const userCounts = {};
+      allReviews.forEach(review => {
+        const userId = review.userId;
+        const userName = review.userName || 'Unknown User';
+        if (!userCounts[userId]) {
+          userCounts[userId] = { name: userName, count: 0, avgRating: 0, totalRating: 0 };
+        }
+        userCounts[userId].count++;
+        userCounts[userId].totalRating += review.rating || 0;
+      });
+
+      Object.values(userCounts).forEach(user => {
+        user.avgRating = user.totalRating / user.count;
+      });
+
+      const topUsers = Object.values(userCounts)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+
+      // Calculate response rate
+      const reviewsWithResponses = allReviews.filter(review => review.ownerResponse && review.ownerResponse.trim());
+      const responseRate = allReviews.length > 0 ? (reviewsWithResponses.length / allReviews.length) * 100 : 0;
+
+      setAnalytics({
+        totalReviews: stats.totalReviews || allReviews.length,
+        pendingReviews: stats.pendingReviews || 0,
+        approvedReviews: allReviews.filter(r => r.status === 'approved').length,
+        rejectedReviews: allReviews.filter(r => r.status === 'rejected').length,
+        removedReviews: allReviews.filter(r => r.status === 'removed' || r.status === 'removed_by_user').length,
+        averageRating: stats.averageRating || 0,
+        sentiment: {
+          positive: sentimentData.positive || 0,
+          negative: sentimentData.negative || 0,
+          neutral: sentimentData.neutral || 0,
+          topWords: sentimentData.topWords || []
+        },
+        recentActivity: allReviews.slice(0, 10),
+        topProperties,
+        topUsers,
+        ratingDistribution,
+        monthlyTrends: Object.entries(monthlyTrends)
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([month, count]) => ({ month, count })),
+        responseRate
+      });
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
     }
   };
 
@@ -369,16 +503,254 @@ export default function AdminReviews() {
       <div className="max-w-full sm:max-w-3xl md:max-w-6xl mx-auto bg-white rounded-2xl shadow-2xl p-2 sm:p-4 md:p-8 animate-slideUp">
         <div className="flex items-center justify-between mb-4 sm:mb-8">
           <h1 className="text-2xl sm:text-4xl font-extrabold text-blue-700 drop-shadow animate-fade-in">Review Management</h1>
-          <button
-            onClick={handleRefresh}
-            disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition disabled:opacity-50 disabled:cursor-not-allowed shadow"
-            title="Refresh reviews"
-          >
-            <FaSync className={`${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowAnalytics(!showAnalytics)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
+                showAnalytics 
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' 
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+              title="Toggle Analytics"
+            >
+              <FaChartLine />
+              Analytics
+            </button>
+            <button
+              onClick={handleRefresh}
+              disabled={loading}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition disabled:opacity-50 disabled:cursor-not-allowed shadow"
+              title="Refresh reviews"
+            >
+              <FaSync className={`${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+          </div>
         </div>
+
+        {/* Analytics Dashboard */}
+        {showAnalytics && (
+          <div className="mb-8 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-200">
+            <h2 className="text-2xl font-bold text-blue-800 mb-6 flex items-center gap-2">
+              <FaChartBar className="text-blue-600" />
+              Review Analytics & Insights
+            </h2>
+            
+            {/* Key Metrics */}
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
+              <div className="bg-white rounded-lg p-4 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Total Reviews</p>
+                    <p className="text-2xl font-bold text-blue-600">{analytics.totalReviews}</p>
+                  </div>
+                  <FaComments className="text-2xl text-blue-500" />
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg p-4 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Pending</p>
+                    <p className="text-2xl font-bold text-yellow-600">{analytics.pendingReviews}</p>
+                  </div>
+                  <FaExclamationTriangle className="text-2xl text-yellow-500" />
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg p-4 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Approved</p>
+                    <p className="text-2xl font-bold text-green-600">{analytics.approvedReviews}</p>
+                  </div>
+                  <FaCheck className="text-2xl text-green-500" />
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg p-4 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Avg Rating</p>
+                    <p className="text-2xl font-bold text-purple-600">{analytics.averageRating.toFixed(1)}</p>
+                  </div>
+                  <FaStar className="text-2xl text-purple-500" />
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg p-4 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Response Rate</p>
+                    <p className="text-2xl font-bold text-indigo-600">{analytics.responseRate.toFixed(1)}%</p>
+                  </div>
+                  <FaReply className="text-2xl text-indigo-500" />
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg p-4 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Removed</p>
+                    <p className="text-2xl font-bold text-red-600">{analytics.removedReviews}</p>
+                  </div>
+                  <FaBan className="text-2xl text-red-500" />
+                </div>
+              </div>
+            </div>
+
+            {/* Sentiment Analysis */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <div className="bg-white rounded-lg p-6 shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <FaChartPie className="text-green-600" />
+                  Sentiment Analysis
+                </h3>
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div>
+                    <p className="text-sm text-gray-500">Positive</p>
+                    <p className="text-2xl font-bold text-green-600">{analytics.sentiment.positive}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Neutral</p>
+                    <p className="text-2xl font-bold text-gray-600">{analytics.sentiment.neutral}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Negative</p>
+                    <p className="text-2xl font-bold text-red-600">{analytics.sentiment.negative}</p>
+                  </div>
+                </div>
+                {analytics.sentiment.topWords.length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="text-sm font-semibold text-gray-700 mb-2">Top Words</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {analytics.sentiment.topWords.slice(0, 8).map((word, idx) => (
+                        <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
+                          {word.word} ({word.count})
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-white rounded-lg p-6 shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <FaChartBar className="text-blue-600" />
+                  Rating Distribution
+                </h3>
+                <div className="space-y-2">
+                  {[5, 4, 3, 2, 1].map(rating => {
+                    const count = analytics.ratingDistribution[rating] || 0;
+                    const percentage = analytics.totalReviews > 0 ? (count / analytics.totalReviews) * 100 : 0;
+                    return (
+                      <div key={rating} className="flex items-center gap-3">
+                        <div className="flex items-center gap-1 w-8">
+                          <span className="text-sm font-medium">{rating}</span>
+                          <FaStar className="text-yellow-400 text-xs" />
+                        </div>
+                        <div className="flex-1 bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-yellow-400 h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${percentage}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-sm text-gray-600 w-12 text-right">{count}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Top Properties and Users */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white rounded-lg p-6 shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <FaHome className="text-purple-600" />
+                  Top Reviewed Properties
+                </h3>
+                {analytics.topProperties.length > 0 ? (
+                  <div className="space-y-3">
+                    {analytics.topProperties.map((property, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-800 truncate">{property.name}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <div className="flex items-center gap-1">
+                              <FaStar className="text-yellow-400 text-sm" />
+                              <span className="text-sm text-gray-600">{property.avgRating.toFixed(1)}</span>
+                            </div>
+                            <span className="text-sm text-gray-500">•</span>
+                            <span className="text-sm text-gray-500">{property.count} reviews</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-4">No data available</p>
+                )}
+              </div>
+
+              <div className="bg-white rounded-lg p-6 shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <FaUsers className="text-indigo-600" />
+                  Most Active Reviewers
+                </h3>
+                {analytics.topUsers.length > 0 ? (
+                  <div className="space-y-3">
+                    {analytics.topUsers.map((user, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-800 truncate">{user.name}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <div className="flex items-center gap-1">
+                              <FaStar className="text-yellow-400 text-sm" />
+                              <span className="text-sm text-gray-600">{user.avgRating.toFixed(1)} avg</span>
+                            </div>
+                            <span className="text-sm text-gray-500">•</span>
+                            <span className="text-sm text-gray-500">{user.count} reviews</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-4">No data available</p>
+                )}
+              </div>
+            </div>
+
+            {/* Monthly Trends */}
+            {analytics.monthlyTrends.length > 0 && (
+              <div className="mt-6 bg-white rounded-lg p-6 shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <FaTrendingUp className="text-green-600" />
+                  Monthly Review Trends
+                </h3>
+                <div className="flex items-end gap-2 h-32">
+                  {analytics.monthlyTrends.map((trend, idx) => {
+                    const maxCount = Math.max(...analytics.monthlyTrends.map(t => t.count));
+                    const height = (trend.count / maxCount) * 100;
+                    return (
+                      <div key={idx} className="flex flex-col items-center flex-1">
+                        <div 
+                          className="w-full bg-gradient-to-t from-blue-500 to-purple-500 rounded-t transition-all duration-300"
+                          style={{ height: `${height}%` }}
+                          title={`${trend.month}: ${trend.count} reviews`}
+                        ></div>
+                        <span className="text-xs text-gray-500 mt-2 transform -rotate-45 origin-left">
+                          {trend.month.split('-')[1]}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
         {/* Search Box */}
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-4">
           <input

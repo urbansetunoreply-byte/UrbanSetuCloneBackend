@@ -922,13 +922,21 @@ export default function Listing() {
                   <FaArrowLeft className="text-sm" />
                   <span className="hidden sm:inline">{backButtonInfo.text}</span>
                 </button>
-                <button
-                  onClick={() => addToComparison(listing)}
-                  className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-4 py-3 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
-                >
-                  <FaChartLine className="text-sm" />
-                  <span className="hidden sm:inline">+ Compare</span>
-                </button>
+                <div className="relative">
+                  <button
+                    onClick={() => addToComparison(listing)}
+                    className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-4 py-3 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
+                  >
+                    <FaChartLine className="text-sm" />
+                    <span className="hidden sm:inline">+ Compare</span>
+                  </button>
+                  {showComparisonTooltip && (
+                    <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
+                      Please sign in to use comparison tool
+                      <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
+                    </div>
+                  )}
+                </div>
                 {currentUser && (listing.sellerId === currentUser._id || listing.userRef === currentUser._id) ? (
                   <Link
                     to={`/user/update-listing/${listing._id}`}
@@ -954,13 +962,21 @@ export default function Listing() {
                   <FaArrowLeft className="text-sm" />
                   <span className="hidden sm:inline">{backButtonInfo.text}</span>
                 </button>
-                <button
-                  onClick={() => addToComparison(listing)}
-                  className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-4 py-3 rounded-lg hover:from-purple-600 hover:to-indigo-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
-                >
-                  <FaChartLine className="text-sm" />
-                  <span className="hidden sm:inline">+ Compare</span>
-                </button>
+                <div className="relative">
+                  <button
+                    onClick={() => addToComparison(listing)}
+                    className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-4 py-3 rounded-lg hover:from-purple-600 hover:to-indigo-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
+                  >
+                    <FaChartLine className="text-sm" />
+                    <span className="hidden sm:inline">+ Compare</span>
+                  </button>
+                  {showComparisonTooltip && (
+                    <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
+                      Please sign in to use comparison tool
+                      <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
+                    </div>
+                  )}
+                </div>
                 <Link
                   to={`/admin/update-listing/${listing._id}`}
                   className="bg-gradient-to-r from-green-500 to-teal-500 text-white px-4 py-3 rounded-lg hover:from-green-600 hover:to-teal-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
@@ -2096,7 +2112,7 @@ export default function Listing() {
               type="text"
               value={assignUserSearch}
               onChange={(e) => setAssignUserSearch(e.target.value)}
-              placeholder="Search users by name, email, or mobile number"
+              placeholder="Search users by name, email, or mobile number (e.g., 9876543210, +91-9876543210)"
               className="border rounded p-2 w-full"
               disabled={assignOwnerLoading}
             />
@@ -2111,16 +2127,58 @@ export default function Listing() {
                 .filter((user) => {
                   const q = assignUserSearch.trim().toLowerCase();
                   if (!q) return true;
+                  
+                  // Normalize search query - remove spaces, dashes, parentheses, and country codes
+                  const normalizedQuery = q.replace(/[\s\-\(\)\+]/g, '').replace(/^91/, '');
+                  
                   const name = (user.username || user.name || "").toLowerCase();
                   const email = (user.email || "").toLowerCase();
-                  const mobile = (user.mobileNumber || user.mobile || "").toString().toLowerCase();
-                  return name.includes(q) || email.includes(q) || mobile.includes(q);
+                  
+                  // Enhanced mobile number search
+                  const mobileNumber = user.mobileNumber || user.mobile || "";
+                  const mobileStr = mobileNumber.toString();
+                  
+                  // Create multiple mobile number formats for better matching
+                  const mobileFormats = [
+                    mobileStr, // Original format
+                    mobileStr.replace(/[\s\-\(\)]/g, ''), // Without spaces/dashes/parentheses
+                    mobileStr.replace(/^\+91/, ''), // Without +91 country code
+                    mobileStr.replace(/^91/, ''), // Without 91 country code
+                    mobileStr.replace(/^0/, ''), // Without leading 0
+                  ].map(format => format.toLowerCase());
+                  
+                  // Check if query matches any mobile format
+                  const mobileMatch = mobileFormats.some(format => 
+                    format.includes(normalizedQuery) || normalizedQuery.includes(format)
+                  );
+                  
+                  return name.includes(q) || email.includes(q) || mobileMatch;
                 })
-                .map((user) => (
-                <option key={user._id} value={user._id}>
-                  {user.username || user.name || user.email} ({user.email}{user.mobileNumber ? `, ${user.mobileNumber}` : ''})
-                </option>
-              ))}
+                .map((user) => {
+                  // Format mobile number for display
+                  const formatMobileNumber = (mobile) => {
+                    if (!mobile) return '';
+                    const cleanMobile = mobile.toString().replace(/[\s\-\(\)]/g, '');
+                    if (cleanMobile.length === 10) {
+                      return `+91-${cleanMobile}`;
+                    } else if (cleanMobile.length === 12 && cleanMobile.startsWith('91')) {
+                      return `+${cleanMobile}`;
+                    } else if (cleanMobile.length === 13 && cleanMobile.startsWith('+91')) {
+                      return cleanMobile;
+                    }
+                    return mobile;
+                  };
+                  
+                  const displayName = user.username || user.name || user.email;
+                  const displayEmail = user.email;
+                  const displayMobile = formatMobileNumber(user.mobileNumber || user.mobile);
+                  
+                  return (
+                    <option key={user._id} value={user._id}>
+                      {displayName} ({displayEmail}{displayMobile ? `, ${displayMobile}` : ''})
+                    </option>
+                  );
+                })}
             </select>
             {assignOwnerLoading && <p className="text-gray-500">Assigning new owner...</p>}
             {selectedNewOwner && !assignOwnerLoading && (
