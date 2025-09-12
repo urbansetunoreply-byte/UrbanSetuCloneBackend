@@ -117,6 +117,47 @@ export default function Watchlist() {
     });
   };
 
+  // Calculate watchlist statistics
+  const calculateWatchlistStats = () => {
+    if (items.length === 0) {
+      setWatchlistStats({
+        totalValue: 0,
+        averagePrice: 0,
+        priceRange: { min: 0, max: 0 },
+        typeDistribution: {},
+        cityDistribution: {}
+      });
+      return;
+    }
+
+    const prices = items.map(item => item.regularPrice || 0).filter(price => price > 0);
+    const totalValue = prices.reduce((sum, price) => sum + price, 0);
+    const averagePrice = prices.length > 0 ? totalValue / prices.length : 0;
+    const priceRange = {
+      min: prices.length > 0 ? Math.min(...prices) : 0,
+      max: prices.length > 0 ? Math.max(...prices) : 0
+    };
+
+    const typeDistribution = items.reduce((acc, item) => {
+      acc[item.type] = (acc[item.type] || 0) + 1;
+      return acc;
+    }, {});
+
+    const cityDistribution = items.reduce((acc, item) => {
+      const city = item.city || 'Unknown';
+      acc[city] = (acc[city] || 0) + 1;
+      return acc;
+    }, {});
+
+    setWatchlistStats({
+      totalValue,
+      averagePrice,
+      priceRange,
+      typeDistribution,
+      cityDistribution
+    });
+  };
+
   useEffect(() => { fetchWatchlist(); }, [currentUser?._id]);
   
   // Periodic check for price changes (every 5 minutes)
@@ -250,47 +291,6 @@ export default function Watchlist() {
 
   const isInWatchlist = (listingId) => {
     return items.some(item => item._id === listingId);
-  };
-
-  // Calculate watchlist statistics
-  const calculateWatchlistStats = () => {
-    if (items.length === 0) {
-      setWatchlistStats({
-        totalValue: 0,
-        averagePrice: 0,
-        priceRange: { min: 0, max: 0 },
-        typeDistribution: {},
-        cityDistribution: {}
-      });
-      return;
-    }
-
-    const prices = items.map(item => item.regularPrice || 0).filter(price => price > 0);
-    const totalValue = prices.reduce((sum, price) => sum + price, 0);
-    const averagePrice = prices.length > 0 ? totalValue / prices.length : 0;
-    const priceRange = {
-      min: prices.length > 0 ? Math.min(...prices) : 0,
-      max: prices.length > 0 ? Math.max(...prices) : 0
-    };
-
-    const typeDistribution = items.reduce((acc, item) => {
-      acc[item.type] = (acc[item.type] || 0) + 1;
-      return acc;
-    }, {});
-
-    const cityDistribution = items.reduce((acc, item) => {
-      const city = item.city || 'Unknown';
-      acc[city] = (acc[city] || 0) + 1;
-      return acc;
-    }, {});
-
-    setWatchlistStats({
-      totalValue,
-      averagePrice,
-      priceRange,
-      typeDistribution,
-      cityDistribution
-    });
   };
 
   // Bulk actions
