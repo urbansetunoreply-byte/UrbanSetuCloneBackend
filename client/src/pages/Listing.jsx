@@ -2138,25 +2138,20 @@ export default function Listing() {
                   
                   const name = (user.username || user.name || "").toLowerCase();
                   const email = (user.email || "").toLowerCase();
-                  const mobileNumber = (user.mobileNumber || user.mobile || "").toString();
+                  const mobileRaw = (user.mobileNumber || user.mobile || "").toString();
+                  const mobile = mobileRaw.replace(/\D/g, '');
                   
-                  // Simple and effective search
-                  const nameMatch = name.includes(q);
-                  const emailMatch = email.includes(q);
-                  
-                  // Mobile number search - check if query contains only digits
-                  let mobileMatch = false;
-                  if (/^\d+$/.test(q)) {
-                    // Query is numeric, search in mobile number
-                    const cleanMobile = mobileNumber.replace(/\D/g, '');
-                    const cleanQuery = q.replace(/\D/g, '');
-                    mobileMatch = cleanMobile.includes(cleanQuery) || cleanQuery.includes(cleanMobile);
-                  } else {
-                    // Query contains text, check if it matches mobile number as string
-                    mobileMatch = mobileNumber.toLowerCase().includes(q);
+                  // If query is exactly a 10-digit number, require exact mobile match
+                  if (/^\d{10}$/.test(q)) {
+                    return mobile === q;
                   }
                   
-                  return nameMatch || emailMatch || mobileMatch;
+                  // Otherwise broad matching across fields
+                  return (
+                    name.includes(q) ||
+                    email.includes(q) ||
+                    mobileRaw.toLowerCase().includes(q)
+                  );
                 })
                 .map((user) => {
                   // Format mobile number for display

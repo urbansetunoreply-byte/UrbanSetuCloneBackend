@@ -428,60 +428,7 @@ export default function AdminDashboard() {
         return acc;
       }, {});
 
-      // Compute suspected fake reviews locally to improve accuracy
-      // Heuristics: identical text across accounts, simple flood checks in last 3 days
-      try {
-        const reviewsArr = Array.isArray(allApprovedReviews) ? allApprovedReviews : (allApprovedReviews.reviews || []);
-        const textCount = new Map();
-        reviewsArr.forEach(r => {
-          const t = (r.comment || '').trim().toLowerCase();
-          if (!t) return; textCount.set(t, (textCount.get(t)||0)+1);
-        });
-        const repetitiveSet = new Set(Array.from(textCount.entries()).filter(([,c]) => c >= 2).map(([t]) => t));
-        const suspiciousReviewPhrases = ['scam','fraud',"don't book",'best deal','don\'t miss','very cheap'];
-        const threeDaysAgo = Date.now() - 3*24*60*60*1000;
-        const byListing = new Map();
-        reviewsArr.forEach(r => {
-          const lid = (r.listingId && (r.listingId._id || r.listingId)) || r.listingId;
-          const created = new Date(r.createdAt || 0).getTime();
-          const entry = { rating: r.rating || 0, created };
-          if (!byListing.has(lid)) byListing.set(lid, []);
-          byListing.get(lid).push(entry);
-        });
-        let floodCount = 0;
-        byListing.forEach(arr => {
-          const recent = arr.filter(x => x.created >= threeDaysAgo);
-          const fiveStar = recent.filter(x => x.rating >= 5).length;
-          const oneStar = recent.filter(x => x.rating <= 1).length;
-          if (fiveStar >= 6 || oneStar >= 6) floodCount += Math.max(fiveStar, oneStar);
-        });
-        const repetitiveReviews = reviewsArr.filter(r => repetitiveSet.has((r.comment||'').trim().toLowerCase()));
-        const suspiciousLang = reviewsArr.filter(r => suspiciousReviewPhrases.some(p => ((r.comment||'').toLowerCase().includes(p))));
-        const computedFakeReviews = Math.max(repetitiveReviews.length + suspiciousLang.length, floodCount);
-        if (computedFakeReviews > (fraudData.suspectedFakeReviews || 0)) {
-          fraudData = { ...fraudData, suspectedFakeReviews: computedFakeReviews };
-        }
-      } catch (_) {}
-
-      // Compute suspicious listings locally (strict low-price proxy)
-      try {
-        const pricesAll = listingsData.map(l => (l.offer && l.discountPrice) ? l.discountPrice : l.regularPrice).filter(Boolean);
-        const meanAll = pricesAll.length ? pricesAll.reduce((a,b)=>a+b,0)/pricesAll.length : 0;
-        const varianceAll = pricesAll.length ? pricesAll.reduce((a,b)=>a+Math.pow(b-meanAll,2),0)/pricesAll.length : 0;
-        const stdAll = Math.sqrt(varianceAll) || 1;
-        const upperAll = meanAll + 3*stdAll; const lowerAll = Math.max(0, meanAll - 3*stdAll);
-        const localSuspicious = listingsData.filter(l => {
-          const p = (l.offer && l.discountPrice) ? l.discountPrice : l.regularPrice;
-          if (!p) return false;
-          if (p > upperAll || p < lowerAll) return true;
-          if (p < 100000) return true; // Below 1 lakh
-          if (p <= 1000) return true; // Below 1000
-          return false;
-        }).length;
-        if (localSuspicious > (fraudData.suspiciousListings || 0)) {
-          fraudData = { ...fraudData, suspiciousListings: localSuspicious };
-        }
-      } catch(_) {}
+      // Do not override server-provided fraud stats with local recomputations.
 
       // Build simple monthly fraud timeline using review floods and duplicates as proxies
       try {

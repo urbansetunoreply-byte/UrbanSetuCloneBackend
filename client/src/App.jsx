@@ -215,6 +215,41 @@ function AppRoutes({ bootstrapped }) {
   const navigate = useNavigate(); // Fix: ensure navigate is defined
   const { playNotification } = useSoundEffects();
 
+  // Auto-refresh on return after long inactivity
+  useEffect(() => {
+    // Use Page Visibility API to detect return to tab
+    const INACTIVITY_MS = 5 * 60 * 1000; // 5 minutes default threshold
+    let lastHiddenAt = null;
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        lastHiddenAt = Date.now();
+      } else {
+        // Visible again
+        if (lastHiddenAt) {
+          const awayMs = Date.now() - lastHiddenAt;
+          if (awayMs >= INACTIVITY_MS) {
+            // Avoid refreshing immediately on the very first load/open
+            const hasVisitedBefore = sessionStorage.getItem('has_visited') === '1';
+            sessionStorage.setItem('has_visited', '1');
+            if (hasVisitedBefore) {
+              window.location.reload();
+            }
+          }
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    // Mark initial visit
+    if (!sessionStorage.getItem('has_visited')) {
+      sessionStorage.setItem('has_visited', '1');
+    }
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
   // Persistent session check on app load
   useEffect(() => {
     const checkSession = async () => {
