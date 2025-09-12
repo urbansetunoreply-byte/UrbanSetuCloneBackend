@@ -131,57 +131,206 @@ export default function Search() {
         const natural = (smartQuery || '').trim();
         if (!natural) return;
         const extracted = { ...formData };
+        
+        // Enhanced city to state mapping
         const inferStateFromCity = (city) => {
             const cityToState = {
-                'mumbai': 'Maharashtra', 'pune': 'Maharashtra', 'nagpur': 'Maharashtra',
-                'delhi': 'Delhi', 'new delhi': 'Delhi',
-                'bengaluru': 'Karnataka', 'bangalore': 'Karnataka', 'mysuru': 'Karnataka',
-                'chennai': 'Tamil Nadu', 'coimbatore': 'Tamil Nadu',
-                'kolkata': 'West Bengal',
-                'hyderabad': 'Telangana',
-                'ahmedabad': 'Gujarat', 'surat': 'Gujarat',
-                'jaipur': 'Rajasthan',
-                'lucknow': 'Uttar Pradesh', 'noida': 'Uttar Pradesh', 'kanpur': 'Uttar Pradesh',
-                'gurgaon': 'Haryana', 'gurugram': 'Haryana',
-                'indore': 'Madhya Pradesh', 'bhopal': 'Madhya Pradesh',
-                'patna': 'Bihar'
+                'mumbai': 'Maharashtra', 'pune': 'Maharashtra', 'nagpur': 'Maharashtra', 'nashik': 'Maharashtra', 'aurangabad': 'Maharashtra',
+                'delhi': 'Delhi', 'new delhi': 'Delhi', 'noida': 'Uttar Pradesh', 'gurgaon': 'Haryana', 'gurugram': 'Haryana', 'faridabad': 'Haryana',
+                'bengaluru': 'Karnataka', 'bangalore': 'Karnataka', 'mysuru': 'Karnataka', 'mysore': 'Karnataka', 'mangalore': 'Karnataka', 'hubli': 'Karnataka',
+                'chennai': 'Tamil Nadu', 'coimbatore': 'Tamil Nadu', 'madurai': 'Tamil Nadu', 'tiruchirapalli': 'Tamil Nadu', 'salem': 'Tamil Nadu',
+                'kolkata': 'West Bengal', 'howrah': 'West Bengal', 'durgapur': 'West Bengal', 'asansol': 'West Bengal',
+                'hyderabad': 'Telangana', 'warangal': 'Telangana', 'nizamabad': 'Telangana',
+                'ahmedabad': 'Gujarat', 'surat': 'Gujarat', 'vadodara': 'Gujarat', 'rajkot': 'Gujarat', 'bhavnagar': 'Gujarat',
+                'jaipur': 'Rajasthan', 'jodhpur': 'Rajasthan', 'udaipur': 'Rajasthan', 'kota': 'Rajasthan', 'bikaner': 'Rajasthan',
+                'lucknow': 'Uttar Pradesh', 'kanpur': 'Uttar Pradesh', 'agra': 'Uttar Pradesh', 'varanasi': 'Uttar Pradesh', 'meerut': 'Uttar Pradesh',
+                'indore': 'Madhya Pradesh', 'bhopal': 'Madhya Pradesh', 'gwalior': 'Madhya Pradesh', 'jabalpur': 'Madhya Pradesh',
+                'patna': 'Bihar', 'gaya': 'Bihar', 'bhagalpur': 'Bihar', 'muzaffarpur': 'Bihar',
+                'kochi': 'Kerala', 'thiruvananthapuram': 'Kerala', 'kozhikode': 'Kerala', 'thrissur': 'Kerala',
+                'visakhapatnam': 'Andhra Pradesh', 'vijayawada': 'Andhra Pradesh', 'guntur': 'Andhra Pradesh', 'nellore': 'Andhra Pradesh',
+                'chandigarh': 'Chandigarh', 'panchkula': 'Haryana', 'mohali': 'Punjab'
             };
-            const key = (city||'').toLowerCase();
+            const key = (city||'').toLowerCase().trim();
             return cityToState[key] || '';
         };
-        const bedsMatch = natural.match(/(\d+)\s*(bhk|bed|beds)/i);
+
+        // Enhanced bedroom detection
+        const bedsMatch = natural.match(/(\d+)\s*(bhk|bed|beds|bedroom|bedrooms|room|rooms)/i);
         if (bedsMatch) extracted.bedrooms = bedsMatch[1];
-        const priceMatch = natural.match(/(?:under|below|within)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore)?/i);
-        if (priceMatch) extracted.maxPrice = priceMatch[1].replace(/,/g,'');
-        if (priceMatch && priceMatch[2]) {
-          const unit = priceMatch[2].toLowerCase();
-          const val = Number(extracted.maxPrice||0);
-          if (unit==='k') extracted.maxPrice = String(val*1000);
-          if (unit==='l' || unit==='lac' || unit==='lakh') extracted.maxPrice = String(val*100000);
-          if (unit==='cr' || unit==='crore') extracted.maxPrice = String(val*10000000);
+        
+        // Enhanced bathroom detection
+        const bathMatch = natural.match(/(\d+)\s*(bath|baths|bathroom|bathrooms|toilet|toilets)/i);
+        if (bathMatch) extracted.bathrooms = bathMatch[1];
+
+        // Enhanced price detection with more patterns
+        const pricePatterns = [
+            /(?:under|below|upto|max|maximum)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
+            /(?:within|around|about)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
+            /(?:budget|budget of)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
+            /(?:less than|not more than)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i
+        ];
+        
+        for (const pattern of pricePatterns) {
+            const priceMatch = natural.match(pattern);
+            if (priceMatch) {
+                extracted.maxPrice = priceMatch[1].replace(/,/g,'');
+                if (priceMatch[2]) {
+                    const unit = priceMatch[2].toLowerCase();
+                    const val = Number(extracted.maxPrice||0);
+                    if (unit==='k' || unit==='thousand') extracted.maxPrice = String(val*1000);
+                    if (unit==='l' || unit==='lac' || unit==='lakh' || unit==='lakhs') extracted.maxPrice = String(val*100000);
+                    if (unit==='cr' || unit==='crore' || unit==='crores') extracted.maxPrice = String(val*10000000);
+                }
+                break;
+            }
         }
-        const minPriceMatch = natural.match(/above\s*(\d[\d,]*)/i);
-        if (minPriceMatch) extracted.minPrice = minPriceMatch[1].replace(/,/g,'');
-        const nearMatch = natural.match(/near\s+([a-zA-Z ]+)/i);
-        if (nearMatch) extracted.city = nearMatch[1].trim();
-        const inCity = natural.match(/in\s+([a-zA-Z ]+)/i);
-        if (inCity) extracted.city = inCity[1].trim();
-        if (extracted.city && !extracted.state) extracted.state = inferStateFromCity(extracted.city);
-        const states = ['andhra pradesh','arunachal pradesh','assam','bihar','chhattisgarh','goa','gujarat','haryana','himachal pradesh','jharkhand','karnataka','kerala','madhya pradesh','maharashtra','manipur','meghalaya','mizoram','nagaland','odisha','punjab','rajasthan','sikkim','tamil nadu','telangana','tripura','uttar pradesh','uttarakhand','west bengal','delhi'];
+
+        // Enhanced minimum price detection
+        const minPricePatterns = [
+            /(?:above|more than|minimum|min|from)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
+            /(?:starting from|starting at)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i
+        ];
+        
+        for (const pattern of minPricePatterns) {
+            const minPriceMatch = natural.match(pattern);
+            if (minPriceMatch) {
+                extracted.minPrice = minPriceMatch[1].replace(/,/g,'');
+                if (minPriceMatch[2]) {
+                    const unit = minPriceMatch[2].toLowerCase();
+                    const val = Number(extracted.minPrice||0);
+                    if (unit==='k' || unit==='thousand') extracted.minPrice = String(val*1000);
+                    if (unit==='l' || unit==='lac' || unit==='lakh' || unit==='lakhs') extracted.minPrice = String(val*100000);
+                    if (unit==='cr' || unit==='crore' || unit==='crores') extracted.minPrice = String(val*10000000);
+                }
+                break;
+            }
+        }
+
+        // Enhanced location detection
+        const locationPatterns = [
+            /(?:near|close to|around)\s+([a-zA-Z\s]+?)(?:\s|$|,|\.)/i,
+            /(?:in|at|from)\s+([a-zA-Z\s]+?)(?:\s|$|,|\.)/i,
+            /(?:located in|situated in)\s+([a-zA-Z\s]+?)(?:\s|$|,|\.)/i,
+            /(?:area|locality|neighborhood)\s+([a-zA-Z\s]+?)(?:\s|$|,|\.)/i
+        ];
+        
+        for (const pattern of locationPatterns) {
+            const locationMatch = natural.match(pattern);
+            if (locationMatch) {
+                const location = locationMatch[1].trim();
+                // Check if it's a city or landmark
+                if (location.length > 2 && !/^(the|a|an|and|or|but|in|on|at|to|for|of|with|by)$/i.test(location)) {
+                    extracted.city = location;
+                    break;
+                }
+            }
+        }
+
+        // Auto-infer state from city
+        if (extracted.city && !extracted.state) {
+            extracted.state = inferStateFromCity(extracted.city);
+        }
+
+        // Enhanced state detection
+        const states = ['andhra pradesh','arunachal pradesh','assam','bihar','chhattisgarh','goa','gujarat','haryana','himachal pradesh','jharkhand','karnataka','kerala','madhya pradesh','maharashtra','manipur','meghalaya','mizoram','nagaland','odisha','punjab','rajasthan','sikkim','tamil nadu','telangana','tripura','uttar pradesh','uttarakhand','west bengal','delhi','chandigarh','jammu and kashmir','ladakh'];
         const lower = natural.toLowerCase();
         const matchedState = states.find(s => new RegExp(`(^|\\b)${s}(\\b|$)`).test(lower));
         if (matchedState) extracted.state = matchedState.replace(/\b\w/g, c => c.toUpperCase());
-        const typeMatch = natural.match(/\b(rent|rental|sale|buy)\b/i);
-        if (typeMatch) extracted.type = /rent/.test(typeMatch[1].toLowerCase()) ? 'rent' : 'sale';
-        // Negations
-        if (/no parking/i.test(natural)) extracted.parking = false; else if (/parking/i.test(natural)) extracted.parking = true;
-        if (/unfurnished/i.test(natural)) extracted.furnished = false; else if (/furnished/i.test(natural)) extracted.furnished = true;
-        const offerMatch = natural.match(/offer|discount|deal/i);
-        if (offerMatch) extracted.offer = true;
-        const furnishedMatch = natural.match(/furnished/i);
-        if (furnishedMatch) extracted.furnished = true;
-        const parkingMatch = natural.match(/parking/i);
-        if (parkingMatch) extracted.parking = true;
+
+        // Enhanced property type detection
+        const typePatterns = [
+            /\b(rent|rental|renting|for rent|to rent)\b/i,
+            /\b(sale|sell|selling|for sale|to sell|buy|buying|purchase|purchasing)\b/i,
+            /\b(lease|leasing|leased)\b/i
+        ];
+        
+        for (const pattern of typePatterns) {
+            const typeMatch = natural.match(pattern);
+            if (typeMatch) {
+                const type = typeMatch[1].toLowerCase();
+                if (/rent|lease/.test(type)) extracted.type = 'rent';
+                else if (/sale|buy|purchase/.test(type)) extracted.type = 'sale';
+                break;
+            }
+        }
+
+        // Enhanced amenities detection
+        const amenityPatterns = {
+            parking: [
+                /(?:with|having|includes?)\s+parking/i,
+                /parking\s+(?:available|included|provided)/i,
+                /(?:car\s+)?parking/i,
+                /garage/i
+            ],
+            furnished: [
+                /(?:fully\s+)?furnished/i,
+                /(?:with|having|includes?)\s+furniture/i,
+                /furniture\s+(?:included|provided|available)/i,
+                /(?:semi\s+)?furnished/i
+            ],
+            unfurnished: [
+                /unfurnished/i,
+                /(?:without|no)\s+furniture/i,
+                /bare\s+apartment/i
+            ],
+            offer: [
+                /(?:special\s+)?offer/i,
+                /discount/i,
+                /deal/i,
+                /promotion/i,
+                /(?:reduced|lower)\s+price/i,
+                /(?:cheap|affordable|budget)/i
+            ]
+        };
+
+        // Check for parking
+        if (amenityPatterns.parking.some(pattern => pattern.test(natural))) {
+            extracted.parking = true;
+        } else if (/no\s+parking|without\s+parking/i.test(natural)) {
+            extracted.parking = false;
+        }
+
+        // Check for furnished/unfurnished
+        if (amenityPatterns.furnished.some(pattern => pattern.test(natural))) {
+            extracted.furnished = true;
+        } else if (amenityPatterns.unfurnished.some(pattern => pattern.test(natural))) {
+            extracted.furnished = false;
+        }
+
+        // Check for offers
+        if (amenityPatterns.offer.some(pattern => pattern.test(natural))) {
+            extracted.offer = true;
+        }
+
+        // Property size detection
+        const sizePatterns = [
+            /(?:small|compact|studio|1\s*bhk)/i,
+            /(?:medium|2\s*bhk|3\s*bhk)/i,
+            /(?:large|big|4\s*bhk|5\s*bhk)/i,
+            /(?:luxury|premium|villa|penthouse)/i
+        ];
+
+        if (/small|compact|studio|1\s*bhk/i.test(natural)) {
+            extracted.bedrooms = '1';
+        } else if (/medium|2\s*bhk|3\s*bhk/i.test(natural)) {
+            extracted.bedrooms = '2';
+        } else if (/large|big|4\s*bhk|5\s*bhk/i.test(natural)) {
+            extracted.bedrooms = '4';
+        }
+
+        // Property condition detection
+        if (/new|newly\s+built|recently\s+constructed/i.test(natural)) {
+            // Could add a condition filter if needed
+        } else if (/old|aged|renovated|refurbished/i.test(natural)) {
+            // Could add a condition filter if needed
+        }
+
+        // Urgency detection
+        if (/urgent|immediate|asap|quick|fast/i.test(natural)) {
+            extracted.sort = 'createdAt';
+            extracted.order = 'desc';
+        }
+
         const urlParams = new URLSearchParams(extracted);
         navigate(`?${urlParams.toString()}`);
     };
