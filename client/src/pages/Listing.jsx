@@ -2160,6 +2160,12 @@ export default function Listing() {
                     // Remove all non-numeric characters for comparison
                     const cleanFormat = format.replace(/\D/g, '');
                     const cleanQuery = normalizedQuery.replace(/\D/g, '');
+                    
+                    // Debug logging (remove in production)
+                    if (cleanQuery.length >= 3) {
+                      console.log('Mobile search:', { cleanQuery, cleanFormat, mobileStr, user: user.email });
+                    }
+                    
                     return cleanFormat.includes(cleanQuery) || cleanQuery.includes(cleanFormat);
                   });
                   

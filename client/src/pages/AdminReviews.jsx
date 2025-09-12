@@ -168,14 +168,8 @@ export default function AdminReviews() {
         withCredentials: true
       });
       
-      // Fetch sentiment analysis
-      const sentimentRes = await axios.get(`${API_BASE_URL}/api/ai/sentiment/summary`, {
-        withCredentials: true
-      });
-
       const allReviews = allReviewsRes.data.reviews || allReviewsRes.data || [];
       const stats = statsRes.data;
-      const sentimentData = sentimentRes.data || { positive: 0, negative: 0, neutral: 0, topWords: [] };
 
       // Calculate rating distribution
       const ratingDistribution = {};
@@ -190,6 +184,10 @@ export default function AdminReviews() {
         const month = new Date(review.createdAt).toISOString().substring(0, 7);
         monthlyTrends[month] = (monthlyTrends[month] || 0) + 1;
       });
+      
+      // Debug logging for monthly trends
+      console.log('Monthly trends data:', monthlyTrends);
+      console.log('Total reviews for trends:', allReviews.length);
 
       // Top properties by review count
       const propertyCounts = {};
@@ -238,6 +236,41 @@ export default function AdminReviews() {
       const reviewsWithResponses = allReviews.filter(review => review.ownerResponse && review.ownerResponse.trim());
       const responseRate = allReviews.length > 0 ? (reviewsWithResponses.length / allReviews.length) * 100 : 0;
 
+      // Sentiment Analysis: simple rule-based scoring over review comments
+      const sentimentWords = {
+        positive: ['excellent', 'amazing', 'wonderful', 'great', 'fantastic', 'perfect', 'love', 'beautiful', 'outstanding', 'superb', 'brilliant', 'marvelous', 'delightful', 'satisfied', 'happy', 'pleased', 'impressed', 'recommend', 'best', 'awesome'],
+        negative: ['terrible', 'awful', 'horrible', 'disappointed', 'bad', 'worst', 'hate', 'disgusting', 'unacceptable', 'poor', 'disappointing', 'frustrated', 'angry', 'annoyed', 'upset', 'displeased', 'unsatisfied', 'regret', 'waste', 'avoid']
+      };
+
+      let pos = 0, neg = 0, neu = 0;
+      const wordCounts = {};
+
+      allReviews.forEach(review => {
+        if (review.comment) {
+          const words = review.comment.toLowerCase().split(/\s+/);
+          let sentiment = 0;
+          
+          words.forEach(word => {
+            if (sentimentWords.positive.includes(word)) sentiment += 1;
+            else if (sentimentWords.negative.includes(word)) sentiment -= 1;
+            
+            wordCounts[word] = (wordCounts[word] || 0) + 1;
+          });
+          
+          if (sentiment > 0) pos++;
+          else if (sentiment < 0) neg++;
+          else neu++;
+        } else {
+          neu++;
+        }
+      });
+
+      const topWords = Object.entries(wordCounts)
+        .filter(([word]) => word.length > 3)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 10)
+        .map(([word]) => word);
+
       setAnalytics({
         totalReviews: stats.totalReviews || allReviews.length,
         pendingReviews: stats.pendingReviews || 0,
@@ -246,10 +279,10 @@ export default function AdminReviews() {
         removedReviews: allReviews.filter(r => r.status === 'removed' || r.status === 'removed_by_user').length,
         averageRating: stats.averageRating || 0,
         sentiment: {
-          positive: sentimentData.positive || 0,
-          negative: sentimentData.negative || 0,
-          neutral: sentimentData.neutral || 0,
-          topWords: sentimentData.topWords || []
+          positive: pos,
+          negative: neg,
+          neutral: neu,
+          topWords
         },
         recentActivity: allReviews.slice(0, 10),
         topProperties,

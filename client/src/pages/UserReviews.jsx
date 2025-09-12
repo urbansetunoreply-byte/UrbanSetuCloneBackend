@@ -740,7 +740,7 @@ export default function UserReviews() {
             {filteredAndSortedReviews.map((review) => (
               <div key={review._id} className={`relative group ${viewMode === 'list' ? 'flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm border w-full overflow-hidden' : ''}`}>
                 <div className={viewMode === 'list' ? 'flex-1' : ''}>
-                  <div className={`border border-gray-200 rounded-lg hover:shadow-md transition-shadow overflow-x-auto ${viewMode === 'grid' ? 'p-4 h-full flex flex-col' : 'p-3 sm:p-6'}`}>
+                  <div className={`border border-gray-200 rounded-lg hover:shadow-md transition-shadow ${viewMode === 'grid' ? 'p-3 h-full flex flex-col' : 'p-3 sm:p-6 overflow-x-auto'}`}>
                     <div className="flex flex-col gap-2 sm:gap-4 lg:flex-row lg:items-start lg:justify-between">
                       {/* Review Content */}
                       <div className="flex-1">
@@ -760,17 +760,17 @@ export default function UserReviews() {
                           </span>
                         </div>
 
-                        <p className="text-gray-700 mb-3 line-clamp-3">{review.comment}</p>
+                        <p className={`text-gray-700 mb-3 ${viewMode === 'grid' ? 'text-sm line-clamp-2' : 'line-clamp-3'}`}>{review.comment}</p>
 
                         {/* Property Info */}
                         {review.listingId && (
-                          <div className="bg-gray-50 rounded-lg p-3">
-                            <h4 className="font-semibold text-gray-800">
+                          <div className={`bg-gray-50 rounded-lg ${viewMode === 'grid' ? 'p-2' : 'p-3'}`}>
+                            <h4 className={`font-semibold text-gray-800 ${viewMode === 'grid' ? 'text-sm' : ''}`}>
                               <a href={`/user/listing/${review.listingId && typeof review.listingId === 'object' ? review.listingId._id : review.listingId}`} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
                                 {review.listingId?.name}
                               </a>
                             </h4>
-                            <p className="text-sm text-gray-600">
+                            <p className={`text-gray-600 ${viewMode === 'grid' ? 'text-xs' : 'text-sm'}`}>
                               {review.listingId?.city}, {review.listingId?.state}
                             </p>
                           </div>
@@ -787,10 +787,10 @@ export default function UserReviews() {
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="flex flex-col gap-2 lg:flex-shrink-0 w-full sm:w-auto">
+                      <div className={`flex gap-2 lg:flex-shrink-0 w-full sm:w-auto ${viewMode === 'grid' ? 'flex-row justify-center mt-3' : 'flex-col'}`}>
                         <button
                           onClick={() => handleEditReview(review)}
-                          className="flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition shadow"
+                          className={`flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition shadow ${viewMode === 'grid' ? 'px-3 py-2 text-sm flex-1' : 'px-4 py-2'}`}
                         >
                           <FaEdit />
                           Edit
@@ -798,7 +798,7 @@ export default function UserReviews() {
                         
                         <button
                           onClick={() => handleDeleteReview(review)}
-                          className="flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg hover:from-red-600 hover:to-pink-600 transition shadow"
+                          className={`flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg hover:from-red-600 hover:to-pink-600 transition shadow ${viewMode === 'grid' ? 'px-3 py-2 text-sm flex-1' : 'px-4 py-2'}`}
                         >
                           <FaTrash />
                           Delete
