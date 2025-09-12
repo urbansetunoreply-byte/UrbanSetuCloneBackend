@@ -410,7 +410,7 @@ export default function AdminFraudManagement() {
 
   return (
     <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-6 sm:py-10 px-2 md:px-8">
-      <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-lg p-4 sm:p-6">
+      <div className="w-full mx-auto bg-white rounded-xl shadow-lg p-4 sm:p-6">
         <div className="flex items-center justify-between mb-6 gap-2 flex-wrap">
           <h3 className="text-3xl font-extrabold text-blue-700 drop-shadow">Fraud Management</h3>
           <div className="flex gap-2 flex-wrap">
@@ -545,10 +545,10 @@ export default function AdminFraudManagement() {
             </div>
 
             {(filter==='all' || filter==='listings') && (
-              <div className="mb-8">
+              <div className="mb-8 md:-mx-8">
                 <h4 className="text-xl font-bold text-gray-800 mb-3">Suspicious Listings</h4>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full border text-xs sm:text-sm" style={{ minWidth: '800px' }}>
+                <div className="overflow-x-auto md:overflow-x-visible">
+                  <table className="min-w-full w-full border text-xs sm:text-sm">
                     <thead className="bg-gray-100">
                       <tr>
                         {showSelectMode && <th className="p-2 text-left w-8">Select</th>}
@@ -610,7 +610,7 @@ export default function AdminFraudManagement() {
                   </table>
                 </div>
                 {/* Pagination for listings */}
-                <div className="flex items-center justify-end gap-2 mt-3">
+                <div className="flex items-center justify-end gap-2 mt-3 md:px-8">
                   <button className="px-2 py-1 bg-gray-200 rounded text-xs" onClick={()=>setPageL(p=>Math.max(1,p-1))}>Prev</button>
                   <span className="text-xs">Page {pageL}</span>
                   <button className="px-2 py-1 bg-gray-200 rounded text-xs" onClick={()=>setPageL(p=>p+1)}>Next</button>
@@ -619,10 +619,10 @@ export default function AdminFraudManagement() {
             )}
 
             {(filter==='all' || filter==='reviews') && (
-              <div>
+              <div className="md:-mx-8">
                 <h4 className="text-xl font-bold text-gray-800 mb-3">Suspected Fake Reviews</h4>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full border text-xs sm:text-sm" style={{ minWidth: '800px' }}>
+                <div className="overflow-x-auto md:overflow-x-visible">
+                  <table className="min-w-full w-full border text-xs sm:text-sm">
                     <thead className="bg-gray-100">
                       <tr>
                         {showSelectMode && <th className="p-2 text-left w-8">Select</th>}
@@ -690,7 +690,7 @@ export default function AdminFraudManagement() {
                   </table>
                 </div>
                 {/* Pagination for reviews */}
-                <div className="flex items-center justify-end gap-2 mt-3">
+                <div className="flex items-center justify-end gap-2 mt-3 md:px-8">
                   <button className="px-2 py-1 bg-gray-200 rounded text-xs" onClick={()=>setPageR(p=>Math.max(1,p-1))}>Prev</button>
                   <span className="text-xs">Page {pageR}</span>
                   <button className="px-2 py-1 bg-gray-200 rounded text-xs" onClick={()=>setPageR(p=>p+1)}>Next</button>
