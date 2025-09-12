@@ -446,32 +446,32 @@ export default function AdminExplore() {
           </h3>
           <p className="text-center text-gray-600 mb-6">Search and filter all properties across the platform</p>
           
-          {/* Enhanced Smart (NLP) Search */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl mb-6 border border-blue-200">
-            <div className="flex items-center gap-2 mb-4">
+          {/* Enhanced Smart (NLP) Search - Desktop Optimized */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 lg:p-6 rounded-xl mb-6 border border-blue-200">
+            <div className="flex items-center gap-2 mb-3 lg:mb-4">
               <div className="p-2 bg-blue-500 rounded-lg">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 lg:w-5 lg:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                 </svg>
               </div>
-              <label className="text-lg font-semibold text-blue-800">Smart Search (Natural Language)</label>
+              <label className="text-base lg:text-lg font-semibold text-blue-800">Smart Search (Natural Language)</label>
             </div>
-            <form onSubmit={applySmartQuery} className="space-y-4">
+            <form onSubmit={applySmartQuery} className="space-y-3 lg:space-y-4">
               <div className="relative">
                 <input
                   value={smartQuery}
                   onChange={(e) => setSmartQuery(e.target.value)}
                   placeholder="e.g., 3BHK above 50L in Bengaluru with parking"
-                  className="w-full p-4 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-lg"
+                  className="w-full p-3 lg:p-4 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-base lg:text-lg"
                 />
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <button type="submit" className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-6 py-2 rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 transform hover:scale-105 shadow-lg font-semibold">
+                <div className="absolute right-2 lg:right-3 top-1/2 transform -translate-y-1/2">
+                  <button type="submit" className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 lg:px-6 py-2 rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 transform hover:scale-105 shadow-lg font-semibold text-sm lg:text-base">
                     Search
                   </button>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <span className="text-sm text-gray-600">Try:</span>
+              <div className="flex flex-wrap gap-1 lg:gap-2">
+                <span className="text-xs lg:text-sm text-gray-600">Try:</span>
                 {[
                   "3BHK above 50L in Mumbai",
                   "2BHK with parking in Delhi", 
@@ -482,7 +482,7 @@ export default function AdminExplore() {
                     key={index}
                     type="button"
                     onClick={() => setSmartQuery(suggestion)}
-                    className="text-xs bg-white border border-blue-300 text-blue-700 px-3 py-1 rounded-full hover:bg-blue-50 transition-colors duration-200"
+                    className="text-xs bg-white border border-blue-300 text-blue-700 px-2 lg:px-3 py-1 rounded-full hover:bg-blue-50 transition-colors duration-200"
                   >
                     {suggestion}
                   </button>
@@ -493,115 +493,135 @@ export default function AdminExplore() {
 
           <form
             onSubmit={handleSubmit}
-            className="grid md:grid-cols-2 gap-4 bg-gray-100 p-4 rounded-lg mb-6"
+            className="bg-gray-100 p-4 lg:p-6 rounded-lg mb-6"
           >
-            <input
-              type="text"
-              name="searchTerm"
-              placeholder="Search by property name, address, or description..."
-              value={formData.searchTerm}
-              onChange={handleChanges}
-              className="p-2 border rounded-md w-full"
-            />
+            {/* First Row - Search and Sort */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+              <input
+                type="text"
+                name="searchTerm"
+                placeholder="Search by property name, address, or description..."
+                value={formData.searchTerm}
+                onChange={handleChanges}
+                className="p-3 border rounded-lg w-full text-sm lg:text-base"
+              />
 
-            <select
-              name="sort_order"
-              onChange={(e) => {
-                const [sort, order] = e.target.value.split("_");
-                setFormData((prev) => ({
-                  ...prev,
-                  sort,
-                  order,
-                }));
-              }}
-              value={`${formData.sort}_${formData.order}`}
-              className="p-2 border rounded-md w-full"
-            >
-              <option value="regularPrice_desc">Price high to low</option>
-              <option value="regularPrice_asc">Price low to high</option>
-              <option value="createdAt_desc">Latest</option>
-              <option value="createdAt_asc">Oldest</option>
-            </select>
+              <select
+                name="sort_order"
+                onChange={(e) => {
+                  const [sort, order] = e.target.value.split("_");
+                  setFormData((prev) => ({
+                    ...prev,
+                    sort,
+                    order,
+                  }));
+                }}
+                value={`${formData.sort}_${formData.order}`}
+                className="p-3 border rounded-lg w-full text-sm lg:text-base"
+              >
+                <option value="regularPrice_desc">Price high to low</option>
+                <option value="regularPrice_asc">Price low to high</option>
+                <option value="createdAt_desc">Latest</option>
+                <option value="createdAt_asc">Oldest</option>
+              </select>
 
-            {/* LocationSelector for search */}
-            <div className="md:col-span-2">
+              <button
+                type="submit"
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center justify-center gap-2 text-sm lg:text-base"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 lg:h-5 lg:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4-4m0 0A7 7 0 104 4a7 7 0 0013 13z" /></svg>
+                Search
+              </button>
+            </div>
+
+            {/* Location Selector */}
+            <div className="mb-4">
               <LocationSelector value={locationFilter} onChange={handleLocationChange} mode="search" />
             </div>
 
-            {/* Radio Buttons for Type Selection */}
-            <div className="flex gap-4">
-              <label>
-                <input
-                  type="radio"
-                  name="type"
-                  value="all"
-                  checked={formData.type === "all"}
-                  onChange={handleChanges}
-                />{" "}
-                All
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="type"
-                  value="rent"
-                  checked={formData.type === "rent"}
-                  onChange={handleChanges}
-                />{" "}
-                Rent
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="type"
-                  value="sale"
-                  checked={formData.type === "sale"}
-                  onChange={handleChanges}
-                />{" "}
-                Sale
-              </label>
+            {/* Second Row - Type and Filters */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+              {/* Property Type */}
+              <div className="flex flex-wrap gap-3 lg:gap-4">
+                <label className="flex items-center gap-2 text-sm lg:text-base">
+                  <input
+                    type="radio"
+                    name="type"
+                    value="all"
+                    checked={formData.type === "all"}
+                    onChange={handleChanges}
+                    className="w-4 h-4"
+                  />
+                  All
+                </label>
+                <label className="flex items-center gap-2 text-sm lg:text-base">
+                  <input
+                    type="radio"
+                    name="type"
+                    value="rent"
+                    checked={formData.type === "rent"}
+                    onChange={handleChanges}
+                    className="w-4 h-4"
+                  />
+                  Rent
+                </label>
+                <label className="flex items-center gap-2 text-sm lg:text-base">
+                  <input
+                    type="radio"
+                    name="type"
+                    value="sale"
+                    checked={formData.type === "sale"}
+                    onChange={handleChanges}
+                    className="w-4 h-4"
+                  />
+                  Sale
+                </label>
+              </div>
+
+              {/* Amenities */}
+              <div className="flex flex-wrap gap-3 lg:gap-4">
+                <label className="flex items-center gap-2 text-sm lg:text-base">
+                  <input
+                    type="checkbox"
+                    name="parking"
+                    onChange={handleChanges}
+                    checked={formData.parking}
+                    className="w-4 h-4"
+                  />
+                  Parking
+                </label>
+                <label className="flex items-center gap-2 text-sm lg:text-base">
+                  <input
+                    type="checkbox"
+                    name="furnished"
+                    onChange={handleChanges}
+                    checked={formData.furnished}
+                    className="w-4 h-4"
+                  />
+                  Furnished
+                </label>
+                <label className="flex items-center gap-2 text-sm lg:text-base">
+                  <input
+                    type="checkbox"
+                    name="offer"
+                    onChange={handleChanges}
+                    checked={formData.offer}
+                    className="w-4 h-4"
+                  />
+                  Offer
+                </label>
+              </div>
             </div>
 
-            {/* Checkboxes for Filters */}
-            <div className="flex gap-4">
-              <label>
-                <input
-                  type="checkbox"
-                  name="parking"
-                  onChange={handleChanges}
-                  checked={formData.parking}
-                />{" "}
-                Parking
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  name="furnished"
-                  onChange={handleChanges}
-                  checked={formData.furnished}
-                />{" "}
-                Furnished
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  name="offer"
-                  onChange={handleChanges}
-                  checked={formData.offer}
-                />{" "}
-                Offer
-              </label>
-            </div>
-
-            {/* Advanced Filters */}
-            <div className="flex gap-2">
+            {/* Third Row - Advanced Filters */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
               <input
                 type="number"
                 name="minPrice"
                 placeholder="Min Price"
                 value={formData.minPrice}
                 onChange={handleChanges}
-                className="p-2 border rounded-md w-full"
+                className="p-3 border rounded-lg w-full text-sm lg:text-base"
                 min={0}
               />
               <input
@@ -610,18 +630,16 @@ export default function AdminExplore() {
                 placeholder="Max Price"
                 value={formData.maxPrice}
                 onChange={handleChanges}
-                className="p-2 border rounded-md w-full"
+                className="p-3 border rounded-lg w-full text-sm lg:text-base"
                 min={0}
               />
-            </div>
-            <div className="flex gap-2">
               <input
                 type="number"
                 name="bedrooms"
                 placeholder="Bedrooms"
                 value={formData.bedrooms}
                 onChange={handleChanges}
-                className="p-2 border rounded-md w-full"
+                className="p-3 border rounded-lg w-full text-sm lg:text-base"
                 min={1}
               />
               <input
@@ -630,18 +648,10 @@ export default function AdminExplore() {
                 placeholder="Bathrooms"
                 value={formData.bathrooms}
                 onChange={handleChanges}
-                className="p-2 border rounded-md w-full"
+                className="p-3 border rounded-lg w-full text-sm lg:text-base"
                 min={1}
               />
             </div>
-
-            <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center justify-center gap-2"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4-4m0 0A7 7 0 104 4a7 7 0 0013 13z" /></svg>
-              Search
-            </button>
           </form>
 
           

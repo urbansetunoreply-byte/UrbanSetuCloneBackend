@@ -17,15 +17,21 @@ export const getManagementUsers = async (req, res, next) => {
   }
 };
 
-// Fetch all admins (for default admin only)
+// Fetch all admins (for admin and rootadmin)
 export const getManagementAdmins = async (req, res, next) => {
   try {
     const currentUser = await User.findById(req.user.id);
-    if (!currentUser || !currentUser.isDefaultAdmin) {
-      return next(errorHandler(403, 'Access denied. Only the current default admin can access admin management.'));
+    if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'rootadmin')) {
+      return next(errorHandler(403, 'Access denied. Only admins can access admin management.'));
     }
-    // Exclude the default admin himself
-    const admins = await User.find({ role: 'admin', _id: { $ne: currentUser._id } }).select('-password');
+    // Regular admins: only see other admins (not rootadmin/default admin)
+    // Rootadmin: see all admins (not rootadmin/default admin)
+    const query = { role: 'admin', _id: { $ne: currentUser._id } };
+    if (currentUser.role === 'admin') {
+      // Regular admins cannot see rootadmin or default admin
+      query.isDefaultAdmin = { $ne: true };
+    }
+    const admins = await User.find(query).select('-password');
     res.status(200).json(admins);
   } catch (err) {
     next(err);
