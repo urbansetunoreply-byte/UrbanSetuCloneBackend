@@ -381,7 +381,7 @@ export default function AdminFraudManagement() {
         const digits = (text.match(/\d/g) || []).length;
         if (digits >= 10){
           // If too many repeating digits like 9999999999 or obvious sequences
-          if (/([0-9])\1{5,}/.test(text) || /(123456|987654)/.test(text)) {
+          if (/([0-9])\\1{5,}/.test(text) || /(123456|987654)/.test(text)) {
             reasons.add('Suspicious phone number pattern');
           }
         }
