@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { FaStar, FaEdit, FaTrash, FaSearch, FaCheck, FaTimes, FaSync, FaChartLine, FaChartBar, FaChartPie, FaArrowUp, FaArrowDown, FaUsers, FaComments, FaExclamationTriangle, FaHome, FaFilter, FaSort, FaBars, FaEye, FaHeart, FaDownload, FaShare, FaPlus, FaTimes as FaX } from 'react-icons/fa';
 import ReviewForm from '../components/ReviewForm.jsx';
-import ContactSupportWrapper from '../components/ContactSupportWrapper';
 import { socket } from '../utils/socket.js';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
@@ -561,26 +560,8 @@ export default function UserReviews() {
               </div>
             </div>
             
-            {/* Sentiment Analysis */}
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white p-4 rounded-lg shadow-sm">
-                <h4 className="font-semibold text-gray-800 mb-3">Sentiment Overview</h4>
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <p className="text-sm text-gray-500">Positive</p>
-                    <p className="text-xl font-bold text-green-600">{analytics.sentiment.positive}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Neutral</p>
-                    <p className="text-xl font-bold text-gray-600">{analytics.sentiment.neutral}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Negative</p>
-                    <p className="text-xl font-bold text-red-600">{analytics.sentiment.negative}</p>
-                  </div>
-                </div>
-              </div>
-              
+            {/* Rating Distribution */}
+            <div className="mt-6">
               <div className="bg-white p-4 rounded-lg shadow-sm">
                 <h4 className="font-semibold text-gray-800 mb-3">Rating Distribution</h4>
                 <div className="space-y-2">
@@ -753,13 +734,13 @@ export default function UserReviews() {
           </div>
         ) : (
           <div className={viewMode === 'grid' 
-            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" 
+            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6" 
             : "space-y-4 overflow-x-hidden"
           }>
             {filteredAndSortedReviews.map((review) => (
               <div key={review._id} className={`relative group ${viewMode === 'list' ? 'flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm border w-full overflow-hidden' : ''}`}>
                 <div className={viewMode === 'list' ? 'flex-1' : ''}>
-                  <div className="border border-gray-200 rounded-lg p-3 sm:p-6 hover:shadow-md transition-shadow overflow-x-auto">
+                  <div className={`border border-gray-200 rounded-lg hover:shadow-md transition-shadow overflow-x-auto ${viewMode === 'grid' ? 'p-4 h-full flex flex-col' : 'p-3 sm:p-6'}`}>
                     <div className="flex flex-col gap-2 sm:gap-4 lg:flex-row lg:items-start lg:justify-between">
                       {/* Review Content */}
                       <div className="flex-1">
@@ -770,9 +751,11 @@ export default function UserReviews() {
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-2 mb-3">
-                          {renderStars(review.rating)}
-                          <span className="text-sm text-gray-600">
+                        <div className={`flex items-center gap-2 mb-3 ${viewMode === 'grid' ? 'justify-center' : ''}`}>
+                          <div className="flex items-center gap-1">
+                            {renderStars(review.rating)}
+                          </div>
+                          <span className={`text-gray-600 font-medium ${viewMode === 'grid' ? 'text-sm' : 'text-sm'}`}>
                             {review.rating} star{review.rating > 1 ? 's' : ''}
                           </span>
                         </div>
@@ -957,7 +940,6 @@ export default function UserReviews() {
           </div>
         </div>
       )}
-      <ContactSupportWrapper />
     </div>
   );
 } 

@@ -2111,8 +2111,16 @@ export default function Listing() {
             <input
               type="text"
               value={assignUserSearch}
-              onChange={(e) => setAssignUserSearch(e.target.value)}
-              placeholder="Search users by name, email, or mobile number (e.g., 9876543210, +91-9876543210)"
+              onChange={(e) => {
+                const value = e.target.value;
+                // Limit to 10 digits for mobile numbers, but allow longer for names/emails
+                const isNumeric = /^\d+$/.test(value.replace(/[\s\-\(\)\+]/g, ''));
+                if (isNumeric && value.replace(/[\s\-\(\)\+]/g, '').length > 10) {
+                  return; // Don't update if numeric input exceeds 10 digits
+                }
+                setAssignUserSearch(value);
+              }}
+              placeholder="Search users by name, email, or mobile number (max 10 digits)"
               className="border rounded p-2 w-full"
               disabled={assignOwnerLoading}
             />
@@ -2148,9 +2156,12 @@ export default function Listing() {
                   ].map(format => format.toLowerCase());
                   
                   // Check if query matches any mobile format
-                  const mobileMatch = mobileFormats.some(format => 
-                    format.includes(normalizedQuery) || normalizedQuery.includes(format)
-                  );
+                  const mobileMatch = mobileFormats.some(format => {
+                    // Remove all non-numeric characters for comparison
+                    const cleanFormat = format.replace(/\D/g, '');
+                    const cleanQuery = normalizedQuery.replace(/\D/g, '');
+                    return cleanFormat.includes(cleanQuery) || cleanQuery.includes(cleanFormat);
+                  });
                   
                   return name.includes(q) || email.includes(q) || mobileMatch;
                 })
