@@ -594,10 +594,6 @@ export default function AdminDashboard() {
       }));
 
       // Enhanced Review Quality Score calculation
-      console.log('Debug - allApprovedReviews length:', allApprovedReviews.length);
-      console.log('Debug - totalReviews:', totalReviews);
-      console.log('Debug - pos, neg, neu:', pos, neg, neu);
-      
       const reviewQuality = allApprovedReviews.length > 0 ? 
         Math.round((allApprovedReviews.filter(r => {
           const comment = r.comment || '';
@@ -605,7 +601,6 @@ export default function AdminDashboard() {
         }).length / allApprovedReviews.length) * 100) : 
         (totalReviews > 0 ? Math.round(60 + Math.random() * 30) : 0); // Fallback for demo data
       
-      console.log('Debug - reviewQuality:', reviewQuality);
 
       // Property Types Analytics
       const propertyTypes = listingsData.reduce((acc, l) => {
