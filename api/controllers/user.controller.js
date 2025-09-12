@@ -173,7 +173,7 @@ export const getAllUsersForAutocomplete = async (req, res, next) => {
         const users = await User.find({
             _id: { $ne: req.user.id },
             status: { $ne: 'suspended' } // Exclude suspended users
-        }).select('email username _id').sort({ email: 1 });
+        }).select('email username _id mobileNumber').sort({ email: 1 });
         
         res.status(200).json(users);
     } catch (error) {

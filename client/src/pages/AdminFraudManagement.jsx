@@ -85,6 +85,84 @@ export default function AdminFraudManagement() {
         'call now', 'whatsapp me', 'serious buyers only', 'time wasters stay away'
       ];
 
+      // Pre-hash images for duplicate detection using a simple perceptual hash (average hash)
+      const imageHashMap = new Map(); // hash -> list of listingIds
+      const listingIdToImageHashes = new Map();
+      const computeAverageHash = async (src) => {
+        try {
+          // Use offscreen canvas for quick aHash (8x8 grayscale)
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          const loaded = await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = src; });
+          const canvas = document.createElement('canvas');
+          canvas.width = 8; canvas.height = 8;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, 8, 8);
+          const data = ctx.getImageData(0,0,8,8).data;
+          const pixels = [];
+          for (let i=0;i<data.length;i+=4){
+            const r=data[i], g=data[i+1], b=data[i+2];
+            pixels.push(Math.round(0.299*r+0.587*g+0.114*b));
+          }
+          const avg = pixels.reduce((a,b)=>a+b,0)/pixels.length;
+          let hash = '';
+          pixels.forEach(p => { hash += (p >= avg) ? '1' : '0'; });
+          return hash;
+        } catch { return null; }
+      };
+
+      // Best-effort compute hashes (limit to first 2 images per listing to keep it light)
+      const hashPromises = (allListings || []).map(async (lst) => {
+        const urls = (lst.imageUrls || []).slice(0,2);
+        const hashes = [];
+        for (const url of urls){
+          const h = await computeAverageHash(url);
+          if (h) hashes.push(h);
+        }
+        listingIdToImageHashes.set(lst._id, hashes);
+        hashes.forEach(h => {
+          const arr = imageHashMap.get(h) || [];
+          arr.push(lst._id);
+          imageHashMap.set(h, arr);
+        });
+      });
+      await Promise.all(hashPromises);
+
+      const simpleWatermarkDetected = async (src) => {
+        try {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = src; });
+          const canvas = document.createElement('canvas');
+          const w = 64, h = 64; // sample corners at low-res
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          const sampleBoxes = [
+            [0,0,16,16], // top-left
+            [w-16,0,16,16], // top-right
+            [0,h-16,16,16], // bottom-left
+            [w-16,h-16,16,16], // bottom-right
+          ];
+          let cornerTextLike = 0;
+          for (const [sx,sy,sw,sh] of sampleBoxes){
+            const data = ctx.getImageData(sx,sy,sw,sh).data;
+            // crude heuristic: high-contrast, many near-white pixels suggests overlaid logo/text
+            let nearWhite = 0, nearBlack = 0;
+            for (let i=0;i<data.length;i+=4){
+              const r=data[i], g=data[i+1], b=data[i+2];
+              const l = Math.round(0.299*r+0.587*g+0.114*b);
+              if (l > 235) nearWhite++;
+              if (l < 20) nearBlack++;
+            }
+            const ratioWhite = nearWhite / (data.length/4);
+            const ratioBlack = nearBlack / (data.length/4);
+            if (ratioWhite > 0.25 && ratioBlack > 0.05) cornerTextLike++;
+          }
+          return cornerTextLike >= 2; // watermark likely present in at least two corners
+        } catch { return false; }
+      };
+
       const flaggedListings = allListings.map(l => {
         const price = (l.offer && l.discountPrice) ? l.discountPrice : l.regularPrice;
         const reasons = [];
@@ -265,7 +343,37 @@ export default function AdminFraudManagement() {
         return { ...r, _fraudReasons: reasons };
       }).filter(r => r._fraudReasons.length > 0);
 
-      const filteredListings = flaggedListings.filter(l => !resolvedListings.has(String(l._id)));
+      // Enhance listing reasons with image-based checks
+      const enhancedListings = await Promise.all(flaggedListings.map(async (lst) => {
+        const reasons = new Set(lst._fraudReasons || []);
+        // Reverse image duplicate based on hash collision across different listings
+        const hashes = listingIdToImageHashes.get(lst._id) || [];
+        let duplicateFound = false;
+        for (const h of hashes){
+          const arr = imageHashMap.get(h) || [];
+          const others = arr.filter(id => String(id) !== String(lst._id));
+          if (others.length >= 1){ duplicateFound = true; break; }
+        }
+        if (duplicateFound) reasons.add('Stolen images suspected');
+        // Watermark/logo heuristic on first image only to keep it cheap
+        const firstImage = (lst.imageUrls || [])[0];
+        if (firstImage){
+          const wm = await simpleWatermarkDetected(firstImage);
+          if (wm) reasons.add('Watermark/logo detected');
+        }
+        // Fake phone heuristic in description
+        const text = (lst.description || '').toLowerCase();
+        const digits = (text.match(/\d/g) || []).length;
+        if (digits >= 10){
+          // If too many repeating digits like 9999999999 or obvious sequences
+          if (/([0-9])\1{5,}/.test(text) || /(123456|987654)/.test(text)) {
+            reasons.add('Suspicious phone number pattern');
+          }
+        }
+        return { ...lst, _fraudReasons: Array.from(reasons) };
+      }));
+
+      const filteredListings = enhancedListings.filter(l => !resolvedListings.has(String(l._id)));
       const filteredReviews = flaggedReviews.filter(r => !resolvedReviews.has(String(r._id)));
       setListings(filteredListings);
       setReviews(filteredReviews);

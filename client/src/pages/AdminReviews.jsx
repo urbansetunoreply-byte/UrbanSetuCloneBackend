@@ -103,6 +103,15 @@ export default function AdminReviews() {
     };
   }, [currentUser, currentPage, selectedStatus, sortBy, sortOrder]);
 
+  // Ensure page opens at top
+  useEffect(() => {
+    try {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    } catch {}
+  }, []);
+
   // Scroll lock for modals: lock body scroll when review details modal is open (mobile and desktop)
   useEffect(() => {
     if (selectedReview || (showRemovalModal && reviewToRemove) || (showDeleteModal && reviewToDelete)) {

@@ -66,6 +66,15 @@ export default function UserReviews() {
     fetchUserReviews();
   }, []);
 
+  // Ensure page opens at top
+  useEffect(() => {
+    try {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    } catch {}
+  }, []);
+
   useEffect(() => {
     calculateAnalytics();
   }, [reviews]);
