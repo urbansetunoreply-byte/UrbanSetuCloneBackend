@@ -957,7 +957,7 @@ export default function Listing() {
               <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 w-full">
                 <button
                   onClick={() => navigate(backButtonInfo.path)}
-                  className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
+                  className="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-4 py-3 rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
                 >
                   <FaArrowLeft className="text-sm" />
                   <span className="hidden sm:inline">{backButtonInfo.text}</span>
@@ -965,7 +965,7 @@ export default function Listing() {
                 <div className="relative">
                   <button
                     onClick={() => addToComparison(listing)}
-                    className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-4 py-3 rounded-lg hover:from-purple-600 hover:to-indigo-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
+                    className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-4 py-3 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
                   >
                     <FaChartLine className="text-sm" />
                     <span className="hidden sm:inline">+ Compare</span>
