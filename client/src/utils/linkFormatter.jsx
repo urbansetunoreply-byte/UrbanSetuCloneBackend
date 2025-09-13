@@ -7,6 +7,9 @@ const formatMarkdown = (text, isSentMessage = false) => {
   const lines = text.split('\n');
   const result = [];
   
+  // Create a map to store processed parts for each line
+  const lineProcessedParts = new Map();
+  
   lines.forEach((line, lineIndex) => {
     // Check if this is a list item first
     const isNumberedList = line.trim().match(/^(\d+)\.\s+/);
@@ -96,8 +99,8 @@ const formatMarkdown = (text, isSentMessage = false) => {
         parts.push(processedLine.slice(currentIndex));
       }
       
-      // Store the processed parts for later use
-      line.processedParts = parts;
+      // Store the processed parts in the map
+      lineProcessedParts.set(lineIndex, parts);
     } else {
       // For non-list items, process the entire line as before
       let processedLine = line;
@@ -168,8 +171,8 @@ const formatMarkdown = (text, isSentMessage = false) => {
         parts.push(processedLine.slice(currentIndex));
       }
       
-      // Store the processed parts for later use
-      line.processedParts = parts;
+      // Store the processed parts in the map
+      lineProcessedParts.set(lineIndex, parts);
     }
     
     // Handle list items
@@ -180,9 +183,10 @@ const formatMarkdown = (text, isSentMessage = false) => {
         const [, indent, num, content] = listMatch;
         // Use different colors for sent vs received messages
         const listColor = isSentMessage ? "text-blue-200" : "text-blue-600";
+        const processedParts = lineProcessedParts.get(lineIndex);
         result.push(
           <div key={lineIndex} className={`${indent ? 'ml-4' : ''} mb-1`}>
-            <span className={`font-medium ${listColor}`}>{num}.</span> {line.processedParts && line.processedParts.length > 0 ? line.processedParts : content}
+            <span className={`font-medium ${listColor}`}>{num}.</span> {processedParts && processedParts.length > 0 ? processedParts : content}
           </div>
         );
         return;
@@ -194,9 +198,10 @@ const formatMarkdown = (text, isSentMessage = false) => {
         const [, indent, content] = listMatch;
         // Use different colors for sent vs received messages
         const listColor = isSentMessage ? "text-blue-200" : "text-blue-600";
+        const processedParts = lineProcessedParts.get(lineIndex);
         result.push(
           <div key={lineIndex} className={`${indent ? 'ml-4' : ''} mb-1`}>
-            <span className={listColor}>•</span> {line.processedParts && line.processedParts.length > 0 ? line.processedParts : content}
+            <span className={listColor}>•</span> {processedParts && processedParts.length > 0 ? processedParts : content}
           </div>
         );
         return;
@@ -209,9 +214,10 @@ const formatMarkdown = (text, isSentMessage = false) => {
         // Use different text colors for sent vs received messages
         const textColor = isSentMessage ? "text-gray-200" : "text-gray-600";
         const borderColor = isSentMessage ? "border-gray-400" : "border-gray-300";
+        const processedParts = lineProcessedParts.get(lineIndex);
         result.push(
           <div key={lineIndex} className={`border-l-4 ${borderColor} pl-3 ml-2 italic ${textColor} mb-1`}>
-            {line.processedParts && line.processedParts.length > 0 ? line.processedParts : content}
+            {processedParts && processedParts.length > 0 ? processedParts : content}
           </div>
         );
         return;
@@ -219,8 +225,9 @@ const formatMarkdown = (text, isSentMessage = false) => {
     }
     
     // Regular line
-    if (line.processedParts && line.processedParts.length > 0) {
-      result.push(<span key={lineIndex}>{line.processedParts}</span>);
+    const processedParts = lineProcessedParts.get(lineIndex);
+    if (processedParts && processedParts.length > 0) {
+      result.push(<span key={lineIndex}>{processedParts}</span>);
     } else if (line.trim()) {
       result.push(<span key={lineIndex}>{line}</span>);
     }
