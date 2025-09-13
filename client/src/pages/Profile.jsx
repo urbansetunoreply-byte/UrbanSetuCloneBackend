@@ -579,11 +579,8 @@ export default function Profile() {
     setOtpError("");
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/send-profile-email-otp`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-profile-email-otp`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({ email: formData.email }),
       });
 
@@ -624,11 +621,8 @@ export default function Profile() {
     setOtpError("");
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/verify-otp`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({ 
           email: formData.email,
           otp: otp 

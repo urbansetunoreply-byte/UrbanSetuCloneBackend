@@ -346,8 +346,8 @@ export default function UserChangePassword() {
               )}
 
               {success && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <p className="text-green-600 text-sm">{success}</p>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-blue-600 text-sm">{success}</p>
                 </div>
               )}
             </form>

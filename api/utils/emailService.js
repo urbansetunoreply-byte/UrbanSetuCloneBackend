@@ -34,8 +34,11 @@ export const sendSignupOTPEmail = async (email, otp) => {
               Thank you for signing up with UrbanSetu! To complete your registration, please use the verification code below:
             </p>
             
-            <div style="background-color: #2563eb; color: white; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
-              <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px;">${otp}</span>
+            <div style="background-color: #2563eb; color: white; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0; position: relative;">
+              <span id="otp-code" style="font-size: 32px; font-weight: bold; letter-spacing: 5px;">${otp}</span>
+              <button onclick="copyOTP('${otp}')" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 6px; margin-left: 15px; cursor: pointer; font-size: 14px; display: inline-flex; align-items: center; gap: 5px; transition: background 0.2s;">
+                📋 Copy
+              </button>
             </div>
             
             <p style="color: #6b7280; margin: 0; font-size: 14px;">
@@ -50,6 +53,41 @@ export const sendSignupOTPEmail = async (email, otp) => {
           </div>
         </div>
       </div>
+      
+      <script>
+        function copyOTP(otp) {
+          navigator.clipboard.writeText(otp).then(function() {
+            // Change button text temporarily
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '✅ Copied!';
+            button.style.background = 'rgba(34, 197, 94, 0.3)';
+            
+            setTimeout(function() {
+              button.innerHTML = originalText;
+              button.style.background = 'rgba(255,255,255,0.2)';
+            }, 2000);
+          }).catch(function(err) {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = otp;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '✅ Copied!';
+            button.style.background = 'rgba(34, 197, 94, 0.3)';
+            
+            setTimeout(function() {
+              button.innerHTML = originalText;
+              button.style.background = 'rgba(255,255,255,0.2)';
+            }, 2000);
+          });
+        }
+      </script>
     `
   };
 
@@ -82,8 +120,11 @@ export const sendForgotPasswordOTPEmail = async (email, otp) => {
               We received a request to reset your password for your UrbanSetu account. To proceed with the password reset, please use the verification code below:
             </p>
             
-            <div style="background-color: #dc2626; color: white; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
-              <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px;">${otp}</span>
+            <div style="background-color: #dc2626; color: white; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0; position: relative;">
+              <span id="otp-code" style="font-size: 32px; font-weight: bold; letter-spacing: 5px;">${otp}</span>
+              <button onclick="copyOTP('${otp}')" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 6px; margin-left: 15px; cursor: pointer; font-size: 14px; display: inline-flex; align-items: center; gap: 5px; transition: background 0.2s;">
+                📋 Copy
+              </button>
             </div>
             
             <p style="color: #6b7280; margin: 0 0 15px 0; line-height: 1.6;">
@@ -102,6 +143,41 @@ export const sendForgotPasswordOTPEmail = async (email, otp) => {
           </div>
         </div>
       </div>
+      
+      <script>
+        function copyOTP(otp) {
+          navigator.clipboard.writeText(otp).then(function() {
+            // Change button text temporarily
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '✅ Copied!';
+            button.style.background = 'rgba(34, 197, 94, 0.3)';
+            
+            setTimeout(function() {
+              button.innerHTML = originalText;
+              button.style.background = 'rgba(255,255,255,0.2)';
+            }, 2000);
+          }).catch(function(err) {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = otp;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '✅ Copied!';
+            button.style.background = 'rgba(34, 197, 94, 0.3)';
+            
+            setTimeout(function() {
+              button.innerHTML = originalText;
+              button.style.background = 'rgba(255,255,255,0.2)';
+            }, 2000);
+          });
+        }
+      </script>
     `
   };
 
@@ -134,8 +210,11 @@ export const sendProfileEmailOTPEmail = async (email, otp) => {
               You're updating your email address in your UrbanSetu profile. To confirm this change and verify your new email address, please use the verification code below:
             </p>
             
-            <div style="background-color: #059669; color: white; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
-              <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px;">${otp}</span>
+            <div style="background-color: #059669; color: white; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0; position: relative;">
+              <span id="otp-code" style="font-size: 32px; font-weight: bold; letter-spacing: 5px;">${otp}</span>
+              <button onclick="copyOTP('${otp}')" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 6px; margin-left: 15px; cursor: pointer; font-size: 14px; display: inline-flex; align-items: center; gap: 5px; transition: background 0.2s;">
+                📋 Copy
+              </button>
             </div>
             
             <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
@@ -154,6 +233,41 @@ export const sendProfileEmailOTPEmail = async (email, otp) => {
           </div>
         </div>
       </div>
+      
+      <script>
+        function copyOTP(otp) {
+          navigator.clipboard.writeText(otp).then(function() {
+            // Change button text temporarily
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '✅ Copied!';
+            button.style.background = 'rgba(34, 197, 94, 0.3)';
+            
+            setTimeout(function() {
+              button.innerHTML = originalText;
+              button.style.background = 'rgba(255,255,255,0.2)';
+            }, 2000);
+          }).catch(function(err) {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = otp;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '✅ Copied!';
+            button.style.background = 'rgba(34, 197, 94, 0.3)';
+            
+            setTimeout(function() {
+              button.innerHTML = originalText;
+              button.style.background = 'rgba(255,255,255,0.2)';
+            }, 2000);
+          });
+        }
+      </script>
     `
   };
 
@@ -186,8 +300,11 @@ export const sendLoginOTPEmail = async (email, otp) => {
               You're signing in to your UrbanSetu account. To complete the login process, please use the verification code below:
             </p>
             
-            <div style="background-color: #7c3aed; color: white; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
-              <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px;">${otp}</span>
+            <div style="background-color: #7c3aed; color: white; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0; position: relative;">
+              <span id="otp-code" style="font-size: 32px; font-weight: bold; letter-spacing: 5px;">${otp}</span>
+              <button onclick="copyOTP('${otp}')" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 6px; margin-left: 15px; cursor: pointer; font-size: 14px; display: inline-flex; align-items: center; gap: 5px; transition: background 0.2s;">
+                📋 Copy
+              </button>
             </div>
             
             <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
@@ -206,6 +323,41 @@ export const sendLoginOTPEmail = async (email, otp) => {
           </div>
         </div>
       </div>
+      
+      <script>
+        function copyOTP(otp) {
+          navigator.clipboard.writeText(otp).then(function() {
+            // Change button text temporarily
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '✅ Copied!';
+            button.style.background = 'rgba(34, 197, 94, 0.3)';
+            
+            setTimeout(function() {
+              button.innerHTML = originalText;
+              button.style.background = 'rgba(255,255,255,0.2)';
+            }, 2000);
+          }).catch(function(err) {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = otp;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '✅ Copied!';
+            button.style.background = 'rgba(34, 197, 94, 0.3)';
+            
+            setTimeout(function() {
+              button.innerHTML = originalText;
+              button.style.background = 'rgba(255,255,255,0.2)';
+            }, 2000);
+          });
+        }
+      </script>
     `
   };
 
