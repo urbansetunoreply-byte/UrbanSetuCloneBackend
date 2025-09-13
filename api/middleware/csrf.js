@@ -65,20 +65,6 @@ export const verifyCSRFToken = (req, res, next) => {
             method: req.method
         });
         
-        if (!token || !cookieToken) {
-            console.error('CSRF token missing:', { token: !!token, cookieToken: !!cookieToken });
-            return next(errorHandler(403, 'CSRF token missing'));
-        }
-        
-        if (token !== cookieToken) {
-            console.error('CSRF token mismatch:', { 
-                tokenMatch: token === cookieToken,
-                tokenStart: token.substring(0, 8),
-                cookieStart: cookieToken.substring(0, 8)
-            });
-            return next(errorHandler(403, 'Invalid CSRF token'));
-        }
-        
         // Check if token exists in store and is not expired
         const tokenData = csrfTokenStore.get(token);
         if (!tokenData || Date.now() > tokenData.expiresAt) {
