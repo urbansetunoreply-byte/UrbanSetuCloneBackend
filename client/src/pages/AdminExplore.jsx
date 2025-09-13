@@ -238,20 +238,55 @@ export default function AdminExplore() {
       return cityToState[key] || '';
     };
 
-    // Enhanced bedroom detection
-    const bedsMatch = natural.match(/(\d+)\s*(bhk|bed|beds|bedroom|bedrooms|room|rooms)/i);
-    if (bedsMatch) extracted.bedrooms = bedsMatch[1];
+    // Enhanced bedroom detection with routine language
+    const bedPatterns = [
+      /(\d+)\s*(bhk|bed|beds|bedroom|bedrooms|room|rooms)/i,
+      // Routine language patterns
+      /(\d+)\s*(?:ka|ke)\s*(?:room|kamra|bedroom)/i,
+      /(\d+)\s*(?:bhk|bed|room)\s*(?:ka|ke)\s*(?:flat|apartment|ghar)/i,
+      /(?:flat|apartment|ghar)\s*(?:with|mein)\s*(\d+)\s*(?:room|bed|bhk)/i,
+      /(\d+)\s*(?:room|bed|bhk)\s*(?:wala|wali)\s*(?:flat|apartment|ghar)/i
+    ];
     
-    // Enhanced bathroom detection
-    const bathMatch = natural.match(/(\d+)\s*(bath|baths|bathroom|bathrooms|toilet|toilets)/i);
-    if (bathMatch) extracted.bathrooms = bathMatch[1];
+    for (const pattern of bedPatterns) {
+      const bedsMatch = natural.match(pattern);
+      if (bedsMatch) {
+        extracted.bedrooms = bedsMatch[1];
+        break;
+      }
+    }
+    
+    // Enhanced bathroom detection with routine language
+    const bathPatterns = [
+      /(\d+)\s*(bath|baths|bathroom|bathrooms|toilet|toilets)/i,
+      // Routine language patterns
+      /(\d+)\s*(?:ka|ke)\s*(?:bathroom|toilet|washroom)/i,
+      /(\d+)\s*(?:bath|toilet)\s*(?:ka|ke)\s*(?:flat|apartment|ghar)/i,
+      /(?:flat|apartment|ghar)\s*(?:with|mein)\s*(\d+)\s*(?:bath|toilet)/i,
+      /(\d+)\s*(?:bath|toilet)\s*(?:wala|wali)\s*(?:flat|apartment|ghar)/i
+    ];
+    
+    for (const pattern of bathPatterns) {
+      const bathMatch = natural.match(pattern);
+      if (bathMatch) {
+        extracted.bathrooms = bathMatch[1];
+        break;
+      }
+    }
 
-    // Enhanced price detection with more patterns
+    // Enhanced price detection with more patterns including routine language
     const pricePatterns = [
       /(?:under|below|upto|max|maximum)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
       /(?:within|around|about)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
       /(?:budget|budget of)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
-      /(?:less than|not more than)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i
+      /(?:less than|not more than)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
+      // Routine language patterns
+      /(?:kam\s+se\s+kam|minimum|at\s+least)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
+      /(?:zyada\s+se\s+zyada|maximum|at\s+most)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
+      /(?:tak|se\s+zyada|se\s+kam)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
+      /(?:around|about|lagbhag|takriban)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
+      /(?:budget|paisa|rupees)\s*(?:hai|mein)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
+      /(?:price|dam|rate)\s*(?:hai|mein)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i
     ];
     
     for (const pattern of pricePatterns) {
@@ -290,12 +325,18 @@ export default function AdminExplore() {
       }
     }
 
-    // Enhanced location detection
+    // Enhanced location detection with routine language
     const locationPatterns = [
       /(?:near|close to|around)\s+([a-zA-Z\s]+?)(?:\s|$|,|\.)/i,
       /(?:in|at|from)\s+([a-zA-Z\s]+?)(?:\s|$|,|\.)/i,
       /(?:located in|situated in)\s+([a-zA-Z\s]+?)(?:\s|$|,|\.)/i,
-      /(?:area|locality|neighborhood)\s+([a-zA-Z\s]+?)(?:\s|$|,|\.)/i
+      /(?:area|locality|neighborhood)\s+([a-zA-Z\s]+?)(?:\s|$|,|\.)/i,
+      // Routine language patterns
+      /(?:paas|near|ke\s+paas|ke\s+near)\s+([a-zA-Z\s]+?)(?:\s|$|,|\.)/i,
+      /(?:mein|in|at)\s+([a-zA-Z\s]+?)(?:\s|$|,|\.)/i,
+      /(?:area|ilaka|mohalla|colony)\s+([a-zA-Z\s]+?)(?:\s|$|,|\.)/i,
+      /(?:located|situated|hain)\s+(?:in|mein)\s+([a-zA-Z\s]+?)(?:\s|$|,|\.)/i,
+      /(?:from|se)\s+([a-zA-Z\s]+?)(?:\s|$|,|\.)/i
     ];
     
     for (const pattern of locationPatterns) {
@@ -321,41 +362,67 @@ export default function AdminExplore() {
     const matchedState = states.find(s => new RegExp(`(^|\b)${s}(\b|$)`).test(lower));
     if (matchedState) extracted.state = matchedState.replace(/\b\w/g, c => c.toUpperCase());
 
-    // Enhanced property type detection
+    // Enhanced property type detection with routine language
     const typePatterns = [
       /\b(rent|rental|renting|for rent|to rent)\b/i,
       /\b(sale|sell|selling|for sale|to sell|buy|buying|purchase|purchasing)\b/i,
-      /\b(lease|leasing|leased)\b/i
+      /\b(lease|leasing|leased)\b/i,
+      // Routine language patterns
+      /(?:rent|kiran|bhada)\s+(?:ke\s+liye|par|mein)/i,
+      /(?:sale|bechne|kharidne)\s+(?:ke\s+liye|par|mein)/i,
+      /(?:for|ke\s+liye)\s+(?:rent|sale|kiran|bechne)/i,
+      /(?:looking\s+for|chahiye|dhundh\s+raha)\s+(?:rent|sale|kiran|bechne)/i,
+      /(?:want|chahiye)\s+(?:to\s+)?(?:rent|buy|kiran|kharid)/i,
+      /(?:available\s+for|available)\s+(?:rent|sale|kiran|bechne)/i
     ];
     
     for (const pattern of typePatterns) {
       const typeMatch = natural.match(pattern);
       if (typeMatch) {
-        const type = typeMatch[1].toLowerCase();
-        if (/rent|lease/.test(type)) extracted.type = 'rent';
-        else if (/sale|buy|purchase/.test(type)) extracted.type = 'sale';
+        const type = typeMatch[1] || typeMatch[0];
+        if (/rent|kiran|bhada|lease/i.test(type)) extracted.type = 'rent';
+        else if (/sale|bechne|kharidne|buy|purchase/i.test(type)) extracted.type = 'sale';
         break;
       }
     }
 
-    // Enhanced amenities detection
+    // Enhanced amenities detection with routine language
     const amenityPatterns = {
       parking: [
         /(?:with|having|includes?)\s+parking/i,
         /parking\s+(?:available|included|provided)/i,
         /(?:car\s+)?parking/i,
-        /garage/i
+        /garage/i,
+        // Routine language patterns
+        /(?:gaadi|car|bike|scooter)\s+(?:parking|khada|rakhne)/i,
+        /(?:parking|khada)\s+(?:hai|available|mila)/i,
+        /(?:covered|chhaya)\s+(?:parking|khada)/i,
+        /(?:basement|tala)\s+(?:parking|khada)/i,
+        /(?:open|khula)\s+(?:parking|khada)/i
       ],
       furnished: [
         /(?:fully\s+)?furnished/i,
         /(?:with|having|includes?)\s+furniture/i,
         /furniture\s+(?:included|provided|available)/i,
-        /(?:semi\s+)?furnished/i
+        /(?:semi\s+)?furnished/i,
+        // Routine language patterns
+        /(?:furnished|sajavata|sajaya|sajaya\s+hua)/i,
+        /(?:furniture|samagri|saman)\s+(?:hai|available|mila)/i,
+        /(?:ready|taiyar)\s+(?:to\s+move|rehne|rahan)/i,
+        /(?:fully|puri\s+tarah|bilkul)\s+(?:furnished|sajaya)/i,
+        /(?:semi|aadha|thoda)\s+(?:furnished|sajaya)/i,
+        /(?:modern|naya|latest)\s+(?:furniture|samagri)/i
       ],
       unfurnished: [
         /unfurnished/i,
         /(?:without|no)\s+furniture/i,
-        /bare\s+apartment/i
+        /bare\s+apartment/i,
+        // Routine language patterns
+        /(?:unfurnished|khali|saman\s+nahi)/i,
+        /(?:without|bina)\s+(?:furniture|samagri)/i,
+        /(?:empty|khali)\s+(?:flat|apartment|ghar)/i,
+        /(?:bare|nanga)\s+(?:flat|apartment)/i,
+        /(?:no|nahi)\s+(?:furniture|samagri)/i
       ],
       offer: [
         /(?:special\s+)?offer/i,
@@ -363,7 +430,15 @@ export default function AdminExplore() {
         /deal/i,
         /promotion/i,
         /(?:reduced|lower)\s+price/i,
-        /(?:cheap|affordable|budget)/i
+        /(?:cheap|affordable|budget)/i,
+        // Routine language patterns
+        /(?:offer|sasta|kam\s+dam)/i,
+        /(?:discount|chhut|bargain)/i,
+        /(?:deal|sasta\s+deal|achha\s+deal)/i,
+        /(?:cheap|sasta|kam\s+price)/i,
+        /(?:affordable|paisa\s+vasool|value\s+for\s+money)/i,
+        /(?:budget|kam\s+budget|sasta)/i,
+        /(?:special|khas|limited)\s+(?:offer|deal)/i
       ]
     };
 
@@ -461,8 +536,8 @@ export default function AdminExplore() {
                 <input
                   value={smartQuery}
                   onChange={(e) => setSmartQuery(e.target.value)}
-                  placeholder="e.g., 3BHK above 50L in Bengaluru with parking"
-                  className="w-full p-4 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-lg pr-24 md:pr-4"
+                  placeholder="3BHK above 50L in Bengaluru with parking"
+                  className="w-full p-4 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-lg pr-24 md:pr-4 placeholder:text-sm md:placeholder:text-base"
                 />
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2 hidden md:block">
                   <button type="submit" className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-6 py-2 rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 transform hover:scale-105 shadow-lg font-semibold">
