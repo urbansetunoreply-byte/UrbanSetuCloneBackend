@@ -14,6 +14,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function SignIn({ bootstrapped, sessionChecked }) {
     const emailInputRef = useRef(null);
+    const otpEmailInputRef = useRef(null);
     const [formData, setFormData] = useState({
         email: "",
         password: ""
@@ -56,6 +57,13 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             focusWithoutKeyboard(emailInputRef.current);
         }
     }, []);
+
+    // Focus OTP email field when OTP method is selected
+    useEffect(() => {
+        if (loginMethod === "otp" && otpEmailInputRef.current) {
+            focusWithoutKeyboard(otpEmailInputRef.current);
+        }
+    }, [loginMethod]);
 
     // Block access if already signed in
     useEffect(() => {
@@ -477,6 +485,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                             id="email" 
                                             value={otpData.email}
                                             onChange={handleOtpChange} 
+                                            ref={otpEmailInputRef}
                                             className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${otpSent ? 'pr-12 bg-gray-50' : ''}`}
                                             required
                                             disabled={otpSent}
@@ -526,20 +535,6 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                     </div>
                                 )}
                                 
-                                <button 
-                                    disabled={loading || otpLoading || (!otpSent && !canResend)} 
-                                    className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
-                                >
-                                    {loading || otpLoading ? (
-                                        <div className="flex items-center justify-center">
-                                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                                            {otpSent ? "Verifying..." : "Sending OTP..."}
-                                        </div>
-                                    ) : (
-                                        otpSent ? "Verify & Sign In" : "Send OTP"
-                                    )}
-                                </button>
-                                
                                 {otpSent && (
                                     <div className="text-center">
                                         {resendTimer > 0 ? (
@@ -558,6 +553,20 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                         )}
                                     </div>
                                 )}
+                                
+                                <button 
+                                    disabled={loading || otpLoading || (!otpSent && !canResend)} 
+                                    className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
+                                >
+                                    {loading || otpLoading ? (
+                                        <div className="flex items-center justify-center">
+                                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                                            {otpSent ? "Verifying..." : "Sending OTP..."}
+                                        </div>
+                                    ) : (
+                                        otpSent ? "Verify & Sign In" : "Send OTP"
+                                    )}
+                                </button>
                             </form>
                         )}
                         
