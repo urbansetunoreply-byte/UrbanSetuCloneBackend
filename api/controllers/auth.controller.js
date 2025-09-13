@@ -470,7 +470,7 @@ export const sendLoginOTP = async (req, res, next) => {
         if (!user) {
             return res.status(400).json({
                 success: false,
-                message: "No account found with this email address. Please sign up first."
+                message: "We couldn’t find an account with this email. Sign up to create one."
             });
         }
 
