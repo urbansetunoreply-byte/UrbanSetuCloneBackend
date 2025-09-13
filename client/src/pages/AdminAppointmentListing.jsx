@@ -53,12 +53,11 @@ export default function AdminAppointmentListing() {
     if (
       !formData.date ||
       !formData.time ||
-      !formData.message ||
       !formData.purpose ||
       !formData.propertyName ||
       !formData.propertyDescription
     ) {
-      toast.error("Please fill out all fields before booking the appointment.");
+      toast.error("Please fill out all required fields before booking the appointment.");
       return;
     }
     if (!listingId) {

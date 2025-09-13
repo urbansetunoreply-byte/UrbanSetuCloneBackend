@@ -3193,6 +3193,14 @@ function AdminAppointmentRow({
         {appt.status === "deletedByAdmin" && appt.adminComment && (
           <div className="text-xs text-gray-600 mt-1">"{appt.adminComment}"</div>
         )}
+        {(appt.status === "cancelledByBuyer" || appt.status === "cancelledBySeller") && (
+          <div className="text-xs text-gray-600 mt-1">
+            {appt.status === "cancelledByBuyer" 
+              ? `Buyer reinitiations: ${appt.buyerReinitiationCount || 0}/2`
+              : `Seller reinitiations: ${appt.sellerReinitiationCount || 0}/2`
+            }
+          </div>
+        )}
       </td>
       <td className="border p-2 text-center">
         <div className="flex flex-col gap-2">
@@ -5018,7 +5026,25 @@ function AdminAppointmentRow({
                       const el=inputRef.current; if(!el)return; const base=newComment||''; const start=el.selectionStart||0; setNewComment(base.slice(0,start)+`- `+base.slice(start));
                     }}>• List</button>
                     <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
-                      const el=inputRef.current; if(!el)return; const base=newComment||''; const start=el.selectionStart||0; setNewComment(base.slice(0,start)+`1. `+base.slice(start));
+                      const el=inputRef.current; if(!el)return; const base=newComment||''; const start=el.selectionStart||0; const before = base.slice(0,start); const after = base.slice(start); 
+                      // Find existing numbered list items to determine next number
+                      const lines = before.split('\n');
+                      let nextNum = 1;
+                      
+                      // Check if we're continuing a list
+                      for (let i = lines.length - 1; i >= 0; i--) {
+                        const line = lines[i].trim();
+                        const match = line.match(/^(\d+)\.\s/);
+                        if (match) {
+                          nextNum = parseInt(match[1]) + 1;
+                          break;
+                        } else if (line && !line.match(/^\s*$/)) {
+                          // Non-empty, non-numbered line found, reset to 1
+                          break;
+                        }
+                      }
+                      
+                      setNewComment(base.slice(0,start)+`${nextNum}. `+base.slice(start));
                     }}>1. List</button>
                     <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
                       const el=inputRef.current; if(!el)return; const base=newComment||''; const start=el.selectionStart||0; setNewComment(base.slice(0,start)+`> `+base.slice(start));

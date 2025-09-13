@@ -108,12 +108,11 @@ export default function Appointment() {
     if (
       !formData.date ||
       !formData.time ||
-      !formData.message ||
       !formData.purpose ||
       !formData.propertyName ||
       !formData.propertyDescription
     ) {
-      toast.warning("Please fill out all fields before booking the appointment.");
+      toast.warning("Please fill out all required fields before booking the appointment.");
       return;
     }
 

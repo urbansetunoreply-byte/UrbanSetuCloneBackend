@@ -6155,7 +6155,26 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         const el = inputRef.current; if (!el) return; const base = comment || ''; const start = el.selectionStart || 0; const before = base.slice(0,start); const after = base.slice(start); const next = `${before}- ${after}`; setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2, start+2);}catch(_){}} ,0);
                       }}>• List</button>
                       <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
-                        const el = inputRef.current; if (!el) return; const base = comment || ''; const start = el.selectionStart || 0; const before = base.slice(0,start); const after = base.slice(start); const next = `${before}1. ${after}`; setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+3, start+3);}catch(_){}} ,0);
+                        const el = inputRef.current; if (!el) return; const base = comment || ''; const start = el.selectionStart || 0; const before = base.slice(0,start); const after = base.slice(start); 
+                        // Find existing numbered list items to determine next number
+                        const lines = before.split('\n');
+                        const lastLine = lines[lines.length - 1];
+                        let nextNum = 1;
+                        
+                        // Check if we're continuing a list
+                        for (let i = lines.length - 1; i >= 0; i--) {
+                          const line = lines[i].trim();
+                          const match = line.match(/^(\d+)\.\s/);
+                          if (match) {
+                            nextNum = parseInt(match[1]) + 1;
+                            break;
+                          } else if (line && !line.match(/^\s*$/)) {
+                            // Non-empty, non-numbered line found, reset to 1
+                            break;
+                          }
+                        }
+                        
+                        const next = `${before}${nextNum}. ${after}`; setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+(nextNum.toString().length)+2, start+(nextNum.toString().length)+2);}catch(_){}} ,0);
                       }}>1. List</button>
                       <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
                         const el = inputRef.current; if (!el) return; const base = comment || ''; const start = el.selectionStart || 0; const before = base.slice(0,start); const after = base.slice(start); const next = `${before}> ${after}`; setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2, start+2);}catch(_){}} ,0);
