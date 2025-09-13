@@ -354,10 +354,10 @@ export default function AdminChangePassword() {
               <p className="text-gray-600">
                   Changed your mind?{" "}
                 <button 
-                  onClick={() => navigate("/admin")} 
+                  onClick={() => navigate("/admin/profile")} 
                   className="text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors duration-200"
                 >
-                  Back to Dashboard
+                  Back to Profile
                 </button>
               </p>
             </div>
