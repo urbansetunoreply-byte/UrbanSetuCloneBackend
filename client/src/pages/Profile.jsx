@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { FaEdit, FaUser, FaEnvelope, FaPhone, FaKey, FaTrash, FaSignOutAlt, FaHome, FaCalendarAlt, FaHeart, FaEye, FaCrown, FaTimes, FaCheck, FaStar, FaRoute, FaCreditCard, FaShieldAlt, FaTools, FaTruck } from "react-icons/fa";
@@ -300,6 +300,9 @@ export default function Profile() {
   const [otpError, setOtpError] = useState("");
   const [emailEditMode, setEmailEditMode] = useState(false);
   
+  // OTP field ref for focus
+  const otpInputRef = useRef(null);
+  
   // Timer states for resend OTP
   const [resendTimer, setResendTimer] = useState(0);
   const [canResend, setCanResend] = useState(true);
@@ -600,6 +603,13 @@ export default function Profile() {
         // Start timer for resend
         setResendTimer(30); // 30 seconds
         setCanResend(false);
+        
+        // Focus on OTP field after a short delay
+        setTimeout(() => {
+          if (otpInputRef.current) {
+            otpInputRef.current.focus();
+          }
+        }, 100);
       } else {
         setOtpError(data.message);
       }
@@ -1802,11 +1812,17 @@ export default function Profile() {
                       </label>
                       <div className="flex flex-row gap-2">
                         <input
+                          ref={otpInputRef}
                           type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
                           placeholder="Enter 6-digit OTP"
                           id="otp"
                           value={otp}
-                          onChange={(e) => setOtp(e.target.value)}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^0-9]/g, '');
+                            setOtp(value);
+                          }}
                           maxLength="6"
                           className="flex-1 px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
                         />

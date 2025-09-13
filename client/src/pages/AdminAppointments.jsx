@@ -5050,7 +5050,7 @@ function AdminAppointmentRow({
                       const el=inputRef.current; if(!el)return; const base=newComment||''; const start=el.selectionStart||0; setNewComment(base.slice(0,start)+`> `+base.slice(start));
                     }}>&gt; Quote</button>
                     <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" title="Tag Property" onClick={() => {
-                      const el=inputRef.current; if(!el)return; const start=el.selectionStart||0; const base=newComment||''; const insert='@[PropertyName]'; setNewComment(base.slice(0,start)+insert+base.slice(start));
+                      const el=inputRef.current; if(!el)return; const start=el.selectionStart||0; const base=newComment||''; const insert='@'; setNewComment(base.slice(0,start)+insert+base.slice(start));
                     }}>@Prop</button>
                     <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" title="Insert appointment card" onClick={() => {
                       const el=inputRef.current; if(!el)return; const start=el.selectionStart||0; const base=newComment||''; const card='[Appointment: date • time • with]'; setNewComment(base.slice(0,start)+card+base.slice(start));
