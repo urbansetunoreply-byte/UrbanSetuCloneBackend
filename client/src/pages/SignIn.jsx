@@ -28,6 +28,10 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
     const [otpSent, setOtpSent] = useState(false);
     const [otpLoading, setOtpLoading] = useState(false);
     const [otpSuccessMessage, setOtpSuccessMessage] = useState("");
+    
+    // Timer states for resend OTP
+    const [resendTimer, setResendTimer] = useState(0);
+    const [canResend, setCanResend] = useState(true);
 
     const { loading, error, currentUser } = useSelector((state) => state.user);
     const navigate = useNavigate();
@@ -68,6 +72,25 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         }
     }, [bootstrapped, sessionChecked, currentUser, navigate]);
 
+    // Timer effect for resend OTP
+    useEffect(() => {
+        let interval = null;
+        if (resendTimer > 0) {
+            interval = setInterval(() => {
+                setResendTimer((prevTimer) => {
+                    if (prevTimer <= 1) {
+                        setCanResend(true);
+                        return 0;
+                    }
+                    return prevTimer - 1;
+                });
+            }, 1000);
+        }
+        return () => {
+            if (interval) clearInterval(interval);
+        };
+    }, [resendTimer]);
+
     const handleChange = (e) => {
         setFormData({
             ...formData,
@@ -92,6 +115,11 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         if (otpSuccessMessage) {
             setOtpSuccessMessage("");
         }
+        // Reset timer when email changes
+        if (e.target.id === "email") {
+            setResendTimer(0);
+            setCanResend(true);
+        }
     };
 
     const handleSendOTP = async (e) => {
@@ -99,6 +127,10 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         console.log('Send OTP clicked');
         if (!otpData.email) {
             dispatch(signInFailure("Email is required"));
+            return;
+        }
+
+        if (!canResend) {
             return;
         }
 
@@ -121,6 +153,10 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
 
             setOtpSent(true);
             setOtpSuccessMessage("OTP sent successfully to your email");
+            
+            // Start timer for resend
+            setResendTimer(30); // 30 seconds
+            setCanResend(false);
         } catch (error) {
             dispatch(signInFailure(error.message));
         } finally {
@@ -327,6 +363,8 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 setOtpSent(false);
                                 setOtpData({ email: "", otp: "" });
                                 setOtpSuccessMessage("");
+                                setResendTimer(0);
+                                setCanResend(true);
                             }}
                             className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
                                 loginMethod === "password"
@@ -342,6 +380,8 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 setLoginMethod("otp");
                                 setFormData({ email: "", password: "" });
                                 setOtpSuccessMessage("");
+                                setResendTimer(0);
+                                setCanResend(true);
                             }}
                             className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
                                 loginMethod === "otp"
@@ -487,7 +527,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 )}
                                 
                                 <button 
-                                    disabled={loading || otpLoading} 
+                                    disabled={loading || otpLoading || (!otpSent && !canResend)} 
                                     className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
                                 >
                                     {loading || otpLoading ? (
@@ -502,17 +542,20 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 
                                 {otpSent && (
                                     <div className="text-center">
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setOtpSent(false);
-                                                setOtpData({ email: otpData.email, otp: "" });
-                                                setOtpSuccessMessage("");
-                                            }}
-                                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200"
-                                        >
-                                            Resend OTP
-                                        </button>
+                                        {resendTimer > 0 ? (
+                                            <span className="text-sm text-gray-500">
+                                                Resend in {Math.floor(resendTimer / 60)}:{(resendTimer % 60).toString().padStart(2, '0')}
+                                            </span>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                onClick={handleSendOTP}
+                                                disabled={otpLoading || !canResend}
+                                                className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                {otpLoading ? "Sending..." : "Resend OTP"}
+                                            </button>
+                                        )}
                                     </div>
                                 )}
                             </form>
