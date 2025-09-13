@@ -2,6 +2,7 @@ import User from "../models/user.model.js";
 import bcryptjs from "bcryptjs";
 import { errorHandler } from "../utils/error.js";
 import jwt from 'jsonwebtoken'
+import { generateOTP, sendSignupOTPEmail } from "../utils/emailService.js";
 
 export const SignUp=async (req,res,next)=>{
     const {username,email,password,role,mobileNumber,address,emailVerified}=req.body;
@@ -325,3 +326,181 @@ export const resetPassword = async (req, res, next) => {
         next(error);
     }
 };
+
+// Store OTPs temporarily for login (in production, use Redis or database)
+const loginOtpStore = new Map();
+
+// Send OTP for login
+export const sendLoginOTP = async (req, res, next) => {
+    const { email } = req.body;
+    
+    if (!email) {
+        return next(errorHandler(400, "Email is required"));
+    }
+
+    const emailLower = email.toLowerCase();
+
+    try {
+        // Check if user exists with the email
+        const user = await User.findOne({ email: emailLower });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "No account found with that email address."
+            });
+        }
+
+        // Generate OTP
+        const otp = generateOTP();
+        
+        // Store OTP with expiration (10 minutes)
+        const expirationTime = Date.now() + 10 * 60 * 1000; // 10 minutes
+        loginOtpStore.set(emailLower, {
+            otp,
+            expirationTime,
+            attempts: 0,
+            userId: user._id
+        });
+
+        // Send OTP email for login
+        const emailResult = await sendLoginOTPEmail(emailLower, otp);
+        
+        if (!emailResult.success) {
+            return res.status(500).json({
+                success: false,
+                message: "Failed to send OTP. Please try again."
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "OTP sent successfully to your email"
+        });
+
+    } catch (error) {
+        console.error('Send login OTP error:', error);
+        next(error);
+    }
+};
+
+// Verify OTP and login
+export const verifyLoginOTP = async (req, res, next) => {
+    const { email, otp } = req.body;
+    
+    if (!email || !otp) {
+        return next(errorHandler(400, "Email and OTP are required"));
+    }
+
+    const emailLower = email.toLowerCase();
+
+    try {
+        // Get stored OTP data
+        const storedData = loginOtpStore.get(emailLower);
+        
+        if (!storedData) {
+            return res.status(400).json({
+                success: false,
+                message: "OTP expired or not found. Please request a new OTP."
+            });
+        }
+
+        // Check if OTP is expired
+        if (Date.now() > storedData.expirationTime) {
+            loginOtpStore.delete(emailLower);
+            return res.status(400).json({
+                success: false,
+                message: "OTP has expired. Please request a new OTP."
+            });
+        }
+
+        // Check if too many attempts
+        if (storedData.attempts >= 3) {
+            loginOtpStore.delete(emailLower);
+            return res.status(400).json({
+                success: false,
+                message: "Too many failed attempts. Please request a new OTP."
+            });
+        }
+
+        // Verify OTP
+        if (storedData.otp !== otp) {
+            storedData.attempts += 1;
+            loginOtpStore.set(emailLower, storedData);
+            
+            return res.status(400).json({
+                success: false,
+                message: "Invalid OTP. Please try again."
+            });
+        }
+
+        // OTP is valid, get user and create session
+        const user = await User.findById(storedData.userId).select('-password');
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        // Check if user is approved
+        if (user.adminApprovalStatus !== 'approved') {
+            return res.status(403).json({
+                success: false,
+                message: "Your account is pending approval. Please contact support."
+            });
+        }
+
+        // Check if user is suspended
+        if (user.status === 'suspended') {
+            return res.status(403).json({
+                success: false,
+                message: "Your account has been suspended. Please contact support."
+            });
+        }
+
+        // Generate JWT token
+        const token = jwt.sign({ id: user._id }, process.env.JWT_TOKEN);
+        
+        // Clear OTP from store
+        loginOtpStore.delete(emailLower);
+
+        // Set cookie
+        res.cookie('access_token', token, {
+            httpOnly: true,
+            sameSite: 'none',
+            secure: true,
+            path: '/'
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "Login successful",
+            token,
+            role: user.role,
+            isDefaultAdmin: user.isDefaultAdmin,
+            adminApprovalStatus: user.adminApprovalStatus,
+            status: user.status,
+            avatar: user.avatar,
+            mobileNumber: user.mobileNumber,
+            isGeneratedMobile: user.isGeneratedMobile,
+            address: user.address,
+            gender: user.gender,
+            username: user.username,
+            email: user.email
+        });
+
+    } catch (error) {
+        console.error('Verify login OTP error:', error);
+        next(error);
+    }
+};
+
+// Clean up expired login OTPs periodically
+setInterval(() => {
+    const now = Date.now();
+    for (const [email, data] of loginOtpStore.entries()) {
+        if (now > data.expirationTime) {
+            loginOtpStore.delete(email);
+        }
+    }
+}, 5 * 60 * 1000); // Clean up every 5 minutes

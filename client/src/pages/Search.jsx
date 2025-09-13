@@ -550,13 +550,19 @@ export default function Search() {
                               value={smartQuery}
                               onChange={(e) => setSmartQuery(e.target.value)}
                               placeholder="e.g., 2BHK under 15k near Delhi Metro, furnished with parking"
-                              className="w-full p-4 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-lg"
+                              className="w-full p-4 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-lg pr-24 md:pr-4"
                             />
-                            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 hidden md:block">
                                 <button type="submit" className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-6 py-2 rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 transform hover:scale-105 shadow-lg font-semibold">
                                     Search
                                 </button>
                             </div>
+                        </div>
+                        {/* Mobile Search Button */}
+                        <div className="md:hidden">
+                            <button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 transform hover:scale-105 shadow-lg font-semibold text-sm">
+                                Search
+                            </button>
                         </div>
                         <div className="flex flex-wrap gap-2">
                             <span className="text-sm text-gray-600">Try:</span>

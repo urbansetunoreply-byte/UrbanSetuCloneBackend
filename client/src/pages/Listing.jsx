@@ -1336,13 +1336,16 @@ export default function Listing() {
                     }
                   </p>
                 </div>
-                <div className="bg-white p-3 rounded-lg shadow-sm text-center">
-                  <FaEye className="mx-auto text-blue-600 mb-1" />
-                  <p className="text-xs text-gray-600">Views</p>
-                  <p className="font-semibold">
-                    {listing.viewCount || 0}
-                  </p>
-                </div>
+                {/* View Count - Only show for admins, rootadmins, and property owners */}
+                {currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin' || (listing.userRef && currentUser._id === listing.userRef)) && (
+                  <div className="bg-white p-3 rounded-lg shadow-sm text-center">
+                    <FaEye className="mx-auto text-blue-600 mb-1" />
+                    <p className="text-xs text-gray-600">Views</p>
+                    <p className="font-semibold">
+                      {listing.viewCount || 0}
+                    </p>
+                  </div>
+                )}
                 <div className="bg-white p-3 rounded-lg shadow-sm text-center">
                   <FaCalendarAlt className="mx-auto text-orange-600 mb-1" />
                   <p className="text-xs text-gray-600">Age</p>
@@ -1544,19 +1547,23 @@ export default function Listing() {
                       Property Performance
                     </h5>
                     <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Total Views</span>
-                        <span className="font-semibold text-blue-600">
-                          {listing.viewCount || 0}
-                        </span>
-                      </div>
+                      {/* Total Views - Only show for admins, rootadmins, and property owners */}
+                      {currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin' || (listing.userRef && currentUser._id === listing.userRef)) && (
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">Total Views</span>
+                          <span className="font-semibold text-blue-600">
+                            {listing.viewCount || 0}
+                          </span>
+                        </div>
+                      )}
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-600">Days Listed</span>
                         <span className="font-semibold text-blue-600">
                           {daysListed > 0 ? `${daysListed} days` : 'Today'}
                         </span>
                       </div>
-                      {isAdmin && isAdminContext && (
+                      {/* Interest Level - Only show for admins, rootadmins, and property owners */}
+                      {currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin' || (listing.userRef && currentUser._id === listing.userRef)) && (
                         <div className="flex justify-between">
                           <span className="text-sm text-gray-600">Interest Level</span>
                           <span className="font-semibold text-green-600">

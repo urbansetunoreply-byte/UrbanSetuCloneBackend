@@ -1,5 +1,5 @@
 import express from 'express'
-import { SignUp,SignIn,Google,Signout,verifyAuth,forgotPassword,resetPassword} from '../controllers/auth.controller.js'
+import { SignUp,SignIn,Google,Signout,verifyAuth,forgotPassword,resetPassword,sendLoginOTP,verifyLoginOTP} from '../controllers/auth.controller.js'
 import bcryptjs from 'bcryptjs';
 import User from '../models/user.model.js';
 import { verifyToken } from '../utils/verify.js';
@@ -19,6 +19,10 @@ router.post("/send-otp", sendOTP)
 router.post("/verify-otp", verifyOTP)
 router.post("/send-forgot-password-otp", sendForgotPasswordOTP)
 router.post("/send-profile-email-otp", sendProfileEmailOTP)
+
+// OTP Login routes
+router.post("/send-login-otp", sendLoginOTP)
+router.post("/verify-login-otp", verifyLoginOTP)
 
 // POST /api/auth/verify-password
 router.post('/verify-password', verifyToken, async (req, res) => {
