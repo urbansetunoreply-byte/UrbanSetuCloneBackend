@@ -119,7 +119,7 @@ export const SignIn=async(req,res,next)=>{
             // Track failed attempt
             trackFailedAttempt(identifier, validUser._id);
             logSecurityEvent('failed_login', { email: emailLower, userId: validUser._id, reason: 'invalid_password' });
-            return next(errorHandler(401,"Invalid credentials"))
+            return next(errorHandler(401,"Invalid email address or password"))
         }
         
         // Check if admin account is pending approval
