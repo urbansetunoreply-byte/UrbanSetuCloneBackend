@@ -2,7 +2,7 @@ import User from "../models/user.model.js";
 import bcryptjs from "bcryptjs";
 import { errorHandler } from "../utils/error.js";
 import jwt from 'jsonwebtoken'
-import { generateOTP, sendSignupOTPEmail } from "../utils/emailService.js";
+import { generateOTP, sendSignupOTPEmail,sendLoginOTPEmail } from "../utils/emailService.js";
 
 export const SignUp=async (req,res,next)=>{
     const {username,email,password,role,mobileNumber,address,emailVerified}=req.body;
