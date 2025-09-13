@@ -16,17 +16,7 @@ const CACHE_DURATION = 50 * 60 * 1000;
  */
 export const fetchCSRFToken = async () => {
   try {
-    // Check if we have a valid cached token
-    const now = Date.now();
-    if (csrfTokenCache.token && 
-        csrfTokenCache.timestamp && 
-        csrfTokenCache.expiresAt && 
-        now < csrfTokenCache.expiresAt && 
-        (now - csrfTokenCache.timestamp) < CACHE_DURATION) {
-      return csrfTokenCache.token;
-    }
-
-    // Fetch new token from server
+    // Always fetch a fresh token since server deletes tokens after use
     const response = await fetch(`${API_BASE_URL}/api/auth/csrf-token`, {
       method: 'GET',
       credentials: 'include', // Important: include cookies
@@ -47,13 +37,7 @@ export const fetchCSRFToken = async () => {
       throw new Error('No CSRF token received from server');
     }
 
-    // Cache the token
-    csrfTokenCache = {
-      token: data.csrfToken,
-      timestamp: now,
-      expiresAt: now + (60 * 60 * 1000) // 1 hour from now
-    };
-
+    // Don't cache the token since server deletes it after use
     return data.csrfToken;
   } catch (error) {
     console.error('Error fetching CSRF token:', error);
@@ -62,7 +46,7 @@ export const fetchCSRFToken = async () => {
 };
 
 /**
- * Get CSRF token (from cache or fetch new one)
+ * Get CSRF token (always fetch fresh one since server deletes after use)
  * @returns {Promise<string>} CSRF token
  */
 export const getCSRFToken = async () => {
@@ -93,22 +77,21 @@ export const createAuthenticatedFetchOptions = async (options = {}) => {
       ...options,
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRF-Token': csrfToken,
+        'x-csrf-token': csrfToken,
         ...options.headers,
       },
       credentials: 'include',
     };
   } catch (error) {
     console.error('Error creating authenticated fetch options:', error);
-    // Clear cache and try once more
-    clearCSRFTokenCache();
+    // Try once more without caching
     try {
-      const csrfToken = await getCSRFToken();
+      const csrfToken = await fetchCSRFToken();
       return {
         ...options,
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken,
+          'x-csrf-token': csrfToken,
           ...options.headers,
         },
         credentials: 'include',
