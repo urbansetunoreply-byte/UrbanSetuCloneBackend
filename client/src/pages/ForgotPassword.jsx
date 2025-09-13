@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import NotFound from "./NotFound";
 import { focusWithoutKeyboard } from '../utils/mobileUtils';
 import { calculatePasswordStrength, getPasswordStrengthColor, getPasswordStrengthBgColor, getPasswordStrengthText, meetsMinimumRequirements } from "../utils/passwordStrength.js";
+import { authenticatedFetch, getCSRFToken } from '../utils/csrf';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -196,11 +197,8 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
     setOtpError("");
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/send-forgot-password-otp`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-forgot-password-otp`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({ 
           email: formData.email
         }),
@@ -237,11 +235,8 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
     setOtpError("");
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/verify-otp`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({ 
           email: formData.email,
           otp: otp 
@@ -293,11 +288,8 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/reset-password`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/reset-password`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({
           userId: formData.userId,
           newPassword: formData.newPassword,

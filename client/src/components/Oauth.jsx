@@ -4,6 +4,7 @@ import { signInSuccess } from '../redux/user/userSlice.js';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { FcGoogle } from 'react-icons/fc';
+import { authenticatedFetch } from '../utils/csrf';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -17,19 +18,14 @@ export default function Oauth({ pageType }) {
             const auth = getAuth();
             const result = await signInWithPopup(auth, provider);
             const apiUrl = "/api/auth/google";
-            const options = {
+            const res = await authenticatedFetch(`${API_BASE_URL}${apiUrl}`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                credentials: "include",
                 body: JSON.stringify({
                     name: result.user.displayName,
                     email: result.user.email,
                     photo: result.user.photoURL
                 })
-            };
-            const res = await fetch(`${API_BASE_URL}${apiUrl}`, options);
+            });
             const data = await res.json();
             dispatch(signInSuccess(data));
             navigate("/");

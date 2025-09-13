@@ -9,6 +9,7 @@ import { reconnectSocket } from "../utils/socket";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { areCookiesEnabled, createAuthenticatedFetchOptions } from '../utils/auth';
 import { focusWithoutKeyboard } from '../utils/mobileUtils';
+import { authenticatedFetch, getCSRFToken } from '../utils/csrf';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -159,11 +160,8 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
 
         setOtpLoading(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/api/auth/send-login-otp`, {
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-login-otp`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
                 body: JSON.stringify({ email: otpData.email })
             });
 
@@ -205,15 +203,10 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         
         try {
             const apiUrl = `${API_BASE_URL}/api/auth/verify-login-otp`;
-            const options = {
+            const res = await authenticatedFetch(apiUrl, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                credentials: 'include',
                 body: JSON.stringify(otpData)
-            };
-            const res = await fetch(apiUrl, options);
+            });
             const data = await res.json();
 
             if (data.success === false) {
@@ -270,15 +263,10 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         
         try {
             const apiUrl = `${API_BASE_URL}/api/auth/signin`;
-            const options = {
+            const res = await authenticatedFetch(apiUrl, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                credentials: 'include',
                 body: JSON.stringify(formData)
-            };
-            const res = await fetch(apiUrl, options);
+            });
             const data = await res.json();
 
             if (data.success === false) {

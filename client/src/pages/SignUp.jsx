@@ -5,6 +5,7 @@ import Oauth from "../components/Oauth";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import { useSelector } from "react-redux";
 import { calculatePasswordStrength, getPasswordStrengthColor, getPasswordStrengthBgColor, getPasswordStrengthText, meetsMinimumRequirements } from "../utils/passwordStrength.js";
+import { authenticatedFetch, getCSRFToken } from '../utils/csrf';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -130,11 +131,8 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
     setOtpError("");
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/send-otp`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-otp`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({ email: formData.email }),
       });
 
@@ -169,11 +167,8 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
     setOtpError("");
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/verify-otp`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({ 
           email: formData.email,
           otp: otp 
@@ -227,17 +222,13 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
 
     try {
       const apiUrl = `${API_BASE_URL}/api/auth/signup`;
-      const options = {
+      const res = await authenticatedFetch(apiUrl, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({
           ...formData,
           emailVerified: true
         }),
-      };
-      const res = await fetch(apiUrl, options);
+      });
       const data = await res.json();
       if (data.success === false) {
         // Handle field-specific errors
