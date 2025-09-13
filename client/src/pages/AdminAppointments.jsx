@@ -5074,7 +5074,7 @@ function AdminAppointmentRow({
                         return uniqueProps.slice(0,8).map(p => (
                           <button key={p.id} type="button" className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100" onClick={() => {
                             const el = inputRef.current; const base = newComment || ''; const m = base.match(/@([^\s]*)$/); if (!m) return; const start = base.lastIndexOf('@');
-                            const token = `@[${p.name}](${p.id})`;
+                            const token = `@`;
                             const next = base.slice(0,start) + token + ' ' + base.slice(start + m[0].length);
                             setNewComment(next);
                             setTimeout(()=>{ try{ el?.focus(); el?.setSelectionRange(start+token.length+1, start+token.length+1);}catch(_){}} ,0);
@@ -6130,7 +6130,11 @@ function AdminAppointmentRow({
                                   ? 'bg-gradient-to-r from-blue-600 to-purple-700 text-white hover:from-blue-500 hover:to-purple-600' 
                                   : 'bg-white text-gray-800 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
                               }`}
-                              onClick={() => {
+                              onClick={(e) => {
+                                // Don't scroll if clicking on a link
+                                if (e.target.tagName === 'A' || e.target.closest('a')) {
+                                  return;
+                                }
                                 setShowStarredModal(false);
                                 // Scroll to the message in the main chat if it exists
                                 const messageElement = document.querySelector(`[data-message-id="${message._id}"]`);
