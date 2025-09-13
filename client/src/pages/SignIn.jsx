@@ -16,6 +16,8 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export default function SignIn({ bootstrapped, sessionChecked }) {
     const emailInputRef = useRef(null);
     const otpEmailInputRef = useRef(null);
+    const passwordInputRef = useRef(null);
+    const otpInputRef = useRef(null);
     const [formData, setFormData] = useState({
         email: "",
         password: ""
@@ -66,6 +68,20 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             focusWithoutKeyboard(otpEmailInputRef.current);
         }
     }, [loginMethod]);
+
+    // Focus password field when email step is completed
+    useEffect(() => {
+        if (emailStep && passwordInputRef.current) {
+            focusWithoutKeyboard(passwordInputRef.current);
+        }
+    }, [emailStep]);
+
+    // Focus OTP field when OTP is sent
+    useEffect(() => {
+        if (otpSent && otpInputRef.current) {
+            focusWithoutKeyboard(otpInputRef.current);
+        }
+    }, [otpSent]);
 
     // Block access if already signed in
     useEffect(() => {
@@ -430,6 +446,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                                 id="password" 
                                                 value={formData.password}
                                                 onChange={handleChange} 
+                                                ref={passwordInputRef}
                                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pr-12"
                                                 required
                                             />
@@ -523,6 +540,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                             placeholder="Enter 6-digit OTP" 
                                             id="otp" 
                                             value={otpData.otp}
+                                            ref={otpInputRef}
                                             onChange={(e) => {
                                                 // Only allow numbers
                                                 const value = e.target.value.replace(/[^0-9]/g, '');

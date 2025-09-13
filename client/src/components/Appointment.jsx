@@ -168,6 +168,14 @@ export default function Appointment() {
     // Close payment modal without marking as booked or redirecting
     setShowPaymentModal(false);
     toast.info('Payment not completed. Appointment remains pending until payment is confirmed.');
+    // Navigate to appointments page after closing payment modal
+    setTimeout(() => {
+      if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
+        navigate('/admin/appointments');
+      } else {
+        navigate('/user/my-appointments');
+      }
+    }, 1000);
   };
 
   if (!currentUser) {

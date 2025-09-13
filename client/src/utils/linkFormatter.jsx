@@ -82,9 +82,11 @@ const formatMarkdown = (text, isSentMessage = false) => {
       const listMatch = line.match(/^(\s*)(\d+)\.\s+(.*)$/);
       if (listMatch) {
         const [, indent, num, content] = listMatch;
+        // Use different colors for sent vs received messages
+        const listColor = isSentMessage ? "text-blue-200" : "text-blue-600";
         result.push(
           <div key={lineIndex} className={`${indent ? 'ml-4' : ''} mb-1`}>
-            <span className="font-medium text-blue-600">{num}.</span> {parts.length > 0 ? parts : content}
+            <span className={`font-medium ${listColor}`}>{num}.</span> {parts.length > 0 ? parts : content}
           </div>
         );
         return;
@@ -94,9 +96,11 @@ const formatMarkdown = (text, isSentMessage = false) => {
       const listMatch = line.match(/^(\s*)[-•]\s+(.*)$/);
       if (listMatch) {
         const [, indent, content] = listMatch;
+        // Use different colors for sent vs received messages
+        const listColor = isSentMessage ? "text-blue-200" : "text-blue-600";
         result.push(
           <div key={lineIndex} className={`${indent ? 'ml-4' : ''} mb-1`}>
-            <span className="text-blue-600">•</span> {parts.length > 0 ? parts : content}
+            <span className={listColor}>•</span> {parts.length > 0 ? parts : content}
           </div>
         );
         return;
@@ -106,8 +110,11 @@ const formatMarkdown = (text, isSentMessage = false) => {
       const quoteMatch = line.match(/^>\s+(.*)$/);
       if (quoteMatch) {
         const content = quoteMatch[1];
+        // Use different text colors for sent vs received messages
+        const textColor = isSentMessage ? "text-gray-200" : "text-gray-600";
+        const borderColor = isSentMessage ? "border-gray-400" : "border-gray-300";
         result.push(
-          <div key={lineIndex} className="border-l-4 border-gray-300 pl-3 ml-2 italic text-gray-600 mb-1">
+          <div key={lineIndex} className={`border-l-4 ${borderColor} pl-3 ml-2 italic ${textColor} mb-1`}>
             {parts.length > 0 ? parts : content}
           </div>
         );
