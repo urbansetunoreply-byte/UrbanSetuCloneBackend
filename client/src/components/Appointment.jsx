@@ -265,7 +265,7 @@ export default function Appointment() {
               name="message"
               value={formData.message}
               onChange={handleChange}
-              placeholder="Tell us about your requirements..."
+              placeholder="Tell us about your requirements... (Optional)"
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               rows="4"
             ></textarea>

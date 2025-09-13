@@ -409,9 +409,9 @@ export const forgotPassword = async (req, res, next) => {
 // Reset Password
 export const resetPassword = async (req, res, next) => {
     try {
-        const { token, newPassword, confirmPassword } = req.body;
+        const { userId, newPassword, confirmPassword } = req.body;
         
-        if (!token || !newPassword || !confirmPassword) {
+        if (!userId || !newPassword || !confirmPassword) {
             return next(errorHandler(400, "All fields are required"));
         }
         
@@ -425,31 +425,8 @@ export const resetPassword = async (req, res, next) => {
             return next(errorHandler(400, "Password must be at least 8 characters and include uppercase, lowercase, number, and special character"));
         }
         
-        // Verify reset token
-        let decoded;
-        try {
-            decoded = jwt.verify(token, process.env.JWT_TOKEN);
-            if (decoded.type !== 'password_reset') {
-                return next(errorHandler(400, "Invalid token type"));
-            }
-        } catch (error) {
-            return next(errorHandler(400, "Invalid or expired reset token"));
-        }
-        
-        // Check if token exists in store and is not used
-        const tokenData = resetTokenStore.get(token);
-        if (!tokenData || tokenData.used) {
-            return next(errorHandler(400, "Invalid or expired reset token"));
-        }
-        
-        // Check if token is expired
-        if (Date.now() > tokenData.expiresAt) {
-            resetTokenStore.delete(token);
-            return next(errorHandler(400, "Reset token has expired"));
-        }
-        
         // Find user by ID
-        const user = await User.findById(tokenData.userId);
+        const user = await User.findById(userId);
         
         if (!user) {
             return next(errorHandler(404, "User not found"));
@@ -464,9 +441,6 @@ export const resetPassword = async (req, res, next) => {
         // Update password
         user.password = bcryptjs.hashSync(newPassword, 10);
         await user.save();
-        
-        // Mark token as used
-        resetTokenStore.delete(token);
         
         res.status(200).json({ 
             message: "Password reset successful. You can now log in.",
@@ -494,9 +468,9 @@ export const sendLoginOTP = async (req, res, next) => {
         // Check if user exists with the email
         const user = await User.findOne({ email: emailLower });
         if (!user) {
-            return res.status(200).json({
-                success: true,
-                message: "If this email exists, we sent instructions."
+            return res.status(400).json({
+                success: false,
+                message: "No account found with this email address. Please sign up first."
             });
         }
 

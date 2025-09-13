@@ -3181,7 +3181,7 @@ function AdminAppointmentRow({
         </button>
       </td>
       <td className="border p-2 capitalize">{appt.purpose}</td>
-      <td className="border p-2 max-w-xs truncate">{appt.message}</td>
+      <td className="border p-2 max-w-xs truncate">{appt.message || 'No message provided'}</td>
       <td className="border p-2 text-center">
         <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(appt.status)}`}>
           {appt.status === "deletedByAdmin" ? "Deleted by Admin" :
