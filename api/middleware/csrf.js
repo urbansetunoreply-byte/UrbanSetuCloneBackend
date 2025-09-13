@@ -85,9 +85,20 @@ export const verifyCSRFToken = (req, res, next) => {
             return next(errorHandler(403, 'CSRF token mismatch'));
         }
         
-        // Remove used token (one-time use)
-        csrfTokenStore.delete(token);
-        console.log('CSRF token verified and consumed successfully');
+        // Remove used token (one-time use) - except for OTP endpoints which need multiple uses
+        const isOTPEndpoint = req.path.includes('/send-otp') || 
+                             req.path.includes('/verify-otp') || 
+                             req.path.includes('/send-forgot-password-otp') || 
+                             req.path.includes('/send-profile-email-otp') || 
+                             req.path.includes('/send-login-otp') || 
+                             req.path.includes('/verify-login-otp');
+        
+        if (!isOTPEndpoint) {
+            csrfTokenStore.delete(token);
+            console.log('CSRF token verified and consumed successfully');
+        } else {
+            console.log('CSRF token verified for OTP endpoint (not consumed)');
+        }
         
         next();
     } catch (error) {

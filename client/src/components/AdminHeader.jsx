@@ -101,7 +101,7 @@ export default function AdminHeader() {
         return 'bg-gradient-to-r from-red-600 to-red-700'; // Red for forgot-password verification step
       case '/change-password':
       case '/admin/change-password':
-        return 'bg-gradient-to-r from-green-600 to-green-700'; // Green for change-password
+        return 'bg-gradient-to-r from-blue-600 to-blue-700'; // Blue for change-password
       default:
         return 'bg-gradient-to-r from-blue-700 to-purple-700'; // Default blue-purple
     }
@@ -126,7 +126,7 @@ export default function AdminHeader() {
         return 'bg-red-500 hover:bg-red-600'; // Red for forgot-password verification step
       case '/change-password':
       case '/admin/change-password':
-        return 'bg-green-500 hover:bg-green-600'; // Green for change-password
+        return 'bg-blue-500 hover:bg-blue-600'; // Blue for change-password
       default:
         return 'bg-blue-500 hover:bg-blue-600'; // Default blue
     }
