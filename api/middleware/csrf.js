@@ -20,10 +20,13 @@ export const generateCSRFToken = (req, res, next) => {
         const token = crypto.randomBytes(32).toString('hex');
         const expiresAt = Date.now() + 60 * 60 * 1000; // 1 hour
         
+        // Use IP address and User-Agent as identifier since we don't have sessions
+        const identifier = `${req.ip}-${req.get('User-Agent') || 'unknown'}`;
+        
         // Store token with expiration
         csrfTokenStore.set(token, {
             expiresAt,
-            sessionId: req.sessionID || req.ip // Use session ID or IP as identifier
+            sessionId: identifier
         });
         
         // Set token in cookie
@@ -62,9 +65,9 @@ export const verifyCSRFToken = (req, res, next) => {
             return next(errorHandler(403, 'CSRF token expired'));
         }
         
-        // Check session identifier
-        const sessionId = req.sessionID || req.ip;
-        if (tokenData.sessionId !== sessionId) {
+        // Check identifier (IP + User-Agent)
+        const identifier = `${req.ip}-${req.get('User-Agent') || 'unknown'}`;
+        if (tokenData.sessionId !== identifier) {
             return next(errorHandler(403, 'CSRF token mismatch'));
         }
         
@@ -79,15 +82,62 @@ export const verifyCSRFToken = (req, res, next) => {
 
 // Get CSRF token for forms
 export const getCSRFToken = (req, res) => {
-    const token = req.cookies.csrf_token;
-    if (!token) {
-        return res.status(400).json({ error: 'CSRF token not found' });
+    try {
+        const token = req.cookies.csrf_token;
+        
+        // If no token exists, generate a new one
+        if (!token) {
+            const newToken = crypto.randomBytes(32).toString('hex');
+            const expiresAt = Date.now() + 60 * 60 * 1000; // 1 hour
+            const identifier = `${req.ip}-${req.get('User-Agent') || 'unknown'}`;
+            
+            // Store token with expiration
+            csrfTokenStore.set(newToken, {
+                expiresAt,
+                sessionId: identifier
+            });
+            
+            // Set token in cookie
+            res.cookie('csrf_token', newToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict',
+                path: '/',
+                maxAge: 60 * 60 * 1000 // 1 hour
+            });
+            
+            return res.json({ csrfToken: newToken });
+        }
+        
+        // Check if existing token is valid
+        const tokenData = csrfTokenStore.get(token);
+        if (!tokenData || Date.now() > tokenData.expiresAt) {
+            // Token expired, generate a new one
+            const newToken = crypto.randomBytes(32).toString('hex');
+            const expiresAt = Date.now() + 60 * 60 * 1000; // 1 hour
+            const identifier = `${req.ip}-${req.get('User-Agent') || 'unknown'}`;
+            
+            // Store new token
+            csrfTokenStore.set(newToken, {
+                expiresAt,
+                sessionId: identifier
+            });
+            
+            // Set new token in cookie
+            res.cookie('csrf_token', newToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict',
+                path: '/',
+                maxAge: 60 * 60 * 1000 // 1 hour
+            });
+            
+            return res.json({ csrfToken: newToken });
+        }
+        
+        res.json({ csrfToken: token });
+    } catch (error) {
+        console.error('Error in getCSRFToken:', error);
+        res.status(500).json({ error: 'Failed to generate CSRF token' });
     }
-    
-    const tokenData = csrfTokenStore.get(token);
-    if (!tokenData || Date.now() > tokenData.expiresAt) {
-        return res.status(400).json({ error: 'CSRF token expired' });
-    }
-    
-    res.json({ csrfToken: token });
 };

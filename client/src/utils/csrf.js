@@ -36,6 +36,8 @@ export const fetchCSRFToken = async () => {
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('CSRF token fetch failed:', response.status, errorText);
       throw new Error(`Failed to fetch CSRF token: ${response.status}`);
     }
 
@@ -98,15 +100,31 @@ export const createAuthenticatedFetchOptions = async (options = {}) => {
     };
   } catch (error) {
     console.error('Error creating authenticated fetch options:', error);
-    // Return options without CSRF token as fallback
-    return {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-      credentials: 'include',
-    };
+    // Clear cache and try once more
+    clearCSRFTokenCache();
+    try {
+      const csrfToken = await getCSRFToken();
+      return {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
+          ...options.headers,
+        },
+        credentials: 'include',
+      };
+    } catch (retryError) {
+      console.error('Retry failed for CSRF token:', retryError);
+      // Return options without CSRF token as final fallback
+      return {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+        credentials: 'include',
+      };
+    }
   }
 };
 
