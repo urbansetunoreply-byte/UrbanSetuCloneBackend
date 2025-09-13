@@ -27,6 +27,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
     });
     const [otpSent, setOtpSent] = useState(false);
     const [otpLoading, setOtpLoading] = useState(false);
+    const [otpSuccessMessage, setOtpSuccessMessage] = useState("");
 
     const { loading, error, currentUser } = useSelector((state) => state.user);
     const navigate = useNavigate();
@@ -87,10 +88,15 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         if (urlError) {
             setUrlError("");
         }
+        // Clear success message when user starts typing
+        if (otpSuccessMessage) {
+            setOtpSuccessMessage("");
+        }
     };
 
     const handleSendOTP = async (e) => {
         e.preventDefault();
+        console.log('Send OTP clicked');
         if (!otpData.email) {
             dispatch(signInFailure("Email is required"));
             return;
@@ -114,7 +120,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             }
 
             setOtpSent(true);
-            dispatch(signInSuccess({ message: "OTP sent successfully to your email" }));
+            setOtpSuccessMessage("OTP sent successfully to your email");
         } catch (error) {
             dispatch(signInFailure(error.message));
         } finally {
@@ -124,6 +130,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
 
     const handleOtpLogin = async (e) => {
         e.preventDefault();
+        console.log('Verify OTP clicked');
         if (!otpData.email || !otpData.otp) {
             dispatch(signInFailure("Email and OTP are required"));
             return;
@@ -319,6 +326,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 setLoginMethod("password");
                                 setOtpSent(false);
                                 setOtpData({ email: "", otp: "" });
+                                setOtpSuccessMessage("");
                             }}
                             className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
                                 loginMethod === "password"
@@ -333,6 +341,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                             onClick={() => {
                                 setLoginMethod("otp");
                                 setFormData({ email: "", password: "" });
+                                setOtpSuccessMessage("");
                             }}
                             className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
                                 loginMethod === "otp"
@@ -421,20 +430,43 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                     <label htmlFor="otp-email" className="block text-sm font-medium text-gray-700 mb-2">
                                         Email Address
                                     </label>
-                                    <input 
-                                        type="email" 
-                                        placeholder="Enter your email" 
-                                        id="email" 
-                                        value={otpData.email}
-                                        onChange={handleOtpChange} 
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                                        required
-                                        disabled={otpSent}
-                                    />
+                                    <div className="relative">
+                                        <input 
+                                            type="email" 
+                                            placeholder="Enter your email" 
+                                            id="email" 
+                                            value={otpData.email}
+                                            onChange={handleOtpChange} 
+                                            className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${otpSent ? 'pr-12 bg-gray-50' : ''}`}
+                                            required
+                                            disabled={otpSent}
+                                        />
+                                        {otpSent && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setOtpSent(false);
+                                                    setOtpData({ email: otpData.email, otp: "" });
+                                                    setOtpSuccessMessage("");
+                                                }}
+                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-800 focus:outline-none"
+                                                title="Edit email"
+                                            >
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                                 
                                 {otpSent && (
                                     <div>
+                                        {otpSuccessMessage && (
+                                            <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                                                <p className="text-green-600 text-sm">{otpSuccessMessage}</p>
+                                            </div>
+                                        )}
                                         <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-2">
                                             OTP Code
                                         </label>
@@ -475,6 +507,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                             onClick={() => {
                                                 setOtpSent(false);
                                                 setOtpData({ email: otpData.email, otp: "" });
+                                                setOtpSuccessMessage("");
                                             }}
                                             className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200"
                                         >
