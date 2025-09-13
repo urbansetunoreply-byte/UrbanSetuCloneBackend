@@ -34,6 +34,8 @@ export default function Appointment() {
   const [checkingActive, setCheckingActive] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [appointmentData, setAppointmentData] = useState(null);
+  const [paymentStatus, setPaymentStatus] = useState(null); // 'success' or 'failed'
+  const [showPaymentMessage, setShowPaymentMessage] = useState(false);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -154,6 +156,8 @@ export default function Appointment() {
   const handlePaymentSuccess = (payment) => {
     setBooked(true);
     setShowPaymentModal(false);
+    setPaymentStatus('success');
+    setShowPaymentMessage(true);
     toast.success('Appointment booked and payment confirmed!');
     setTimeout(() => {
       if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
@@ -167,6 +171,8 @@ export default function Appointment() {
   const handlePaymentClose = () => {
     // Close payment modal without marking as booked or redirecting
     setShowPaymentModal(false);
+    setPaymentStatus('failed');
+    setShowPaymentMessage(true);
     toast.info('Payment not completed. Appointment remains pending until payment is confirmed.');
     // Navigate to appointments page after closing payment modal
     setTimeout(() => {
@@ -175,7 +181,7 @@ export default function Appointment() {
       } else {
         navigate('/user/my-appointments');
       }
-    }, 1000);
+    }, 2000);
   };
 
   if (!currentUser) {
@@ -196,7 +202,24 @@ export default function Appointment() {
         <h3 className="text-3xl font-extrabold text-blue-700 mb-6 text-center drop-shadow">
           Book Appointment
         </h3>
-        {booked ? (
+        {showPaymentMessage ? (
+          <div className="text-center py-10">
+            {paymentStatus === 'success' ? (
+              <>
+                <div className="text-green-600 text-xl font-semibold mb-2">Payment Successful!</div>
+                <div className="text-gray-700 mb-2">Appointment booked successfully!</div>
+                <div className="text-gray-600 text-sm mb-2">The property owner will review your request.</div>
+                <div className="text-sm text-gray-500">Redirecting to Myappointments...</div>
+              </>
+            ) : (
+              <>
+                <div className="text-red-600 text-xl font-semibold mb-2">Payment Unsuccessful</div>
+                <div className="text-gray-700 mb-2">Please complete your payment from Myppointments to confirm booking</div>
+                <div className="text-sm text-gray-500">Redirecting to Myappointments...</div>
+              </>
+            )}
+          </div>
+        ) : booked ? (
           <div className="text-center py-10">
             <div className="text-green-600 text-xl font-semibold">Appointment booked successfully!</div>
             <div className="text-gray-700 mt-1">The property owner will review your request.</div>

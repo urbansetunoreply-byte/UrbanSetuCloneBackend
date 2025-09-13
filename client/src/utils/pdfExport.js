@@ -49,52 +49,138 @@ const loadImageAsBase64 = (url) => {
 };
 
 /**
- * Process message text to handle links and split into lines
+ * Process message text to handle markdown formatting, links and split into lines
  */
-const processMessageWithLinks = (message, pdf, maxWidth) => {
+const processMessageWithMarkdownAndLinks = (message, pdf, maxWidth) => {
   // URL regex pattern to match various link formats
   const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|[^\s]+\.[^\s]{2,})/gi;
   
-  // Split message into parts (text and URLs)
-  const parts = message.split(urlRegex);
+  // Markdown patterns
+  const markdownPatterns = [
+    { regex: /\*\*(.*?)\*\*/g, type: 'bold' },
+    { regex: /\*(.*?)\*/g, type: 'italic' },
+    { regex: /__(.*?)__/g, type: 'underline' },
+    { regex: /~~(.*?)~~/g, type: 'strikethrough' },
+  ];
+  
+  // First, process markdown formatting
+  let processedText = message;
+  const markdownElements = [];
+  
+  markdownPatterns.forEach(pattern => {
+    let match;
+    while ((match = pattern.regex.exec(processedText)) !== null) {
+      markdownElements.push({
+        start: match.index,
+        end: match.index + match[0].length,
+        content: match[1],
+        type: pattern.type,
+        full: match[0]
+      });
+    }
+  });
+  
+  // Sort markdown elements by position
+  markdownElements.sort((a, b) => a.start - b.start);
+  
+  // Process non-overlapping markdown elements
+  const validMarkdownElements = [];
+  markdownElements.forEach(element => {
+    const overlaps = validMarkdownElements.some(vm => 
+      (element.start >= vm.start && element.start < vm.end) ||
+      (element.end > vm.start && element.end <= vm.end)
+    );
+    if (!overlaps) {
+      validMarkdownElements.push(element);
+    }
+  });
+  
+  // Build the formatted text with markdown
+  const textParts = [];
+  let currentIndex = 0;
+  
+  validMarkdownElements.forEach((element, idx) => {
+    // Add text before the element
+    if (element.start > currentIndex) {
+      textParts.push({
+        type: 'text',
+        content: processedText.slice(currentIndex, element.start)
+      });
+    }
+    
+    // Add the formatted element
+    textParts.push({
+      type: element.type,
+      content: element.content
+    });
+    
+    currentIndex = element.end;
+  });
+  
+  // Add remaining text
+  if (currentIndex < processedText.length) {
+    textParts.push({
+      type: 'text',
+      content: processedText.slice(currentIndex)
+    });
+  }
+  
+  // Now process each text part for URLs
   const lines = [];
   let currentLine = '';
   
-  parts.forEach((part, index) => {
-    // Check if this part is a URL
-    if (urlRegex.test(part)) {
-      // Ensure URL has protocol
-      let url = part;
-      if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        url = 'https://' + url;
-      }
+  textParts.forEach(part => {
+    if (part.type === 'text') {
+      // Process URLs in text parts
+      const urlParts = part.content.split(urlRegex);
       
-      // Add URL to current line or create new line if needed
-      const urlWithProtocol = url;
-      const displayUrl = part;
-      
-      if (currentLine.length + displayUrl.length <= maxWidth) {
-        currentLine += displayUrl;
-      } else {
-        if (currentLine.trim()) {
-          lines.push({ type: 'text', content: currentLine.trim() });
+      urlParts.forEach((urlPart, index) => {
+        if (urlRegex.test(urlPart)) {
+          // This is a URL
+          let url = urlPart;
+          if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            url = 'https://' + url;
+          }
+          
+          if (currentLine.length + urlPart.length <= maxWidth) {
+            currentLine += urlPart;
+          } else {
+            if (currentLine.trim()) {
+              lines.push({ type: 'text', content: currentLine.trim() });
+            }
+            currentLine = urlPart;
+          }
+          
+          lines.push({ type: 'url', content: urlPart, url: url });
+          currentLine = '';
+        } else {
+          // Regular text
+          if (currentLine.length + urlPart.length <= maxWidth) {
+            currentLine += urlPart;
+          } else {
+            if (currentLine.trim()) {
+              lines.push({ type: 'text', content: currentLine.trim() });
+            }
+            currentLine = urlPart;
+          }
         }
-        currentLine = displayUrl;
-      }
-      
-      // Add URL object to lines
-      lines.push({ type: 'url', content: displayUrl, url: urlWithProtocol });
-      currentLine = '';
+      });
     } else {
-      // Regular text
-      if (currentLine.length + part.length <= maxWidth) {
-        currentLine += part;
+      // Markdown formatted content
+      if (currentLine.length + part.content.length <= maxWidth) {
+        currentLine += part.content;
       } else {
         if (currentLine.trim()) {
           lines.push({ type: 'text', content: currentLine.trim() });
         }
-        currentLine = part;
+        currentLine = part.content;
       }
+      
+      lines.push({ 
+        type: part.type, 
+        content: part.content 
+      });
+      currentLine = '';
     }
   });
   
@@ -107,9 +193,9 @@ const processMessageWithLinks = (message, pdf, maxWidth) => {
 };
 
 /**
- * Render message lines with link support
+ * Render message lines with markdown formatting and link support
  */
-const renderMessageWithLinks = (pdf, lines, startX, startY, isCurrentUser) => {
+const renderMessageWithMarkdownAndLinks = (pdf, lines, startX, startY, isCurrentUser) => {
   let currentY = startY;
   
   lines.forEach((line, lineIndex) => {
@@ -135,6 +221,58 @@ const renderMessageWithLinks = (pdf, lines, startX, startY, isCurrentUser) => {
       // Render link text
       pdf.text(line.content, startX, currentY);
       
+      currentY += 4;
+    } else if (line.type === 'bold') {
+      // Render bold text
+      const textColor = isCurrentUser ? [255, 255, 255] : [51, 51, 51];
+      pdf.setTextColor(...textColor);
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'bold');
+      
+      pdf.text(line.content, startX, currentY);
+      currentY += 4;
+    } else if (line.type === 'italic') {
+      // Render italic text
+      const textColor = isCurrentUser ? [255, 255, 255] : [51, 51, 51];
+      pdf.setTextColor(...textColor);
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'italic');
+      
+      pdf.text(line.content, startX, currentY);
+      currentY += 4;
+    } else if (line.type === 'underline') {
+      // Render underlined text
+      const textColor = isCurrentUser ? [255, 255, 255] : [51, 51, 51];
+      pdf.setTextColor(...textColor);
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'normal');
+      
+      const textWidth = pdf.getTextWidth(line.content);
+      const underlineY = currentY + 1;
+      
+      // Draw underline
+      pdf.setDrawColor(...textColor);
+      pdf.line(startX, underlineY, startX + textWidth, underlineY);
+      
+      // Render text
+      pdf.text(line.content, startX, currentY);
+      currentY += 4;
+    } else if (line.type === 'strikethrough') {
+      // Render strikethrough text
+      const textColor = isCurrentUser ? [255, 255, 255] : [51, 51, 51];
+      pdf.setTextColor(...textColor);
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'normal');
+      
+      const textWidth = pdf.getTextWidth(line.content);
+      const strikethroughY = currentY - 1;
+      
+      // Draw strikethrough line
+      pdf.setDrawColor(...textColor);
+      pdf.line(startX, strikethroughY, startX + textWidth, strikethroughY);
+      
+      // Render text
+      pdf.text(line.content, startX, currentY);
       currentY += 4;
     } else {
       // Render regular text
@@ -437,11 +575,13 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
 
           // Add image caption if exists
           if (message.message && message.message.trim()) {
-            // Process caption with link support
-            const processedCaption = processMessageWithLinks(message.message.trim(), pdf, 60);
+            // Process caption with markdown and link support
+            const processedCaption = processMessageWithMarkdownAndLinks(message.message.trim(), pdf, 60);
             
             processedCaption.lines.forEach(line => {
               checkPageBreak();
+              const startX = isCurrentUser ? pageWidth - margin - 65 : margin + 25;
+              
               if (line.type === 'url') {
                 // Render clickable link in caption
                 const linkColor = isCurrentUser ? [255, 255, 255] : [59, 130, 246];
@@ -455,29 +595,60 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
                 
                 // Draw underline
                 pdf.setDrawColor(...linkColor);
-                if (isCurrentUser) {
-                  pdf.line(pageWidth - margin - 65, underlineY, pageWidth - margin - 65 + textWidth, underlineY);
-                  // Add clickable link
-                  pdf.link(pageWidth - margin - 65, yPosition - 3, textWidth, 4, { url: line.url });
-                  pdf.text(line.content, pageWidth - margin - 65, yPosition);
-                } else {
-                  pdf.line(margin + 25, underlineY, margin + 25 + textWidth, underlineY);
-                  // Add clickable link
-                  pdf.link(margin + 25, yPosition - 3, textWidth, 4, { url: line.url });
-                  pdf.text(line.content, margin + 25, yPosition);
-                }
+                pdf.line(startX, underlineY, startX + textWidth, underlineY);
+                
+                // Add clickable link
+                pdf.link(startX, yPosition - 3, textWidth, 4, { url: line.url });
+                pdf.text(line.content, startX, yPosition);
+              } else if (line.type === 'bold') {
+                // Render bold text in caption
+                const textColor = isCurrentUser ? [255, 255, 255] : [51, 51, 51];
+                pdf.setTextColor(...textColor);
+                pdf.setFontSize(8);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text(line.content, startX, yPosition);
+              } else if (line.type === 'italic') {
+                // Render italic text in caption
+                const textColor = isCurrentUser ? [255, 255, 255] : [51, 51, 51];
+                pdf.setTextColor(...textColor);
+                pdf.setFontSize(8);
+                pdf.setFont('helvetica', 'italic');
+                pdf.text(line.content, startX, yPosition);
+              } else if (line.type === 'underline') {
+                // Render underlined text in caption
+                const textColor = isCurrentUser ? [255, 255, 255] : [51, 51, 51];
+                pdf.setTextColor(...textColor);
+                pdf.setFontSize(8);
+                pdf.setFont('helvetica', 'normal');
+                
+                const textWidth = pdf.getTextWidth(line.content);
+                const underlineY = yPosition + 1;
+                
+                // Draw underline
+                pdf.setDrawColor(...textColor);
+                pdf.line(startX, underlineY, startX + textWidth, underlineY);
+                pdf.text(line.content, startX, yPosition);
+              } else if (line.type === 'strikethrough') {
+                // Render strikethrough text in caption
+                const textColor = isCurrentUser ? [255, 255, 255] : [51, 51, 51];
+                pdf.setTextColor(...textColor);
+                pdf.setFontSize(8);
+                pdf.setFont('helvetica', 'normal');
+                
+                const textWidth = pdf.getTextWidth(line.content);
+                const strikethroughY = yPosition - 1;
+                
+                // Draw strikethrough line
+                pdf.setDrawColor(...textColor);
+                pdf.line(startX, strikethroughY, startX + textWidth, strikethroughY);
+                pdf.text(line.content, startX, yPosition);
               } else {
                 // Regular text in caption
                 const textColor = isCurrentUser ? [255, 255, 255] : [51, 51, 51];
                 pdf.setTextColor(...textColor);
                 pdf.setFontSize(8);
                 pdf.setFont('helvetica', 'normal');
-                
-                if (isCurrentUser) {
-                  pdf.text(line.content, pageWidth - margin - 65, yPosition);
-                } else {
-                  pdf.text(line.content, margin + 25, yPosition);
-                }
+                pdf.text(line.content, startX, yPosition);
               }
               yPosition += 4;
             });
@@ -485,14 +656,14 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
 
           yPosition += 8;
         } else if (message.message && message.message.trim()) {
-          // Regular text message with link handling
+          // Regular text message with markdown and link handling
           checkPageBreak(20);
 
           // Message bubble effect
           const bubbleWidth = Math.min(120, pageWidth - (margin * 2) - 20);
           
-          // Process message to handle links
-          const processedMessage = processMessageWithLinks(message.message.trim(), pdf, bubbleWidth - 10);
+          // Process message to handle markdown and links
+          const processedMessage = processMessageWithMarkdownAndLinks(message.message.trim(), pdf, bubbleWidth - 10);
           const messageLines = processedMessage.lines;
           const bubbleHeight = (messageLines.length * 4) + 8;
 
@@ -501,15 +672,15 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
             pdf.setFillColor(...primaryColor);
             pdf.roundedRect(pageWidth - margin - bubbleWidth, yPosition, bubbleWidth, bubbleHeight, 2, 2, 'F');
             
-            // Render message lines with link support
-            renderMessageWithLinks(pdf, messageLines, pageWidth - margin - bubbleWidth + 5, yPosition + 8, true);
+            // Render message lines with markdown and link support
+            renderMessageWithMarkdownAndLinks(pdf, messageLines, pageWidth - margin - bubbleWidth + 5, yPosition + 8, true);
           } else {
             // Left-aligned bubble (other party)
             pdf.setFillColor(250, 250, 250);
             pdf.roundedRect(margin + 20, yPosition, bubbleWidth, bubbleHeight, 2, 2, 'F');
             
-            // Render message lines with link support
-            renderMessageWithLinks(pdf, messageLines, margin + 25, yPosition + 8, false);
+            // Render message lines with markdown and link support
+            renderMessageWithMarkdownAndLinks(pdf, messageLines, margin + 25, yPosition + 8, false);
           }
 
           // Sender name and timestamp

@@ -12,6 +12,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function ForgotPassword({ bootstrapped, sessionChecked }) {
   const emailInputRef = useRef(null);
+  const otpInputRef = useRef(null);
   const [step, setStep] = useState(1); // 1: verification, 2: reset password
   const [formData, setFormData] = useState({
     email: "",
@@ -63,6 +64,13 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
       focusWithoutKeyboard(emailInputRef.current);
     }
   }, [step]);
+
+  // Autofocus OTP field when it appears
+  useEffect(() => {
+    if (otpSent && !emailVerified && otpInputRef.current) {
+      focusWithoutKeyboard(otpInputRef.current);
+    }
+  }, [otpSent, emailVerified]);
 
   // Timer effect for resend OTP
   useEffect(() => {
@@ -457,6 +465,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                         type="text"
                         placeholder="Enter 6-digit OTP"
                         id="otp"
+                        ref={otpInputRef}
                         value={otp}
                         onChange={(e) => {
                           // Only allow numbers

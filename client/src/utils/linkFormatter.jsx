@@ -8,72 +8,168 @@ const formatMarkdown = (text, isSentMessage = false) => {
   const result = [];
   
   lines.forEach((line, lineIndex) => {
-    let processedLine = line;
-    const parts = [];
-    let lastIndex = 0;
+    // Check if this is a list item first
+    const isNumberedList = line.trim().match(/^(\d+)\.\s+/);
+    const isBulletList = line.trim().match(/^[-•]\s+/);
     
-    // Process markdown formatting in order of precedence
-    const patterns = [
-      { regex: /\*\*(.*?)\*\*/g, tag: 'strong' }, // Bold
-      { regex: /\*(.*?)\*/g, tag: 'em' }, // Italic
-      { regex: /__(.*?)__/g, tag: 'u' }, // Underline
-      { regex: /~~(.*?)~~/g, tag: 'del' }, // Strikethrough
-    ];
-    
-    // Find all markdown patterns
-    const matches = [];
-    patterns.forEach(pattern => {
-      let match;
-      while ((match = pattern.regex.exec(processedLine)) !== null) {
-        matches.push({
-          start: match.index,
-          end: match.index + match[0].length,
-          content: match[1],
-          tag: pattern.tag,
-          full: match[0]
-        });
-      }
-    });
-    
-    // Sort matches by position
-    matches.sort((a, b) => a.start - b.start);
-    
-    // Process non-overlapping matches
-    const validMatches = [];
-    matches.forEach(match => {
-      const overlaps = validMatches.some(vm => 
-        (match.start >= vm.start && match.start < vm.end) ||
-        (match.end > vm.start && match.end <= vm.end)
-      );
-      if (!overlaps) {
-        validMatches.push(match);
-      }
-    });
-    
-    // Build the formatted line
-    validMatches.sort((a, b) => a.start - b.start);
-    let currentIndex = 0;
-    
-    validMatches.forEach((match, idx) => {
-      // Add text before the match
-      if (match.start > currentIndex) {
-        parts.push(processedLine.slice(currentIndex, match.start));
+    if (isNumberedList || isBulletList) {
+      // For list items, only process the content part, not the entire line
+      let content = '';
+      if (isNumberedList) {
+        const listMatch = line.match(/^(\s*)(\d+)\.\s+(.*)$/);
+        if (listMatch) {
+          content = listMatch[3]; // Only the content part
+        }
+      } else if (isBulletList) {
+        const listMatch = line.match(/^(\s*)[-•]\s+(.*)$/);
+        if (listMatch) {
+          content = listMatch[2]; // Only the content part
+        }
       }
       
-      // Add the formatted element
-      const TagName = match.tag;
-      parts.push(
-        <TagName key={`${lineIndex}-${idx}`} className={match.tag === 'u' ? 'underline' : ''}>
-          {match.content}
-        </TagName>
-      );
+      // Process markdown formatting only on the content part
+      let processedLine = content;
+      const parts = [];
+      let lastIndex = 0;
       
-      currentIndex = match.end;
-    });
-    
-    // Add remaining text
-    if (currentIndex < processedLine.length) {
-      parts.push(processedLine.slice(currentIndex));
+      // Process markdown formatting in order of precedence
+      const patterns = [
+        { regex: /\*\*(.*?)\*\*/g, tag: 'strong' }, // Bold
+        { regex: /\*(.*?)\*/g, tag: 'em' }, // Italic
+        { regex: /__(.*?)__/g, tag: 'u' }, // Underline
+        { regex: /~~(.*?)~~/g, tag: 'del' }, // Strikethrough
+      ];
+      
+      // Find all markdown patterns
+      const matches = [];
+      patterns.forEach(pattern => {
+        let match;
+        while ((match = pattern.regex.exec(processedLine)) !== null) {
+          matches.push({
+            start: match.index,
+            end: match.index + match[0].length,
+            content: match[1],
+            tag: pattern.tag,
+            full: match[0]
+          });
+        }
+      });
+      
+      // Sort matches by position
+      matches.sort((a, b) => a.start - b.start);
+      
+      // Process non-overlapping matches
+      const validMatches = [];
+      matches.forEach(match => {
+        const overlaps = validMatches.some(vm => 
+          (match.start >= vm.start && match.start < vm.end) ||
+          (match.end > vm.start && match.end <= vm.end)
+        );
+        if (!overlaps) {
+          validMatches.push(match);
+        }
+      });
+      
+      // Build the formatted line
+      validMatches.sort((a, b) => a.start - b.start);
+      let currentIndex = 0;
+      
+      validMatches.forEach((match, idx) => {
+        // Add text before the match
+        if (match.start > currentIndex) {
+          parts.push(processedLine.slice(currentIndex, match.start));
+        }
+        
+        // Add the formatted element
+        const TagName = match.tag;
+        parts.push(
+          <TagName key={`${lineIndex}-${idx}`} className={match.tag === 'u' ? 'underline' : ''}>
+            {match.content}
+          </TagName>
+        );
+        
+        currentIndex = match.end;
+      });
+      
+      // Add remaining text
+      if (currentIndex < processedLine.length) {
+        parts.push(processedLine.slice(currentIndex));
+      }
+      
+      // Store the processed parts for later use
+      line.processedParts = parts;
+    } else {
+      // For non-list items, process the entire line as before
+      let processedLine = line;
+      const parts = [];
+      let lastIndex = 0;
+      
+      // Process markdown formatting in order of precedence
+      const patterns = [
+        { regex: /\*\*(.*?)\*\*/g, tag: 'strong' }, // Bold
+        { regex: /\*(.*?)\*/g, tag: 'em' }, // Italic
+        { regex: /__(.*?)__/g, tag: 'u' }, // Underline
+        { regex: /~~(.*?)~~/g, tag: 'del' }, // Strikethrough
+      ];
+      
+      // Find all markdown patterns
+      const matches = [];
+      patterns.forEach(pattern => {
+        let match;
+        while ((match = pattern.regex.exec(processedLine)) !== null) {
+          matches.push({
+            start: match.index,
+            end: match.index + match[0].length,
+            content: match[1],
+            tag: pattern.tag,
+            full: match[0]
+          });
+        }
+      });
+      
+      // Sort matches by position
+      matches.sort((a, b) => a.start - b.start);
+      
+      // Process non-overlapping matches
+      const validMatches = [];
+      matches.forEach(match => {
+        const overlaps = validMatches.some(vm => 
+          (match.start >= vm.start && match.start < vm.end) ||
+          (match.end > vm.start && match.end <= vm.end)
+        );
+        if (!overlaps) {
+          validMatches.push(match);
+        }
+      });
+      
+      // Build the formatted line
+      validMatches.sort((a, b) => a.start - b.start);
+      let currentIndex = 0;
+      
+      validMatches.forEach((match, idx) => {
+        // Add text before the match
+        if (match.start > currentIndex) {
+          parts.push(processedLine.slice(currentIndex, match.start));
+        }
+        
+        // Add the formatted element
+        const TagName = match.tag;
+        parts.push(
+          <TagName key={`${lineIndex}-${idx}`} className={match.tag === 'u' ? 'underline' : ''}>
+            {match.content}
+          </TagName>
+        );
+        
+        currentIndex = match.end;
+      });
+      
+      // Add remaining text
+      if (currentIndex < processedLine.length) {
+        parts.push(processedLine.slice(currentIndex));
+      }
+      
+      // Store the processed parts for later use
+      line.processedParts = parts;
     }
     
     // Handle list items
@@ -86,7 +182,7 @@ const formatMarkdown = (text, isSentMessage = false) => {
         const listColor = isSentMessage ? "text-blue-200" : "text-blue-600";
         result.push(
           <div key={lineIndex} className={`${indent ? 'ml-4' : ''} mb-1`}>
-            <span className={`font-medium ${listColor}`}>{num}.</span> {parts.length > 0 ? parts : content}
+            <span className={`font-medium ${listColor}`}>{num}.</span> {line.processedParts && line.processedParts.length > 0 ? line.processedParts : content}
           </div>
         );
         return;
@@ -100,7 +196,7 @@ const formatMarkdown = (text, isSentMessage = false) => {
         const listColor = isSentMessage ? "text-blue-200" : "text-blue-600";
         result.push(
           <div key={lineIndex} className={`${indent ? 'ml-4' : ''} mb-1`}>
-            <span className={listColor}>•</span> {parts.length > 0 ? parts : content}
+            <span className={listColor}>•</span> {line.processedParts && line.processedParts.length > 0 ? line.processedParts : content}
           </div>
         );
         return;
@@ -115,7 +211,7 @@ const formatMarkdown = (text, isSentMessage = false) => {
         const borderColor = isSentMessage ? "border-gray-400" : "border-gray-300";
         result.push(
           <div key={lineIndex} className={`border-l-4 ${borderColor} pl-3 ml-2 italic ${textColor} mb-1`}>
-            {parts.length > 0 ? parts : content}
+            {line.processedParts && line.processedParts.length > 0 ? line.processedParts : content}
           </div>
         );
         return;
@@ -123,8 +219,8 @@ const formatMarkdown = (text, isSentMessage = false) => {
     }
     
     // Regular line
-    if (parts.length > 0) {
-      result.push(<span key={lineIndex}>{parts}</span>);
+    if (line.processedParts && line.processedParts.length > 0) {
+      result.push(<span key={lineIndex}>{line.processedParts}</span>);
     } else if (line.trim()) {
       result.push(<span key={lineIndex}>{line}</span>);
     }
