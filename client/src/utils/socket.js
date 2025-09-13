@@ -36,7 +36,7 @@ export function reconnectSocket() {
   if (socket && socket.connected) {
     socket.disconnect();
   }
-  console.log('[Socket] reconnecting with token:', getToken());
+  console.log('[Socket] reconnecting with token');
   socket = io(SOCKET_URL, {
     auth: {
       token: getToken(),
