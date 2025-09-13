@@ -19,6 +19,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         email: "",
         password: ""
     });
+    const [emailStep, setEmailStep] = useState(false); // Track if email step is completed
     const [urlError, setUrlError] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [loginMethod, setLoginMethod] = useState("password"); // "password" or "otp"
@@ -108,6 +109,20 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         if (urlError) {
             setUrlError("");
         }
+    };
+
+    const handleEmailContinue = (e) => {
+        e.preventDefault();
+        if (!formData.email) {
+            dispatch(signInFailure("Email is required"));
+            return;
+        }
+        setEmailStep(true);
+    };
+
+    const handleEmailEdit = () => {
+        setEmailStep(false);
+        setFormData(prev => ({ ...prev, password: "" }));
     };
 
     const handleOtpChange = (e) => {
@@ -373,6 +388,8 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 setOtpSuccessMessage("");
                                 setResendTimer(0);
                                 setCanResend(true);
+                                setEmailStep(false);
+                                setFormData({ email: "", password: "" });
                             }}
                             className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
                                 loginMethod === "password"
@@ -390,6 +407,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 setOtpSuccessMessage("");
                                 setResendTimer(0);
                                 setCanResend(true);
+                                setEmailStep(false);
                             }}
                             className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
                                 loginMethod === "otp"
@@ -404,58 +422,75 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                     <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
                         {loginMethod === "password" ? (
                             // Password Login Form
-                            <form onSubmit={handleSubmit} className="space-y-6">
+                            <form onSubmit={emailStep ? handleSubmit : handleEmailContinue} className="space-y-6">
                                 <div>
                                     <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                                         Email Address
                                     </label>
-                                    <input 
-                                        type="email" 
-                                        placeholder="Enter your email" 
-                                        id="email" 
-                                        value={formData.email}
-                                        onChange={handleChange} 
-                                        ref={emailInputRef}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                                        required
-                                    />
-                                </div>
-                                
-                                <div>
-                                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                                        Password
-                                    </label>
                                     <div className="relative">
                                         <input 
-                                            type={showPassword ? "text" : "password"}
-                                            placeholder="Enter your password" 
-                                            id="password" 
-                                            value={formData.password}
+                                            type="email" 
+                                            placeholder="Enter your email" 
+                                            id="email" 
+                                            value={formData.email}
                                             onChange={handleChange} 
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pr-12"
+                                            ref={emailInputRef}
+                                            readOnly={emailStep}
+                                            className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${emailStep ? 'pr-12 bg-gray-50' : ''}`}
                                             required
                                         />
-                                        <button
-                                            type="button"
-                                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 focus:outline-none"
-                                            tabIndex={-1}
-                                            onClick={() => setShowPassword((prev) => !prev)}
-                                            aria-label={showPassword ? "Hide password" : "Show password"}
-                                        >
-                                            {showPassword ? <FaEyeSlash /> : <FaEye />}
-                                        </button>
+                                        {emailStep && (
+                                            <button
+                                                type="button"
+                                                onClick={handleEmailEdit}
+                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-800 focus:outline-none"
+                                                title="Edit email"
+                                            >
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                                 
-                                {/* Forgot Password Link */}
-                                <div className="text-right">
-                                    <Link 
-                                        to="/forgot-password" 
-                                        className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200"
-                                    >
-                                        Forgot Password?
-                                    </Link>
-                                </div>
+                                {emailStep && (
+                                    <div>
+                                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                                            Password
+                                        </label>
+                                        <div className="relative">
+                                            <input 
+                                                type={showPassword ? "text" : "password"}
+                                                placeholder="Enter your password" 
+                                                id="password" 
+                                                value={formData.password}
+                                                onChange={handleChange} 
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pr-12"
+                                                required
+                                            />
+                                            <button
+                                                type="button"
+                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 focus:outline-none"
+                                                tabIndex={-1}
+                                                onClick={() => setShowPassword((prev) => !prev)}
+                                                aria-label={showPassword ? "Hide password" : "Show password"}
+                                            >
+                                                {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                            </button>
+                                        </div>
+                                        
+                                        {/* Forgot Password Link */}
+                                        <div className="text-right mt-2">
+                                            <Link 
+                                                to="/forgot-password" 
+                                                className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200"
+                                            >
+                                                Forgot Password?
+                                            </Link>
+                                        </div>
+                                    </div>
+                                )}
                                 
                                 <button 
                                     disabled={loading} 
@@ -467,7 +502,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                             Signing In...
                                         </div>
                                     ) : (
-                                        "Sign In"
+                                        emailStep ? "Sign In" : "Continue"
                                     )}
                                 </button>
                             </form>
@@ -524,7 +559,11 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                             placeholder="Enter 6-digit OTP" 
                                             id="otp" 
                                             value={otpData.otp}
-                                            onChange={handleOtpChange} 
+                                            onChange={(e) => {
+                                                // Only allow numbers
+                                                const value = e.target.value.replace(/[^0-9]/g, '');
+                                                handleOtpChange({ ...e, target: { ...e.target, value } });
+                                            }} 
                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-center text-lg tracking-widest"
                                             maxLength="6"
                                             required
