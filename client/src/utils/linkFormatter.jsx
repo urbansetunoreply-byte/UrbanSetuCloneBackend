@@ -246,13 +246,14 @@ export const formatLinksInText = (text, isSentMessage = false) => {
   if (!text || typeof text !== 'string') return text;
 
   // URL regex pattern to match various link formats
-  const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|[^\s]+\.[^\s]{2,})/gi;
+  const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
   
   const parts = text.split(urlRegex);
   
   return parts.map((part, index) => {
-    // Check if this part is a URL
-    if (urlRegex.test(part)) {
+    // Check if this part is a URL - create a new regex instance to avoid global flag side effects
+    const testRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
+    if (testRegex.test(part)) {
       // Ensure URL has protocol
       let url = part;
       if (!url.startsWith('http://') && !url.startsWith('https://')) {
@@ -317,45 +318,52 @@ export const FormattedTextWithLinksAndSearch = ({ text, isSentMessage = false, c
     
     let processedText = part;
     
-    // Apply search highlighting
-    if (searchQuery) {
-      const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-      const parts = processedText.split(regex);
-      
-      processedText = parts.map((subPart, index) => {
-        if (regex.test(subPart)) {
-          return `<span class="search-text-highlight bg-yellow-200 text-black px-1 rounded">${subPart}</span>`;
-        }
-        return subPart;
-      }).join('');
-    }
-
-    // Detect property mention tokens of the form @[Name](listingId)
+    // First, handle property mentions
     const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
-    const pieces = [];
+    const mentionPieces = [];
     let lastIndex = 0;
     let match;
+    
     while ((match = mentionRegex.exec(processedText)) !== null) {
       const [full, name, listingId] = match;
       if (match.index > lastIndex) {
-        pieces.push(processedText.slice(lastIndex, match.index));
+        mentionPieces.push(processedText.slice(lastIndex, match.index));
       }
       const basePrefix = window.location.pathname.includes('/admin') ? '/admin/listing/' : '/user/listing/';
       const href = `${basePrefix}${listingId}`;
       const linkClasses = isSentMessage 
         ? "text-white underline decoration-dotted hover:text-blue-200"
         : "text-blue-600 underline decoration-dotted hover:text-blue-800";
-      pieces.push(
+      mentionPieces.push(
         <a key={`prop-${listingId}-${match.index}-${partIndex}`} href={href} onClick={(e) => e.stopPropagation()} className={linkClasses} title={`Open ${name}`}>@{name}</a>
       );
       lastIndex = match.index + full.length;
     }
     if (lastIndex < processedText.length) {
-      pieces.push(processedText.slice(lastIndex));
+      mentionPieces.push(processedText.slice(lastIndex));
     }
 
-    // Apply URL link formatting to non-mention text segments
-    return pieces.flatMap((subPart, idx) => {
+    // Then apply search highlighting to text parts
+    const finalPieces = mentionPieces.flatMap((piece, idx) => {
+      if (typeof piece !== 'string') return piece; // Keep React elements as-is
+      
+      if (searchQuery) {
+        const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        const parts = piece.split(regex);
+        
+        return parts.map((subPart, index) => {
+          if (regex.test(subPart)) {
+            return <span key={`search-${idx}-${index}`} className="search-text-highlight bg-yellow-200 text-black px-1 rounded">{subPart}</span>;
+          }
+          return subPart;
+        });
+      }
+      
+      return piece;
+    });
+
+    // Finally, apply URL link formatting to text segments
+    return finalPieces.flatMap((subPart, idx) => {
       if (typeof subPart === 'string') {
         return formatLinksInText(subPart, isSentMessage);
       }

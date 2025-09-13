@@ -55,10 +55,9 @@ export const sendSignupOTPEmail = async (email, otp) => {
       </div>
       
       <script>
-        function copyOTP(otp) {
+        function copyOTP(otp, button) {
           navigator.clipboard.writeText(otp).then(function() {
             // Change button text temporarily
-            const button = window.event ? window.event.target : arguments[1];
             if (button) {
               const originalText = button.innerHTML;
               button.innerHTML = '✅ Copied!';
@@ -149,10 +148,9 @@ export const sendForgotPasswordOTPEmail = async (email, otp) => {
       </div>
       
       <script>
-        function copyOTP(otp) {
+        function copyOTP(otp, button) {
           navigator.clipboard.writeText(otp).then(function() {
             // Change button text temporarily
-            const button = window.event ? window.event.target : arguments[1];
             if (button) {
               const originalText = button.innerHTML;
               button.innerHTML = '✅ Copied!';
@@ -243,10 +241,9 @@ export const sendProfileEmailOTPEmail = async (email, otp) => {
       </div>
       
       <script>
-        function copyOTP(otp) {
+        function copyOTP(otp, button) {
           navigator.clipboard.writeText(otp).then(function() {
             // Change button text temporarily
-            const button = window.event ? window.event.target : arguments[1];
             if (button) {
               const originalText = button.innerHTML;
               button.innerHTML = '✅ Copied!';
@@ -337,10 +334,9 @@ export const sendLoginOTPEmail = async (email, otp) => {
       </div>
       
       <script>
-        function copyOTP(otp) {
+        function copyOTP(otp, button) {
           navigator.clipboard.writeText(otp).then(function() {
             // Change button text temporarily
-            const button = window.event ? window.event.target : arguments[1];
             if (button) {
               const originalText = button.innerHTML;
               button.innerHTML = '✅ Copied!';
