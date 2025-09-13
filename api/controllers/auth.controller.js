@@ -100,7 +100,7 @@ export const SignIn=async(req,res,next)=>{
             // Track failed attempt
             trackFailedAttempt(identifier);
             logSecurityEvent('failed_login', { email: emailLower, reason: 'user_not_found' });
-            return next(errorHandler(401,"Invalid credentials"))
+            return next(errorHandler(401,"Invalid email address or password"))
         }
         
         // Check if account is locked
