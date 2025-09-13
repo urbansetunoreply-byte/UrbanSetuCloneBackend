@@ -354,7 +354,7 @@ export default function UserChangePassword() {
 
             <div className="mt-6 text-center">
               <p className="text-gray-600">
-                Remember your password?{" "}
+                  Changed your mind?{" "}
                 <button 
                   onClick={() => navigate("/user")} 
                   className="text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors duration-200"
