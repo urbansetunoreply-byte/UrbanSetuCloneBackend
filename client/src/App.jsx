@@ -217,7 +217,7 @@ function AppRoutes({ bootstrapped }) {
 
   // Enhanced auto-refresh logic using Page Visibility API + Focus/Blur Events
   useEffect(() => {
-    const REFRESH_AFTER_MINUTES = 5; // Configurable refresh threshold
+    const REFRESH_AFTER_MINUTES = 10; // Configurable refresh threshold
     const INACTIVITY_MS = REFRESH_AFTER_MINUTES * 60 * 1000;
     let lastHidden = null;
     let lastBlur = null;
