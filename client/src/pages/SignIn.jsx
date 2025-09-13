@@ -148,7 +148,6 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
 
     const handleSendOTP = async (e) => {
         e.preventDefault();
-        console.log('Send OTP clicked');
         if (!otpData.email) {
             dispatch(signInFailure("Email is required"));
             return;
@@ -187,7 +186,6 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
 
     const handleOtpLogin = async (e) => {
         e.preventDefault();
-        console.log('Verify OTP clicked');
         if (!otpData.email || !otpData.otp) {
             dispatch(signInFailure("Email and OTP are required"));
             return;
@@ -197,9 +195,6 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         
         // Check if cookies are enabled for better UX
         const cookiesEnabled = areCookiesEnabled();
-        if (!cookiesEnabled) {
-            console.warn('Third-party cookies are blocked. Using localStorage fallback for authentication.');
-        }
         
         try {
             const apiUrl = `${API_BASE_URL}/api/auth/verify-login-otp`;
@@ -216,14 +211,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             
             if (data.token) {
                 localStorage.setItem('accessToken', data.token);
-                console.log('Saved accessToken to localStorage:', data.token);
                 
-                // If cookies are blocked, show a helpful message
-                if (!cookiesEnabled) {
-                    console.log('Authentication will use localStorage since cookies are blocked');
-                }
-            } else {
-                console.warn('No token found in login response!');
             }
             // Dispatch success and wait for state update
             dispatch(signInSuccess(data));
@@ -232,7 +220,6 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             await new Promise(resolve => setTimeout(resolve, 50));
             
             // Reconnect socket with new token
-            console.log('Reconnecting socket after login with token:', localStorage.getItem('accessToken'));
             reconnectSocket();
             
             if (data.role === "admin" || data.role === "rootadmin") {
@@ -257,9 +244,6 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         
         // Check if cookies are enabled for better UX
         const cookiesEnabled = areCookiesEnabled();
-        if (!cookiesEnabled) {
-            console.warn('Third-party cookies are blocked. Using localStorage fallback for authentication.');
-        }
         
         try {
             const apiUrl = `${API_BASE_URL}/api/auth/signin`;
@@ -276,14 +260,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             
             if (data.token) {
                 localStorage.setItem('accessToken', data.token);
-                console.log('Saved accessToken to localStorage:', data.token);
                 
-                // If cookies are blocked, show a helpful message
-                if (!cookiesEnabled) {
-                    console.log('Authentication will use localStorage since cookies are blocked');
-                }
-            } else {
-                console.warn('No token found in login response!');
             }
             // Dispatch success and wait for state update
             dispatch(signInSuccess(data));
@@ -292,7 +269,6 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             await new Promise(resolve => setTimeout(resolve, 50));
             
             // Reconnect socket with new token
-            console.log('Reconnecting socket after login with token:', localStorage.getItem('accessToken'));
             reconnectSocket();
             
             if (data.role === "admin" || data.role === "rootadmin") {
@@ -550,7 +526,14 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                             onChange={(e) => {
                                                 // Only allow numbers
                                                 const value = e.target.value.replace(/[^0-9]/g, '');
-                                                handleOtpChange({ ...e, target: { ...e.target, value } });
+                                                // Create a new event-like object with the filtered value
+                                                const syntheticEvent = {
+                                                    target: {
+                                                        id: 'otp',
+                                                        value: value
+                                                    }
+                                                };
+                                                handleOtpChange(syntheticEvent);
                                             }} 
                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-center text-lg tracking-widest"
                                             maxLength="6"
