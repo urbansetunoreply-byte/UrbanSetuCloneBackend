@@ -16,6 +16,8 @@ const CACHE_DURATION = 50 * 60 * 1000;
  */
 export const fetchCSRFToken = async () => {
   try {
+    console.log('Fetching CSRF token from:', `${API_BASE_URL}/api/auth/csrf-token`);
+    
     // Always fetch a fresh token since server deletes tokens after use
     const response = await fetch(`${API_BASE_URL}/api/auth/csrf-token`, {
       method: 'GET',
@@ -25,6 +27,8 @@ export const fetchCSRFToken = async () => {
       },
     });
 
+    console.log('CSRF token response status:', response.status);
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error('CSRF token fetch failed:', response.status, errorText);
@@ -32,6 +36,7 @@ export const fetchCSRFToken = async () => {
     }
 
     const data = await response.json();
+    console.log('CSRF token received:', data.csrfToken ? 'present' : 'missing');
     
     if (!data.csrfToken) {
       throw new Error('No CSRF token received from server');
@@ -77,7 +82,7 @@ export const createAuthenticatedFetchOptions = async (options = {}) => {
       ...options,
       headers: {
         'Content-Type': 'application/json',
-        'x-csrf-token': csrfToken,
+        'X-CSRF-Token': csrfToken,
         ...options.headers,
       },
       credentials: 'include',
@@ -91,7 +96,7 @@ export const createAuthenticatedFetchOptions = async (options = {}) => {
         ...options,
         headers: {
           'Content-Type': 'application/json',
-          'x-csrf-token': csrfToken,
+          'X-CSRF-Token': csrfToken,
           ...options.headers,
         },
         credentials: 'include',
@@ -118,6 +123,22 @@ export const createAuthenticatedFetchOptions = async (options = {}) => {
  * @returns {Promise<Response>} Fetch response
  */
 export const authenticatedFetch = async (url, options = {}) => {
-  const authenticatedOptions = await createAuthenticatedFetchOptions(options);
-  return fetch(url, authenticatedOptions);
+  try {
+    console.log('Making authenticated request to:', url);
+    const authenticatedOptions = await createAuthenticatedFetchOptions(options);
+    console.log('Request headers:', authenticatedOptions.headers);
+    
+    const response = await fetch(url, authenticatedOptions);
+    console.log('Response status:', response.status);
+    
+    if (!response.ok && response.status === 403) {
+      const errorData = await response.json().catch(() => ({ message: 'CSRF token error' }));
+      console.error('CSRF token error:', errorData);
+    }
+    
+    return response;
+  } catch (error) {
+    console.error('Authenticated fetch error:', error);
+    throw error;
+  }
 };

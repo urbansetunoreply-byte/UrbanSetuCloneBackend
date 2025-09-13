@@ -48,34 +48,64 @@ export const generateCSRFToken = (req, res, next) => {
 // Verify CSRF token
 export const verifyCSRFToken = (req, res, next) => {
     try {
-        const token = req.body._csrf || req.headers['x-csrf-token'];
+        const token = req.body._csrf || req.headers['x-csrf-token'] || req.headers['X-CSRF-Token'];
         const cookieToken = req.cookies.csrf_token;
         
+        // Debug logging
+        console.log('CSRF Verification:', {
+            hasToken: !!token,
+            hasCookieToken: !!cookieToken,
+            tokenLength: token ? token.length : 0,
+            cookieTokenLength: cookieToken ? cookieToken.length : 0,
+            headers: {
+                'x-csrf-token': req.headers['x-csrf-token'] ? 'present' : 'missing',
+                'X-CSRF-Token': req.headers['X-CSRF-Token'] ? 'present' : 'missing'
+            },
+            endpoint: req.path,
+            method: req.method
+        });
+        
         if (!token || !cookieToken) {
+            console.error('CSRF token missing:', { token: !!token, cookieToken: !!cookieToken });
             return next(errorHandler(403, 'CSRF token missing'));
         }
         
         if (token !== cookieToken) {
+            console.error('CSRF token mismatch:', { 
+                tokenMatch: token === cookieToken,
+                tokenStart: token.substring(0, 8),
+                cookieStart: cookieToken.substring(0, 8)
+            });
             return next(errorHandler(403, 'Invalid CSRF token'));
         }
         
         // Check if token exists in store and is not expired
         const tokenData = csrfTokenStore.get(token);
         if (!tokenData || Date.now() > tokenData.expiresAt) {
+            console.error('CSRF token expired or not found:', { 
+                hasTokenData: !!tokenData,
+                isExpired: tokenData ? Date.now() > tokenData.expiresAt : 'no data'
+            });
             return next(errorHandler(403, 'CSRF token expired'));
         }
         
         // Check identifier (IP + User-Agent)
         const identifier = `${req.ip}-${req.get('User-Agent') || 'unknown'}`;
         if (tokenData.sessionId !== identifier) {
+            console.error('CSRF token identifier mismatch:', { 
+                expected: tokenData.sessionId,
+                actual: identifier
+            });
             return next(errorHandler(403, 'CSRF token mismatch'));
         }
         
         // Remove used token (one-time use)
         csrfTokenStore.delete(token);
+        console.log('CSRF token verified and consumed successfully');
         
         next();
     } catch (error) {
+        console.error('CSRF verification error:', error);
         next(error);
     }
 };
