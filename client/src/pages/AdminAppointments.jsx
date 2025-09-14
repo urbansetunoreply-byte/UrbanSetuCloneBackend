@@ -1288,8 +1288,8 @@ function AdminAppointmentRow({
   const [selectedMessageForInfo, setSelectedMessageForInfo] = useLocalState(null);
   // Persist draft per appointment when chat is open
   React.useEffect(() => {
-    if (!showChatModal || !appt?._id) return;
-    const draftKey = `admin_appt_draft_${appt._id}`;
+    if (!showChatModal || !appt?._id || !currentUser?._id) return;
+    const draftKey = `admin_appt_draft_${appt._id}_${currentUser._id}`;
     const saved = localStorage.getItem(draftKey);
     if (saved !== null && saved !== undefined) {
       setNewComment(saved);
@@ -1305,13 +1305,13 @@ function AdminAppointmentRow({
         } catch(_) {}
       }, 0);
     }
-  }, [showChatModal, appt?._id]);
+  }, [showChatModal, appt?._id, currentUser?._id]);
 
   React.useEffect(() => {
-    if (!showChatModal || !appt?._id) return;
-    const draftKey = `admin_appt_draft_${appt._id}`;
+    if (!showChatModal || !appt?._id || !currentUser?._id) return;
+    const draftKey = `admin_appt_draft_${appt._id}_${currentUser._id}`;
     localStorage.setItem(draftKey, newComment);
-  }, [newComment, showChatModal, appt?._id]);
+  }, [newComment, showChatModal, appt?._id, currentUser?._id]);
   
   // Starred messages states
   const [showStarredModal, setShowStarredModal] = useLocalState(false);
@@ -2513,7 +2513,7 @@ function AdminAppointmentRow({
     try { playMessageSent(); } catch(_) {}
     setNewComment("");
     try {
-      const draftKey = `admin_appt_draft_${appt._id}`;
+      const draftKey = `admin_appt_draft_${appt._id}_${currentUser._id}`;
       localStorage.removeItem(draftKey);
     } catch(_) {}
     setDetectedUrl(null);
@@ -6248,6 +6248,7 @@ function AdminAppointmentRow({
                                     text={(message.message || '').replace(/\n+$/, '')}
                                     isSentMessage={isMe}
                                     className="whitespace-pre-wrap break-words"
+                                    searchQuery={searchQuery}
                                   />
                                 )}
                               </div>

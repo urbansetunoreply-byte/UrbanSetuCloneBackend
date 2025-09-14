@@ -1216,8 +1216,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
 
   // Persist draft per appointment when chat is open (placed after refs/state used)
   useEffect(() => {
-    if (!showChatModal || !appt?._id) return;
-    const draftKey = `appt_draft_${appt._id}`;
+    if (!showChatModal || !appt?._id || !currentUser?._id) return;
+    const draftKey = `appt_draft_${appt._id}_${currentUser._id}`;
     const savedDraft = localStorage.getItem(draftKey);
     if (savedDraft !== null && savedDraft !== undefined) {
       setComment(savedDraft);
@@ -1254,10 +1254,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   }, [comment, showChatModal, propertiesLoaded]);
 
   useEffect(() => {
-    if (!showChatModal || !appt?._id) return;
-    const draftKey = `appt_draft_${appt._id}`;
+    if (!showChatModal || !appt?._id || !currentUser?._id) return;
+    const draftKey = `appt_draft_${appt._id}_${currentUser._id}`;
     localStorage.setItem(draftKey, comment);
-  }, [comment, showChatModal, appt?._id]);
+  }, [comment, showChatModal, appt?._id, currentUser?._id]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [visibleActionsMessageId, setVisibleActionsMessageId] = useState(null);
   const [messageToDelete, setMessageToDelete] = useState(null);
@@ -2716,7 +2716,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     setComments(prev => [...prev, tempMessage]);
     setComment("");
     try {
-      const draftKey = `appt_draft_${appt._id}`;
+      const draftKey = `appt_draft_${appt._id}_${currentUser._id}`;
       localStorage.removeItem(draftKey);
     } catch (_) {}
     setDetectedUrl(null);
@@ -8000,6 +8000,7 @@ You can lock this chat again at any time from the options.</p>
                                     text={(message.message || '').replace(/\n+$/, '')}
                                     isSentMessage={isMe}
                                     className="whitespace-pre-wrap break-words"
+                                    searchQuery={searchQuery}
                                   />
                                 </>
                               )}
