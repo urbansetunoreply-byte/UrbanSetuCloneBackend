@@ -335,13 +335,17 @@ export const FormattedTextWithReadMore = ({ text, isSentMessage = false, classNa
     WebkitBoxOrient: 'vertical',
   } : {};
 
+  // Choose the appropriate component based on whether search query is provided
+  const FormattedComponent = searchQuery ? FormattedTextWithLinksAndSearch : FormattedTextWithLinks;
+
   return (
     <div className="relative">
       <div ref={textRef} style={truncatedStyle}>
-        <FormattedTextWithLinks
+        <FormattedComponent
           text={displayText}
           isSentMessage={isSentMessage}
           className={className}
+          searchQuery={searchQuery}
         />
       </div>
       {shouldShowReadMore && (
