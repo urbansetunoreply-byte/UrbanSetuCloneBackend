@@ -300,6 +300,7 @@ export const FormattedTextWithLinks = ({ text, isSentMessage = false, className 
     if (typeof part === 'string') {
       return formatLinksInText(part, isSentMessage);
     }
+    // If it's already a React element (from markdown formatting), return it as is
     return part;
   });
   
@@ -335,8 +336,8 @@ export const FormattedTextWithReadMore = ({ text, isSentMessage = false, classNa
     WebkitBoxOrient: 'vertical',
   } : {};
 
-  // Choose the appropriate component based on whether search query is provided
-  const FormattedComponent = searchQuery ? FormattedTextWithLinksAndSearch : FormattedTextWithLinks;
+  // Always use FormattedTextWithLinksAndSearch as it handles both links and search
+  const FormattedComponent = FormattedTextWithLinksAndSearch;
 
   return (
     <div className="relative">
