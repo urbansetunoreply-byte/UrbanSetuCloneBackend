@@ -246,13 +246,13 @@ export const formatLinksInText = (text, isSentMessage = false) => {
   if (!text || typeof text !== 'string') return text;
 
   // URL regex pattern to match various link formats
-  const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
+  const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
   
   const parts = text.split(urlRegex);
   
   return parts.map((part, index) => {
     // Check if this part is a URL - create a new regex instance to avoid global flag side effects
-    const testRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
+    const testRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
     if (testRegex.test(part)) {
       // Ensure URL has protocol
       let url = part;
