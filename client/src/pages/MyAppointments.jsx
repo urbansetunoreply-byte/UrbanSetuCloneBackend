@@ -2842,8 +2842,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         }));
         setEditingComment(null);
         setEditText("");
-        setComment(originalDraft); // Restore original draft
-        setOriginalDraft(""); // Clear stored draft
+        // Restore original draft and clear it after a small delay to ensure state update
+        const draftToRestore = originalDraft;
+        setComment(draftToRestore);
+        setTimeout(() => {
+          setOriginalDraft(""); // Clear stored draft after restoration
+        }, 100);
         setDetectedUrl(null);
         setPreviewDismissed(false);
         // Auto-resize textarea for restored draft
@@ -5766,7 +5770,6 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                         isSentMessage={isMe}
                                         className="whitespace-pre-wrap break-words"
                                         searchQuery={searchQuery}
-                                        maxLines={4}
                                       />
                                       {c.edited && (
                                         <span className="ml-2 text-[10px] italic text-gray-300 whitespace-nowrap">(Edited)</span>
@@ -6116,8 +6119,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         onClick={() => { 
                           setEditingComment(null); 
                           setEditText(""); 
-                          setComment(originalDraft); // Restore original draft
-                          setOriginalDraft(""); // Clear stored draft
+                          // Restore original draft and clear it after a small delay to ensure state update
+                          const draftToRestore = originalDraft;
+                          setComment(draftToRestore);
+                          setTimeout(() => {
+                            setOriginalDraft(""); // Clear stored draft after restoration
+                          }, 100);
                           setDetectedUrl(null);
                           setPreviewDismissed(false);
                           // Auto-resize textarea for restored draft
@@ -7982,7 +7989,6 @@ You can lock this chat again at any time from the options.</p>
                                     text={(message.message || '').replace(/\n+$/, '')}
                                     isSentMessage={isMe}
                                     className="whitespace-pre-wrap break-words"
-                                    maxLines={4}
                                   />
                                 </>
                               )}

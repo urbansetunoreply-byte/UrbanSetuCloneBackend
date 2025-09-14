@@ -2640,8 +2640,12 @@ function AdminAppointmentRow({
         }));
         setEditingComment(null);
         setEditText("");
-        setNewComment(originalDraft); // Restore original draft
-        setOriginalDraft(""); // Clear stored draft
+        // Restore original draft and clear it after a small delay to ensure state update
+        const draftToRestore = originalDraft;
+        setNewComment(draftToRestore);
+        setTimeout(() => {
+          setOriginalDraft(""); // Clear stored draft after restoration
+        }, 100);
         setDetectedUrl(null);
         setPreviewDismissed(false);
         // Auto-resize textarea for restored draft
@@ -4495,7 +4499,6 @@ function AdminAppointmentRow({
                                         isSentMessage={isMe}
                                         className="whitespace-pre-wrap break-words"
                                         searchQuery={searchQuery}
-                                        maxLines={4}
                                       />
                                       {c.edited && (
                                         <span className="ml-2 text-[10px] italic text-gray-300 whitespace-nowrap">(Edited)</span>
@@ -4990,8 +4993,12 @@ function AdminAppointmentRow({
                       onClick={() => { 
                         setEditingComment(null); 
                         setEditText(""); 
-                        setNewComment(originalDraft); // Restore original draft
-                        setOriginalDraft(""); // Clear stored draft
+                        // Restore original draft and clear it after a small delay to ensure state update
+                        const draftToRestore = originalDraft;
+                        setNewComment(draftToRestore);
+                        setTimeout(() => {
+                          setOriginalDraft(""); // Clear stored draft after restoration
+                        }, 100);
                         setDetectedUrl(null);
                         setPreviewDismissed(false);
                         // Auto-resize textarea for restored draft
@@ -6230,7 +6237,6 @@ function AdminAppointmentRow({
                                     text={(message.message || '').replace(/\n+$/, '')}
                                     isSentMessage={isMe}
                                     className="whitespace-pre-wrap break-words"
-                                    maxLines={4}
                                   />
                                 )}
                               </div>

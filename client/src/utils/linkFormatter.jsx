@@ -312,7 +312,7 @@ export const FormattedTextWithLinks = ({ text, isSentMessage = false, className 
 
 // Component wrapper for formatted text with links and search highlighting
 // Component wrapper with read more functionality for long messages
-export const FormattedTextWithReadMore = ({ text, isSentMessage = false, className = "", searchQuery = "", maxLines = 6 }) => {
+export const FormattedTextWithReadMore = ({ text, isSentMessage = false, className = "", searchQuery = "", maxLines = 20 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [shouldShowReadMore, setShouldShowReadMore] = useState(false);
   const textRef = useRef(null);
@@ -348,13 +348,13 @@ export const FormattedTextWithReadMore = ({ text, isSentMessage = false, classNa
         />
       </div>
       {shouldShowReadMore && (
-        <div className="mt-1">
+        <div className="mt-2 flex justify-end">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className={`text-xs font-medium transition-colors duration-200 ${
+            className={`px-3 py-1 text-xs font-semibold rounded-full transition-all duration-200 shadow-sm hover:shadow-md ${
               isSentMessage
-                ? 'text-blue-200 hover:text-white'
-                : 'text-blue-600 hover:text-blue-800'
+                ? 'bg-blue-500/20 text-blue-100 hover:bg-blue-500/30 hover:text-white border border-blue-400/30'
+                : 'bg-blue-100 text-blue-700 hover:bg-blue-200 hover:text-blue-800 border border-blue-200'
             }`}
           >
             {isExpanded ? 'Read less' : 'Read more'}
@@ -368,50 +368,54 @@ export const FormattedTextWithReadMore = ({ text, isSentMessage = false, classNa
 export const FormattedTextWithLinksAndSearch = ({ text, isSentMessage = false, className = "", searchQuery = "" }) => {
   if (!text || typeof text !== 'string') return <span className={className}>{text}</span>;
 
-  // Handle property mentions first, then URLs
-  const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
-  const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
+  // First apply markdown formatting
+  const markdownFormatted = formatMarkdown(text, isSentMessage);
   
-  // First, handle property mentions
-  let processedText = text;
-  const mentionMatches = [...text.matchAll(mentionRegex)];
-  
-  // Replace property mentions with placeholders to avoid conflicts with URL detection
-  const mentionPlaceholders = [];
-  mentionMatches.forEach((match, index) => {
-    const [full, name, listingId] = match;
-    const placeholder = `__MENTION_${index}__`;
-    processedText = processedText.replace(full, placeholder);
-    mentionPlaceholders.push({ placeholder, name, listingId, full });
-  });
-  
-  // Then handle URLs
-  const urlMatches = [...processedText.matchAll(urlRegex)];
-  const urlPlaceholders = [];
-  urlMatches.forEach((match, index) => {
-    const [url] = match;
-    const placeholder = `__URL_${index}__`;
-    processedText = processedText.replace(url, placeholder);
-    urlPlaceholders.push({ placeholder, url });
-  });
-  
-  // Split by placeholders and process
-  const allPlaceholders = [...mentionPlaceholders, ...urlPlaceholders];
-  let parts;
-  if (allPlaceholders.length > 0) {
-    const placeholderRegex = new RegExp(`(${allPlaceholders.map(p => p.placeholder).join('|')})`, 'g');
-    parts = processedText.split(placeholderRegex);
-  } else {
-    parts = [processedText];
-  }
-  
-  return (
-    <span className={className}>
-      {parts.map((part, index) => {
-        if (!part) return null;
+  // Then apply link formatting and search highlighting
+  const finalFormatted = markdownFormatted.map((part, partIndex) => {
+    if (typeof part === 'string') {
+      // Handle property mentions first, then URLs
+      const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
+      const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
+      
+      // First, handle property mentions
+      let processedText = part;
+      const mentionMatches = [...part.matchAll(mentionRegex)];
+      
+      // Replace property mentions with placeholders to avoid conflicts with URL detection
+      const mentionPlaceholders = [];
+      mentionMatches.forEach((match, index) => {
+        const [full, name, listingId] = match;
+        const placeholder = `__MENTION_${partIndex}_${index}__`;
+        processedText = processedText.replace(full, placeholder);
+        mentionPlaceholders.push({ placeholder, name, listingId, full });
+      });
+      
+      // Then handle URLs
+      const urlMatches = [...processedText.matchAll(urlRegex)];
+      const urlPlaceholders = [];
+      urlMatches.forEach((match, index) => {
+        const [url] = match;
+        const placeholder = `__URL_${partIndex}_${index}__`;
+        processedText = processedText.replace(url, placeholder);
+        urlPlaceholders.push({ placeholder, url });
+      });
+      
+      // Split by placeholders and process
+      const allPlaceholders = [...mentionPlaceholders, ...urlPlaceholders];
+      let parts;
+      if (allPlaceholders.length > 0) {
+        const placeholderRegex = new RegExp(`(${allPlaceholders.map(p => p.placeholder).join('|')})`, 'g');
+        parts = processedText.split(placeholderRegex);
+      } else {
+        parts = [processedText];
+      }
+      
+      return parts.map((subPart, index) => {
+        if (!subPart) return null;
         
         // Check if it's a placeholder
-        const mentionPlaceholder = mentionPlaceholders.find(p => p.placeholder === part);
+        const mentionPlaceholder = mentionPlaceholders.find(p => p.placeholder === subPart);
         if (mentionPlaceholder) {
           const { name, listingId } = mentionPlaceholder;
           const basePrefix = window.location.pathname.includes('/admin') ? '/admin/listing/' : '/user/listing/';
@@ -422,7 +426,7 @@ export const FormattedTextWithLinksAndSearch = ({ text, isSentMessage = false, c
           
           return (
             <a
-              key={index}
+              key={`mention-${partIndex}-${index}`}
               href={href}
               onClick={(e) => e.stopPropagation()}
               className={linkClasses}
@@ -433,7 +437,7 @@ export const FormattedTextWithLinksAndSearch = ({ text, isSentMessage = false, c
           );
         }
         
-        const urlPlaceholder = urlPlaceholders.find(p => p.placeholder === part);
+        const urlPlaceholder = urlPlaceholders.find(p => p.placeholder === subPart);
         if (urlPlaceholder) {
           const { url } = urlPlaceholder;
           let finalUrl = url;
@@ -447,7 +451,7 @@ export const FormattedTextWithLinksAndSearch = ({ text, isSentMessage = false, c
           
           return (
             <a
-              key={index}
+              key={`url-${partIndex}-${index}`}
               href={finalUrl}
               target="_blank"
               rel="noopener noreferrer"
@@ -462,22 +466,29 @@ export const FormattedTextWithLinksAndSearch = ({ text, isSentMessage = false, c
         // Check for search highlighting
         if (searchQuery) {
           const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-          const searchParts = part.split(regex);
+          const searchParts = subPart.split(regex);
           
-          return searchParts.map((subPart, subIndex) => {
-            if (regex.test(subPart)) {
+          return searchParts.map((searchPart, searchIndex) => {
+            if (regex.test(searchPart)) {
               return (
-                <span key={`search-${index}-${subIndex}`} className="search-text-highlight bg-yellow-200 text-black px-1 rounded">
-                  {subPart}
+                <span key={`search-${partIndex}-${index}-${searchIndex}`} className="search-text-highlight bg-yellow-200 text-black px-1 rounded">
+                  {searchPart}
                 </span>
               );
             }
-            return subPart;
+            return searchPart;
           });
         }
         
-        return part;
-      })}
+        return subPart;
+      });
+    }
+    return part;
+  });
+  
+  return (
+    <span className={className}>
+      {finalFormatted}
     </span>
   );
 };
