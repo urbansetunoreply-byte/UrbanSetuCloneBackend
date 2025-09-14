@@ -327,22 +327,65 @@ export const FormattedTextWithReadMore = ({ text, isSentMessage = false, classNa
     }
   }, [text, maxLines]);
 
-  const displayText = isExpanded ? text : text;
-  const truncatedStyle = !isExpanded && shouldShowReadMore ? {
-    maxHeight: `${maxLines * 20}px`,
-    overflow: 'hidden',
-    display: '-webkit-box',
-    WebkitLineClamp: maxLines,
-    WebkitBoxOrient: 'vertical',
-  } : {};
-
+  // Use the appropriate component based on search query
   const FormattedComponent = searchQuery ? FormattedTextWithLinksAndSearch : FormattedTextWithLinks;
+
+  // If expanded or shouldn't show read more, show full content
+  if (isExpanded || !shouldShowReadMore) {
+    return (
+      <div className="relative">
+        <div ref={textRef}>
+          <FormattedComponent
+            text={text}
+            isSentMessage={isSentMessage}
+            className={className}
+            searchQuery={searchQuery}
+          />
+        </div>
+        {shouldShowReadMore && (
+          <div className="mt-1">
+            <button
+              onClick={() => setIsExpanded(false)}
+              className={`text-xs font-medium transition-colors duration-200 ${
+                isSentMessage
+                  ? 'text-blue-200 hover:text-white'
+                  : 'text-blue-600 hover:text-blue-800'
+              }`}
+            >
+              Read less
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // For truncated view, we need to handle text truncation differently
+  // to avoid CSS truncation breaking React elements (links)
+  const lines = text.split('\n');
+  let truncatedText = '';
+  let lineCount = 0;
+  
+  for (let i = 0; i < lines.length && lineCount < maxLines; i++) {
+    if (lineCount > 0) truncatedText += '\n';
+    truncatedText += lines[i];
+    lineCount++;
+    
+    // Estimate if this line might wrap (rough estimation based on character count)
+    const estimatedWrappedLines = Math.ceil(lines[i].length / 50); // Assume ~50 chars per line
+    lineCount += estimatedWrappedLines - 1;
+  }
+  
+  // Add ellipsis if text was truncated
+  if (lineCount >= maxLines && truncatedText.length < text.length) {
+    truncatedText += '...';
+  }
 
   return (
     <div className="relative">
-      <div ref={textRef} style={truncatedStyle}>
+      <div ref={textRef}>
         <FormattedComponent
-          text={displayText}
+          text={truncatedText}
           isSentMessage={isSentMessage}
           className={className}
           searchQuery={searchQuery}
@@ -351,14 +394,14 @@ export const FormattedTextWithReadMore = ({ text, isSentMessage = false, classNa
       {shouldShowReadMore && (
         <div className="mt-1">
           <button
-            onClick={() => setIsExpanded(!isExpanded)}
+            onClick={() => setIsExpanded(true)}
             className={`text-xs font-medium transition-colors duration-200 ${
               isSentMessage
                 ? 'text-blue-200 hover:text-white'
                 : 'text-blue-600 hover:text-blue-800'
             }`}
           >
-            {isExpanded ? 'Read less' : 'Read more'}
+            Read more
           </button>
         </div>
       )}
