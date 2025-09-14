@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaCheck } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import { FormattedTextWithLinks } from '../utils/linkFormatter.jsx';
+import { formatLinksInText } from '../utils/linkFormatter.jsx';
 import { useSelector } from 'react-redux';
 
 const GeminiChatbox = () => {
@@ -561,6 +561,267 @@ const GeminiChatbox = () => {
                                     onClick={() => {
                                         try {
                                             const lines = messages.map(m => `${m.role === 'user' ? 'You' : 'Gemini'}: ${m.content}`);
+                                            const blob = new Blob([lines.join('\n\n')], { type: 'text/plain;charset=utf-8' });
+                                            const url = URL.createObjectURL(blob);
+                                            const a = document.createElement('a');
+                                            a.href = url;
+                                            a.download = `gemini_chat_${new Date().toISOString().split('T')[0]}.txt`;
+                                            document.body.appendChild(a);
+                                            a.click();
+                                            document.body.removeChild(a);
+                                            URL.revokeObjectURL(url);
+                                        } catch (e) {
+                                            toast.error('Failed to export transcript');
+                                        }
+                                    }}
+                                    className="text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
+                                    title="Export transcript"
+                                    aria-label="Export transcript"
+                                >
+                                    Export
+                                </button>
+                                {/* Hide clear button when no user messages */}
+                                {messages && (messages.length > 1 || messages.some(m => m.role === 'user')) && (
+                                    <button
+                                        onClick={() => setShowConfirmClear(true)}
+                                        className="text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
+                                        title="Clear Chat"
+                                        aria-label="Clear Chat"
+                                    >
+                                        Clear
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => setIsOpen(false)}
+                                    className="text-white hover:text-gray-200 transition-colors"
+                                >
+                                    <FaTimes size={16} />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Messages */}
+                        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
+                            {messages.map((message, index) => (
+                                <div
+                                    key={index}
+                                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                >
+                                    <div
+                                        className={`max-w-[85%] p-3 rounded-2xl break-words relative group ${
+                                            message.role === 'user'
+                                                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                                                : message.isError 
+                                                    ? 'bg-red-100 text-red-800 border border-red-200'
+                                                    : 'bg-gray-100 text-gray-800'
+                                        }`}
+                                    >
+                                        <p className="text-sm whitespace-pre-wrap leading-relaxed pr-8">{formatLinksInText(message.content, message.role === 'user')}</p>
+                                        {message.timestamp && (
+                                            <div className={`${message.role === 'user' ? 'text-white/80' : message.isError ? 'text-red-600' : 'text-gray-500'} text-[10px] mt-1`}>
+                                                {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </div>
+                                        )}
+
+                                        {/* Action buttons */}
+                                        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                                            {/* Copy icon for all messages */}
+                                            <button
+                                                onClick={() => copyToClipboard(message.content)}
+                                                className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-all duration-200"
+                                                title="Copy message"
+                                                aria-label="Copy message"
+                                            >
+                                                <FaCopy size={14} />
+                                            </button>
+                                            
+                                            {/* Retry button for failed messages */}
+                                            {message.isError && message.originalUserMessage && (
+                                                <button
+                                                    onClick={() => retryMessage(message.originalUserMessage, index)}
+                                                    disabled={isLoading}
+                                                    className="p-1 text-red-600 hover:text-red-700 hover:bg-red-200 rounded transition-all duration-200 disabled:opacity-50"
+                                                    title="Retry message"
+                                                    aria-label="Retry message"
+                                                >
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                                        <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                                                    </svg>
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                            {isLoading && (
+                                <div className="flex justify-start">
+                                    <div className="bg-gray-100 text-gray-800 p-3 rounded-2xl">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="flex space-x-1">
+                                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                                            </div>
+                                            <span className="text-sm text-gray-600 font-medium">Gemini is thinking...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            <div ref={messagesEndRef} />
+                            {/* scroll button moved to container-level absolute positioning */}
+                        </div>
+
+                        {/* Floating Scroll to bottom button - container-level absolute */}
+                        {isScrolledUp && (
+                            <div className="absolute bottom-20 right-4 z-30">
+                                <button
+                                    onClick={() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })}
+                                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-full p-3 shadow-xl transition-all duration-200 hover:scale-110 relative transform hover:shadow-2xl"
+                                    title="Jump to latest"
+                                    aria-label="Jump to latest"
+                                >
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="transform">
+                                        <path d="M12 16l-6-6h12l-6 6z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Quick suggestion prompts when conversation is empty */}
+                        {messages && (messages.length === 1 && !messages.some(m => m.role === 'user')) && (
+                            <div className="px-4 pb-2 pt-2 border-t border-gray-100 flex-shrink-0">
+                                <div className="flex flex-wrap gap-2">
+                                    {[
+                                        'Show trending properties',
+                                        'How do I schedule a viewing?',
+                                        'What are popular areas near me?',
+                                        'Explain mortgage basics'
+                                    ].map((prompt) => (
+                                        <button
+                                            key={prompt}
+                                            onClick={() => { setInputMessage(prompt); setTimeout(() => handleSubmit(new Event('submit')), 0); }}
+                                            className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded-full"
+                                        >
+                                            {prompt}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Input */}
+                        <div className="p-4 border-t border-gray-200 flex-shrink-0">
+                            <form onSubmit={handleSubmit} className="flex space-x-2">
+                                <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={inputMessage}
+                                    onChange={(e) => setInputMessage(e.target.value)}
+                                    onKeyPress={handleKeyPress}
+                                    placeholder="Ask me anything about real estate..."
+                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                    disabled={isLoading}
+                                />
+                                {isLoading ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => { abortControllerRef.current?.abort(); toast.info('Generation stopped'); }}
+                                        className="bg-red-600 hover:bg-red-700 text-white px-3 rounded-full h-10 text-xs font-medium shadow"
+                                        title="Stop generating"
+                                        aria-label="Stop generating"
+                                    >
+                                        Stop
+                                    </button>
+                                ) : (
+                                    <button
+                                        type="submit"
+                                        disabled={!inputMessage.trim()}
+                                        className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-full hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-110 flex-shrink-0 flex items-center justify-center w-10 h-10 group hover:shadow-xl active:scale-95"
+                                    >
+                                        <div className="relative">
+                                            {sendIconSent ? (
+                                                <FaCheck className="text-white send-icon animate-sent" size={16} />
+                                            ) : (
+                                                <FaPaperPlane className={`text-white send-icon ${sendIconAnimating ? 'animate-fly' : ''} group-hover:scale-110 transition-all duration-300`} size={16} />
+                                            )}
+                                        </div>
+                                    </button>
+                                )}
+                            </form>
+                        </div>
+                        {/* Clear confirmation modal */}
+                        {showConfirmClear && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                                <div className="bg-white rounded-xl shadow-xl p-5 w-80">
+                                    <h4 className="font-semibold mb-2">Clear chat?</h4>
+                                    <p className="text-sm text-gray-600 mb-4">This will remove your conversation here. This action cannot be undone.</p>
+                                    <div className="flex justify-end gap-2">
+                                        <button onClick={() => setShowConfirmClear(false)} className="px-3 py-1.5 text-sm rounded border border-gray-300 text-gray-700">Cancel</button>
+                                        <button onClick={() => { setShowConfirmClear(false); handleClearChatHistory(); }} className="px-3 py-1.5 text-sm rounded bg-red-600 text-white hover:bg-red-700">Clear</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Send button animation styles */}
+            <style>
+                {`
+                @keyframes sendIconFly {
+                  0% {
+                    transform: translate(0, 0) scale(1);
+                    opacity: 1;
+                  }
+                  20% {
+                    transform: translate(-3px, -6px) scale(1.05);
+                    opacity: 0.9;
+                  }
+                  40% {
+                    transform: translate(-8px, -12px) scale(1.1);
+                    opacity: 0.8;
+                  }
+                  60% {
+                    transform: translate(8px, -18px) scale(1.15);
+                    opacity: 0.9;
+                  }
+                  80% {
+                    transform: translate(15px, -20px) scale(1.2);
+                    opacity: 0.95;
+                  }
+                  100% {
+                    transform: translate(0, 0) scale(1);
+                    opacity: 1;
+                  }
+                }
+                .send-icon.animate-fly {
+                  animation: sendIconFly 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                }
+                @keyframes sentSuccess {
+                  0% {
+                    transform: scale(0.8);
+                    opacity: 0;
+                  }
+                  50% {
+                    transform: scale(1.2);
+                    opacity: 1;
+                  }
+                  100% {
+                    transform: scale(1);
+                    opacity: 1;
+                  }
+                }
+                .send-icon.animate-sent {
+                  animation: sentSuccess 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                }
+                `}
+            </style>
+        </>
+    );
+};
+
+export default GeminiChatbox;                         const lines = messages.map(m => `${m.role === 'user' ? 'You' : 'Gemini'}: ${m.content}`);
                                             const blob = new Blob([lines.join('\n\n')], { type: 'text/plain;charset=utf-8' });
                                             const url = URL.createObjectURL(blob);
                                             const a = document.createElement('a');
