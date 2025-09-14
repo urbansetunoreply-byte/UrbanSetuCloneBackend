@@ -1299,6 +1299,8 @@ function AdminAppointmentRow({
             const length = inputRef.current.value.length;
             inputRef.current.focus();
             inputRef.current.setSelectionRange(length, length);
+            // Adjust textarea height based on draft content
+            autoResizeTextarea(inputRef.current);
           }
         } catch(_) {}
       }, 0);

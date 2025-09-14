@@ -1227,6 +1227,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
             const length = inputRef.current.value.length;
             inputRef.current.focus();
             inputRef.current.setSelectionRange(length, length);
+            // Adjust textarea height based on draft content
+            autoResizeTextarea(inputRef.current);
           }
         } catch (_) {}
       }, 0);
@@ -2895,7 +2897,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
 
   const startEditing = (comment) => {
     // Save current draft before starting to edit
-    const currentDraft = comment.trim();
+    const currentDraft = comment.message?.trim() || '';
     if (currentDraft) {
       const draftKey = `appt_draft_${appt._id}`;
       localStorage.setItem(draftKey, currentDraft);
