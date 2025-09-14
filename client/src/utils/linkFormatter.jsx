@@ -244,9 +244,6 @@ const formatMarkdown = (text, isSentMessage = false) => {
 // Utility function to detect and format links in text
 export const formatLinksInText = (text, isSentMessage = false) => {
   if (!text || typeof text !== 'string') return text;
-  
-  // Debug logging
-  console.log('formatLinksInText called with:', { text, isSentMessage });
 
   // URL regex pattern to match various link formats
   const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
@@ -311,80 +308,89 @@ export const FormattedTextWithLinks = ({ text, isSentMessage = false, className 
 // Component wrapper for formatted text with links and search highlighting
 export const FormattedTextWithLinksAndSearch = ({ text, isSentMessage = false, className = "", searchQuery = "" }) => {
   if (!text || typeof text !== 'string') return <span className={className}>{text}</span>;
+
+  // Simplified approach: handle property mentions and URLs directly
+  const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
+  const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
   
-  // Debug logging
-  console.log('FormattedTextWithLinksAndSearch called with:', { text, isSentMessage, className, searchQuery });
-
-  // First apply markdown formatting
-  const markdownFormatted = formatMarkdown(text, isSentMessage);
+  // Combine both regex patterns
+  const combinedRegex = new RegExp(`(${urlRegex.source}|${mentionRegex.source})`, 'gi');
   
-  // Then process each part for search highlighting and property mentions
-  const processedParts = markdownFormatted.map((part, partIndex) => {
-    if (typeof part !== 'string') return part; // Keep React elements as-is
-    
-    let processedText = part;
-    
-    // First, handle property mentions
-    const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
-    const mentionPieces = [];
-    let lastIndex = 0;
-    let match;
-    
-    while ((match = mentionRegex.exec(processedText)) !== null) {
-      const [full, name, listingId] = match;
-      if (match.index > lastIndex) {
-        mentionPieces.push(processedText.slice(lastIndex, match.index));
-      }
-      const basePrefix = window.location.pathname.includes('/admin') ? '/admin/listing/' : '/user/listing/';
-      const href = `${basePrefix}${listingId}`;
-      const linkClasses = isSentMessage 
-        ? "text-white underline decoration-dotted hover:text-blue-200"
-        : "text-blue-600 underline decoration-dotted hover:text-blue-800";
-      mentionPieces.push(
-        <a key={`prop-${listingId}-${match.index}-${partIndex}`} href={href} onClick={(e) => e.stopPropagation()} className={linkClasses} title={`Open ${name}`}>@{name}</a>
-      );
-      lastIndex = match.index + full.length;
-    }
-    if (lastIndex < processedText.length) {
-      mentionPieces.push(processedText.slice(lastIndex));
-    }
-
-    // Then apply search highlighting to text parts
-    const finalPieces = mentionPieces.flatMap((piece, idx) => {
-      if (typeof piece !== 'string') return piece; // Keep React elements as-is
-      
-      if (searchQuery) {
-        const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-        const parts = piece.split(regex);
-        
-        return parts.map((subPart, index) => {
-          if (regex.test(subPart)) {
-            return <span key={`search-${idx}-${index}`} className="search-text-highlight bg-yellow-200 text-black px-1 rounded">{subPart}</span>;
-          }
-          return subPart;
-        });
-      }
-      
-      return piece;
-    });
-
-    // Finally, apply URL link formatting to text segments
-    return finalPieces.flatMap((subPart, idx) => {
-      if (typeof subPart === 'string') {
-        const linkFormatted = formatLinksInText(subPart, isSentMessage);
-        // formatLinksInText returns an array, so we need to flatten it
-        return Array.isArray(linkFormatted) ? linkFormatted : [linkFormatted];
-      }
-      return subPart;
-    });
-  });
-
-  const finalResult = processedParts.flat(Infinity);
-  console.log('FormattedTextWithLinksAndSearch final result:', finalResult);
+  const parts = text.split(combinedRegex);
   
   return (
     <span className={className}>
-      {finalResult}
+      {parts.map((part, index) => {
+        if (!part) return null;
+        
+        // Check if it's a URL
+        const urlTestRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
+        if (urlTestRegex.test(part)) {
+          let url = part;
+          if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            url = 'https://' + url;
+          }
+          
+          const linkClasses = isSentMessage 
+            ? "text-white hover:text-blue-200 underline transition-colors duration-200"
+            : "text-blue-600 hover:text-blue-800 underline transition-colors duration-200";
+          
+          return (
+            <a
+              key={index}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={linkClasses}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {part}
+            </a>
+          );
+        }
+        
+        // Check if it's a property mention
+        const mentionMatch = part.match(/@\[([^\]]+)\]\(([^)]+)\)/);
+        if (mentionMatch) {
+          const [full, name, listingId] = mentionMatch;
+          const basePrefix = window.location.pathname.includes('/admin') ? '/admin/listing/' : '/user/listing/';
+          const href = `${basePrefix}${listingId}`;
+          const linkClasses = isSentMessage 
+            ? "text-white underline decoration-dotted hover:text-blue-200"
+            : "text-blue-600 underline decoration-dotted hover:text-blue-800";
+          
+          return (
+            <a
+              key={index}
+              href={href}
+              onClick={(e) => e.stopPropagation()}
+              className={linkClasses}
+              title={`Open ${name}`}
+            >
+              @{name}
+            </a>
+          );
+        }
+        
+        // Check for search highlighting
+        if (searchQuery) {
+          const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+          const searchParts = part.split(regex);
+          
+          return searchParts.map((subPart, subIndex) => {
+            if (regex.test(subPart)) {
+              return (
+                <span key={`search-${index}-${subIndex}`} className="search-text-highlight bg-yellow-200 text-black px-1 rounded">
+                  {subPart}
+                </span>
+              );
+            }
+            return subPart;
+          });
+        }
+        
+        return part;
+      })}
     </span>
   );
 };
