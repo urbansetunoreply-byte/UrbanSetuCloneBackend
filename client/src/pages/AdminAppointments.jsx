@@ -1252,6 +1252,7 @@ function AdminAppointmentRow({
   const [sending, setSending] = useLocalState(false);
   const [editingComment, setEditingComment] = useLocalState(null);
   const [editText, setEditText] = useLocalState("");
+  const [originalDraft, setOriginalDraft] = useLocalState("");
   const [savingComment, setSavingComment] = useLocalState(null);
   const [replyTo, setReplyTo] = useLocalState(null);
   const [showChatModal, setShowChatModal] = useLocalState(false);
@@ -1298,6 +1299,8 @@ function AdminAppointmentRow({
             const length = inputRef.current.value.length;
             inputRef.current.focus();
             inputRef.current.setSelectionRange(length, length);
+            // Auto-resize textarea for drafted content
+            autoResizeTextarea(inputRef.current);
           }
         } catch(_) {}
       }, 0);
@@ -2637,11 +2640,16 @@ function AdminAppointmentRow({
         }));
         setEditingComment(null);
         setEditText("");
-        setNewComment(""); // Clear the main input
+        setNewComment(originalDraft); // Restore original draft
+        setOriginalDraft(""); // Clear stored draft
         setDetectedUrl(null);
         setPreviewDismissed(false);
-        // Reset textarea height to normal after editing
-        resetTextareaHeight();
+        // Auto-resize textarea for restored draft
+        setTimeout(() => {
+          if (inputRef.current) {
+            autoResizeTextarea(inputRef.current);
+          }
+        }, 0);
         
         // Aggressively refocus the input field to keep keyboard open on mobile
         const refocusInput = () => {
@@ -2708,6 +2716,8 @@ function AdminAppointmentRow({
   };
 
   const startEditing = (comment) => {
+    // Store the current draft before starting edit
+    setOriginalDraft(newComment);
     setEditingComment(comment._id);
     setEditText(comment.message);
     setNewComment(comment.message); // Set the message in the main input
@@ -4976,11 +4986,16 @@ function AdminAppointmentRow({
                       onClick={() => { 
                         setEditingComment(null); 
                         setEditText(""); 
-                        setNewComment(""); 
+                        setNewComment(originalDraft); // Restore original draft
+                        setOriginalDraft(""); // Clear stored draft
                         setDetectedUrl(null);
                         setPreviewDismissed(false);
-                        // Reset textarea height to normal when cancelling edit
-                        resetTextareaHeight();
+                        // Auto-resize textarea for restored draft
+                        setTimeout(() => {
+                          if (inputRef.current) {
+                            autoResizeTextarea(inputRef.current);
+                          }
+                        }, 0);
                       }} 
                       title="Cancel edit"
                     >
@@ -5020,7 +5035,7 @@ function AdminAppointmentRow({
                       const el = inputRef.current; if (!el) return; const start = el.selectionStart||0; const end=el.selectionEnd||0; const base=newComment||''; const selected=base.slice(start,end); const wrapped=`__${selected||'underline'}__`; const next=base.slice(0,start)+wrapped+base.slice(end); setNewComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2,start+2+(selected||'underline').length);}catch(_){}} ,0);
                     }}>U</button>
                     <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
-                      const el=inputRef.current; if(!el)return; const start=el.selectionStart||0; const end=el.selectionEnd||0; const base=newComment||''; const selected=base.slice(start,end); const wrapped=`~~${selected||'strike'}~~`; setNewComment(base.slice(0,start)+wrapped+base.slice(end));
+                      const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = newComment || ''; const selected = base.slice(start, end); const wrapped = `~~${selected || 'strike'}~~`; const next = base.slice(0, start) + wrapped + base.slice(end); setNewComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 2, start + 2 + (selected || 'strike').length); } catch (_) {} }, 0);
                     }}>S</button>
                     <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
                       const el=inputRef.current; if(!el)return; const base=newComment||''; const start=el.selectionStart||0; setNewComment(base.slice(0,start)+`- `+base.slice(start));
