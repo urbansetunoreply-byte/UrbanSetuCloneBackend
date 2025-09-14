@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { FaTrash, FaSearch, FaPen, FaCheck, FaTimes, FaUserShield, FaUser, FaEnvelope, FaPhone, FaArchive, FaUndo, FaCommentDots, FaCheckDouble, FaBan, FaPaperPlane, FaCalendar, FaLightbulb, FaCopy, FaEllipsisV, FaFlag, FaCircle, FaInfoCircle, FaSync, FaStar, FaRegStar, FaThumbtack, FaCalendarAlt, FaCheckSquare, FaDownload, FaRupeeSign, FaCreditCard, FaSpinner } from "react-icons/fa";
-import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch } from '../utils/linkFormatter.jsx';
+import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
 import UserAvatar from '../components/UserAvatar';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
 import ImagePreview from '../components/ImagePreview';
@@ -2849,9 +2849,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         // Auto-resize textarea for restored draft
         setTimeout(() => {
           if (inputRef.current) {
+            // Force a re-render by triggering the input event
+            const event = new Event('input', { bubbles: true });
+            inputRef.current.dispatchEvent(event);
             autoResizeTextarea(inputRef.current);
           }
-        }, 0);
+        }, 50);
         
         // Aggressively refocus the input field to keep keyboard open on mobile
         const refocusInput = () => {
@@ -2891,15 +2894,15 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     }
   };
 
-  const startEditing = (comment) => {
+  const startEditing = (message) => {
     // Store the current draft before starting edit
     setOriginalDraft(comment);
-    setEditingComment(comment._id);
-    setEditText(comment.message);
-    setComment(comment.message); // Set the message in the main input
+    setEditingComment(message._id);
+    setEditText(message.message);
+    setComment(message.message); // Set the message in the main input
     // Store original data for potential rollback
     setComments(prev => prev.map(c => 
-      c._id === comment._id 
+      c._id === message._id 
         ? { ...c, originalMessage: c.message, wasEdited: c.edited }
         : c
     ));
@@ -5758,11 +5761,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                         return null;
                                       })()}
                                       
-                                      <FormattedTextWithLinksAndSearch 
+                                      <FormattedTextWithReadMore 
                                         text={(c.message || '').replace(/\n+$/, '')}
                                         isSentMessage={isMe}
                                         className="whitespace-pre-wrap break-words"
                                         searchQuery={searchQuery}
+                                        maxLines={4}
                                       />
                                       {c.edited && (
                                         <span className="ml-2 text-[10px] italic text-gray-300 whitespace-nowrap">(Edited)</span>
@@ -6119,9 +6123,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           // Auto-resize textarea for restored draft
                           setTimeout(() => {
                             if (inputRef.current) {
+                              // Force a re-render by triggering the input event
+                              const event = new Event('input', { bubbles: true });
+                              inputRef.current.dispatchEvent(event);
                               autoResizeTextarea(inputRef.current);
                             }
-                          }, 0);
+                          }, 50);
                         }} 
                         title="Cancel edit"
                       >
@@ -7971,10 +7978,11 @@ You can lock this chat again at any time from the options.</p>
                                       />
                                     </div>
                                   )}
-                                  <FormattedTextWithLinks 
+                                  <FormattedTextWithReadMore 
                                     text={(message.message || '').replace(/\n+$/, '')}
                                     isSentMessage={isMe}
                                     className="whitespace-pre-wrap break-words"
+                                    maxLines={4}
                                   />
                                 </>
                               )}

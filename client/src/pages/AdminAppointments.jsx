@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { FaTrash, FaSearch, FaPen, FaPaperPlane, FaUser, FaEnvelope, FaCalendar, FaPhone, FaUserShield, FaArchive, FaUndo, FaCommentDots, FaCheck, FaCheckDouble, FaBan, FaTimes, FaLightbulb, FaCopy, FaEllipsisV, FaInfoCircle, FaSync, FaStar, FaRegStar, FaFlag, FaCalendarAlt, FaCheckSquare, FaDownload, FaSpinner, FaRupeeSign } from "react-icons/fa";
-import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch } from '../utils/linkFormatter.jsx';
+import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
 import UserAvatar from '../components/UserAvatar';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
 import ImagePreview from '../components/ImagePreview';
@@ -2647,9 +2647,12 @@ function AdminAppointmentRow({
         // Auto-resize textarea for restored draft
         setTimeout(() => {
           if (inputRef.current) {
+            // Force a re-render by triggering the input event
+            const event = new Event('input', { bubbles: true });
+            inputRef.current.dispatchEvent(event);
             autoResizeTextarea(inputRef.current);
           }
-        }, 0);
+        }, 50);
         
         // Aggressively refocus the input field to keep keyboard open on mobile
         const refocusInput = () => {
@@ -4487,11 +4490,12 @@ function AdminAppointmentRow({
                                         return null;
                                       })()}
                                       
-                                      <FormattedTextWithLinksAndSearch 
+                                      <FormattedTextWithReadMore 
                                         text={(c.message || '').replace(/\n+$/, '')}
                                         isSentMessage={isMe}
                                         className="whitespace-pre-wrap break-words"
                                         searchQuery={searchQuery}
+                                        maxLines={4}
                                       />
                                       {c.edited && (
                                         <span className="ml-2 text-[10px] italic text-gray-300 whitespace-nowrap">(Edited)</span>
@@ -4993,9 +4997,12 @@ function AdminAppointmentRow({
                         // Auto-resize textarea for restored draft
                         setTimeout(() => {
                           if (inputRef.current) {
+                            // Force a re-render by triggering the input event
+                            const event = new Event('input', { bubbles: true });
+                            inputRef.current.dispatchEvent(event);
                             autoResizeTextarea(inputRef.current);
                           }
-                        }, 0);
+                        }, 50);
                       }} 
                       title="Cancel edit"
                     >
@@ -6219,10 +6226,11 @@ function AdminAppointmentRow({
                                     </div>
                                   </div>
                                 ) : (
-                                  <FormattedTextWithLinks 
+                                  <FormattedTextWithReadMore 
                                     text={(message.message || '').replace(/\n+$/, '')}
                                     isSentMessage={isMe}
                                     className="whitespace-pre-wrap break-words"
+                                    maxLines={4}
                                   />
                                 )}
                               </div>

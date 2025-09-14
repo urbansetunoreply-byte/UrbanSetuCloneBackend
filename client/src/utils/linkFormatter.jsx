@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 // Utility function to format markdown text
 const formatMarkdown = (text, isSentMessage = false) => {
@@ -11,6 +11,11 @@ const formatMarkdown = (text, isSentMessage = false) => {
   const lineProcessedParts = new Map();
   
   lines.forEach((line, lineIndex) => {
+    // Ensure line is a string and not null/undefined
+    if (!line || typeof line !== 'string') {
+      return;
+    }
+    
     // Check if this is a list item first
     const isNumberedList = line.trim().match(/^(\d+)\.\s+/);
     const isBulletList = line.trim().match(/^[-•]\s+/);
@@ -243,7 +248,7 @@ const formatMarkdown = (text, isSentMessage = false) => {
 
 // Utility function to detect and format links in text
 export const formatLinksInText = (text, isSentMessage = false) => {
-  if (!text || typeof text !== 'string') return text;
+  if (!text || typeof text !== 'string') return text || '';
 
   // URL regex pattern to match various link formats
   const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
@@ -306,6 +311,60 @@ export const FormattedTextWithLinks = ({ text, isSentMessage = false, className 
 };
 
 // Component wrapper for formatted text with links and search highlighting
+// Component wrapper with read more functionality for long messages
+export const FormattedTextWithReadMore = ({ text, isSentMessage = false, className = "", searchQuery = "", maxLines = 6 }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [shouldShowReadMore, setShouldShowReadMore] = useState(false);
+  const textRef = useRef(null);
+
+  useEffect(() => {
+    if (textRef.current && text) {
+      const lineHeight = 20; // approximate line height in px
+      const maxHeight = maxLines * lineHeight;
+      const actualHeight = textRef.current.scrollHeight;
+      setShouldShowReadMore(actualHeight > maxHeight);
+    }
+  }, [text, maxLines]);
+
+  const displayText = isExpanded ? text : text;
+  const truncatedStyle = !isExpanded && shouldShowReadMore ? {
+    maxHeight: `${maxLines * 20}px`,
+    overflow: 'hidden',
+    display: '-webkit-box',
+    WebkitLineClamp: maxLines,
+    WebkitBoxOrient: 'vertical',
+  } : {};
+
+  const FormattedComponent = searchQuery ? FormattedTextWithLinksAndSearch : FormattedTextWithLinks;
+
+  return (
+    <div className="relative">
+      <div ref={textRef} style={truncatedStyle}>
+        <FormattedComponent
+          text={displayText}
+          isSentMessage={isSentMessage}
+          className={className}
+          searchQuery={searchQuery}
+        />
+      </div>
+      {shouldShowReadMore && (
+        <div className="mt-1">
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className={`text-xs font-medium transition-colors duration-200 ${
+              isSentMessage
+                ? 'text-blue-200 hover:text-white'
+                : 'text-blue-600 hover:text-blue-800'
+            }`}
+          >
+            {isExpanded ? 'Read less' : 'Read more'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const FormattedTextWithLinksAndSearch = ({ text, isSentMessage = false, className = "", searchQuery = "" }) => {
   if (!text || typeof text !== 'string') return <span className={className}>{text}</span>;
 
