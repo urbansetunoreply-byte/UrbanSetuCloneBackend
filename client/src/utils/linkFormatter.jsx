@@ -309,50 +309,52 @@ export const FormattedTextWithLinks = ({ text, isSentMessage = false, className 
 export const FormattedTextWithLinksAndSearch = ({ text, isSentMessage = false, className = "", searchQuery = "" }) => {
   if (!text || typeof text !== 'string') return <span className={className}>{text}</span>;
 
-  // Simplified approach: handle property mentions and URLs directly
-  const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
+  // Handle property mentions first, then URLs
   const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
+  const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
   
-  // Combine both regex patterns
-  const combinedRegex = new RegExp(`(${urlRegex.source}|${mentionRegex.source})`, 'gi');
+  // First, handle property mentions
+  let processedText = text;
+  const mentionMatches = [...text.matchAll(mentionRegex)];
   
-  const parts = text.split(combinedRegex);
+  // Replace property mentions with placeholders to avoid conflicts with URL detection
+  const mentionPlaceholders = [];
+  mentionMatches.forEach((match, index) => {
+    const [full, name, listingId] = match;
+    const placeholder = `__MENTION_${index}__`;
+    processedText = processedText.replace(full, placeholder);
+    mentionPlaceholders.push({ placeholder, name, listingId, full });
+  });
+  
+  // Then handle URLs
+  const urlMatches = [...processedText.matchAll(urlRegex)];
+  const urlPlaceholders = [];
+  urlMatches.forEach((match, index) => {
+    const [url] = match;
+    const placeholder = `__URL_${index}__`;
+    processedText = processedText.replace(url, placeholder);
+    urlPlaceholders.push({ placeholder, url });
+  });
+  
+  // Split by placeholders and process
+  const allPlaceholders = [...mentionPlaceholders, ...urlPlaceholders];
+  let parts;
+  if (allPlaceholders.length > 0) {
+    const placeholderRegex = new RegExp(`(${allPlaceholders.map(p => p.placeholder).join('|')})`, 'g');
+    parts = processedText.split(placeholderRegex);
+  } else {
+    parts = [processedText];
+  }
   
   return (
     <span className={className}>
       {parts.map((part, index) => {
         if (!part) return null;
         
-        // Check if it's a URL
-        const urlTestRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
-        if (urlTestRegex.test(part)) {
-          let url = part;
-          if (!url.startsWith('http://') && !url.startsWith('https://')) {
-            url = 'https://' + url;
-          }
-          
-          const linkClasses = isSentMessage 
-            ? "text-white hover:text-blue-200 underline transition-colors duration-200"
-            : "text-blue-600 hover:text-blue-800 underline transition-colors duration-200";
-          
-          return (
-            <a
-              key={index}
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={linkClasses}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {part}
-            </a>
-          );
-        }
-        
-        // Check if it's a property mention
-        const mentionMatch = part.match(/@\[([^\]]+)\]\(([^)]+)\)/);
-        if (mentionMatch) {
-          const [full, name, listingId] = mentionMatch;
+        // Check if it's a placeholder
+        const mentionPlaceholder = mentionPlaceholders.find(p => p.placeholder === part);
+        if (mentionPlaceholder) {
+          const { name, listingId } = mentionPlaceholder;
           const basePrefix = window.location.pathname.includes('/admin') ? '/admin/listing/' : '/user/listing/';
           const href = `${basePrefix}${listingId}`;
           const linkClasses = isSentMessage 
@@ -368,6 +370,32 @@ export const FormattedTextWithLinksAndSearch = ({ text, isSentMessage = false, c
               title={`Open ${name}`}
             >
               @{name}
+            </a>
+          );
+        }
+        
+        const urlPlaceholder = urlPlaceholders.find(p => p.placeholder === part);
+        if (urlPlaceholder) {
+          const { url } = urlPlaceholder;
+          let finalUrl = url;
+          if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+            finalUrl = 'https://' + finalUrl;
+          }
+          
+          const linkClasses = isSentMessage 
+            ? "text-white hover:text-blue-200 underline transition-colors duration-200"
+            : "text-blue-600 hover:text-blue-800 underline transition-colors duration-200";
+          
+          return (
+            <a
+              key={index}
+              href={finalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={linkClasses}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {url}
             </a>
           );
         }
