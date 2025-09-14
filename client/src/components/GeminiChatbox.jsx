@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaCheck } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import { formatLinksInText } from '../utils/linkFormatter.jsx';
+import { FormattedTextWithLinks } from '../utils/linkFormatter.jsx';
 import { useSelector } from 'react-redux';
 
 const GeminiChatbox = () => {
@@ -616,7 +616,12 @@ const GeminiChatbox = () => {
                                                     : 'bg-gray-100 text-gray-800'
                                         }`}
                                     >
-                                        <p className="text-sm whitespace-pre-wrap leading-relaxed pr-8">{formatLinksInText(message.content, message.role === 'user')}</p>
+                                        <div className="text-sm whitespace-pre-wrap leading-relaxed pr-8">
+                                            <FormattedTextWithLinks 
+                                                text={message.content} 
+                                                isSentMessage={message.role === 'user'} 
+                                            />
+                                        </div>
                                         {message.timestamp && (
                                             <div className={`${message.role === 'user' ? 'text-white/80' : message.isError ? 'text-red-600' : 'text-gray-500'} text-[10px] mt-1`}>
                                                 {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

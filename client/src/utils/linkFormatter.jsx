@@ -296,9 +296,99 @@ export const FormattedTextWithLinks = ({ text, isSentMessage = false, className 
   const markdownFormatted = formatMarkdown(text, isSentMessage);
   
   // Then apply link formatting to text parts
-  const finalFormatted = markdownFormatted.map((part, index) => {
+  const finalFormatted = markdownFormatted.map((part, partIndex) => {
     if (typeof part === 'string') {
-      return formatLinksInText(part, isSentMessage);
+      // Handle property mentions first, then URLs
+      const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
+      const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?|(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
+      
+      // First, handle property mentions
+      let processedText = part;
+      const mentionMatches = [...part.matchAll(mentionRegex)];
+      
+      // Replace property mentions with placeholders to avoid conflicts with URL detection
+      const mentionPlaceholders = [];
+      mentionMatches.forEach((match, index) => {
+        const [full, name, listingId] = match;
+        const placeholder = `__MENTION_${partIndex}_${index}__`;
+        processedText = processedText.replace(full, placeholder);
+        mentionPlaceholders.push({ placeholder, name, listingId, full });
+      });
+      
+      // Then handle URLs
+      const urlMatches = [...processedText.matchAll(urlRegex)];
+      const urlPlaceholders = [];
+      urlMatches.forEach((match, index) => {
+        const [url] = match;
+        const placeholder = `__URL_${partIndex}_${index}__`;
+        processedText = processedText.replace(url, placeholder);
+        urlPlaceholders.push({ placeholder, url });
+      });
+      
+      // Split by placeholders and process
+      const allPlaceholders = [...mentionPlaceholders, ...urlPlaceholders];
+      let parts;
+      if (allPlaceholders.length > 0) {
+        const placeholderRegex = new RegExp(`(${allPlaceholders.map(p => p.placeholder).join('|')})`, 'g');
+        parts = processedText.split(placeholderRegex);
+      } else {
+        parts = [processedText];
+      }
+      
+      return parts.map((subPart, index) => {
+        if (!subPart) return null;
+        
+        // Check if it's a placeholder
+        const mentionPlaceholder = mentionPlaceholders.find(p => p.placeholder === subPart);
+        if (mentionPlaceholder) {
+          const { name, listingId } = mentionPlaceholder;
+          const basePrefix = window.location.pathname.includes('/admin') ? '/admin/listing/' : '/user/listing/';
+          const href = `${basePrefix}${listingId}`;
+          const linkClasses = isSentMessage 
+            ? "text-white underline decoration-dotted hover:text-blue-200 cursor-pointer"
+            : "text-blue-600 underline decoration-dotted hover:text-blue-800 cursor-pointer";
+          
+          return (
+            <a
+              key={`mention-${partIndex}-${index}`}
+              href={href}
+              onClick={(e) => e.stopPropagation()}
+              className={linkClasses}
+              title={`Open ${name}`}
+            >
+              @{name}
+            </a>
+          );
+        }
+        
+        const urlPlaceholder = urlPlaceholders.find(p => p.placeholder === subPart);
+        if (urlPlaceholder) {
+          const { url } = urlPlaceholder;
+          let finalUrl = url;
+          if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+            finalUrl = 'https://' + finalUrl;
+          }
+          
+          const linkClasses = isSentMessage 
+            ? "text-white hover:text-blue-200 underline transition-colors duration-200 cursor-pointer"
+            : "text-blue-600 hover:text-blue-800 underline transition-colors duration-200 cursor-pointer";
+          
+          return (
+            <a
+              key={`url-${partIndex}-${index}`}
+              href={finalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={linkClasses}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {url}
+            </a>
+          );
+        }
+        
+        return subPart;
+      });
     }
     // If it's already a React element (from markdown formatting), return it as is
     return part;
