@@ -3033,6 +3033,36 @@ function AdminAppointmentRow({
           });
           
           setLocalComments(updatedComments);
+          
+          // Force scroll to bottom after refresh - use multiple attempts to ensure it works
+          const scrollToBottomAfterRefresh = () => {
+            // First try the chatEndRef
+            if (chatEndRef.current) {
+              chatEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+              return;
+            }
+            
+            // If chatEndRef is not available, try scrolling the container
+            const container = chatContainerRef.current;
+            if (container) {
+              container.scrollTop = container.scrollHeight;
+              return;
+            }
+            
+            // Last resort: try to find any scrollable container in the chat
+            const chatContainers = document.querySelectorAll('[data-chat-container]');
+            chatContainers.forEach(container => {
+              if (container.scrollHeight > container.clientHeight) {
+                container.scrollTop = container.scrollHeight;
+              }
+            });
+          };
+          
+          // Try multiple times with increasing delays to ensure DOM is updated
+          setTimeout(scrollToBottomAfterRefresh, 100);
+          setTimeout(scrollToBottomAfterRefresh, 300);
+          setTimeout(scrollToBottomAfterRefresh, 600);
+          setTimeout(scrollToBottomAfterRefresh, 1000);
         }
     } catch (err) {
       console.error('Error fetching latest comments:', err);

@@ -313,7 +313,7 @@ export const FormattedTextWithLinks = ({ text, isSentMessage = false, className 
 
 // Component wrapper for formatted text with links and search highlighting
 // Component wrapper with read more functionality for long messages
-export const FormattedTextWithReadMore = ({ text, isSentMessage = false, className = "", searchQuery = "", maxLines = 20 }) => {
+export const FormattedTextWithReadMore = ({ text, isSentMessage = false, className = "", searchQuery = "", maxLines = 4 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [shouldShowReadMore, setShouldShowReadMore] = useState(false);
   const textRef = useRef(null);
@@ -350,13 +350,13 @@ export const FormattedTextWithReadMore = ({ text, isSentMessage = false, classNa
         />
       </div>
       {shouldShowReadMore && (
-        <div className="mt-2 flex justify-end">
+        <div className="mt-1">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className={`px-3 py-1 text-xs font-semibold rounded-full transition-all duration-200 shadow-sm hover:shadow-md ${
+            className={`text-xs font-medium transition-colors duration-200 ${
               isSentMessage
-                ? 'bg-blue-500/20 text-blue-100 hover:bg-blue-500/30 hover:text-white border border-blue-400/30'
-                : 'bg-blue-100 text-blue-700 hover:bg-blue-200 hover:text-blue-800 border border-blue-200'
+                ? 'text-blue-200 hover:text-white'
+                : 'text-blue-600 hover:text-blue-800'
             }`}
           >
             {isExpanded ? 'Read less' : 'Read more'}
