@@ -5001,15 +5001,26 @@ function AdminAppointmentRow({
                         }, 100);
                         setDetectedUrl(null);
                         setPreviewDismissed(false);
-                        // Auto-resize textarea for restored draft
+                        // Auto-resize textarea for restored draft with proper timing
                         setTimeout(() => {
                           if (inputRef.current) {
                             // Force a re-render by triggering the input event
                             const event = new Event('input', { bubbles: true });
                             inputRef.current.dispatchEvent(event);
-                            autoResizeTextarea(inputRef.current);
+                            // Reset height first, then calculate proper height
+                            inputRef.current.style.height = '48px';
+                            const scrollHeight = inputRef.current.scrollHeight;
+                            const maxHeight = 144;
+                            
+                            if (scrollHeight <= maxHeight) {
+                              inputRef.current.style.height = scrollHeight + 'px';
+                              inputRef.current.style.overflowY = 'hidden';
+                            } else {
+                              inputRef.current.style.height = maxHeight + 'px';
+                              inputRef.current.style.overflowY = 'auto';
+                            }
                           }
-                        }, 50);
+                        }, 100);
                       }} 
                       title="Cancel edit"
                     >
