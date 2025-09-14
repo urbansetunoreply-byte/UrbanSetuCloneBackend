@@ -336,8 +336,7 @@ export const FormattedTextWithReadMore = ({ text, isSentMessage = false, classNa
     WebkitBoxOrient: 'vertical',
   } : {};
 
-  // Always use FormattedTextWithLinksAndSearch as it handles both links and search
-  const FormattedComponent = FormattedTextWithLinksAndSearch;
+  const FormattedComponent = searchQuery ? FormattedTextWithLinksAndSearch : FormattedTextWithLinks;
 
   return (
     <div className="relative">

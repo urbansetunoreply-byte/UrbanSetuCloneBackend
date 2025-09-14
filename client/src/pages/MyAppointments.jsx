@@ -2414,7 +2414,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       const { data } = await axios.get(`${API_BASE_URL}/api/bookings/${appt._id}`, {
         withCredentials: true
       });
-      if (data.comments && data.comments.length !== comments.length) {
+      if (data.comments) {
         // Merge server comments with local temp messages to prevent re-entry
         setComments(prev => {
           const serverCommentIds = new Set(data.comments.map(c => c._id));
