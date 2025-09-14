@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { FaTrash, FaSearch, FaPen, FaCheck, FaTimes, FaUserShield, FaUser, FaEnvelope, FaPhone, FaArchive, FaUndo, FaCommentDots, FaCheckDouble, FaBan, FaPaperPlane, FaCalendar, FaLightbulb, FaCopy, FaEllipsisV, FaFlag, FaCircle, FaInfoCircle, FaSync, FaStar, FaRegStar, FaThumbtack, FaCalendarAlt, FaCheckSquare, FaDownload, FaRupeeSign, FaCreditCard, FaSpinner } from "react-icons/fa";
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch } from '../utils/linkFormatter.jsx';
+import ChatInputWithMentions from '../components/ChatInputWithMentions';
 import UserAvatar from '../components/UserAvatar';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
 import ImagePreview from '../components/ImagePreview';
@@ -6213,8 +6214,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         })()}
                       </div>
                     )}
-                    <textarea
-                      rows={1}
+                    <ChatInputWithMentions
+                      ref={inputRef}
                       className="w-full pl-4 pr-20 py-3 border-2 border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 shadow-lg transition-all duration-300 bg-white resize-none whitespace-pre-wrap break-all hover:border-blue-300 hover:shadow-xl focus:shadow-2xl transform hover:scale-[1.01] overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
                       style={{
                         minHeight: '48px',
@@ -6327,7 +6328,6 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           }
                         }
                       }}
-                      ref={inputRef}
                     />
                     {/* Emoji Button - Inside textarea on the right */}
                     <div className="absolute right-12 bottom-3">
