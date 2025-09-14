@@ -244,6 +244,9 @@ const formatMarkdown = (text, isSentMessage = false) => {
 // Utility function to detect and format links in text
 export const formatLinksInText = (text, isSentMessage = false) => {
   if (!text || typeof text !== 'string') return text;
+  
+  // Debug logging
+  console.log('formatLinksInText called with:', { text, isSentMessage });
 
   // URL regex pattern to match various link formats
   const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
@@ -308,6 +311,9 @@ export const FormattedTextWithLinks = ({ text, isSentMessage = false, className 
 // Component wrapper for formatted text with links and search highlighting
 export const FormattedTextWithLinksAndSearch = ({ text, isSentMessage = false, className = "", searchQuery = "" }) => {
   if (!text || typeof text !== 'string') return <span className={className}>{text}</span>;
+  
+  // Debug logging
+  console.log('FormattedTextWithLinksAndSearch called with:', { text, isSentMessage, className, searchQuery });
 
   // First apply markdown formatting
   const markdownFormatted = formatMarkdown(text, isSentMessage);
@@ -373,9 +379,12 @@ export const FormattedTextWithLinksAndSearch = ({ text, isSentMessage = false, c
     });
   });
 
+  const finalResult = processedParts.flat(Infinity);
+  console.log('FormattedTextWithLinksAndSearch final result:', finalResult);
+  
   return (
     <span className={className}>
-      {processedParts}
+      {finalResult}
     </span>
   );
 };
