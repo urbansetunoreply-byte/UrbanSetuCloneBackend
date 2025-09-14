@@ -1184,6 +1184,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const [sending, setSending] = useState(false);
   const [editingComment, setEditingComment] = useState(null);
   const [editText, setEditText] = useState("");
+  const [originalDraft, setOriginalDraft] = useState("");
   const [savingComment, setSavingComment] = useState(null);
   const location = useLocation();
   const [showChatModal, setShowChatModal] = useState(false);
@@ -1226,6 +1227,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
             const length = inputRef.current.value.length;
             inputRef.current.focus();
             inputRef.current.setSelectionRange(length, length);
+            // Auto-resize textarea for drafted content
+            autoResizeTextarea(inputRef.current);
           }
         } catch (_) {}
       }, 0);
@@ -2839,11 +2842,16 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         }));
         setEditingComment(null);
         setEditText("");
-        setComment(""); // Clear the main input
+        setComment(originalDraft); // Restore original draft
+        setOriginalDraft(""); // Clear stored draft
         setDetectedUrl(null);
         setPreviewDismissed(false);
-        // Reset textarea height to normal after editing
-        resetTextareaHeight();
+        // Auto-resize textarea for restored draft
+        setTimeout(() => {
+          if (inputRef.current) {
+            autoResizeTextarea(inputRef.current);
+          }
+        }, 0);
         
         // Aggressively refocus the input field to keep keyboard open on mobile
         const refocusInput = () => {
@@ -2884,6 +2892,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   };
 
   const startEditing = (comment) => {
+    // Store the current draft before starting edit
+    setOriginalDraft(comment);
     setEditingComment(comment._id);
     setEditText(comment.message);
     setComment(comment.message); // Set the message in the main input
@@ -2902,10 +2912,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         inputRef.current.setSelectionRange(length, length);
         
         // Auto-resize textarea for edited content
-        inputRef.current.style.height = '48px';
-        const scrollHeight = inputRef.current.scrollHeight;
-        const maxHeight = 144;
-        inputRef.current.style.height = Math.min(scrollHeight, maxHeight) + 'px';
+        autoResizeTextarea(inputRef.current);
       }
     }, 100);
   };
@@ -6105,11 +6112,16 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         onClick={() => { 
                           setEditingComment(null); 
                           setEditText(""); 
-                          setComment(""); 
+                          setComment(originalDraft); // Restore original draft
+                          setOriginalDraft(""); // Clear stored draft
                           setDetectedUrl(null);
                           setPreviewDismissed(false);
-                          // Reset textarea height to normal when cancelling edit
-                          resetTextareaHeight();
+                          // Auto-resize textarea for restored draft
+                          setTimeout(() => {
+                            if (inputRef.current) {
+                              autoResizeTextarea(inputRef.current);
+                            }
+                          }, 0);
                         }} 
                         title="Cancel edit"
                       >
