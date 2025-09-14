@@ -365,7 +365,9 @@ export const FormattedTextWithLinksAndSearch = ({ text, isSentMessage = false, c
     // Finally, apply URL link formatting to text segments
     return finalPieces.flatMap((subPart, idx) => {
       if (typeof subPart === 'string') {
-        return formatLinksInText(subPart, isSentMessage);
+        const linkFormatted = formatLinksInText(subPart, isSentMessage);
+        // formatLinksInText returns an array, so we need to flatten it
+        return Array.isArray(linkFormatted) ? linkFormatted : [linkFormatted];
       }
       return subPart;
     });

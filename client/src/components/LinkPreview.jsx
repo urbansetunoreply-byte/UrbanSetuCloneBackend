@@ -21,7 +21,14 @@ const LinkPreview = ({ url, onRemove, className = "", showRemoveButton = true, c
       
       try {
         // Use a link preview service (you can replace with your own backend endpoint)
-        const response = await fetch(`https://api.microlink.io?url=${encodeURIComponent(url)}&meta=true`);
+        const response = await fetch(`https://api.microlink.io?url=${encodeURIComponent(url)}&meta=true`, {
+          timeout: 5000 // 5 second timeout
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
         
         if (data.status === 'success' && data.data) {
@@ -33,11 +40,30 @@ const LinkPreview = ({ url, onRemove, className = "", showRemoveButton = true, c
             url: url
           });
         } else {
-          setError(true);
+          // Fallback: create a basic preview with just the URL
+          setPreview({
+            title: new URL(url).hostname,
+            description: url,
+            image: null,
+            siteName: new URL(url).hostname,
+            url: url
+          });
         }
       } catch (err) {
         console.error('Error fetching link preview:', err);
-        setError(true);
+        // Fallback: create a basic preview with just the URL
+        try {
+          setPreview({
+            title: new URL(url).hostname,
+            description: url,
+            image: null,
+            siteName: new URL(url).hostname,
+            url: url
+          });
+        } catch (urlErr) {
+          console.error('Error creating URL object:', urlErr);
+          setError(true);
+        }
       } finally {
         setLoading(false);
       }
