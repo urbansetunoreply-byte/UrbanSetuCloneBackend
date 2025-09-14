@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { FaTrash, FaSearch, FaPen, FaCheck, FaTimes, FaUserShield, FaUser, FaEnvelope, FaPhone, FaArchive, FaUndo, FaCommentDots, FaCheckDouble, FaBan, FaPaperPlane, FaCalendar, FaLightbulb, FaCopy, FaEllipsisV, FaFlag, FaCircle, FaInfoCircle, FaSync, FaStar, FaRegStar, FaThumbtack, FaCalendarAlt, FaCheckSquare, FaDownload, FaRupeeSign, FaCreditCard, FaSpinner } from "react-icons/fa";
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch } from '../utils/linkFormatter.jsx';
 import UserAvatar from '../components/UserAvatar';
+import ReadMoreText from '../components/ReadMoreText';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
 import ImagePreview from '../components/ImagePreview';
 import LinkPreview from '../components/LinkPreview';
@@ -2839,7 +2840,16 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         }));
         setEditingComment(null);
         setEditText("");
-        setComment(""); // Clear the main input
+        
+        // Restore the saved draft after successful edit
+        const draftKey = `appt_draft_${appt._id}`;
+        const savedDraft = localStorage.getItem(draftKey);
+        if (savedDraft) {
+          setComment(savedDraft);
+        } else {
+          setComment(""); // Clear the main input
+        }
+        
         setDetectedUrl(null);
         setPreviewDismissed(false);
         // Reset textarea height to normal after editing
@@ -2884,6 +2894,13 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   };
 
   const startEditing = (comment) => {
+    // Save current draft before starting to edit
+    const currentDraft = comment.trim();
+    if (currentDraft) {
+      const draftKey = `appt_draft_${appt._id}`;
+      localStorage.setItem(draftKey, currentDraft);
+    }
+    
     setEditingComment(comment._id);
     setEditText(comment.message);
     setComment(comment.message); // Set the message in the main input
@@ -2901,7 +2918,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         const length = inputRef.current.value.length;
         inputRef.current.setSelectionRange(length, length);
         
-        // Auto-resize textarea for edited content
+        // Auto-resize textarea for edited content - adjust to the message being edited
         inputRef.current.style.height = '48px';
         const scrollHeight = inputRef.current.scrollHeight;
         const maxHeight = 144;
@@ -5751,11 +5768,13 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                         return null;
                                       })()}
                                       
-                                      <FormattedTextWithLinksAndSearch 
-                                        text={(c.message || '').replace(/\n+$/, '')}
+                                      <ReadMoreText 
+                                        text={c.message || ''}
                                         isSentMessage={isMe}
                                         className="whitespace-pre-wrap break-words"
                                         searchQuery={searchQuery}
+                                        maxLength={200}
+                                        minHeight="60px"
                                       />
                                       {c.edited && (
                                         <span className="ml-2 text-[10px] italic text-gray-300 whitespace-nowrap">(Edited)</span>
@@ -6103,9 +6122,17 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                       <button 
                         className="ml-auto text-yellow-400 hover:text-yellow-700 bg-yellow-100 hover:bg-yellow-200 rounded-full p-1 transition-colors" 
                         onClick={() => { 
+                          // Restore the saved draft when cancelling edit
+                          const draftKey = `appt_draft_${appt._id}`;
+                          const savedDraft = localStorage.getItem(draftKey);
+                          if (savedDraft) {
+                            setComment(savedDraft);
+                          } else {
+                            setComment("");
+                          }
+                          
                           setEditingComment(null); 
                           setEditText(""); 
-                          setComment(""); 
                           setDetectedUrl(null);
                           setPreviewDismissed(false);
                           // Reset textarea height to normal when cancelling edit
@@ -7959,10 +7986,12 @@ You can lock this chat again at any time from the options.</p>
                                       />
                                     </div>
                                   )}
-                                  <FormattedTextWithLinks 
-                                    text={(message.message || '').replace(/\n+$/, '')}
+                                  <ReadMoreText 
+                                    text={message.message || ''}
                                     isSentMessage={isMe}
                                     className="whitespace-pre-wrap break-words"
+                                    maxLength={200}
+                                    minHeight="60px"
                                   />
                                 </>
                               )}

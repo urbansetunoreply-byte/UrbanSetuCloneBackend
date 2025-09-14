@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useMemo, useRef } from "react"
 import { FaTrash, FaSearch, FaPen, FaPaperPlane, FaUser, FaEnvelope, FaCalendar, FaPhone, FaUserShield, FaArchive, FaUndo, FaCommentDots, FaCheck, FaCheckDouble, FaBan, FaTimes, FaLightbulb, FaCopy, FaEllipsisV, FaInfoCircle, FaSync, FaStar, FaRegStar, FaFlag, FaCalendarAlt, FaCheckSquare, FaDownload, FaSpinner, FaRupeeSign } from "react-icons/fa";
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch } from '../utils/linkFormatter.jsx';
 import UserAvatar from '../components/UserAvatar';
+import ReadMoreText from '../components/ReadMoreText';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
 import ImagePreview from '../components/ImagePreview';
 import LinkPreview from '../components/LinkPreview';
@@ -2637,7 +2638,16 @@ function AdminAppointmentRow({
         }));
         setEditingComment(null);
         setEditText("");
-        setNewComment(""); // Clear the main input
+        
+        // Restore the saved draft after successful edit
+        const draftKey = `appt_draft_${appt._id}`;
+        const savedDraft = localStorage.getItem(draftKey);
+        if (savedDraft) {
+          setNewComment(savedDraft);
+        } else {
+          setNewComment(""); // Clear the main input
+        }
+        
         setDetectedUrl(null);
         setPreviewDismissed(false);
         // Reset textarea height to normal after editing
@@ -2708,6 +2718,13 @@ function AdminAppointmentRow({
   };
 
   const startEditing = (comment) => {
+    // Save current draft before starting to edit
+    const currentDraft = newComment.trim();
+    if (currentDraft) {
+      const draftKey = `appt_draft_${appt._id}`;
+      localStorage.setItem(draftKey, currentDraft);
+    }
+    
     setEditingComment(comment._id);
     setEditText(comment.message);
     setNewComment(comment.message); // Set the message in the main input
@@ -2725,7 +2742,7 @@ function AdminAppointmentRow({
         const length = inputRef.current.value.length;
         inputRef.current.setSelectionRange(length, length);
         
-        // Auto-resize textarea for edited content
+        // Auto-resize textarea for edited content - adjust to the message being edited
         autoResizeTextarea(inputRef.current);
       }
     }, 100);
@@ -4477,11 +4494,13 @@ function AdminAppointmentRow({
                                         return null;
                                       })()}
                                       
-                                      <FormattedTextWithLinksAndSearch 
-                                        text={(c.message || '').replace(/\n+$/, '')}
+                                      <ReadMoreText 
+                                        text={c.message || ''}
                                         isSentMessage={isMe}
                                         className="whitespace-pre-wrap break-words"
                                         searchQuery={searchQuery}
+                                        maxLength={200}
+                                        minHeight="60px"
                                       />
                                       {c.edited && (
                                         <span className="ml-2 text-[10px] italic text-gray-300 whitespace-nowrap">(Edited)</span>
@@ -4974,9 +4993,17 @@ function AdminAppointmentRow({
                     <button 
                       className="ml-auto text-yellow-400 hover:text-yellow-700 bg-yellow-100 hover:bg-yellow-200 rounded-full p-1 transition-colors" 
                       onClick={() => { 
+                        // Restore the saved draft when cancelling edit
+                        const draftKey = `appt_draft_${appt._id}`;
+                        const savedDraft = localStorage.getItem(draftKey);
+                        if (savedDraft) {
+                          setNewComment(savedDraft);
+                        } else {
+                          setNewComment("");
+                        }
+                        
                         setEditingComment(null); 
                         setEditText(""); 
-                        setNewComment(""); 
                         setDetectedUrl(null);
                         setPreviewDismissed(false);
                         // Reset textarea height to normal when cancelling edit
@@ -5020,7 +5047,7 @@ function AdminAppointmentRow({
                       const el = inputRef.current; if (!el) return; const start = el.selectionStart||0; const end=el.selectionEnd||0; const base=newComment||''; const selected=base.slice(start,end); const wrapped=`__${selected||'underline'}__`; const next=base.slice(0,start)+wrapped+base.slice(end); setNewComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2,start+2+(selected||'underline').length);}catch(_){}} ,0);
                     }}>U</button>
                     <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
-                      const el=inputRef.current; if(!el)return; const start=el.selectionStart||0; const end=el.selectionEnd||0; const base=newComment||''; const selected=base.slice(start,end); const wrapped=`~~${selected||'strike'}~~`; setNewComment(base.slice(0,start)+wrapped+base.slice(end));
+                      const el=inputRef.current; if(!el)return; const start=el.selectionStart||0; const end=el.selectionEnd||0; const base=newComment||''; const selected=base.slice(start,end); const wrapped=`~~${selected||'strike'}~~`; const next=base.slice(0,start)+wrapped+base.slice(end); setNewComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2,start+2+(selected||'strike').length);}catch(_){}} ,0);
                     }}>S</button>
                     <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
                       const el=inputRef.current; if(!el)return; const base=newComment||''; const start=el.selectionStart||0; setNewComment(base.slice(0,start)+`- `+base.slice(start));
@@ -6204,10 +6231,12 @@ function AdminAppointmentRow({
                                     </div>
                                   </div>
                                 ) : (
-                                  <FormattedTextWithLinks 
-                                    text={(message.message || '').replace(/\n+$/, '')}
+                                  <ReadMoreText 
+                                    text={message.message || ''}
                                     isSentMessage={isMe}
                                     className="whitespace-pre-wrap break-words"
+                                    maxLength={200}
+                                    minHeight="60px"
                                   />
                                 )}
                               </div>
