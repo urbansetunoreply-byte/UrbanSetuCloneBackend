@@ -251,13 +251,13 @@ export const formatLinksInText = (text, isSentMessage = false) => {
   if (!text || typeof text !== 'string') return text || '';
 
   // URL regex pattern to match various link formats
-  const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
+  const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?|(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
   
   const parts = text.split(urlRegex);
   
   return parts.map((part, index) => {
     // Check if this part is a URL - create a new regex instance to avoid global flag side effects
-    const testRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
+    const testRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?|(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
     if (testRegex.test(part)) {
       // Ensure URL has protocol
       let url = part;
@@ -267,8 +267,8 @@ export const formatLinksInText = (text, isSentMessage = false) => {
       
       // Different styling for sent vs received messages
       const linkClasses = isSentMessage 
-        ? "text-white hover:text-blue-200 underline transition-colors duration-200" // White for sent messages (blue background)
-        : "text-blue-600 hover:text-blue-800 underline transition-colors duration-200"; // Blue for received messages (white/gray background)
+        ? "text-white hover:text-blue-200 underline transition-colors duration-200 cursor-pointer" // White for sent messages (blue background)
+        : "text-blue-600 hover:text-blue-800 underline transition-colors duration-200 cursor-pointer"; // Blue for received messages (white/gray background)
       
       return (
         <a
@@ -378,7 +378,7 @@ export const FormattedTextWithLinksAndSearch = ({ text, isSentMessage = false, c
     if (typeof part === 'string') {
       // Handle property mentions first, then URLs
       const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
-      const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
+      const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?|(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
       
       // First, handle property mentions
       let processedText = part;
@@ -423,8 +423,8 @@ export const FormattedTextWithLinksAndSearch = ({ text, isSentMessage = false, c
           const basePrefix = window.location.pathname.includes('/admin') ? '/admin/listing/' : '/user/listing/';
           const href = `${basePrefix}${listingId}`;
           const linkClasses = isSentMessage 
-            ? "text-white underline decoration-dotted hover:text-blue-200"
-            : "text-blue-600 underline decoration-dotted hover:text-blue-800";
+            ? "text-white underline decoration-dotted hover:text-blue-200 cursor-pointer"
+            : "text-blue-600 underline decoration-dotted hover:text-blue-800 cursor-pointer";
           
           return (
             <a
@@ -448,8 +448,8 @@ export const FormattedTextWithLinksAndSearch = ({ text, isSentMessage = false, c
           }
           
           const linkClasses = isSentMessage 
-            ? "text-white hover:text-blue-200 underline transition-colors duration-200"
-            : "text-blue-600 hover:text-blue-800 underline transition-colors duration-200";
+            ? "text-white hover:text-blue-200 underline transition-colors duration-200 cursor-pointer"
+            : "text-blue-600 hover:text-blue-800 underline transition-colors duration-200 cursor-pointer";
           
           return (
             <a

@@ -2434,12 +2434,23 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         });
         setUnreadNewMessages(0); // Reset unread count after refresh
         
-        // Force scroll to bottom after refresh
-        setTimeout(() => {
+        // Force scroll to bottom after refresh - use multiple attempts to ensure it works
+        const scrollToBottomAfterRefresh = () => {
           if (chatEndRef.current) {
             chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+          } else {
+            // If chatEndRef is not available, try scrolling the container
+            const container = chatContainerRef.current;
+            if (container) {
+              container.scrollTop = container.scrollHeight;
+            }
           }
-        }, 100);
+        };
+        
+        // Try multiple times with increasing delays to ensure DOM is updated
+        setTimeout(scrollToBottomAfterRefresh, 50);
+        setTimeout(scrollToBottomAfterRefresh, 200);
+        setTimeout(scrollToBottomAfterRefresh, 500);
       }
     } catch (err) {
       console.error('Error fetching latest comments:', err);
