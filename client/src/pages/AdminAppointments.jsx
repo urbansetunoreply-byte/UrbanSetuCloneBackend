@@ -4524,7 +4524,7 @@ function AdminAppointmentRow({
                                         return null;
                                       })()}
                                       
-                                      <FormattedTextWithReadMore 
+                                      <FormattedTextWithLinksAndSearch 
                                         text={(c.message || '').replace(/\n+$/, '')}
                                         isSentMessage={isMe}
                                         className="whitespace-pre-wrap break-words"
@@ -6274,7 +6274,7 @@ function AdminAppointmentRow({
                                     </div>
                                   </div>
                                 ) : (
-                                  <FormattedTextWithReadMore 
+                                  <FormattedTextWithLinksAndSearch 
                                     text={(message.message || '').replace(/\n+$/, '')}
                                     isSentMessage={isMe}
                                     className="whitespace-pre-wrap break-words"
