@@ -1865,23 +1865,6 @@ export default function Profile() {
                     )}
                   </div>
                   
-                  {/* Profile Email OTP reCAPTCHA Widget - Show when required (even when OTP field is open) */}
-                  {showProfileRecaptcha && emailValidation.available === true && !emailValidation.loading && !emailVerified && formData.email !== originalEmail && emailEditMode && (
-                    <div className="mt-4">
-                      <RecaptchaWidget
-                        key={profileRecaptchaKey}
-                        ref={profileRecaptchaRef}
-                        onVerify={handleProfileRecaptchaVerify}
-                        onExpire={handleProfileRecaptchaExpire}
-                        onError={handleProfileRecaptchaError}
-                        className="flex justify-center"
-                      />
-                      {profileRecaptchaError && (
-                        <p className="text-red-500 text-sm mt-2 text-center">{profileRecaptchaError}</p>
-                      )}
-                    </div>
-                  )}
-
                   {/* OTP sent message */}
                   {otpSent && !emailVerified && (
                     <p className="text-sm text-gray-600 mt-2">
@@ -1941,6 +1924,22 @@ export default function Profile() {
                           )}
                         </div>
                       </div>
+                      {/* Profile Email OTP reCAPTCHA Widget - Show when required directly under OTP section */}
+                      {showProfileRecaptcha && emailValidation.available === true && !emailValidation.loading && formData.email !== originalEmail && emailEditMode && (
+                        <div className="mt-3">
+                          <RecaptchaWidget
+                            key={profileRecaptchaKey}
+                            ref={profileRecaptchaRef}
+                            onVerify={handleProfileRecaptchaVerify}
+                            onExpire={handleProfileRecaptchaExpire}
+                            onError={handleProfileRecaptchaError}
+                            className="flex justify-center"
+                          />
+                          {profileRecaptchaError && (
+                            <p className="text-red-500 text-sm mt-2 text-center">{profileRecaptchaError}</p>
+                          )}
+                        </div>
+                      )}
                       {/* OTP Error Message */}
                       {otpError && (
                         <p className="text-red-500 text-sm mt-2">{otpError}</p>
