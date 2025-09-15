@@ -4,7 +4,7 @@ import bcryptjs from 'bcryptjs';
 import User from '../models/user.model.js';
 import { verifyToken } from '../utils/verify.js';
 import { sendOTP, verifyOTP, sendForgotPasswordOTP, sendProfileEmailOTP } from '../controllers/emailVerification.controller.js';
-import { signInRateLimit, signUpRateLimit, forgotPasswordRateLimit, otpRateLimit } from '../middleware/rateLimiter.js';
+import { signInRateLimit, signUpRateLimit, forgotPasswordRateLimit, otpRateLimit, otpVerifyRateLimit } from '../middleware/rateLimiter.js';
 import { generateCSRFToken, verifyCSRFToken, getCSRFToken } from '../middleware/csrf.js';
 import { bruteForceProtection, getFailedAttempts } from '../middleware/security.js';
 import { validateRecaptcha, conditionalRecaptcha, captchaRateLimit } from '../middleware/recaptcha.js';
@@ -30,13 +30,13 @@ router.post("/reset-password", verifyCSRFToken, resetPassword)
 
 // Email verification routes
 router.post("/send-otp", otpRateLimit, verifyCSRFToken, sendOTP)
-router.post("/verify-otp", otpRateLimit, verifyCSRFToken, verifyOTP)
+router.post("/verify-otp", otpVerifyRateLimit, verifyCSRFToken, verifyOTP)
 router.post("/send-forgot-password-otp", otpRateLimit, verifyCSRFToken, sendForgotPasswordOTP)
 router.post("/send-profile-email-otp", otpRateLimit, verifyCSRFToken, ...otpRecaptchaMiddleware, sendProfileEmailOTP)
 
 // OTP Login routes
 router.post("/send-login-otp", otpRateLimit, verifyCSRFToken, ...otpRecaptchaMiddleware, sendLoginOTP)
-router.post("/verify-login-otp", otpRateLimit, verifyCSRFToken, verifyLoginOTP)
+router.post("/verify-login-otp", otpVerifyRateLimit, verifyCSRFToken, verifyLoginOTP)
 
 // POST /api/auth/verify-password
 router.post('/verify-password', verifyToken, async (req, res) => {

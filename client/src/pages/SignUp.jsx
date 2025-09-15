@@ -526,7 +526,11 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                   type="tel"
                   placeholder="Enter 10-digit mobile number"
                   id="mobileNumber"
-                  onChange={handleChange}
+                  onChange={(e) => {
+                    const digitsOnly = e.target.value.replace(/[^0-9]/g, '');
+                    handleChange({ target: { id: 'mobileNumber', value: digitsOnly } });
+                  }}
+                  inputMode="numeric"
                   pattern="[0-9]{10}"
                   maxLength="10"
                   className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${

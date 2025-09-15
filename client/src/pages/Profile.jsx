@@ -739,7 +739,13 @@ export default function Profile() {
 
   // Enhanced handleChange with validation
   const handleChangeWithValidation = (e) => {
-    const { id, value } = e.target;
+    const { id } = e.target;
+    let { value } = e.target;
+    
+    // Ensure only digits for mobile number field
+    if (id === 'mobileNumber') {
+      value = value.replace(/[^0-9]/g, '');
+    }
     
     setFormData({
       ...formData,

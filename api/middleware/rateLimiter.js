@@ -81,6 +81,13 @@ export const otpRateLimit = createRateLimiter(
     'Too many OTP requests. Please try again in a minute.'
 );
 
+// Specific limiter for OTP verification attempts (wrong OTP retries)
+export const otpVerifyRateLimit = createRateLimiter(
+    60 * 1000, // 1 minute window
+    5, // max 5 verify attempts per minute
+    'Too many incorrect OTP attempts. Please try again in a minute.'
+);
+
 // Rate limiter for failed attempts (more restrictive)
 export const failedAttemptsRateLimit = createRateLimiter(
     15 * 60 * 1000, // 15 minutes window
