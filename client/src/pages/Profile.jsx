@@ -1871,6 +1871,23 @@ export default function Profile() {
                     )}
                   </div>
                   
+                  {/* Show reCAPTCHA below email when OTP field is closed and captcha required */}
+                  {showProfileRecaptcha && emailValidation.available === true && !emailValidation.loading && !otpSent && !emailVerified && formData.email !== originalEmail && emailEditMode && (
+                    <div className="mt-3">
+                      <RecaptchaWidget
+                        key={profileRecaptchaKey}
+                        ref={profileRecaptchaRef}
+                        onVerify={handleProfileRecaptchaVerify}
+                        onExpire={handleProfileRecaptchaExpire}
+                        onError={handleProfileRecaptchaError}
+                        className="flex justify-center"
+                      />
+                      {profileRecaptchaError && (
+                        <p className="text-red-500 text-sm mt-2 text-center">{profileRecaptchaError}</p>
+                      )}
+                    </div>
+                  )}
+
                   {/* OTP sent message */}
                   {otpSent && !emailVerified && (
                     <p className="text-sm text-gray-600 mt-2">
