@@ -150,6 +150,11 @@ export default function AdminAppointments() {
     }
   }, []);
 
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   useEffect(() => {
     // Join admin appointments room to receive real-time updates
     if (socket.connected && currentUser) {
