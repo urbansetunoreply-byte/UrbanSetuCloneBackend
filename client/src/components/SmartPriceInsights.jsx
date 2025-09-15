@@ -37,6 +37,33 @@ const SmartPriceInsights = ({ listing, currentUser }) => {
     return trends;
   };
 
+  // Calculate amenities count (same logic as main page)
+  const getAmenitiesCount = () => {
+    let count = 0;
+    if (listing.parking) count++;
+    if (listing.furnished) count++;
+    if (listing.garden) count++;
+    if (listing.swimmingPool) count++;
+    if (listing.wifi) count++;
+    if (listing.security) count++;
+    if (listing.gym) count++;
+    if (listing.lift) count++;
+    return count;
+  };
+
+  // Get location string (same logic as main page)
+  const getLocationString = () => {
+    if (listing.city) {
+      return `${listing.city}${listing.district ? `, ${listing.district}` : ''}${listing.state ? `, ${listing.state}` : ''}`;
+    }
+    return listing.location || 'N/A';
+  };
+
+  // Calculate demand score (same logic as Property Insights)
+  const getDemandScore = () => {
+    return listing.bedrooms >= 3 ? 'High' : listing.bedrooms === 2 ? 'Medium' : 'Standard';
+  };
+
   // Calculate fair price score (0-100)
   const calculateFairPriceScore = () => {
     const currentPrice = listing.offer ? listing.discountPrice : listing.regularPrice;
@@ -55,8 +82,8 @@ const SmartPriceInsights = ({ listing, currentUser }) => {
       else if (rentPerSqft > 80) score -= 20;
     }
     
-    // Adjust based on amenities
-    const amenityCount = listing.amenities?.length || 0;
+    // Adjust based on amenities (use actual count)
+    const amenityCount = getAmenitiesCount();
     score += Math.min(amenityCount * 2, 15);
     
     // Adjust based on location (mock data)
@@ -234,11 +261,11 @@ const SmartPriceInsights = ({ listing, currentUser }) => {
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">Amenities</span>
-              <span className="font-semibold text-gray-800">{listing.amenities?.length || 0} features</span>
+              <span className="font-semibold text-gray-800">{getAmenitiesCount()} features</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">Location</span>
-              <span className="font-semibold text-gray-800">{listing.location || 'N/A'}</span>
+              <span className="font-semibold text-gray-800">{getLocationString()}</span>
             </div>
           </div>
         </div>
@@ -340,7 +367,7 @@ const SmartPriceInsights = ({ listing, currentUser }) => {
             <FaClock className="text-indigo-600" />
             <h6 className="font-semibold text-indigo-800">Market Activity</h6>
           </div>
-          <p className="text-2xl font-bold text-indigo-600">High</p>
+          <p className="text-2xl font-bold text-indigo-600">{getDemandScore()}</p>
           <p className="text-sm text-gray-600">Property demand</p>
         </div>
         
