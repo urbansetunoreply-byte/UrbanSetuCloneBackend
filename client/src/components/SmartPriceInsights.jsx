@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { FaChartLine, FaTrendingUp, FaTrendingDown, FaCalculator, FaHome, FaRent, FaDollarSign, FaPercentage, FaClock, FaMapMarkerAlt, FaStar, FaInfoCircle } from 'react-icons/fa';
+import { FaChartLine, FaArrowUp, FaCalculator, FaHome, FaBuilding, FaPercentage, FaClock, FaMapMarkerAlt, FaStar, FaInfoCircle } from 'react-icons/fa';
 
 const SmartPriceInsights = ({ listing, currentUser }) => {
   const [priceTrends, setPriceTrends] = useState([]);
@@ -169,7 +169,7 @@ const SmartPriceInsights = ({ listing, currentUser }) => {
         {/* Price Trends Chart */}
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl">
           <div className="flex items-center gap-2 mb-4">
-            <FaTrendingUp className="text-blue-600" />
+            <FaArrowUp className="text-blue-600" />
             <h5 className="text-lg font-semibold text-blue-800">6-Month Price Trends</h5>
           </div>
           <div className="h-64">
@@ -255,7 +255,7 @@ const SmartPriceInsights = ({ listing, currentUser }) => {
           <div className="space-y-4">
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <h6 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                <FaRent className="text-blue-500" />
+                <FaBuilding className="text-blue-500" />
                 Renting Analysis
               </h6>
               <div className="space-y-2">
