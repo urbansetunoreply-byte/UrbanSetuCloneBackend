@@ -472,7 +472,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                       ref={emailInputRef}
                       value={formData.email}
                       onChange={handleChange}
-                      readOnly={(emailVerified && !emailEditMode) || (otpSent && !emailEditMode)}
+                      readOnly={((emailVerified || otpSent) && !emailEditMode)}
                       className={`w-full px-4 py-3 pr-24 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 ${
                         emailVerified && !emailEditMode
                           ? "bg-gray-100 cursor-not-allowed border-green-500"
@@ -510,7 +510,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                         )}
                       </div>
                     )}
-                    {(emailVerified || (otpSent && !emailVerified)) && !emailEditMode && (
+                    {(emailVerified || otpSent) && !emailEditMode && (
                       <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
                         <button
                           type="button"
