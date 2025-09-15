@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { FaEdit, FaUser, FaEnvelope, FaPhone, FaKey, FaTrash, FaSignOutAlt, FaHome, FaCalendarAlt, FaHeart, FaEye, FaCrown, FaTimes, FaCheck, FaStar, FaRoute, FaCreditCard, FaShieldAlt, FaTools, FaTruck } from "react-icons/fa";
 import UserAvatar from "../components/UserAvatar";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
+import RecaptchaWidget from "../components/RecaptchaWidget";
 import { authenticatedFetch, createAuthenticatedFetchOptions } from '../utils/auth';
 import {
   updateUserStart,
@@ -307,6 +308,14 @@ export default function Profile() {
   const [resendTimer, setResendTimer] = useState(0);
   const [canResend, setCanResend] = useState(true);
   
+  // Profile email OTP reCAPTCHA states
+  const [profileRecaptchaToken, setProfileRecaptchaToken] = useState(null);
+  const [profileRecaptchaError, setProfileRecaptchaError] = useState("");
+  const [showProfileRecaptcha, setShowProfileRecaptcha] = useState(false);
+  const [profileRequiresCaptcha, setProfileRequiresCaptcha] = useState(false);
+  const [profileRecaptchaKey, setProfileRecaptchaKey] = useState(0);
+  const profileRecaptchaRef = useRef(null);
+  
   // Animation states
   const [isVisible, setIsVisible] = useState(false);
   const [statsAnimated, setStatsAnimated] = useState(false);
@@ -567,6 +576,33 @@ export default function Profile() {
     setMobileDebounceTimer(timer);
   };
 
+  // Profile email OTP reCAPTCHA handlers
+  const handleProfileRecaptchaVerify = (token) => {
+    setProfileRecaptchaToken(token);
+    setProfileRecaptchaError("");
+  };
+
+  const handleProfileRecaptchaExpire = () => {
+    setProfileRecaptchaToken(null);
+    setProfileRecaptchaError("reCAPTCHA expired. Please verify again.");
+    setProfileRecaptchaKey((k) => k + 1);
+  };
+
+  const handleProfileRecaptchaError = (error) => {
+    setProfileRecaptchaToken(null);
+    setProfileRecaptchaError("reCAPTCHA verification failed. Please try again.");
+    setProfileRecaptchaKey((k) => k + 1);
+  };
+
+  const resetProfileRecaptcha = () => {
+    if (profileRecaptchaRef.current) {
+      profileRecaptchaRef.current.reset();
+    }
+    setProfileRecaptchaToken(null);
+    setProfileRecaptchaError("");
+    setProfileRecaptchaKey((k) => k + 1);
+  };
+
   // Send OTP for email verification
   const handleSendOTP = async () => {
     if (!formData.email) {
@@ -578,13 +614,26 @@ export default function Profile() {
       return;
     }
 
+    // Check if reCAPTCHA is required but not completed
+    if (profileRequiresCaptcha && !profileRecaptchaToken) {
+      setOtpError("Please complete the reCAPTCHA verification first");
+      return;
+    }
+
     setOtpLoading(true);
     setOtpError("");
 
     try {
+      const requestBody = { email: formData.email };
+      
+      // Include reCAPTCHA token if required
+      if (profileRequiresCaptcha && profileRecaptchaToken) {
+        requestBody.recaptchaToken = profileRecaptchaToken;
+      }
+
       const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-profile-email-otp`, {
         method: "POST",
-        body: JSON.stringify({ email: formData.email }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await res.json();
@@ -600,6 +649,13 @@ export default function Profile() {
           available: true 
         });
         
+        // Reset reCAPTCHA after successful OTP send
+        if (profileRequiresCaptcha) {
+          resetProfileRecaptcha();
+          setShowProfileRecaptcha(false);
+          setProfileRequiresCaptcha(false);
+        }
+        
         // Start timer for resend
         setResendTimer(30); // 30 seconds
         setCanResend(false);
@@ -611,6 +667,12 @@ export default function Profile() {
           }
         }, 100);
       } else {
+        // Handle reCAPTCHA requirements
+        if (data.requiresCaptcha) {
+          setProfileRequiresCaptcha(true);
+          setShowProfileRecaptcha(true);
+          setProfileRecaptchaError("reCAPTCHA verification is now required due to multiple failed attempts.");
+        }
         setOtpError(data.message);
       }
     } catch (error) {
@@ -654,6 +716,12 @@ export default function Profile() {
           available: true 
         });
       } else {
+        // Handle reCAPTCHA requirements
+        if (data.requiresCaptcha) {
+          setProfileRequiresCaptcha(true);
+          setShowProfileRecaptcha(true);
+          setProfileRecaptchaError("reCAPTCHA verification is now required due to multiple failed attempts.");
+        }
         setOtpError(data.message);
       }
     } catch (error) {
@@ -1759,7 +1827,7 @@ export default function Profile() {
                       <button
                         type="button"
                         onClick={handleSendOTP}
-                        disabled={otpLoading || !canResend || !formData.email}
+                        disabled={otpLoading || !canResend || !formData.email || (profileRequiresCaptcha && !profileRecaptchaToken)}
                         className="absolute right-16 top-1/2 transform -translate-y-1/2 px-3 py-1 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap z-10"
                       >
                         {otpLoading ? "Sending..." : "Send OTP"}
@@ -1797,6 +1865,23 @@ export default function Profile() {
                     )}
                   </div>
                   
+                  {/* Profile Email OTP reCAPTCHA Widget - Show when required */}
+                  {showProfileRecaptcha && emailValidation.available === true && !emailValidation.loading && !otpSent && !emailVerified && formData.email !== originalEmail && emailEditMode && (
+                    <div className="mt-4">
+                      <RecaptchaWidget
+                        key={profileRecaptchaKey}
+                        ref={profileRecaptchaRef}
+                        onVerify={handleProfileRecaptchaVerify}
+                        onExpire={handleProfileRecaptchaExpire}
+                        onError={handleProfileRecaptchaError}
+                        className="flex justify-center"
+                      />
+                      {profileRecaptchaError && (
+                        <p className="text-red-500 text-sm mt-2 text-center">{profileRecaptchaError}</p>
+                      )}
+                    </div>
+                  )}
+
                   {/* OTP sent message */}
                   {otpSent && !emailVerified && (
                     <p className="text-sm text-gray-600 mt-2">
