@@ -177,7 +177,8 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
     // If OTP-specific captcha was required (either under email or OTP), hide that widget + message after 1s
     if (otpCaptchaRequired) {
       setTimeout(() => {
-        // Hide UI message but keep requirement flag so next resend includes token
+        // Hide UI and clear flag so widget disappears
+        setOtpCaptchaRequired(false);
         setOtpCaptchaMessage("");
         setOtpError("");
       }, 1000);
@@ -277,8 +278,14 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
         setOtpCaptchaMessage("");
       } else {
         // When captcha required and OTP field not open, prefer showing dedicated captcha message below email, not otpError
-        const requiresCaptcha = data.requiresCaptcha || (data.message && data.message.toLowerCase().includes('recaptcha'));
-        if (requiresCaptcha) {
+        const lowerMsg = (data.message || '').toLowerCase();
+        const requiresCaptcha = data.requiresCaptcha || lowerMsg.includes('recaptcha');
+        const isLocked = lowerMsg.includes('too many requests') || lowerMsg.includes('try again in 15 minutes');
+        if (isLocked) {
+          setOtpCaptchaRequired(false);
+          setOtpCaptchaMessage("");
+          setOtpError("Too many requests. Please try again in 15 minutes.");
+        } else if (requiresCaptcha) {
           setOtpCaptchaRequired(true);
           if (!otpSent) {
             setOtpCaptchaMessage("reCAPTCHA verification is required due to multiple failed attempts or requests");
