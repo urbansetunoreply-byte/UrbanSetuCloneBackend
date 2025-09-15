@@ -70,7 +70,6 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
     // (e.g., if token is used/expired and server asks for captcha again)
     // Keeping the token stored for submit
   };
-  };
 
   const handleRecaptchaExpire = () => {
     setRecaptchaToken(null);
@@ -765,4 +764,4 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
       <ContactSupportWrapper />
     </div>
   );
-
+}
