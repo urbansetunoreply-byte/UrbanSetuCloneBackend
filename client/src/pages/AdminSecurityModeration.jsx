@@ -190,7 +190,7 @@ export default function AdminSecurityModeration() {
             <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-700 to-blue-700 bg-clip-text text-transparent">Security Moderation</h1>
             <p className="text-gray-600">OTP and password lockouts, requests and admin unlocks</p>
           </div>
-          <button onClick={fetchStats} className="px-3 py-2 bg-indigo-600 text-white rounded-lg">Refresh</button>
+          {/* Removed global refresh to keep actions local to tables */}
         </div>
 
         {error && <div className="mb-4 p-3 rounded bg-red-50 text-red-700">{error}</div>}
@@ -199,9 +199,16 @@ export default function AdminSecurityModeration() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* OTP Activity Table */}
           <div className="bg-white rounded-xl shadow p-4">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
               <h2 className="text-lg font-semibold text-gray-800">Recent OTP Activity</h2>
-              <div className="text-right text-sm text-gray-600">
+              <div className="flex items-center gap-3 ml-auto">
+                <div className="hidden sm:block text-right text-sm text-gray-600">
+                  <span className="mr-3">Active OTP lockouts: <span className="font-semibold text-red-600">{stats.activeLockouts}</span></span>
+                  <span>Password lockouts: <span className="font-semibold text-red-600">{stats.passwordLockouts||0}</span></span>
+                </div>
+                <button onClick={fetchStats} className="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:border-blue-300 text-gray-800 text-sm">Refresh</button>
+              </div>
+              <div className="sm:hidden w-full text-sm text-gray-600">
                 <span className="mr-3">Active OTP lockouts: <span className="font-semibold text-red-600">{stats.activeLockouts}</span></span>
                 <span>Password lockouts: <span className="font-semibold text-red-600">{stats.passwordLockouts||0}</span></span>
               </div>
