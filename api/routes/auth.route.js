@@ -129,6 +129,36 @@ router.post('/password-lockouts/unlock', verifyToken, async (req, res) => {
   }
 });
 
+// Admin: unlock password lockout by IP
+router.post('/password-lockouts/unlock-ip', verifyToken, async (req, res) => {
+  try {
+    if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'rootadmin')) {
+      return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+    const { ip } = req.body;
+    if (!ip) return res.status(400).json({ success: false, message: 'ip required' });
+    await PasswordLockout.deleteMany({ ipAddress: ip });
+    res.json({ success: true, message: 'Password lockouts cleared for IP' });
+  } catch (e) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Admin: unlock password lockout by identifier (fallback key)
+router.post('/password-lockouts/unlock-identifier', verifyToken, async (req, res) => {
+  try {
+    if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'rootadmin')) {
+      return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+    const { identifier } = req.body;
+    if (!identifier) return res.status(400).json({ success: false, message: 'identifier required' });
+    await PasswordLockout.clearUserLock({ identifier });
+    res.json({ success: true, message: 'Password lockouts cleared for identifier' });
+  } catch (e) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // POST /api/auth/verify-password
 router.post('/verify-password', verifyToken, async (req, res) => {
   try {

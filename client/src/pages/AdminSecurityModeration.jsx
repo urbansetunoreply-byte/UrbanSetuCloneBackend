@@ -11,6 +11,8 @@ export default function AdminSecurityModeration() {
   const [stats, setStats] = useState({ recent: [], activeLockouts: 0, passwordLockouts: 0 });
   const [emailToUnlock, setEmailToUnlock] = useState("");
   const [ipToUnlock, setIpToUnlock] = useState("");
+  const [passwordLockouts, setPasswordLockouts] = useState([]);
+  const [loadingPasswords, setLoadingPasswords] = useState(false);
 
   const [filters, setFilters] = useState({ email: '', ip: '', lockedOnly: false, captchaOnly: false });
 
@@ -29,8 +31,24 @@ export default function AdminSecurityModeration() {
     }
   };
 
+  const fetchPasswordLockouts = async () => {
+    setLoadingPasswords(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/password-lockouts`, { credentials: 'include' });
+      const data = await res.json();
+      if (!res.ok || data.success === false) throw new Error(data.message || 'Failed to fetch password lockouts');
+      setPasswordLockouts(data.items || []);
+    } catch (e) {
+      // show inline error but don't overwrite main error
+      console.error(e);
+    } finally {
+      setLoadingPasswords(false);
+    }
+  };
+
   useEffect(() => {
     fetchStats();
+    fetchPasswordLockouts();
   }, []);
 
   const unlockByEmail = async () => {
@@ -60,7 +78,50 @@ export default function AdminSecurityModeration() {
       await res.json();
       setIpToUnlock('');
       fetchStats();
+      fetchPasswordLockouts();
     } catch (_) {}
+  };
+
+  const unlockPasswordByEmailOrUser = async (payload) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/password-lockouts/unlock`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+      });
+      await res.json();
+      fetchStats();
+      fetchPasswordLockouts();
+    } catch (e) {}
+  };
+
+  const unlockPasswordByIp = async (ip) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/password-lockouts/unlock-ip`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ ip })
+      });
+      await res.json();
+      fetchStats();
+      fetchPasswordLockouts();
+    } catch (e) {}
+  };
+
+  const unlockPasswordByIdentifier = async (identifier) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/password-lockouts/unlock-identifier`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ identifier })
+      });
+      await res.json();
+      fetchStats();
+      fetchPasswordLockouts();
+    } catch (e) {}
   };
 
   const filtered = useMemo(() => {
@@ -151,6 +212,60 @@ export default function AdminSecurityModeration() {
               <div className="mt-3 text-sm text-gray-700">Active password lockouts: <span className="font-semibold text-red-600">{stats.passwordLockouts||0}</span></div>
             </div>
           </div>
+        </div>
+
+        {/* Password Lockouts Section */}
+        <div className="mt-6 bg-white rounded-xl shadow p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold text-gray-800">Active Password Lockouts</h2>
+            <div className="flex items-center gap-2">
+              <button onClick={fetchPasswordLockouts} className="px-3 py-2 bg-gray-100 border rounded-lg">Refresh</button>
+            </div>
+          </div>
+          {loadingPasswords ? (
+            <div className="p-4 text-gray-500">Loading...</div>
+          ) : (
+            <div className="overflow-auto">
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="text-left text-gray-600 border-b">
+                    <th className="py-2 pr-4">Email</th>
+                    <th className="py-2 pr-4">UserId</th>
+                    <th className="py-2 pr-4">IP</th>
+                    <th className="py-2 pr-4">Identifier</th>
+                    <th className="py-2 pr-4">Attempts</th>
+                    <th className="py-2 pr-4">Locked</th>
+                    <th className="py-2 pr-4">Unlock At</th>
+                    <th className="py-2 pr-4">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {passwordLockouts.map((r) => (
+                    <tr key={r._id} className="border-b hover:bg-gray-50">
+                      <td className="py-2 pr-4">{r.email || '-'}</td>
+                      <td className="py-2 pr-4">{r.userId || '-'}</td>
+                      <td className="py-2 pr-4">{r.ipAddress || '-'}</td>
+                      <td className="py-2 pr-4">{r.identifier || '-'}</td>
+                      <td className="py-2 pr-4">{r.attempts || 0}</td>
+                      <td className="py-2 pr-4">{r.lockedAt ? new Date(r.lockedAt).toLocaleString() : '-'}</td>
+                      <td className="py-2 pr-4">{r.unlockAt ? new Date(r.unlockAt).toLocaleString() : '-'}</td>
+                      <td className="py-2 pr-4 space-x-2">
+                        {r.email && <button onClick={() => unlockPasswordByEmailOrUser({ email: r.email })} className="px-2 py-1 text-xs bg-indigo-600 text-white rounded">Unlock by Email</button>}
+                        {r.userId && <button onClick={() => unlockPasswordByEmailOrUser({ userId: r.userId })} className="px-2 py-1 text-xs bg-blue-600 text-white rounded">Unlock by User</button>}
+                        {r.ipAddress && <button onClick={() => unlockPasswordByIp(r.ipAddress)} className="px-2 py-1 text-xs bg-purple-600 text-white rounded">Unlock by IP</button>}
+                        {r.identifier && <button onClick={() => unlockPasswordByIdentifier(r.identifier)} className="px-2 py-1 text-xs bg-gray-700 text-white rounded">Unlock by Identifier</button>}
+                      </td>
+                    </tr>
+                  ))}
+                  {passwordLockouts.length === 0 && (
+                    <tr>
+                      <td className="py-4 text-center text-gray-500" colSpan="8">No active password lockouts</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </div>
