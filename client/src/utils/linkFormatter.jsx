@@ -418,7 +418,7 @@ export const FormattedTextWithReadMore = ({ text, isSentMessage = false, classNa
   }, [text, maxLines]);
 
   // Use the appropriate component based on search query
-  const FormattedComponent = searchQuery ? FormattedTextWithLinksAndSearch : FormattedTextWithLinks;
+  const FormattedComponent = searchQuery && searchQuery.trim() ? FormattedTextWithLinksAndSearch : FormattedTextWithLinks;
 
   // If expanded or shouldn't show read more, show full content
   if (isExpanded || !shouldShowReadMore) {
@@ -598,7 +598,7 @@ export const FormattedTextWithLinksAndSearch = ({ text, isSentMessage = false, c
         }
         
         // Check for search highlighting
-        if (searchQuery) {
+        if (searchQuery && searchQuery.trim()) {
           const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
           const searchParts = subPart.split(regex);
           

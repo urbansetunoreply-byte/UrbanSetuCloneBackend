@@ -2410,7 +2410,6 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   // Fetch latest comments when refresh button is clicked
   const fetchLatestComments = async () => {
     try {
-      setLoadingComments(true);
       const { data } = await axios.get(`${API_BASE_URL}/api/bookings/${appt._id}`, {
         withCredentials: true
       });
@@ -2467,8 +2466,6 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     } catch (err) {
       console.error('Error fetching latest comments:', err);
       toast.error('Failed to refresh messages');
-    } finally {
-      setLoadingComments(false);
     }
   };
 
@@ -5254,9 +5251,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                   fetchLatestComments();
                                   setShowChatOptionsMenu(false);
                                 }}
-                                disabled={loadingComments}
                               >
-                                <FaSync className={`text-sm ${loadingComments ? 'animate-spin' : ''}`} />
+                                <FaSync className="text-sm" />
                                 Refresh Messages
                               </button>
                                                           {/* Starred Messages option */}
