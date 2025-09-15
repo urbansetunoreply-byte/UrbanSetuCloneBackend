@@ -485,30 +485,10 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                         type="button"
                         onClick={handleSendOTP}
                         disabled={otpLoading || !formData.email || !canResend}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-orange-600 text-white rounded-md text-sm font-medium hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-orange-600 text-white rounded-md text-sm font-medium hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed z-10"
                       >
                         {otpLoading ? "Sending..." : "Send OTP"}
                       </button>
-                    )}
-                    {/* If captcha required before OTP field is open, show below email */}
-                    {otpCaptchaRequired && !otpSent && (
-                      <div className="mt-3 relative">
-                        {/* Maintain button position while showing captcha below */}
-                        <div className="flex justify-center">
-                          <RecaptchaWidget
-                            key={`otp-email-${recaptchaKey}`}
-                            ref={recaptchaRef}
-                            onVerify={handleRecaptchaVerify}
-                            onExpire={handleRecaptchaExpire}
-                            onError={handleRecaptchaError}
-                            disabled={otpLoading}
-                            className="transform scale-90"
-                          />
-                        </div>
-                        {otpCaptchaMessage && (
-                          <p className="text-red-500 text-sm mt-2 text-center">{otpCaptchaMessage}</p>
-                        )}
-                      </div>
                     )}
                     {(emailVerified || otpSent) && !emailEditMode && (
                       <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
@@ -540,6 +520,25 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                       </div>
                     )}
                   </div>
+                  {/* If captcha required before OTP field is open, show below email (outside input wrapper to avoid layout shift on button) */}
+                  {otpCaptchaRequired && !otpSent && (
+                    <div className="mt-3">
+                      <div className="flex justify-center">
+                        <RecaptchaWidget
+                          key={`otp-email-${recaptchaKey}`}
+                          ref={recaptchaRef}
+                          onVerify={handleRecaptchaVerify}
+                          onExpire={handleRecaptchaExpire}
+                          onError={handleRecaptchaError}
+                          disabled={otpLoading}
+                          className="transform scale-90"
+                        />
+                      </div>
+                      {otpCaptchaMessage && (
+                        <p className="text-red-500 text-sm mt-2 text-center">{otpCaptchaMessage}</p>
+                      )}
+                    </div>
+                  )}
                   {otpSent && !emailVerified && (
                     <p className="text-sm text-gray-600 mt-2">
                       OTP sent to {formData.email}
