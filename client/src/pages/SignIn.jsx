@@ -518,7 +518,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                 </div>
             </div>
 
-            {/* Right Side - Login Form */}
+            {/* Right Side - Sign In Form */}
             <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
                 <div className="w-full max-w-md">
                     <div className="text-center mb-8">
@@ -526,7 +526,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                         <p className="text-gray-600">Welcome back! Please sign in to your account.</p>
                     </div>
 
-                    {/* Login Method Toggle Tabs */}
+                    {/* Sign In Method Toggle Tabs */}
                     <div className="flex bg-gray-100 rounded-lg p-1 mb-6">
                         <button
                             type="button"
@@ -546,7 +546,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                     : "text-gray-600 hover:text-gray-800"
                             }`}
                         >
-                            Password Login
+                            Password Sign In
                         </button>
                         <button
                             type="button"
@@ -564,13 +564,13 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                     : "text-gray-600 hover:text-gray-800"
                             }`}
                         >
-                            OTP Login
+                            OTP Sign In
                         </button>
                     </div>
                     
                     <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
                         {loginMethod === "password" ? (
-                            // Password Login Form
+                            // Password Sign In Form
                             <form onSubmit={emailStep ? handleSubmit : handleEmailContinue} className="space-y-6">
                                 <div>
                                     <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -679,7 +679,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 </button>
                             </form>
                         ) : (
-                            // OTP Login Form
+                            // OTP Sign In Form
                             <form onSubmit={otpSent ? handleOtpLogin : handleSendOTP} className="space-y-6">
                                 <div>
                                     <label htmlFor="otp-email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -731,8 +731,8 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                     </div>
                                 )}
 
-                                {/* OTP reCAPTCHA Error - place with the widget */}
-                                {otpRecaptchaError && otpSent && (
+                                {/* OTP reCAPTCHA Error - place with widget under email only when OTP not open */}
+                                {otpRecaptchaError && !otpSent && (
                                     <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
                                         <p className="text-red-600 text-sm">{otpRecaptchaError}</p>
                                     </div>
@@ -806,6 +806,11 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                                 />
                                             </div>
                                         )}
+                                        {otpRecaptchaError && (
+                                            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-2">
+                                                <p className="text-red-600 text-sm">{otpRecaptchaError}</p>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                                 
@@ -816,7 +821,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                     {loading || (!otpSent && otpLoading) ? (
                                         <div className="flex items-center justify-center">
                                             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                                            {otpSent ? "Verifying..." : "Sending OTP..."}
+                                            {otpSent ? "Signing In..." : "Sending OTP..."}
                                         </div>
                                     ) : (
                                         otpSent ? "Verify & Sign In" : "Send OTP"

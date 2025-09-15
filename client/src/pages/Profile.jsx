@@ -678,8 +678,8 @@ export default function Profile() {
           setProfileRecaptchaError("reCAPTCHA verification is required due to multiple failed attempts or requests");
           // Avoid duplicate messaging in OTP error area
           setOtpError("");
-        } else {
-          setOtpError(data.message);
+      } else {
+        setOtpError(data.message);
         }
       }
     } catch (error) {
@@ -730,8 +730,8 @@ export default function Profile() {
           setProfileRecaptchaError("reCAPTCHA verification is required due to multiple failed attempts or requests");
           // Avoid duplicate messaging in OTP error area
           setOtpError("");
-        } else {
-          setOtpError(data.message);
+      } else {
+        setOtpError(data.message);
         }
       }
     } catch (error) {
@@ -1897,7 +1897,7 @@ export default function Profile() {
                       )}
                     </div>
                   )}
-
+                  
                   {/* OTP sent message */}
                   {otpSent && !emailVerified && (
                     <p className="text-sm text-gray-600 mt-2">
