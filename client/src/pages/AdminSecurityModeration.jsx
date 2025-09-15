@@ -13,8 +13,13 @@ export default function AdminSecurityModeration() {
   const [ipToUnlock, setIpToUnlock] = useState("");
   const [passwordLockouts, setPasswordLockouts] = useState([]);
   const [loadingPasswords, setLoadingPasswords] = useState(false);
+  const [passwordEmailToUnlock, setPasswordEmailToUnlock] = useState("");
+  const [passwordUserIdToUnlock, setPasswordUserIdToUnlock] = useState("");
+  const [passwordIpToUnlock, setPasswordIpToUnlock] = useState("");
+  const [passwordIdentifierToUnlock, setPasswordIdentifierToUnlock] = useState("");
 
   const [filters, setFilters] = useState({ email: '', ip: '', lockedOnly: false, captchaOnly: false });
+  const [pwdFilters, setPwdFilters] = useState({ email: '', ip: '', identifier: '', userId: '' });
 
   const fetchStats = async () => {
     setLoading(true);
@@ -124,6 +129,30 @@ export default function AdminSecurityModeration() {
     } catch (e) {}
   };
 
+  const handleUnlockPasswordEmail = async () => {
+    if (!passwordEmailToUnlock) return;
+    await unlockPasswordByEmailOrUser({ email: passwordEmailToUnlock.trim() });
+    setPasswordEmailToUnlock('');
+  };
+
+  const handleUnlockPasswordUserId = async () => {
+    if (!passwordUserIdToUnlock) return;
+    await unlockPasswordByEmailOrUser({ userId: passwordUserIdToUnlock.trim() });
+    setPasswordUserIdToUnlock('');
+  };
+
+  const handleUnlockPasswordIp = async () => {
+    if (!passwordIpToUnlock) return;
+    await unlockPasswordByIp(passwordIpToUnlock.trim());
+    setPasswordIpToUnlock('');
+  };
+
+  const handleUnlockPasswordIdentifier = async () => {
+    if (!passwordIdentifierToUnlock) return;
+    await unlockPasswordByIdentifier(passwordIdentifierToUnlock.trim());
+    setPasswordIdentifierToUnlock('');
+  };
+
   const filtered = useMemo(() => {
     return (stats.recent || []).filter(r => {
       let ok = true;
@@ -134,6 +163,17 @@ export default function AdminSecurityModeration() {
       return ok;
     });
   }, [stats, filters]);
+
+  const filteredPasswordLockouts = useMemo(() => {
+    return (passwordLockouts || []).filter((r) => {
+      let ok = true;
+      if (ok && pwdFilters.email) ok = (r.email || '').toLowerCase().includes(pwdFilters.email.toLowerCase());
+      if (ok && pwdFilters.ip) ok = (r.ipAddress || '').toLowerCase().includes(pwdFilters.ip.toLowerCase());
+      if (ok && pwdFilters.identifier) ok = (r.identifier || '').toLowerCase().includes(pwdFilters.identifier.toLowerCase());
+      if (ok && pwdFilters.userId) ok = String(r.userId || '').toLowerCase().includes(pwdFilters.userId.toLowerCase());
+      return ok;
+    });
+  }, [passwordLockouts, pwdFilters]);
 
   if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'rootadmin')) {
     return <div className="p-6">Unauthorized</div>;
@@ -211,6 +251,27 @@ export default function AdminSecurityModeration() {
               <p className="text-xs text-gray-500 mt-2">Manual unlock clears OTP request/failure counters, captcha flag, and lockout.</p>
               <div className="mt-3 text-sm text-gray-700">Active password lockouts: <span className="font-semibold text-red-600">{stats.passwordLockouts||0}</span></div>
             </div>
+
+            <div className="pt-3 border-t">
+              <h3 className="font-semibold text-gray-800 mb-2">Admin Unlock (Password)</h3>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input value={passwordEmailToUnlock} onChange={e=>setPasswordEmailToUnlock(e.target.value)} placeholder="User email" className="border rounded px-3 py-2 w-full" />
+                <button onClick={handleUnlockPasswordEmail} className="px-3 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 self-end sm:self-auto"><FaUnlockAlt /> Unlock by Email</button>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2 mt-2">
+                <input value={passwordUserIdToUnlock} onChange={e=>setPasswordUserIdToUnlock(e.target.value)} placeholder="User ID" className="border rounded px-3 py-2 w-full" />
+                <button onClick={handleUnlockPasswordUserId} className="px-3 py-2 bg-indigo-600 text-white rounded-lg flex items-center gap-2 self-end sm:self-auto"><FaUnlockAlt /> Unlock by User</button>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2 mt-2">
+                <input value={passwordIpToUnlock} onChange={e=>setPasswordIpToUnlock(e.target.value)} placeholder="IP address" className="border rounded px-3 py-2 w-full" />
+                <button onClick={handleUnlockPasswordIp} className="px-3 py-2 bg-purple-600 text-white rounded-lg flex items-center gap-2 self-end sm:self-auto"><FaUnlockAlt /> Unlock by IP</button>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2 mt-2">
+                <input value={passwordIdentifierToUnlock} onChange={e=>setPasswordIdentifierToUnlock(e.target.value)} placeholder="Identifier (fallback)" className="border rounded px-3 py-2 w-full" />
+                <button onClick={handleUnlockPasswordIdentifier} className="px-3 py-2 bg-gray-700 text-white rounded-lg flex items-center gap-2 self-end sm:self-auto"><FaUnlockAlt /> Unlock by Identifier</button>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">Clears stored password lockout rows for matching key(s) and unlocks user if found.</p>
+            </div>
           </div>
         </div>
 
@@ -221,6 +282,12 @@ export default function AdminSecurityModeration() {
             <div className="flex items-center gap-2">
               <button onClick={fetchPasswordLockouts} className="px-3 py-2 bg-gray-100 border rounded-lg">Refresh</button>
             </div>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 mb-3">
+            <input value={pwdFilters.email} onChange={e=>setPwdFilters(f=>({...f,email:e.target.value}))} placeholder="Filter by email" className="border rounded px-3 py-2 w-full" />
+            <input value={pwdFilters.userId} onChange={e=>setPwdFilters(f=>({...f,userId:e.target.value}))} placeholder="Filter by User ID" className="border rounded px-3 py-2 w-full" />
+            <input value={pwdFilters.ip} onChange={e=>setPwdFilters(f=>({...f,ip:e.target.value}))} placeholder="Filter by IP" className="border rounded px-3 py-2 w-full" />
+            <input value={pwdFilters.identifier} onChange={e=>setPwdFilters(f=>({...f,identifier:e.target.value}))} placeholder="Filter by Identifier" className="border rounded px-3 py-2 w-full" />
           </div>
           {loadingPasswords ? (
             <div className="p-4 text-gray-500">Loading...</div>
@@ -240,7 +307,7 @@ export default function AdminSecurityModeration() {
                   </tr>
                 </thead>
                 <tbody>
-                  {passwordLockouts.map((r) => (
+                  {filteredPasswordLockouts.map((r) => (
                     <tr key={r._id} className="border-b hover:bg-gray-50">
                       <td className="py-2 pr-4">{r.email || '-'}</td>
                       <td className="py-2 pr-4">{r.userId || '-'}</td>

@@ -46,7 +46,7 @@ export const trackFailedAttempt = (identifier, userId = null) => {
     // If too many attempts, lock the account
     if (existing.attempts >= 5) {
         if (userId) {
-            lockAccount(userId, 30 * 60 * 1000); // 30 minutes lockout
+            lockAccount(userId, 30 * 60 * 1000, { identifier, attempts: existing.attempts, ipAddress: identifier }); // 30 minutes lockout
             sendAdminAlert('account_locked', {
                 userId,
                 identifier,
@@ -60,10 +60,24 @@ export const trackFailedAttempt = (identifier, userId = null) => {
 };
 
 // Lock account
-export const lockAccount = async (userId, duration) => {
+export const lockAccount = async (userId, duration, { identifier = undefined, attempts = 0, ipAddress = undefined } = {}) => {
     const unlockAt = Date.now() + duration;
     try {
-        await PasswordLockout.lockUser({ userId, durationMs: duration });
+        // Fetch email for better visibility in admin tables
+        let email = undefined;
+        try {
+            const user = await User.findById(userId).select('email');
+            email = user?.email || undefined;
+        } catch (_) {}
+
+        await PasswordLockout.lockUser({
+            userId,
+            email,
+            identifier,
+            attempts,
+            durationMs: duration,
+            ipAddress: ipAddress || identifier
+        });
         await User.findByIdAndUpdate(userId, { status: 'locked', lockedUntil: new Date(unlockAt) });
     } catch (err) {
         console.error('Failed to persist password lockout:', err);
