@@ -715,8 +715,8 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                     </div>
                                 </div>
                                 
-                                {/* OTP reCAPTCHA Widget - below resend when OTP field open, below email otherwise */}
-                                {showOtpRecaptcha && (
+                                {/* OTP reCAPTCHA Widget - show below email only when OTP field is NOT open */}
+                                {showOtpRecaptcha && !otpSent && (
                                     <div className="flex justify-center mb-4">
                                         <RecaptchaWidget
                                             key={otpRecaptchaKey}
