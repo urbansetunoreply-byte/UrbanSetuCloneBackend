@@ -472,8 +472,8 @@ export const sendLoginOTP = async (req, res, next) => {
         if (otpTracking && otpTracking.isLocked && otpTracking.isLocked()) {
             return res.status(429).json({
                 success: false,
-                message: "Too many failed attempts. Please try again in 15 minutes.",
-                requiresCaptcha: true
+                message: "Too many OTP requests. Please try again in 15 minutes.",
+                requiresCaptcha: false
             });
         }
         // Check if user exists with the email
@@ -494,8 +494,8 @@ export const sendLoginOTP = async (req, res, next) => {
             await otpTracking.registerLockout(15 * 60 * 1000);
             return res.status(429).json({
                 success: false,
-                message: "Too many failed attempts. Please try again in 15 minutes.",
-                requiresCaptcha: true
+                message: "Too many OTP requests. Please try again in 15 minutes.",
+                requiresCaptcha: false
             });
         }
 

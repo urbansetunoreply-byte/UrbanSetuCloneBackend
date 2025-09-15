@@ -110,7 +110,7 @@ export const checkOtpCaptchaRequirement = async (req, res, next) => {
             return res.status(429).json({
                 success: false,
                 message: 'Too many OTP requests. Please try again in 15 minutes.',
-                requiresCaptcha: true
+                requiresCaptcha: false
             });
         }
         

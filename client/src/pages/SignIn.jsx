@@ -349,7 +349,11 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
 
             if (data.success === false) {
                 // Handle reCAPTCHA requirements
-                if (data.requiresCaptcha) {
+                if (data.message && data.message.toLowerCase().includes("too many otp requests")) {
+                    setOtpRecaptchaError("Too many OTP requests. Please try again in 15 minutes.");
+                    setShowOtpRecaptcha(false);
+                    setOtpRequiresCaptcha(false);
+                } else if (data.requiresCaptcha) {
                     setOtpRequiresCaptcha(true);
                     setShowOtpRecaptcha(true);
                     setOtpRecaptchaError("reCAPTCHA verification is now required due to multiple failed attempts.");
