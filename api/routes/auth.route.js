@@ -24,7 +24,7 @@ router.post("/google", signInRateLimit, bruteForceProtection, verifyCSRFToken, c
 }), Google)
 router.get("/signout", Signout)
 router.get("/verify", verifyAuth)
-arouter.post("/forgot-password", forgotPasswordRateLimit, verifyCSRFToken, validateRecaptcha({ required: true }), forgotPassword)
+router.post("/forgot-password", forgotPasswordRateLimit, verifyCSRFToken, validateRecaptcha({ required: true }), forgotPassword)
 router.post("/reset-password", verifyCSRFToken, resetPassword)
 
 // Email verification routes
