@@ -31,9 +31,9 @@ router.post("/forgot-password", forgotPasswordRateLimit, verifyCSRFToken, valida
 router.post("/reset-password", verifyCSRFToken, resetPassword)
 
 // Email verification routes
-router.post("/send-otp", otpRateLimit, verifyCSRFToken, sendOTP)
+router.post("/send-otp", otpRateLimit, verifyCSRFToken, ...otpRecaptchaMiddleware, sendOTP)
 router.post("/verify-otp", otpVerifyRateLimit, verifyCSRFToken, verifyOTP)
-router.post("/send-forgot-password-otp", otpRateLimit, verifyCSRFToken, sendForgotPasswordOTP)
+router.post("/send-forgot-password-otp", otpRateLimit, verifyCSRFToken, ...otpRecaptchaMiddleware, sendForgotPasswordOTP)
 router.post("/send-profile-email-otp", otpRateLimit, verifyCSRFToken, ...otpRecaptchaMiddleware, sendProfileEmailOTP)
 
 // OTP Login routes

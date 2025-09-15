@@ -10,6 +10,7 @@ const otpStore = new Map();
 // Send OTP for signup
 export const sendOTP = async (req, res, next) => {
   const { email } = req.body;
+  const { otpTracking, requiresCaptcha } = req;
   
   if (!email) {
     return next(errorHandler(400, "Email is required"));
@@ -25,6 +26,11 @@ export const sendOTP = async (req, res, next) => {
         success: false,
         message: "An account with this email already exists. Please sign in instead!"
       });
+    }
+
+    // Increment OTP request count
+    if (otpTracking) {
+      await otpTracking.incrementOtpRequest();
     }
 
     // Generate OTP
@@ -49,9 +55,24 @@ export const sendOTP = async (req, res, next) => {
       });
     }
 
+    // Log successful OTP request
+    logSecurityEvent('signup_otp_request_successful', {
+      email: emailLower,
+      ip: req.ip,
+      requiresCaptcha
+    });
+
+    // Log successful forgot password OTP request
+    logSecurityEvent('forgot_password_otp_request_successful', {
+      email: emailLower,
+      ip: req.ip,
+      requiresCaptcha
+    });
+
     res.status(200).json({
       success: true,
-      message: "OTP sent successfully to your email"
+      message: "OTP sent successfully to your email",
+      requiresCaptcha: false
     });
 
   } catch (error) {
@@ -63,6 +84,7 @@ export const sendOTP = async (req, res, next) => {
 // Send OTP for forgot password
 export const sendForgotPasswordOTP = async (req, res, next) => {
   const { email } = req.body;
+  const { otpTracking, requiresCaptcha } = req;
   
   if (!email) {
     return next(errorHandler(400, "Email is required"));
@@ -78,6 +100,11 @@ export const sendForgotPasswordOTP = async (req, res, next) => {
         success: false,
         message: "No account found with that email address."
       });
+    }
+
+    // Increment OTP request count
+    if (otpTracking) {
+      await otpTracking.incrementOtpRequest();
     }
 
     // Generate OTP
@@ -105,7 +132,8 @@ export const sendForgotPasswordOTP = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "OTP sent successfully to your email"
+      message: "OTP sent successfully to your email",
+      requiresCaptcha: false
     });
 
   } catch (error) {
