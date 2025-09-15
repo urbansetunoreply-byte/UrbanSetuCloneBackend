@@ -1865,8 +1865,8 @@ export default function Profile() {
                     )}
                   </div>
                   
-                  {/* Profile Email OTP reCAPTCHA Widget - Show when required */}
-                  {showProfileRecaptcha && emailValidation.available === true && !emailValidation.loading && !otpSent && !emailVerified && formData.email !== originalEmail && emailEditMode && (
+                  {/* Profile Email OTP reCAPTCHA Widget - Show when required (even when OTP field is open) */}
+                  {showProfileRecaptcha && emailValidation.available === true && !emailValidation.loading && !emailVerified && formData.email !== originalEmail && emailEditMode && (
                     <div className="mt-4">
                       <RecaptchaWidget
                         key={profileRecaptchaKey}
@@ -1933,7 +1933,7 @@ export default function Profile() {
                             <button
                               type="button"
                               onClick={handleSendOTP}
-                              disabled={otpLoading}
+                              disabled={otpLoading || (profileRequiresCaptcha && !profileRecaptchaToken)}
                               className="text-xs text-blue-600 hover:text-blue-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {otpLoading ? "Sending..." : "Resend OTP"}
