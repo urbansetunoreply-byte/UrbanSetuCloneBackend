@@ -174,6 +174,14 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
     // Show tick for ~1s before hiding
     setRecaptchaJustVerified(true);
     setTimeout(() => setRecaptchaJustVerified(false), 1000);
+    // If OTP-specific captcha was required (either under email or OTP), hide that widget + message after 1s
+    if (otpCaptchaRequired) {
+      setTimeout(() => {
+        setOtpCaptchaRequired(false);
+        setOtpCaptchaMessage("");
+        setOtpError("");
+      }, 1000);
+    }
   };
 
   const handleRecaptchaExpire = () => {
@@ -268,13 +276,18 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
         setOtpCaptchaRequired(false);
         setOtpCaptchaMessage("");
       } else {
-        setOtpError(data.message);
-        if (data.requiresCaptcha || (data.message && data.message.toLowerCase().includes('recaptcha'))) {
+        // When captcha required and OTP field not open, prefer showing dedicated captcha message below email, not otpError
+        const requiresCaptcha = data.requiresCaptcha || (data.message && data.message.toLowerCase().includes('recaptcha'));
+        if (requiresCaptcha) {
           setOtpCaptchaRequired(true);
-          // If OTP field is not open, show captcha below email with clear message
           if (!otpSent) {
             setOtpCaptchaMessage("reCAPTCHA verification is required due to multiple failed attempts or requests");
+            setOtpError("");
+          } else {
+            setOtpError(data.message || "reCAPTCHA verification is required due to multiple failed attempts or requests");
           }
+        } else {
+          setOtpError(data.message);
         }
       }
     } catch (error) {
@@ -479,7 +492,8 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                     )}
                     {/* If captcha required before OTP field is open, show below email */}
                     {otpCaptchaRequired && !otpSent && (
-                      <div className="mt-3">
+                      <div className="mt-3 relative">
+                        {/* Maintain button position while showing captcha below */}
                         <div className="flex justify-center">
                           <RecaptchaWidget
                             key={`otp-email-${recaptchaKey}`}

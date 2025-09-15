@@ -70,6 +70,13 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
     // Show tick for ~1s before hiding
     setRecaptchaJustVerified(true);
     setTimeout(() => setRecaptchaJustVerified(false), 1000);
+    // If OTP resend captcha was required, auto-hide the widget + any OTP error after 1s
+    if (otpCaptchaRequired) {
+      setTimeout(() => {
+        setOtpCaptchaRequired(false);
+        setOtpError("");
+      }, 1000);
+    }
   };
 
   const handleRecaptchaExpire = () => {
