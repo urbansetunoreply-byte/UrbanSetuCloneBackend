@@ -168,6 +168,8 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
   const handleRecaptchaVerify = (token) => {
     setRecaptchaToken(token);
     setRecaptchaError("");
+    // Hide captcha after successful verification on step 1
+    // It will be shown again if server requires it later
   };
 
   const handleRecaptchaExpire = () => {

@@ -580,6 +580,8 @@ export default function Profile() {
   const handleProfileRecaptchaVerify = (token) => {
     setProfileRecaptchaToken(token);
     setProfileRecaptchaError("");
+    // Hide captcha after successful verification
+    setShowProfileRecaptcha(false);
   };
 
   const handleProfileRecaptchaExpire = () => {

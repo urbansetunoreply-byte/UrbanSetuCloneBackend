@@ -65,6 +65,11 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
   const handleRecaptchaVerify = (token) => {
     setRecaptchaToken(token);
     setRecaptchaError("");
+    // Hide captcha after successful verification
+    // It will be shown again by backend error flow if needed
+    // (e.g., if token is used/expired and server asks for captcha again)
+    // Keeping the token stored for submit
+  };
   };
 
   const handleRecaptchaExpire = () => {
@@ -406,9 +411,9 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                     id="email"
                     value={formData.email}
                     onChange={handleChange}
-                    readOnly={emailVerified && !emailEditMode}
+                    readOnly={(emailVerified || otpSent) && !emailEditMode}
                     className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
-                      emailVerified && !emailEditMode
+                      (emailVerified || otpSent) && !emailEditMode
                         ? "bg-gray-100 cursor-not-allowed border-green-500"
                         : fieldErrors.email ? "border-red-500" : emailVerified ? "border-green-500" : "border-gray-300"
                     }`}
@@ -417,7 +422,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                   {fieldErrors.email && (
                     <p className="text-red-500 text-sm mt-1">{fieldErrors.email}</p>
                   )}
-                  {!emailVerified && !otpSent && !emailEditMode && (
+                  {!emailVerified && !otpSent && (
                     <button
                       type="button"
                       onClick={handleSendOTP}
@@ -427,11 +432,18 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                       {otpLoading ? "Sending..." : "Send OTP"}
                     </button>
                   )}
-                  {emailVerified && !emailEditMode && (
+                  {(emailVerified || (otpSent && !emailVerified)) && !emailEditMode && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => setEmailEditMode(true)}
+                        onClick={() => {
+                          setEmailEditMode(true);
+                          setOtpSent(false);
+                          setOtp("");
+                          setCanResend(true);
+                          setResendTimer(0);
+                          setEmailVerified(false);
+                        }}
                         className="text-blue-600 hover:text-blue-800 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
                         title="Edit email"
                       >
@@ -753,4 +765,4 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
       <ContactSupportWrapper />
     </div>
   );
-}
+

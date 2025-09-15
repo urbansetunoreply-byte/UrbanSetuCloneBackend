@@ -158,6 +158,8 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
     const handleRecaptchaVerify = (token) => {
         setRecaptchaToken(token);
         setRecaptchaError("");
+        // Hide captcha after successful verification
+        setShowRecaptcha(false);
     };
 
     const handleRecaptchaExpire = () => {
@@ -186,6 +188,8 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
     const handleOtpRecaptchaVerify = (token) => {
         setOtpRecaptchaToken(token);
         setOtpRecaptchaError("");
+        // Hide OTP captcha after successful verification
+        setShowOtpRecaptcha(false);
     };
 
     const handleOtpRecaptchaExpire = () => {
