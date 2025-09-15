@@ -530,6 +530,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                     const digitsOnly = e.target.value.replace(/[^0-9]/g, '');
                     handleChange({ target: { id: 'mobileNumber', value: digitsOnly } });
                   }}
+                  value={formData.mobileNumber || ''}
                   inputMode="numeric"
                   pattern="[0-9]{10}"
                   maxLength="10"

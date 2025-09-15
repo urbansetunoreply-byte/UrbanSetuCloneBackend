@@ -441,7 +441,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                       ref={emailInputRef}
                       value={formData.email}
                       onChange={handleChange}
-                      readOnly={emailVerified && !emailEditMode}
+                      readOnly={(emailVerified && !emailEditMode) || (otpSent && !emailEditMode)}
                       className={`w-full px-4 py-3 pr-24 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 ${
                         emailVerified && !emailEditMode
                           ? "bg-gray-100 cursor-not-allowed border-green-500"
@@ -449,21 +449,28 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                       }`}
                       required
                     />
-                                      {!emailVerified && !otpSent && !emailEditMode && (
-                    <button
-                      type="button"
-                      onClick={handleSendOTP}
-                      disabled={otpLoading || !formData.email || !canResend}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-orange-600 text-white rounded-md text-sm font-medium hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {otpLoading ? "Sending..." : "Send OTP"}
-                    </button>
-                  )}
-                    {emailVerified && !emailEditMode && (
+                    {!emailVerified && !otpSent && (
+                      <button
+                        type="button"
+                        onClick={handleSendOTP}
+                        disabled={otpLoading || !formData.email || !canResend}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-orange-600 text-white rounded-md text-sm font-medium hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {otpLoading ? "Sending..." : "Send OTP"}
+                      </button>
+                    )}
+                    {(emailVerified || (otpSent && !emailVerified)) && !emailEditMode && (
                       <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
                         <button
                           type="button"
-                          onClick={() => setEmailEditMode(true)}
+                          onClick={() => {
+                            setEmailEditMode(true);
+                            setOtpSent(false);
+                            setOtp("");
+                            setCanResend(true);
+                            setResendTimer(0);
+                            setEmailVerified(false);
+                          }}
                           className="text-blue-600 hover:text-blue-800 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
                           title="Edit email"
                         >
