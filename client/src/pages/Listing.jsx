@@ -631,6 +631,7 @@ export default function Listing() {
     // Hide all tooltips first
     setShowPriceAnalysisTooltip(false);
     setShowInsightsTooltip(false);
+    setShowSmartPriceInsightsTooltip(false);
     setShowComparisonTooltip(false);
     setShowReviewsTooltip(false);
     
@@ -643,6 +644,10 @@ export default function Listing() {
       case 'insights':
         setShowInsightsTooltip(true);
         setTimeout(() => setShowInsightsTooltip(false), 3000);
+        break;
+      case 'smartPriceInsights':
+        setShowSmartPriceInsightsTooltip(true);
+        setTimeout(() => setShowSmartPriceInsightsTooltip(false), 3000);
         break;
       case 'comparison':
         setShowComparisonTooltip(true);
@@ -1218,7 +1223,7 @@ export default function Listing() {
               {listing.offer && getDiscountPercentage() > 0 ? (
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                   <p className="text-lg sm:text-2xl md:text-3xl text-blue-600 font-semibold">
-                    {formatINR(listing.discountPrice)}
+                    {formatINR(listing.offer ? listing.discountPrice : listing.regularPrice)}
                     {listing.type === "rent" && " / month"}
                   </p>
                   <p className="text-base sm:text-xl text-gray-500 line-through">
@@ -1230,7 +1235,7 @@ export default function Listing() {
                 </div>
               ) : (
                 <p className="text-lg sm:text-2xl md:text-3xl text-blue-600 font-semibold">
-                  {formatINR(listing.regularPrice)}
+                  {formatINR(listing.offer ? listing.discountPrice : listing.regularPrice)}
                   {listing.type === "rent" && " / month"}
                 </p>
               )}
