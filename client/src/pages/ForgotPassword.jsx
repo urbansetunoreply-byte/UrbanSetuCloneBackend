@@ -56,6 +56,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
   const [recaptchaKey, setRecaptchaKey] = useState(0);
   const [recaptchaJustVerified, setRecaptchaJustVerified] = useState(false);
   const recaptchaRef = useRef(null);
+  const [otpCaptchaRequired, setOtpCaptchaRequired] = useState(false);
 
   // Check URL parameters on component mount
   useEffect(() => {
@@ -248,7 +249,8 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
       const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-forgot-password-otp`, {
         method: "POST",
         body: JSON.stringify({ 
-          email: formData.email
+          email: formData.email,
+          ...(otpCaptchaRequired && recaptchaToken ? { recaptchaToken } : {})
         }),
       });
 
@@ -262,8 +264,12 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
         // Start timer for resend
         setResendTimer(30); // 30 seconds
         setCanResend(false);
+        setOtpCaptchaRequired(false);
       } else {
         setOtpError(data.message);
+        if (data.requiresCaptcha || (data.message && data.message.toLowerCase().includes('recaptcha'))) {
+          setOtpCaptchaRequired(true);
+        }
       }
     } catch (error) {
       setOtpError("Failed to send OTP. Please try again.");
@@ -561,10 +567,10 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                     {otpError && (
                       <p className="text-red-500 text-sm mt-2">{otpError}</p>
                     )}
-                    {otpError && otpError.toLowerCase().includes('recaptcha') && (
+                    {otpCaptchaRequired && (
                       <div className="flex justify-center mt-3">
                         <RecaptchaWidget
-                          key={`otp-${recaptchaKey}`}
+                          key={`otp-forgot-${recaptchaKey}`}
                           ref={recaptchaRef}
                           onVerify={handleRecaptchaVerify}
                           onExpire={handleRecaptchaExpire}

@@ -52,6 +52,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
   const [verifyLoading, setVerifyLoading] = useState(false);
   const [otpError, setOtpError] = useState("");
   const [emailEditMode, setEmailEditMode] = useState(false);
+  const [otpCaptchaRequired, setOtpCaptchaRequired] = useState(false);
   
   // Timer states for resend OTP
   const [resendTimer, setResendTimer] = useState(0);
@@ -172,7 +173,10 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
     try {
       const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-otp`, {
         method: "POST",
-        body: JSON.stringify({ email: formData.email }),
+        body: JSON.stringify({ 
+          email: formData.email,
+          ...(otpCaptchaRequired && recaptchaToken ? { recaptchaToken } : {})
+        }),
       });
 
       const data = await res.json();
@@ -185,10 +189,11 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
         // Start timer for resend
         setResendTimer(30); // 30 seconds
         setCanResend(false);
+        setOtpCaptchaRequired(false);
       } else {
         setOtpError(data.message);
-        if (data.requiresCaptcha) {
-          // Show captcha hint below OTP area by surfacing specific message
+        if (data.requiresCaptcha || (data.message && data.message.toLowerCase().includes('recaptcha'))) {
+          setOtpCaptchaRequired(true);
         }
       }
     } catch (error) {
@@ -533,7 +538,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                     <p className="text-red-500 text-sm mt-2">{otpError}</p>
                   )}
                   {/* If backend requested captcha during resends, render captcha below OTP */}
-                  {otpError && otpError.toLowerCase().includes('recaptcha') && (
+                  {(otpCaptchaRequired) && (
                     <div className="flex justify-center mt-3">
                       <RecaptchaWidget
                         key={`otp-${recaptchaKey}`}

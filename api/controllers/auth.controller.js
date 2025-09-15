@@ -472,7 +472,7 @@ export const sendLoginOTP = async (req, res, next) => {
         if (otpTracking && otpTracking.isLocked && otpTracking.isLocked()) {
             return res.status(429).json({
                 success: false,
-                message: "Too many OTP requests. Please try again in 15 minutes.",
+                message: "Too many failed attempts. Please try again in 15 minutes.",
                 requiresCaptcha: true
             });
         }
@@ -494,7 +494,7 @@ export const sendLoginOTP = async (req, res, next) => {
             await otpTracking.registerLockout(15 * 60 * 1000);
             return res.status(429).json({
                 success: false,
-                message: "Too many OTP requests. Please try again in 15 minutes.",
+                message: "Too many failed attempts. Please try again in 15 minutes.",
                 requiresCaptcha: true
             });
         }

@@ -294,7 +294,11 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
 
             if (data.success === false) {
                 // Handle reCAPTCHA errors
-                if (data.message.includes("reCAPTCHA")) {
+                if (data.message && data.message.toLowerCase().includes("too many failed attempts")) {
+                    // Clear captcha UI and show clear lockout message
+                    setOtpRecaptchaError("Too many failed attempts. Please try again in 15 minutes.");
+                    setShowOtpRecaptcha(false);
+                } else if (data.message && data.message.includes("reCAPTCHA")) {
                     setOtpRecaptchaError(data.message);
                     setShowOtpRecaptcha(true);
                 } else if (data.requiresCaptcha) {
