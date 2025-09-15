@@ -158,8 +158,8 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
     const handleRecaptchaVerify = (token) => {
         setRecaptchaToken(token);
         setRecaptchaError("");
-        // Hide captcha after successful verification
-        setShowRecaptcha(false);
+        // Hide after a brief delay to show the tick
+        setTimeout(() => setShowRecaptcha(false), 1000);
     };
 
     const handleRecaptchaExpire = () => {
@@ -190,8 +190,8 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
     const handleOtpRecaptchaVerify = (token) => {
         setOtpRecaptchaToken(token);
         setOtpRecaptchaError("");
-        // Hide OTP captcha after successful verification
-        setShowOtpRecaptcha(false);
+        // Hide after a brief delay to show the tick
+        setTimeout(() => setShowOtpRecaptcha(false), 1000);
     };
 
     const handleOtpRecaptchaExpire = () => {
@@ -730,8 +730,8 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                     </div>
                                 )}
 
-                                {/* OTP reCAPTCHA Error */}
-                                {otpRecaptchaError && (
+                                {/* OTP reCAPTCHA Error - place with the widget */}
+                                {otpRecaptchaError && otpSent && (
                                     <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
                                         <p className="text-red-600 text-sm">{otpRecaptchaError}</p>
                                     </div>

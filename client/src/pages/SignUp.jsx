@@ -65,10 +65,8 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
   const handleRecaptchaVerify = (token) => {
     setRecaptchaToken(token);
     setRecaptchaError("");
-    // Hide captcha after successful verification
-    // It will be shown again by backend error flow if needed
-    // (e.g., if token is used/expired and server asks for captcha again)
-    // Keeping the token stored for submit
+    // Hide after a brief delay to show the tick
+    setTimeout(() => setRecaptchaToken((t) => t), 1000); // keep token, controlled by !recaptchaToken render
   };
 
   const handleRecaptchaExpire = () => {
