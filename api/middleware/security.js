@@ -122,9 +122,10 @@ export const bruteForceProtection = (req, res, next) => {
                     return next(errorHandler(423, 'Account is temporarily locked due to too many failed attempts. Please try again later.'));
                 }
                 
-                // Check failed attempts
+                // Only check for excessive failed attempts (10+ in 15 minutes)
+                // This allows normal users to attempt login even after a few failures
                 const failedAttempts = getFailedAttempts(identifier);
-                if (failedAttempts >= 3) {
+                if (failedAttempts >= 10) {
                     return next(errorHandler(429, 'Too many failed attempts. Please try again in 15 minutes.'));
                 }
                 

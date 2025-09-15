@@ -392,6 +392,9 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                 })
             });
             const data = await res.json();
+            
+            // Debug logging
+            console.log('Sign-in response:', data);
 
             if (data.success === false) {
                 // Handle reCAPTCHA errors

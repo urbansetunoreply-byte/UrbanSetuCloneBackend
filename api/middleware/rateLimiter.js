@@ -59,7 +59,7 @@ export const createRateLimiter = (windowMs, maxAttempts, message) => {
 // Specific rate limiters for different endpoints
 export const signInRateLimit = createRateLimiter(
     60 * 1000, // 1 minute window
-    5, // max 5 attempts
+    10, // max 10 attempts per minute (more lenient)
     'Too many sign-in attempts. Please try again in a minute.'
 );
 
