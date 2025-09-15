@@ -4,12 +4,13 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import { Navigation } from "swiper/modules";
-import { FaBath, FaBed, FaChair, FaMapMarkerAlt, FaParking, FaShare, FaEdit, FaTrash, FaArrowLeft, FaHeart, FaExpand } from "react-icons/fa";
+import { FaBath, FaBed, FaChair, FaMapMarkerAlt, FaParking, FaShare, FaEdit, FaTrash, FaArrowLeft, FaHeart, FaExpand, FaRocket } from "react-icons/fa";
 import { maskAddress, shouldShowLocationLink, getLocationLinkText } from "../utils/addressMasking";
 import { toast } from 'react-toastify';
 import { useWishlist } from '../WishlistContext';
 import { useSelector } from 'react-redux';
 import ImagePreview from "../components/ImagePreview.jsx";
+import SmartPriceInsights from "../components/SmartPriceInsights.jsx";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -28,6 +29,7 @@ export default function AdminListing() {
   const [deassignPassword, setDeassignPassword] = useState('');
   const [deassignLoading, setDeassignLoading] = useState(false);
   const [deassignError, setDeassignError] = useState('');
+  const [showSmartPriceInsights, setShowSmartPriceInsights] = useState(false);
 
   const formatINR = (amount) => {
     return `₹${Number(amount).toLocaleString("en-IN")}`;
@@ -478,6 +480,22 @@ export default function AdminListing() {
             </div>
           </div>
         </div>
+
+        {/* Smart Price Insights Button */}
+        <div className="mb-6">
+          <button
+            onClick={() => setShowSmartPriceInsights(!showSmartPriceInsights)}
+            className="w-full bg-gradient-to-r from-indigo-500 to-indigo-600 text-white p-4 rounded-lg hover:from-indigo-600 hover:to-indigo-700 transition-all flex items-center justify-center gap-3 shadow-lg"
+          >
+            <FaRocket className="text-xl" />
+            <span className="text-lg font-semibold">Smart Price Insights</span>
+          </button>
+        </div>
+
+        {/* Smart Price Insights Section */}
+        {showSmartPriceInsights && (
+          <SmartPriceInsights listing={listing} currentUser={currentUser} />
+        )}
 
         {/* Admin Information */}
         <div className="p-6 bg-blue-50 shadow-md rounded-lg mb-6">

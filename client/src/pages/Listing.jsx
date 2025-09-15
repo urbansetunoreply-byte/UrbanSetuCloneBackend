@@ -12,6 +12,7 @@ import ReviewList from "../components/ReviewList.jsx";
 import ImagePreview from "../components/ImagePreview.jsx";
 import EMICalculator from "../components/EMICalculator.jsx";
 import SocialSharePanel from "../components/SocialSharePanel.jsx";
+import SmartPriceInsights from "../components/SmartPriceInsights.jsx";
 import { maskAddress, shouldShowLocationLink, getLocationLinkText } from "../utils/addressMasking";
 import { toast } from 'react-toastify';
 import { useWishlist } from '../WishlistContext';
@@ -57,6 +58,7 @@ export default function Listing() {
   const [showAmenities, setShowAmenities] = useState(false);
   const [showNearbyPlaces, setShowNearbyPlaces] = useState(false);
   const [showPriceAnalysis, setShowPriceAnalysis] = useState(false);
+  const [showSmartPriceInsights, setShowSmartPriceInsights] = useState(false);
   const [showContactInfo, setShowContactInfo] = useState(false);
   const [viewCount, setViewCount] = useState(0);
   const [similarProperties, setSimilarProperties] = useState([]);
@@ -73,6 +75,7 @@ export default function Listing() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showPriceAnalysisTooltip, setShowPriceAnalysisTooltip] = useState(false);
   const [showInsightsTooltip, setShowInsightsTooltip] = useState(false);
+  const [showSmartPriceInsightsTooltip, setShowSmartPriceInsightsTooltip] = useState(false);
   const [showReviewsTooltip, setShowReviewsTooltip] = useState(false);
   const [confirmModal, setConfirmModal] = useState({ open: false, type: null, propertyId: null, origin: null, message: '' });
   const [showSocialShare, setShowSocialShare] = useState(false);
@@ -1356,7 +1359,7 @@ export default function Listing() {
               </div>
 
               {/* Interactive Feature Toggles */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 <button
                   onClick={() => setShowAmenities(!showAmenities)}
                   className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all flex items-center justify-center gap-2"
@@ -1409,6 +1412,27 @@ export default function Listing() {
                   {showInsightsTooltip && (
                     <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
                       Please sign in to view insights
+                      <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
+                    </div>
+                  )}
+                </div>
+                <div className="relative">
+                  <button
+                    onClick={() => {
+                      if (!currentUser) {
+                        showSignInPrompt('smartPriceInsights');
+                        return;
+                      }
+                      setShowSmartPriceInsights(!showSmartPriceInsights);
+                    }}
+                    className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white p-3 rounded-lg hover:from-indigo-600 hover:to-indigo-700 transition-all flex items-center justify-center gap-2 w-full"
+                  >
+                    <FaRocket />
+                    <span className="text-sm font-medium">Smart Insights</span>
+                  </button>
+                  {showSmartPriceInsightsTooltip && (
+                    <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
+                      Please sign in to view smart price insights
                       <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
                     </div>
                   )}
@@ -1655,6 +1679,11 @@ export default function Listing() {
                 </div>
               </div>
             </div>
+          )}
+
+          {/* Smart Price Insights Section */}
+          {showSmartPriceInsights && currentUser && (
+            <SmartPriceInsights listing={listing} currentUser={currentUser} />
           )}
 
           {/* Admin Information - Only show for admins */}
