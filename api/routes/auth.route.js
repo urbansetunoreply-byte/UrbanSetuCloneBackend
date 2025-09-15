@@ -8,6 +8,7 @@ import { signInRateLimit, signUpRateLimit, forgotPasswordRateLimit, otpRateLimit
 import { generateCSRFToken, verifyCSRFToken, getCSRFToken } from '../middleware/csrf.js';
 import { bruteForceProtection, getFailedAttempts } from '../middleware/security.js';
 import { validateRecaptcha, conditionalRecaptcha, captchaRateLimit } from '../middleware/recaptcha.js';
+import { otpRecaptchaMiddleware } from '../middleware/otpRecaptcha.js';
 const router=express.Router()
 
 // CSRF token endpoint
@@ -31,10 +32,10 @@ router.post("/reset-password", verifyCSRFToken, resetPassword)
 router.post("/send-otp", otpRateLimit, verifyCSRFToken, sendOTP)
 router.post("/verify-otp", otpRateLimit, verifyCSRFToken, verifyOTP)
 router.post("/send-forgot-password-otp", otpRateLimit, verifyCSRFToken, sendForgotPasswordOTP)
-router.post("/send-profile-email-otp", otpRateLimit, verifyCSRFToken, sendProfileEmailOTP)
+router.post("/send-profile-email-otp", otpRateLimit, verifyCSRFToken, ...otpRecaptchaMiddleware, sendProfileEmailOTP)
 
 // OTP Login routes
-router.post("/send-login-otp", otpRateLimit, verifyCSRFToken, sendLoginOTP)
+router.post("/send-login-otp", otpRateLimit, verifyCSRFToken, ...otpRecaptchaMiddleware, sendLoginOTP)
 router.post("/verify-login-otp", otpRateLimit, verifyCSRFToken, verifyLoginOTP)
 
 // POST /api/auth/verify-password

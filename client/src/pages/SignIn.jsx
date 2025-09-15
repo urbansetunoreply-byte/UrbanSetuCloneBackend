@@ -42,7 +42,12 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
     const [recaptchaToken, setRecaptchaToken] = useState(null);
     const [recaptchaError, setRecaptchaError] = useState("");
     const [showRecaptcha, setShowRecaptcha] = useState(false);
+    const [otpRecaptchaToken, setOtpRecaptchaToken] = useState(null);
+    const [otpRecaptchaError, setOtpRecaptchaError] = useState("");
+    const [showOtpRecaptcha, setShowOtpRecaptcha] = useState(false);
+    const [otpRequiresCaptcha, setOtpRequiresCaptcha] = useState(false);
     const recaptchaRef = useRef(null);
+    const otpRecaptchaRef = useRef(null);
 
     const { loading, error, currentUser } = useSelector((state) => state.user);
     const navigate = useNavigate();
@@ -162,6 +167,30 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         setRecaptchaError("");
     };
 
+    // OTP reCAPTCHA handlers
+    const handleOtpRecaptchaVerify = (token) => {
+        setOtpRecaptchaToken(token);
+        setOtpRecaptchaError("");
+    };
+
+    const handleOtpRecaptchaExpire = () => {
+        setOtpRecaptchaToken(null);
+        setOtpRecaptchaError("reCAPTCHA expired. Please verify again.");
+    };
+
+    const handleOtpRecaptchaError = (error) => {
+        setOtpRecaptchaToken(null);
+        setOtpRecaptchaError("reCAPTCHA verification failed. Please try again.");
+    };
+
+    const resetOtpRecaptcha = () => {
+        if (otpRecaptchaRef.current) {
+            otpRecaptchaRef.current.reset();
+        }
+        setOtpRecaptchaToken(null);
+        setOtpRecaptchaError("");
+    };
+
     // Check if reCAPTCHA should be shown (simulate failed attempts check)
     const checkRecaptchaRequirement = () => {
         // In a real app, you'd check with the backend or store this in state
@@ -215,22 +244,49 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             return;
         }
 
+        // Check if reCAPTCHA is required but not provided
+        if (otpRequiresCaptcha && !otpRecaptchaToken) {
+            dispatch(signInFailure("reCAPTCHA verification is required. Please complete the verification."));
+            setShowOtpRecaptcha(true);
+            return;
+        }
+
         setOtpLoading(true);
+        setOtpRecaptchaError("");
+        
         try {
+            const requestBody = { 
+                email: otpData.email,
+                ...(otpRecaptchaToken && { recaptchaToken: otpRecaptchaToken })
+            };
+
             const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-login-otp`, {
                 method: "POST",
-                body: JSON.stringify({ email: otpData.email })
+                body: JSON.stringify(requestBody)
             });
 
             const data = await res.json();
 
             if (data.success === false) {
-                dispatch(signInFailure(data.message));
+                // Handle reCAPTCHA errors
+                if (data.message.includes("reCAPTCHA")) {
+                    setOtpRecaptchaError(data.message);
+                    setShowOtpRecaptcha(true);
+                } else if (data.requiresCaptcha) {
+                    setOtpRequiresCaptcha(true);
+                    setShowOtpRecaptcha(true);
+                    setOtpRecaptchaError("reCAPTCHA verification is now required due to multiple attempts.");
+                } else {
+                    dispatch(signInFailure(data.message));
+                }
                 return;
             }
 
             setOtpSent(true);
             setOtpSuccessMessage("OTP sent successfully to your email");
+            setOtpRequiresCaptcha(false);
+            setShowOtpRecaptcha(false);
+            resetOtpRecaptcha();
             
             // Start timer for resend
             setResendTimer(30); // 30 seconds
@@ -263,6 +319,12 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             const data = await res.json();
 
             if (data.success === false) {
+                // Handle reCAPTCHA requirements
+                if (data.requiresCaptcha) {
+                    setOtpRequiresCaptcha(true);
+                    setShowOtpRecaptcha(true);
+                    setOtpRecaptchaError("reCAPTCHA verification is now required due to multiple failed attempts.");
+                }
                 dispatch(signInFailure(data.message));
                 return;
             }
@@ -618,6 +680,27 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                     </div>
                                 </div>
                                 
+                                {/* OTP reCAPTCHA Widget - Show when required */}
+                                {showOtpRecaptcha && (
+                                    <div className="flex justify-center mb-4">
+                                        <RecaptchaWidget
+                                            ref={otpRecaptchaRef}
+                                            onVerify={handleOtpRecaptchaVerify}
+                                            onExpire={handleOtpRecaptchaExpire}
+                                            onError={handleOtpRecaptchaError}
+                                            disabled={otpLoading}
+                                            className="transform scale-90"
+                                        />
+                                    </div>
+                                )}
+
+                                {/* OTP reCAPTCHA Error */}
+                                {otpRecaptchaError && (
+                                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                                        <p className="text-red-600 text-sm">{otpRecaptchaError}</p>
+                                    </div>
+                                )}
+                                
                                 {otpSent && (
                                     <div>
                                         {otpSuccessMessage && (
@@ -676,7 +759,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 )}
                                 
                                 <button 
-                                    disabled={loading || otpLoading || (!otpSent && !canResend)} 
+                                    disabled={loading || otpLoading || (!otpSent && !canResend) || (otpRequiresCaptcha && !otpRecaptchaToken)} 
                                     className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
                                 >
                                     {loading || otpLoading ? (

@@ -457,6 +457,7 @@ const loginOtpStore = new Map();
 // Send OTP for login
 export const sendLoginOTP = async (req, res, next) => {
     const { email } = req.body;
+    const { otpTracking, requiresCaptcha } = req;
     
     if (!email) {
         return next(errorHandler(400, "Email is required"));
@@ -470,20 +471,24 @@ export const sendLoginOTP = async (req, res, next) => {
         if (!user) {
             return res.status(400).json({
                 success: false,
-                message: "We couldn’t find an account with this email. Sign up to create one."
+                message: "We couldn't find an account with this email. Sign up to create one."
             });
         }
+
+        // Increment OTP request count
+        await otpTracking.incrementOtpRequest();
 
         // Generate OTP
         const otp = generateOTP();
         
-        // Store OTP with expiration (10 minutes)
-        const expirationTime = Date.now() + 10 * 60 * 1000; // 10 minutes
+        // Store OTP with expiration (5 minutes for better security)
+        const expirationTime = Date.now() + 5 * 60 * 1000; // 5 minutes
         loginOtpStore.set(emailLower, {
             otp,
             expirationTime,
             attempts: 0,
-            userId: user._id
+            userId: user._id,
+            trackingId: otpTracking._id
         });
 
         // Send OTP email for login
@@ -496,9 +501,18 @@ export const sendLoginOTP = async (req, res, next) => {
             });
         }
 
+        // Log successful OTP request
+        logSecurityEvent('otp_request_successful', {
+            email: emailLower,
+            userId: user._id,
+            ip: req.ip,
+            requiresCaptcha: requiresCaptcha
+        });
+
         res.status(200).json({
             success: true,
-            message: "OTP sent successfully to your email"
+            message: "OTP sent successfully to your email",
+            requiresCaptcha: false // Reset after successful request
         });
 
     } catch (error) {
@@ -510,6 +524,7 @@ export const sendLoginOTP = async (req, res, next) => {
 // Verify OTP and login
 export const verifyLoginOTP = async (req, res, next) => {
     const { email, otp } = req.body;
+    const { otpTracking } = req;
     
     if (!email || !otp) {
         return next(errorHandler(400, "Email and OTP are required"));
@@ -551,9 +566,23 @@ export const verifyLoginOTP = async (req, res, next) => {
             storedData.attempts += 1;
             loginOtpStore.set(emailLower, storedData);
             
+            // Increment failed attempts in tracking
+            if (otpTracking) {
+                await otpTracking.incrementFailedAttempt();
+            }
+            
+            // Log failed OTP attempt
+            logSecurityEvent('otp_verification_failed', {
+                email: emailLower,
+                userId: storedData.userId,
+                ip: req.ip,
+                attempts: storedData.attempts
+            });
+            
             return res.status(400).json({
                 success: false,
-                message: "Invalid OTP. Please try again."
+                message: "Invalid OTP. Please try again.",
+                requiresCaptcha: otpTracking?.requiresCaptcha || false
             });
         }
 
@@ -587,6 +616,18 @@ export const verifyLoginOTP = async (req, res, next) => {
         
         // Clear OTP from store
         loginOtpStore.delete(emailLower);
+        
+        // Reset tracking on successful login
+        if (otpTracking) {
+            await otpTracking.resetTracking();
+        }
+        
+        // Log successful OTP login
+        logSecurityEvent('otp_login_successful', {
+            email: emailLower,
+            userId: user._id,
+            ip: req.ip
+        });
 
         // Set secure cookies
         setSecureCookies(res, accessToken, refreshToken);

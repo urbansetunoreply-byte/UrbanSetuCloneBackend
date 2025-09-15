@@ -1,6 +1,8 @@
 import User from "../models/user.model.js";
 import { generateOTP, sendSignupOTPEmail, sendForgotPasswordOTPEmail, sendProfileEmailOTPEmail } from "../utils/emailService.js";
 import { errorHandler } from "../utils/error.js";
+import { logSecurityEvent } from "../middleware/security.js";
+import OtpTracking from "../models/otpTracking.model.js";
 
 // Store OTPs temporarily (in production, use Redis or database)
 const otpStore = new Map();
@@ -115,6 +117,7 @@ export const sendForgotPasswordOTP = async (req, res, next) => {
 // Send OTP for profile email verification
 export const sendProfileEmailOTP = async (req, res, next) => {
   const { email } = req.body;
+  const { otpTracking, requiresCaptcha } = req;
   
   if (!email) {
     return next(errorHandler(400, "Email is required"));
@@ -132,16 +135,20 @@ export const sendProfileEmailOTP = async (req, res, next) => {
       });
     }
 
+    // Increment OTP request count
+    await otpTracking.incrementOtpRequest();
+
     // Generate OTP
     const otp = generateOTP();
     
-    // Store OTP with expiration (10 minutes)
-    const expirationTime = Date.now() + 10 * 60 * 1000; // 10 minutes
+    // Store OTP with expiration (5 minutes for better security)
+    const expirationTime = Date.now() + 5 * 60 * 1000; // 5 minutes
     otpStore.set(emailLower, {
       otp,
       expirationTime,
       attempts: 0,
-      type: 'profile_email'
+      type: 'profile_email',
+      trackingId: otpTracking._id
     });
 
     // Send OTP email for profile email verification
@@ -154,9 +161,17 @@ export const sendProfileEmailOTP = async (req, res, next) => {
       });
     }
 
+    // Log successful OTP request
+    logSecurityEvent('profile_otp_request_successful', {
+      email: emailLower,
+      ip: req.ip,
+      requiresCaptcha: requiresCaptcha
+    });
+
     res.status(200).json({
       success: true,
-      message: "OTP sent successfully to your email"
+      message: "OTP sent successfully to your email",
+      requiresCaptcha: false // Reset after successful request
     });
 
   } catch (error) {
@@ -168,6 +183,7 @@ export const sendProfileEmailOTP = async (req, res, next) => {
 // Verify OTP
 export const verifyOTP = async (req, res, next) => {
   const { email, otp } = req.body;
+  const { otpTracking } = req;
   
   if (!email || !otp) {
     return next(errorHandler(400, "Email and OTP are required"));
@@ -209,9 +225,23 @@ export const verifyOTP = async (req, res, next) => {
       storedData.attempts += 1;
       otpStore.set(emailLower, storedData);
       
+      // Increment failed attempts in tracking for profile email OTP
+      if (storedData.type === 'profile_email' && otpTracking) {
+        await otpTracking.incrementFailedAttempt();
+      }
+      
+      // Log failed OTP attempt
+      logSecurityEvent('profile_otp_verification_failed', {
+        email: emailLower,
+        ip: req.ip,
+        attempts: storedData.attempts,
+        type: storedData.type
+      });
+      
       return res.status(400).json({
         success: false,
-        message: "Invalid OTP. Please try again."
+        message: "Invalid OTP. Please try again.",
+        requiresCaptcha: (storedData.type === 'profile_email' && otpTracking?.requiresCaptcha) || false
       });
     }
 
@@ -226,6 +256,25 @@ export const verifyOTP = async (req, res, next) => {
         message: "Email verified successfully",
         userId: userId,
         type: 'forgotPassword'
+      });
+    } else if (storedData.type === 'profile_email') {
+      // For profile email verification, reset tracking and return success
+      if (otpTracking) {
+        await otpTracking.resetTracking();
+      }
+      
+      // Log successful profile email verification
+      logSecurityEvent('profile_otp_verification_successful', {
+        email: emailLower,
+        ip: req.ip
+      });
+      
+      otpStore.delete(emailLower);
+      
+      res.status(200).json({
+        success: true,
+        message: "Email verified successfully",
+        type: 'profile_email'
       });
     } else {
       // For signup, just return success
