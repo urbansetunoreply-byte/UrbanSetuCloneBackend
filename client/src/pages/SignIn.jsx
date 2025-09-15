@@ -42,10 +42,12 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
     const [recaptchaToken, setRecaptchaToken] = useState(null);
     const [recaptchaError, setRecaptchaError] = useState("");
     const [showRecaptcha, setShowRecaptcha] = useState(false);
+    const [recaptchaKey, setRecaptchaKey] = useState(0); // force remount on expire/used
     const [otpRecaptchaToken, setOtpRecaptchaToken] = useState(null);
     const [otpRecaptchaError, setOtpRecaptchaError] = useState("");
     const [showOtpRecaptcha, setShowOtpRecaptcha] = useState(false);
     const [otpRequiresCaptcha, setOtpRequiresCaptcha] = useState(false);
+    const [otpRecaptchaKey, setOtpRecaptchaKey] = useState(0); // force remount for OTP
     const recaptchaRef = useRef(null);
     const otpRecaptchaRef = useRef(null);
 
@@ -161,11 +163,14 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
     const handleRecaptchaExpire = () => {
         setRecaptchaToken(null);
         setRecaptchaError("reCAPTCHA expired. Please verify again.");
+        // force remount so checkbox resets from tick to empty
+        setRecaptchaKey((k) => k + 1);
     };
 
     const handleRecaptchaError = (error) => {
         setRecaptchaToken(null);
         setRecaptchaError("reCAPTCHA verification failed. Please try again.");
+        setRecaptchaKey((k) => k + 1);
     };
 
     const resetRecaptcha = () => {
@@ -174,6 +179,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         }
         setRecaptchaToken(null);
         setRecaptchaError("");
+        setRecaptchaKey((k) => k + 1);
     };
 
     // OTP reCAPTCHA handlers
@@ -185,11 +191,13 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
     const handleOtpRecaptchaExpire = () => {
         setOtpRecaptchaToken(null);
         setOtpRecaptchaError("reCAPTCHA expired. Please verify again.");
+        setOtpRecaptchaKey((k) => k + 1);
     };
 
     const handleOtpRecaptchaError = (error) => {
         setOtpRecaptchaToken(null);
         setOtpRecaptchaError("reCAPTCHA verification failed. Please try again.");
+        setOtpRecaptchaKey((k) => k + 1);
     };
 
     const resetOtpRecaptcha = () => {
@@ -198,6 +206,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         }
         setOtpRecaptchaToken(null);
         setOtpRecaptchaError("");
+        setOtpRecaptchaKey((k) => k + 1);
     };
 
     // Check if reCAPTCHA should be shown (only after 3+ failed attempts)
@@ -400,6 +409,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                 // Handle reCAPTCHA errors
                 if (data.message.includes("reCAPTCHA")) {
                     setRecaptchaError(data.message);
+                    // If token expired/used, force full reset + remount so checkbox returns
                     resetRecaptcha();
                     setShowRecaptcha(true);
                 } else {
@@ -627,6 +637,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 {showRecaptcha && checkRecaptchaRequirement() && (
                                     <div className="flex justify-center">
                                         <RecaptchaWidget
+                                            key={recaptchaKey}
                                             ref={recaptchaRef}
                                             onVerify={handleRecaptchaVerify}
                                             onExpire={handleRecaptchaExpire}
@@ -700,6 +711,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 {showOtpRecaptcha && (
                                     <div className="flex justify-center mb-4">
                                         <RecaptchaWidget
+                                            key={otpRecaptchaKey}
                                             ref={otpRecaptchaRef}
                                             onVerify={handleOtpRecaptchaVerify}
                                             onExpire={handleOtpRecaptchaExpire}
