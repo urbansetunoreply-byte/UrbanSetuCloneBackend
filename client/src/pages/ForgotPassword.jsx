@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FaEye, FaEyeSlash, FaCheck, FaEdit } from "react-icons/fa";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
+import RecaptchaWidget from "../components/RecaptchaWidget";
 import { useSelector } from "react-redux";
 import NotFound from "./NotFound";
 import { focusWithoutKeyboard } from '../utils/mobileUtils';
@@ -48,6 +49,11 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
   // Timer states for resend OTP
   const [resendTimer, setResendTimer] = useState(0);
   const [canResend, setCanResend] = useState(true);
+  
+  // reCAPTCHA states
+  const [recaptchaToken, setRecaptchaToken] = useState(null);
+  const [recaptchaError, setRecaptchaError] = useState("");
+  const recaptchaRef = useRef(null);
 
   // Check URL parameters on component mount
   useEffect(() => {
@@ -155,6 +161,30 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
   const checkPasswordStrength = (password) => {
     const strength = calculatePasswordStrength(password);
     setPasswordStrength(strength);
+  };
+
+  // reCAPTCHA handlers
+  const handleRecaptchaVerify = (token) => {
+    setRecaptchaToken(token);
+    setRecaptchaError("");
+  };
+
+  const handleRecaptchaExpire = () => {
+    setRecaptchaToken(null);
+    setRecaptchaError("reCAPTCHA expired. Please verify again.");
+  };
+
+  const handleRecaptchaError = (error) => {
+    setRecaptchaToken(null);
+    setRecaptchaError("reCAPTCHA verification failed. Please try again.");
+  };
+
+  const resetRecaptcha = () => {
+    if (recaptchaRef.current) {
+      recaptchaRef.current.reset();
+    }
+    setRecaptchaToken(null);
+    setRecaptchaError("");
   };
 
   const handleChange = (e) => {
@@ -276,6 +306,11 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
     
     if (!emailVerified) {
       setError("Please verify your email with OTP before proceeding.");
+      return;
+    }
+
+    if (!recaptchaToken) {
+      setError("Please complete the reCAPTCHA verification.");
       return;
     }
 
@@ -512,8 +547,27 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                   </div>
                 )}
                 
+                {/* reCAPTCHA Widget */}
+                <div className="flex justify-center mb-4">
+                  <RecaptchaWidget
+                    ref={recaptchaRef}
+                    onVerify={handleRecaptchaVerify}
+                    onExpire={handleRecaptchaExpire}
+                    onError={handleRecaptchaError}
+                    disabled={loading}
+                    className="transform scale-90"
+                  />
+                </div>
+
+                {/* reCAPTCHA Error */}
+                {recaptchaError && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                    <p className="text-red-600 text-sm">{recaptchaError}</p>
+                  </div>
+                )}
+                
                 <button
-                  disabled={loading || !emailVerified}
+                  disabled={loading || !emailVerified || !recaptchaToken}
                   className="w-full py-3 px-4 bg-gradient-to-r from-orange-600 to-red-600 text-white font-semibold rounded-lg hover:from-orange-700 hover:to-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
                 >
                   {loading ? (

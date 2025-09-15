@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash, FaCheck, FaTimes, FaEdit } from "react-icons/fa";
 import Oauth from "../components/Oauth";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
+import RecaptchaWidget from "../components/RecaptchaWidget";
 import { useSelector } from "react-redux";
 import { calculatePasswordStrength, getPasswordStrengthColor, getPasswordStrengthBgColor, getPasswordStrengthText, meetsMinimumRequirements } from "../utils/passwordStrength.js";
 import { authenticatedFetch, getCSRFToken } from '../utils/csrf';
@@ -37,6 +38,9 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
   const navigate = useNavigate();
   const { currentUser } = useSelector((state) => state.user);
   const [consent, setConsent] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState(null);
+  const [recaptchaError, setRecaptchaError] = useState("");
+  const recaptchaRef = useRef(null);
 
   // Email verification states
   const [emailVerified, setEmailVerified] = useState(false);
@@ -54,6 +58,30 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
   const checkPasswordStrength = (password) => {
     const strength = calculatePasswordStrength(password);
     setPasswordStrength(strength);
+  };
+
+  // reCAPTCHA handlers
+  const handleRecaptchaVerify = (token) => {
+    setRecaptchaToken(token);
+    setRecaptchaError("");
+  };
+
+  const handleRecaptchaExpire = () => {
+    setRecaptchaToken(null);
+    setRecaptchaError("reCAPTCHA expired. Please verify again.");
+  };
+
+  const handleRecaptchaError = (error) => {
+    setRecaptchaToken(null);
+    setRecaptchaError("reCAPTCHA verification failed. Please try again.");
+  };
+
+  const resetRecaptcha = () => {
+    if (recaptchaRef.current) {
+      recaptchaRef.current.reset();
+    }
+    setRecaptchaToken(null);
+    setRecaptchaError("");
   };
 
   // Timer effect for resend OTP
@@ -203,10 +231,16 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
       return;
     }
 
+    if (!recaptchaToken) {
+      setError("Please complete the reCAPTCHA verification.");
+      return;
+    }
+
     setLoading(true);
     setError("");
     setSuccess("");
     setFieldErrors({ email: "", mobileNumber: "" });
+    setRecaptchaError("");
 
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords are not matching");
@@ -226,7 +260,8 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
         method: "POST",
         body: JSON.stringify({
           ...formData,
-          emailVerified: true
+          emailVerified: true,
+          recaptchaToken
         }),
       });
       const data = await res.json();
@@ -242,6 +277,9 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
             ...prev,
             mobileNumber: data.message
           }));
+        } else if (data.message.includes("reCAPTCHA")) {
+          setRecaptchaError(data.message);
+          resetRecaptcha();
         } else {
           setError(data.message);
         }
@@ -629,11 +667,31 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                 </label>
               </div>
 
+              {/* reCAPTCHA Widget */}
+              <div className="flex justify-center mb-4">
+                <RecaptchaWidget
+                  ref={recaptchaRef}
+                  onVerify={handleRecaptchaVerify}
+                  onExpire={handleRecaptchaExpire}
+                  onError={handleRecaptchaError}
+                  disabled={loading}
+                  className="transform scale-90"
+                />
+              </div>
+
+              {/* reCAPTCHA Error */}
+              {recaptchaError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                  <p className="text-red-600 text-sm">{recaptchaError}</p>
+                </div>
+              )}
+
               <button
                 disabled={
                   loading ||
                   !meetsMinimumRequirements(formData.password) ||
-                  !emailVerified
+                  !emailVerified ||
+                  !recaptchaToken
                 }
                 className="w-full py-3 px-4 bg-gradient-to-r from-green-600 to-blue-600 text-white font-semibold rounded-lg hover:from-green-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
               >

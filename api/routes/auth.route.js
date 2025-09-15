@@ -6,18 +6,25 @@ import { verifyToken } from '../utils/verify.js';
 import { sendOTP, verifyOTP, sendForgotPasswordOTP, sendProfileEmailOTP } from '../controllers/emailVerification.controller.js';
 import { signInRateLimit, signUpRateLimit, forgotPasswordRateLimit, otpRateLimit } from '../middleware/rateLimiter.js';
 import { generateCSRFToken, verifyCSRFToken, getCSRFToken } from '../middleware/csrf.js';
-import { bruteForceProtection } from '../middleware/security.js';
+import { bruteForceProtection, getFailedAttempts } from '../middleware/security.js';
+import { validateRecaptcha, conditionalRecaptcha, captchaRateLimit } from '../middleware/recaptcha.js';
 const router=express.Router()
 
 // CSRF token endpoint
 router.get("/csrf-token", getCSRFToken)
 
-router.post("/signup", signUpRateLimit, verifyCSRFToken, SignUp)
-router.post("/signin", signInRateLimit, bruteForceProtection, verifyCSRFToken, SignIn)
-router.post("/google", signInRateLimit, bruteForceProtection, verifyCSRFToken, Google)
+router.post("/signup", signUpRateLimit, verifyCSRFToken, validateRecaptcha({ required: true }), SignUp)
+router.post("/signin", signInRateLimit, bruteForceProtection, verifyCSRFToken, conditionalRecaptcha((req) => {
+    const identifier = req.ip || req.connection.remoteAddress;
+    return getFailedAttempts(identifier) >= 3;
+}), SignIn)
+router.post("/google", signInRateLimit, bruteForceProtection, verifyCSRFToken, conditionalRecaptcha((req) => {
+    const identifier = req.ip || req.connection.remoteAddress;
+    return getFailedAttempts(identifier) >= 3;
+}), Google)
 router.get("/signout", Signout)
 router.get("/verify", verifyAuth)
-router.post("/forgot-password", forgotPasswordRateLimit, verifyCSRFToken, forgotPassword)
+arouter.post("/forgot-password", forgotPasswordRateLimit, verifyCSRFToken, validateRecaptcha({ required: true }), forgotPassword)
 router.post("/reset-password", verifyCSRFToken, resetPassword)
 
 // Email verification routes

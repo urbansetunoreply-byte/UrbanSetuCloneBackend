@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { signInFailure, signInStart, signInSuccess } from "../redux/user/userSlice.js";
 import Oauth from "../components/Oauth.jsx";
-
+import RecaptchaWidget from "../components/RecaptchaWidget";
 
 import { reconnectSocket } from "../utils/socket";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
@@ -37,6 +37,12 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
     // Timer states for resend OTP
     const [resendTimer, setResendTimer] = useState(0);
     const [canResend, setCanResend] = useState(true);
+    
+    // reCAPTCHA states
+    const [recaptchaToken, setRecaptchaToken] = useState(null);
+    const [recaptchaError, setRecaptchaError] = useState("");
+    const [showRecaptcha, setShowRecaptcha] = useState(false);
+    const recaptchaRef = useRef(null);
 
     const { loading, error, currentUser } = useSelector((state) => state.user);
     const navigate = useNavigate();
@@ -126,6 +132,42 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         if (urlError) {
             setUrlError("");
         }
+        // Clear reCAPTCHA error when user starts typing
+        if (recaptchaError) {
+            setRecaptchaError("");
+        }
+    };
+
+    // reCAPTCHA handlers
+    const handleRecaptchaVerify = (token) => {
+        setRecaptchaToken(token);
+        setRecaptchaError("");
+    };
+
+    const handleRecaptchaExpire = () => {
+        setRecaptchaToken(null);
+        setRecaptchaError("reCAPTCHA expired. Please verify again.");
+    };
+
+    const handleRecaptchaError = (error) => {
+        setRecaptchaToken(null);
+        setRecaptchaError("reCAPTCHA verification failed. Please try again.");
+    };
+
+    const resetRecaptcha = () => {
+        if (recaptchaRef.current) {
+            recaptchaRef.current.reset();
+        }
+        setRecaptchaToken(null);
+        setRecaptchaError("");
+    };
+
+    // Check if reCAPTCHA should be shown (simulate failed attempts check)
+    const checkRecaptchaRequirement = () => {
+        // In a real app, you'd check with the backend or store this in state
+        // For now, we'll use a simple localStorage check
+        const failedAttempts = parseInt(localStorage.getItem('failedLoginAttempts') || '0');
+        return failedAttempts >= 3;
     };
 
     const handleEmailContinue = (e) => {
@@ -256,6 +298,15 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        // Check if reCAPTCHA is required and not provided
+        const requiresRecaptcha = checkRecaptchaRequirement();
+        if (requiresRecaptcha && !recaptchaToken) {
+            dispatch(signInFailure("reCAPTCHA verification is required after multiple failed attempts."));
+            setShowRecaptcha(true);
+            return;
+        }
+        
         dispatch(signInStart());
         
         // Check if cookies are enabled for better UX
@@ -265,14 +316,35 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             const apiUrl = `${API_BASE_URL}/api/auth/signin`;
             const res = await authenticatedFetch(apiUrl, {
                 method: "POST",
-                body: JSON.stringify(formData)
+                body: JSON.stringify({
+                    ...formData,
+                    ...(recaptchaToken && { recaptchaToken })
+                })
             });
             const data = await res.json();
 
             if (data.success === false) {
+                // Handle reCAPTCHA errors
+                if (data.message.includes("reCAPTCHA")) {
+                    setRecaptchaError(data.message);
+                    resetRecaptcha();
+                    setShowRecaptcha(true);
+                } else {
+                    // Increment failed attempts counter
+                    const currentAttempts = parseInt(localStorage.getItem('failedLoginAttempts') || '0');
+                    localStorage.setItem('failedLoginAttempts', (currentAttempts + 1).toString());
+                    
+                    // Show reCAPTCHA if this is the 3rd failed attempt
+                    if (currentAttempts + 1 >= 3) {
+                        setShowRecaptcha(true);
+                    }
+                }
                 dispatch(signInFailure(data.message));
                 return;
             }
+            
+            // Clear failed attempts on successful login
+            localStorage.removeItem('failedLoginAttempts');
             
             if (data.token) {
                 localStorage.setItem('accessToken', data.token);
@@ -473,8 +545,29 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                     </div>
                                 )}
                                 
+                                {/* reCAPTCHA Widget - Show only when required */}
+                                {showRecaptcha && (
+                                    <div className="flex justify-center">
+                                        <RecaptchaWidget
+                                            ref={recaptchaRef}
+                                            onVerify={handleRecaptchaVerify}
+                                            onExpire={handleRecaptchaExpire}
+                                            onError={handleRecaptchaError}
+                                            disabled={loading}
+                                            className="transform scale-90"
+                                        />
+                                    </div>
+                                )}
+
+                                {/* reCAPTCHA Error */}
+                                {recaptchaError && (
+                                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                                        <p className="text-red-600 text-sm">{recaptchaError}</p>
+                                    </div>
+                                )}
+                                
                                 <button 
-                                    disabled={loading} 
+                                    disabled={loading || (showRecaptcha && !recaptchaToken)} 
                                     className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
                                 >
                                     {loading ? (
