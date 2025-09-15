@@ -9,7 +9,7 @@ import { sendOTP, verifyOTP, sendForgotPasswordOTP, sendProfileEmailOTP } from '
 import { signInRateLimit, signUpRateLimit, forgotPasswordRateLimit, otpRateLimit, otpVerifyRateLimit } from '../middleware/rateLimiter.js';
 import { generateCSRFToken, verifyCSRFToken, getCSRFToken } from '../middleware/csrf.js';
 import { bruteForceProtection, getFailedAttempts } from '../middleware/security.js';
-import { accountLockouts } from '../middleware/security.js';
+import PasswordLockout from '../models/passwordLockout.model.js';
 import { conditionalRecaptcha, captchaRateLimit } from '../middleware/recaptcha.js';
 import { otpRecaptchaMiddleware } from '../middleware/otpRecaptcha.js';
 const router=express.Router()
@@ -84,12 +84,46 @@ router.get('/otp/stats', verifyToken, async (req, res) => {
     }
     const recent = await OtpTracking.find({}).sort({ updatedAt: -1 }).limit(200);
     const lockoutsActive = await OtpTracking.countDocuments({ lockoutUntil: { $gt: new Date() } });
-    // Password lockouts (from memory store) - expose counts only
-    let passwordLockouts = 0;
-    try {
-      passwordLockouts = Array.from(accountLockouts?.keys?.() || []).length;
-    } catch(_) {}
+    // Password lockouts (DB-backed)
+    const passwordLockouts = await PasswordLockout.countDocuments({ unlockAt: { $gt: new Date() } });
     res.json({ success: true, recent, activeLockouts: lockoutsActive, passwordLockouts });
+  } catch (e) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Admin: list password lockouts
+router.get('/password-lockouts', verifyToken, async (req, res) => {
+  try {
+    if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'rootadmin')) {
+      return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+    const items = await PasswordLockout.find({ unlockAt: { $gt: new Date() } }).sort({ unlockAt: -1 }).limit(200);
+    res.json({ success: true, items });
+  } catch (e) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Admin: unlock password lockout by email
+router.post('/password-lockouts/unlock', verifyToken, async (req, res) => {
+  try {
+    if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'rootadmin')) {
+      return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+    const { email, userId } = req.body;
+    if (!email && !userId) return res.status(400).json({ success: false, message: 'email or userId required' });
+    if (userId) {
+      await PasswordLockout.clearUserLock({ userId });
+      await User.findByIdAndUpdate(userId, { status: 'active', lockedUntil: null });
+    } else if (email) {
+      const user = await User.findOne({ email: String(email).toLowerCase() });
+      await PasswordLockout.clearUserLock({ email });
+      if (user) {
+        await User.findByIdAndUpdate(user._id, { status: 'active', lockedUntil: null });
+      }
+    }
+    res.json({ success: true, message: 'Password lockout cleared' });
   } catch (e) {
     res.status(500).json({ success: false, message: 'Server error' });
   }

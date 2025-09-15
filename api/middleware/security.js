@@ -1,25 +1,17 @@
 import { errorHandler } from '../utils/error.js';
 import User from '../models/user.model.js';
+import PasswordLockout from '../models/passwordLockout.model.js';
 
 // Store for failed login attempts (in production, use Redis)
 const failedAttemptsStore = new Map();
-const accountLockouts = new Map();
 
 // Clean up expired entries every 5 minutes
 setInterval(() => {
     const now = Date.now();
-    
     // Clean up failed attempts
     for (const [key, data] of failedAttemptsStore.entries()) {
         if (now > data.expiresAt) {
             failedAttemptsStore.delete(key);
-        }
-    }
-    
-    // Clean up account lockouts
-    for (const [key, data] of accountLockouts.entries()) {
-        if (now > data.unlockAt) {
-            accountLockouts.delete(key);
         }
     }
 }, 5 * 60 * 1000);
@@ -68,32 +60,23 @@ export const trackFailedAttempt = (identifier, userId = null) => {
 };
 
 // Lock account
-export const lockAccount = (userId, duration) => {
+export const lockAccount = async (userId, duration) => {
     const unlockAt = Date.now() + duration;
-    accountLockouts.set(`lockout:${userId}`, {
-        userId,
-        lockedAt: Date.now(),
-        unlockAt
-    });
-    
-    // Update user status in database
-    User.findByIdAndUpdate(userId, { 
-        status: 'locked',
-        lockedUntil: new Date(unlockAt)
-    }).catch(console.error);
+    try {
+        await PasswordLockout.lockUser({ userId, durationMs: duration });
+        await User.findByIdAndUpdate(userId, { status: 'locked', lockedUntil: new Date(unlockAt) });
+    } catch (err) {
+        console.error('Failed to persist password lockout:', err);
+    }
 };
 
 // Check if account is locked
-export const isAccountLocked = (userId) => {
-    const lockoutData = accountLockouts.get(`lockout:${userId}`);
-    if (!lockoutData) return false;
-    
-    if (Date.now() > lockoutData.unlockAt) {
-        accountLockouts.delete(`lockout:${userId}`);
-        return false;
-    }
-    
-    return true;
+export const isAccountLocked = async (userId) => {
+    return PasswordLockout.isLocked({ userId });
+};
+
+export const getAccountLockRemainingMs = async (userId, email) => {
+    return PasswordLockout.getRemainingMs({ userId, email });
 };
 
 // Clear failed attempts on successful login
@@ -117,9 +100,11 @@ export const bruteForceProtection = (req, res, next) => {
     // Check if account is locked
     if (email) {
         User.findOne({ email: email.toLowerCase() })
-            .then(user => {
-                if (user && isAccountLocked(user._id)) {
-                    return next(errorHandler(423, 'Account is temporarily locked due to too many failed attempts. Please try again later.'));
+            .then(async user => {
+                if (user && await isAccountLocked(user._id)) {
+                    const remainingMs = await getAccountLockRemainingMs(user._id, user.email);
+                    const remainingMinutes = Math.max(1, Math.ceil(remainingMs / (60 * 1000)));
+                    return next(errorHandler(423, `Account is temporarily locked due to too many failed attempts. Try again in about ${remainingMinutes} minute${remainingMinutes>1?'s':''}.`));
                 }
                 
                 // Only check for excessive failed attempts (10+ in 15 minutes)

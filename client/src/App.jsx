@@ -69,7 +69,7 @@ const RoutePlanner = lazy(() => import('./pages/RoutePlanner'));
 const UserReviews = lazy(() => import("./pages/UserReviews"));
 const AdminFraudManagement = lazy(() => import('./pages/AdminFraudManagement'));
 const PaymentDashboard = lazy(() => import('./pages/PaymentDashboard'));
-const AdminOtpModeration = lazy(() => import('./pages/AdminOtpModeration'));
+const AdminSecurityModeration = lazy(() => import('./pages/AdminSecurityModeration'));
 
 // Loading component
 const LoadingSpinner = () => (
@@ -673,7 +673,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/admin/route-planner" element={<RoutePlannerAdmin />} />
             <Route path="/admin/fraudmanagement" element={<AdminFraudManagement />} />
             <Route path="/admin/payments" element={<PaymentDashboard />} />
-            <Route path="/admin/otp-moderation" element={<AdminOtpModeration />} />
+            <Route path="/admin/security-moderation" element={<AdminSecurityModeration />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

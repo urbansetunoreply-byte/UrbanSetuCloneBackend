@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export default function AdminOtpModeration() {
+export default function AdminSecurityModeration() {
   const { currentUser } = useSelector((state) => state.user);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ recent: [], activeLockouts: 0 });
@@ -88,8 +88,8 @@ export default function AdminOtpModeration() {
               <FaShieldAlt className="text-white text-2xl" />
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-700 to-blue-700 bg-clip-text text-transparent">OTP Moderation</h1>
-              <p className="text-gray-600">Lockouts, requests and admin unlocks</p>
+              <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-700 to-blue-700 bg-clip-text text-transparent">Security Moderation</h1>
+              <p className="text-gray-600">OTP and password lockouts, requests and admin unlocks</p>
             </div>
           </div>
           <div className="flex items-center gap-2 flex-wrap">

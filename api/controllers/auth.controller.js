@@ -4,7 +4,7 @@ import { errorHandler } from "../utils/error.js";
 import jwt from 'jsonwebtoken'
 import { generateOTP, sendSignupOTPEmail,sendLoginOTPEmail } from "../utils/emailService.js";
 import { generateTokenPair, setSecureCookies, clearAuthCookies } from "../utils/jwtUtils.js";
-import { trackFailedAttempt, clearFailedAttempts, logSecurityEvent, sendAdminAlert, isAccountLocked, checkSuspiciousLogin, checkSuspiciousSignup } from "../middleware/security.js";
+import { trackFailedAttempt, clearFailedAttempts, logSecurityEvent, sendAdminAlert, isAccountLocked, checkSuspiciousLogin, checkSuspiciousSignup, getAccountLockRemainingMs } from "../middleware/security.js";
 import { createSession, updateSessionActivity, detectConcurrentLogins, cleanupOldSessions } from "../utils/sessionManager.js";
 import OtpTracking from "../models/otpTracking.model.js";
 
@@ -105,9 +105,11 @@ export const SignIn=async(req,res,next)=>{
         }
         
         // Check if account is locked
-        if (isAccountLocked(validUser._id)) {
+        if (await isAccountLocked(validUser._id)) {
             logSecurityEvent('account_locked_attempt', { email: emailLower, userId: validUser._id });
-            return next(errorHandler(423, "Account is temporarily locked due to too many failed attempts. Please try again later."));
+            const remainingMs = await getAccountLockRemainingMs(validUser._id, emailLower);
+            const remainingMinutes = Math.max(1, Math.ceil(remainingMs / (60 * 1000)));
+            return next(errorHandler(423, `Account is temporarily locked due to too many failed attempts. Try again in about ${remainingMinutes} minute${remainingMinutes>1?'s':''}.`));
         }
         
         if (validUser.status === 'suspended') {

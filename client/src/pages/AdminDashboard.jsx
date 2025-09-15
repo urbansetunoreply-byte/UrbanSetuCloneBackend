@@ -1321,14 +1321,14 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </Link>
-            <Link to="/admin/otp-moderation" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-gray-100 hover:border-indigo-200">
+            <Link to="/admin/security-moderation" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-gray-100 hover:border-indigo-200">
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="bg-gradient-to-r from-indigo-100 to-indigo-200 p-4 rounded-xl group-hover:from-indigo-200 group-hover:to-indigo-300 transition-all duration-300">
                   <FaShieldAlt className="text-2xl text-indigo-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-800 mb-1">OTP Moderation</h3>
-                  <p className="text-sm text-gray-600 mb-2">Lockouts and unlocks</p>
+                  <h3 className="font-semibold text-gray-800 mb-1">Security Moderation</h3>
+                  <p className="text-sm text-gray-600 mb-2">OTP/password lockouts and unlocks</p>
                 </div>
               </div>
             </Link>
