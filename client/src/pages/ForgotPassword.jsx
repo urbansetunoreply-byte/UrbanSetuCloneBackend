@@ -54,6 +54,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
   const [recaptchaToken, setRecaptchaToken] = useState(null);
   const [recaptchaError, setRecaptchaError] = useState("");
   const [recaptchaKey, setRecaptchaKey] = useState(0);
+  const [recaptchaJustVerified, setRecaptchaJustVerified] = useState(false);
   const recaptchaRef = useRef(null);
 
   // Check URL parameters on component mount
@@ -168,8 +169,9 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
   const handleRecaptchaVerify = (token) => {
     setRecaptchaToken(token);
     setRecaptchaError("");
-    // Hide after a brief delay to show the tick
-    setTimeout(() => setRecaptchaToken((t) => t), 1000);
+    // Show tick for ~1s before hiding
+    setRecaptchaJustVerified(true);
+    setTimeout(() => setRecaptchaJustVerified(false), 1000);
   };
 
   const handleRecaptchaExpire = () => {
@@ -562,8 +564,8 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                   </div>
                 )}
                 
-                {/* reCAPTCHA Widget - hide after successful verification */}
-                {!recaptchaToken && (
+                {/* reCAPTCHA Widget - show if not verified or briefly after verify */}
+                {(!recaptchaToken || recaptchaJustVerified) && (
                   <div className="flex justify-center mb-4">
                     <RecaptchaWidget
                       key={recaptchaKey}

@@ -389,7 +389,8 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         // Check if reCAPTCHA is required and not provided
         const requiresRecaptcha = checkRecaptchaRequirement();
         if (requiresRecaptcha && !recaptchaToken) {
-            dispatch(signInFailure("reCAPTCHA verification is required after multiple failed attempts."));
+            // Keep captcha errors local to widget, not as global form error
+            setRecaptchaError("reCAPTCHA verification is required due to multiple failed attempts or requests");
             setShowRecaptcha(true);
             return;
         }
@@ -416,7 +417,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             if (data.success === false) {
                 // Handle reCAPTCHA errors
                 if (data.message.includes("reCAPTCHA")) {
-                    setRecaptchaError(data.message);
+                    setRecaptchaError("reCAPTCHA verification is required due to multiple failed attempts or requests");
                     // If token expired/used, force full reset + remount so checkbox returns
                     resetRecaptcha();
                     setShowRecaptcha(true);
