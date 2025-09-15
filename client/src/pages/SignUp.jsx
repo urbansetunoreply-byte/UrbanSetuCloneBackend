@@ -182,7 +182,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
         method: "POST",
         body: JSON.stringify({ 
           email: formData.email,
-          ...(otpCaptchaRequired && recaptchaToken ? { recaptchaToken } : {})
+          ...(recaptchaToken ? { recaptchaToken } : {})
         }),
       });
 
@@ -487,6 +487,25 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                 {/* OTP Error Message - Show below email field when OTP field is not open */}
                 {otpError && !otpSent && (
                   <p className="text-red-500 text-sm mt-2">{otpError}</p>
+                )}
+                {/* If captcha required before OTP field is open, show below email */}
+                {otpCaptchaRequired && !otpSent && (
+                  <div className="mt-3">
+                    <div className="flex justify-center">
+                      <RecaptchaWidget
+                        key={`signup-otp-email-${recaptchaKey}`}
+                        ref={recaptchaRef}
+                        onVerify={handleRecaptchaVerify}
+                        onExpire={handleRecaptchaExpire}
+                        onError={handleRecaptchaError}
+                        disabled={otpLoading}
+                        className="transform scale-90"
+                      />
+                    </div>
+                    {otpError && (
+                      <p className="text-red-500 text-sm mt-2 text-center">{otpError}</p>
+                    )}
+                  </div>
                 )}
               </div>
 
