@@ -57,6 +57,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
   const [recaptchaJustVerified, setRecaptchaJustVerified] = useState(false);
   const recaptchaRef = useRef(null);
   const [otpCaptchaRequired, setOtpCaptchaRequired] = useState(false);
+  const [otpCaptchaMessage, setOtpCaptchaMessage] = useState("");
 
   // Check URL parameters on component mount
   useEffect(() => {
@@ -265,10 +266,15 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
         setResendTimer(30); // 30 seconds
         setCanResend(false);
         setOtpCaptchaRequired(false);
+        setOtpCaptchaMessage("");
       } else {
         setOtpError(data.message);
         if (data.requiresCaptcha || (data.message && data.message.toLowerCase().includes('recaptcha'))) {
           setOtpCaptchaRequired(true);
+          // If OTP field is not open, show captcha below email with clear message
+          if (!otpSent) {
+            setOtpCaptchaMessage("reCAPTCHA verification is required due to multiple failed attempts or requests");
+          }
         }
       }
     } catch (error) {
@@ -470,6 +476,25 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                       >
                         {otpLoading ? "Sending..." : "Send OTP"}
                       </button>
+                    )}
+                    {/* If captcha required before OTP field is open, show below email */}
+                    {otpCaptchaRequired && !otpSent && (
+                      <div className="mt-3">
+                        <div className="flex justify-center">
+                          <RecaptchaWidget
+                            key={`otp-email-${recaptchaKey}`}
+                            ref={recaptchaRef}
+                            onVerify={handleRecaptchaVerify}
+                            onExpire={handleRecaptchaExpire}
+                            onError={handleRecaptchaError}
+                            disabled={otpLoading}
+                            className="transform scale-90"
+                          />
+                        </div>
+                        {otpCaptchaMessage && (
+                          <p className="text-red-500 text-sm mt-2 text-center">{otpCaptchaMessage}</p>
+                        )}
+                      </div>
                     )}
                     {(emailVerified || (otpSent && !emailVerified)) && !emailEditMode && (
                       <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
