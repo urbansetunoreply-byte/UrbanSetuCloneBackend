@@ -1,5 +1,7 @@
 import express from 'express'
 import { SignUp,SignIn,Google,Signout,verifyAuth,forgotPassword,resetPassword,sendLoginOTP,verifyLoginOTP} from '../controllers/auth.controller.js'
+import { validateRecaptcha } from '../middleware/recaptcha.js';
+import OtpTracking from '../models/otpTracking.model.js';
 import bcryptjs from 'bcryptjs';
 import User from '../models/user.model.js';
 import { verifyToken } from '../utils/verify.js';
@@ -37,6 +39,55 @@ router.post("/send-profile-email-otp", otpRateLimit, verifyCSRFToken, ...otpReca
 // OTP Login routes
 router.post("/send-login-otp", otpRateLimit, verifyCSRFToken, ...otpRecaptchaMiddleware, sendLoginOTP)
 router.post("/verify-login-otp", otpVerifyRateLimit, verifyCSRFToken, verifyLoginOTP)
+
+// Admin unlock endpoints
+router.post('/otp/unlock-email', verifyToken, async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'rootadmin')) {
+      return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+    if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
+    const tracking = await OtpTracking.findOne({ email: email.toLowerCase() }).sort({ createdAt: -1 });
+    if (!tracking) return res.status(404).json({ success: false, message: 'No OTP tracking found' });
+    tracking.failedOtpAttempts = 0;
+    tracking.otpRequestCount = 0;
+    tracking.requiresCaptcha = false;
+    tracking.lockoutUntil = null;
+    tracking.requireExtraVerification = false;
+    await tracking.save();
+    res.json({ success: true, message: 'OTP lockout cleared for email' });
+  } catch (e) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+router.post('/otp/unlock-ip', verifyToken, async (req, res) => {
+  try {
+    const { ip } = req.body;
+    if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'rootadmin')) {
+      return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+    if (!ip) return res.status(400).json({ success: false, message: 'IP is required' });
+    await OtpTracking.updateMany({ ipAddress: ip }, { $set: { failedOtpAttempts: 0, otpRequestCount: 0, requiresCaptcha: false, lockoutUntil: null, requireExtraVerification: false } });
+    res.json({ success: true, message: 'OTP lockout cleared for IP' });
+  } catch (e) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+router.get('/otp/stats', verifyToken, async (req, res) => {
+  try {
+    if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'rootadmin')) {
+      return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+    const recent = await OtpTracking.find({}).sort({ updatedAt: -1 }).limit(200);
+    const lockouts24h = await OtpTracking.countDocuments({ lockoutUntil: { $gt: new Date() } });
+    res.json({ success: true, recent, activeLockouts: lockouts24h });
+  } catch (e) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
 
 // POST /api/auth/verify-password
 router.post('/verify-password', verifyToken, async (req, res) => {

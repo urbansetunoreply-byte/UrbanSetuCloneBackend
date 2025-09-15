@@ -2273,6 +2273,13 @@ export default function Profile() {
                   <FaRoute className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
                   <span className="font-medium text-xs sm:text-sm">Route Planner</span>
                 </Link>
+                <Link
+                  to="/admin/otp-moderation"
+                  className={`bg-indigo-500 text-white p-3 rounded-lg hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1250`}
+                >
+                  <FaShieldAlt className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
+                  <span className="font-medium text-xs sm:text-sm">OTP Moderation</span>
+                </Link>
               </>
             ) : null}
 

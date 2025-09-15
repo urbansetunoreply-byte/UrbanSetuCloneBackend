@@ -6,6 +6,7 @@ import { generateOTP, sendSignupOTPEmail,sendLoginOTPEmail } from "../utils/emai
 import { generateTokenPair, setSecureCookies, clearAuthCookies } from "../utils/jwtUtils.js";
 import { trackFailedAttempt, clearFailedAttempts, logSecurityEvent, sendAdminAlert, isAccountLocked, checkSuspiciousLogin, checkSuspiciousSignup } from "../middleware/security.js";
 import { createSession, updateSessionActivity, detectConcurrentLogins, cleanupOldSessions } from "../utils/sessionManager.js";
+import OtpTracking from "../models/otpTracking.model.js";
 
 export const SignUp=async (req,res,next)=>{
     const {username,email,password,role,mobileNumber,address,emailVerified}=req.body;
@@ -458,6 +459,7 @@ const loginOtpStore = new Map();
 export const sendLoginOTP = async (req, res, next) => {
     const { email } = req.body;
     const { otpTracking, requiresCaptcha } = req;
+    const ipAddress = req.ip || req.connection.remoteAddress;
     
     if (!email) {
         return next(errorHandler(400, "Email is required"));
@@ -466,6 +468,14 @@ export const sendLoginOTP = async (req, res, next) => {
     const emailLower = email.toLowerCase();
 
     try {
+        // Check active lockout due to excessive OTP requests
+        if (otpTracking && otpTracking.isLocked && otpTracking.isLocked()) {
+            return res.status(429).json({
+                success: false,
+                message: "Too many OTP requests. Please try again in 15 minutes.",
+                requiresCaptcha: true
+            });
+        }
         // Check if user exists with the email
         const user = await User.findOne({ email: emailLower });
         if (!user) {
@@ -475,8 +485,19 @@ export const sendLoginOTP = async (req, res, next) => {
             });
         }
 
-        // Increment OTP request count
+        // Increment OTP request count and attach ip/userAgent for auditing
         await otpTracking.incrementOtpRequest();
+        
+        // If 5 requests within 15 minutes -> 15 min lockout
+        const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+        if (otpTracking.otpRequestCount >= 5 && otpTracking.lastOtpTimestamp >= fifteenMinutesAgo) {
+            await otpTracking.registerLockout(15 * 60 * 1000);
+            return res.status(429).json({
+                success: false,
+                message: "Too many OTP requests. Please try again in 15 minutes.",
+                requiresCaptcha: true
+            });
+        }
 
         // Generate OTP
         const otp = generateOTP();
@@ -509,6 +530,13 @@ export const sendLoginOTP = async (req, res, next) => {
             requiresCaptcha: requiresCaptcha
         });
 
+        // If 3 OTP requests within 5 minutes -> require captcha on subsequent requests
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+        if (otpTracking.otpRequestCount >= 3 && otpTracking.lastOtpTimestamp >= fiveMinutesAgo) {
+            otpTracking.requiresCaptcha = true;
+            await otpTracking.save();
+        }
+
         res.status(200).json({
             success: true,
             message: "OTP sent successfully to your email",
@@ -533,6 +561,14 @@ export const verifyLoginOTP = async (req, res, next) => {
     const emailLower = email.toLowerCase();
 
     try {
+        // If verification is currently locked due to too many failures
+        if (otpTracking && otpTracking.isLocked && otpTracking.isLocked()) {
+            return res.status(423).json({
+                success: false,
+                message: "Too many incorrect attempts. Please try again in 15 minutes.",
+                requiresCaptcha: true
+            });
+        }
         // Get stored OTP data
         const storedData = loginOtpStore.get(emailLower);
         
@@ -555,9 +591,19 @@ export const verifyLoginOTP = async (req, res, next) => {
         // Check if too many attempts
         if (storedData.attempts >= 3) {
             loginOtpStore.delete(emailLower);
+            // Track failed attempt in DB and consider lockout
+            if (otpTracking) {
+                await otpTracking.incrementFailedAttempt();
+                // 5 wrong attempts in 15 mins -> 15 min lockout
+                const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+                if (otpTracking.failedOtpAttempts >= 5 && otpTracking.lastFailedAttemptTimestamp >= fifteenMinutesAgo) {
+                    await otpTracking.registerLockout(15 * 60 * 1000);
+                }
+            }
             return res.status(400).json({
                 success: false,
-                message: "Too many failed attempts. Please request a new OTP."
+                message: "Too many failed attempts. Please request a new OTP.",
+                requiresCaptcha: otpTracking?.requiresCaptcha || false
             });
         }
 
@@ -569,6 +615,15 @@ export const verifyLoginOTP = async (req, res, next) => {
             // Increment failed attempts in tracking
             if (otpTracking) {
                 await otpTracking.incrementFailedAttempt();
+                // If 3 wrong attempts -> invalidate current OTP (force new request)
+                if (storedData.attempts >= 3) {
+                    loginOtpStore.delete(emailLower);
+                }
+                // If 5 wrong attempts within 15 minutes -> 15 min lock
+                const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+                if (otpTracking.failedOtpAttempts >= 5 && otpTracking.lastFailedAttemptTimestamp >= fifteenMinutesAgo) {
+                    await otpTracking.registerLockout(15 * 60 * 1000);
+                }
             }
             
             // Log failed OTP attempt
@@ -581,7 +636,7 @@ export const verifyLoginOTP = async (req, res, next) => {
             
             return res.status(400).json({
                 success: false,
-                message: "Invalid OTP. Please try again.",
+                message: storedData.attempts >= 3 ? "Too many incorrect attempts. Please try again in 15 minutes." : "Invalid OTP. Please try again.",
                 requiresCaptcha: otpTracking?.requiresCaptcha || false
             });
         }
@@ -620,6 +675,7 @@ export const verifyLoginOTP = async (req, res, next) => {
         // Reset tracking on successful login
         if (otpTracking) {
             await otpTracking.resetTracking();
+            await otpTracking.clearLockout?.();
         }
         
         // Log successful OTP login

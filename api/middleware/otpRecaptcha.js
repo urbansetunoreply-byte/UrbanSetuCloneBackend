@@ -105,6 +105,15 @@ export const checkOtpCaptchaRequirement = async (req, res, next) => {
         req.otpTracking = tracking;
         req.requiresCaptcha = requiresCaptcha;
         
+        // If currently locked out from OTP actions
+        if (tracking.isLocked && tracking.isLocked()) {
+            return res.status(429).json({
+                success: false,
+                message: 'Too many OTP requests. Please try again in 15 minutes.',
+                requiresCaptcha: true
+            });
+        }
+        
         // If captcha is required but not provided, return error
         if (requiresCaptcha && !req.body.recaptchaToken) {
             return res.status(400).json({

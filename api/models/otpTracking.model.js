@@ -46,11 +46,23 @@ const otpTrackingSchema = new mongoose.Schema({
     type: String,
     required: false
   },
-  // TTL index for automatic cleanup
+  // Creation timestamp (no TTL; we need longer-term stats for progressive lockouts)
   createdAt: {
     type: Date,
-    default: Date.now,
-    expires: 600 // 10 minutes TTL
+    default: Date.now
+  },
+  // Lockout management
+  lockoutUntil: {
+    type: Date,
+    default: null
+  },
+  lockoutHistory: {
+    type: [Date],
+    default: []
+  },
+  requireExtraVerification: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true
@@ -60,6 +72,7 @@ const otpTrackingSchema = new mongoose.Schema({
 otpTrackingSchema.index({ email: 1, createdAt: -1 });
 otpTrackingSchema.index({ ipAddress: 1, createdAt: -1 });
 otpTrackingSchema.index({ requiresCaptcha: 1 });
+otpTrackingSchema.index({ lockoutUntil: 1 });
 
 // Static method to get or create tracking record
 otpTrackingSchema.statics.getOrCreateTracking = async function(email, ipAddress, userAgent = null) {
@@ -71,8 +84,8 @@ otpTrackingSchema.statics.getOrCreateTracking = async function(email, ipAddress,
     ipAddress 
   }).sort({ createdAt: -1 });
   
-  // If no record exists or it's older than 10 minutes, create new one
-  if (!tracking || (Date.now() - tracking.createdAt.getTime()) > 10 * 60 * 1000) {
+  // If no record exists, create new one
+  if (!tracking) {
     tracking = new this({
       email: emailLower,
       ipAddress,
@@ -90,18 +103,24 @@ otpTrackingSchema.statics.getOrCreateTracking = async function(email, ipAddress,
 // Method to check if captcha is required
 otpTrackingSchema.methods.checkCaptchaRequirement = function() {
   const now = new Date();
+  const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
   const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
   
-  // Reset counters if it's been more than 10 minutes
-  if (this.lastOtpTimestamp < tenMinutesAgo) {
+  // Soft decay counters if it's been a while since last action
+  if (this.lastOtpTimestamp && this.lastOtpTimestamp < tenMinutesAgo) {
     this.otpRequestCount = 0;
+  }
+  if (this.lastFailedAttemptTimestamp && this.lastFailedAttemptTimestamp < tenMinutesAgo) {
     this.failedOtpAttempts = 0;
-    this.requiresCaptcha = false;
-    this.captchaVerifiedAt = null;
   }
   
   // Check if captcha is required based on thresholds
-  if (this.otpRequestCount >= 3 || this.failedOtpAttempts >= 3) {
+  // 3 OTP requests within 5 minutes -> captcha
+  if (this.otpRequestCount >= 3 && this.lastOtpTimestamp >= fiveMinutesAgo) {
+    this.requiresCaptcha = true;
+  }
+  // 3 failed OTP verifications within recent window -> captcha
+  if (this.failedOtpAttempts >= 3 && this.lastFailedAttemptTimestamp >= tenMinutesAgo) {
     this.requiresCaptcha = true;
   }
   
@@ -139,6 +158,31 @@ otpTrackingSchema.methods.resetTracking = function() {
   this.captchaVerifiedAt = null;
   this.lastFailedAttemptTimestamp = null;
   return this.save();
+};
+
+// Determine if currently locked
+otpTrackingSchema.methods.isLocked = function() {
+  if (!this.lockoutUntil) return false;
+  return new Date() < this.lockoutUntil;
+};
+
+// Register a lockout for a duration in ms
+otpTrackingSchema.methods.registerLockout = function(durationMs) {
+  const now = new Date();
+  this.lockoutUntil = new Date(now.getTime() + durationMs);
+  this.lockoutHistory.push(now);
+  return this.save();
+};
+
+// Clear any active lockout
+otpTrackingSchema.methods.clearLockout = function() {
+  this.lockoutUntil = null;
+  return this.save();
+};
+
+// Count lockouts in a window
+otpTrackingSchema.methods.countLockoutsSince = function(sinceDate) {
+  return (this.lockoutHistory || []).filter(d => new Date(d) >= sinceDate).length;
 };
 
 const OtpTracking = mongoose.model('OtpTracking', otpTrackingSchema);
