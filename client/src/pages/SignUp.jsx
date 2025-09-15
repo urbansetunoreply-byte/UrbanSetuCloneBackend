@@ -187,6 +187,9 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
         setCanResend(false);
       } else {
         setOtpError(data.message);
+        if (data.requiresCaptcha) {
+          // Show captcha hint below OTP area by surfacing specific message
+        }
       }
     } catch (error) {
       setOtpError("Failed to send OTP. Please try again.");
@@ -525,9 +528,23 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                       )}
                     </div>
                   </div>
-                  {/* OTP Error Message - Moved here to appear below the instruction text */}
+                  {/* OTP Error Message and conditional reCAPTCHA below OTP field */}
                   {otpError && (
                     <p className="text-red-500 text-sm mt-2">{otpError}</p>
+                  )}
+                  {/* If backend requested captcha during resends, render captcha below OTP */}
+                  {otpError && otpError.toLowerCase().includes('recaptcha') && (
+                    <div className="flex justify-center mt-3">
+                      <RecaptchaWidget
+                        key={`otp-${recaptchaKey}`}
+                        ref={recaptchaRef}
+                        onVerify={handleRecaptchaVerify}
+                        onExpire={handleRecaptchaExpire}
+                        onError={handleRecaptchaError}
+                        disabled={otpLoading}
+                        className="transform scale-90"
+                      />
+                    </div>
                   )}
                 </div>
               )}

@@ -557,9 +557,22 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                         )}
                       </div>
                     </div>
-                    {/* OTP Error Message - Moved here to appear below the instruction text */}
+                    {/* OTP Error Message and conditional reCAPTCHA below OTP field */}
                     {otpError && (
                       <p className="text-red-500 text-sm mt-2">{otpError}</p>
+                    )}
+                    {otpError && otpError.toLowerCase().includes('recaptcha') && (
+                      <div className="flex justify-center mt-3">
+                        <RecaptchaWidget
+                          key={`otp-${recaptchaKey}`}
+                          ref={recaptchaRef}
+                          onVerify={handleRecaptchaVerify}
+                          onExpire={handleRecaptchaExpire}
+                          onError={handleRecaptchaError}
+                          disabled={otpLoading}
+                          className="transform scale-90"
+                        />
+                      </div>
                     )}
                   </div>
                 )}

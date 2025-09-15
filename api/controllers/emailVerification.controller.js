@@ -19,6 +19,14 @@ export const sendOTP = async (req, res, next) => {
   const emailLower = email.toLowerCase();
 
   try {
+    // Check active lockout
+    if (otpTracking && otpTracking.isLocked && otpTracking.isLocked()) {
+      return res.status(429).json({
+        success: false,
+        message: 'Too many OTP requests. Please try again in 15 minutes.',
+        requiresCaptcha: true
+      });
+    }
     // Check if email already exists
     const existingUser = await User.findOne({ email: emailLower });
     if (existingUser) {
@@ -31,6 +39,22 @@ export const sendOTP = async (req, res, next) => {
     // Increment OTP request count
     if (otpTracking) {
       await otpTracking.incrementOtpRequest();
+      // 3 requests within 5 minutes -> force captcha on next
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+      if (otpTracking.otpRequestCount >= 3 && otpTracking.lastOtpTimestamp >= fiveMinutesAgo) {
+        otpTracking.requiresCaptcha = true;
+        await otpTracking.save();
+      }
+      // 5 requests within 15 minutes -> lockout 15 minutes
+      const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+      if (otpTracking.otpRequestCount >= 5 && otpTracking.lastOtpTimestamp >= fifteenMinutesAgo) {
+        await otpTracking.registerLockout(15 * 60 * 1000);
+        return res.status(429).json({
+          success: false,
+          message: 'Too many OTP requests. Please try again in 15 minutes.',
+          requiresCaptcha: true
+        });
+      }
     }
 
     // Generate OTP
@@ -93,6 +117,14 @@ export const sendForgotPasswordOTP = async (req, res, next) => {
   const emailLower = email.toLowerCase();
 
   try {
+    // Check lockout
+    if (otpTracking && otpTracking.isLocked && otpTracking.isLocked()) {
+      return res.status(429).json({
+        success: false,
+        message: 'Too many OTP requests. Please try again in 15 minutes.',
+        requiresCaptcha: true
+      });
+    }
     // Check if user exists with the email
     const user = await User.findOne({ email: emailLower });
     if (!user) {
@@ -105,6 +137,20 @@ export const sendForgotPasswordOTP = async (req, res, next) => {
     // Increment OTP request count
     if (otpTracking) {
       await otpTracking.incrementOtpRequest();
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+      if (otpTracking.otpRequestCount >= 3 && otpTracking.lastOtpTimestamp >= fiveMinutesAgo) {
+        otpTracking.requiresCaptcha = true;
+        await otpTracking.save();
+      }
+      const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+      if (otpTracking.otpRequestCount >= 5 && otpTracking.lastOtpTimestamp >= fifteenMinutesAgo) {
+        await otpTracking.registerLockout(15 * 60 * 1000);
+        return res.status(429).json({
+          success: false,
+          message: 'Too many OTP requests. Please try again in 15 minutes.',
+          requiresCaptcha: true
+        });
+      }
     }
 
     // Generate OTP
@@ -129,6 +175,13 @@ export const sendForgotPasswordOTP = async (req, res, next) => {
         message: "Failed to send OTP. Please try again."
       });
     }
+
+    // Log successful forgot password OTP request
+    logSecurityEvent('forgot_password_otp_request_successful', {
+      email: emailLower,
+      ip: req.ip,
+      requiresCaptcha
+    });
 
     res.status(200).json({
       success: true,
