@@ -3042,9 +3042,16 @@ function AdminAppointmentRow({
           setLocalComments(updatedComments);
           
           // Don't auto-scroll to bottom - retain current scroll position
+          
+          // Show success toast notification
+          toast.success('Messages refreshed successfully!', {
+            autoClose: 2000,
+            position: 'top-center'
+          });
         }
     } catch (err) {
       console.error('Error fetching latest comments:', err);
+      toast.error('Failed to refresh messages');
     } finally {
       setLoadingComments(false);
     }

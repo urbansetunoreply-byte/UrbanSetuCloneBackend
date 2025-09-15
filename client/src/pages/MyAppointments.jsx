@@ -2435,6 +2435,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         setUnreadNewMessages(0); // Reset unread count after refresh
         
         // Don't auto-scroll to bottom - retain current scroll position
+        
+        // Show success toast notification
+        toast.success('Messages refreshed successfully!', {
+          autoClose: 2000,
+          position: 'top-center'
+        });
       }
     } catch (err) {
       console.error('Error fetching latest comments:', err);
@@ -5619,12 +5625,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                       </div>
                     </div>
                   )}
-                  {loadingComments ? (
-                    <div className="flex flex-col items-center justify-center h-full text-center py-8">
-                      <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
-                      <p className="text-gray-500 font-medium text-sm">Loading messages...</p>
-                    </div>
-                  ) : filteredComments.length === 0 ? (
+                  {filteredComments.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-center py-8">
                       <FaCommentDots className="text-gray-300 text-4xl mb-3" />
                       <p className="text-gray-500 font-medium text-sm">No messages yet</p>
