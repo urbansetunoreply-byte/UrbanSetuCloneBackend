@@ -45,6 +45,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
   const [otpError, setOtpError] = useState("");
   const [emailVerified, setEmailVerified] = useState(false);
   const [emailEditMode, setEmailEditMode] = useState(false);
+  const [emailLocked, setEmailLocked] = useState(false);
   
   // Timer states for resend OTP
   const [resendTimer, setResendTimer] = useState(0);
@@ -253,6 +254,8 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
     }
 
     setOtpLoading(true);
+    // Lock email immediately on send/resend attempt until user clicks edit icon
+    setEmailLocked(true);
     setOtpError("");
 
     try {
@@ -479,7 +482,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                       ref={emailInputRef}
                       value={formData.email}
                       onChange={handleChange}
-                      readOnly={((emailVerified || otpSent) && !emailEditMode)}
+                      readOnly={((emailLocked || emailVerified || otpSent) && !emailEditMode)}
                       className={`w-full px-4 py-3 pr-24 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 ${
                         emailVerified && !emailEditMode
                           ? "bg-gray-100 cursor-not-allowed border-green-500"
@@ -497,13 +500,14 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                         {otpLoading ? "Sending..." : "Send OTP"}
                       </button>
                     )}
-                    {(emailVerified || otpSent) && !emailEditMode && (
+                    {(emailLocked || emailVerified || otpSent) && !emailEditMode && (
                       <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
                         <button
                           type="button"
                           onClick={() => {
                             setEmailEditMode(true);
                             setOtpSent(false);
+                            setEmailLocked(false);
                             setOtp("");
                             setCanResend(true);
                             setResendTimer(0);
