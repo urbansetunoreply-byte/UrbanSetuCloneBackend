@@ -1496,7 +1496,7 @@ function AdminAppointmentRow({
     setLoadingStarredMessages(true);
     try {
       // First, sync comments to ensure we have the latest starred status
-      await fetchLatestComments();
+      await loadInitialComments();
       // Then fetch starred messages from backend
       const { data } = await axios.get(`${API_BASE_URL}/api/bookings/${appt._id}/starred-messages`, {
         withCredentials: true
@@ -3011,7 +3011,48 @@ function AdminAppointmentRow({
     setAdminPassword("");
   };
 
-  // Fetch latest comments when chat modal opens
+  // Load initial comments when chat modal opens (without refresh toast)
+  const loadInitialComments = async () => {
+    try {
+      setLoadingComments(true);
+      const { data } = await axios.get(`${API_BASE_URL}/api/bookings/${appt._id}`, {
+        withCredentials: true
+      });
+      if (data.comments) {
+          // Preserve starred status and temp messages from current state
+          // Preserve starred status from current state
+          const updatedComments = data.comments.map(newComment => {
+            const existingComment = localComments.find(c => c._id === newComment._id);
+            if (existingComment && existingComment.starredBy) {
+              return { ...newComment, starredBy: existingComment.starredBy };
+            }
+            return newComment;
+          });
+
+          // Add back any local temp messages that haven't been confirmed yet
+          const localTempMessages = localComments.filter(c => c._id.startsWith('temp-'));
+          const serverCommentIds = new Set(data.comments.map(c => c._id));
+          
+          localTempMessages.forEach(tempMsg => {
+            if (!serverCommentIds.has(tempMsg._id)) {
+              updatedComments.push(tempMsg);
+            }
+          });
+          
+          setLocalComments(updatedComments);
+          
+          // Don't auto-scroll to bottom - retain current scroll position
+          // No toast notification for initial load
+        }
+    } catch (err) {
+      console.error('Error loading initial comments:', err);
+      toast.error('Failed to load messages');
+    } finally {
+      setLoadingComments(false);
+    }
+  };
+
+  // Fetch latest comments when refresh button is clicked (with refresh toast)
   const fetchLatestComments = async () => {
     try {
       setLoadingComments(true);
@@ -3072,9 +3113,9 @@ function AdminAppointmentRow({
       if (data.success) {
         setShowPasswordModal(false);
         setShowChatModal(true);
-        // Fetch latest comments when chat opens
+        // Load initial comments when chat opens (without refresh toast)
         setTimeout(() => {
-          fetchLatestComments();
+          loadInitialComments();
         }, 100);
       }
     } catch (err) {
