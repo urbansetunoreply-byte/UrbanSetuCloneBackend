@@ -177,7 +177,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
     // If OTP-specific captcha was required (either under email or OTP), hide that widget + message after 1s
     if (otpCaptchaRequired) {
       setTimeout(() => {
-        setOtpCaptchaRequired(false);
+        // Hide UI message but keep requirement flag so next resend includes token
         setOtpCaptchaMessage("");
         setOtpError("");
       }, 1000);
@@ -259,7 +259,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
         method: "POST",
         body: JSON.stringify({ 
           email: formData.email,
-          ...(otpCaptchaRequired && recaptchaToken ? { recaptchaToken } : {})
+          ...(otpCaptchaRequired ? { recaptchaToken } : {})
         }),
       });
 
