@@ -5217,7 +5217,14 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         </div>
                         
                         {/* Chat options menu */}
-                        <div className="relative">
+                        <div className="relative flex items-center gap-2">
+                          {/* Loading icon when refreshing messages */}
+                          {loadingComments && (
+                            <div className="text-white bg-white/10 rounded-full p-2 shadow">
+                              <FaSpinner className="text-sm animate-spin" />
+                            </div>
+                          )}
+                          
                           <button
                             className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors shadow"
                             onClick={() => setShowChatOptionsMenu(!showChatOptionsMenu)}

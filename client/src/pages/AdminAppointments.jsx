@@ -1266,6 +1266,7 @@ function AdminAppointmentRow({
   const [showDeleteModal, setShowDeleteModal] = useLocalState(false);
   const [messageToDelete, setMessageToDelete] = useLocalState(null);
   const [passwordLoading, setPasswordLoading] = useLocalState(false);
+  const [loadingComments, setLoadingComments] = useLocalState(false);
   const chatEndRef = React.useRef(null);
   const chatContainerRef = React.useRef(null);
   const inputRef = React.useRef(null);
@@ -3013,6 +3014,7 @@ function AdminAppointmentRow({
   // Fetch latest comments when chat modal opens
   const fetchLatestComments = async () => {
     try {
+      setLoadingComments(true);
       const { data } = await axios.get(`${API_BASE_URL}/api/bookings/${appt._id}`, {
         withCredentials: true
       });
@@ -3039,38 +3041,12 @@ function AdminAppointmentRow({
           
           setLocalComments(updatedComments);
           
-          // Force scroll to bottom after refresh - use multiple attempts to ensure it works
-          const scrollToBottomAfterRefresh = () => {
-            // First try the chatEndRef
-            if (chatEndRef.current) {
-              chatEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
-              return;
-            }
-            
-            // If chatEndRef is not available, try scrolling the container
-            const container = chatContainerRef.current;
-            if (container) {
-              container.scrollTop = container.scrollHeight;
-              return;
-            }
-            
-            // Last resort: try to find any scrollable container in the chat
-            const chatContainers = document.querySelectorAll('[data-chat-container]');
-            chatContainers.forEach(container => {
-              if (container.scrollHeight > container.clientHeight) {
-                container.scrollTop = container.scrollHeight;
-              }
-            });
-          };
-          
-          // Try multiple times with increasing delays to ensure DOM is updated
-          setTimeout(scrollToBottomAfterRefresh, 100);
-          setTimeout(scrollToBottomAfterRefresh, 300);
-          setTimeout(scrollToBottomAfterRefresh, 600);
-          setTimeout(scrollToBottomAfterRefresh, 1000);
+          // Don't auto-scroll to bottom - retain current scroll position
         }
     } catch (err) {
       console.error('Error fetching latest comments:', err);
+    } finally {
+      setLoadingComments(false);
     }
   };
 
@@ -3914,7 +3890,14 @@ function AdminAppointmentRow({
                       </div>
                       
                       {/* Chat options menu */}
-                      <div className="relative">
+                      <div className="relative flex items-center gap-2">
+                        {/* Loading icon when refreshing messages */}
+                        {loadingComments && (
+                          <div className="text-white bg-white/10 rounded-full p-2 shadow">
+                            <FaSpinner className="text-sm animate-spin" />
+                          </div>
+                        )}
+                        
                         <button
                           className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors shadow"
                           onClick={() => {
