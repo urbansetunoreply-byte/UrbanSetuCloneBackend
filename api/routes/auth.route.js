@@ -9,7 +9,7 @@ import { sendOTP, verifyOTP, sendForgotPasswordOTP, sendProfileEmailOTP } from '
 import { signInRateLimit, signUpRateLimit, forgotPasswordRateLimit, otpRateLimit, otpVerifyRateLimit } from '../middleware/rateLimiter.js';
 import { generateCSRFToken, verifyCSRFToken, getCSRFToken } from '../middleware/csrf.js';
 import { bruteForceProtection, getFailedAttempts } from '../middleware/security.js';
-import { validateRecaptcha, conditionalRecaptcha, captchaRateLimit } from '../middleware/recaptcha.js';
+import { conditionalRecaptcha, captchaRateLimit } from '../middleware/recaptcha.js';
 import { otpRecaptchaMiddleware } from '../middleware/otpRecaptcha.js';
 const router=express.Router()
 
