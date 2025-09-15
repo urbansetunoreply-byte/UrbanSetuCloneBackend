@@ -64,6 +64,72 @@ const SmartPriceInsights = ({ listing, currentUser }) => {
     return listing.bedrooms >= 3 ? 'High' : listing.bedrooms === 2 ? 'Medium' : 'Standard';
   };
 
+  // Calculate ROI Potential (consistent with Property Insights)
+  const getROIPotential = () => {
+    return listing.type === 'rent' ? '5-8%' : '8-12%';
+  };
+
+  // Calculate dynamic area growth based on property characteristics
+  const getAreaGrowth = () => {
+    if (!listing) return '+8.0%';
+    
+    // Use property ID hash for consistent but varied results
+    const propertyId = listing._id;
+    const hash = propertyId.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    
+    // Base growth rate
+    let baseGrowth = 8.0;
+    
+    // Adjust based on property type
+    if (listing.type === 'sale') baseGrowth += 2.0;
+    
+    // Adjust based on bedrooms (more bedrooms = higher growth potential)
+    if (listing.bedrooms >= 3) baseGrowth += 3.0;
+    else if (listing.bedrooms === 2) baseGrowth += 1.5;
+    
+    // Adjust based on city (major cities have higher growth)
+    const majorCities = ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Hyderabad', 'Pune', 'Kolkata'];
+    if (majorCities.includes(listing.city)) baseGrowth += 2.0;
+    
+    // Add some variation based on property ID hash
+    const variation = (Math.abs(hash) % 50) / 10; // 0-5% variation
+    baseGrowth += variation;
+    
+    return `+${baseGrowth.toFixed(1)}%`;
+  };
+
+  // Calculate dynamic ROI percentage (consistent with Property Insights range)
+  const getROIPercentage = () => {
+    if (!listing) return '8.2%';
+    
+    // Use property ID hash for consistent but varied results
+    const propertyId = listing._id;
+    const hash = propertyId.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    
+    // Base ROI based on property type
+    let baseROI = listing.type === 'rent' ? 6.5 : 10.0;
+    
+    // Adjust based on bedrooms
+    if (listing.bedrooms >= 3) baseROI += 1.0;
+    else if (listing.bedrooms === 2) baseROI += 0.5;
+    
+    // Adjust based on city
+    const majorCities = ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Hyderabad', 'Pune', 'Kolkata'];
+    if (majorCities.includes(listing.city)) baseROI += 0.8;
+    
+    // Add some variation based on property ID hash
+    const variation = (Math.abs(hash) % 30) / 10; // 0-3% variation
+    baseROI += variation;
+    
+    return `${baseROI.toFixed(1)}%`;
+  };
+
   // Calculate fair price score (0-100)
   const calculateFairPriceScore = () => {
     const currentPrice = listing.offer ? listing.discountPrice : listing.regularPrice;
@@ -358,7 +424,7 @@ const SmartPriceInsights = ({ listing, currentUser }) => {
             <FaMapMarkerAlt className="text-orange-600" />
             <h6 className="font-semibold text-orange-800">Area Growth</h6>
           </div>
-          <p className="text-2xl font-bold text-orange-600">+12.5%</p>
+          <p className="text-2xl font-bold text-orange-600">{getAreaGrowth()}</p>
           <p className="text-sm text-gray-600">YoY price growth</p>
         </div>
         
@@ -376,7 +442,7 @@ const SmartPriceInsights = ({ listing, currentUser }) => {
             <FaPercentage className="text-teal-600" />
             <h6 className="font-semibold text-teal-800">ROI Potential</h6>
           </div>
-          <p className="text-2xl font-bold text-teal-600">8.2%</p>
+          <p className="text-2xl font-bold text-teal-600">{getROIPercentage()}</p>
           <p className="text-sm text-gray-600">Expected annual return</p>
         </div>
       </div>
