@@ -66,6 +66,15 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         }
     }, [location.search, navigate]);
 
+    // Check for existing failed attempts on component mount
+    useEffect(() => {
+        const failedAttempts = parseInt(localStorage.getItem('failedLoginAttempts') || '0');
+        if (failedAttempts >= 3) {
+            setShowRecaptcha(true);
+            setRecaptchaError("reCAPTCHA verification is required due to multiple failed attempts.");
+        }
+    }, []);
+
     // Autofocus email field on mount
     useEffect(() => {
         if (emailInputRef.current) {
@@ -191,10 +200,9 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         setOtpRecaptchaError("");
     };
 
-    // Check if reCAPTCHA should be shown (simulate failed attempts check)
+    // Check if reCAPTCHA should be shown (only after 3+ failed attempts)
     const checkRecaptchaRequirement = () => {
-        // In a real app, you'd check with the backend or store this in state
-        // For now, we'll use a simple localStorage check
+        // Only show reCAPTCHA if there are 3+ failed attempts
         const failedAttempts = parseInt(localStorage.getItem('failedLoginAttempts') || '0');
         return failedAttempts >= 3;
     };
@@ -394,11 +402,13 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                 } else {
                     // Increment failed attempts counter
                     const currentAttempts = parseInt(localStorage.getItem('failedLoginAttempts') || '0');
-                    localStorage.setItem('failedLoginAttempts', (currentAttempts + 1).toString());
+                    const newAttempts = currentAttempts + 1;
+                    localStorage.setItem('failedLoginAttempts', newAttempts.toString());
                     
-                    // Show reCAPTCHA if this is the 3rd failed attempt
-                    if (currentAttempts + 1 >= 3) {
+                    // Show reCAPTCHA only if this is exactly the 3rd failed attempt
+                    if (newAttempts === 3) {
                         setShowRecaptcha(true);
+                        setRecaptchaError("reCAPTCHA verification is now required due to multiple failed attempts.");
                     }
                 }
                 dispatch(signInFailure(data.message));
@@ -407,6 +417,9 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             
             // Clear failed attempts on successful login
             localStorage.removeItem('failedLoginAttempts');
+            setShowRecaptcha(false);
+            setRecaptchaToken(null);
+            setRecaptchaError("");
             
             if (data.token) {
                 localStorage.setItem('accessToken', data.token);
@@ -607,8 +620,8 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                     </div>
                                 )}
                                 
-                                {/* reCAPTCHA Widget - Show only when required */}
-                                {showRecaptcha && (
+                                {/* reCAPTCHA Widget - Show only when required (3+ failed attempts) */}
+                                {showRecaptcha && checkRecaptchaRequirement() && (
                                     <div className="flex justify-center">
                                         <RecaptchaWidget
                                             ref={recaptchaRef}
