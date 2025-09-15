@@ -560,18 +560,20 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                   </div>
                 )}
                 
-                {/* reCAPTCHA Widget */}
-                <div className="flex justify-center mb-4">
-                  <RecaptchaWidget
-                    key={recaptchaKey}
-                    ref={recaptchaRef}
-                    onVerify={handleRecaptchaVerify}
-                    onExpire={handleRecaptchaExpire}
-                    onError={handleRecaptchaError}
-                    disabled={loading}
-                    className="transform scale-90"
-                  />
-                </div>
+                {/* reCAPTCHA Widget - hide after successful verification */}
+                {!recaptchaToken && (
+                  <div className="flex justify-center mb-4">
+                    <RecaptchaWidget
+                      key={recaptchaKey}
+                      ref={recaptchaRef}
+                      onVerify={handleRecaptchaVerify}
+                      onExpire={handleRecaptchaExpire}
+                      onError={handleRecaptchaError}
+                      disabled={loading}
+                      className="transform scale-90"
+                    />
+                  </div>
+                )}
 
                 {/* reCAPTCHA Error */}
                 {recaptchaError && (

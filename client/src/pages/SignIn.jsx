@@ -711,7 +711,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                     </div>
                                 </div>
                                 
-                                {/* OTP reCAPTCHA Widget - Show when required */}
+                                {/* OTP reCAPTCHA Widget - below resend when OTP field open, below email otherwise */}
                                 {showOtpRecaptcha && (
                                     <div className="flex justify-center mb-4">
                                         <RecaptchaWidget
@@ -787,14 +787,28 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                                 {otpLoading ? "Sending..." : "Resend OTP"}
                                             </button>
                                         )}
+                                        {/* Show OTP reCAPTCHA under resend when OTP field open */}
+                                        {showOtpRecaptcha && (
+                                            <div className="flex justify-center mt-2">
+                                                <RecaptchaWidget
+                                                    key={otpRecaptchaKey}
+                                                    ref={otpRecaptchaRef}
+                                                    onVerify={handleOtpRecaptchaVerify}
+                                                    onExpire={handleOtpRecaptchaExpire}
+                                                    onError={handleOtpRecaptchaError}
+                                                    disabled={otpLoading}
+                                                    className="transform scale-90"
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                                 
                                 <button 
-                                    disabled={loading || otpLoading || (!otpSent && !canResend) || (otpRequiresCaptcha && !otpRecaptchaToken)} 
+                                    disabled={loading || (!otpSent && (otpLoading || !canResend)) || (otpRequiresCaptcha && !otpRecaptchaToken)} 
                                     className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
                                 >
-                                    {loading || otpLoading ? (
+                                    {loading || (!otpSent && otpLoading) ? (
                                         <div className="flex items-center justify-center">
                                             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                                             {otpSent ? "Verifying..." : "Sending OTP..."}
