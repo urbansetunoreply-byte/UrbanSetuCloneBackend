@@ -412,17 +412,15 @@ startServer();
 
 // Global error handler (should be after all routes)
 app.use((err, req, res, next) => {
-  // Suppress stack trace for expected 401 errors
-  if (err.status === 401 || err.statusCode === 401 || err.message === 'Access token not found') {
-    // Log as info, not error
+  const status = err.statusCode || err.status || 500;
+  if (status === 401 || err.message === 'Access token not found') {
     console.info(`[401] ${err.message}`);
     return res.status(401).json({ success: false, message: err.message || 'Unauthorized' });
   }
-  // Log as warning for 4xx, error for 5xx
-  if (err.status && err.status >= 400 && err.status < 500) {
-    console.warn(`[${err.status}] ${err.message}`);
+  if (status >= 400 && status < 500) {
+    console.warn(`[${status}] ${err.message}`);
   } else {
-  console.error(err.stack);
+    console.error(err.stack || err);
   }
-  res.status(err.status || 500).json({ success: false, message: err.message || 'Internal Server Error' });
+  res.status(status).json({ success: false, message: err.message || 'Internal Server Error' });
 });
