@@ -157,7 +157,7 @@ export const validateOtpRecaptcha = async (req, res, next) => {
             return next(errorHandler(500, 'reCAPTCHA configuration error'));
         }
         
-        // Verify the token
+        // Verify the token once and grant short grace period
         const verificationResult = await verifyRecaptchaToken(recaptchaToken, secretKey);
         
         // Check verification result
@@ -180,7 +180,7 @@ export const validateOtpRecaptcha = async (req, res, next) => {
             });
         }
         
-        // Mark captcha as verified in tracking record
+        // Mark captcha as verified in tracking record (model uses captchaVerifiedAt for grace)
         if (req.otpTracking) {
             await req.otpTracking.verifyCaptcha();
         }

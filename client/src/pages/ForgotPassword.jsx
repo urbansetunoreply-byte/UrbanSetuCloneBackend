@@ -263,7 +263,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
         method: "POST",
         body: JSON.stringify({ 
           email: formData.email,
-          ...(otpCaptchaRequired ? { recaptchaToken } : {})
+          ...(recaptchaToken ? { recaptchaToken } : {})
         }),
       });
 
