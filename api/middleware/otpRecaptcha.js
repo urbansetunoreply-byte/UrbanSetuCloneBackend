@@ -88,7 +88,7 @@ const verifyRecaptchaToken = async (token, secretKey) => {
 export const checkOtpCaptchaRequirement = async (req, res, next) => {
     try {
         const { email } = req.body;
-        const ipAddress = req.ip || req.connection.remoteAddress;
+        const ipAddress = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || req.connection.remoteAddress;
         const userAgent = req.get('User-Agent');
         
         if (!email) {

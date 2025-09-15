@@ -82,7 +82,7 @@ export const sendOTP = async (req, res, next) => {
     // Log successful OTP request
     logSecurityEvent('signup_otp_request_successful', {
       email: emailLower,
-      ip: req.ip,
+      ip: req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip,
       requiresCaptcha
     });
 
@@ -179,7 +179,7 @@ export const sendForgotPasswordOTP = async (req, res, next) => {
     // Log successful forgot password OTP request
     logSecurityEvent('forgot_password_otp_request_successful', {
       email: emailLower,
-      ip: req.ip,
+      ip: req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip,
       requiresCaptcha
     });
 
@@ -245,7 +245,7 @@ export const sendProfileEmailOTP = async (req, res, next) => {
     // Log successful OTP request
     logSecurityEvent('profile_otp_request_successful', {
       email: emailLower,
-      ip: req.ip,
+      ip: req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip,
       requiresCaptcha: requiresCaptcha
     });
 

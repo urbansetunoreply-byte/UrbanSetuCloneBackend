@@ -76,6 +76,9 @@ let PORT = process.env.PORT || 3000;
 
 const app = express();
 
+// Trust proxy headers (needed to get real client IP behind proxies/load balancers)
+app.set('trust proxy', true);
+
 app.use(express.json())
 app.use(cookieParser());
 

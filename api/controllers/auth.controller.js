@@ -459,7 +459,7 @@ const loginOtpStore = new Map();
 export const sendLoginOTP = async (req, res, next) => {
     const { email } = req.body;
     const { otpTracking, requiresCaptcha } = req;
-    const ipAddress = req.ip || req.connection.remoteAddress;
+    const ipAddress = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || req.connection.remoteAddress;
     
     if (!email) {
         return next(errorHandler(400, "Email is required"));
@@ -526,7 +526,7 @@ export const sendLoginOTP = async (req, res, next) => {
         logSecurityEvent('otp_request_successful', {
             email: emailLower,
             userId: user._id,
-            ip: req.ip,
+            ip: ipAddress,
             requiresCaptcha: requiresCaptcha
         });
 
