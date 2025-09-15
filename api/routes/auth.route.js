@@ -9,6 +9,7 @@ import { sendOTP, verifyOTP, sendForgotPasswordOTP, sendProfileEmailOTP } from '
 import { signInRateLimit, signUpRateLimit, forgotPasswordRateLimit, otpRateLimit, otpVerifyRateLimit } from '../middleware/rateLimiter.js';
 import { generateCSRFToken, verifyCSRFToken, getCSRFToken } from '../middleware/csrf.js';
 import { bruteForceProtection, getFailedAttempts } from '../middleware/security.js';
+import { accountLockouts } from '../middleware/security.js';
 import { conditionalRecaptcha, captchaRateLimit } from '../middleware/recaptcha.js';
 import { otpRecaptchaMiddleware } from '../middleware/otpRecaptcha.js';
 const router=express.Router()
@@ -82,8 +83,13 @@ router.get('/otp/stats', verifyToken, async (req, res) => {
       return res.status(403).json({ success: false, message: 'Forbidden' });
     }
     const recent = await OtpTracking.find({}).sort({ updatedAt: -1 }).limit(200);
-    const lockouts24h = await OtpTracking.countDocuments({ lockoutUntil: { $gt: new Date() } });
-    res.json({ success: true, recent, activeLockouts: lockouts24h });
+    const lockoutsActive = await OtpTracking.countDocuments({ lockoutUntil: { $gt: new Date() } });
+    // Password lockouts (from memory store) - expose counts only
+    let passwordLockouts = 0;
+    try {
+      passwordLockouts = Array.from(accountLockouts?.keys?.() || []).length;
+    } catch(_) {}
+    res.json({ success: true, recent, activeLockouts: lockoutsActive, passwordLockouts });
   } catch (e) {
     res.status(500).json({ success: false, message: 'Server error' });
   }
