@@ -313,6 +313,7 @@ export default function Profile() {
   const [profileRecaptchaError, setProfileRecaptchaError] = useState("");
   const [showProfileRecaptcha, setShowProfileRecaptcha] = useState(false);
   const [profileRequiresCaptcha, setProfileRequiresCaptcha] = useState(false);
+  const [profileRecaptchaKey, setProfileRecaptchaKey] = useState(0);
   const profileRecaptchaRef = useRef(null);
   
   // Animation states
@@ -584,11 +585,13 @@ export default function Profile() {
   const handleProfileRecaptchaExpire = () => {
     setProfileRecaptchaToken(null);
     setProfileRecaptchaError("reCAPTCHA expired. Please verify again.");
+    setProfileRecaptchaKey((k) => k + 1);
   };
 
   const handleProfileRecaptchaError = (error) => {
     setProfileRecaptchaToken(null);
     setProfileRecaptchaError("reCAPTCHA verification failed. Please try again.");
+    setProfileRecaptchaKey((k) => k + 1);
   };
 
   const resetProfileRecaptcha = () => {
@@ -597,6 +600,7 @@ export default function Profile() {
     }
     setProfileRecaptchaToken(null);
     setProfileRecaptchaError("");
+    setProfileRecaptchaKey((k) => k + 1);
   };
 
   // Send OTP for email verification
@@ -1865,6 +1869,7 @@ export default function Profile() {
                   {showProfileRecaptcha && emailValidation.available === true && !emailValidation.loading && !otpSent && !emailVerified && formData.email !== originalEmail && emailEditMode && (
                     <div className="mt-4">
                       <RecaptchaWidget
+                        key={profileRecaptchaKey}
                         ref={profileRecaptchaRef}
                         onVerify={handleProfileRecaptchaVerify}
                         onExpire={handleProfileRecaptchaExpire}

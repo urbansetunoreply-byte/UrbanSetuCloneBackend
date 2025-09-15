@@ -53,6 +53,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
   // reCAPTCHA states
   const [recaptchaToken, setRecaptchaToken] = useState(null);
   const [recaptchaError, setRecaptchaError] = useState("");
+  const [recaptchaKey, setRecaptchaKey] = useState(0);
   const recaptchaRef = useRef(null);
 
   // Check URL parameters on component mount
@@ -172,11 +173,13 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
   const handleRecaptchaExpire = () => {
     setRecaptchaToken(null);
     setRecaptchaError("reCAPTCHA expired. Please verify again.");
+    setRecaptchaKey((k) => k + 1);
   };
 
   const handleRecaptchaError = (error) => {
     setRecaptchaToken(null);
     setRecaptchaError("reCAPTCHA verification failed. Please try again.");
+    setRecaptchaKey((k) => k + 1);
   };
 
   const resetRecaptcha = () => {
@@ -185,6 +188,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
     }
     setRecaptchaToken(null);
     setRecaptchaError("");
+    setRecaptchaKey((k) => k + 1);
   };
 
   const handleChange = (e) => {
@@ -550,6 +554,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                 {/* reCAPTCHA Widget */}
                 <div className="flex justify-center mb-4">
                   <RecaptchaWidget
+                    key={recaptchaKey}
                     ref={recaptchaRef}
                     onVerify={handleRecaptchaVerify}
                     onExpire={handleRecaptchaExpire}

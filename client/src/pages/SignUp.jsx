@@ -40,6 +40,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
   const [consent, setConsent] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState(null);
   const [recaptchaError, setRecaptchaError] = useState("");
+  const [recaptchaKey, setRecaptchaKey] = useState(0);
   const recaptchaRef = useRef(null);
 
   // Email verification states
@@ -69,11 +70,13 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
   const handleRecaptchaExpire = () => {
     setRecaptchaToken(null);
     setRecaptchaError("reCAPTCHA expired. Please verify again.");
+    setRecaptchaKey((k) => k + 1);
   };
 
   const handleRecaptchaError = (error) => {
     setRecaptchaToken(null);
     setRecaptchaError("reCAPTCHA verification failed. Please try again.");
+    setRecaptchaKey((k) => k + 1);
   };
 
   const resetRecaptcha = () => {
@@ -82,6 +85,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
     }
     setRecaptchaToken(null);
     setRecaptchaError("");
+    setRecaptchaKey((k) => k + 1);
   };
 
   // Timer effect for resend OTP
@@ -670,6 +674,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
               {/* reCAPTCHA Widget */}
               <div className="flex justify-center mb-4">
                 <RecaptchaWidget
+                  key={recaptchaKey}
                   ref={recaptchaRef}
                   onVerify={handleRecaptchaVerify}
                   onExpire={handleRecaptchaExpire}
