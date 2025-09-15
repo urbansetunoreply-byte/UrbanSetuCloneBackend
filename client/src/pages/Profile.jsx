@@ -671,9 +671,12 @@ export default function Profile() {
         if (data.requiresCaptcha) {
           setProfileRequiresCaptcha(true);
           setShowProfileRecaptcha(true);
-          setProfileRecaptchaError("reCAPTCHA verification is now required due to multiple failed attempts.");
+          setProfileRecaptchaError("reCAPTCHA verification is required due to multiple failed attempts or requests");
+          // Avoid duplicate messaging in OTP error area
+          setOtpError("");
+        } else {
+          setOtpError(data.message);
         }
-        setOtpError(data.message);
       }
     } catch (error) {
       setOtpError("Failed to send OTP. Please try again.");
@@ -720,9 +723,12 @@ export default function Profile() {
         if (data.requiresCaptcha) {
           setProfileRequiresCaptcha(true);
           setShowProfileRecaptcha(true);
-          setProfileRecaptchaError("reCAPTCHA verification is now required due to multiple failed attempts.");
+          setProfileRecaptchaError("reCAPTCHA verification is required due to multiple failed attempts or requests");
+          // Avoid duplicate messaging in OTP error area
+          setOtpError("");
+        } else {
+          setOtpError(data.message);
         }
-        setOtpError(data.message);
       }
     } catch (error) {
       setOtpError("Failed to verify OTP. Please try again.");
