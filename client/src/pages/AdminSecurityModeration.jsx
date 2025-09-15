@@ -28,7 +28,10 @@ export default function AdminSecurityModeration() {
       const res = await fetch(`${API_BASE_URL}/api/auth/otp/stats`, { credentials: 'include' });
       const data = await res.json();
       if (!res.ok || data.success === false) throw new Error(data.message || 'Failed to fetch');
-      setStats({ recent: data.recent || [], activeLockouts: data.activeLockouts || 0, passwordLockouts: data.passwordLockouts || 0 });
+      const recent = data.recent || [];
+      const computedActive = recent.filter(r => r.lockoutUntil && new Date(r.lockoutUntil) > new Date()).length;
+      const activeLockouts = (data.activeLockouts || 0) === 0 && computedActive > 0 ? computedActive : (data.activeLockouts || 0);
+      setStats({ recent, activeLockouts, passwordLockouts: data.passwordLockouts || 0 });
     } catch (e) {
       setError(e.message || 'Failed to load');
     } finally {
@@ -192,8 +195,10 @@ export default function AdminSecurityModeration() {
 
         {error && <div className="mb-4 p-3 rounded bg-red-50 text-red-700">{error}</div>}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-white rounded-xl shadow p-4">
+        {/* Two equal columns: Left = OTP Activity, Right = Password Lockouts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* OTP Activity Table */}
+          <div className="bg-white rounded-xl shadow p-4">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-lg font-semibold text-gray-800">Recent OTP Activity</h2>
               <div className="text-right text-sm text-gray-600">
@@ -218,6 +223,7 @@ export default function AdminSecurityModeration() {
                     <th className="py-2 pr-4">Captcha</th>
                     <th className="py-2 pr-4">Lockout</th>
                     <th className="py-2 pr-4">Updated</th>
+                    <th className="py-2 pr-4">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -230,53 +236,36 @@ export default function AdminSecurityModeration() {
                       <td className="py-2 pr-4">{r.requiresCaptcha ? 'Yes' : 'No'}</td>
                       <td className="py-2 pr-4">{r.lockoutUntil && new Date(r.lockoutUntil) > new Date() ? new Date(r.lockoutUntil).toLocaleString() : '-'}</td>
                       <td className="py-2 pr-4">{r.updatedAt ? new Date(r.updatedAt).toLocaleString() : '-'}</td>
+                      <td className="py-2 pr-4">
+                        <button
+                          onClick={async () => {
+                            try {
+                              if (r.email) {
+                                const res = await fetch(`${API_BASE_URL}/api/auth/otp/unlock-email`, {
+                                  method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ email: r.email })
+                                });
+                                await res.json();
+                              } else if (r.ipAddress) {
+                                const res = await fetch(`${API_BASE_URL}/api/auth/otp/unlock-ip`, {
+                                  method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ ip: r.ipAddress })
+                                });
+                                await res.json();
+                              }
+                            } catch (_) {}
+                            fetchStats();
+                          }}
+                          className="px-2 py-1 text-xs bg-green-600 text-white rounded"
+                          title="Unlock restriction"
+                        >Unlock restriction</button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           </div>
-
-          <div className="bg-white rounded-xl shadow p-4 space-y-4">
-            <div>
-              <h3 className="font-semibold text-gray-800 mb-2">Admin Unlock</h3>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <input value={emailToUnlock} onChange={e=>setEmailToUnlock(e.target.value)} placeholder="User email" className="border rounded px-3 py-2 w-full" />
-                <button onClick={unlockByEmail} className="px-3 py-2 bg-indigo-600 text-white rounded-lg flex items-center gap-2 self-end sm:self-auto"><FaUnlockAlt /> Unlock OTP</button>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-2 mt-2">
-                <input value={ipToUnlock} onChange={e=>setIpToUnlock(e.target.value)} placeholder="IP address" className="border rounded px-3 py-2 w-full" />
-                <button onClick={unlockByIp} className="px-3 py-2 bg-purple-600 text-white rounded-lg flex items-center gap-2 self-end sm:self-auto"><FaUnlockAlt /> Unlock OTP IP</button>
-              </div>
-              <p className="text-xs text-gray-500 mt-2">Manual unlock clears OTP request/failure counters, captcha flag, and lockout.</p>
-              <div className="mt-3 text-sm text-gray-700">Active password lockouts: <span className="font-semibold text-red-600">{stats.passwordLockouts||0}</span></div>
-            </div>
-
-            <div className="pt-3 border-t">
-              <h3 className="font-semibold text-gray-800 mb-2">Admin Unlock (Password)</h3>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <input value={passwordEmailToUnlock} onChange={e=>setPasswordEmailToUnlock(e.target.value)} placeholder="User email" className="border rounded px-3 py-2 w-full" />
-                <button onClick={handleUnlockPasswordEmail} className="px-3 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 self-end sm:self-auto"><FaUnlockAlt /> Unlock by Email</button>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-2 mt-2">
-                <input value={passwordUserIdToUnlock} onChange={e=>setPasswordUserIdToUnlock(e.target.value)} placeholder="User ID" className="border rounded px-3 py-2 w-full" />
-                <button onClick={handleUnlockPasswordUserId} className="px-3 py-2 bg-indigo-600 text-white rounded-lg flex items-center gap-2 self-end sm:self-auto"><FaUnlockAlt /> Unlock by User</button>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-2 mt-2">
-                <input value={passwordIpToUnlock} onChange={e=>setPasswordIpToUnlock(e.target.value)} placeholder="IP address" className="border rounded px-3 py-2 w-full" />
-                <button onClick={handleUnlockPasswordIp} className="px-3 py-2 bg-purple-600 text-white rounded-lg flex items-center gap-2 self-end sm:self-auto"><FaUnlockAlt /> Unlock by IP</button>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-2 mt-2">
-                <input value={passwordIdentifierToUnlock} onChange={e=>setPasswordIdentifierToUnlock(e.target.value)} placeholder="Identifier (fallback)" className="border rounded px-3 py-2 w-full" />
-                <button onClick={handleUnlockPasswordIdentifier} className="px-3 py-2 bg-gray-700 text-white rounded-lg flex items-center gap-2 self-end sm:self-auto"><FaUnlockAlt /> Unlock by Identifier</button>
-              </div>
-              <p className="text-xs text-gray-500 mt-2">Clears stored password lockout rows for matching key(s) and unlocks user if found.</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Password Lockouts Section */}
-        <div className="mt-6 bg-white rounded-xl shadow p-4">
+          {/* Password Lockouts Table */}
+          <div className="bg-white rounded-xl shadow p-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold text-gray-800">Active Password Lockouts</h2>
             <div className="flex items-center gap-2">
@@ -316,11 +305,24 @@ export default function AdminSecurityModeration() {
                       <td className="py-2 pr-4">{r.attempts || 0}</td>
                       <td className="py-2 pr-4">{r.lockedAt ? new Date(r.lockedAt).toLocaleString() : '-'}</td>
                       <td className="py-2 pr-4">{r.unlockAt ? new Date(r.unlockAt).toLocaleString() : '-'}</td>
-                      <td className="py-2 pr-4 space-x-2">
-                        {r.email && <button onClick={() => unlockPasswordByEmailOrUser({ email: r.email })} className="px-2 py-1 text-xs bg-indigo-600 text-white rounded">Unlock by Email</button>}
-                        {r.userId && <button onClick={() => unlockPasswordByEmailOrUser({ userId: r.userId })} className="px-2 py-1 text-xs bg-blue-600 text-white rounded">Unlock by User</button>}
-                        {r.ipAddress && <button onClick={() => unlockPasswordByIp(r.ipAddress)} className="px-2 py-1 text-xs bg-purple-600 text-white rounded">Unlock by IP</button>}
-                        {r.identifier && <button onClick={() => unlockPasswordByIdentifier(r.identifier)} className="px-2 py-1 text-xs bg-gray-700 text-white rounded">Unlock by Identifier</button>}
+                      <td className="py-2 pr-4">
+                        <button
+                          onClick={async () => {
+                            try {
+                              if (r.email) {
+                                await unlockPasswordByEmailOrUser({ email: r.email });
+                              } else if (r.userId) {
+                                await unlockPasswordByEmailOrUser({ userId: r.userId });
+                              } else if (r.ipAddress) {
+                                await unlockPasswordByIp(r.ipAddress);
+                              } else if (r.identifier) {
+                                await unlockPasswordByIdentifier(r.identifier);
+                              }
+                            } catch (_) {}
+                          }}
+                          className="px-2 py-1 text-xs bg-green-600 text-white rounded"
+                          title="Unlock"
+                        >Unlock</button>
                       </td>
                     </tr>
                   ))}
@@ -333,6 +335,7 @@ export default function AdminSecurityModeration() {
               </table>
             </div>
           )}
+          </div>
         </div>
       </div>
     </div>
