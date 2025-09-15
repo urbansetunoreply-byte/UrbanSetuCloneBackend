@@ -105,6 +105,7 @@ otpTrackingSchema.methods.checkCaptchaRequirement = function() {
   const now = new Date();
   const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
   const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
+  const graceWindowAgo = new Date(now.getTime() - 10 * 60 * 1000); // 10-minute grace after captcha
   
   // Soft decay counters if it's been a while since last action
   if (this.lastOtpTimestamp && this.lastOtpTimestamp < tenMinutesAgo) {
@@ -114,10 +115,12 @@ otpTrackingSchema.methods.checkCaptchaRequirement = function() {
     this.failedOtpAttempts = 0;
   }
   
-  // Check if captcha is required based on thresholds
-  // 3 OTP requests within 5 minutes -> captcha
+  // Check if captcha is required based on thresholds, but honor recent captcha verification
+  // 3 OTP requests within 5 minutes -> captcha, unless captcha verified recently (grace period)
   if (this.otpRequestCount >= 3 && this.lastOtpTimestamp >= fiveMinutesAgo) {
-    this.requiresCaptcha = true;
+    if (!this.captchaVerifiedAt || this.captchaVerifiedAt < graceWindowAgo) {
+      this.requiresCaptcha = true;
+    }
   }
   // 3 failed OTP verifications within recent window -> captcha
   if (this.failedOtpAttempts >= 3 && this.lastFailedAttemptTimestamp >= tenMinutesAgo) {

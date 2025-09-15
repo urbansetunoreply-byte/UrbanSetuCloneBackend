@@ -42,7 +42,8 @@ export const sendOTP = async (req, res, next) => {
       // 3 requests within 5 minutes -> force captcha on next
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
       if (otpTracking.otpRequestCount >= 3 && otpTracking.lastOtpTimestamp >= fiveMinutesAgo) {
-        otpTracking.requiresCaptcha = true;
+        // Defer to model's checkCaptchaRequirement logic (which honors grace period)
+        otpTracking.checkCaptchaRequirement();
         await otpTracking.save();
       }
       // 5 requests within 15 minutes -> lockout 15 minutes
