@@ -75,12 +75,15 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
     setRecaptchaToken(null);
     setRecaptchaError("reCAPTCHA expired. Please verify again.");
     setRecaptchaKey((k) => k + 1);
+    // Show captcha again on expire
+    // Rendering is gated by !recaptchaToken, so this will make it visible
   };
 
   const handleRecaptchaError = (error) => {
     setRecaptchaToken(null);
     setRecaptchaError("reCAPTCHA verification failed. Please try again.");
     setRecaptchaKey((k) => k + 1);
+    // Will re-render due to null token
   };
 
   const resetRecaptcha = () => {

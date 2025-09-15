@@ -588,12 +588,14 @@ export default function Profile() {
     setProfileRecaptchaToken(null);
     setProfileRecaptchaError("reCAPTCHA expired. Please verify again.");
     setProfileRecaptchaKey((k) => k + 1);
+    setShowProfileRecaptcha(true);
   };
 
   const handleProfileRecaptchaError = (error) => {
     setProfileRecaptchaToken(null);
     setProfileRecaptchaError("reCAPTCHA verification failed. Please try again.");
     setProfileRecaptchaKey((k) => k + 1);
+    setShowProfileRecaptcha(true);
   };
 
   const resetProfileRecaptcha = () => {

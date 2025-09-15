@@ -167,12 +167,14 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         setRecaptchaError("reCAPTCHA expired. Please verify again.");
         // force remount so checkbox resets from tick to empty
         setRecaptchaKey((k) => k + 1);
+        setShowRecaptcha(true);
     };
 
     const handleRecaptchaError = (error) => {
         setRecaptchaToken(null);
         setRecaptchaError("reCAPTCHA verification failed. Please try again.");
         setRecaptchaKey((k) => k + 1);
+        setShowRecaptcha(true);
     };
 
     const resetRecaptcha = () => {
@@ -196,12 +198,14 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         setOtpRecaptchaToken(null);
         setOtpRecaptchaError("reCAPTCHA expired. Please verify again.");
         setOtpRecaptchaKey((k) => k + 1);
+        setShowOtpRecaptcha(true);
     };
 
     const handleOtpRecaptchaError = (error) => {
         setOtpRecaptchaToken(null);
         setOtpRecaptchaError("reCAPTCHA verification failed. Please try again.");
         setOtpRecaptchaKey((k) => k + 1);
+        setShowOtpRecaptcha(true);
     };
 
     const resetOtpRecaptcha = () => {

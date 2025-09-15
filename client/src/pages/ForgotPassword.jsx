@@ -176,12 +176,14 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
     setRecaptchaToken(null);
     setRecaptchaError("reCAPTCHA expired. Please verify again.");
     setRecaptchaKey((k) => k + 1);
+    // Will become visible again due to !recaptchaToken in render
   };
 
   const handleRecaptchaError = (error) => {
     setRecaptchaToken(null);
     setRecaptchaError("reCAPTCHA verification failed. Please try again.");
     setRecaptchaKey((k) => k + 1);
+    // Will become visible again due to !recaptchaToken in render
   };
 
   const resetRecaptcha = () => {
