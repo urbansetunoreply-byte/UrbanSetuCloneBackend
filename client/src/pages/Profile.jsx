@@ -2227,7 +2227,7 @@ export default function Profile() {
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
             <button
               onClick={handleShowListings}
-              className={`bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-450`}
+              className={`bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-450`}
             >
               <FaHome className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:-translate-y-0.5`} />
               <span className="font-medium text-xs sm:text-sm">My Listings</span>
@@ -2235,7 +2235,7 @@ export default function Profile() {
             
             <Link
               to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? "/admin/appointments" : "/user/my-appointments"}
-              className={`bg-green-500 text-white p-3 rounded-lg hover:bg-green-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-600`}
+              className={`bg-green-500 text-white p-3 rounded-lg hover:bg-green-600 transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-green-500 flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-600`}
             >
               <FaCalendarAlt className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:-translate-y-0.5`} />
               <span className="font-medium text-xs sm:text-sm">{(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? 'Appointments' : 'My Appointments'}</span>
@@ -2244,7 +2244,7 @@ export default function Profile() {
             {!(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
               <Link
                 to="/user/wishlist"
-                className={`bg-red-500 text-white p-3 rounded-lg hover:bg-red-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-750`}
+                className={`bg-red-500 text-white p-3 rounded-lg hover:bg-red-600 transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-500 flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-750`}
               >
                 <FaHeart className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:scale-110`} />
                 <span className="font-medium text-xs sm:text-sm">My Wishlist</span>
@@ -2254,7 +2254,7 @@ export default function Profile() {
             {!(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
               <Link
                 to="/user/watchlist"
-                className={`bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-800`}
+                className={`bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-800`}
               >
                 <FaEye className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:-translate-y-0.5`} />
                 <span className="font-medium text-xs sm:text-sm">My Watchlist</span>
@@ -2263,9 +2263,9 @@ export default function Profile() {
 
             <Link
               to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? "/admin/reviews" : "/user/reviews"}
-              className={`bg-yellow-500 text-white p-3 rounded-lg hover:bg-yellow-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-900`}
+              className={`bg-yellow-500 text-white p-3 rounded-lg hover:bg-yellow-600 transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-500 flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-900`}
             >
-              <FaStar className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.pulse}`} />
+              <FaStar className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:scale-110`} />
               <span className="font-medium text-xs sm:text-sm">{(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? 'Reviews' : 'My Reviews'}</span>
             </Link>
             
@@ -2367,6 +2367,7 @@ export default function Profile() {
                 onClick={() => navigate('/admin/management')}
                 className={`w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp} animation-delay-900`}
               >
+                <FaUser className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:${animationClasses.wiggle}`} />
                 <span className="group-hover:animate-pulse">Accounts</span>
               </button>
             )}

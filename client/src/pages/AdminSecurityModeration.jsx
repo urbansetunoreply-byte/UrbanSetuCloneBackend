@@ -20,6 +20,7 @@ export default function AdminSecurityModeration() {
 
   const [filters, setFilters] = useState({ email: '', ip: '', lockedOnly: false, captchaOnly: false });
   const [pwdFilters, setPwdFilters] = useState({ email: '', ip: '', identifier: '', userId: '' });
+  const [otpRefreshing, setOtpRefreshing] = useState(false);
 
   const fetchStats = async () => {
     setLoading(true);
@@ -42,7 +43,7 @@ export default function AdminSecurityModeration() {
 
   // Refresh only OTP activity and active lockouts, do not touch password lockouts count
   const fetchOtpOnly = async () => {
-    setLoading(true);
+    setOtpRefreshing(true);
     setError('');
     try {
       const res = await fetch(`${API_BASE_URL}/api/auth/otp/stats`, { credentials: 'include' });
@@ -55,7 +56,7 @@ export default function AdminSecurityModeration() {
     } catch (e) {
       setError(e.message || 'Failed to load');
     } finally {
-      setLoading(false);
+      setOtpRefreshing(false);
     }
   };
 
@@ -272,7 +273,7 @@ export default function AdminSecurityModeration() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* OTP Activity Table */}
           <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300">
-            <div className="flex items-center justify-between mb-6 gap-2 flex-wrap">
+            <div className="flex items-center mb-6 gap-2 flex-wrap">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg">
                   <FaEnvelope className="w-5 h-5 text-white" />
@@ -281,10 +282,19 @@ export default function AdminSecurityModeration() {
               </div>
               <button 
                 onClick={fetchOtpOnly} 
-                className="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 flex items-center gap-2"
+                className="ml-auto px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 flex items-center gap-2 order-2"
               >
-                <FaRedo className="w-4 h-4" />
-                Refresh
+                {otpRefreshing ? (
+                  <>
+                    <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+                    Refreshing...
+                  </>
+                ) : (
+                  <>
+                    <FaRedo className="w-4 h-4" />
+                    Refresh
+                  </>
+                )}
               </button>
             </div>
             {/* Enhanced Filter Section */}
