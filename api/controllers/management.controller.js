@@ -129,7 +129,7 @@ export const deleteUserOrAdmin = async (req, res, next) => {
       }
       const user = await User.findById(id);
       if (!user || user.role !== 'user') return next(errorHandler(404, 'User not found'));
-      await DeletedAccount.create({
+      const delRecUser = await DeletedAccount.create({
         accountId: user._id,
         name: user.username,
         email: user.email,
@@ -139,6 +139,7 @@ export const deleteUserOrAdmin = async (req, res, next) => {
         reason: req.body?.reason || ''
       });
       await User.findByIdAndDelete(id);
+      await AuditLog.create({ action: 'soft_delete', performedBy: currentUser._id, targetAccount: delRecUser._id, targetEmail: delRecUser.email, details: { type: 'admin_delete', role: 'user' } });
       return res.status(200).json({ message: 'User moved to DeletedAccounts' });
     } else if (type === 'admin') {
       if (!isRoot) {
@@ -146,7 +147,7 @@ export const deleteUserOrAdmin = async (req, res, next) => {
       }
       const admin = await User.findById(id);
       if (!admin || admin.role !== 'admin') return next(errorHandler(404, 'Admin not found'));
-      await DeletedAccount.create({
+      const delRecAdmin = await DeletedAccount.create({
         accountId: admin._id,
         name: admin.username,
         email: admin.email,
@@ -156,6 +157,7 @@ export const deleteUserOrAdmin = async (req, res, next) => {
         reason: req.body?.reason || ''
       });
       await User.findByIdAndDelete(id);
+      await AuditLog.create({ action: 'soft_delete', performedBy: currentUser._id, targetAccount: delRecAdmin._id, targetEmail: delRecAdmin.email, details: { type: 'admin_delete', role: 'admin' } });
       return res.status(200).json({ message: 'Admin moved to DeletedAccounts' });
     } else {
       return next(errorHandler(400, 'Invalid type'));

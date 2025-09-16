@@ -7,6 +7,7 @@ const deletedAccountSchema = new mongoose.Schema({
   role: { type: String, enum: ['user', 'admin'], required: true, index: true },
   deletedAt: { type: Date, default: Date.now, index: true },
   deletedBy: { type: mongoose.Schema.Types.Mixed, required: true }, // ObjectId of admin/rootadmin or string 'self'
+  originalData: { type: mongoose.Schema.Types.Mixed }
   reason: { type: String, default: '' }
 }, { timestamps: true });
 

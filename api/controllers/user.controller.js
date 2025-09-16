@@ -2,6 +2,8 @@ import Listing from "../models/listing.model.js"
 import User from "../models/user.model.js"
 import { errorHandler } from "../utils/error.js"
 import mongoose from "mongoose"
+import DeletedAccount from '../models/deletedAccount.model.js';
+import AuditLog from '../models/auditLog.model.js';
 import bcryptjs from "bcryptjs"
 import Review from "../models/review.model.js";
 import ReviewReply from "../models/reviewReply.model.js";
@@ -133,9 +135,26 @@ export const deleteUser=async(req,res,next)=>{
         if (!isMatch) {
             return next(errorHandler(401, "Password is incorrect"));
         }
-        await User.findByIdAndDelete(req.params.id)
-        res.status(200)
-        res.json("User deleted successfully")
+        // Soft-delete: move to DeletedAccounts and audit log
+        const deletedRecord = await DeletedAccount.create({
+            accountId: user._id,
+            name: user.username,
+            email: user.email,
+            role: user.role,
+            deletedAt: new Date(),
+            deletedBy: 'self',
+            reason: 'self_deleted',
+            originalData: {
+                username: user.username,
+                email: user.email,
+                role: user.role,
+                createdAt: user.createdAt,
+                status: user.status
+            }
+        });
+        await User.findByIdAndDelete(req.params.id);
+        await AuditLog.create({ action: 'soft_delete', performedBy: user._id, targetAccount: deletedRecord._id, targetEmail: user.email, details: { type: 'self_delete', role: user.role } });
+        res.status(200).json({ success: true, message: "User moved to DeletedAccounts" })
     }
     catch(error){
         console.error(error);
