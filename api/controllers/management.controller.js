@@ -136,7 +136,8 @@ export const deleteUserOrAdmin = async (req, res, next) => {
         role: 'user',
         deletedAt: new Date(),
         deletedBy: currentUser._id,
-        reason: req.body?.reason || ''
+        reason: req.body?.reason || '',
+        policy: req.body?.policy
       });
       await User.findByIdAndDelete(id);
       await AuditLog.create({ action: 'soft_delete', performedBy: currentUser._id, targetAccount: delRecUser._id, targetEmail: delRecUser.email, details: { type: 'admin_delete', role: 'user' } });
@@ -154,7 +155,8 @@ export const deleteUserOrAdmin = async (req, res, next) => {
         role: 'admin',
         deletedAt: new Date(),
         deletedBy: currentUser._id,
-        reason: req.body?.reason || ''
+        reason: req.body?.reason || '',
+        policy: req.body?.policy
       });
       await User.findByIdAndDelete(id);
       await AuditLog.create({ action: 'soft_delete', performedBy: currentUser._id, targetAccount: delRecAdmin._id, targetEmail: delRecAdmin.email, details: { type: 'admin_delete', role: 'admin' } });
@@ -246,6 +248,10 @@ export const purgeDeletedAccount = async (req, res, next) => {
     const { id } = req.params;
     const record = await DeletedAccount.findById(id);
     if (!record) return next(errorHandler(404, 'Deleted account not found'));
+    // Update record to preserve purge metadata and policy in case of audit export
+    record.purgedAt = new Date();
+    record.purgedBy = currentUser._id;
+    await record.save();
     await DeletedAccount.findByIdAndDelete(id);
     await AuditLog.create({ action: 'purge', performedBy: currentUser._id, targetAccount: record._id, targetEmail: record.email });
     res.json({ success: true, message: 'Deleted account purged' });

@@ -8,6 +8,7 @@ import { generateTokenPair, setSecureCookies, clearAuthCookies } from "../utils/
 import { trackFailedAttempt, clearFailedAttempts, logSecurityEvent, sendAdminAlert, isAccountLocked, checkSuspiciousLogin, checkSuspiciousSignup, getAccountLockRemainingMs } from "../middleware/security.js";
 import { createSession, updateSessionActivity, detectConcurrentLogins, cleanupOldSessions } from "../utils/sessionManager.js";
 import OtpTracking from "../models/otpTracking.model.js";
+import DeletedAccount from "../models/deletedAccount.model.js";
 
 export const SignUp=async (req,res,next)=>{
     const {username,email,password,role,mobileNumber,address,emailVerified}=req.body;
@@ -29,6 +30,35 @@ export const SignUp=async (req,res,next)=>{
     }
     
     try {
+        // Check softban/purge policy before allowing signup
+        const existingSoftban = await DeletedAccount.findOne({ email: emailLower });
+        if (existingSoftban) {
+            const policy = existingSoftban.policy || {};
+            // Purged? If purged and banType is 'ban', block permanently
+            if (existingSoftban.purgedAt && policy.banType === 'ban') {
+                return next(errorHandler(403, "This account was permanently removed and cannot be used to sign up again."));
+            }
+            // If explicit ban
+            if (policy.banType === 'ban') {
+                return next(errorHandler(403, "This account has been permanently banned due to policy violations. Please contact support if you believe this is a mistake."));
+            }
+            // If allowed but with cooling-off period
+            if (!existingSoftban.purgedAt && typeof policy.allowResignupAfterDays === 'number' && policy.allowResignupAfterDays > 0) {
+                const allowAfter = new Date(existingSoftban.deletedAt.getTime() + policy.allowResignupAfterDays * 24 * 60 * 60 * 1000);
+                if (new Date() < allowAfter) {
+                    const daysLeft = Math.ceil((allowAfter.getTime() - Date.now()) / (24*60*60*1000));
+                    return next(errorHandler(403, `Please wait ${daysLeft} more day(s) before signing up again.`));
+                }
+            }
+            // Show contextual messages
+            if (policy.category === 'inactive_auto') {
+                return next(errorHandler(403, "This account was deactivated due to long inactivity. You may create a new account or contact support to restore."));
+            }
+            if (policy.category === 'requested_by_user') {
+                return next(errorHandler(403, "This account was deleted at your request. You may sign up again anytime."));
+            }
+            // Otherwise allow signup to proceed (non-banned)
+        }
         // Check if email already exists
         const existingEmail = await User.findOne({ email: emailLower });
         if (existingEmail) {
