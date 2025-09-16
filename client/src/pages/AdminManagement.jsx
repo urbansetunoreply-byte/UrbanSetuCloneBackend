@@ -270,11 +270,11 @@ export default function AdminManagement() {
     };
 
     showConfirmation(
-      'Confirm Deletion',
-      `Are you sure you want to delete this ${type}? This action cannot be undone.`,
+      'Confirm Softban',
+      `Are you sure you want to softban this ${type}? This can be restored later.`,
       performDelete,
       {
-        confirmText: 'Delete',
+        confirmText: 'Softban',
         confirmButtonClass: 'bg-red-500 hover:bg-red-600'
       }
     );
@@ -736,7 +736,7 @@ export default function AdminManagement() {
               fetchDeletedAccounts();
             }}
           >
-            Deleted Accounts
+            Softbanned Accounts
           </button>
         </div>
 
@@ -932,7 +932,7 @@ export default function AdminManagement() {
                             className="flex-1 px-2 py-1 rounded-lg font-semibold text-sm bg-red-500 text-white hover:bg-red-600 transition-all duration-200 flex items-center justify-center gap-2"
                             onClick={e => { e.stopPropagation(); handleDelete(user._id, "user"); }}
                           >
-                            <FaTrash /> Delete
+                            <FaTrash /> Softban
                           </button>
                           {currentUser.isDefaultAdmin && (
                             <button
@@ -1040,7 +1040,7 @@ export default function AdminManagement() {
                             className="flex-1 px-2 py-1 rounded-lg font-semibold text-sm bg-red-500 text-white hover:bg-red-600 transition-all duration-200 flex items-center justify-center gap-2"
                             onClick={e => { e.stopPropagation(); handleDelete(admin._id, "admin"); }}
                           >
-                            <FaTrash /> Delete
+                            <FaTrash /> Softban
                           </button>
                           <button
                             className="flex-1 px-2 py-1 rounded-lg font-semibold text-sm bg-blue-500 text-white hover:bg-blue-600 transition-all duration-200 flex items-center justify-center gap-2"
@@ -1068,7 +1068,7 @@ export default function AdminManagement() {
             )}
             {tab === 'deleted' && (
               <div className="mt-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">Deleted Accounts</h2>
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">Softbanned Accounts</h2>
                 {deletedLoading ? (
                   <div className="flex items-center justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div><span className="ml-3 text-gray-600">Loading...</span></div>
                 ) : deletedAccounts.length === 0 ? (
