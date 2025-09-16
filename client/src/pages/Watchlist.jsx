@@ -66,9 +66,13 @@ export default function Watchlist() {
     }
   };
 
+  // Feature flag: optionally enable backend notifications to avoid 404s if route is absent
+  const ENABLE_WATCHLIST_NOTIFICATIONS = import.meta.env.VITE_ENABLE_WATCHLIST_NOTIFICATIONS === 'true';
+
   // Send watchlist notification
   const sendWatchlistNotification = async (listing, type, message) => {
     if (!currentUser?._id) return;
+    if (!ENABLE_WATCHLIST_NOTIFICATIONS) return;
     
     try {
       const response = await fetch(`${API_BASE_URL}/api/notifications/watchlist`, {
@@ -95,9 +99,16 @@ export default function Watchlist() {
           notification: data.notification
         });
       }
-    } catch (error) {
-      console.error('Error sending watchlist notification:', error);
+    } catch (_) {
+      // Silently ignore notification errors
     }
+  };
+
+  // Helper used by multiple computations - must be defined before usage
+  const getEffectivePrice = (l) => {
+    if (!l) return null;
+    const effective = (l.offer && l.discountPrice) ? l.discountPrice : l.regularPrice;
+    return effective ?? null;
   };
 
   // Check for price changes and send notifications
@@ -453,11 +464,7 @@ export default function Watchlist() {
     );
   }
 
-  const getEffectivePrice = (l) => {
-    if (!l) return null;
-    const effective = (l.offer && l.discountPrice) ? l.discountPrice : l.regularPrice;
-    return effective ?? null;
-  };
+  
 
   const isPriceDropped = (l) => {
     const effective = getEffectivePrice(l);

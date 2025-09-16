@@ -3,46 +3,46 @@ import React from "react";
 
 export default function AdminTerms() {
   return (
-    <div className="max-w-3xl mx-auto py-10 px-4">
-      <h1 className="text-3xl font-bold mb-6 text-blue-700">Admin Terms & Conditions</h1>
+    <div className="max-w-4xl mx-auto py-10 px-4">
+      <h1 className="text-4xl font-bold mb-6 text-blue-700">Admin Terms & Conditions</h1>
       <div className="space-y-6 text-gray-800 text-base">
-        <p>Welcome to our Real Estate platform. By using our services, you agree to the following terms and conditions. Please read them carefully. By registering, you must select a role (admin) and provide explicit consent to our Terms & Privacy Policy.</p>
-        <h2 className="text-xl font-semibold mt-6 mb-2">1. Fairness & Equal Opportunity</h2>
-        <ul className="list-disc ml-6 space-y-2">
-          <li>All users (buyers, sellers, and admins) must act honestly and fairly in all transactions.</li>
-          <li>No discrimination based on race, gender, religion, or any other protected status is tolerated.</li>
-          <li>Admins must review listings and requests impartially and without bias.</li>
+        <p className="text-lg">By using UrbanSetu admin tools, you agree to these admin terms.</p>
+        
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">1. Admin Responsibilities</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li>Act impartially and in users' best interests.</li>
+          <li>Do not abuse admin privileges for personal gain.</li>
+          <li>Maintain confidentiality of sensitive user and business data.</li>
+          <li>Default admin privileges may have additional constraints.</li>
         </ul>
-        <h2 className="text-xl font-semibold mt-6 mb-2">2. Admin Responsibilities</h2>
-        <ul className="list-disc ml-6 space-y-2">
-          <li>Admins must act in the best interest of the platform and its users.</li>
-          <li>Admins must not abuse their privileges or access for personal gain.</li>
-          <li>Admins must maintain confidentiality of sensitive user data.</li>
-          <li>Admins may transfer their rights to another admin, following platform procedures. Default admins may have special restrictions.</li>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">2. Security & Compliance</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li>Use strong authentication and keep sessions secure.</li>
+          <li>Follow audit and logging practices for critical actions.</li>
+          <li>Comply with applicable laws, regulations, and company policies.</li>
         </ul>
-        <h2 className="text-xl font-semibold mt-6 mb-2">3. Consent and Account Management</h2>
-        <ul className="list-disc ml-6 space-y-2">
-          <li>Explicit consent to these terms and our privacy policy is required at signup and for certain actions.</li>
-          <li>You may delete your account at any time. Deleting your account will remove your data, except where retention is required by law or for legitimate business purposes. Default admins may have special restrictions.</li>
-          <li>Strong password requirements are enforced for your security.</li>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">3. Platform Rules</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li>We may revoke admin access for violations.</li>
+          <li>Admins must not bypass safeguards or manipulate data improperly.</li>
         </ul>
-        <h2 className="text-xl font-semibold mt-6 mb-2">4. Platform Rules</h2>
-        <ul className="list-disc ml-6 space-y-2">
-          <li>We reserve the right to remove any content or user that violates these terms.</li>
-          <li>Admins may suspend or ban accounts for repeated or serious violations.</li>
-          <li>All transactions and communications must comply with applicable laws.</li>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">4. Smart & AI Features</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li>Use AI insights responsibly; verify results for critical actions.</li>
+          <li>Do not rely solely on AI for compliance or legal decisions.</li>
         </ul>
-        <h2 className="text-xl font-semibold mt-6 mb-2">5. Limitation of Liability</h2>
-        <ul className="list-disc ml-6 space-y-2">
-          <li>We are not responsible for the actions of users or third parties on the platform.</li>
-          <li>All property transactions are the responsibility of the involved parties.</li>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">5. Liability</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li>Admin actions are traceable; misuse can result in suspension or legal action.</li>
+          <li>UrbanSetu is not responsible for third-party actions.</li>
         </ul>
-        <h2 className="text-xl font-semibold mt-6 mb-2">6. Changes to Terms</h2>
-        <ul className="list-disc ml-6 space-y-2">
-          <li>We may update these terms at any time. Continued use of the platform constitutes acceptance of the new terms.</li>
-        </ul>
-        <p className="mt-8 text-gray-600">If you have questions about these terms, please contact our support team.</p>
+
+        <p className="mt-6 text-sm text-gray-600">Last updated: {new Date().toLocaleDateString()}</p>
       </div>
     </div>
   );
-} 
+}

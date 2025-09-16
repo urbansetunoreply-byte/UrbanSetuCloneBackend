@@ -1,12 +1,31 @@
 import React, { useState, useEffect } from 'react';
 
-import { FaBullseye, FaGlobe, FaUsers, FaShieldAlt, FaUserFriends, FaEnvelope, FaStar } from 'react-icons/fa';
+import { FaBullseye, FaGlobe, FaUsers, FaShieldAlt, FaUserFriends, FaEnvelope, FaStar, FaPhone, FaMobileAlt } from 'react-icons/fa';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function PublicAbout() {
   const [aboutData, setAboutData] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  const handlePhoneClick = (phoneNumber) => {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+      window.location.href = `tel:${phoneNumber}`;
+    } else {
+      navigator.clipboard.writeText(phoneNumber).then(() => {
+        alert(`Phone number ${phoneNumber} copied to clipboard!`);
+      }).catch(() => {
+        const textArea = document.createElement('textarea');
+        textArea.value = phoneNumber;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        alert(`Phone number ${phoneNumber} copied to clipboard!`);
+      });
+    }
+  };
 
   useEffect(() => {
     const fetchAboutData = async () => {
@@ -103,9 +122,46 @@ export default function PublicAbout() {
           <h2 className="text-2xl font-bold text-green-700 flex items-center gap-2 mb-2">
             <FaEnvelope className="text-green-500" /> Contact & Support
           </h2>
-          <p className="text-slate-700 text-lg whitespace-pre-line">
-            {aboutData.contact || ''}
-          </p>
+          <p className="text-slate-700 text-lg whitespace-pre-line mb-6">{aboutData.contact || ''}</p>
+
+          {/* Contact Methods */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Phone Numbers */}
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+              <h3 className="text-lg font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                <FaPhone className="text-blue-600" /> Phone Support
+              </h3>
+              <div className="space-y-2">
+                <button onClick={() => handlePhoneClick('+1-555-123-4567')} className="flex items-center gap-2 text-blue-700 hover:text-blue-800 hover:bg-blue-200 p-2 rounded-lg transition-all duration-200 w-full text-left">
+                  <FaMobileAlt className="text-blue-600" />
+                  <span className="font-medium">+1 (555) 123-4567</span>
+                </button>
+                <button onClick={() => handlePhoneClick('+1-555-987-6543')} className="flex items-center gap-2 text-blue-700 hover:text-blue-800 hover:bg-blue-200 p-2 rounded-lg transition-all duration-200 w-full text-left">
+                  <FaPhone className="text-blue-600" />
+                  <span className="font-medium">+1 (555) 987-6543</span>
+                </button>
+              </div>
+              <p className="text-xs text-blue-600 mt-2">📱 Mobile: Tap to call | 💻 Desktop: Click to copy</p>
+            </div>
+
+            {/* Email Support */}
+            <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
+              <h3 className="text-lg font-semibold text-green-800 mb-3 flex items-center gap-2">
+                <FaEnvelope className="text-green-600" /> Email Support
+              </h3>
+              <div className="space-y-2">
+                <a href="mailto:support@urbansetu.com" className="flex items-center gap-2 text-green-700 hover:text-green-800 hover:bg-green-200 p-2 rounded-lg transition-all duration-200">
+                  <FaEnvelope className="text-green-600" />
+                  <span className="font-medium">support@urbansetu.com</span>
+                </a>
+                <a href="mailto:info@urbansetu.com" className="flex items-center gap-2 text-green-700 hover:text-green-800 hover:bg-green-200 p-2 rounded-lg transition-all duration-200">
+                  <FaEnvelope className="text-green-600" />
+                  <span className="font-medium">info@urbansetu.com</span>
+                </a>
+              </div>
+              <p className="text-xs text-green-600 mt-2">📧 24/7 email support available</p>
+            </div>
+          </div>
         </div>
       </div>
       {/* Connect with Us section */}

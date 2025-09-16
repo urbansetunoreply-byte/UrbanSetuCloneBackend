@@ -3,46 +3,46 @@ import React from "react";
 
 export default function UserTerms() {
   return (
-    <div className="max-w-3xl mx-auto py-10 px-4">
-      <h1 className="text-3xl font-bold mb-6 text-blue-700">User Terms & Conditions</h1>
+    <div className="max-w-4xl mx-auto py-10 px-4">
+      <h1 className="text-4xl font-bold mb-6 text-blue-700">User Terms & Conditions</h1>
       <div className="space-y-6 text-gray-800 text-base">
-        <p>Welcome to our Real Estate platform. By using our services, you agree to the following terms and conditions. Please read them carefully. By registering, you must select a role (user) and provide explicit consent to our Terms & Privacy Policy.</p>
-        <h2 className="text-xl font-semibold mt-6 mb-2">1. Fairness & Equal Opportunity</h2>
-        <ul className="list-disc ml-6 space-y-2">
-          <li>All users (buyers, sellers, and admins) must act honestly and fairly in all transactions.</li>
-          <li>No discrimination based on race, gender, religion, or any other protected status is tolerated.</li>
-          <li>Admins must review listings and requests impartially and without bias.</li>
+        <p className="text-lg">By using UrbanSetu, you agree to these user terms. Please read them carefully.</p>
+        
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">1. Your Responsibilities</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li>Provide accurate information. Mobile number must be unique and valid.</li>
+          <li>Respect privacy and rights of others. No harassment or fraud.</li>
+          <li>Ensure your listings are truthful and updated. False listings may lead to action.</li>
         </ul>
-        <h2 className="text-xl font-semibold mt-6 mb-2">2. User Responsibilities</h2>
-        <ul className="list-disc ml-6 space-y-2">
-          <li>Provide accurate and truthful information when registering and listing properties. Mobile numbers must be unique and valid.</li>
-          <li>Respect the privacy and rights of other users.</li>
-          <li>Do not use the platform for illegal or fraudulent activities.</li>
-          <li>When creating or editing a listing, you must confirm that all information provided is true and genuine. Providing false information may result in account suspension or legal action.</li>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">2. Account & Consent</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li>Explicit consent is required for our Terms and Privacy Policy.</li>
+          <li>You may delete your account; data retention applies where required by law.</li>
+          <li>Use strong passwords and keep your account secure.</li>
         </ul>
-        <h2 className="text-xl font-semibold mt-6 mb-2">3. Consent and Account Management</h2>
-        <ul className="list-disc ml-6 space-y-2">
-          <li>Explicit consent to these terms and our privacy policy is required at signup and for certain actions.</li>
-          <li>You may delete your account at any time. Deleting your account will remove your data, except where retention is required by law or for legitimate business purposes.</li>
-          <li>Strong password requirements are enforced for your security.</li>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">3. Platform Use</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li>Follow applicable laws and platform rules.</li>
+          <li>We may remove content that violates guidelines.</li>
+          <li>Admins may suspend accounts for serious violations.</li>
         </ul>
-        <h2 className="text-xl font-semibold mt-6 mb-2">4. Platform Rules</h2>
-        <ul className="list-disc ml-6 space-y-2">
-          <li>We reserve the right to remove any content or user that violates these terms.</li>
-          <li>Admins may suspend or ban accounts for repeated or serious violations.</li>
-          <li>All transactions and communications must comply with applicable laws.</li>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">4. Smart & AI Features</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li>Natural language search, recommendations, and watchlist price monitoring.</li>
+          <li>Notifications for price drops, new listings, and appointments.</li>
         </ul>
-        <h2 className="text-xl font-semibold mt-6 mb-2">5. Limitation of Liability</h2>
-        <ul className="list-disc ml-6 space-y-2">
-          <li>We are not responsible for the actions of users or third parties on the platform.</li>
-          <li>All property transactions are the responsibility of the involved parties.</li>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">5. Liability</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li>We are not party to property transactions between users.</li>
+          <li>We are not responsible for third-party actions.</li>
         </ul>
-        <h2 className="text-xl font-semibold mt-6 mb-2">6. Changes to Terms</h2>
-        <ul className="list-disc ml-6 space-y-2">
-          <li>We may update these terms at any time. Continued use of the platform constitutes acceptance of the new terms.</li>
-        </ul>
-        <p className="mt-8 text-gray-600">If you have questions about these terms, please contact our support team.</p>
+
+        <p className="mt-6 text-sm text-gray-600">Last updated: {new Date().toLocaleDateString()}</p>
       </div>
     </div>
   );
-} 
+}

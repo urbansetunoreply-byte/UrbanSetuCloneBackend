@@ -3,46 +3,49 @@ import React from "react";
 
 export default function AdminPrivacy() {
   return (
-    <div className="max-w-3xl mx-auto py-10 px-4">
-      <h1 className="text-3xl font-bold mb-6 text-blue-700">Admin Privacy Policy</h1>
+    <div className="max-w-4xl mx-auto py-10 px-4">
+      <h1 className="text-4xl font-bold mb-6 text-blue-700">Admin Privacy Policy</h1>
       <div className="space-y-6 text-gray-800 text-base">
-        <p>Your privacy is important to us. This policy explains how we collect, use, and protect your information as an admin of our platform.</p>
-        <h2 className="text-xl font-semibold mt-6 mb-2">1. Information We Collect</h2>
-        <ul className="list-disc ml-6 space-y-2">
-          <li>Personal information you provide during registration, including your selected role (admin), name, email, and validated mobile number (must be unique and 10 digits).</li>
-          <li>Property details, communications, transaction history, and admin actions (such as transfer of admin rights).</li>
-          <li>Usage data such as IP address, browser type, and device information.</li>
+        <p className="text-lg">This policy explains how we collect, use, and protect your information as an admin on UrbanSetu.</p>
+        
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">1. Information We Collect</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Admin Profile:</strong> Name, email, validated mobile number (unique 10 digits), role (admin/rootadmin), and authentication credentials.</li>
+          <li><strong>Admin Activity:</strong> Listing approvals, edits, removals, reviews, unlocks, and other moderation actions.</li>
+          <li><strong>Operational Data:</strong> Security events, OTP lockouts handling, system notices, and audit logs.</li>
+          <li><strong>Technical Data:</strong> IP address, device and browser details, usage analytics, and error logs.</li>
         </ul>
-        <h2 className="text-xl font-semibold mt-6 mb-2">2. How We Use Your Information</h2>
-        <ul className="list-disc ml-6 space-y-2">
-          <li>To provide, improve, and secure our services.</li>
-          <li>To communicate with you about your account, listings, platform updates, and admin responsibilities.</li>
-          <li>To ensure security, prevent fraud, and enforce platform rules.</li>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">2. How We Use Admin Information</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Operations:</strong> Perform admin duties and maintain platform integrity.</li>
+          <li><strong>Security:</strong> Monitor threats, manage lockouts, and prevent abuse.</li>
+          <li><strong>Compliance:</strong> Maintain audit trails and follow legal obligations.</li>
+          <li><strong>Improvement:</strong> Use analytics and feedback to improve tooling.</li>
         </ul>
-        <h2 className="text-xl font-semibold mt-6 mb-2">3. Consent and Your Rights</h2>
-        <ul className="list-disc ml-6 space-y-2">
-          <li>Explicit consent for our Terms & Privacy Policy is required at signup and for certain actions.</li>
-          <li>You can access, update, or delete your personal information at any time. Deleting your account will remove your data, except where retention is required by law or for legitimate business purposes. Default admins may have special restrictions.</li>
-          <li>You may opt out of marketing communications.</li>
-          <li>Contact us for any privacy-related concerns or requests.</li>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">3. Admin Rights</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li>Access your data and request corrections.</li>
+          <li>Request account deletion (may be limited for default admins).</li>
+          <li>Receive important operational and security notifications.</li>
         </ul>
-        <h2 className="text-xl font-semibold mt-6 mb-2">4. Sharing of Information</h2>
-        <ul className="list-disc ml-6 space-y-2">
-          <li>We do not sell your personal information to third parties.</li>
-          <li>We may share information with service providers as needed to operate the platform.</li>
-          <li>We may disclose information if required by law or to protect our rights.</li>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">4. Sharing & Third Parties</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>No Sale:</strong> We do not sell admin information.</li>
+          <li><strong>Service Providers:</strong> Infrastructure, monitoring, analytics under strict agreements.</li>
+          <li><strong>Legal:</strong> Disclosures required by law or to protect our users and platform.</li>
         </ul>
-        <h2 className="text-xl font-semibold mt-6 mb-2">5. Data Security</h2>
-        <ul className="list-disc ml-6 space-y-2">
-          <li>We use industry-standard security measures to protect your data, including strong password requirements and account protection features.</li>
-          <li>Despite our efforts, no system is completely secure. Use the platform at your own risk.</li>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">5. Security</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li>Role-based access, encryption, audit logging, and incident response.</li>
+          <li>Despite safeguards, no system is perfect—use admin tools responsibly.</li>
         </ul>
-        <h2 className="text-xl font-semibold mt-6 mb-2">6. Changes to This Policy</h2>
-        <ul className="list-disc ml-6 space-y-2">
-          <li>We may update this policy from time to time. Continued use of the platform means you accept the new policy.</li>
-        </ul>
-        <p className="mt-8 text-gray-600">If you have questions about this policy, please contact our support team.</p>
+
+        <p className="mt-6 text-sm text-gray-600">Last updated: {new Date().toLocaleDateString()}</p>
       </div>
     </div>
   );
-} 
+}
