@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { FaTools, FaEnvelope, FaCheckCircle } from 'react-icons/fa';
+import { FaTools, FaEnvelope, FaCheckCircle, FaTruckMoving } from 'react-icons/fa';
 
 export default function AdminServices() {
   const { currentUser } = useSelector((state) => state.user);
   const [items, setItems] = useState([]);
+  const [movers, setMovers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
 
@@ -17,6 +18,9 @@ export default function AdminServices() {
       const res = await fetch(`${API_BASE_URL}/api/requests/services`, { credentials: 'include' });
       const data = await res.json();
       setItems(Array.isArray(data) ? data : []);
+      const mres = await fetch(`${API_BASE_URL}/api/requests/movers`, { credentials: 'include' });
+      const mdata = await mres.json();
+      setMovers(Array.isArray(mdata) ? mdata : []);
     } catch (_) {}
     setLoading(false);
   };
@@ -68,8 +72,6 @@ export default function AdminServices() {
 
       {loading ? (
         <div className="text-gray-600">Loading...</div>
-      ) : filtered.length === 0 ? (
-        <div className="text-gray-600">No service requests found.</div>
       ) : (
         <div className="bg-white rounded-xl shadow overflow-auto">
           <table className="min-w-[700px] w-full text-sm">
@@ -111,6 +113,57 @@ export default function AdminServices() {
           </table>
         </div>
       )}
+
+      {/* Movers Requests Section */}
+      <div className="mt-10 border-t border-gray-200 pt-8">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold flex items-center gap-2"><FaTruckMoving className="text-blue-600"/> Movers Requests</h2>
+          <button onClick={fetchNotifications} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button>
+        </div>
+        {loading ? (
+          <div className="text-gray-600">Loading...</div>
+        ) : movers.length === 0 ? (
+          <div className="text-gray-600">No movers requests found.</div>
+        ) : (
+          <div className="bg-white rounded-xl shadow overflow-auto">
+            <table className="min-w-[700px] w-full text-sm">
+              <thead className="bg-gray-50 text-gray-600">
+                <tr>
+                  <th className="text-left px-4 py-3">Requested</th>
+                  <th className="text-left px-4 py-3">Requester</th>
+                  <th className="text-left px-4 py-3">Details</th>
+                  <th className="text-left px-4 py-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {movers.map(n => (
+                  <tr key={n._id} className="border-t">
+                    <td className="px-4 py-3 whitespace-nowrap">{new Date(n.createdAt).toLocaleString()}</td>
+                    <td className="px-4 py-3">{n.requesterName} ({n.requesterEmail})</td>
+                    <td className="px-4 py-3">
+                      <div className="text-xs text-gray-700">From: {n.fromAddress}</div>
+                      <div className="text-xs text-gray-700">To: {n.toAddress}</div>
+                      <div className="text-xs text-gray-700">Date: {n.moveDate}</div>
+                      <div className="text-xs text-gray-700">Size: {n.size}</div>
+                      {n.notes && (<div className="text-xs text-gray-700">Notes: {n.notes}</div>)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        {n.requesterEmail && (
+                          <a href={`mailto:${n.requesterEmail}`} className="px-2 py-1 rounded bg-blue-600 text-white text-xs inline-flex items-center gap-1"><FaEnvelope/> Email</a>
+                        )}
+                        <select value={n.status} onChange={async(e)=>{try{await fetch(`${API_BASE_URL}/api/requests/movers/${n._id}`,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:e.target.value})}); fetchNotifications();}catch(_){}}} className="text-xs border rounded px-2 py-1">
+                          {['pending','in_progress','completed','cancelled'].map(s=> <option key={s} value={s}>{s}</option>)}
+                        </select>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

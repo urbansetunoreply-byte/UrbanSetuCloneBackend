@@ -61,9 +61,7 @@ const AdminEditListing = lazy(() => import("./pages/AdminEditListing"));
 const Oauth = lazy(() => import("./components/Oauth"));
 const AdminAppointmentListing = lazy(() => import("./pages/AdminAppointmentListing"));
 const AdminReviews = lazy(() => import("./pages/AdminReviews"));
-const AdminMovers = lazy(() => import('./pages/AdminMovers'));
 const AdminServices = lazy(() => import('./pages/AdminServices'));
-const PackersMovers = lazy(() => import('./pages/PackersMovers'));
 const OnDemandServices = lazy(() => import('./pages/OnDemandServices'));
 const RoutePlanner = lazy(() => import('./pages/RoutePlanner'));
 const UserReviews = lazy(() => import("./pages/UserReviews"));
@@ -639,7 +637,6 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/user/appointment" element={<Appointment />} />
             <Route path="/user/my-appointments" element={<MyAppointments />} />
             <Route path="/user/my-listings" element={<MyListings />} />
-            <Route path="/user/movers" element={<PackersMovers />} />
             <Route path="/user/services" element={<OnDemandServices />} />
             <Route path="/user/route-planner" element={<RoutePlanner />} />
             <Route path="/user/change-password" element={<UserChangePassword />} />
@@ -668,7 +665,6 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/admin/privacy" element={<AdminPrivacy />} />
             <Route path="/admin/management" element={<AdminManagement />} />
             <Route path="/admin/reviews" element={<AdminReviews />} />
-            <Route path="/admin/movers" element={<AdminMovers />} />
             <Route path="/admin/services" element={<AdminServices />} />
             <Route path="/admin/route-planner" element={<RoutePlannerAdmin />} />
             <Route path="/admin/fraudmanagement" element={<AdminFraudManagement />} />

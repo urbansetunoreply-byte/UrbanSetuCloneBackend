@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from "../redux/user/userSlice";
-import { FaHome, FaCalendarAlt, FaPlus, FaSignOutAlt, FaSearch, FaUserCheck, FaList, FaInfoCircle, FaCompass, FaBars, FaTimes, FaUser, FaTruckMoving, FaTools } from "react-icons/fa";
+import { FaHome, FaCalendarAlt, FaPlus, FaSignOutAlt, FaSearch, FaUserCheck, FaList, FaInfoCircle, FaCompass, FaBars, FaTimes, FaUser, FaTools } from "react-icons/fa";
 import UserAvatar from "./UserAvatar";
 import NotificationBell from "./NotificationBell.jsx";
 import { persistor } from '../redux/store';
@@ -419,13 +419,7 @@ function AdminNavLinks({ mobile = false, onNavigate, pendingCount, handleSignout
         </li>
       </Link>
 
-      {/* Movers and Services management links */}
-      <Link to="/admin/movers" onClick={onNavigate}>
-        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-sm flex items-center gap-1'}`}>
-          <FaTruckMoving className={`${mobile ? 'text-lg text-blue-500' : 'text-sm text-blue-500'}`} />
-          <span>Movers</span>
-        </li>
-      </Link>
+      {/* Movers removed; Services now includes movers section */}
       <Link to="/admin/services" onClick={onNavigate}>
         <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-sm flex items-center gap-1'}`}>
           <FaTools className={`${mobile ? 'text-lg text-purple-600' : 'text-sm text-purple-600'}`} />

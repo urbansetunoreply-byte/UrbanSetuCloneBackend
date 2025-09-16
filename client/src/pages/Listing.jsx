@@ -2497,7 +2497,6 @@ export default function Listing() {
                                     <span className="text-gray-600">({data.reviews.rating})</span>
                                   </div>
                                   <div><span className="font-medium text-gray-600">Reviews:</span> {data.reviews.totalReviews}</div>
-                                  <div><span className="font-medium text-gray-600">Views:</span> {data.reviews.views}</div>
                                 </div>
                               </td>
                             );

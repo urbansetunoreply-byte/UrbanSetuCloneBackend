@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { FaSearch, FaHome, FaInfoCircle, FaCompass, FaPlus, FaList, FaHeart, FaCalendarAlt, FaUser, FaSignOutAlt, FaStar, FaBars, FaTimes, FaTrash, FaTruckMoving, FaTools, FaRoute } from "react-icons/fa";
+import { FaSearch, FaHome, FaInfoCircle, FaCompass, FaPlus, FaList, FaHeart, FaCalendarAlt, FaUser, FaSignOutAlt, FaStar, FaBars, FaTimes, FaTrash, FaTools, FaRoute } from "react-icons/fa";
 import UserAvatar from "./UserAvatar";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -466,12 +466,7 @@ function UserNavLinks({ mobile = false, onNavigate }) {
       {/* Services quick links */}
       {currentUser && (
         <>
-          <Link to="/user/movers" onClick={onNavigate}>
-            <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-sm flex items-center gap-1'}`}>
-              <FaTruckMoving className={`${mobile ? 'text-lg text-blue-500' : 'text-sm text-blue-500'}`} />
-              <span>{mobile ? 'Movers' : 'Movers'}</span>
-            </li>
-          </Link>
+          {/* Movers removed */}
           <Link to="/user/services" onClick={onNavigate}>
             <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-sm flex items-center gap-1'}`}>
               <FaTools className={`${mobile ? 'text-lg text-purple-600' : 'text-sm text-purple-600'}`} />
