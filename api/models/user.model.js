@@ -80,6 +80,15 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ["active", "suspended"],
     default: "active"
+  },
+  suspendedAt: {
+    type: Date,
+    default: null
+  },
+  suspendedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    default: null
   }
 }, { timestamps: true });
 

@@ -639,7 +639,19 @@ export default function AdminManagement() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 py-10 px-2 md:px-8 animate-fadeIn">
       <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-2xl p-8 animate-slideUp">
-        <h1 className="text-4xl font-extrabold text-blue-700 mb-8 drop-shadow animate-fade-in">Accounts Management</h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-4xl font-extrabold text-blue-700 drop-shadow animate-fade-in">Accounts Management</h1>
+          <button
+            onClick={() => fetchData()}
+            className="px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow inline-flex items-center gap-2"
+            title="Refresh data"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+              <path d="M12 6V3L8 7l4 4V8c2.757 0 5 2.243 5 5a5 5 0 11-9.9-1H5.026A7 7 0 1019 13c0-3.86-3.141-7-7-7z" />
+            </svg>
+            Refresh
+          </button>
+        </div>
         <div className="flex gap-4 mb-8 animate-fadeIn">
           <button
             className={`px-6 py-3 rounded-xl font-bold text-lg shadow transition-all duration-200 ${tab === "users" ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white scale-105" : "bg-gray-100 text-gray-700 hover:bg-blue-50"}`}
@@ -1069,6 +1081,25 @@ export default function AdminManagement() {
                     <div className="flex items-center gap-2 text-gray-700 text-sm">
                       <span><strong>Status:</strong> {selectedAccount.status || 'active'}</span>
                     </div>
+                    {/* Lockout remaining time (password lockout) */}
+                    {(() => {
+                      if (!passwordLockouts || !Array.isArray(passwordLockouts)) return null;
+                      const entry = passwordLockouts.find(l => (l.email || '').toLowerCase() === (selectedAccount.email || '').toLowerCase() && new Date(l.unlockAt) > new Date());
+                      if (!entry) return null;
+                      const remainingMs = new Date(entry.unlockAt).getTime() - Date.now();
+                      const remainingMin = Math.max(1, Math.ceil(remainingMs / 60000));
+                      return (
+                        <div className="flex items-center gap-2 text-orange-700 text-sm">
+                          <span><strong>Time left to unlock:</strong> about {remainingMin} minute{remainingMin>1? 's':''}</span>
+                        </div>
+                      );
+                    })()}
+                    {/* Suspension details */}
+                    {selectedAccount.status === 'suspended' && (
+                      <div className="flex items-center gap-2 text-gray-700 text-sm">
+                        <span><strong>Suspended on:</strong> {selectedAccount.suspendedAt ? new Date(selectedAccount.suspendedAt).toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' }) : 'N/A'}</span>
+                      </div>
+                    )}
                     {selectedAccount.type === 'admin' && (
                       <>
                         <div className="flex items-center gap-2 text-gray-700 text-sm">
@@ -1095,6 +1126,12 @@ export default function AdminManagement() {
                           <span><strong>Is Default Admin:</strong> {selectedAccount.isDefaultAdmin ? 'Yes' : 'No'}</span>
                         </div>
                       </>
+                    )}
+                    {/* Show who suspended (rootadmin only) */}
+                    {selectedAccount.status === 'suspended' && currentUser.role === 'rootadmin' && selectedAccount.suspendedBy && (
+                      <div className="flex items-center gap-2 text-gray-700 text-sm">
+                        <span><strong>Suspended by:</strong> {selectedAccount.suspendedBy?.username || selectedAccount.suspendedBy?.email || selectedAccount.suspendedBy}</span>
+                      </div>
                     )}
                   </div>
                 </>

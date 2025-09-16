@@ -51,7 +51,15 @@ export const suspendUserOrAdmin = async (req, res, next) => {
       }
       const user = await User.findById(id);
       if (!user || user.role !== 'user') return next(errorHandler(404, 'User not found'));
-      user.status = user.status === 'active' ? 'suspended' : 'active';
+      const togglingToSuspended = user.status === 'active';
+      user.status = togglingToSuspended ? 'suspended' : 'active';
+      if (togglingToSuspended) {
+        user.suspendedAt = new Date();
+        user.suspendedBy = currentUser._id;
+      } else {
+        user.suspendedAt = null;
+        user.suspendedBy = null;
+      }
       await user.save();
       
       // Emit socket event for account suspension
@@ -74,7 +82,15 @@ export const suspendUserOrAdmin = async (req, res, next) => {
       }
       const admin = await User.findById(id);
       if (!admin || admin.role !== 'admin') return next(errorHandler(404, 'Admin not found'));
-      admin.status = admin.status === 'active' ? 'suspended' : 'active';
+      const togglingAdminToSuspended = admin.status === 'active';
+      admin.status = togglingAdminToSuspended ? 'suspended' : 'active';
+      if (togglingAdminToSuspended) {
+        admin.suspendedAt = new Date();
+        admin.suspendedBy = currentUser._id;
+      } else {
+        admin.suspendedAt = null;
+        admin.suspendedBy = null;
+      }
       await admin.save();
       
       // Emit socket event for account suspension
