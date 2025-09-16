@@ -126,8 +126,21 @@ export const authenticatedFetch = async (url, options = {}) => {
     const response = await fetch(url, authenticatedOptions);
     
     if (!response.ok && response.status === 403) {
-      const errorData = await response.json().catch(() => ({ message: 'CSRF token error' }));
-      console.error('CSRF token error:', errorData);
+      // Clone before consuming so downstream can still read the body
+      const cloned = response.clone();
+      let errorData = null;
+      try {
+        errorData = await cloned.json();
+      } catch (_) {
+        // Fallback if body is not JSON
+        try {
+          const text = await cloned.text();
+          errorData = { message: text };
+        } catch (_) {
+          errorData = { message: 'Forbidden' };
+        }
+      }
+      console.error('403 response:', errorData);
     }
     
     return response;

@@ -289,6 +289,19 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                 method: "POST",
                 body: JSON.stringify(requestBody)
             });
+            // Handle suspended account (403) with friendly message
+            if (res.status === 403) {
+                let friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
+                try {
+                    const errData = await res.clone().json();
+                    if (errData && errData.message && errData.message.toLowerCase().includes('suspended')) {
+                        friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
+                    }
+                } catch (_) {}
+                dispatch(signInFailure(friendlyMessage));
+                setOtpLoading(false);
+                return;
+            }
 
             const data = await res.json();
 
@@ -345,6 +358,18 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                 method: "POST",
                 body: JSON.stringify(otpData)
             });
+            // Handle suspended account (403) with friendly message
+            if (res.status === 403) {
+                let friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
+                try {
+                    const errData = await res.clone().json();
+                    if (errData && errData.message && errData.message.toLowerCase().includes('suspended')) {
+                        friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
+                    }
+                } catch (_) {}
+                dispatch(signInFailure(friendlyMessage));
+                return;
+            }
             const data = await res.json();
 
             if (data.success === false) {
@@ -417,6 +442,22 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                     ...(recaptchaToken && { recaptchaToken })
                 })
             });
+            // Handle suspended account (403) with friendly message
+            if (res.status === 403) {
+                let friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
+                try {
+                    const errData = await res.clone().json();
+                    if (errData && errData.message && errData.message.toLowerCase().includes('suspended')) {
+                        friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
+                    }
+                } catch (_) {}
+                // Increment failed attempts to keep captcha logic consistent with other errors
+                const currentAttempts = parseInt(localStorage.getItem('failedLoginAttempts') || '0');
+                const newAttempts = currentAttempts + 1;
+                localStorage.setItem('failedLoginAttempts', newAttempts.toString());
+                dispatch(signInFailure(friendlyMessage));
+                return;
+            }
             const data = await res.json();
             
             //
