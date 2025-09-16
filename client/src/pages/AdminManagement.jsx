@@ -16,15 +16,19 @@ export default function AdminManagement() {
   const [admins, setAdmins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("users");
-  const [deletedAccounts, setDeletedAccounts] = useState([]);
-  const [deletedFilters, setDeletedFilters] = useState({ q: '', role: 'all', deletedBy: '', from: '', to: '' });
-  const [deletedLoading, setDeletedLoading] = useState(false);
+  const [softbannedAccounts, setSoftbannedAccounts] = useState([]);
+  const [softbannedFilters, setSoftbannedFilters] = useState({ q: '', role: 'all', softbannedBy: '', from: '', to: '' });
+  const [softbannedLoading, setSoftbannedLoading] = useState(false);
+  const [purgedAccounts, setPurgedAccounts] = useState([]);
+  const [purgedFilters, setPurgedFilters] = useState({ q: '', role: 'all', purgedBy: '', from: '', to: '' });
+  const [purgedLoading, setPurgedLoading] = useState(false);
   const [suspendError, setSuspendError] = useState({});
   const [showRestriction, setShowRestriction] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [showDeleteReasonModal, setShowDeleteReasonModal] = useState(false);
   const [deleteReason, setDeleteReason] = useState("");
   const [deleteOtherReason, setDeleteOtherReason] = useState("");
+  const [deletePolicy, setDeletePolicy] = useState({ category: '', banType: 'allow', allowResignupAfterDays: 0, notes: '' });
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [accountLoading, setAccountLoading] = useState(false);
   const [accountStats, setAccountStats] = useState({ listings: 0, appointments: 0 });
@@ -120,9 +124,13 @@ export default function AdminManagement() {
       } catch (_) {
         setPasswordLockouts([]);
       }
-      // Fetch deleted accounts
+      // Fetch softbanned accounts
       try {
-        await fetchDeletedAccounts();
+        await fetchSoftbannedAccounts();
+      } catch (_) {}
+      // Fetch purged accounts
+      try {
+        await fetchPurgedAccounts();
       } catch (_) {}
     } catch (err) {
       toast.error("Failed to fetch accounts");
@@ -131,26 +139,51 @@ export default function AdminManagement() {
     }
   };
 
-  const fetchDeletedAccounts = async () => {
-    setDeletedLoading(true);
+  const fetchSoftbannedAccounts = async () => {
+    setSoftbannedLoading(true);
     try {
       const params = new URLSearchParams();
-      if (deletedFilters.q) params.set('q', deletedFilters.q);
-      if (deletedFilters.role && deletedFilters.role !== 'all') params.set('role', deletedFilters.role);
-      if (deletedFilters.deletedBy) params.set('deletedBy', deletedFilters.deletedBy);
-      if (deletedFilters.from) params.set('from', deletedFilters.from);
-      if (deletedFilters.to) params.set('to', deletedFilters.to);
+      if (softbannedFilters.q) params.set('q', softbannedFilters.q);
+      if (softbannedFilters.role && softbannedFilters.role !== 'all') params.set('role', softbannedFilters.role);
+      if (softbannedFilters.softbannedBy) params.set('softbannedBy', softbannedFilters.softbannedBy);
+      if (softbannedFilters.from) params.set('from', softbannedFilters.from);
+      if (softbannedFilters.to) params.set('to', softbannedFilters.to);
       const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts?${params.toString()}`, { credentials: 'include' });
       const data = await res.json();
       if (res.ok && data && Array.isArray(data.items)) {
-        setDeletedAccounts(data.items);
+        // Filter out purged accounts (those with purgedAt)
+        setSoftbannedAccounts(data.items.filter(acc => !acc.purgedAt));
       } else {
-        setDeletedAccounts([]);
+        setSoftbannedAccounts([]);
       }
     } catch (e) {
-      setDeletedAccounts([]);
+      setSoftbannedAccounts([]);
     } finally {
-      setDeletedLoading(false);
+      setSoftbannedLoading(false);
+    }
+  };
+
+  const fetchPurgedAccounts = async () => {
+    setPurgedLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (purgedFilters.q) params.set('q', purgedFilters.q);
+      if (purgedFilters.role && purgedFilters.role !== 'all') params.set('role', purgedFilters.role);
+      if (purgedFilters.purgedBy) params.set('purgedBy', purgedFilters.purgedBy);
+      if (purgedFilters.from) params.set('from', purgedFilters.from);
+      if (purgedFilters.to) params.set('to', purgedFilters.to);
+      const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts?${params.toString()}`, { credentials: 'include' });
+      const data = await res.json();
+      if (res.ok && data && Array.isArray(data.items)) {
+        // Filter only purged accounts (those with purgedAt)
+        setPurgedAccounts(data.items.filter(acc => acc.purgedAt));
+      } else {
+        setPurgedAccounts([]);
+      }
+    } catch (e) {
+      setPurgedAccounts([]);
+    } finally {
+      setPurgedLoading(false);
     }
   };
 
@@ -183,7 +216,7 @@ export default function AdminManagement() {
         // Rollback
         fetchData();
         toast.error(data.message || "Failed to update status");
-        setSuspendError((prev) => ({ ...prev, [id]: "Can't able to suspend account, may be deleted or moved" }));
+        setSuspendError((prev) => ({ ...prev, [id]: "Can't able to suspend account, may be softbanned or moved" }));
         setTimeout(() => setSuspendError((prev) => ({ ...prev, [id]: undefined })), 4000);
       }
     } catch (err) {
@@ -199,6 +232,7 @@ export default function AdminManagement() {
     setSelectedAccount({ _id: id, type });
     setDeleteReason("");
     setDeleteOtherReason("");
+    setDeletePolicy({ category: '', banType: 'allow', allowResignupAfterDays: 0, notes: '' });
     setShowDeleteReasonModal(true);
   };
 
@@ -207,6 +241,13 @@ export default function AdminManagement() {
     if (!sel) return;
     const id = sel._id; const type = sel.type;
     const finalReason = deleteReason === 'other' ? (deleteOtherReason || '') : deleteReason;
+    
+    // Map reason to policy category
+    const policyCategory = deleteReason === 'other' ? 'other' : deleteReason;
+    const finalPolicy = {
+      ...deletePolicy,
+      category: policyCategory
+    };
 
     const performDelete = async () => {
       // Store original state for rollback
@@ -224,21 +265,24 @@ export default function AdminManagement() {
           method: "DELETE",
           credentials: "include",
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ reason: finalReason })
+          body: JSON.stringify({ 
+            reason: finalReason,
+            policy: finalPolicy
+          })
         });
         const data = await res.json();
         if (res.ok) {
-          toast.success(`${type === "user" ? "User" : "Admin"} deleted successfully`);
+          toast.success(`${type === "user" ? "User" : "Admin"} softbanned successfully`);
           // Emit socket event
           socket.emit(type === 'user' ? 'user_update' : 'admin_update', { type: 'delete', [type]: { _id: id }, userId: id });
-          // Emit global signout event for the deleted user
+          // Emit global signout event for the softbanned user
           socket.emit('force_signout', { 
             userId: id, 
-            action: 'delete', 
-            message: 'Your account has been deleted. You have been signed out.' 
+            action: 'softban', 
+            message: 'Your account has been softbanned. You have been signed out.' 
           });
-          // Refresh deleted accounts list if on tab
-          if (tab === 'deleted') fetchDeletedAccounts();
+          // Refresh softbanned accounts list if on tab
+          if (tab === 'softbanned') fetchSoftbannedAccounts();
         } else {
           // Rollback on failure
           if (type === 'user') {
@@ -247,11 +291,11 @@ export default function AdminManagement() {
             setAdmins(originalAdmins);
           }
           if (res.status === 404) {
-            toast.error("Account not found. It may have been already deleted or moved.");
+            toast.error("Account not found. It may have been already softbanned or moved.");
           } else if (data.message && data.message.toLowerCase().includes("not found")) {
-            toast.error("Account not found. It may have been already deleted or moved.");
+            toast.error("Account not found. It may have been already softbanned or moved.");
           } else {
-            toast.error(data.message || "Failed to delete account");
+            toast.error(data.message || "Failed to softban account");
           }
         }
       } catch (err) {
@@ -264,7 +308,7 @@ export default function AdminManagement() {
         if (err.name === 'TypeError' && err.message.includes('fetch')) {
           toast.error("Network error. Please check your connection and try again.");
         } else {
-          toast.error("Failed to delete account. Please try again.");
+          toast.error("Failed to softban account. Please try again.");
         }
       }
     };
@@ -730,19 +774,28 @@ export default function AdminManagement() {
             Admins
           </button>
           <button
-            className={`px-6 py-3 rounded-xl font-bold text-lg shadow transition-all duration-200 ${tab === "deleted" ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white scale-105" : "bg-gray-100 text-gray-700 hover:bg-rose-50"}`}
+            className={`px-6 py-3 rounded-xl font-bold text-lg shadow transition-all duration-200 ${tab === "softbanned" ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white scale-105" : "bg-gray-100 text-gray-700 hover:bg-rose-50"}`}
             onClick={() => {
-              setTab("deleted");
-              fetchDeletedAccounts();
+              setTab("softbanned");
+              fetchSoftbannedAccounts();
             }}
           >
             Softbanned Accounts
+          </button>
+          <button
+            className={`px-6 py-3 rounded-xl font-bold text-lg shadow transition-all duration-200 ${tab === "purged" ? "bg-gradient-to-r from-red-500 to-orange-500 text-white scale-105" : "bg-gray-100 text-gray-700 hover:bg-red-50"}`}
+            onClick={() => {
+              setTab("purged");
+              fetchPurgedAccounts();
+            }}
+          >
+            Purged Accounts
           </button>
         </div>
 
         {/* Enhanced Search and Filters */}
         <div className="mb-6 animate-fadeIn">
-          {tab !== 'deleted' ? (
+          {tab !== 'softbanned' && tab !== 'purged' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Main Search */}
             <div className="relative">
@@ -805,27 +858,47 @@ export default function AdminManagement() {
           </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <input value={deletedFilters.q} onChange={e=>setDeletedFilters(f=>({...f,q:e.target.value}))} placeholder="Search name/email" className="px-3 py-3 border rounded-xl" />
-              <select value={deletedFilters.role} onChange={e=>setDeletedFilters(f=>({...f,role:e.target.value}))} className="px-3 py-3 border rounded-xl">
+              <input value={softbannedFilters.q} onChange={e=>setSoftbannedFilters(f=>({...f,q:e.target.value}))} placeholder="Search name/email" className="px-3 py-3 border rounded-xl" />
+              <select value={softbannedFilters.role} onChange={e=>setSoftbannedFilters(f=>({...f,role:e.target.value}))} className="px-3 py-3 border rounded-xl">
                 <option value="all">All Roles</option>
                 <option value="user">User</option>
                 {currentUser.isDefaultAdmin && <option value="admin">Admin</option>}
               </select>
-              <input type="date" value={deletedFilters.from} onChange={e=>setDeletedFilters(f=>({...f,from:e.target.value}))} className="px-3 py-3 border rounded-xl" />
-              <input type="date" value={deletedFilters.to} onChange={e=>setDeletedFilters(f=>({...f,to:e.target.value}))} className="px-3 py-3 border rounded-xl" />
-              <input value={deletedFilters.deletedBy} onChange={e=>setDeletedFilters(f=>({...f,deletedBy:e.target.value}))} placeholder="Deleted by (id or self)" className="px-3 py-3 border rounded-xl" />
+              <input type="date" value={softbannedFilters.from} onChange={e=>setSoftbannedFilters(f=>({...f,from:e.target.value}))} className="px-3 py-3 border rounded-xl" />
+              <input type="date" value={softbannedFilters.to} onChange={e=>setSoftbannedFilters(f=>({...f,to:e.target.value}))} className="px-3 py-3 border rounded-xl" />
+              <input value={softbannedFilters.softbannedBy} onChange={e=>setSoftbannedFilters(f=>({...f,softbannedBy:e.target.value}))} placeholder="Softbanned by (id or self)" className="px-3 py-3 border rounded-xl" />
               <div className="flex items-center gap-2">
-                <button onClick={fetchDeletedAccounts} className="px-4 py-3 bg-blue-600 text-white rounded-xl">Apply</button>
-                <button onClick={()=>{setDeletedFilters({ q:'', role:'all', deletedBy:'', from:'', to:''}); setTimeout(fetchDeletedAccounts,0);}} className="px-4 py-3 bg-gray-100 rounded-xl">Clear</button>
+                <button onClick={fetchSoftbannedAccounts} className="px-4 py-3 bg-blue-600 text-white rounded-xl">Apply</button>
+                <button onClick={()=>{setSoftbannedFilters({ q:'', role:'all', softbannedBy:'', from:'', to:''}); setTimeout(fetchSoftbannedAccounts,0);}} className="px-4 py-3 bg-gray-100 rounded-xl">Clear</button>
               </div>
               <div className="col-span-full text-sm text-gray-600">
-                {currentUser.isDefaultAdmin ? 'You are viewing all deleted accounts (users + admins).' : 'You are viewing only deleted user accounts.'}
+                {currentUser.isDefaultAdmin ? 'You are viewing all softbanned accounts (users + admins).' : 'You are viewing only softbanned user accounts.'}
+              </div>
+            </div>
+          )}
+          {tab === 'purged' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <input value={purgedFilters.q} onChange={e=>setPurgedFilters(f=>({...f,q:e.target.value}))} placeholder="Search name/email" className="px-3 py-3 border rounded-xl" />
+              <select value={purgedFilters.role} onChange={e=>setPurgedFilters(f=>({...f,role:e.target.value}))} className="px-3 py-3 border rounded-xl">
+                <option value="all">All Roles</option>
+                <option value="user">User</option>
+                {currentUser.isDefaultAdmin && <option value="admin">Admin</option>}
+              </select>
+              <input type="date" value={purgedFilters.from} onChange={e=>setPurgedFilters(f=>({...f,from:e.target.value}))} className="px-3 py-3 border rounded-xl" />
+              <input type="date" value={purgedFilters.to} onChange={e=>setPurgedFilters(f=>({...f,to:e.target.value}))} className="px-3 py-3 border rounded-xl" />
+              <input value={purgedFilters.purgedBy} onChange={e=>setPurgedFilters(f=>({...f,purgedBy:e.target.value}))} placeholder="Purged by (id)" className="px-3 py-3 border rounded-xl" />
+              <div className="flex items-center gap-2">
+                <button onClick={fetchPurgedAccounts} className="px-4 py-3 bg-red-600 text-white rounded-xl">Apply</button>
+                <button onClick={()=>{setPurgedFilters({ q:'', role:'all', purgedBy:'', from:'', to:''}); setTimeout(fetchPurgedAccounts,0);}} className="px-4 py-3 bg-gray-100 rounded-xl">Clear</button>
+              </div>
+              <div className="col-span-full text-sm text-gray-600">
+                {currentUser.isDefaultAdmin ? 'You are viewing all purged accounts (users + admins). These accounts are permanently removed.' : 'You are viewing only purged user accounts. These accounts are permanently removed.'}
               </div>
             </div>
           )}
 
           {/* Results Summary */}
-          {tab !== 'deleted' && (searchTerm || statusFilter !== "all") && (
+          {tab !== 'softbanned' && tab !== 'purged' && (searchTerm || statusFilter !== "all") && (
             <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
               <div className="text-sm text-blue-800">
                 <span className="font-semibold">Active Filters:</span>
@@ -1066,13 +1139,13 @@ export default function AdminManagement() {
                 )}
               </div>
             )}
-            {tab === 'deleted' && (
+            {tab === 'softbanned' && (
               <div className="mt-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-4">Softbanned Accounts</h2>
-                {deletedLoading ? (
+                {softbannedLoading ? (
                   <div className="flex items-center justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div><span className="ml-3 text-gray-600">Loading...</span></div>
-                ) : deletedAccounts.length === 0 ? (
-                  <div className="p-6 text-center text-gray-500 border rounded-xl">No deleted accounts found</div>
+                ) : softbannedAccounts.length === 0 ? (
+                  <div className="p-6 text-center text-gray-500 border rounded-xl">No softbanned accounts found</div>
                 ) : (
                   <div className="overflow-auto rounded-xl border border-gray-200">
                     <table className="min-w-full text-sm">
@@ -1081,14 +1154,15 @@ export default function AdminManagement() {
                           <th className="px-4 py-2">Name</th>
                           <th className="px-4 py-2">Email</th>
                           <th className="px-4 py-2">Role</th>
-                          <th className="px-4 py-2">Date Deleted</th>
-                          <th className="px-4 py-2">Deleted By</th>
+                          <th className="px-4 py-2">Date Softbanned</th>
+                          <th className="px-4 py-2">Softbanned By</th>
                           <th className="px-4 py-2">Reason</th>
+                          <th className="px-4 py-2">Policy</th>
                           <th className="px-4 py-2">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">
-                        {deletedAccounts.map(acc => (
+                        {softbannedAccounts.map(acc => (
                           <tr key={acc._id} className="hover:bg-gray-50">
                             <td className="px-4 py-2 font-medium text-gray-800">{acc.name}</td>
                             <td className="px-4 py-2 text-gray-700">{acc.email}</td>
@@ -1096,15 +1170,77 @@ export default function AdminManagement() {
                             <td className="px-4 py-2 text-gray-600">{acc.deletedAt ? new Date(acc.deletedAt).toLocaleString() : '-'}</td>
                             <td className="px-4 py-2 text-gray-600">{typeof acc.deletedBy === 'string' ? acc.deletedBy : (acc.deletedBy?._id || acc.deletedBy) }</td>
                             <td className="px-4 py-2 text-gray-600">{acc.reason || '-'}</td>
+                            <td className="px-4 py-2 text-gray-600">
+                              {acc.policy ? (
+                                <div className="text-xs">
+                                  <div><strong>Category:</strong> {acc.policy.category || '-'}</div>
+                                  <div><strong>Ban Type:</strong> {acc.policy.banType || '-'}</div>
+                                  {acc.policy.allowResignupAfterDays > 0 && (
+                                    <div><strong>Resignup After:</strong> {acc.policy.allowResignupAfterDays} days</div>
+                                  )}
+                                </div>
+                              ) : '-'}
+                            </td>
                             <td className="px-4 py-2">
                               {currentUser.isDefaultAdmin ? (
                                 <div className="flex gap-2">
-                                  <button onClick={async ()=>{ if(!confirm('Restore this account?')) return; const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts/restore/${acc._id}`, { method:'POST', credentials:'include' }); const data = await res.json(); if(res.ok){ toast.success('Account restored'); fetchDeletedAccounts(); } else { toast.error(data.message||'Restore failed'); } }} className="px-3 py-1 bg-green-600 text-white rounded-lg text-xs">Restore</button>
-                                  <button onClick={async ()=>{ if(!confirm('Permanently purge this account? This cannot be undone.')) return; const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts/purge/${acc._id}`, { method:'DELETE', credentials:'include' }); const data = await res.json(); if(res.ok){ toast.success('Account purged'); fetchDeletedAccounts(); } else { toast.error(data.message||'Purge failed'); } }} className="px-3 py-1 bg-red-600 text-white rounded-lg text-xs">Purge</button>
+                                  <button onClick={async ()=>{ if(!confirm('Restore this account?')) return; const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts/restore/${acc._id}`, { method:'POST', credentials:'include' }); const data = await res.json(); if(res.ok){ toast.success('Account restored'); fetchSoftbannedAccounts(); } else { toast.error(data.message||'Restore failed'); } }} className="px-3 py-1 bg-green-600 text-white rounded-lg text-xs">Restore</button>
+                                  <button onClick={async ()=>{ if(!confirm('Permanently purge this account? This cannot be undone.')) return; const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts/purge/${acc._id}`, { method:'DELETE', credentials:'include' }); const data = await res.json(); if(res.ok){ toast.success('Account purged'); fetchSoftbannedAccounts(); fetchPurgedAccounts(); } else { toast.error(data.message||'Purge failed'); } }} className="px-3 py-1 bg-red-600 text-white rounded-lg text-xs">Purge</button>
                                 </div>
                               ) : (
                                 <span className="text-xs text-gray-500">View only</span>
                               )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+            {tab === 'purged' && (
+              <div className="mt-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">Purged Accounts (Permanently Removed)</h2>
+                {purgedLoading ? (
+                  <div className="flex items-center justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div><span className="ml-3 text-gray-600">Loading...</span></div>
+                ) : purgedAccounts.length === 0 ? (
+                  <div className="p-6 text-center text-gray-500 border rounded-xl">No purged accounts found</div>
+                ) : (
+                  <div className="overflow-auto rounded-xl border border-gray-200">
+                    <table className="min-w-full text-sm">
+                      <thead className="bg-red-50">
+                        <tr className="text-left text-gray-700">
+                          <th className="px-4 py-2">Name</th>
+                          <th className="px-4 py-2">Email</th>
+                          <th className="px-4 py-2">Role</th>
+                          <th className="px-4 py-2">Date Softbanned</th>
+                          <th className="px-4 py-2">Date Purged</th>
+                          <th className="px-4 py-2">Purged By</th>
+                          <th className="px-4 py-2">Reason</th>
+                          <th className="px-4 py-2">Policy</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {purgedAccounts.map(acc => (
+                          <tr key={acc._id} className="hover:bg-red-50">
+                            <td className="px-4 py-2 font-medium text-gray-800">{acc.name}</td>
+                            <td className="px-4 py-2 text-gray-700">{acc.email}</td>
+                            <td className="px-4 py-2"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${acc.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>{acc.role}</span></td>
+                            <td className="px-4 py-2 text-gray-600">{acc.deletedAt ? new Date(acc.deletedAt).toLocaleString() : '-'}</td>
+                            <td className="px-4 py-2 text-red-600 font-semibold">{acc.purgedAt ? new Date(acc.purgedAt).toLocaleString() : '-'}</td>
+                            <td className="px-4 py-2 text-gray-600">{acc.purgedBy ? (typeof acc.purgedBy === 'string' ? acc.purgedBy : acc.purgedBy._id) : '-'}</td>
+                            <td className="px-4 py-2 text-gray-600">{acc.reason || '-'}</td>
+                            <td className="px-4 py-2 text-gray-600">
+                              {acc.policy ? (
+                                <div className="text-xs">
+                                  <div><strong>Category:</strong> {acc.policy.category || '-'}</div>
+                                  <div><strong>Ban Type:</strong> {acc.policy.banType || '-'}</div>
+                                  {acc.policy.allowResignupAfterDays > 0 && (
+                                    <div><strong>Resignup After:</strong> {acc.policy.allowResignupAfterDays} days</div>
+                                  )}
+                                </div>
+                              ) : '-'}
                             </td>
                           </tr>
                         ))}
@@ -1294,49 +1430,116 @@ export default function AdminManagement() {
         </div>
       )}
       
-      {/* Delete Reason Modal */}
+      {/* Softban Reason Modal */}
       {showDeleteReasonModal && (
         <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Reason for deletion</h3>
-            <p className="text-gray-600 mb-3">Please select a reason to proceed.</p>
-            <select
-              className="w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500"
-              value={deleteReason}
-              onChange={e => setDeleteReason(e.target.value)}
-            >
-              <option value="">Select a reason</option>
-              {selectedAccount?.type === 'user' ? (
-                <>
-                  <option value="Fraudulent activity">Fraudulent activity</option>
-                  <option value="Fake or duplicate account">Fake or duplicate account</option>
-                  <option value="Inappropriate content or behavior">Inappropriate content or behavior</option>
-                  <option value="Violation of terms & policies">Violation of terms & policies</option>
-                  <option value="Requested by user (support request)">Requested by user (support request)</option>
-                  <option value="other">Other (textbox optional)</option>
-                </>
-              ) : (
-                <>
-                  <option value="Misuse of admin privileges">Misuse of admin privileges</option>
-                  <option value="Inactive admin account">Inactive admin account</option>
-                  <option value="Violation of policies or trust">Violation of policies or trust</option>
-                  <option value="Role restructuring / reassigning">Role restructuring / reassigning</option>
-                  <option value="other">Other (textbox optional)</option>
-                </>
-              )}
-            </select>
+          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">Reason for Softban</h3>
+            <p className="text-gray-600 mb-3">Please select a reason and configure policy to proceed.</p>
+            
+            {/* Reason Selection */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Reason</label>
+              <select
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                value={deleteReason}
+                onChange={e => setDeleteReason(e.target.value)}
+              >
+                <option value="">Select a reason</option>
+                {selectedAccount?.type === 'user' ? (
+                  <>
+                    <option value="fraud">Fraudulent activity</option>
+                    <option value="duplicate">Fake or duplicate account</option>
+                    <option value="inappropriate">Inappropriate content or behavior</option>
+                    <option value="policy_violation">Violation of terms & policies</option>
+                    <option value="requested_by_user">Requested by user (support request)</option>
+                    <option value="other">Other (textbox optional)</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="misuse_privileges">Misuse of admin privileges</option>
+                    <option value="inactive_admin">Inactive admin account</option>
+                    <option value="violation_trust">Violation of policies or trust</option>
+                    <option value="role_restructure">Role restructuring / reassigning</option>
+                    <option value="other">Other (textbox optional)</option>
+                  </>
+                )}
+              </select>
+            </div>
+            
             {deleteReason === 'other' && (
-              <input
-                type="text"
-                className="w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500"
-                placeholder="Optional details"
-                value={deleteOtherReason}
-                onChange={e => setDeleteOtherReason(e.target.value)}
-              />
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Additional Details</label>
+                <input
+                  type="text"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  placeholder="Optional details"
+                  value={deleteOtherReason}
+                  onChange={e => setDeleteOtherReason(e.target.value)}
+                />
+              </div>
             )}
-            <div className="flex justify-end gap-3 mt-4">
-              <button className="px-4 py-2 rounded-lg bg-gray-500 text-white" onClick={() => { setShowDeleteReasonModal(false); setSelectedAccount(null); }}>Cancel</button>
-              <button className="px-4 py-2 rounded-lg bg-red-600 text-white" onClick={async () => { setShowDeleteReasonModal(false); await performDeleteWithReason(); }}>Confirm Delete</button>
+            
+            {/* Policy Configuration */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Ban Type</label>
+              <select
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={deletePolicy.banType}
+                onChange={e => setDeletePolicy(prev => ({ ...prev, banType: e.target.value }))}
+              >
+                <option value="allow">Allow re-signup (default)</option>
+                <option value="ban">Permanent ban</option>
+              </select>
+            </div>
+            
+            {deletePolicy.banType === 'allow' && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Cooling-off Period (days)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="365"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="0 for immediate re-signup"
+                  value={deletePolicy.allowResignupAfterDays}
+                  onChange={e => setDeletePolicy(prev => ({ ...prev, allowResignupAfterDays: parseInt(e.target.value) || 0 }))}
+                />
+                <p className="text-xs text-gray-500 mt-1">Set to 0 for immediate re-signup, or specify days to wait</p>
+              </div>
+            )}
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Policy Notes (Optional)</label>
+              <textarea
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                rows="2"
+                placeholder="Additional policy notes..."
+                value={deletePolicy.notes}
+                onChange={e => setDeletePolicy(prev => ({ ...prev, notes: e.target.value }))}
+              />
+            </div>
+            
+            <div className="flex justify-end gap-3 mt-6">
+              <button 
+                className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600" 
+                onClick={() => { 
+                  setShowDeleteReasonModal(false); 
+                  setSelectedAccount(null); 
+                  setDeletePolicy({ category: '', banType: 'allow', allowResignupAfterDays: 0, notes: '' });
+                }}
+              >
+                Cancel
+              </button>
+              <button 
+                className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700" 
+                onClick={async () => { 
+                  setShowDeleteReasonModal(false); 
+                  await performDeleteWithReason(); 
+                }}
+              >
+                Confirm Softban
+              </button>
             </div>
           </div>
         </div>
