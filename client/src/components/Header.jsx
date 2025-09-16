@@ -165,81 +165,124 @@ export default function Header() {
   };
 
   return (
-    <div className={`flex min-w-0 items-center justify-between px-2 sm:px-4 md:px-6 py-2 sm:py-3 ${getHeaderGradient()} shadow-lg sticky top-0 z-50 transition-all duration-300 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
-      {/* Logo/Title */}
-      <Link to={location.pathname.startsWith('/user') ? '/user' : '/'} className="flex-shrink-0">
-        <h1 className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-extrabold tracking-wide drop-shadow flex items-center gap-2 transition-transform duration-300 hover:scale-110 group">
-          <span className="relative flex items-center justify-center">
-            <FaHome className="text-2xl xs:text-3xl md:text-4xl text-yellow-400 drop-shadow-lg animate-bounce-slow group-hover:animate-bounce" style={{ filter: 'drop-shadow(0 2px 8px #facc15)' }} />
-            <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-1 bg-gradient-to-r from-yellow-300 to-purple-400 rounded-full opacity-60 blur-sm"></span>
-          </span>
-          <span className="bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 bg-clip-text text-transparent animate-gradient-x">Urban</span>
-          <span className="bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent animate-gradient-x">Setu</span>
-        </h1>
-      </Link>
-      {/* Hamburger menu for mobile (right side) */}
-      <div className="flex items-center sm:hidden">
-        <button
-          className="text-white text-2xl p-2 focus:outline-none transition-all duration-300 hover:scale-110 hover:text-yellow-300 rounded-lg hover:bg-white/10"
-          onClick={() => setMobileMenuOpen((prev) => !prev)}
-          aria-label="Open navigation menu"
-        >
-          <div className={`transition-transform duration-300 ${mobileMenuOpen ? 'animate-hamburger-to-x' : 'animate-x-to-hamburger'}`}>
-            {mobileMenuOpen ? <FaTimes /> : <FaBars />}
+    <header className={`relative ${getHeaderGradient()} shadow-xl border-b border-white/20 sticky top-0 z-50 transition-all duration-300 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
+      {/* Top Bar */}
+      <div className="bg-black/10 border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between py-2 text-sm text-white/80">
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-2">
+                <FaHome className="text-yellow-400" />
+                <span>Premium Real Estate Platform</span>
+              </span>
+            </div>
+            <div className="hidden md:flex items-center gap-4">
+              <span>📞 +1 (555) 123-4567</span>
+              <span>✉️ info@urbansetu.com</span>
+            </div>
           </div>
-        </button>
-      </div>
-      {/* Desktop nav links */}
-      <div className="hidden sm:block">
-        <div className="flex items-center gap-2">
-          {/* Nav links start with Home */}
-          <UserNavLinks />
         </div>
       </div>
-      {/* Mobile nav menu */}
+
+      {/* Main Header */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between py-4">
+          {/* Logo/Title */}
+          <Link to={location.pathname.startsWith('/user') ? '/user' : '/'} className="flex-shrink-0 group">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="p-3 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                  <FaHome className="text-2xl sm:text-3xl text-yellow-400 drop-shadow-lg" />
+                </div>
+                <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl blur opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white drop-shadow-lg">
+                  <span className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
+                    Urban
+                  </span>
+                  <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent ml-2">
+                    Setu
+                  </span>
+                </h1>
+                <p className="text-xs sm:text-sm text-white/70 font-medium tracking-wider uppercase">
+                  Real Estate Excellence
+                </p>
+              </div>
+            </div>
+          </Link>
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center space-x-8">
+            <UserNavLinks />
+          </nav>
+
+          {/* Mobile Menu Button */}
+          <div className="lg:hidden">
+            <button
+              className="p-3 text-white hover:text-yellow-300 focus:outline-none transition-all duration-300 hover:bg-white/10 rounded-xl border border-white/20"
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              aria-label="Open navigation menu"
+            >
+              <div className={`transition-transform duration-300 ${mobileMenuOpen ? 'animate-hamburger-to-x' : 'animate-x-to-hamburger'}`}>
+                {mobileMenuOpen ? <FaTimes className="text-xl" /> : <FaBars className="text-xl" />}
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+      {/* Mobile Navigation Menu */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col items-end sm:hidden">
-          {/* Backdrop with blur effect */}
-          <div 
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-backdrop-blur-in"
-            onClick={() => setMobileMenuOpen(false)}
-            style={{ pointerEvents: 'auto' }}
-          />
-          {/* Menu content */}
-          <div className="relative w-4/5 max-w-sm h-full mobile-menu-content animate-slide-in-right overflow-hidden">
-            <div className="flex flex-col h-full p-6">
-              {/* Close button */}
-              <button
-                className="self-end text-2xl text-gray-700 mb-6 p-2 hover:bg-gray-100 rounded-full transition-all duration-200 hover:scale-110"
-                onClick={() => setMobileMenuOpen(false)}
-                aria-label="Close navigation menu"
-              >
-                <FaTimes />
-              </button>
-              
-              {/* Search form */}
-              <form onSubmit={handleSubmit} className="flex items-center border-2 border-gray-200 rounded-xl overflow-hidden bg-white mb-6 focus-within:ring-2 focus-within:ring-blue-300 focus-within:border-blue-300 transition-all duration-300 shadow-sm hover:shadow-md">
-                <input
-                  type="text"
-                  placeholder="Search properties..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="px-4 py-3 outline-none w-full text-gray-800 focus:bg-blue-50 transition-colors text-sm"
-                />
-                <button className={`${getSearchButtonColor()} text-white p-3 hover:bg-yellow-400 hover:text-blue-700 transition-all duration-300`} type="submit">
-                  <FaSearch />
-                </button>
-              </form>
-              
-              {/* Navigation links */}
-              <div className="flex-1 overflow-y-auto">
-                <UserNavLinks mobile onNavigate={() => setMobileMenuOpen(false)} />
+        <div className="lg:hidden">
+          <div className="fixed inset-0 z-50">
+            {/* Backdrop */}
+            <div 
+              className="absolute inset-0 bg-black/70 backdrop-blur-md"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            
+            {/* Menu Panel */}
+            <div className="relative ml-auto w-80 max-w-sm h-full bg-white shadow-2xl">
+              <div className="flex flex-col h-full">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-bold">Menu</h2>
+                    <button
+                      className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                      aria-label="Close menu"
+                    >
+                      <FaTimes className="text-xl" />
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Search */}
+                <div className="p-6 border-b border-gray-200">
+                  <form onSubmit={handleSubmit} className="flex items-center bg-gray-50 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:bg-white transition-all">
+                    <input
+                      type="text"
+                      placeholder="Search properties..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="px-4 py-3 outline-none w-full text-gray-800 bg-transparent"
+                    />
+                    <button className="bg-blue-500 hover:bg-blue-600 text-white p-3 transition-colors" type="submit">
+                      <FaSearch />
+                    </button>
+                  </form>
+                </div>
+                
+                {/* Navigation Links */}
+                <div className="flex-1 overflow-y-auto p-6">
+                  <UserNavLinks mobile onNavigate={() => setMobileMenuOpen(false)} />
+                </div>
               </div>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </header>
   );
 }
 
@@ -303,13 +346,13 @@ function UserNavLinks({ mobile = false, onNavigate }) {
   
 
   return (
-    <ul className={`${mobile ? 'flex flex-col gap-2 text-gray-800' : 'flex space-x-2 sm:space-x-4 items-center text-white text-base font-normal'}`}>
-      {/* Search icon/input first, white color */}
-      {!mobile ? (
+    <ul className={`${mobile ? 'flex flex-col gap-1' : 'flex items-center space-x-6'}`}>
+      {/* Desktop Search */}
+      {!mobile && (
         <li className="flex items-center">
           {!searchOpen ? (
             <button
-              className="p-2 text-white hover:text-yellow-300 focus:outline-none transition-all"
+              className="p-3 text-white hover:text-yellow-300 focus:outline-none transition-all duration-300 hover:bg-white/10 rounded-xl border border-white/20"
               onClick={() => setSearchOpen(true)}
               aria-label="Open search"
             >
@@ -318,45 +361,45 @@ function UserNavLinks({ mobile = false, onNavigate }) {
           ) : (
             <form
               onSubmit={handleSubmit}
-              className="flex items-center border rounded-lg overflow-hidden bg-white mx-2 sm:mx-4 focus-within:ring-2 focus-within:ring-yellow-300 transition-all w-28 xs:w-40 sm:w-64 animate-search-expand"
+              className="flex items-center bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-yellow-300 focus-within:bg-white/20 transition-all duration-300 w-64"
             >
               <input
                 ref={searchInputRef}
                 type="text"
-                placeholder="Search..."
+                placeholder="Search properties..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onBlur={() => setSearchOpen(false)}
-                className="px-2 py-1 sm:px-3 sm:py-2 outline-none w-full text-black focus:bg-blue-50 transition-colors text-sm sm:text-base"
+                className="px-4 py-3 outline-none w-full text-white placeholder-white/70 bg-transparent"
               />
-              <button className={`bg-blue-500 hover:bg-blue-600 text-white p-2 hover:bg-yellow-400 hover:text-blue-700 transition-colors`} type="submit">
+              <button className="bg-yellow-400 hover:bg-yellow-500 text-gray-800 p-3 transition-colors" type="submit">
                 <FaSearch />
               </button>
             </form>
           )}
         </li>
-      ) : null}
+      )}
       
       
       
-      {/* Mobile menu items with staggered animations */}
+      {/* Navigation Links */}
       <Link to={location.pathname.startsWith('/user') ? '/user' : '/'} onClick={onNavigate}>
-        <li className={`mobile-menu-item ${mobile ? 'animate-menu-item-in p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium' : 'hover:text-yellow-300 hover:scale-110 flex items-center gap-1 transition-all'}`}>
-          <FaHome className="text-xl text-blue-500" /> 
+        <li className={`${mobile ? 'flex items-center gap-3 p-4 rounded-xl hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium'}`}>
+          <FaHome className={`${mobile ? 'text-xl text-blue-500' : 'text-lg'}`} /> 
           <span>Home</span>
         </li>
       </Link>
       
       <Link to="/about" onClick={onNavigate}>
-        <li className={`mobile-menu-item ${mobile ? 'animate-menu-item-in-delay-1 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium' : 'hover:text-yellow-300 hover:scale-110 flex items-center gap-1 transition-all'}`}>
-          <FaInfoCircle className="text-xl text-green-500" /> 
+        <li className={`${mobile ? 'flex items-center gap-3 p-4 rounded-xl hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium'}`}>
+          <FaInfoCircle className={`${mobile ? 'text-xl text-green-500' : 'text-lg'}`} /> 
           <span>About</span>
         </li>
       </Link>
       
       <Link to="/search" onClick={onNavigate}>
-        <li className={`mobile-menu-item ${mobile ? 'animate-menu-item-in-delay-2 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium' : 'hover:text-yellow-300 hover:scale-110 flex items-center gap-1 transition-all'}`}>
-          <FaCompass className="text-xl text-purple-500" /> 
+        <li className={`${mobile ? 'flex items-center gap-3 p-4 rounded-xl hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium'}`}>
+          <FaCompass className={`${mobile ? 'text-xl text-purple-500' : 'text-lg'}`} /> 
           <span>Explore</span>
         </li>
       </Link>

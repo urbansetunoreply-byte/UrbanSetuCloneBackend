@@ -826,6 +826,26 @@ export default function AdminDashboard() {
 
       {/* Enhanced Analytics Dashboard */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+        {/* Admin Analytics Main Heading */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center justify-center gap-4 mb-4">
+            <div className="p-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-lg">
+              <FaChartLine className="text-white text-3xl" />
+            </div>
+            <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+              Admin Analytics
+            </h1>
+          </div>
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            Comprehensive insights and management tools for platform oversight, security monitoring, and business intelligence
+          </p>
+          <div className="flex items-center justify-center gap-2 mt-4">
+            <div className="w-12 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+            <div className="w-8 h-1 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full"></div>
+            <div className="w-4 h-1 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full"></div>
+          </div>
+        </div>
+
         {/* Critical Operations - Most Urgent for Admin Daily Tasks */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
