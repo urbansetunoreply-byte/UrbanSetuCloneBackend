@@ -266,6 +266,19 @@ export default function Profile() {
   const [showTransferPasswordModal, setShowTransferPasswordModal] = useState(false);
   const [transferDeletePassword, setTransferDeletePassword] = useState("");
   const [transferDeleteError, setTransferDeleteError] = useState("");
+  const [deleteOtp, setDeleteOtp] = useState("");
+  const [deleteOtpSent, setDeleteOtpSent] = useState(false);
+  const [deleteOtpError, setDeleteOtpError] = useState("");
+  const [deleteOtpAttempts, setDeleteOtpAttempts] = useState(0);
+  const [deleteOtpLoading, setDeleteOtpLoading] = useState(false);
+  const [deleteResendTimer, setDeleteResendTimer] = useState(0);
+  const [deleteCanResend, setDeleteCanResend] = useState(true);
+  const [transferOtp, setTransferOtp] = useState("");
+  const [transferOtpSent, setTransferOtpSent] = useState(false);
+  const [transferOtpError, setTransferOtpError] = useState("");
+  const [transferOtpAttempts, setTransferOtpAttempts] = useState(0);
+  const [transferResendTimer, setTransferResendTimer] = useState(0);
+  const [transferCanResend, setTransferCanResend] = useState(true);
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [transferAdmins, setTransferAdmins] = useState([]);
   const [selectedTransferAdmin, setSelectedTransferAdmin] = useState("");
@@ -291,6 +304,16 @@ export default function Profile() {
       document.body.classList.remove('modal-open');
     };
   }, [showPasswordModal, showTransferPasswordModal, showTransferModal, showAdminModal]);
+
+  // OTP resend timers (delete / transfer)
+  useEffect(() => {
+    let t1; if (deleteResendTimer > 0) t1 = setTimeout(() => setDeleteResendTimer(x => x - 1), 1000);
+    return () => { if (t1) clearTimeout(t1); };
+  }, [deleteResendTimer]);
+  useEffect(() => {
+    let t2; if (transferResendTimer > 0) t2 = setTimeout(() => setTransferResendTimer(x => x - 1), 1000);
+    return () => { if (t2) clearTimeout(t2); };
+  }, [transferResendTimer]);
   
   // Real-time validation states
   const [emailValidation, setEmailValidation] = useState({ loading: false, message: "", available: null });
@@ -1110,71 +1133,77 @@ export default function Profile() {
     }
     try {
       setTransferLoading(true);
-      
-      // First, verify the password by checking it directly
-      const verifyRes = await fetch(`${API_BASE_URL}/api/user/verify-password/${currentUser._id}`, {
+      // Verify password using common endpoint
+      const verifyRes = await fetch(`${API_BASE_URL}/api/auth/verify-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ password: transferDeletePassword })
       });
-      let verifyData = {};
-      try {
-        verifyData = await verifyRes.json();
-      } catch (jsonErr) {
-        verifyData = {};
-      }
-      
-      if (verifyRes.status === 401) {
-        setShowTransferPasswordModal(false);
-        toast.error("Your session has expired. Please sign in again. No admin rights are Transferred");
-        // Signout and redirect
-        dispatch(signoutUserStart());
-        const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
-        const signoutData = await signoutRes.json();
-        if (signoutData.success === false) {
-          dispatch(signoutUserFailure(signoutData.message));
-        } else {
-          dispatch(signoutUserSuccess(signoutData));
-        }
-        navigate('/sign-in', { replace: true });
-        return;
-      }
-      
-      // Check if password verification failed
-      if (!verifyRes.ok || verifyData.success === false) {
+      if (!verifyRes.ok) {
         setShowTransferPasswordModal(false);
         toast.error("For your security, you've been signed out automatically.");
-        // Signout and redirect
-        dispatch(signoutUserStart());
-        const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
-        const signoutData = await signoutRes.json();
-        if (signoutData.success === false) {
-          dispatch(signoutUserFailure(signoutData.message));
-        } else {
-          dispatch(signoutUserSuccess(signoutData));
-        }
+        await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
         navigate('/sign-in', { replace: true });
         return;
       }
-      
-      // Password is correct, now transfer default admin rights
+      // Send OTP to root admin email
+      const sendRes = await fetch(`${API_BASE_URL}/api/auth/send-forgot-password-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email: currentUser.email })
+      });
+      const sendData = await sendRes.json();
+      if (!sendRes.ok || sendData.success === false) {
+        setTransferDeleteError(sendData.message || 'Failed to send OTP');
+        return;
+      }
+      setTransferOtp("");
+      setTransferOtpSent(true);
+      setTransferCanResend(false);
+      setTransferResendTimer(30);
+    } catch (error) {
+      setTransferDeleteError('Failed to verify password');
+    } finally {
+      setTransferLoading(false);
+    }
+  };
+
+  const resendTransferOtp = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/send-forgot-password-otp`, { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({ email: currentUser.email }) });
+      const data = await res.json();
+      return res.ok && data.success !== false;
+    } catch (_) { return false; }
+  };
+
+  const handleFinalTransferDeleteWithOtp = async () => {
+    setTransferOtpError("");
+    if (!transferOtp || transferOtp.length !== 6) { setTransferOtpError('Enter 6-digit OTP'); return; }
+    try {
+      const vRes = await fetch(`${API_BASE_URL}/api/auth/verify-otp`, { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({ email: currentUser.email, otp: transferOtp }) });
+      const vData = await vRes.json();
+      if (!vRes.ok || vData.success === false || vData.type !== 'forgotPassword') {
+        const att = transferOtpAttempts + 1; setTransferOtpAttempts(att);
+        setTransferOtpError(vData.message || 'Invalid OTP');
+        if (att >= 5) {
+          setShowTransferPasswordModal(false);
+          toast.error("For your security, you've been signed out automatically.");
+          await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials:'include' });
+          navigate('/sign-in', { replace: true });
+        }
+        return;
+      }
+      // OTP verified -> transfer rights then delete
       const transferRes = await fetch(`${API_BASE_URL}/api/user/transfer-default-admin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
-          currentAdminId: currentUser._id,
-          newDefaultAdminId: selectedAdmin
-        })
+        body: JSON.stringify({ currentAdminId: currentUser._id, newDefaultAdminId: selectedAdmin })
       });
       const transferData = await transferRes.json();
-      if (!transferRes.ok) {
-        toast.error(transferData.message || 'Failed to transfer default admin rights');
-        return;
-      }
-
-      // Now delete the account (user is no longer default admin)
+      if (!transferRes.ok) { setTransferOtpError(transferData.message || 'Failed to transfer default admin rights'); return; }
       const deleteRes = await fetch(`${API_BASE_URL}/api/user/delete/${currentUser._id}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
@@ -1182,21 +1211,14 @@ export default function Profile() {
         body: JSON.stringify({ password: transferDeletePassword })
       });
       const deleteData = await deleteRes.json();
-      if (!deleteRes.ok) {
-        toast.error(deleteData.message || 'Failed to delete account after transfer');
-        return;
-      }
-      
-      // Both transfer and deletion successful
+      if (!deleteRes.ok) { setTransferOtpError(deleteData.message || 'Failed to delete account after transfer'); return; }
       dispatch(deleteUserSuccess(deleteData));
       setShowAdminModal(false);
       setShowTransferPasswordModal(false);
-      toast.success("Admin rights are transferred and account deleted successfully!");
+      toast.success('Admin rights transferred and account deleted successfully!');
       navigate('/');
-    } catch (error) {
-      setTransferDeleteError("Account deletion failed");
-    } finally {
-      setTransferLoading(false);
+    } catch (_) {
+      setTransferOtpError('Verification failed');
     }
   };
 
@@ -2583,7 +2605,7 @@ export default function Profile() {
             <div className="p-6">
               <h3 className="text-xl font-bold text-gray-800 mb-4">Confirm Account Deletion</h3>
               <p className="mb-4 text-gray-600">Please enter your password to confirm account deletion after transferring default admin rights. This action cannot be undone.</p>
-              <form onSubmit={e => { e.preventDefault(); handleConfirmTransferAndDelete(); }}>
+              <form onSubmit={async e => { e.preventDefault(); if (!transferOtpSent) { await handleConfirmTransferAndDelete(); } else { await handleFinalTransferDeleteWithOtp(); } }}>
                 <input
                   type="password"
                   className="w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -2592,6 +2614,16 @@ export default function Profile() {
                   onChange={e => setTransferDeletePassword(e.target.value)}
                 />
                 {transferDeleteError && <div className="text-red-600 text-sm mb-2">{transferDeleteError}</div>}
+                {transferOtpSent && (
+                  <div className="mt-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Enter OTP</label>
+                    <div className="flex gap-2">
+                      <input type="text" maxLength="6" value={transferOtp} onChange={e=> setTransferOtp(e.target.value.replace(/[^0-9]/g,''))} className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="6-digit OTP" />
+                      <button type="button" disabled={!transferCanResend || transferResendTimer>0} onClick={async()=>{ if(transferResendTimer>0) return; const ok = await resendTransferOtp(); if(ok){ setTransferCanResend(false); setTransferResendTimer(30);} }} className="px-3 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50">{transferResendTimer>0?`Resend in ${transferResendTimer}s`:'Resend OTP'}</button>
+                    </div>
+                    {transferOtpError && <div className="text-red-600 text-sm mt-1">{transferOtpError}</div>}
+                  </div>
+                )}
                 <div className="flex justify-end space-x-3">
                   <button
                     type="button"
@@ -2602,7 +2634,7 @@ export default function Profile() {
                     type="submit"
                     className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
                     disabled={transferLoading}
-                  >{transferLoading ? 'Processing...' : 'Transfer & Delete'}</button>
+                  >{transferOtpSent ? 'Transfer & Delete' : (transferLoading ? 'Processing...' : 'Verify & Send OTP')}</button>
                 </div>
               </form>
             </div>
