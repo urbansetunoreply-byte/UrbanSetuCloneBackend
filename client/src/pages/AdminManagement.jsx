@@ -16,6 +16,9 @@ export default function AdminManagement() {
   const [admins, setAdmins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("users");
+  const [deletedAccounts, setDeletedAccounts] = useState([]);
+  const [deletedFilters, setDeletedFilters] = useState({ q: '', role: 'all', deletedBy: '', from: '', to: '' });
+  const [deletedLoading, setDeletedLoading] = useState(false);
   const [suspendError, setSuspendError] = useState({});
   const [showRestriction, setShowRestriction] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState(null);
@@ -113,10 +116,37 @@ export default function AdminManagement() {
       } catch (_) {
         setPasswordLockouts([]);
       }
+      // Fetch deleted accounts
+      try {
+        await fetchDeletedAccounts();
+      } catch (_) {}
     } catch (err) {
       toast.error("Failed to fetch accounts");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchDeletedAccounts = async () => {
+    setDeletedLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (deletedFilters.q) params.set('q', deletedFilters.q);
+      if (deletedFilters.role && deletedFilters.role !== 'all') params.set('role', deletedFilters.role);
+      if (deletedFilters.deletedBy) params.set('deletedBy', deletedFilters.deletedBy);
+      if (deletedFilters.from) params.set('from', deletedFilters.from);
+      if (deletedFilters.to) params.set('to', deletedFilters.to);
+      const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts?${params.toString()}`, { credentials: 'include' });
+      const data = await res.json();
+      if (res.ok && data && Array.isArray(data.items)) {
+        setDeletedAccounts(data.items);
+      } else {
+        setDeletedAccounts([]);
+      }
+    } catch (e) {
+      setDeletedAccounts([]);
+    } finally {
+      setDeletedLoading(false);
     }
   };
 
@@ -682,10 +712,20 @@ export default function AdminManagement() {
           >
             Admins
           </button>
+          <button
+            className={`px-6 py-3 rounded-xl font-bold text-lg shadow transition-all duration-200 ${tab === "deleted" ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white scale-105" : "bg-gray-100 text-gray-700 hover:bg-rose-50"}`}
+            onClick={() => {
+              setTab("deleted");
+              fetchDeletedAccounts();
+            }}
+          >
+            Deleted Accounts
+          </button>
         </div>
 
         {/* Enhanced Search and Filters */}
         <div className="mb-6 animate-fadeIn">
+          {tab !== 'deleted' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Main Search */}
             <div className="relative">
@@ -746,9 +786,29 @@ export default function AdminManagement() {
               </button>
             </div>
           </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <input value={deletedFilters.q} onChange={e=>setDeletedFilters(f=>({...f,q:e.target.value}))} placeholder="Search name/email" className="px-3 py-3 border rounded-xl" />
+              <select value={deletedFilters.role} onChange={e=>setDeletedFilters(f=>({...f,role:e.target.value}))} className="px-3 py-3 border rounded-xl">
+                <option value="all">All Roles</option>
+                <option value="user">User</option>
+                {currentUser.isDefaultAdmin && <option value="admin">Admin</option>}
+              </select>
+              <input type="date" value={deletedFilters.from} onChange={e=>setDeletedFilters(f=>({...f,from:e.target.value}))} className="px-3 py-3 border rounded-xl" />
+              <input type="date" value={deletedFilters.to} onChange={e=>setDeletedFilters(f=>({...f,to:e.target.value}))} className="px-3 py-3 border rounded-xl" />
+              <input value={deletedFilters.deletedBy} onChange={e=>setDeletedFilters(f=>({...f,deletedBy:e.target.value}))} placeholder="Deleted by (id or self)" className="px-3 py-3 border rounded-xl" />
+              <div className="flex items-center gap-2">
+                <button onClick={fetchDeletedAccounts} className="px-4 py-3 bg-blue-600 text-white rounded-xl">Apply</button>
+                <button onClick={()=>{setDeletedFilters({ q:'', role:'all', deletedBy:'', from:'', to:''}); setTimeout(fetchDeletedAccounts,0);}} className="px-4 py-3 bg-gray-100 rounded-xl">Clear</button>
+              </div>
+              <div className="col-span-full text-sm text-gray-600">
+                {currentUser.isDefaultAdmin ? 'You are viewing all deleted accounts (users + admins).' : 'You are viewing only deleted user accounts.'}
+              </div>
+            </div>
+          )}
 
           {/* Results Summary */}
-          {(searchTerm || statusFilter !== "all") && (
+          {tab !== 'deleted' && (searchTerm || statusFilter !== "all") && (
             <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
               <div className="text-sm text-blue-800">
                 <span className="font-semibold">Active Filters:</span>
@@ -985,6 +1045,54 @@ export default function AdminManagement() {
                         )}
                       </div>
                     ))}
+                  </div>
+                )}
+              </div>
+            )}
+            {tab === 'deleted' && (
+              <div className="mt-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">Deleted Accounts</h2>
+                {deletedLoading ? (
+                  <div className="flex items-center justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div><span className="ml-3 text-gray-600">Loading...</span></div>
+                ) : deletedAccounts.length === 0 ? (
+                  <div className="p-6 text-center text-gray-500 border rounded-xl">No deleted accounts found</div>
+                ) : (
+                  <div className="overflow-auto rounded-xl border border-gray-200">
+                    <table className="min-w-full text-sm">
+                      <thead className="bg-gray-50">
+                        <tr className="text-left text-gray-700">
+                          <th className="px-4 py-2">Name</th>
+                          <th className="px-4 py-2">Email</th>
+                          <th className="px-4 py-2">Role</th>
+                          <th className="px-4 py-2">Date Deleted</th>
+                          <th className="px-4 py-2">Deleted By</th>
+                          <th className="px-4 py-2">Reason</th>
+                          <th className="px-4 py-2">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {deletedAccounts.map(acc => (
+                          <tr key={acc._id} className="hover:bg-gray-50">
+                            <td className="px-4 py-2 font-medium text-gray-800">{acc.name}</td>
+                            <td className="px-4 py-2 text-gray-700">{acc.email}</td>
+                            <td className="px-4 py-2"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${acc.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>{acc.role}</span></td>
+                            <td className="px-4 py-2 text-gray-600">{acc.deletedAt ? new Date(acc.deletedAt).toLocaleString() : '-'}</td>
+                            <td className="px-4 py-2 text-gray-600">{typeof acc.deletedBy === 'string' ? acc.deletedBy : (acc.deletedBy?._id || acc.deletedBy) }</td>
+                            <td className="px-4 py-2 text-gray-600">{acc.reason || '-'}</td>
+                            <td className="px-4 py-2">
+                              {currentUser.isDefaultAdmin ? (
+                                <div className="flex gap-2">
+                                  <button onClick={async ()=>{ if(!confirm('Restore this account?')) return; const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts/restore/${acc._id}`, { method:'POST', credentials:'include' }); const data = await res.json(); if(res.ok){ toast.success('Account restored'); fetchDeletedAccounts(); } else { toast.error(data.message||'Restore failed'); } }} className="px-3 py-1 bg-green-600 text-white rounded-lg text-xs">Restore</button>
+                                  <button onClick={async ()=>{ if(!confirm('Permanently purge this account? This cannot be undone.')) return; const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts/purge/${acc._id}`, { method:'DELETE', credentials:'include' }); const data = await res.json(); if(res.ok){ toast.success('Account purged'); fetchDeletedAccounts(); } else { toast.error(data.message||'Purge failed'); } }} className="px-3 py-1 bg-red-600 text-white rounded-lg text-xs">Purge</button>
+                                </div>
+                              ) : (
+                                <span className="text-xs text-gray-500">View only</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 )}
               </div>

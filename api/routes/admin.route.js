@@ -7,7 +7,7 @@ import {
     transferRootAdminRights
 } from '../controllers/admin.controller.js';
 import User from '../models/user.model.js';
-import { getManagementUsers, getManagementAdmins, suspendUserOrAdmin, deleteUserOrAdmin, demoteAdminToUser, promoteUserToAdmin, reapproveRejectedAdmin } from '../controllers/management.controller.js';
+import { getManagementUsers, getManagementAdmins, suspendUserOrAdmin, deleteUserOrAdmin, demoteAdminToUser, promoteUserToAdmin, reapproveRejectedAdmin, getDeletedAccounts, restoreDeletedAccount, purgeDeletedAccount } from '../controllers/management.controller.js';
 
 const router = express.Router();
 
@@ -57,6 +57,11 @@ router.delete('/management/delete/:type/:id', verifyToken, deleteUserOrAdmin);
 router.patch('/management/demote/:id', verifyToken, demoteAdminToUser);
 router.patch('/management/promote/:id', verifyToken, promoteUserToAdmin);
 router.patch('/management/reapprove/:adminId', verifyToken, reapproveRejectedAdmin);
+
+// Deleted Accounts APIs
+router.get('/deleted-accounts', verifyToken, getDeletedAccounts);
+router.post('/deleted-accounts/restore/:id', verifyToken, restoreDeletedAccount);
+router.delete('/deleted-accounts/purge/:id', verifyToken, purgeDeletedAccount);
 
 // Verify admin password for management access
 router.post('/management/verify-password', verifyToken, async (req, res, next) => {
