@@ -36,9 +36,9 @@ export default function Watchlist() {
     cityDistribution: {}
   });
 
-  const fetchWatchlist = async () => {
+  const fetchWatchlist = async (showLoading = true) => {
     if (!currentUser?._id) return;
-    setLoading(true);
+    if (showLoading) setLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/watchlist/user/${currentUser._id}`, { credentials: 'include' });
       if (res.ok) {
@@ -62,7 +62,41 @@ export default function Watchlist() {
     } catch (e) {
       // noop
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
+    }
+  };
+
+  // Send watchlist notification
+  const sendWatchlistNotification = async (listing, type, message) => {
+    if (!currentUser?._id) return;
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/notifications/watchlist`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          userId: currentUser._id,
+          listingId: listing._id,
+          type: type,
+          title: `Watchlist Alert: ${listing.name}`,
+          message: message,
+          link: `/user/listing/${listing._id}`
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Emit socket event for real-time notification
+        socket.emit('watchlistNotification', {
+          userId: currentUser._id,
+          notification: data.notification
+        });
+      }
+    } catch (error) {
+      console.error('Error sending watchlist notification:', error);
     }
   };
 
@@ -165,8 +199,8 @@ export default function Watchlist() {
     if (!currentUser?._id || items.length === 0) return;
     
     const interval = setInterval(() => {
-      // Re-fetch watchlist to get latest prices and check for changes
-      fetchWatchlist();
+      // Re-fetch watchlist to get latest prices and check for changes (background refresh)
+      fetchWatchlist(false);
     }, 5 * 60 * 1000); // 5 minutes
     
     return () => clearInterval(interval);
@@ -176,8 +210,8 @@ export default function Watchlist() {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden && currentUser?._id && items.length > 0) {
-        // Page became visible, check for price changes
-        fetchWatchlist();
+        // Page became visible, check for price changes (background refresh)
+        fetchWatchlist(false);
       }
     };
     
@@ -439,40 +473,6 @@ export default function Watchlist() {
     const baseline = baselineMap.get(l._id);
     if (baseline == null) return false;
     return effective > baseline;
-  };
-
-  // Send watchlist notification
-  const sendWatchlistNotification = async (listing, type, message) => {
-    if (!currentUser?._id) return;
-    
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/notifications/watchlist`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          userId: currentUser._id,
-          listingId: listing._id,
-          type: type,
-          title: `Watchlist Alert: ${listing.name}`,
-          message: message,
-          link: `/user/listing/${listing._id}`
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        // Emit socket event for real-time notification
-        socket.emit('watchlistNotification', {
-          userId: currentUser._id,
-          notification: data.notification
-        });
-      }
-    } catch (error) {
-      console.error('Error sending watchlist notification:', error);
-    }
   };
 
   const getPerItemStats = (listing) => {

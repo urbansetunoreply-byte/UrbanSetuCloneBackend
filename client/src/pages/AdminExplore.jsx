@@ -216,6 +216,29 @@ export default function AdminExplore() {
     if (!natural) return;
     const extracted = { ...formData };
     
+    // Enhanced NLP processing with context understanding
+    const processNaturalLanguage = (query) => {
+      const lowerQuery = query.toLowerCase();
+      
+      // Intent detection
+      const intents = {
+        search: /(?:find|search|look for|looking for|need|want|require|dhundh|khoj|chahiye)/i,
+        rent: /(?:rent|rental|renting|for rent|to rent|kiran|bhada|rent par)/i,
+        buy: /(?:buy|purchase|sale|selling|for sale|to buy|kharid|bechne|sale par)/i,
+        budget: /(?:budget|affordable|cheap|low cost|economical|paisa|dam|rate)/i,
+        location: /(?:near|close to|around|in|at|from|paas|mein|se)/i,
+        size: /(?:room|bedroom|bhk|bed|bath|bathroom|toilet|kamra|washroom)/i,
+        amenities: /(?:parking|furnished|unfurnished|garden|balcony|lift|security|gym|pool|ac|air conditioning)/i
+      };
+      
+      // Extract intent
+      const detectedIntent = Object.keys(intents).find(intent => intents[intent].test(query));
+      
+      return { detectedIntent, query: lowerQuery };
+    };
+    
+    const { detectedIntent } = processNaturalLanguage(natural);
+    
     // Enhanced city to state mapping
     const inferStateFromCity = (city) => {
       const cityToState = {
@@ -375,6 +398,83 @@ export default function AdminExplore() {
       /(?:want|chahiye)\s+(?:to\s+)?(?:rent|buy|kiran|kharid)/i,
       /(?:available\s+for|available)\s+(?:rent|sale|kiran|bechne)/i
     ];
+    
+    // Enhanced amenities detection with smart context understanding
+    const amenitiesPatterns = {
+      parking: [
+        /(?:parking|car\s+parking|vehicle\s+parking|garage)/i,
+        /(?:parking\s+available|parking\s+space|car\s+space)/i,
+        /(?:with\s+parking|parking\s+included)/i,
+        // Hindi/regional patterns
+        /(?:parking|gaadi\s+rakhne\s+ki\s+jagah|vehicle\s+parking)/i
+      ],
+      furnished: [
+        /(?:furnished|fully\s+furnished|semi\s+furnished)/i,
+        /(?:with\s+furniture|furniture\s+included)/i,
+        /(?:ready\s+to\s+move|move\s+in\s+ready)/i,
+        // Hindi/regional patterns
+        /(?:furnished|saman\s+ke\s+saath|ready\s+to\s+move)/i
+      ],
+      unfurnished: [
+        /(?:unfurnished|semi\s+furnished|bare)/i,
+        /(?:without\s+furniture|no\s+furniture)/i,
+        // Hindi/regional patterns
+        /(?:unfurnished|bina\s+saman\s+ke|khali)/i
+      ],
+      garden: [
+        /(?:garden|lawn|green\s+space|outdoor\s+space)/i,
+        /(?:with\s+garden|garden\s+available)/i,
+        // Hindi/regional patterns
+        /(?:garden|bagicha|lawn|green\s+area)/i
+      ],
+      balcony: [
+        /(?:balcony|terrace|veranda)/i,
+        /(?:with\s+balcony|balcony\s+available)/i,
+        // Hindi/regional patterns
+        /(?:balcony|terrace|veranda|chhat)/i
+      ],
+      lift: [
+        /(?:lift|elevator|elevator\s+available)/i,
+        /(?:with\s+lift|lift\s+facility)/i,
+        // Hindi/regional patterns
+        /(?:lift|elevator|lift\s+ki\s+facility)/i
+      ],
+      security: [
+        /(?:security|24\s*7\s*security|gated\s+community)/i,
+        /(?:security\s+guard|security\s+system)/i,
+        // Hindi/regional patterns
+        /(?:security|suraksha|guard|24\s*7\s*security)/i
+      ],
+      gym: [
+        /(?:gym|fitness\s+center|workout\s+area)/i,
+        /(?:with\s+gym|gym\s+facility)/i,
+        // Hindi/regional patterns
+        /(?:gym|fitness|vyayam\s+shala)/i
+      ],
+      pool: [
+        /(?:pool|swimming\s+pool)/i,
+        /(?:with\s+pool|pool\s+facility)/i,
+        // Hindi/regional patterns
+        /(?:pool|swimming\s+pool|tairne\s+ki\s+jagah)/i
+      ],
+      ac: [
+        /(?:ac|air\s+conditioning|air\s+conditioned)/i,
+        /(?:with\s+ac|ac\s+available)/i,
+        // Hindi/regional patterns
+        /(?:ac|air\s+conditioning|thandak)/i
+      ]
+    };
+    
+    // Process amenities
+    Object.keys(amenitiesPatterns).forEach(amenity => {
+      const patterns = amenitiesPatterns[amenity];
+      const hasAmenity = patterns.some(pattern => pattern.test(natural));
+      if (hasAmenity) {
+        if (amenity === 'furnished') extracted.furnished = true;
+        if (amenity === 'parking') extracted.parking = true;
+        if (amenity === 'offer') extracted.offer = true; // For special offers
+      }
+    });
     
     for (const pattern of typePatterns) {
       const typeMatch = natural.match(pattern);
