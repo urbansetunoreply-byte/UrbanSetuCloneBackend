@@ -553,10 +553,10 @@ const GeminiChatbox = () => {
                                 </div>
                                 <div className="leading-tight hidden sm:block">
                                     <div className="text-xs md:text-sm font-semibold">
-                                        Gemini AI Real Estate Helper
+                                        Gemini AI
                                     </div>
                                     <div className="text-[10px] md:text-xs text-white/80">
-                                        Smart property assistance
+                                        Your Smart Real Estate Assistant
                                     </div>
                                 </div>
                             </div>
