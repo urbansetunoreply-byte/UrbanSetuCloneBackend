@@ -249,10 +249,11 @@ export default function Watchlist() {
   };
 
   const searchProperties = async (searchQuery = propertySearchTerm) => {
-    if (!searchQuery.trim()) return;
+    const q = typeof searchQuery === 'string' ? searchQuery.trim() : '';
+    if (!q) return;
     setSearching(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/listing/get?search=${encodeURIComponent(searchQuery)}&limit=20`, {
+      const res = await fetch(`${API_BASE_URL}/api/listing/get?search=${encodeURIComponent(q)}&limit=20`, {
         credentials: 'include'
       });
       if (res.ok) {
@@ -270,7 +271,8 @@ export default function Watchlist() {
   };
 
   const fetchSearchSuggestions = async (query) => {
-    if (!query.trim() || query.length < 2) {
+    const q = typeof query === 'string' ? query.trim() : '';
+    if (!q || q.length < 2) {
       setSearchSuggestions([]);
       setShowSuggestions(false);
       return;
@@ -278,7 +280,7 @@ export default function Watchlist() {
 
     setSuggestionLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/listing/get?search=${encodeURIComponent(query)}&limit=5`, {
+      const res = await fetch(`${API_BASE_URL}/api/listing/get?search=${encodeURIComponent(q)}&limit=5`, {
         credentials: 'include'
       });
       if (res.ok) {

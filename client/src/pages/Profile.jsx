@@ -2815,7 +2815,7 @@ export default function Profile() {
                     value={transferPassword}
                     onChange={e => setTransferPassword(e.target.value)}
                   />
-                  {transferError && <div className="text-red-600 text-sm mt-2">{transferError}</div>}
+                  {!transferOtpSent && transferError && <div className="text-red-600 text-sm mt-2">{transferError}</div>}
                   {transferOtpSent && (
                     <div className="mt-4">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Enter OTP</label>
@@ -2823,6 +2823,7 @@ export default function Profile() {
                         <input type="text" maxLength="6" value={transferOtp} onChange={e=> setTransferOtp(e.target.value.replace(/[^0-9]/g,''))} className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500" placeholder="6-digit OTP" />
                         <button type="button" disabled={!transferCanResend || transferResendTimer>0} onClick={async()=>{ if(transferResendTimer>0) return; const ok = await resendTransferOtp(); if(ok){ setTransferCanResend(false); setTransferResendTimer(30);} }} className="px-3 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50">{transferResendTimer>0?`Resend in ${transferResendTimer}s`:'Resend OTP'}</button>
                       </div>
+                      {transferError && <div className="text-red-600 text-sm mt-2">{transferError}</div>}
                     </div>
                   )}
                   <div className="flex justify-end space-x-3 mt-6">
@@ -2839,7 +2840,7 @@ export default function Profile() {
                       {transferSubmitting ? (
                         <>
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Processing...
+                          {transferOtpSent ? 'Transferring...' : 'Processing...'}
                         </>
                       ) : (
                         <>

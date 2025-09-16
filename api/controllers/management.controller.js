@@ -211,13 +211,23 @@ export const restoreDeletedAccount = async (req, res, next) => {
     // Recreate user/admin
     const exists = await User.findOne({ email: record.email });
     if (exists) return next(errorHandler(400, 'An active account with this email already exists'));
+    const original = (record.originalData || {});
+    const bcrypt = (await import('bcryptjs')).default;
+    // Ensure required fields
+    const username = original.username || record.name || 'Restored User';
+    const mobileNumber = original.mobileNumber && String(original.mobileNumber).match(/^\d{10}$/) ? String(original.mobileNumber) : String(Math.floor(1000000000 + Math.random() * 9000000000));
     const restored = new User({
-      username: record.name,
+      username,
       email: record.email,
-      password: (await import('bcryptjs')).default.hashSync(Math.random().toString(36).slice(-10), 10),
+      password: bcrypt.hashSync(Math.random().toString(36).slice(-10), 10),
       role: record.role,
       adminApprovalStatus: record.role === 'admin' ? 'approved' : undefined,
-      status: 'active'
+      status: 'active',
+      mobileNumber,
+      isGeneratedMobile: !original.mobileNumber,
+      address: original.address || '',
+      gender: original.gender || undefined,
+      avatar: original.avatar || undefined
     });
     await restored.save();
     await AuditLog.create({ action: 'restore', performedBy: currentUser._id, targetAccount: record._id, targetEmail: record.email });
