@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { FaUnlockAlt, FaShieldAlt, FaLock, FaEye, FaEyeSlash, FaFilter, FaSearch, FaRefresh, FaExclamationTriangle, FaCheckCircle, FaClock, FaUser, FaGlobe, FaEnvelope, FaKey } from 'react-icons/fa';
+import { FaUnlockAlt, FaShieldAlt, FaLock, FaEye, FaEyeSlash, FaFilter, FaSearch, FaRedo, FaExclamationTriangle, FaCheckCircle, FaClock, FaUser, FaGlobe, FaEnvelope, FaKey } from 'react-icons/fa';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -264,7 +264,7 @@ export default function AdminSecurityModeration() {
                 onClick={fetchStats} 
                 className="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 flex items-center gap-2"
               >
-                <FaRefresh className="w-4 h-4" />
+                <FaRedo className="w-4 h-4" />
                 Refresh
               </button>
             </div>
@@ -439,7 +439,7 @@ export default function AdminSecurityModeration() {
                 onClick={fetchPasswordLockouts} 
                 className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 flex items-center gap-2"
               >
-                <FaRefresh className="w-4 h-4" />
+                <FaRedo className="w-4 h-4" />
                 Refresh
               </button>
             </div>
