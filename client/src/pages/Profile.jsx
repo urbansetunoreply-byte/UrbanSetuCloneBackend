@@ -308,6 +308,13 @@ export default function Profile() {
     let t2; if (transferResendTimer > 0) t2 = setTimeout(() => setTransferResendTimer(x => x - 1), 1000);
     return () => { if (t2) clearTimeout(t2); };
   }, [transferResendTimer]);
+  // Re-enable resend when timer hits 0
+  useEffect(() => {
+    if (deleteResendTimer <= 0) setDeleteCanResend(true);
+  }, [deleteResendTimer]);
+  useEffect(() => {
+    if (transferResendTimer <= 0) setTransferCanResend(true);
+  }, [transferResendTimer]);
   
   // Real-time validation states
   const [emailValidation, setEmailValidation] = useState({ loading: false, message: "", available: null });
@@ -2556,9 +2563,9 @@ export default function Profile() {
                 />
                 {deleteError && <div className="text-red-600 text-sm mb-2">{deleteError}</div>}
                 {deleteOtpSent && (
-                  <div className="mt-2">
+                  <div className="mt-4">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Enter OTP</label>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-3">
                       <input
                         type="text"
                         maxLength="6"
@@ -2567,12 +2574,12 @@ export default function Profile() {
                         className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                         placeholder="6-digit OTP"
                       />
-                      <button type="button" disabled={deleteOtpLoading || !deleteCanResend || deleteResendTimer>0} onClick={async()=>{ if(deleteResendTimer>0) return; setDeleteOtpError(""); const ok = await resendDeleteOtp(); if(ok){ setDeleteCanResend(false); setDeleteResendTimer(30);} }} className="px-3 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50">{deleteResendTimer>0?`Resend in ${deleteResendTimer}s`:'Resend OTP'}</button>
+                      <button type="button" disabled={deleteOtpLoading || !deleteCanResend || deleteResendTimer>0} onClick={async()=>{ if(deleteResendTimer>0) return; setDeleteOtpError(""); const ok = await resendDeleteOtp(); if(ok){ setDeleteCanResend(false); setDeleteResendTimer(30);} }} className="px-4 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50 sm:self-auto self-start">{deleteResendTimer>0?`Resend in ${deleteResendTimer}s`:'Resend OTP'}</button>
                     </div>
                     {deleteOtpError && <div className="text-red-600 text-sm mt-1">{deleteOtpError}</div>}
                   </div>
                 )}
-                <div className="flex justify-end space-x-3">
+                <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6">
                   <button
                     type="button"
                     onClick={() => { setShowPasswordModal(false); setDeletePassword(""); setDeleteError(""); }}
