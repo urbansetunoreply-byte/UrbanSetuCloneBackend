@@ -1946,13 +1946,21 @@ export default function Profile() {
                             const value = e.target.value.replace(/[^0-9]/g, '');
                             setOtp(value);
                           }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              if (otp && otp.length === 6 && !verifyLoading) {
+                                handleVerifyOTP();
+                              }
+                            }
+                          }}
                           maxLength="6"
                           className="flex-1 px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
                         />
                         <button
                           type="button"
                           onClick={handleVerifyOTP}
-                          disabled={verifyLoading || !otp}
+                          disabled={verifyLoading || otp.length !== 6}
                           className="px-3 py-2 sm:px-4 sm:py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm sm:text-base whitespace-nowrap"
                         >
                           {verifyLoading ? "Verifying..." : "Verify"}

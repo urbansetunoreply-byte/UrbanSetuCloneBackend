@@ -828,6 +828,14 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                                 };
                                                 handleOtpChange(syntheticEvent);
                                             }} 
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' && otpSent) {
+                                                    e.preventDefault();
+                                                    if (otpData.otp && otpData.otp.length === 6) {
+                                                        handleOtpLogin(e);
+                                                    }
+                                                }
+                                            }}
                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-center text-lg tracking-widest"
                                             maxLength="6"
                                             required
@@ -877,7 +885,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 )}
                                 
                                 <button 
-                                    disabled={loading || (!otpSent && (otpLoading || !canResend)) || (otpRequiresCaptcha && !otpRecaptchaToken)} 
+                                    disabled={loading || (!otpSent && (otpLoading || !canResend)) || (otpRequiresCaptcha && !otpRecaptchaToken) || (otpSent && otpData.otp.length !== 6)} 
                                     className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
                                 >
                                     {loading || (!otpSent && otpLoading) ? (
