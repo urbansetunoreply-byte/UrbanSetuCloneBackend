@@ -256,6 +256,13 @@ export default function Profile() {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteError, setDeleteError] = useState("");
+  const [deleteOtp, setDeleteOtp] = useState("");
+  const [deleteOtpSent, setDeleteOtpSent] = useState(false);
+  const [deleteOtpError, setDeleteOtpError] = useState("");
+  const [deleteOtpAttempts, setDeleteOtpAttempts] = useState(0);
+  const [deleteOtpLoading, setDeleteOtpLoading] = useState(false);
+  const [deleteResendTimer, setDeleteResendTimer] = useState(0);
+  const [deleteCanResend, setDeleteCanResend] = useState(true);
   const [showTransferPasswordModal, setShowTransferPasswordModal] = useState(false);
   const [transferDeletePassword, setTransferDeletePassword] = useState("");
   const [transferDeleteError, setTransferDeleteError] = useState("");
@@ -990,68 +997,80 @@ export default function Profile() {
 
   const handleConfirmDelete = async () => {
     setDeleteError("");
-    if (!deletePassword) {
-      setDeleteError("Password is required");
+    if (!deletePassword) { setDeleteError('Password is required'); return; }
+    // Step 1: verify password
+    const res = await fetch(`${API_BASE_URL}/api/auth/verify-password`, { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password: deletePassword }) });
+    if (!res.ok) {
+      setShowPasswordModal(false);
+      toast.error("For your security, you've been signed out automatically.");
+      dispatch(signoutUserStart());
+      const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials:'include' });
+      const signoutData = await signoutRes.json();
+      if (signoutData.success === false) dispatch(signoutUserFailure(signoutData.message)); else dispatch(signoutUserSuccess(signoutData));
+      navigate('/sign-in', { replace: true });
       return;
     }
+    // Step 2: send OTP
+    setDeleteOtpError("");
+    setDeleteOtp("");
+    setDeleteOtpSent(false);
     try {
-      dispatch(deleteUserStart());
+      setDeleteOtpLoading(true);
+      const sendRes = await fetch(`${API_BASE_URL}/api/auth/send-forgot-password-otp`, { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: currentUser.email }) });
+      const sendData = await sendRes.json();
+      if (!sendRes.ok || sendData.success === false) {
+        setDeleteError(sendData.message || 'Failed to send OTP');
+        return;
+      }
+      setDeleteOtpSent(true);
+      setDeleteCanResend(false);
+      setDeleteResendTimer(30);
+    } finally {
+      setDeleteOtpLoading(false);
+    }
+  };
+
+  const resendDeleteOtp = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/send-forgot-password-otp`, { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: currentUser.email }) });
+      const data = await res.json();
+      return res.ok && data.success !== false;
+    } catch (_) { return false; }
+  };
+
+  const handleFinalDeleteWithOtp = async () => {
+    setDeleteOtpError("");
+    if (!deleteOtp || deleteOtp.length !== 6) { setDeleteOtpError('Enter 6-digit OTP'); return; }
+    try {
+      const vRes = await fetch(`${API_BASE_URL}/api/auth/verify-otp`, { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: currentUser.email, otp: deleteOtp }) });
+      const vData = await vRes.json();
+      if (!vRes.ok || vData.success === false || vData.type !== 'forgotPassword') {
+        const att = deleteOtpAttempts + 1; setDeleteOtpAttempts(att);
+        setDeleteOtpError(vData.message || 'Invalid OTP');
+        if (att >= 5) {
+          setShowPasswordModal(false);
+          toast.error("For your security, you've been signed out automatically.");
+          dispatch(signoutUserStart());
+          const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials:'include' });
+          const signoutData = await signoutRes.json();
+          if (signoutData.success === false) dispatch(signoutUserFailure(signoutData.message)); else dispatch(signoutUserSuccess(signoutData));
+          navigate('/sign-in', { replace: true });
+          return;
+        }
+        return;
+      }
+      // OTP verified -> proceed to delete
       const apiUrl = `${API_BASE_URL}/api/user/delete/${currentUser._id}`;
-      const options = {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: deletePassword }),
-        credentials: 'include',
-      };
+      const options = { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password: deletePassword }), credentials:'include' };
       const res = await fetch(apiUrl, options);
-      let data = {};
-      try {
-        data = await res.json();
-      } catch (jsonErr) {
-        data = {};
-      }
-      if (res.status === 401) {
-        setShowPasswordModal(false);
-        toast.error("For your security, you've been signed out automatically.");
-        // Signout and redirect
-        dispatch(signoutUserStart());
-        const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
-        const signoutData = await signoutRes.json();
-        if (signoutData.success === false) {
-          dispatch(signoutUserFailure(signoutData.message));
-        } else {
-          dispatch(signoutUserSuccess(signoutData));
-        }
-        navigate('/sign-in', { replace: true });
-        return;
-      }
-      if (data.message && data.message.toLowerCase().includes('password')) {
-        setShowPasswordModal(false);
-        toast.error("For your security, you've been signed out automatically.");
-        // Signout and redirect
-        dispatch(signoutUserStart());
-        const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
-        const signoutData = await signoutRes.json();
-        if (signoutData.success === false) {
-          dispatch(signoutUserFailure(signoutData.message));
-        } else {
-          dispatch(signoutUserSuccess(signoutData));
-        }
-        navigate('/sign-in', { replace: true });
-        return;
-      }
-      if (data.success === false || res.status !== 200) {
-        setDeleteError(data.message || "Account deletion failed");
-        dispatch(deleteUserFailure(data.message));
-        return;
-      }
+      const data = await res.json();
+      if (!res.ok) { setDeleteError(data.message || 'Account deletion failed'); return; }
       dispatch(deleteUserSuccess(data));
       setShowPasswordModal(false);
       toast.success("Account deleted successfully. Thank you for being with us — we hope to serve you again in the future!");
       navigate('/');
-    } catch (error) {
-      setDeleteError("Account deletion failed");
-      dispatch(deleteUserFailure(error.message));
+    } catch (_) {
+      setDeleteOtpError('Verification failed');
     }
   };
 
@@ -2514,8 +2533,8 @@ export default function Profile() {
           <div className={`bg-white rounded-xl shadow-xl max-w-md w-full ${animationClasses.scaleIn}`}>
             <div className="p-6">
               <h3 className="text-xl font-bold text-gray-800 mb-4">Confirm Account Deletion</h3>
-              <p className="mb-4 text-gray-600">Please enter your password to confirm account deletion. This action cannot be undone.</p>
-              <form onSubmit={e => { e.preventDefault(); handleConfirmDelete(); }}>
+              <p className="mb-4 text-gray-600">Enter your password. After verification, we will email you an OTP to complete deletion.</p>
+              <form onSubmit={async e => { e.preventDefault(); if (!deleteOtpSent) { await handleConfirmDelete(); } else { await handleFinalDeleteWithOtp(); } }}>
                 <input
                   type="password"
                   className="w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -2524,6 +2543,23 @@ export default function Profile() {
                   onChange={e => setDeletePassword(e.target.value)}
                 />
                 {deleteError && <div className="text-red-600 text-sm mb-2">{deleteError}</div>}
+                {deleteOtpSent && (
+                  <div className="mt-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Enter OTP</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        maxLength="6"
+                        value={deleteOtp}
+                        onChange={e=> setDeleteOtp(e.target.value.replace(/[^0-9]/g,''))}
+                        className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                        placeholder="6-digit OTP"
+                      />
+                      <button type="button" disabled={deleteOtpLoading || !deleteCanResend || deleteResendTimer>0} onClick={async()=>{ if(deleteResendTimer>0) return; setDeleteOtpError(""); const ok = await resendDeleteOtp(); if(ok){ setDeleteCanResend(false); setDeleteResendTimer(30);} }} className="px-3 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50">{deleteResendTimer>0?`Resend in ${deleteResendTimer}s`:'Resend OTP'}</button>
+                    </div>
+                    {deleteOtpError && <div className="text-red-600 text-sm mt-1">{deleteOtpError}</div>}
+                  </div>
+                )}
                 <div className="flex justify-end space-x-3">
                   <button
                     type="button"
@@ -2533,7 +2569,7 @@ export default function Profile() {
                   <button
                     type="submit"
                     className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
-                  >Delete</button>
+                  >{deleteOtpSent ? 'Delete' : 'Verify & Send OTP'}</button>
                 </div>
               </form>
             </div>
