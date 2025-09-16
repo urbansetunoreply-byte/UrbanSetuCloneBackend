@@ -119,7 +119,7 @@ export const bruteForceProtection = (req, res, next) => {
                 if (user && await isAccountLocked(user._id)) {
                     const remainingMs = await getAccountLockRemainingMs(user._id, user.email);
                     const remainingMinutes = Math.max(1, Math.ceil(remainingMs / (60 * 1000)));
-                    return next(errorHandler(423, `Account is temporarily locked due to too many failed attempts. Try again in about ${remainingMinutes} minute${remainingMinutes>1?'s, or reset your password.':''}.`));
+                    return next(errorHandler(423, `Account is temporarily locked due to too many failed attempts. Try again in about ${remainingMinutes} minute${remainingMinutes>1?'s, or reset your password':''}.`));
                 }
                 
                 // Only check for excessive failed attempts (10+ in 15 minutes)
