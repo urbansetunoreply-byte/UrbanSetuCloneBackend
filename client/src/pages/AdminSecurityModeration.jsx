@@ -204,13 +204,11 @@ export default function AdminSecurityModeration() {
               <div className="flex items-center gap-3 ml-auto">
                 <div className="hidden sm:block text-right text-sm text-gray-600">
                   <span className="mr-3">Active OTP lockouts: <span className="font-semibold text-red-600">{stats.activeLockouts}</span></span>
-                  <span>Password lockouts: <span className="font-semibold text-red-600">{stats.passwordLockouts||0}</span></span>
                 </div>
                 <button onClick={fetchStats} className="px-3 py-2 bg-white border border-gray-200 rounded-lg hover:border-blue-300 text-gray-800 text-sm">Refresh</button>
               </div>
               <div className="sm:hidden w-full text-sm text-gray-600">
                 <span className="mr-3">Active OTP lockouts: <span className="font-semibold text-red-600">{stats.activeLockouts}</span></span>
-                <span>Password lockouts: <span className="font-semibold text-red-600">{stats.passwordLockouts||0}</span></span>
               </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 mb-3">
@@ -273,8 +271,11 @@ export default function AdminSecurityModeration() {
           </div>
           {/* Password Lockouts Table */}
           <div className="bg-white rounded-xl shadow p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-gray-800">Active Password Lockouts</h2>
+          <div className="flex items-start justify-between mb-3 gap-2">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-800">Active Password Lockouts</h2>
+              <p className="text-sm text-gray-600 mt-1">Password lockouts: <span className="font-semibold text-red-600">{stats.passwordLockouts || 0}</span></p>
+            </div>
             <div className="flex items-center gap-2">
               <button onClick={fetchPasswordLockouts} className="px-3 py-2 bg-gray-100 border rounded-lg">Refresh</button>
             </div>
