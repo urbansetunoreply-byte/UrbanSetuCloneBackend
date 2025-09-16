@@ -267,6 +267,20 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
         }),
       });
 
+      // Handle suspended account (403) early and stop flow
+      if (res.status === 403) {
+        let friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
+        try {
+          const errData = await res.clone().json();
+          if (errData && errData.message && errData.message.toLowerCase().includes('suspended')) {
+            friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
+          }
+        } catch (_) {}
+        setOtpError(friendlyMessage);
+        setOtpLoading(false);
+        return;
+      }
+
       const data = await res.json();
 
       if (data.success) {
