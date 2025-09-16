@@ -282,6 +282,7 @@ export default function Profile() {
   const [transferPassword, setTransferPassword] = useState("");
   const [transferError, setTransferError] = useState("");
   const [transferSubmitting, setTransferSubmitting] = useState(false);
+  const [transferOtpVisible, setTransferOtpVisible] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [mobileError, setMobileError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -1319,6 +1320,61 @@ export default function Profile() {
     }
     setTransferSubmitting(true);
     try {
+      // Step 1: verify password
+      const verifyRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-password`, {
+        method: 'POST',
+        body: JSON.stringify({ password: transferPassword })
+      });
+      if (!verifyRes.ok) {
+        setShowTransferModal(false);
+        toast.error("For your security, you've been signed out automatically.");
+        await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+        navigate('/sign-in', { replace: true });
+        return;
+      }
+      // Step 2: send OTP
+      const sendRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-forgot-password-otp`, {
+        method: 'POST',
+        body: JSON.stringify({ email: currentUser.email })
+      });
+      const sendData = await sendRes.json();
+      if (!sendRes.ok || sendData.success === false) {
+        setTransferError(sendData.message || 'Failed to send OTP');
+        return;
+      }
+      setTransferOtp("");
+      setTransferOtpSent(true);
+      setTransferOtpVisible(true);
+      setTransferCanResend(false);
+      setTransferResendTimer(30);
+    } catch (e) {
+      setTransferError('Failed to verify password');
+    } finally {
+      setTransferSubmitting(false);
+    }
+  };
+
+  const handleFinalTransferWithOtp = async () => {
+    setTransferError("");
+    if (!transferOtp || transferOtp.length !== 6) {
+      setTransferError('Enter 6-digit OTP');
+      return;
+    }
+    try {
+      const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email, otp: transferOtp }) });
+      const vData = await vRes.json();
+      if (!vRes.ok || vData.success === false || vData.type !== 'forgotPassword') {
+        const att = transferOtpAttempts + 1; setTransferOtpAttempts(att);
+        setTransferError(vData.message || 'Invalid OTP');
+        if (att >= 5) {
+          setShowTransferModal(false);
+          toast.error("For your security, you've been signed out automatically.");
+          await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials:'include' });
+          navigate('/sign-in', { replace: true });
+        }
+        return;
+      }
+      // OTP verified -> transfer rights
       const res = await fetch(`${API_BASE_URL}/api/admin/transfer-rights`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1326,20 +1382,6 @@ export default function Profile() {
         body: JSON.stringify({ targetAdminId: selectedTransferAdmin, password: transferPassword })
       });
       const data = await res.json();
-      if (res.status === 401 && data.error === 'invalidPassword') {
-        setShowTransferModal(false);
-        toast.error("For your security, you've been signed out automatically.");
-        dispatch(signoutUserStart());
-        const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
-        const signoutData = await signoutRes.json();
-        if (signoutData.success === false) {
-          dispatch(signoutUserFailure(signoutData.message));
-        } else {
-          dispatch(signoutUserSuccess(signoutData));
-        }
-        navigate('/sign-in', { replace: true });
-        return;
-      }
       if (!res.ok) {
         setTransferError(data.message || 'Failed to transfer rights.');
         return;
@@ -1349,8 +1391,6 @@ export default function Profile() {
       navigate('/sign-in', { replace: true });
     } catch (e) {
       setTransferError('Failed to transfer rights.');
-    } finally {
-      setTransferSubmitting(false);
     }
   };
 
@@ -2767,7 +2807,7 @@ export default function Profile() {
               </div>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password:</label>
-                <form onSubmit={e => { e.preventDefault(); handleTransferSubmit(); }}>
+                <form onSubmit={e => { e.preventDefault(); transferOtpSent ? handleFinalTransferWithOtp() : handleTransferSubmit(); }}>
                   <input
                     type="password"
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
@@ -2776,6 +2816,15 @@ export default function Profile() {
                     onChange={e => setTransferPassword(e.target.value)}
                   />
                   {transferError && <div className="text-red-600 text-sm mt-2">{transferError}</div>}
+                  {transferOtpSent && (
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Enter OTP</label>
+                      <div className="flex gap-2">
+                        <input type="text" maxLength="6" value={transferOtp} onChange={e=> setTransferOtp(e.target.value.replace(/[^0-9]/g,''))} className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500" placeholder="6-digit OTP" />
+                        <button type="button" disabled={!transferCanResend || transferResendTimer>0} onClick={async()=>{ if(transferResendTimer>0) return; const ok = await resendTransferOtp(); if(ok){ setTransferCanResend(false); setTransferResendTimer(30);} }} className="px-3 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50">{transferResendTimer>0?`Resend in ${transferResendTimer}s`:'Resend OTP'}</button>
+                      </div>
+                    </div>
+                  )}
                   <div className="flex justify-end space-x-3 mt-6">
                     <button
                       type="button"
@@ -2784,7 +2833,7 @@ export default function Profile() {
                     >Cancel</button>
                     <button
                       type="submit"
-                      disabled={!selectedTransferAdmin || !transferPassword || transferSubmitting}
+                      disabled={!selectedTransferAdmin || !transferPassword || transferSubmitting || (transferOtpSent && transferOtp.length !== 6)}
                       className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center"
                     >
                       {transferSubmitting ? (
@@ -2795,7 +2844,7 @@ export default function Profile() {
                       ) : (
                         <>
                           <FaCrown className="w-4 h-4 mr-2" />
-                          Transfer Rights
+                          {transferOtpSent ? 'Transfer Rights' : 'Verify'}
                         </>
                       )}
                     </button>
