@@ -202,7 +202,7 @@ export default function AdminHeader() {
     <header className={`relative ${getHeaderGradient()} shadow-xl border-b border-white/20 sticky top-0 z-50 transition-all duration-300 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
       {/* Admin Top Bar */}
       <div className="bg-black/20 border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-2 text-sm text-white/80">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-2">
@@ -224,60 +224,60 @@ export default function AdminHeader() {
       </div>
 
       {/* Main Admin Header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between py-4">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between py-3">
           {/* Admin Logo/Title */}
           <Link to="/admin" className="flex-shrink-0 group">
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="p-3 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                  <FaUserCheck className="text-2xl sm:text-3xl text-yellow-400 drop-shadow-lg" />
+                <div className="p-2 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                  <FaUserCheck className="text-xl sm:text-2xl text-yellow-400 drop-shadow-lg" />
                 </div>
-                <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl blur opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
+                <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl blur opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white drop-shadow-lg">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white drop-shadow-lg">
                   <span className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
                     Admin
                   </span>
-                  <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent ml-2">
+                  <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent ml-1">
                     Panel
                   </span>
                 </h1>
-                <p className="text-xs sm:text-sm text-white/70 font-medium tracking-wider uppercase">
+                <p className="text-xs text-white/70 font-medium tracking-wider uppercase">
                   Management Dashboard
                 </p>
               </div>
             </div>
           </Link>
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-6">
+          <nav className="hidden lg:flex items-center space-x-4">
             {/* Desktop Search */}
             <div className="flex items-center">
               {!searchOpen ? (
                 <button
-                  className="p-3 text-white hover:text-yellow-300 focus:outline-none transition-all duration-300 hover:bg-white/10 rounded-xl border border-white/20"
+                  className="p-2 text-white hover:text-yellow-300 focus:outline-none transition-all duration-300 hover:bg-white/10 rounded-lg"
                   onClick={() => setSearchOpen(true)}
                   aria-label="Open search"
                 >
-                  <FaSearch className="text-lg" />
+                  <FaSearch className="text-base" />
                 </button>
               ) : (
                 <form
                   onSubmit={handleSearch}
-                  className="flex items-center bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-yellow-300 focus-within:bg-white/20 transition-all duration-300 w-64"
+                  className="flex items-center bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-yellow-300 focus-within:bg-white/20 transition-all duration-300 w-48"
                 >
                   <input
                     ref={searchInputRef}
                     type="text"
-                    placeholder="Search properties..."
+                    placeholder="Search..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onBlur={() => setSearchOpen(false)}
-                    className="px-4 py-3 outline-none w-full text-white placeholder-white/70 bg-transparent"
+                    className="px-3 py-2 outline-none w-full text-white placeholder-white/70 bg-transparent text-sm"
                   />
-                  <button className="bg-yellow-400 hover:bg-yellow-500 text-gray-800 p-3 transition-colors" type="submit">
-                    <FaSearch />
+                  <button className="bg-yellow-400 hover:bg-yellow-500 text-gray-800 p-2 transition-colors" type="submit">
+                    <FaSearch className="text-sm" />
                   </button>
                 </form>
               )}
@@ -294,12 +294,12 @@ export default function AdminHeader() {
           {/* Mobile Menu Button */}
           <div className="lg:hidden">
             <button
-              className="p-3 text-white hover:text-yellow-300 focus:outline-none transition-all duration-300 hover:bg-white/10 rounded-xl border border-white/20"
+              className="p-2 text-white hover:text-yellow-300 focus:outline-none transition-all duration-300 hover:bg-white/10 rounded-lg"
               onClick={() => setMobileMenuOpen((prev) => !prev)}
               aria-label="Open navigation menu"
             >
               <div className={`transition-transform duration-300 ${mobileMenuOpen ? 'animate-hamburger-to-x' : 'animate-x-to-hamburger'}`}>
-                {mobileMenuOpen ? <FaTimes className="text-xl" /> : <FaBars className="text-xl" />}
+                {mobileMenuOpen ? <FaTimes className="text-lg" /> : <FaBars className="text-lg" />}
               </div>
             </button>
           </div>
@@ -364,50 +364,50 @@ export default function AdminHeader() {
 function AdminNavLinks({ mobile = false, onNavigate, pendingCount, handleSignout, currentUser }) {
   const navigate = useNavigate();
   return (
-    <ul className={`${mobile ? 'flex flex-col gap-1' : 'flex items-center space-x-6'}`}>
+    <ul className={`${mobile ? 'flex flex-col gap-1' : 'flex items-center space-x-3'}`}>
       {/* Admin Navigation Links */}
       <Link to="/admin" onClick={onNavigate}>
-        <li className={`${mobile ? 'flex items-center gap-3 p-4 rounded-xl hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium'}`}>
-          <FaHome className={`${mobile ? 'text-xl text-blue-500' : 'text-lg'}`} /> 
+        <li className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-sm'}`}>
+          <FaHome className={`${mobile ? 'text-lg text-blue-500' : 'text-sm'}`} /> 
           <span>Dashboard</span>
         </li>
       </Link>
       
       <Link to="/admin/create-listing" onClick={onNavigate}>
-        <li className={`mobile-menu-item ${mobile ? 'animate-menu-item-in-delay-1 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium' : 'hover:text-green-300 transition-all duration-200 flex items-center gap-2'}`}>
-          <FaPlus className="text-xl text-green-500" /> 
+        <li className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-sm'}`}>
+          <FaPlus className={`${mobile ? 'text-lg text-green-500' : 'text-sm'}`} /> 
           <span>Add Property</span>
         </li>
       </Link>
       
       <Link to="/admin/listings" onClick={onNavigate}>
-        <li className={`mobile-menu-item ${mobile ? 'animate-menu-item-in-delay-2 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium' : 'hover:text-purple-300 transition-all duration-200 flex items-center gap-2'}`}>
-          <FaList className="text-xl text-purple-500" /> 
+        <li className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-sm'}`}>
+          <FaList className={`${mobile ? 'text-lg text-purple-500' : 'text-sm'}`} /> 
           <span>All Listings</span>
         </li>
       </Link>
 
-      {/* New: Movers and Services management links */}
+      {/* Movers and Services management links */}
       <Link to="/admin/movers" onClick={onNavigate}>
-        <li className={`mobile-menu-item ${mobile ? 'animate-menu-item-in-delay-3 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium' : 'hover:text-blue-300 transition-all duration-200 flex items-center gap-2'}`}>
-          <FaTruckMoving className="text-xl text-blue-500" />
+        <li className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-sm'}`}>
+          <FaTruckMoving className={`${mobile ? 'text-lg text-blue-500' : 'text-sm'}`} />
           <span>Movers</span>
         </li>
       </Link>
       <Link to="/admin/services" onClick={onNavigate}>
-        <li className={`mobile-menu-item ${mobile ? 'animate-menu-item-in-delay-3 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium' : 'hover:text-purple-300 transition-all duration-200 flex items-center gap-2'}`}>
-          <FaTools className="text-xl text-purple-600" />
+        <li className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-sm'}`}>
+          <FaTools className={`${mobile ? 'text-lg text-purple-600' : 'text-sm'}`} />
           <span>Services</span>
         </li>
       </Link>
       
       {currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin') && currentUser.adminApprovalStatus === 'approved' && (
         <Link to="/admin/requests" onClick={onNavigate}>
-          <li className={`mobile-menu-item ${mobile ? 'animate-menu-item-in-delay-3 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium relative' : 'hover:text-orange-300 transition-all duration-200 flex items-center gap-2 relative'}`}>
-            <FaUserCheck className="text-xl text-orange-500" /> 
+          <li className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium relative' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-sm relative'}`}>
+            <FaUserCheck className={`${mobile ? 'text-lg text-orange-500' : 'text-sm'}`} /> 
             <span>Requests</span>
             {pendingCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
                 {pendingCount}
               </span>
             )}
@@ -416,28 +416,28 @@ function AdminNavLinks({ mobile = false, onNavigate, pendingCount, handleSignout
       )}
       
       <Link to="/admin/about" onClick={onNavigate}>
-        <li className={`mobile-menu-item ${mobile ? 'animate-menu-item-in-delay-4 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium' : 'hover:text-indigo-300 transition-all duration-200 flex items-center gap-2'}`}>
-          <FaInfoCircle className="text-xl text-indigo-500" /> 
+        <li className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-sm'}`}>
+          <FaInfoCircle className={`${mobile ? 'text-lg text-indigo-500' : 'text-sm'}`} /> 
           <span>About</span>
         </li>
       </Link>
       
       <Link to="/admin/explore" onClick={onNavigate}>
-        <li className={`mobile-menu-item ${mobile ? 'animate-menu-item-in-delay-5 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium' : 'hover:text-teal-300 transition-all duration-200 flex items-center gap-2'}`}>
-          <FaCompass className="text-xl text-teal-500" /> 
+        <li className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-sm'}`}>
+          <FaCompass className={`${mobile ? 'text-lg text-teal-500' : 'text-sm'}`} /> 
           <span>Explore</span>
         </li>
       </Link>
       
-      <li className={`mobile-menu-item ${mobile ? 'animate-menu-item-in-delay-1 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium' : 'flex items-center'}`}>
+      <li className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'flex items-center'}`}>
         <NotificationBell mobile={mobile} />
       </li>
       
       <li 
-        className={`mobile-menu-item ${mobile ? 'animate-menu-item-in-delay-2 p-4 rounded-xl hover:bg-red-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium cursor-pointer' : 'flex items-center cursor-pointer'}`}
+        className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium cursor-pointer' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-sm cursor-pointer'}`}
         onClick={() => { handleSignout(); if (onNavigate) onNavigate(); }}
       >
-        <FaSignOutAlt className={`text-xl ${mobile ? 'text-red-500' : ''}`} /> 
+        <FaSignOutAlt className={`${mobile ? 'text-lg text-red-500' : 'text-sm'}`} /> 
         <span>Sign Out</span>
       </li>
       
@@ -451,7 +451,7 @@ function AdminNavLinks({ mobile = false, onNavigate, pendingCount, handleSignout
           >
             <UserAvatar 
               user={currentUser} 
-              size="h-8 w-8" 
+              size="h-7 w-7" 
               textSize="text-xs"
               showBorder={true}
             />
@@ -461,15 +461,15 @@ function AdminNavLinks({ mobile = false, onNavigate, pendingCount, handleSignout
       
       {/* Profile for mobile */}
       {currentUser && mobile && (
-        <li className="mobile-menu-item animate-menu-item-in-delay-3">
+        <li>
           <div
-            className="cursor-pointer transition-transform duration-300 hover:scale-110 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium"
+            className="cursor-pointer transition-transform duration-300 hover:scale-110 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 flex items-center gap-3 text-gray-700 font-medium"
             onClick={() => { navigate("/admin/profile"); if (onNavigate) onNavigate(); }}
             title="Profile"
           >
             <UserAvatar 
               user={currentUser} 
-              size="h-8 w-8" 
+              size="h-7 w-7" 
               textSize="text-xs"
               showBorder={true}
             />

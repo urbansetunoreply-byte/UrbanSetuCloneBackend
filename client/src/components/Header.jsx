@@ -168,7 +168,7 @@ export default function Header() {
     <header className={`relative ${getHeaderGradient()} shadow-xl border-b border-white/20 sticky top-0 z-50 transition-all duration-300 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
       {/* Top Bar */}
       <div className="bg-black/10 border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-2 text-sm text-white/80">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-2">
@@ -185,46 +185,47 @@ export default function Header() {
       </div>
 
       {/* Main Header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between py-4">
-          {/* Logo/Title */}
+      <div className="w-full px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between py-3">
+          {/* Logo/Title - Left Aligned */}
           <Link to={location.pathname.startsWith('/user') ? '/user' : '/'} className="flex-shrink-0 group">
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="p-3 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                  <FaHome className="text-2xl sm:text-3xl text-yellow-400 drop-shadow-lg" />
+                <div className="p-2 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                  <FaHome className="text-xl sm:text-2xl text-yellow-400 drop-shadow-lg" />
                 </div>
-                <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl blur opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
+                <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl blur opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white drop-shadow-lg">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white drop-shadow-lg">
                   <span className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
                     Urban
                   </span>
-                  <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent ml-2">
+                  <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent ml-1">
                     Setu
                   </span>
                 </h1>
-                <p className="text-xs sm:text-sm text-white/70 font-medium tracking-wider uppercase">
+                <p className="text-xs text-white/70 font-medium tracking-wider uppercase">
                   Real Estate Excellence
                 </p>
               </div>
             </div>
           </Link>
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-8">
+          
+          {/* Desktop Navigation - Right Side */}
+          <nav className="hidden lg:flex items-center space-x-4">
             <UserNavLinks />
           </nav>
 
           {/* Mobile Menu Button */}
           <div className="lg:hidden">
             <button
-              className="p-3 text-white hover:text-yellow-300 focus:outline-none transition-all duration-300 hover:bg-white/10 rounded-xl border border-white/20"
+              className="p-2 text-white hover:text-yellow-300 focus:outline-none transition-all duration-300 hover:bg-white/10 rounded-lg"
               onClick={() => setMobileMenuOpen((prev) => !prev)}
               aria-label="Open navigation menu"
             >
               <div className={`transition-transform duration-300 ${mobileMenuOpen ? 'animate-hamburger-to-x' : 'animate-x-to-hamburger'}`}>
-                {mobileMenuOpen ? <FaTimes className="text-xl" /> : <FaBars className="text-xl" />}
+                {mobileMenuOpen ? <FaTimes className="text-lg" /> : <FaBars className="text-lg" />}
               </div>
             </button>
           </div>
@@ -346,106 +347,81 @@ function UserNavLinks({ mobile = false, onNavigate }) {
   
 
   return (
-    <ul className={`${mobile ? 'flex flex-col gap-1' : 'flex items-center space-x-6'}`}>
+    <ul className={`${mobile ? 'flex flex-col gap-1' : 'flex items-center space-x-3'}`}>
       {/* Desktop Search */}
       {!mobile && (
         <li className="flex items-center">
           {!searchOpen ? (
             <button
-              className="p-3 text-white hover:text-yellow-300 focus:outline-none transition-all duration-300 hover:bg-white/10 rounded-xl border border-white/20"
+              className="p-2 text-white hover:text-yellow-300 focus:outline-none transition-all duration-300 hover:bg-white/10 rounded-lg"
               onClick={() => setSearchOpen(true)}
               aria-label="Open search"
             >
-              <FaSearch className="text-lg" />
+              <FaSearch className="text-base" />
             </button>
           ) : (
             <form
               onSubmit={handleSubmit}
-              className="flex items-center bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-yellow-300 focus-within:bg-white/20 transition-all duration-300 w-64"
+              className="flex items-center bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-yellow-300 focus-within:bg-white/20 transition-all duration-300 w-48"
             >
               <input
                 ref={searchInputRef}
                 type="text"
-                placeholder="Search properties..."
+                placeholder="Search..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onBlur={() => setSearchOpen(false)}
-                className="px-4 py-3 outline-none w-full text-white placeholder-white/70 bg-transparent"
+                className="px-3 py-2 outline-none w-full text-white placeholder-white/70 bg-transparent text-sm"
               />
-              <button className="bg-yellow-400 hover:bg-yellow-500 text-gray-800 p-3 transition-colors" type="submit">
-                <FaSearch />
+              <button className="bg-yellow-400 hover:bg-yellow-500 text-gray-800 p-2 transition-colors" type="submit">
+                <FaSearch className="text-sm" />
               </button>
             </form>
           )}
         </li>
       )}
       
-      
-      
       {/* Navigation Links */}
       <Link to={location.pathname.startsWith('/user') ? '/user' : '/'} onClick={onNavigate}>
-        <li className={`${mobile ? 'flex items-center gap-3 p-4 rounded-xl hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium'}`}>
-          <FaHome className={`${mobile ? 'text-xl text-blue-500' : 'text-lg'}`} /> 
+        <li className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-sm'}`}>
+          <FaHome className={`${mobile ? 'text-lg text-blue-500' : 'text-sm'}`} /> 
           <span>Home</span>
         </li>
       </Link>
       
       <Link to="/about" onClick={onNavigate}>
-        <li className={`${mobile ? 'flex items-center gap-3 p-4 rounded-xl hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium'}`}>
-          <FaInfoCircle className={`${mobile ? 'text-xl text-green-500' : 'text-lg'}`} /> 
+        <li className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-sm'}`}>
+          <FaInfoCircle className={`${mobile ? 'text-lg text-green-500' : 'text-sm'}`} /> 
           <span>About</span>
         </li>
       </Link>
       
       <Link to="/search" onClick={onNavigate}>
-        <li className={`${mobile ? 'flex items-center gap-3 p-4 rounded-xl hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium'}`}>
-          <FaCompass className={`${mobile ? 'text-xl text-purple-500' : 'text-lg'}`} /> 
+        <li className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-sm'}`}>
+          <FaCompass className={`${mobile ? 'text-lg text-purple-500' : 'text-sm'}`} /> 
           <span>Explore</span>
         </li>
       </Link>
 
-      {/* Services quick links for mobile */}
-      {currentUser && mobile && (
-        <>
-          <Link to="/user/movers" onClick={onNavigate}>
-            <li className={`mobile-menu-item animate-menu-item-in-delay-3 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium`}>
-              <FaTruckMoving className="text-xl text-blue-500" />
-              <span>Movers</span>
-            </li>
-          </Link>
-          <Link to="/user/services" onClick={onNavigate}>
-            <li className={`mobile-menu-item animate-menu-item-in-delay-4 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium`}>
-              <FaTools className="text-xl text-purple-600" />
-              <span>Services</span>
-            </li>
-          </Link>
-          <Link to="/user/route-planner" onClick={onNavigate}>
-            <li className={`mobile-menu-item animate-menu-item-in-delay-5 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium`}>
-              <FaRoute className="text-xl text-green-600" />
-              <span>Route Planner</span>
-            </li>
-          </Link>
-        </>
-      )}
       {/* Services quick links */}
-      {currentUser && !mobile && (
+      {currentUser && (
         <>
           <Link to="/user/movers" onClick={onNavigate}>
-            <li className="hover:text-yellow-300 hover:scale-110 flex items-center gap-2 transition-all">
-              <FaTruckMoving className="text-sm text-blue-500" />
-              <span>Movers</span>
+            <li className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-sm'}`}>
+              <FaTruckMoving className={`${mobile ? 'text-lg text-blue-500' : 'text-sm'}`} />
+              <span>{mobile ? 'Movers' : 'Movers'}</span>
             </li>
           </Link>
           <Link to="/user/services" onClick={onNavigate}>
-            <li className="hover:text-yellow-300 hover:scale-110 flex items-center gap-2 transition-all">
-              <FaTools className="text-sm text-purple-600" />
+            <li className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-sm'}`}>
+              <FaTools className={`${mobile ? 'text-lg text-purple-600' : 'text-sm'}`} />
               <span>Services</span>
             </li>
           </Link>
           <Link to="/user/route-planner" onClick={onNavigate}>
-            <li className="hover:text-yellow-300 hover:scale-110 flex items-center gap-2 transition-all">
-              <FaRoute className="text-sm text-green-600" />
-              <span>Route</span>
+            <li className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-sm'}`}>
+              <FaRoute className={`${mobile ? 'text-lg text-green-600' : 'text-sm'}`} />
+              <span>{mobile ? 'Route Planner' : 'Route'}</span>
             </li>
           </Link>
         </>
@@ -454,29 +430,29 @@ function UserNavLinks({ mobile = false, onNavigate }) {
       {currentUser && (
         <>
           <Link to="/user/create-listing" onClick={onNavigate}>
-            <li className={`mobile-menu-item ${mobile ? 'animate-menu-item-in-delay-3 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium' : 'hover:text-yellow-300 hover:scale-110 flex items-center gap-1 transition-all'}`}>
-              <FaPlus className="text-xl text-orange-500" /> 
+            <li className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-sm'}`}>
+              <FaPlus className={`${mobile ? 'text-lg text-orange-500' : 'text-sm'}`} /> 
               <span>Add Property</span>
             </li>
           </Link>
           
           <Link to="/user/my-listings" onClick={onNavigate}>
-            <li className={`mobile-menu-item ${mobile ? 'animate-menu-item-in-delay-4 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium' : 'hover:text-yellow-300 hover:scale-110 flex items-center gap-1 transition-all'}`}>
-              <FaList className="text-xl text-indigo-500" /> 
+            <li className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-sm'}`}>
+              <FaList className={`${mobile ? 'text-lg text-indigo-500' : 'text-sm'}`} /> 
               <span>My Listings</span>
             </li>
           </Link>
           
           <Link to="/user/wishlist" onClick={onNavigate}>
-            <li className={`mobile-menu-item ${mobile ? 'animate-menu-item-in-delay-5 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium' : 'hover:text-yellow-300 hover:scale-110 flex items-center gap-1 transition-all'}`}>
-              <FaHeart className="text-xl text-red-500" /> 
+            <li className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-sm'}`}>
+              <FaHeart className={`${mobile ? 'text-lg text-red-500' : 'text-sm'}`} /> 
               <span>Wish List</span>
             </li>
           </Link>
           
           <Link to="/user/my-appointments" onClick={onNavigate}>
-            <li className={`mobile-menu-item ${mobile ? 'animate-menu-item-in-delay-6 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium' : 'hover:text-yellow-300 hover:scale-110 flex items-center gap-1 transition-all'}`}>
-              <FaCalendarAlt className="text-xl text-teal-500" /> 
+            <li className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-sm'}`}>
+              <FaCalendarAlt className={`${mobile ? 'text-lg text-teal-500' : 'text-sm'}`} /> 
               <span>My Appointments</span>
             </li>
           </Link>
@@ -485,15 +461,15 @@ function UserNavLinks({ mobile = false, onNavigate }) {
       
       {currentUser ? (
         <>
-          <li className={`mobile-menu-item ${mobile ? 'animate-menu-item-in-delay-1 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium' : 'flex items-center relative'}`}>
+          <li className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'flex items-center relative'}`}>
             <NotificationBell mobile={mobile} />
           </li>
           
           <li 
-            className={`mobile-menu-item ${mobile ? 'animate-menu-item-in-delay-2 p-4 rounded-xl hover:bg-red-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium cursor-pointer' : 'hover:text-yellow-300 hover:scale-110 flex items-center gap-1 cursor-pointer transition-all'}`} 
+            className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium cursor-pointer' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-sm cursor-pointer'}`} 
             onClick={() => { handleSignout(); if (onNavigate) onNavigate(); }}
           >
-            <FaSignOutAlt className={`text-xl ${mobile ? 'text-red-500' : ''}`} /> 
+            <FaSignOutAlt className={`${mobile ? 'text-lg text-red-500' : 'text-sm'}`} /> 
             <span>Sign Out</span>
           </li>
           
@@ -514,7 +490,7 @@ function UserNavLinks({ mobile = false, onNavigate }) {
               >
                 <UserAvatar 
                   user={currentUser} 
-                  size="h-8 w-8" 
+                  size="h-7 w-7" 
                   textSize="text-xs"
                   showBorder={true}
                 />
@@ -524,15 +500,15 @@ function UserNavLinks({ mobile = false, onNavigate }) {
           
           {/* Profile for mobile */}
           {mobile && (
-            <li className="mobile-menu-item animate-menu-item-in-delay-3">
+            <li>
               <div
-                className="cursor-pointer transition-transform duration-300 hover:scale-110 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium"
+                className="cursor-pointer transition-transform duration-300 hover:scale-110 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 flex items-center gap-3 text-gray-700 font-medium"
                 onClick={() => { navigate("/user/profile"); if (onNavigate) onNavigate(); }}
                 title="Profile"
               >
                 <UserAvatar 
                   user={currentUser} 
-                  size="h-8 w-8" 
+                  size="h-7 w-7" 
                   textSize="text-xs"
                   showBorder={true}
                 />
@@ -543,8 +519,8 @@ function UserNavLinks({ mobile = false, onNavigate }) {
         </>
       ) : (
         <Link to="/sign-in" onClick={onNavigate}>
-          <li className={`mobile-menu-item ${mobile ? 'animate-menu-item-in-delay-1 p-4 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center gap-3 text-lg font-medium' : 'hover:text-yellow-300 hover:scale-110 flex items-center gap-1 transition-all'}`}>
-            <FaUser className="text-xl text-blue-500" /> 
+          <li className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-sm'}`}>
+            <FaUser className={`${mobile ? 'text-lg text-blue-500' : 'text-sm'}`} /> 
             <span>Sign In</span>
           </li>
         </Link>
