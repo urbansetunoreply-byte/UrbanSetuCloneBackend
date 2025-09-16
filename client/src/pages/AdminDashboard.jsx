@@ -855,7 +855,7 @@ export default function AdminDashboard() {
               </div>
               <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Critical Operations</h2>
             </div>
-            <span className="text-sm text-gray-500 hidden sm:block">(Requires Immediate Attention)</span>
+            <span className="text-xs sm:text-sm text-gray-500">(Requires Immediate Attention)</span>
           </div>
           
           {/* Security & Fraud Monitoring */}
@@ -998,7 +998,7 @@ export default function AdminDashboard() {
               </div>
               <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Core Business Metrics</h2>
             </div>
-            <span className="text-sm text-gray-500 hidden sm:block">(Essential for Platform Health)</span>
+            <span className="text-xs sm:text-sm text-gray-500">(Essential for Platform Health)</span>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-6">
@@ -1088,7 +1088,7 @@ export default function AdminDashboard() {
               </div>
               <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Market Performance & Insights</h2>
             </div>
-            <span className="text-sm text-gray-500 hidden sm:block">(Business Intelligence)</span>
+            <span className="text-xs sm:text-sm text-gray-500">(Business Intelligence)</span>
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -1240,7 +1240,7 @@ export default function AdminDashboard() {
               </div>
               <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Analytical Insights</h2>
             </div>
-            <span className="text-sm text-gray-500 hidden sm:block">(Strategic Decision Support)</span>
+            <span className="text-xs sm:text-sm text-gray-500">(Strategic Decision Support)</span>
           </div>
 
           {/* Performance & Sentiment Analysis */}
@@ -1532,7 +1532,7 @@ export default function AdminDashboard() {
               </div>
               <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Detailed Analytics</h2>
             </div>
-            <span className="text-sm text-gray-500 hidden sm:block">(Deep Analysis & Historical Data)</span>
+            <span className="text-xs sm:text-sm text-gray-500">(Deep Analysis & Historical Data)</span>
           </div>
 
           {/* Top Rated Properties */}
@@ -1735,7 +1735,7 @@ export default function AdminDashboard() {
               </div>
               <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Property Listings</h2>
             </div>
-            <span className="text-sm text-gray-500 hidden sm:block">(Recent Activity & Management)</span>
+            <span className="text-xs sm:text-sm text-gray-500">(Recent Activity & Management)</span>
           </div>
         </div>
 

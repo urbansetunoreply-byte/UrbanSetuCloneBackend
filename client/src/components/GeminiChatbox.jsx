@@ -31,6 +31,7 @@ const GeminiChatbox = () => {
     const lastUserMessageRef = useRef('');
     const [tone, setTone] = useState(() => localStorage.getItem('gemini_tone') || 'neutral'); // modes dropdown (tone)
     const [isHeaderMenuOpen, setIsHeaderMenuOpen] = useState(false);
+    const [showFeatures, setShowFeatures] = useState(false);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -629,6 +630,14 @@ const GeminiChatbox = () => {
                                                     Export
                                                 </button>
                                             </li>
+                                            <li>
+                                                <button
+                                                    onClick={() => { setShowFeatures(true); setIsHeaderMenuOpen(false); }}
+                                                    className="w-full text-left px-3 py-2 hover:bg-gray-100"
+                                                >
+                                                    Features
+                                                </button>
+                                            </li>
                                             {(messages && (messages.length > 1 || messages.some(m => m.role === 'user'))) && (
                                                 <li>
                                                     <button
@@ -750,6 +759,27 @@ const GeminiChatbox = () => {
                                             {prompt}
                                         </button>
                                     ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Features modal */}
+                        {showFeatures && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                                <div className="bg-white rounded-xl shadow-xl p-5 w-96 max-w-full">
+                                    <h4 className="font-semibold mb-3">Gemini Features</h4>
+                                    <ul className="text-sm text-gray-700 list-disc pl-5 space-y-1">
+                                        <li>Conversation history (per-session)</li>
+                                        <li>Export transcript to .txt</li>
+                                        <li>Modes: Neutral, Friendly, Formal, Concise</li>
+                                        <li>Quick prompts and keyboard shortcuts</li>
+                                        <li>Retry failed responses</li>
+                                        <li>Copy any message</li>
+                                        <li>Mobile-friendly modal and scroll lock</li>
+                                    </ul>
+                                    <div className="flex justify-end mt-4">
+                                        <button onClick={() => setShowFeatures(false)} className="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-700">Close</button>
+                                    </div>
                                 </div>
                             </div>
                         )}
