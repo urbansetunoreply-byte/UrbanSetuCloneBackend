@@ -203,7 +203,7 @@ export default function AdminHeader() {
       {/* Admin Top Bar */}
       <div className="bg-black/20 border-b border-white/10">
         <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-2 text-sm text-white/80">
+          <div className="flex items-center justify-between py-1 text-sm text-white/80">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-2">
                 <FaUserCheck className="text-yellow-400" />
@@ -215,9 +215,22 @@ export default function AdminHeader() {
                 </span>
               )}
             </div>
-            <div className="hidden md:flex items-center gap-4">
-              <span>🛡️ Secure Admin Access</span>
-              <span>📊 Real-time Analytics</span>
+            <div className="flex items-center gap-4">
+              <div className="hidden md:flex items-center gap-4">
+                <span>🛡️ Secure Admin Access</span>
+                <span>📊 Real-time Analytics</span>
+              </div>
+              {/* Mobile signout button for admin users */}
+              {currentUser && (
+                <button
+                  onClick={handleSignout}
+                  className="md:hidden flex items-center gap-1 text-white/80 hover:text-white transition-colors text-sm"
+                  title="Sign Out"
+                >
+                  <FaSignOutAlt className="text-xs" />
+                  <span className="text-xs">Sign Out</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -225,7 +238,7 @@ export default function AdminHeader() {
 
       {/* Main Admin Header */}
       <div className="w-full px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between py-3">
+        <div className="flex items-center justify-between py-2">
           {/* Admin Logo/Title */}
           <Link to="/admin" className="flex-shrink-0 group">
             <div className="flex items-center gap-3">

@@ -164,21 +164,61 @@ export default function Header() {
     setSearchTerm("");
   };
 
+  const handleSignout = async () => {
+    try {
+      const res = await fetch("/api/auth/signout", { method: "GET", credentials: "include" });
+      const data = await res.json();
+      if (data.success === false) {
+        console.log(data.message);
+        return;
+      }
+      dispatch(signoutUserSuccess());
+      await persistor.purge();
+      reconnectSocket();
+      localStorage.removeItem('accessToken');
+      document.cookie = 'access_token=; Max-Age=0; path=/; domain=' + window.location.hostname + '; secure; samesite=None';
+      toast.info("You have been signed out.");
+      navigate("/sign-in");
+    } catch (error) {
+      console.log(error.message);
+      dispatch(signoutUserSuccess());
+      await persistor.purge();
+      reconnectSocket();
+      localStorage.removeItem('accessToken');
+      document.cookie = 'access_token=; Max-Age=0; path=/; domain=' + window.location.hostname + '; secure; samesite=None';
+      toast.info("You have been signed out.");
+      navigate("/sign-in");
+    }
+  };
+
   return (
     <header className={`relative ${getHeaderGradient()} shadow-xl border-b border-white/20 sticky top-0 z-50 transition-all duration-300 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
       {/* Top Bar */}
       <div className="bg-black/10 border-b border-white/10">
         <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-2 text-sm text-white/80">
+          <div className="flex items-center justify-between py-1 text-sm text-white/80">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-2">
                 <FaHome className="text-yellow-400" />
                 <span>Premium Real Estate Platform</span>
               </span>
             </div>
-            <div className="hidden md:flex items-center gap-4">
-              <span>📞 +1 (555) 123-4567</span>
-              <span>✉️ info@urbansetu.com</span>
+            <div className="flex items-center gap-4">
+              <div className="hidden md:flex items-center gap-4">
+                <span>📞 +1 (555) 123-4567</span>
+                <span>✉️ info@urbansetu.com</span>
+              </div>
+              {/* Mobile signout button for logged-in users */}
+              {currentUser && (
+                <button
+                  onClick={handleSignout}
+                  className="md:hidden flex items-center gap-1 text-white/80 hover:text-white transition-colors text-sm"
+                  title="Sign Out"
+                >
+                  <FaSignOutAlt className="text-xs" />
+                  <span className="text-xs">Sign Out</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -186,7 +226,7 @@ export default function Header() {
 
       {/* Main Header */}
       <div className="w-full px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between py-3">
+        <div className="flex items-center justify-between py-2">
           {/* Logo/Title - Left Aligned */}
           <Link to={location.pathname.startsWith('/user') ? '/user' : '/'} className="flex-shrink-0 group">
             <div className="flex items-center gap-3">
