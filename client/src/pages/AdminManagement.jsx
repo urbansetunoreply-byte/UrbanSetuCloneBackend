@@ -22,6 +22,9 @@ export default function AdminManagement() {
   const [suspendError, setSuspendError] = useState({});
   const [showRestriction, setShowRestriction] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState(null);
+  const [showDeleteReasonModal, setShowDeleteReasonModal] = useState(false);
+  const [deleteReason, setDeleteReason] = useState("");
+  const [deleteOtherReason, setDeleteOtherReason] = useState("");
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [accountLoading, setAccountLoading] = useState(false);
   const [accountStats, setAccountStats] = useState({ listings: 0, appointments: 0 });
@@ -43,6 +46,7 @@ export default function AdminManagement() {
   });
   const lockoutTimerRef = useRef(null);
   const warningTimerRef = useRef(null);
+  
 
   useEffect(() => {
     if (!currentUser) return;
@@ -192,6 +196,18 @@ export default function AdminManagement() {
 
   // Optimistic UI for delete
   const handleDelete = async (id, type) => {
+    setSelectedAccount({ _id: id, type });
+    setDeleteReason("");
+    setDeleteOtherReason("");
+    setShowDeleteReasonModal(true);
+  };
+
+  const performDeleteWithReason = async () => {
+    const sel = selectedAccount;
+    if (!sel) return;
+    const id = sel._id; const type = sel.type;
+    const finalReason = deleteReason === 'other' ? (deleteOtherReason || '') : deleteReason;
+
     const performDelete = async () => {
       // Store original state for rollback
       const originalUsers = [...users];
@@ -207,6 +223,8 @@ export default function AdminManagement() {
         const res = await fetch(`${API_BASE_URL}/api/admin/management/delete/${type}/${id}`, {
           method: "DELETE",
           credentials: "include",
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason: finalReason })
         });
         const data = await res.json();
         if (res.ok) {
@@ -219,6 +237,8 @@ export default function AdminManagement() {
             action: 'delete', 
             message: 'Your account has been deleted. You have been signed out.' 
           });
+          // Refresh deleted accounts list if on tab
+          if (tab === 'deleted') fetchDeletedAccounts();
         } else {
           // Rollback on failure
           if (type === 'user') {
@@ -226,8 +246,6 @@ export default function AdminManagement() {
           } else {
             setAdmins(originalAdmins);
           }
-          
-          // Handle specific error cases
           if (res.status === 404) {
             toast.error("Account not found. It may have been already deleted or moved.");
           } else if (data.message && data.message.toLowerCase().includes("not found")) {
@@ -243,7 +261,6 @@ export default function AdminManagement() {
         } else {
           setAdmins(originalAdmins);
         }
-        
         if (err.name === 'TypeError' && err.message.includes('fetch')) {
           toast.error("Network error. Please check your connection and try again.");
         } else {
@@ -251,7 +268,7 @@ export default function AdminManagement() {
         }
       }
     };
-    
+
     showConfirmation(
       'Confirm Deletion',
       `Are you sure you want to delete this ${type}? This action cannot be undone.`,
@@ -567,7 +584,7 @@ export default function AdminManagement() {
 
   // Add scroll lock for modals
   useEffect(() => {
-    if (showAccountModal || showConfirmModal) {
+    if (showAccountModal || showConfirmModal || showDeleteReasonModal) {
       document.body.style.overflow = 'hidden';
       document.body.style.position = 'fixed';
       document.body.style.width = '100%';
@@ -581,7 +598,7 @@ export default function AdminManagement() {
       document.body.style.position = '';
       document.body.style.width = '';
     };
-  }, [showAccountModal, showConfirmModal]);
+  }, [showAccountModal, showConfirmModal, showDeleteReasonModal]);
 
   // Guard: If users/admins are not arrays, show session expired/unauthorized message
   if (!Array.isArray(users) || (tab === 'admins' && !Array.isArray(admins) && currentUser.isDefaultAdmin)) {
@@ -1272,6 +1289,54 @@ export default function AdminManagement() {
                   {confirmModalData.confirmText}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Delete Reason Modal */}
+      {showDeleteReasonModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">Reason for deletion</h3>
+            <p className="text-gray-600 mb-3">Please select a reason to proceed.</p>
+            <select
+              className="w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500"
+              value={deleteReason}
+              onChange={e => setDeleteReason(e.target.value)}
+            >
+              <option value="">Select a reason</option>
+              {selectedAccount?.type === 'user' ? (
+                <>
+                  <option value="Fraudulent activity">Fraudulent activity</option>
+                  <option value="Fake or duplicate account">Fake or duplicate account</option>
+                  <option value="Inappropriate content or behavior">Inappropriate content or behavior</option>
+                  <option value="Violation of terms & policies">Violation of terms & policies</option>
+                  <option value="Requested by user (support request)">Requested by user (support request)</option>
+                  <option value="other">Other (textbox optional)</option>
+                </>
+              ) : (
+                <>
+                  <option value="Misuse of admin privileges">Misuse of admin privileges</option>
+                  <option value="Inactive admin account">Inactive admin account</option>
+                  <option value="Violation of policies or trust">Violation of policies or trust</option>
+                  <option value="Role restructuring / reassigning">Role restructuring / reassigning</option>
+                  <option value="other">Other (textbox optional)</option>
+                </>
+              )}
+            </select>
+            {deleteReason === 'other' && (
+              <input
+                type="text"
+                className="w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500"
+                placeholder="Optional details"
+                value={deleteOtherReason}
+                onChange={e => setDeleteOtherReason(e.target.value)}
+              />
+            )}
+            <div className="flex justify-end gap-3 mt-4">
+              <button className="px-4 py-2 rounded-lg bg-gray-500 text-white" onClick={() => { setShowDeleteReasonModal(false); setSelectedAccount(null); }}>Cancel</button>
+              <button className="px-4 py-2 rounded-lg bg-red-600 text-white" onClick={async () => { setShowDeleteReasonModal(false); await performDeleteWithReason(); }}>Confirm Delete</button>
             </div>
           </div>
         </div>

@@ -127,7 +127,7 @@ export const deleteUser=async(req,res,next)=>{
             return next(errorHandler(403, "Default admin cannot be deleted directly. Please assign a new default admin first."));
         }
         // Password verification
-        const { password } = req.body;
+        const { password, reason, otherReason } = req.body;
         if (!password) {
             return next(errorHandler(401, "Password is required to delete account"));
         }
@@ -136,6 +136,7 @@ export const deleteUser=async(req,res,next)=>{
             return next(errorHandler(401, "Password is incorrect"));
         }
         // Soft-delete: move to DeletedAccounts and audit log
+        const resolvedReason = reason === 'other' && otherReason ? otherReason : (reason || 'self_deleted');
         const deletedRecord = await DeletedAccount.create({
             accountId: user._id,
             name: user.username,
@@ -143,7 +144,7 @@ export const deleteUser=async(req,res,next)=>{
             role: user.role,
             deletedAt: new Date(),
             deletedBy: 'self',
-            reason: 'self_deleted',
+            reason: resolvedReason,
             originalData: {
                 username: user.username,
                 email: user.email,

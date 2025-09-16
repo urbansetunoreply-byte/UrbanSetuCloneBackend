@@ -263,6 +263,9 @@ export default function Profile() {
   const [deleteOtpLoading, setDeleteOtpLoading] = useState(false);
   const [deleteResendTimer, setDeleteResendTimer] = useState(0);
   const [deleteCanResend, setDeleteCanResend] = useState(true);
+  const [deleteReasonOpen, setDeleteReasonOpen] = useState(false);
+  const [deleteReason, setDeleteReason] = useState("");
+  const [deleteOtherReason, setDeleteOtherReason] = useState("");
   // (Removed duplicate delete OTP state block)
   const [showTransferPasswordModal, setShowTransferPasswordModal] = useState(false);
   const [transferDeletePassword, setTransferDeletePassword] = useState("");
@@ -1034,7 +1037,12 @@ export default function Profile() {
       navigate('/sign-in', { replace: true });
       return;
     }
-    // Step 2: send OTP
+    // Step 2: open reason dropdown step
+    setDeleteReasonOpen(true);
+  };
+
+  const handleContinueAfterReason = async () => {
+    // Step 3: send OTP
     setDeleteOtpError("");
     setDeleteOtp("");
     setDeleteOtpSent(false);
@@ -1085,7 +1093,8 @@ export default function Profile() {
       }
       // OTP verified -> proceed to delete
       const apiUrl = `${API_BASE_URL}/api/user/delete/${currentUser._id}`;
-      const options = { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password: deletePassword }), credentials:'include' };
+      const payload = { password: deletePassword, reason: deleteReason === 'other' ? 'other' : deleteReason, otherReason: deleteReason === 'other' ? deleteOtherReason : undefined };
+      const options = { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload), credentials:'include' };
       const res = await authenticatedFetch(apiUrl, options);
       const data = await res.json();
       if (!res.ok) { setDeleteError(data.message || 'Account deletion failed'); return; }
@@ -2553,7 +2562,7 @@ export default function Profile() {
             <div className="p-6">
               <h3 className="text-xl font-bold text-gray-800 mb-4">Confirm Account Deletion</h3>
               <p className="mb-4 text-gray-600">Enter your password. After verification, we will email you an OTP to complete deletion.</p>
-              <form onSubmit={async e => { e.preventDefault(); if (!deleteOtpSent) { await handleConfirmDelete(); } else { await handleFinalDeleteWithOtp(); } }}>
+              <form onSubmit={async e => { e.preventDefault(); if (!deleteOtpSent && !deleteReasonOpen) { await handleConfirmDelete(); } else if (!deleteOtpSent && deleteReasonOpen) { await handleContinueAfterReason(); } else { await handleFinalDeleteWithOtp(); } }}>
                 <input
                   type="password"
                   className="w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -2562,6 +2571,35 @@ export default function Profile() {
                   onChange={e => setDeletePassword(e.target.value)}
                 />
                 {deleteError && <div className="text-red-600 text-sm mb-2">{deleteError}</div>}
+
+                {deleteReasonOpen && !deleteOtpSent && (
+                  <div className="mt-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Reason for leaving</label>
+                    <select
+                      className="w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500"
+                      value={deleteReason}
+                      onChange={e => setDeleteReason(e.target.value)}
+                    >
+                      <option value="">Select a reason</option>
+                      <option value="Better platform">Found a better platform</option>
+                      <option value="Privacy or security concerns">Privacy or security concerns</option>
+                      <option value="Too many notifications/emails">Too many notifications/emails</option>
+                      <option value="Couldn't find suitable property">Couldn't find suitable property</option>
+                      <option value="Just testing / trial account">Just testing / trial account</option>
+                      <option value="other">Other (please specify)</option>
+                    </select>
+                    {deleteReason === 'other' && (
+                      <input
+                        type="text"
+                        className="w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500"
+                        placeholder="Please describe your reason (optional)"
+                        value={deleteOtherReason}
+                        onChange={e => setDeleteOtherReason(e.target.value)}
+                      />
+                    )}
+                  </div>
+                )}
+
                 {deleteOtpSent && (
                   <div className="mt-4">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Enter OTP</label>
@@ -2582,13 +2620,13 @@ export default function Profile() {
                 <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6">
                   <button
                     type="button"
-                    onClick={() => { setShowPasswordModal(false); setDeletePassword(""); setDeleteError(""); }}
+                    onClick={() => { setShowPasswordModal(false); setDeletePassword(""); setDeleteError(""); setDeleteReasonOpen(false); setDeleteReason(""); setDeleteOtherReason(""); }}
                     className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
                   >Cancel</button>
                   <button
                     type="submit"
                     className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
-                  >{deleteOtpSent ? 'Delete' : 'Verify & Send OTP'}</button>
+                  >{deleteOtpSent ? 'Delete' : (deleteReasonOpen ? 'Continue' : 'Verify')}</button>
                 </div>
               </form>
             </div>
