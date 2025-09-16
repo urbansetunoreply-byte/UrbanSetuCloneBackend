@@ -833,370 +833,442 @@ export default function AdminDashboard() {
           <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Analytics Overview</h2>
         </div>
         
-        {/* Enhanced Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-6 mb-8">
-          {/* Users Card */}
-          <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-blue-200">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600 mb-1">Total Users</p>
-                <p className="text-3xl font-bold text-blue-600 group-hover:scale-105 transition-transform duration-200">{analytics.totalUsers}</p>
-              </div>
-              <div className="bg-gradient-to-r from-blue-100 to-blue-200 p-3 rounded-xl group-hover:from-blue-200 group-hover:to-blue-300 transition-all duration-300">
-                <FaUsers className="text-2xl text-blue-600" />
-              </div>
+        {/* Critical Operations - Most Urgent for Admin Daily Tasks */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-gradient-to-r from-red-500 to-orange-500 rounded-lg">
+              <FaExclamationTriangle className="text-white text-xl" />
             </div>
-            {currentUser?.role === 'rootadmin' && (
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Admins:</span>
-                <span className="font-semibold text-blue-600">{analytics.totalAdmins}</span>
-              </div>
-            )}
+            <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Critical Operations</h2>
+            <span className="text-sm text-gray-500">(Requires Immediate Attention)</span>
           </div>
-
-          {/* Properties Card */}
-          <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-green-200">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600 mb-1">Total Properties</p>
-                <p className="text-3xl font-bold text-green-600 group-hover:scale-105 transition-transform duration-200">{analytics.totalListings}</p>
-              </div>
-              <div className="bg-gradient-to-r from-green-100 to-green-200 p-3 rounded-xl group-hover:from-green-200 group-hover:to-green-300 transition-all duration-300">
-                <FaHome className="text-2xl text-green-600" />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">For Sale:</span>
-                <span className="font-semibold text-green-600">{analytics.listingStats.sale}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">For Rent:</span>
-                <span className="font-semibold text-green-600">{analytics.listingStats.rent}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Offers:</span>
-                <span className="font-semibold text-orange-600">{analytics.listingStats.offer}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Reviews Card */}
-          <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-yellow-200">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600 mb-1">Reviews</p>
-                <p className="text-3xl font-bold text-yellow-600 group-hover:scale-105 transition-transform duration-200">{analytics.totalReviews}</p>
-              </div>
-              <div className="bg-gradient-to-r from-yellow-100 to-yellow-200 p-3 rounded-xl group-hover:from-yellow-200 group-hover:to-yellow-300 transition-all duration-300">
-                <FaStar className="text-2xl text-yellow-600" />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Avg Rating:</span>
-                <span className="font-semibold text-yellow-600">{analytics.averageRating.toFixed(1)} ⭐</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Pending:</span>
-                <span className="font-semibold text-orange-600">{analytics.pendingReviews}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Appointments Card */}
-          <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-purple-200">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600 mb-1">Appointments</p>
-                <p className="text-3xl font-bold text-purple-600 group-hover:scale-105 transition-transform duration-200">{bookingStats.total}</p>
-              </div>
-              <div className="bg-gradient-to-r from-purple-100 to-purple-200 p-3 rounded-xl group-hover:from-purple-200 group-hover:to-purple-300 transition-all duration-300">
-                <FaCalendarAlt className="text-2xl text-purple-600" />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Accepted:</span>
-                <span className="font-semibold text-green-600">{bookingStats.accepted}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Pending:</span>
-                <span className="font-semibold text-orange-600">{bookingStats.pending}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Rejected:</span>
-                <span className="font-semibold text-red-600">{bookingStats.rejected}</span>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        {/* Security Analytics */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
-          {/* Active OTP Lockouts Card */}
-          <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-red-200">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600 mb-1">Active OTP Lockouts</p>
-                <p className="text-3xl font-bold text-red-600 group-hover:scale-105 transition-transform duration-200">{securityStats.activeOtpLockouts}</p>
-              </div>
-              <div className="bg-gradient-to-r from-red-100 to-red-200 p-3 rounded-xl group-hover:from-red-200 group-hover:to-red-300 transition-all duration-300">
-                <FaShieldAlt className="text-2xl text-red-600" />
-              </div>
-            </div>
-            <div className="text-xs text-gray-500">
-              Users temporarily locked from OTP requests
-            </div>
-          </div>
-
-          {/* Password Lockouts Card */}
-          <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-orange-200">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600 mb-1">Password Lockouts</p>
-                <p className="text-3xl font-bold text-orange-600 group-hover:scale-105 transition-transform duration-200">{securityStats.passwordLockouts}</p>
-              </div>
-              <div className="bg-gradient-to-r from-orange-100 to-orange-200 p-3 rounded-xl group-hover:from-orange-200 group-hover:to-orange-300 transition-all duration-300">
-                <FaLock className="text-2xl text-orange-600" />
-              </div>
-            </div>
-            <div className="text-xs text-gray-500">
-              Accounts locked due to failed login attempts
-            </div>
-          </div>
-
-          {/* Total OTP Requests Card */}
-          <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-blue-200">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600 mb-1">Total OTP Requests</p>
-                <p className="text-3xl font-bold text-blue-600 group-hover:scale-105 transition-transform duration-200">{securityStats.totalOtpRequests}</p>
-              </div>
-              <div className="bg-gradient-to-r from-blue-100 to-blue-200 p-3 rounded-xl group-hover:from-blue-200 group-hover:to-blue-300 transition-all duration-300">
-                <FaSync className="text-2xl text-blue-600" />
-              </div>
-            </div>
-            <div className="text-xs text-gray-500">
-              OTP requests made in recent activity
-            </div>
-          </div>
-
-          {/* Failed Attempts Card */}
-          <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-purple-200">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600 mb-1">Failed Attempts</p>
-                <p className="text-3xl font-bold text-purple-600 group-hover:scale-105 transition-transform duration-200">{securityStats.totalFailedAttempts}</p>
-              </div>
-              <div className="bg-gradient-to-r from-purple-100 to-purple-200 p-3 rounded-xl group-hover:from-purple-200 group-hover:to-purple-300 transition-all duration-300">
-                <FaExclamationTriangle className="text-2xl text-purple-600" />
-              </div>
-            </div>
-            <div className="text-xs text-gray-500">
-              Failed OTP verification attempts
-            </div>
-          </div>
-        </div>
-
-        {/* Price Statistics and Distribution */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-green-600 mr-2" /> Price Statistics</h3>
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <p className="text-sm text-gray-500">Min</p>
-                <p className="text-xl sm:text-2xl font-bold text-gray-800 break-all">₹{analytics.priceStats.min.toLocaleString('en-IN')}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Avg</p>
-                <p className="text-xl sm:text-2xl font-bold text-blue-700 break-all">₹{analytics.priceStats.avg.toLocaleString('en-IN')}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Max</p>
-                <p className="text-xl sm:text-2xl font-bold text-gray-800 break-all">₹{analytics.priceStats.max.toLocaleString('en-IN')}</p>
-              </div>
-            </div>
-            <p className="mt-4 text-sm text-gray-600"><span className="font-semibold text-green-700">{analytics.priceStats.discountedCount}</span> listings currently on discount</p>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-purple-600 mr-2" /> Bedrooms Distribution</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {Object.entries(analytics.bedroomsDistribution).sort((a,b)=>Number(a[0])-Number(b[0])).map(([beds, count]) => (
-                <div key={beds} className="border border-gray-200 rounded-lg p-4 text-center">
-                  <p className="text-sm text-gray-500">{beds} bed{Number(beds) === 1 ? '' : 's'}</p>
-                  <p className="text-xl font-bold text-purple-700">{count}</p>
-                  {/* Simple bar viz */}
-                  <div className="h-2 bg-gray-100 rounded mt-2">
-                    <div className="h-2 bg-purple-500 rounded" style={{ width: `${Math.min(100, Math.round((count / Math.max(1, analytics.totalListings)) * 100))}%` }} />
-                  </div>
+          
+          {/* Security & Fraud Monitoring */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
+            {/* Active OTP Lockouts Card */}
+            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-red-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-600 mb-1">Active OTP Lockouts</p>
+                  <p className="text-3xl font-bold text-red-600 group-hover:scale-105 transition-transform duration-200">{securityStats.activeOtpLockouts}</p>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Engagement Card */}
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Avg Views/Listing</p>
-                <p className="text-3xl font-bold text-rose-600">{analytics.engagement.avgViewsPerListing}</p>
+                <div className="bg-gradient-to-r from-red-100 to-red-200 p-3 rounded-xl group-hover:from-red-200 group-hover:to-red-300 transition-all duration-300">
+                  <FaShieldAlt className="text-2xl text-red-600" />
+                </div>
               </div>
-              <div className="bg-rose-100 p-3 rounded-full">
-                <FaEye className="text-2xl text-rose-600" />
+              <div className="text-xs text-gray-500">
+                Users temporarily locked from OTP requests
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Fraud Activity Timeline */}
-        {fraudTimeline.length > 0 && (
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow mb-8">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaExclamationTriangle className="text-red-600 mr-2" /> Fraud Activity (monthly)</h3>
-            <div className="mt-3 flex items-end gap-1 h-20">
-              {fraudTimeline.map((pt, i, arr) => {
-                const max = Math.max(...arr.map(x => x.count || 1));
-                const h = Math.max(2, Math.round((pt.count / (max || 1)) * 56));
-                return (
-                  <div key={pt.month} className="flex flex-col items-center" title={`${pt.month}: ${pt.count}`}>
-                    <div className="w-3 bg-red-500 rounded-t" style={{ height: `${h}px` }} />
-                    <div className="mt-1 text-[10px] text-gray-500 rotate-0">{pt.month.split('-')[1]}</div>
-                  </div>
-                );
-              })}
+            {/* Password Lockouts Card */}
+            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-orange-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-600 mb-1">Password Lockouts</p>
+                  <p className="text-3xl font-bold text-orange-600 group-hover:scale-105 transition-transform duration-200">{securityStats.passwordLockouts}</p>
+                </div>
+                <div className="bg-gradient-to-r from-orange-100 to-orange-200 p-3 rounded-xl group-hover:from-orange-200 group-hover:to-orange-300 transition-all duration-300">
+                  <FaLock className="text-2xl text-orange-600" />
+                </div>
+              </div>
+              <div className="text-xs text-gray-500">
+                Accounts locked due to failed login attempts
+              </div>
+            </div>
+
+            {/* Failed Attempts Card */}
+            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-purple-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-600 mb-1">Failed Attempts</p>
+                  <p className="text-3xl font-bold text-purple-600 group-hover:scale-105 transition-transform duration-200">{securityStats.totalFailedAttempts}</p>
+                </div>
+                <div className="bg-gradient-to-r from-purple-100 to-purple-200 p-3 rounded-xl group-hover:from-purple-200 group-hover:to-purple-300 transition-all duration-300">
+                  <FaExclamationTriangle className="text-2xl text-purple-600" />
+                </div>
+              </div>
+              <div className="text-xs text-gray-500">
+                Failed OTP verification attempts
+              </div>
+            </div>
+
+            {/* Total OTP Requests Card */}
+            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-blue-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-600 mb-1">Total OTP Requests</p>
+                  <p className="text-3xl font-bold text-blue-600 group-hover:scale-105 transition-transform duration-200">{securityStats.totalOtpRequests}</p>
+                </div>
+                <div className="bg-gradient-to-r from-blue-100 to-blue-200 p-3 rounded-xl group-hover:from-blue-200 group-hover:to-blue-300 transition-all duration-300">
+                  <FaSync className="text-2xl text-blue-600" />
+                </div>
+              </div>
+              <div className="text-xs text-gray-500">
+                OTP requests made in recent activity
+              </div>
             </div>
           </div>
-        )}
 
-        {/* Market Insights */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-blue-600 mr-2" /> Market Price Trends</h3>
-            {analytics.marketInsights.monthlyAvgPrices.length === 0 ? (
-              <p className="text-sm text-gray-500">Not enough data yet.</p>
-            ) : (
+          {/* Pending Reviews & Appointments - High Priority Actions */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* Pending Reviews Card */}
+            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-yellow-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-600 mb-1">Pending Reviews</p>
+                  <p className="text-3xl font-bold text-yellow-600 group-hover:scale-105 transition-transform duration-200">{analytics.pendingReviews}</p>
+                </div>
+                <div className="bg-gradient-to-r from-yellow-100 to-yellow-200 p-3 rounded-xl group-hover:from-yellow-200 group-hover:to-yellow-300 transition-all duration-300">
+                  <FaStar className="text-2xl text-yellow-600" />
+                </div>
+              </div>
               <div className="space-y-2">
-                {analytics.marketInsights.monthlyAvgPrices.map(mp => (
-                  <div key={mp.month} className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">{mp.month}</span>
-                    <span className="font-semibold text-gray-800">₹{mp.avg.toLocaleString('en-IN')}</span>
-                  </div>
-                ))}
-                {/* Inline spark-bar */}
-                <div className="mt-3 flex items-end gap-1 h-20">
-                  {analytics.marketInsights.monthlyAvgPrices.map((mp, i, arr) => {
-                    const max = Math.max(...arr.map(x => x.avg || 1));
-                    const h = Math.max(2, Math.round((mp.avg / (max || 1)) * 56));
-                    return (
-                      <div key={mp.month} className="flex flex-col items-center" title={`${mp.month}: ₹${mp.avg.toLocaleString('en-IN')}`}>
-                        <div className="w-3 bg-blue-500 rounded-t" style={{ height: `${h}px` }} />
-                        <div className="mt-1 text-[10px] text-gray-500 rotate-0">{mp.month.split('-')[1]}</div>
-                      </div>
-                    );
-                  })}
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Total Reviews:</span>
+                  <span className="font-semibold text-yellow-600">{analytics.totalReviews}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Avg Rating:</span>
+                  <span className="font-semibold text-yellow-600">{analytics.averageRating.toFixed(1)} ⭐</span>
                 </div>
               </div>
-            )}
-          </div>
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-indigo-600 mr-2" /> Demand by City</h3>
-            {analytics.marketInsights.demandByCity.length === 0 ? (
-              <p className="text-sm text-gray-500">Not enough data yet.</p>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {analytics.marketInsights.demandByCity.map((d, idx) => (
-                  <div key={idx} className="border border-gray-200 rounded-lg p-3 flex items-center justify-between">
-                    <span className="text-sm text-gray-600">{d.city}</span>
-                    <span className="text-base font-bold text-indigo-700">{d.count}</span>
-                  </div>
-                ))}
-                {/* Pie chart of top 5 demand */}
-                <div className="col-span-1 md:col-span-2 flex items-center justify-center mt-2">
-                  {(() => {
-                    const total = analytics.marketInsights.demandByCity.slice(0,5).reduce((s,x)=>s+x.count,0) || 1;
-                    let acc = 0;
-                    const segments = analytics.marketInsights.demandByCity.slice(0,5).map((x, i) => {
-                      const start = acc / total * 360; acc += x.count; const end = acc / total * 360;
-                      const colors = ['#6366f1','#8b5cf6','#06b6d4','#22c55e','#f59e0b'];
-                      return `${colors[i%colors.length]} ${start}deg ${end}deg`;
-                    }).join(',');
-                    return (
-                      <div className="flex flex-col items-center">
-                        <div className="w-28 h-28 rounded-full" style={{ background: `conic-gradient(${segments})` }} />
-                        <div className="mt-2 space-y-1">
-                          {analytics.marketInsights.demandByCity.slice(0,5).map((x,i)=>{
-                            const colors = ['#6366f1','#8b5cf6','#06b6d4','#22c55e','#f59e0b'];
-                            const pct = Math.round((x.count/total)*100);
-                            return (
-                              <div key={i} className="flex items-center gap-2 text-xs text-gray-700">
-                                <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: colors[i%colors.length] }} />
-                                <span>{x.city}</span>
-                                <span className="text-gray-500">({pct}% - {x.count})</span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Performance & Sentiment */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-rose-600 mr-2" /> Top Owners by Rating</h3>
-            {analytics.performance.topOwnersByRating.length === 0 ? (
-              <p className="text-sm text-gray-500">Not enough data yet.</p>
-            ) : (
-              <div className="space-y-2">
-                {analytics.performance.topOwnersByRating.map((o, idx) => (
-                  <div key={idx} className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">{o.ownerName}</span>
-                    <span className="font-semibold text-gray-800">{o.avgRating} ⭐ ({o.listings} listings)</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaStar className="text-yellow-500 mr-2" /> Review Sentiment</h3>
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <p className="text-sm text-gray-500">Positive</p>
-                <p className="text-2xl font-bold text-green-600">{analytics.sentiment.positive}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Neutral</p>
-                <p className="text-2xl font-bold text-gray-600">{analytics.sentiment.neutral}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Negative</p>
-                <p className="text-2xl font-bold text-red-600">{analytics.sentiment.negative}</p>
-              </div>
-            </div>
-            {analytics.sentiment.topWords.length > 0 && (
               <div className="mt-4">
-                <h4 className="text-sm font-semibold text-gray-700 mb-2">Common Words</h4>
-                <div className="flex flex-wrap gap-2">
-                  {analytics.sentiment.topWords.map((w, idx) => (
-                    <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">{w.word} ({w.count})</span>
+                <Link to="/admin/reviews" className="inline-flex items-center text-sm font-medium text-yellow-600 hover:text-yellow-700">
+                  Review Management →
+                </Link>
+              </div>
+            </div>
+
+            {/* Appointments Card */}
+            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-purple-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-600 mb-1">Appointments</p>
+                  <p className="text-3xl font-bold text-purple-600 group-hover:scale-105 transition-transform duration-200">{bookingStats.total}</p>
+                </div>
+                <div className="bg-gradient-to-r from-purple-100 to-purple-200 p-3 rounded-xl group-hover:from-purple-200 group-hover:to-purple-300 transition-all duration-300">
+                  <FaCalendarAlt className="text-2xl text-purple-600" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Accepted:</span>
+                  <span className="font-semibold text-green-600">{bookingStats.accepted}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Pending:</span>
+                  <span className="font-semibold text-orange-600">{bookingStats.pending}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Rejected:</span>
+                  <span className="font-semibold text-red-600">{bookingStats.rejected}</span>
+                </div>
+              </div>
+              <div className="mt-4">
+                <Link to="/admin/appointments" className="inline-flex items-center text-sm font-medium text-purple-600 hover:text-purple-700">
+                  Manage Appointments →
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Core Business Metrics - Essential for Platform Health */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg">
+              <FaChartLine className="text-white text-xl" />
+            </div>
+            <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Core Business Metrics</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-6">
+            {/* Users Card */}
+            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-blue-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-600 mb-1">Total Users</p>
+                  <p className="text-3xl font-bold text-blue-600 group-hover:scale-105 transition-transform duration-200">{analytics.totalUsers}</p>
+                </div>
+                <div className="bg-gradient-to-r from-blue-100 to-blue-200 p-3 rounded-xl group-hover:from-blue-200 group-hover:to-blue-300 transition-all duration-300">
+                  <FaUsers className="text-2xl text-blue-600" />
+                </div>
+              </div>
+              {currentUser?.role === 'rootadmin' && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Admins:</span>
+                  <span className="font-semibold text-blue-600">{analytics.totalAdmins}</span>
+                </div>
+              )}
+              <div className="mt-4">
+                <button
+                  onClick={() => navigate('/admin/management')}
+                  className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700"
+                >
+                  Manage Users →
+                </button>
+              </div>
+            </div>
+
+            {/* Properties Card */}
+            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-green-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-600 mb-1">Total Properties</p>
+                  <p className="text-3xl font-bold text-green-600 group-hover:scale-105 transition-transform duration-200">{analytics.totalListings}</p>
+                </div>
+                <div className="bg-gradient-to-r from-green-100 to-green-200 p-3 rounded-xl group-hover:from-green-200 group-hover:to-green-300 transition-all duration-300">
+                  <FaHome className="text-2xl text-green-600" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">For Sale:</span>
+                  <span className="font-semibold text-green-600">{analytics.listingStats.sale}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">For Rent:</span>
+                  <span className="font-semibold text-green-600">{analytics.listingStats.rent}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Offers:</span>
+                  <span className="font-semibold text-orange-600">{analytics.listingStats.offer}</span>
+                </div>
+              </div>
+              <div className="mt-4">
+                <Link to="/admin/explore" className="inline-flex items-center text-sm font-medium text-green-600 hover:text-green-700">
+                  Browse Properties →
+                </Link>
+              </div>
+            </div>
+
+            {/* Engagement Card */}
+            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-rose-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-600 mb-1">Avg Views/Listing</p>
+                  <p className="text-3xl font-bold text-rose-600 group-hover:scale-105 transition-transform duration-200">{analytics.engagement.avgViewsPerListing}</p>
+                </div>
+                <div className="bg-gradient-to-r from-rose-100 to-rose-200 p-3 rounded-xl group-hover:from-rose-200 group-hover:to-rose-300 transition-all duration-300">
+                  <FaEye className="text-2xl text-rose-600" />
+                </div>
+              </div>
+              <div className="text-xs text-gray-500">
+                Average views per property listing
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Market Performance & Insights */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg">
+              <FaChartLine className="text-white text-xl" />
+            </div>
+            <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Market Performance & Insights</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-green-600 mr-2" /> Price Statistics</h3>
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <p className="text-sm text-gray-500">Min</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-800 break-all">₹{analytics.priceStats.min.toLocaleString('en-IN')}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Avg</p>
+                  <p className="text-xl sm:text-2xl font-bold text-blue-700 break-all">₹{analytics.priceStats.avg.toLocaleString('en-IN')}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Max</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-800 break-all">₹{analytics.priceStats.max.toLocaleString('en-IN')}</p>
+                </div>
+              </div>
+              <p className="mt-4 text-sm text-gray-600"><span className="font-semibold text-green-700">{analytics.priceStats.discountedCount}</span> listings currently on discount</p>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-purple-600 mr-2" /> Bedrooms Distribution</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {Object.entries(analytics.bedroomsDistribution).sort((a,b)=>Number(a[0])-Number(b[0])).map(([beds, count]) => (
+                  <div key={beds} className="border border-gray-200 rounded-lg p-4 text-center">
+                    <p className="text-sm text-gray-500">{beds} bed{Number(beds) === 1 ? '' : 's'}</p>
+                    <p className="text-xl font-bold text-purple-700">{count}</p>
+                    {/* Simple bar viz */}
+                    <div className="h-2 bg-gray-100 rounded mt-2">
+                      <div className="h-2 bg-purple-500 rounded" style={{ width: `${Math.min(100, Math.round((count / Math.max(1, analytics.totalListings)) * 100))}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Fraud Activity Timeline - Grouped with Security */}
+          {fraudTimeline.length > 0 && (
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow mb-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaExclamationTriangle className="text-red-600 mr-2" /> Fraud Activity Timeline</h3>
+              <div className="mt-3 flex items-end gap-1 h-20">
+                {fraudTimeline.map((pt, i, arr) => {
+                  const max = Math.max(...arr.map(x => x.count || 1));
+                  const h = Math.max(2, Math.round((pt.count / (max || 1)) * 56));
+                  return (
+                    <div key={pt.month} className="flex flex-col items-center" title={`${pt.month}: ${pt.count}`}>
+                      <div className="w-3 bg-red-500 rounded-t" style={{ height: `${h}px` }} />
+                      <div className="mt-1 text-[10px] text-gray-500 rotate-0">{pt.month.split('-')[1]}</div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="mt-4">
+                <Link to="/admin/fraudmanagement" className="inline-flex items-center text-sm font-medium text-red-600 hover:text-red-700">
+                  Fraud Management →
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+
+          {/* Market Insights - Extended */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-blue-600 mr-2" /> Market Price Trends</h3>
+              {analytics.marketInsights.monthlyAvgPrices.length === 0 ? (
+                <p className="text-sm text-gray-500">Not enough data yet.</p>
+              ) : (
+                <div className="space-y-2">
+                  {analytics.marketInsights.monthlyAvgPrices.map(mp => (
+                    <div key={mp.month} className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">{mp.month}</span>
+                      <span className="font-semibold text-gray-800">₹{mp.avg.toLocaleString('en-IN')}</span>
+                    </div>
+                  ))}
+                  {/* Inline spark-bar */}
+                  <div className="mt-3 flex items-end gap-1 h-20">
+                    {analytics.marketInsights.monthlyAvgPrices.map((mp, i, arr) => {
+                      const max = Math.max(...arr.map(x => x.avg || 1));
+                      const h = Math.max(2, Math.round((mp.avg / (max || 1)) * 56));
+                      return (
+                        <div key={mp.month} className="flex flex-col items-center" title={`${mp.month}: ₹${mp.avg.toLocaleString('en-IN')}`}>
+                          <div className="w-3 bg-blue-500 rounded-t" style={{ height: `${h}px` }} />
+                          <div className="mt-1 text-[10px] text-gray-500 rotate-0">{mp.month.split('-')[1]}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-indigo-600 mr-2" /> Demand by City</h3>
+              {analytics.marketInsights.demandByCity.length === 0 ? (
+                <p className="text-sm text-gray-500">Not enough data yet.</p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {analytics.marketInsights.demandByCity.map((d, idx) => (
+                    <div key={idx} className="border border-gray-200 rounded-lg p-3 flex items-center justify-between">
+                      <span className="text-sm text-gray-600">{d.city}</span>
+                      <span className="text-base font-bold text-indigo-700">{d.count}</span>
+                    </div>
+                  ))}
+                  {/* Pie chart of top 5 demand */}
+                  <div className="col-span-1 md:col-span-2 flex items-center justify-center mt-2">
+                    {(() => {
+                      const total = analytics.marketInsights.demandByCity.slice(0,5).reduce((s,x)=>s+x.count,0) || 1;
+                      let acc = 0;
+                      const segments = analytics.marketInsights.demandByCity.slice(0,5).map((x, i) => {
+                        const start = acc / total * 360; acc += x.count; const end = acc / total * 360;
+                        const colors = ['#6366f1','#8b5cf6','#06b6d4','#22c55e','#f59e0b'];
+                        return `${colors[i%colors.length]} ${start}deg ${end}deg`;
+                      }).join(',');
+                      return (
+                        <div className="flex flex-col items-center">
+                          <div className="w-28 h-28 rounded-full" style={{ background: `conic-gradient(${segments})` }} />
+                          <div className="mt-2 space-y-1">
+                            {analytics.marketInsights.demandByCity.slice(0,5).map((x,i)=>{
+                              const colors = ['#6366f1','#8b5cf6','#06b6d4','#22c55e','#f59e0b'];
+                              const pct = Math.round((x.count/total)*100);
+                              return (
+                                <div key={i} className="flex items-center gap-2 text-xs text-gray-700">
+                                  <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: colors[i%colors.length] }} />
+                                  <span>{x.city}</span>
+                                  <span className="text-gray-500">({pct}% - {x.count})</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Analytical Insights - For Strategic Decisions */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
+              <FaStar className="text-white text-xl" />
+            </div>
+            <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Analytical Insights</h2>
+            <span className="text-sm text-gray-500">(Strategic Decision Support)</span>
+          </div>
+
+          {/* Performance & Sentiment Analysis */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-rose-600 mr-2" /> Top Owners by Rating</h3>
+              {analytics.performance.topOwnersByRating.length === 0 ? (
+                <p className="text-sm text-gray-500">Not enough data yet.</p>
+              ) : (
+                <div className="space-y-2">
+                  {analytics.performance.topOwnersByRating.map((o, idx) => (
+                    <div key={idx} className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">{o.ownerName}</span>
+                      <span className="font-semibold text-gray-800">{o.avgRating} ⭐ ({o.listings} listings)</span>
+                    </div>
                   ))}
                 </div>
+              )}
+            </div>
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaStar className="text-yellow-500 mr-2" /> Review Sentiment</h3>
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <p className="text-sm text-gray-500">Positive</p>
+                  <p className="text-2xl font-bold text-green-600">{analytics.sentiment.positive}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Neutral</p>
+                  <p className="text-2xl font-bold text-gray-600">{analytics.sentiment.neutral}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Negative</p>
+                  <p className="text-2xl font-bold text-red-600">{analytics.sentiment.negative}</p>
+                </div>
               </div>
-            )}
+              {analytics.sentiment.topWords.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2">Common Words</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {analytics.sentiment.topWords.map((w, idx) => (
+                      <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">{w.word} ({w.count})</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Enhanced Analytics - New Sections */}
-        
-        {/* Conversion Funnel & Property Performance */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Conversion Funnel & Property Performance */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-indigo-600 mr-2" /> Conversion Funnel</h3>
             <div className="space-y-3">
@@ -1240,10 +1312,9 @@ export default function AdminDashboard() {
               </div>
             )}
           </div>
-        </div>
-
-        {/* Geographic Analytics & Property Types */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          
+          {/* Geographic Analytics & Property Types */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-emerald-600 mr-2" /> State Distribution</h3>
             {Object.keys(analytics.geographic.stateDistribution).length === 0 ? (
@@ -1293,56 +1364,58 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Advanced Sentiment & Regional Price Analysis */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaStar className="text-pink-600 mr-2" /> Emotion Analysis</h3>
-            <div className="grid grid-cols-2 gap-3">
-              {Object.entries(analytics.advancedSentiment.emotionBreakdown)
-                .filter(([emotion, count]) => count > 0)
-                .sort((a, b) => b[1] - a[1])
-                .map(([emotion, count]) => (
-                  <div key={emotion} className="text-center">
-                    <p className="text-sm text-gray-500 capitalize">{emotion}</p>
-                    <p className="text-lg font-bold text-pink-600">{count}</p>
-                  </div>
-                ))}
-            </div>
-            <div className="mt-4 p-3 bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">Review Quality Score</span>
-                <span className="text-lg font-bold text-pink-600">{analytics.advancedSentiment.reviewQuality}%</span>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaRupeeSign className="text-teal-600 mr-2" /> Regional Price Analysis</h3>
-            {analytics.geographic.regionalPriceVariation.length === 0 ? (
-              <p className="text-sm text-gray-500">No regional price data available.</p>
-            ) : (
-              <div className="space-y-2">
-                {analytics.geographic.regionalPriceVariation.slice(0, 5).map((region, idx) => (
-                  <div key={idx} className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">{region.state}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-500">({region.count} listings)</span>
-                      <span className="font-semibold text-teal-600">₹{region.avgPrice.toLocaleString('en-IN')}</span>
+          {/* Advanced Sentiment & Regional Price Analysis */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaStar className="text-pink-600 mr-2" /> Emotion Analysis</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {Object.entries(analytics.advancedSentiment.emotionBreakdown)
+                  .filter(([emotion, count]) => count > 0)
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([emotion, count]) => (
+                    <div key={emotion} className="text-center">
+                      <p className="text-sm text-gray-500 capitalize">{emotion}</p>
+                      <p className="text-lg font-bold text-pink-600">{count}</p>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
-            )}
+              <div className="mt-4 p-3 bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700">Review Quality Score</span>
+                  <span className="text-lg font-bold text-pink-600">{analytics.advancedSentiment.reviewQuality}%</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaRupeeSign className="text-teal-600 mr-2" /> Regional Price Analysis</h3>
+              {analytics.geographic.regionalPriceVariation.length === 0 ? (
+                <p className="text-sm text-gray-500">No regional price data available.</p>
+              ) : (
+                <div className="space-y-2">
+                  {analytics.geographic.regionalPriceVariation.slice(0, 5).map((region, idx) => (
+                    <div key={idx} className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">{region.state}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">({region.count} listings)</span>
+                        <span className="font-semibold text-teal-600">₹{region.avgPrice.toLocaleString('en-IN')}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Enhanced Quick Actions */}
+        {/* Quick Actions - High Priority Admin Tasks */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg">
               <FaChartLine className="text-white text-xl" />
             </div>
             <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Quick Actions</h2>
+            <span className="text-sm text-gray-500">(Direct Access to Management Pages)</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 lg:gap-6">
             <button
@@ -1425,34 +1498,44 @@ export default function AdminDashboard() {
             </Link>
         </div>
 
-        {/* Top Rated Properties */}
-        {analytics.topProperties.length > 0 && (
-          <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-              <FaStar className="text-yellow-500 mr-2" />
-              Top Rated Properties
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {analytics.topProperties.map((property) => (
-                <div key={property._id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold text-gray-800 truncate">{property.name}</h4>
-                    <span className="text-sm text-yellow-600 font-semibold">
-                      {property.averageRating.toFixed(1)} ⭐
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">{property.city}, {property.state}</p>
-                  <p className="text-sm text-gray-500">
-                    {property.reviewCount} review{property.reviewCount !== 1 ? 's' : ''}
-                  </p>
-                </div>
-              ))}
+        {/* Detailed Analytics - For Deep Analysis */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-gradient-to-r from-gray-500 to-slate-500 rounded-lg">
+              <FaChartLine className="text-white text-xl" />
             </div>
+            <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Detailed Analytics</h2>
+            <span className="text-sm text-gray-500">(Deep Analysis & Historical Data)</span>
           </div>
-        )}
 
-        {/* Enhanced Watchlist Analytics */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+          {/* Top Rated Properties */}
+          {analytics.topProperties.length > 0 && (
+            <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <FaStar className="text-yellow-500 mr-2" />
+                Top Rated Properties
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {analytics.topProperties.map((property) => (
+                  <div key={property._id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-semibold text-gray-800 truncate">{property.name}</h4>
+                      <span className="text-sm text-yellow-600 font-semibold">
+                        {property.averageRating.toFixed(1)} ⭐
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-2">{property.city}, {property.state}</p>
+                    <p className="text-sm text-gray-500">
+                      {property.reviewCount} review{property.reviewCount !== 1 ? 's' : ''}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Enhanced Watchlist Analytics */}
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
           <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
             <FaEye className="text-indigo-500 mr-2" />
             Watchlist Analytics
@@ -1593,28 +1676,39 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Recent Listings */}
-        {analytics.recentListings.length > 0 && (
-          <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-              <FaEye className="text-purple-500 mr-2" />
-              Recently Added Listings
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {analytics.recentListings.map((l) => (
-                <div key={l._id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold text-gray-800 truncate">{l.name}</h4>
-                    <span className="text-xs text-gray-500">{l.createdAt ? new Date(l.createdAt).toLocaleDateString() : ''}</span>
+          {/* Recent Listings */}
+          {analytics.recentListings.length > 0 && (
+            <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <FaEye className="text-purple-500 mr-2" />
+                Recently Added Listings
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                {analytics.recentListings.map((l) => (
+                  <div key={l._id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-semibold text-gray-800 truncate">{l.name}</h4>
+                      <span className="text-xs text-gray-500">{l.createdAt ? new Date(l.createdAt).toLocaleDateString() : ''}</span>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-1">{l.city}, {l.state}</p>
+                    <p className="text-sm text-gray-500">Type: {l.type}{l.offer ? ' • Offer' : ''}</p>
                   </div>
-                  <p className="text-sm text-gray-600 mb-1">{l.city}, {l.state}</p>
-                  <p className="text-sm text-gray-500">Type: {l.type}{l.offer ? ' • Offer' : ''}</p>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
+          )}
+        </div>
+
+        {/* Property Listings - Recent Activity */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg">
+              <FaHome className="text-white text-xl" />
+            </div>
+            <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Property Listings</h2>
+            <span className="text-sm text-gray-500">(Recent Activity & Management)</span>
           </div>
-        )}
-      </div>
+        </div>
 
       {/* Listings Section */}
       <div className="max-w-6xl w-full mx-auto px-2 sm:px-4 md:px-8 py-8 overflow-x-hidden">
