@@ -24,6 +24,7 @@ export default function AdminManagement() {
   const [accountStats, setAccountStats] = useState({ listings: 0, appointments: 0 });
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [passwordLockouts, setPasswordLockouts] = useState([]); // { email, unlockAt }
   const [showPasswordModal, setShowPasswordModal] = useState(true);
   const [managementPassword, setManagementPassword] = useState("");
   const [managementPasswordError, setManagementPasswordError] = useState("");
@@ -99,6 +100,18 @@ export default function AdminManagement() {
         const adminRes = await fetch(`${API_BASE_URL}/api/admin/management/admins`, { credentials: "include" });
         const adminData = await adminRes.json();
         setAdmins(adminData);
+      }
+      // Fetch active password lockouts (failed sign-in lockouts)
+      try {
+        const lockRes = await fetch(`${API_BASE_URL}/api/auth/password-lockouts`, { credentials: 'include' });
+        const lockData = await lockRes.json();
+        if (lockRes.ok && lockData && Array.isArray(lockData.items)) {
+          setPasswordLockouts(lockData.items);
+        } else {
+          setPasswordLockouts([]);
+        }
+      } catch (_) {
+        setPasswordLockouts([]);
       }
     } catch (err) {
       toast.error("Failed to fetch accounts");
@@ -429,7 +442,12 @@ export default function AdminManagement() {
     
     // Status filter
     if (statusFilter !== "all") {
-      filtered = filtered.filter(account => account.status === statusFilter);
+      if (statusFilter === 'locked') {
+        const lockedEmailSet = new Set(passwordLockouts.filter(l => new Date(l.unlockAt) > new Date()).map(l => (l.email || '').toLowerCase()));
+        filtered = filtered.filter(account => lockedEmailSet.has((account.email || '').toLowerCase()));
+      } else {
+        filtered = filtered.filter(account => account.status === statusFilter);
+      }
     }
     
     return filtered;
@@ -693,6 +711,7 @@ export default function AdminManagement() {
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
                 <option value="suspended">Suspended</option>
+                <option value="locked">Locked</option>
               </select>
               <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                 <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -786,6 +805,18 @@ export default function AdminManagement() {
                             <div className="flex items-center gap-2 text-gray-500 text-sm mt-1">
                               <FaEnvelope /> {highlightMatch(user.email)}
                             </div>
+                            {(() => {
+                              if (!passwordLockouts || !Array.isArray(passwordLockouts)) return null;
+                              const entry = passwordLockouts.find(l => (l.email || '').toLowerCase() === (user.email || '').toLowerCase() && new Date(l.unlockAt) > new Date());
+                              if (!entry) return null;
+                              const remainingMs = new Date(entry.unlockAt).getTime() - Date.now();
+                              const remainingMin = Math.max(1, Math.ceil(remainingMs / 60000));
+                              return (
+                                <div className="mt-1 text-xs text-orange-700 bg-orange-50 border border-orange-200 rounded px-2 py-1 inline-block">
+                                  Locked: about {remainingMin} minute{remainingMin>1? 's':''} left
+                                </div>
+                              );
+                            })()}
                             {user.mobileNumber && (
                               <div className="flex items-center gap-2 text-gray-500 text-sm mt-1">
                                 <FaPhone /> {highlightMatch(user.mobileNumber)}
@@ -882,6 +913,18 @@ export default function AdminManagement() {
                             <div className="flex items-center gap-2 text-gray-500 text-sm mt-1">
                               <FaEnvelope /> {highlightMatch(admin.email)}
                             </div>
+                            {(() => {
+                              if (!passwordLockouts || !Array.isArray(passwordLockouts)) return null;
+                              const entry = passwordLockouts.find(l => (l.email || '').toLowerCase() === (admin.email || '').toLowerCase() && new Date(l.unlockAt) > new Date());
+                              if (!entry) return null;
+                              const remainingMs = new Date(entry.unlockAt).getTime() - Date.now();
+                              const remainingMin = Math.max(1, Math.ceil(remainingMs / 60000));
+                              return (
+                                <div className="mt-1 text-xs text-orange-700 bg-orange-50 border border-orange-200 rounded px-2 py-1 inline-block">
+                                  Locked: about {remainingMin} minute{remainingMin>1? 's':''} left
+                                </div>
+                              );
+                            })()}
                             {admin.mobileNumber && (
                               <div className="flex items-center gap-2 text-gray-500 text-sm mt-1">
                                 <FaPhone /> {highlightMatch(admin.mobileNumber)}

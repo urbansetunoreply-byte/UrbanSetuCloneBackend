@@ -29,7 +29,7 @@ const GeminiChatbox = () => {
     const [unreadCount, setUnreadCount] = useState(0);
     const [isExpanded, setIsExpanded] = useState(false);
     const lastUserMessageRef = useRef('');
-    const [tone, setTone] = useState('neutral'); // modes dropdown (tone)
+    const [tone, setTone] = useState(() => localStorage.getItem('gemini_tone') || 'neutral'); // modes dropdown (tone)
     const [isHeaderMenuOpen, setIsHeaderMenuOpen] = useState(false);
 
     const scrollToBottom = () => {
@@ -566,7 +566,7 @@ const GeminiChatbox = () => {
                                 {/* Modes dropdown moved to the right, before options */}
                                 <select
                                     value={tone}
-                                    onChange={(e) => setTone(e.target.value)}
+                                    onChange={(e) => { setTone(e.target.value); localStorage.setItem('gemini_tone', e.target.value); }}
                                     className="text-white/90 bg-white/10 hover:bg-white/20 border border-white/30 text-[10px] md:text-xs px-2 py-1 rounded outline-none max-w-[120px] md:max-w-[140px]"
                                     title="Modes"
                                     aria-label="Modes"
@@ -732,8 +732,8 @@ const GeminiChatbox = () => {
                             </div>
                         )}
 
-                        {/* Quick suggestion prompts when conversation is empty */}
-                        {messages && (messages.length === 1 && !messages.some(m => m.role === 'user')) && (
+                        {/* Quick suggestion prompts - always visible at bottom */}
+                        {messages && (
                             <div className="px-4 pb-2 pt-2 border-t border-gray-100 flex-shrink-0">
                                 <div className="flex flex-wrap gap-2">
                                     {[
