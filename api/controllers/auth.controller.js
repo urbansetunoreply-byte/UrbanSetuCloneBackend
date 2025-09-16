@@ -495,6 +495,18 @@ export const sendLoginOTP = async (req, res, next) => {
             });
         }
 
+        // Block OTP sending if account is password-locked due to failed attempts
+        try {
+            if (await isAccountLocked(user._id)) {
+                const remainingMs = await getAccountLockRemainingMs(user._id, user.email);
+                const remainingMinutes = Math.max(1, Math.ceil(remainingMs / (60 * 1000)));
+                return res.status(423).json({
+                    success: false,
+                    message: `Account is temporarily locked due to too many failed attempts. Try again in about ${remainingMinutes} minute${remainingMinutes>1?'s':''}.`
+                });
+            }
+        } catch (_) {}
+
         // Increment OTP request count and attach ip/userAgent for auditing
         await otpTracking.incrementOtpRequest();
         
