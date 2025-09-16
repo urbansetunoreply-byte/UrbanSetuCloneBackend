@@ -1245,7 +1245,7 @@ export default function AdminDashboard() {
 
           {/* Performance & Sentiment Analysis */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow max-w-3xl mx-auto w-full">
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-rose-600 mr-2" /> Top Owners by Rating</h3>
               {analytics.performance.topOwnersByRating.length === 0 ? (
                 <p className="text-sm text-gray-500">Not enough data yet.</p>
@@ -1260,7 +1260,7 @@ export default function AdminDashboard() {
                 </div>
               )}
             </div>
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow max-w-3xl mx-auto w-full">
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaStar className="text-yellow-500 mr-2" /> Review Sentiment</h3>
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
@@ -1292,7 +1292,7 @@ export default function AdminDashboard() {
 
           {/* Conversion Funnel & Property Performance */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow max-w-3xl mx-auto w-full">
+          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-indigo-600 mr-2" /> Conversion Funnel</h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -1320,7 +1320,7 @@ export default function AdminDashboard() {
             </div>
           </div>
           
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow max-w-3xl mx-auto w_full">
+          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaEye className="text-cyan-600 mr-2" /> Top Viewed Properties</h3>
             {analytics.propertyPerformance.topViewedProperties.length === 0 ? (
               <p className="text-sm text-gray-500">No view data available yet.</p>
@@ -1389,7 +1389,7 @@ export default function AdminDashboard() {
 
           {/* Advanced Sentiment & Regional Price Analysis */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow max-w-3xl mx-auto w-full">
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaStar className="text-pink-600 mr-2" /> Emotion Analysis</h3>
               <div className="grid grid-cols-2 gap-3">
                 {Object.entries(analytics.advancedSentiment.emotionBreakdown)
@@ -1410,7 +1410,7 @@ export default function AdminDashboard() {
               </div>
             </div>
             
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow max-w-3xl mx-auto w-full">
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaRupeeSign className="text-teal-600 mr-2" /> Regional Price Analysis</h3>
               {analytics.geographic.regionalPriceVariation.length === 0 ? (
                 <p className="text-sm text-gray-500">No regional price data available.</p>
