@@ -40,6 +40,25 @@ export default function AdminSecurityModeration() {
     }
   };
 
+  // Refresh only OTP activity and active lockouts, do not touch password lockouts count
+  const fetchOtpOnly = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/otp/stats`, { credentials: 'include' });
+      const data = await res.json();
+      if (!res.ok || data.success === false) throw new Error(data.message || 'Failed to fetch');
+      const recent = data.recent || [];
+      const computedActive = recent.filter(r => r.lockoutUntil && new Date(r.lockoutUntil) > new Date()).length;
+      const activeLockouts = (data.activeLockouts || 0) === 0 && computedActive > 0 ? computedActive : (data.activeLockouts || 0);
+      setStats(prev => ({ ...prev, recent, activeLockouts }));
+    } catch (e) {
+      setError(e.message || 'Failed to load');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchPasswordLockouts = async () => {
     setLoadingPasswords(true);
     try {
@@ -261,7 +280,7 @@ export default function AdminSecurityModeration() {
                 <h2 className="text-xl font-bold text-gray-800">Recent OTP Activity</h2>
               </div>
               <button 
-                onClick={fetchStats} 
+                onClick={fetchOtpOnly} 
                 className="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 flex items-center gap-2"
               >
                 <FaRedo className="w-4 h-4" />
@@ -436,6 +455,17 @@ export default function AdminSecurityModeration() {
                       </td>
                     </tr>
                   ))}
+                  {filtered.length === 0 && (
+                    <tr>
+                      <td className="py-8 text-center text-gray-500" colSpan="8">
+                        <div className="flex flex-col items-center gap-2">
+                          <FaCheckCircle className="w-8 h-8 text-green-500" />
+                          <span className="text-lg font-medium">No recent OTP activity</span>
+                          <span className="text-sm">All clear. No OTP lockouts or requests to show</span>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
