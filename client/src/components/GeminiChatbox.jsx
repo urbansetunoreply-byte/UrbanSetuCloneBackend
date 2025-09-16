@@ -547,27 +547,27 @@ const GeminiChatbox = () => {
                         {/* Header: left icon+title, right controls: modes dropdown, options (kebab), close */}
                         <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 md:p-4 rounded-t-2xl flex items-center justify-between flex-shrink-0 relative">
                             {/* Left: assistant identity */}
-                            <div className="flex items-center gap-2 md:gap-3">
+                            <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
                                 <div className="p-1.5 md:p-2 bg-white/10 rounded-lg border border-white/20">
                                     <FaRobot size={16} className="opacity-90" />
                                 </div>
-                                <div className="leading-tight block">
-                                    <div className="text-xs md:text-sm font-semibold">
+                                <div className="leading-tight block max-w-full">
+                                    <div className="text-xs md:text-sm font-semibold truncate">
                                         Gemini AI
                                     </div>
-                                    <div className="text-[10px] md:text-xs text-white/80">
+                                    <div className="text-[10px] md:text-xs text-white/80 truncate">
                                         Your Smart Real Estate Assistant
                                     </div>
                                 </div>
                             </div>
 
                             {/* Right controls: modes dropdown + kebab menu + close */}
-                            <div className="flex items-center gap-2 relative">
+                            <div className="flex items-center gap-2 relative flex-shrink-0">
                                 {/* Modes dropdown moved to the right, before options */}
                                 <select
                                     value={tone}
                                     onChange={(e) => setTone(e.target.value)}
-                                    className="text-white/90 bg-white/10 hover:bg-white/20 border border-white/30 text-xs px-2 py-1 rounded outline-none max-w-[140px]"
+                                    className="hidden md:block text-white/90 bg-white/10 hover:bg-white/20 border border-white/30 text-xs px-2 py-1 rounded outline-none max-w-[140px]"
                                     title="Modes"
                                     aria-label="Modes"
                                 >
@@ -578,7 +578,7 @@ const GeminiChatbox = () => {
                                 </select>
                                 <button
                                     onClick={() => setIsHeaderMenuOpen(open => !open)}
-                                    className="text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
+                                    className="hidden md:inline-flex text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
                                     title="More options"
                                     aria-label="More options"
                                 >
