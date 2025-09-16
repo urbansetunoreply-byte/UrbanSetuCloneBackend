@@ -743,9 +743,9 @@ export default function AdminManagement() {
             Refresh
           </button>
         </div>
-        <div className="flex gap-4 mb-8 animate-fadeIn">
+        <div className="flex flex-wrap gap-2 sm:gap-4 mb-8 animate-fadeIn">
           <button
-            className={`px-6 py-3 rounded-xl font-bold text-lg shadow transition-all duration-200 ${tab === "users" ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white scale-105" : "bg-gray-100 text-gray-700 hover:bg-blue-50"}`}
+            className={`px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-bold text-sm sm:text-lg shadow transition-all duration-200 ${tab === "users" ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white scale-105" : "bg-gray-100 text-gray-700 hover:bg-blue-50"}`}
             onClick={() => {
               setTab("users");
               setShowRestriction(false);
@@ -756,7 +756,7 @@ export default function AdminManagement() {
             Users
           </button>
           <button
-            className={`px-6 py-3 rounded-xl font-bold text-lg shadow transition-all duration-200 ${tab === "admins" ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white scale-105" : "bg-gray-100 text-gray-700 hover:bg-purple-50"}`}
+            className={`px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-bold text-sm sm:text-lg shadow transition-all duration-200 ${tab === "admins" ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white scale-105" : "bg-gray-100 text-gray-700 hover:bg-purple-50"}`}
             onClick={() => {
               if (!currentUser.isDefaultAdmin) {
                 setShowRestriction(true);
@@ -774,22 +774,24 @@ export default function AdminManagement() {
             Admins
           </button>
           <button
-            className={`px-6 py-3 rounded-xl font-bold text-lg shadow transition-all duration-200 ${tab === "softbanned" ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white scale-105" : "bg-gray-100 text-gray-700 hover:bg-rose-50"}`}
+            className={`px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-bold text-sm sm:text-lg shadow transition-all duration-200 ${tab === "softbanned" ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white scale-105" : "bg-gray-100 text-gray-700 hover:bg-rose-50"}`}
             onClick={() => {
               setTab("softbanned");
               fetchSoftbannedAccounts();
             }}
           >
-            Softbanned Accounts
+            <span className="hidden sm:inline">Softbanned Accounts</span>
+            <span className="sm:hidden">Softbanned</span>
           </button>
           <button
-            className={`px-6 py-3 rounded-xl font-bold text-lg shadow transition-all duration-200 ${tab === "purged" ? "bg-gradient-to-r from-red-500 to-orange-500 text-white scale-105" : "bg-gray-100 text-gray-700 hover:bg-red-50"}`}
+            className={`px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-bold text-sm sm:text-lg shadow transition-all duration-200 ${tab === "purged" ? "bg-gradient-to-r from-red-500 to-orange-500 text-white scale-105" : "bg-gray-100 text-gray-700 hover:bg-red-50"}`}
             onClick={() => {
               setTab("purged");
               fetchPurgedAccounts();
             }}
           >
-            Purged Accounts
+            <span className="hidden sm:inline">Purged Accounts</span>
+            <span className="sm:hidden">Purged</span>
           </button>
         </div>
 
@@ -856,7 +858,7 @@ export default function AdminManagement() {
               </button>
             </div>
           </div>
-          ) : (
+          ) : tab === 'softbanned' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <input value={softbannedFilters.q} onChange={e=>setSoftbannedFilters(f=>({...f,q:e.target.value}))} placeholder="Search name/email" className="px-3 py-3 border rounded-xl" />
               <select value={softbannedFilters.role} onChange={e=>setSoftbannedFilters(f=>({...f,role:e.target.value}))} className="px-3 py-3 border rounded-xl">
@@ -875,8 +877,7 @@ export default function AdminManagement() {
                 {currentUser.isDefaultAdmin ? 'You are viewing all softbanned accounts (users + admins).' : 'You are viewing only softbanned user accounts.'}
               </div>
             </div>
-          )}
-          {tab === 'purged' && (
+          ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <input value={purgedFilters.q} onChange={e=>setPurgedFilters(f=>({...f,q:e.target.value}))} placeholder="Search name/email" className="px-3 py-3 border rounded-xl" />
               <select value={purgedFilters.role} onChange={e=>setPurgedFilters(f=>({...f,role:e.target.value}))} className="px-3 py-3 border rounded-xl">
@@ -1147,29 +1148,29 @@ export default function AdminManagement() {
                 ) : softbannedAccounts.length === 0 ? (
                   <div className="p-6 text-center text-gray-500 border rounded-xl">No softbanned accounts found</div>
                 ) : (
-                  <div className="overflow-auto rounded-xl border border-gray-200">
+                  <div className="overflow-x-auto rounded-xl border border-gray-200">
                     <table className="min-w-full text-sm">
                       <thead className="bg-gray-50">
                         <tr className="text-left text-gray-700">
-                          <th className="px-4 py-2">Name</th>
-                          <th className="px-4 py-2">Email</th>
-                          <th className="px-4 py-2">Role</th>
-                          <th className="px-4 py-2">Date Softbanned</th>
-                          <th className="px-4 py-2">Softbanned By</th>
-                          <th className="px-4 py-2">Reason</th>
-                          <th className="px-4 py-2">Policy</th>
-                          <th className="px-4 py-2">Actions</th>
+                          <th className="px-4 py-2 whitespace-nowrap">Name</th>
+                          <th className="px-4 py-2 whitespace-nowrap">Email</th>
+                          <th className="px-4 py-2 whitespace-nowrap">Role</th>
+                          <th className="px-4 py-2 whitespace-nowrap">Date Softbanned</th>
+                          <th className="px-4 py-2 whitespace-nowrap">Softbanned By</th>
+                          <th className="px-4 py-2 whitespace-nowrap">Reason</th>
+                          <th className="px-4 py-2 whitespace-nowrap">Policy</th>
+                          <th className="px-4 py-2 whitespace-nowrap">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">
                         {softbannedAccounts.map(acc => (
                           <tr key={acc._id} className="hover:bg-gray-50">
-                            <td className="px-4 py-2 font-medium text-gray-800">{acc.name}</td>
-                            <td className="px-4 py-2 text-gray-700">{acc.email}</td>
-                            <td className="px-4 py-2"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${acc.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>{acc.role}</span></td>
-                            <td className="px-4 py-2 text-gray-600">{acc.deletedAt ? new Date(acc.deletedAt).toLocaleString() : '-'}</td>
-                            <td className="px-4 py-2 text-gray-600">{typeof acc.deletedBy === 'string' ? acc.deletedBy : (acc.deletedBy?._id || acc.deletedBy) }</td>
-                            <td className="px-4 py-2 text-gray-600">{acc.reason || '-'}</td>
+                            <td className="px-4 py-2 font-medium text-gray-800 whitespace-nowrap">{acc.name}</td>
+                            <td className="px-4 py-2 text-gray-700 whitespace-nowrap">{acc.email}</td>
+                            <td className="px-4 py-2 whitespace-nowrap"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${acc.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>{acc.role}</span></td>
+                            <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{acc.deletedAt ? new Date(acc.deletedAt).toLocaleString() : '-'}</td>
+                            <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{typeof acc.deletedBy === 'string' ? acc.deletedBy : (acc.deletedBy?._id || acc.deletedBy) }</td>
+                            <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{acc.reason || '-'}</td>
                             <td className="px-4 py-2 text-gray-600">
                               {acc.policy ? (
                                 <div className="text-xs">
@@ -1181,7 +1182,7 @@ export default function AdminManagement() {
                                 </div>
                               ) : '-'}
                             </td>
-                            <td className="px-4 py-2">
+                            <td className="px-4 py-2 whitespace-nowrap">
                               {currentUser.isDefaultAdmin ? (
                                 <div className="flex gap-2">
                                   <button onClick={async ()=>{ if(!confirm('Restore this account?')) return; const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts/restore/${acc._id}`, { method:'POST', credentials:'include' }); const data = await res.json(); if(res.ok){ toast.success('Account restored'); fetchSoftbannedAccounts(); } else { toast.error(data.message||'Restore failed'); } }} className="px-3 py-1 bg-green-600 text-white rounded-lg text-xs">Restore</button>
@@ -1207,30 +1208,30 @@ export default function AdminManagement() {
                 ) : purgedAccounts.length === 0 ? (
                   <div className="p-6 text-center text-gray-500 border rounded-xl">No purged accounts found</div>
                 ) : (
-                  <div className="overflow-auto rounded-xl border border-gray-200">
+                  <div className="overflow-x-auto rounded-xl border border-gray-200">
                     <table className="min-w-full text-sm">
                       <thead className="bg-red-50">
                         <tr className="text-left text-gray-700">
-                          <th className="px-4 py-2">Name</th>
-                          <th className="px-4 py-2">Email</th>
-                          <th className="px-4 py-2">Role</th>
-                          <th className="px-4 py-2">Date Softbanned</th>
-                          <th className="px-4 py-2">Date Purged</th>
-                          <th className="px-4 py-2">Purged By</th>
-                          <th className="px-4 py-2">Reason</th>
-                          <th className="px-4 py-2">Policy</th>
+                          <th className="px-4 py-2 whitespace-nowrap">Name</th>
+                          <th className="px-4 py-2 whitespace-nowrap">Email</th>
+                          <th className="px-4 py-2 whitespace-nowrap">Role</th>
+                          <th className="px-4 py-2 whitespace-nowrap">Date Softbanned</th>
+                          <th className="px-4 py-2 whitespace-nowrap">Date Purged</th>
+                          <th className="px-4 py-2 whitespace-nowrap">Purged By</th>
+                          <th className="px-4 py-2 whitespace-nowrap">Reason</th>
+                          <th className="px-4 py-2 whitespace-nowrap">Policy</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">
                         {purgedAccounts.map(acc => (
                           <tr key={acc._id} className="hover:bg-red-50">
-                            <td className="px-4 py-2 font-medium text-gray-800">{acc.name}</td>
-                            <td className="px-4 py-2 text-gray-700">{acc.email}</td>
-                            <td className="px-4 py-2"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${acc.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>{acc.role}</span></td>
-                            <td className="px-4 py-2 text-gray-600">{acc.deletedAt ? new Date(acc.deletedAt).toLocaleString() : '-'}</td>
-                            <td className="px-4 py-2 text-red-600 font-semibold">{acc.purgedAt ? new Date(acc.purgedAt).toLocaleString() : '-'}</td>
-                            <td className="px-4 py-2 text-gray-600">{acc.purgedBy ? (typeof acc.purgedBy === 'string' ? acc.purgedBy : acc.purgedBy._id) : '-'}</td>
-                            <td className="px-4 py-2 text-gray-600">{acc.reason || '-'}</td>
+                            <td className="px-4 py-2 font-medium text-gray-800 whitespace-nowrap">{acc.name}</td>
+                            <td className="px-4 py-2 text-gray-700 whitespace-nowrap">{acc.email}</td>
+                            <td className="px-4 py-2 whitespace-nowrap"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${acc.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>{acc.role}</span></td>
+                            <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{acc.deletedAt ? new Date(acc.deletedAt).toLocaleString() : '-'}</td>
+                            <td className="px-4 py-2 text-red-600 font-semibold whitespace-nowrap">{acc.purgedAt ? new Date(acc.purgedAt).toLocaleString() : '-'}</td>
+                            <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{acc.purgedBy ? (typeof acc.purgedBy === 'string' ? acc.purgedBy : acc.purgedBy._id) : '-'}</td>
+                            <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{acc.reason || '-'}</td>
                             <td className="px-4 py-2 text-gray-600">
                               {acc.policy ? (
                                 <div className="text-xs">
