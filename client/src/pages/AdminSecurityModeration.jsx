@@ -31,7 +31,7 @@ export default function AdminSecurityModeration() {
       const recent = data.recent || [];
       // Use server-provided activeLockouts count directly, with computed fallback only if server returns 0
       const computedActive = recent.filter(r => r.lockoutUntil && new Date(r.lockoutUntil) > new Date()).length;
-      const activeLockouts = data.activeLockouts || computedActive;
+      const activeLockouts = (data.activeLockouts || 0) === 0 && computedActive > 0 ? computedActive : (data.activeLockouts || 0);
       setStats({ recent, activeLockouts, passwordLockouts: data.passwordLockouts || 0 });
     } catch (e) {
       setError(e.message || 'Failed to load');
