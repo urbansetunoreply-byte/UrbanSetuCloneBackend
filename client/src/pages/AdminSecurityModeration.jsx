@@ -318,23 +318,37 @@ export default function AdminSecurityModeration() {
               </div>
             </div>
             <div className="overflow-auto rounded-lg border border-gray-200">
-              <table className="min-w-full text-sm">
+              <table className="min-w-full text-sm table-fixed">
+                <colgroup>
+                  <col className="w-[28%]" />
+                  <col className="w-[16%]" />
+                  <col className="w-[8%]" />
+                  <col className="w-[8%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[12%]" />
+                  <col className="w-[12%]" />
+                  <col className="w-[6%]" />
+                </colgroup>
                 <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                   <tr className="text-left text-gray-700">
-                    <th className="py-3 px-4 font-semibold flex items-center gap-2">
+                    <th className="py-3 px-4 font-semibold">
+                      <div className="flex items-center gap-2 whitespace-nowrap">
                       <FaEnvelope className="w-3 h-3" />
                       Email
+                      </div>
                     </th>
-                    <th className="py-3 px-4 font-semibold flex items-center gap-2">
+                    <th className="py-3 px-4 font-semibold">
+                      <div className="flex items-center gap-2 whitespace-nowrap">
                       <FaGlobe className="w-3 h-3" />
                       IP
+                      </div>
                     </th>
-                    <th className="py-3 px-4 font-semibold">Requests</th>
-                    <th className="py-3 px-4 font-semibold">Fails</th>
-                    <th className="py-3 px-4 font-semibold">Captcha</th>
-                    <th className="py-3 px-4 font-semibold">Lockout</th>
-                    <th className="py-3 px-4 font-semibold">Updated</th>
-                    <th className="py-3 px-4 font-semibold">Actions</th>
+                    <th className="py-3 px-4 font-semibold whitespace-nowrap">Requests</th>
+                    <th className="py-3 px-4 font-semibold whitespace-nowrap">Fails</th>
+                    <th className="py-3 px-4 font-semibold whitespace-nowrap">Captcha</th>
+                    <th className="py-3 px-4 font-semibold whitespace-nowrap">Lockout</th>
+                    <th className="py-3 px-4 font-semibold whitespace-nowrap">Updated</th>
+                    <th className="py-3 px-4 font-semibold whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -495,29 +509,47 @@ export default function AdminSecurityModeration() {
               </div>
             ) : (
               <div className="overflow-auto rounded-lg border border-gray-200">
-                <table className="min-w-full text-sm">
+                <table className="min-w-full text-sm table-fixed">
+                  <colgroup>
+                    <col className="w-[24%]" />
+                    <col className="w-[14%]" />
+                    <col className="w-[16%]" />
+                    <col className="w-[16%]" />
+                    <col className="w-[8%]" />
+                    <col className="w-[8%]" />
+                    <col className="w-[10%]" />
+                    <col className="w-[8%]" />
+                  </colgroup>
                   <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                     <tr className="text-left text-gray-700">
-                      <th className="py-3 px-4 font-semibold flex items-center gap-2">
-                        <FaEnvelope className="w-3 h-3" />
-                        Email
+                      <th className="py-3 px-4 font-semibold">
+                        <div className="flex items-center gap-2 whitespace-nowrap">
+                          <FaEnvelope className="w-3 h-3" />
+                          Email
+                        </div>
                       </th>
-                      <th className="py-3 px-4 font-semibold flex items-center gap-2">
-                        <FaUser className="w-3 h-3" />
-                        User ID
+                      <th className="py-3 px-4 font-semibold">
+                        <div className="flex items-center gap-2 whitespace-nowrap">
+                          <FaUser className="w-3 h-3" />
+                          User ID
+                        </div>
                       </th>
-                      <th className="py-3 px-4 font-semibold flex items-center gap-2">
-                        <FaGlobe className="w-3 h-3" />
-                        IP
+                      <th className="py-3 px-4 font-semibold">
+                        <div className="flex items-center gap-2 whitespace-nowrap">
+                          <FaGlobe className="w-3 h-3" />
+                          IP
+                        </div>
                       </th>
-                      <th className="py-3 px-4 font-semibold flex items-center gap-2">
-                        <FaKey className="w-3 h-3" />
-                        Identifier
+                      <th className="py-3 px-4 font-semibold">
+                        <div className="flex items-center gap-2 whitespace-nowrap">
+                          <FaKey className="w-3 h-3" />
+                          Identifier
+                        </div>
                       </th>
-                      <th className="py-3 px-4 font-semibold">Attempts</th>
-                      <th className="py-3 px-4 font-semibold">Locked</th>
-                      <th className="py-3 px-4 font-semibold">Unlock At</th>
-                      <th className="py-3 px-4 font-semibold">Actions</th>
+                      <th className="py-3 px-4 font-semibold whitespace-nowrap">Attempts</th>
+                      <th className="py-3 px-4 font-semibold whitespace-nowrap">Locked</th>
+                      <th className="py-3 px-4 font-semibold whitespace-nowrap">Unlock At</th>
+                      <th className="py-3 px-4 font-semibold whitespace-nowrap">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">

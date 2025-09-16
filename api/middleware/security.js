@@ -78,7 +78,8 @@ export const lockAccount = async (userId, duration, { identifier = undefined, at
             durationMs: duration,
             ipAddress: ipAddress || identifier
         });
-        await User.findByIdAndUpdate(userId, { status: 'locked', lockedUntil: new Date(unlockAt) });
+        // Do not set an invalid user status here. We rely on PasswordLockout collection for lock state.
+        // If there is any auxiliary field like lockedUntil in the future, ensure schema supports it before setting.
     } catch (err) {
         console.error('Failed to persist password lockout:', err);
     }

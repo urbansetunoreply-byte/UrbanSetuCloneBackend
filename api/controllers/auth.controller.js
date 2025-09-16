@@ -1,4 +1,5 @@
 import User from "../models/user.model.js";
+import PasswordLockout from "../models/passwordLockout.model.js";
 import bcryptjs from "bcryptjs";
 import { errorHandler } from "../utils/error.js";
 import jwt from 'jsonwebtoken'
@@ -443,7 +444,17 @@ export const resetPassword = async (req, res, next) => {
         
         // Update password
         user.password = bcryptjs.hashSync(newPassword, 10);
+        // If user status was incorrectly set to a non-enum value like 'locked', normalize to 'active'
+        if (user.status !== 'active' && user.status !== 'suspended') {
+            user.status = 'active';
+        }
         await user.save();
+
+        // Clear any active password lockouts for this user/email after successful reset
+        try {
+            await PasswordLockout.clearUserLock({ userId: user._id });
+            await PasswordLockout.clearUserLock({ email: user.email });
+        } catch (_) {}
         
         res.status(200).json({ 
             message: "Password reset successful. You can now log in.",
