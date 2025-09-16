@@ -169,6 +169,7 @@ export default function AdminDashboard() {
   const [deleteError, setDeleteError] = useState("");
   const [pendingDelete, setPendingDelete] = useState({ id: null, ownerId: null });
   const [fraudStats, setFraudStats] = useState({ suspiciousListings: 0, suspectedFakeReviews: 0, lastScan: null });
+  const [securityStats, setSecurityStats] = useState({ activeOtpLockouts: 0, passwordLockouts: 0, totalOtpRequests: 0, totalFailedAttempts: 0 });
 
   // Lock body scroll when deletion modals are open on dashboard
   useEffect(() => {
@@ -194,7 +195,8 @@ export default function AdminDashboard() {
           fetchSaleListings(),
           fetchAppointmentCount(),
           fetchBookingStats(),
-          fetchAnalytics()
+          fetchAnalytics(),
+          fetchSecurityStats()
         ]);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
@@ -252,6 +254,28 @@ export default function AdminDashboard() {
       setBookingStats(res.data);
     } catch (error) {
       console.error('Failed to fetch booking stats:', error);
+    }
+  };
+
+  const fetchSecurityStats = async () => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/api/auth/otp/stats`, {
+        withCredentials: true
+      });
+      if (res.data.success) {
+        const recent = res.data.recent || [];
+        const totalOtpRequests = recent.reduce((sum, r) => sum + (r.otpRequestCount || 0), 0);
+        const totalFailedAttempts = recent.reduce((sum, r) => sum + (r.failedOtpAttempts || 0), 0);
+        
+        setSecurityStats({
+          activeOtpLockouts: res.data.activeLockouts || 0,
+          passwordLockouts: res.data.passwordLockouts || 0,
+          totalOtpRequests,
+          totalFailedAttempts
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch security stats:', error);
     }
   };
 
@@ -907,6 +931,73 @@ export default function AdminDashboard() {
             </div>
           </div>
 
+        </div>
+
+        {/* Security Analytics */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
+          {/* Active OTP Lockouts Card */}
+          <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-red-200">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-600 mb-1">Active OTP Lockouts</p>
+                <p className="text-3xl font-bold text-red-600 group-hover:scale-105 transition-transform duration-200">{securityStats.activeOtpLockouts}</p>
+              </div>
+              <div className="bg-gradient-to-r from-red-100 to-red-200 p-3 rounded-xl group-hover:from-red-200 group-hover:to-red-300 transition-all duration-300">
+                <FaShieldAlt className="text-2xl text-red-600" />
+              </div>
+            </div>
+            <div className="text-xs text-gray-500">
+              Users temporarily locked from OTP requests
+            </div>
+          </div>
+
+          {/* Password Lockouts Card */}
+          <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-orange-200">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-600 mb-1">Password Lockouts</p>
+                <p className="text-3xl font-bold text-orange-600 group-hover:scale-105 transition-transform duration-200">{securityStats.passwordLockouts}</p>
+              </div>
+              <div className="bg-gradient-to-r from-orange-100 to-orange-200 p-3 rounded-xl group-hover:from-orange-200 group-hover:to-orange-300 transition-all duration-300">
+                <FaLock className="text-2xl text-orange-600" />
+              </div>
+            </div>
+            <div className="text-xs text-gray-500">
+              Accounts locked due to failed login attempts
+            </div>
+          </div>
+
+          {/* Total OTP Requests Card */}
+          <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-blue-200">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-600 mb-1">Total OTP Requests</p>
+                <p className="text-3xl font-bold text-blue-600 group-hover:scale-105 transition-transform duration-200">{securityStats.totalOtpRequests}</p>
+              </div>
+              <div className="bg-gradient-to-r from-blue-100 to-blue-200 p-3 rounded-xl group-hover:from-blue-200 group-hover:to-blue-300 transition-all duration-300">
+                <FaSync className="text-2xl text-blue-600" />
+              </div>
+            </div>
+            <div className="text-xs text-gray-500">
+              OTP requests made in recent activity
+            </div>
+          </div>
+
+          {/* Failed Attempts Card */}
+          <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-purple-200">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-600 mb-1">Failed Attempts</p>
+                <p className="text-3xl font-bold text-purple-600 group-hover:scale-105 transition-transform duration-200">{securityStats.totalFailedAttempts}</p>
+              </div>
+              <div className="bg-gradient-to-r from-purple-100 to-purple-200 p-3 rounded-xl group-hover:from-purple-200 group-hover:to-purple-300 transition-all duration-300">
+                <FaExclamationTriangle className="text-2xl text-purple-600" />
+              </div>
+            </div>
+            <div className="text-xs text-gray-500">
+              Failed OTP verification attempts
+            </div>
+          </div>
         </div>
 
         {/* Price Statistics and Distribution */}
