@@ -567,7 +567,7 @@ const GeminiChatbox = () => {
                                 <select
                                     value={tone}
                                     onChange={(e) => setTone(e.target.value)}
-                                    className="hidden md:block text-white/90 bg-white/10 hover:bg-white/20 border border-white/30 text-xs px-2 py-1 rounded outline-none max-w-[140px]"
+                                    className="text-white/90 bg-white/10 hover:bg-white/20 border border-white/30 text-[10px] md:text-xs px-2 py-1 rounded outline-none max-w-[120px] md:max-w-[140px]"
                                     title="Modes"
                                     aria-label="Modes"
                                 >
@@ -578,7 +578,7 @@ const GeminiChatbox = () => {
                                 </select>
                                 <button
                                     onClick={() => setIsHeaderMenuOpen(open => !open)}
-                                    className="hidden md:inline-flex text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
+                                    className="inline-flex text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
                                     title="More options"
                                     aria-label="More options"
                                 >
