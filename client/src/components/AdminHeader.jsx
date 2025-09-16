@@ -342,7 +342,7 @@ export default function AdminHeader() {
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="px-4 py-3 outline-none w-full text-gray-800 bg-transparent"
                     />
-                    <button className="bg-blue-500 hover:bg-blue-600 text-white p-3 transition-colors" type="submit">
+                    <button className={`${getSearchButtonColor()} text-white p-3 transition-colors`} type="submit">
                       <FaSearch />
                     </button>
                   </form>
