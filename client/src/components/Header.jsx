@@ -11,6 +11,7 @@ import { toast } from 'react-toastify';
 
 export default function Header() {
   const { currentUser } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
   const [searchTerm, setSearchTerm] = useState("");
   const [fadeIn, setFadeIn] = useState(false);
   const navigate = useNavigate();
@@ -143,6 +144,25 @@ export default function Header() {
         return 'bg-blue-500 hover:bg-blue-600'; // Blue for change-password
       default:
         return 'bg-blue-500 hover:bg-blue-600'; // Default blue
+    }
+  };
+
+  // Function to get search focus ring color based on current route
+  const getSearchFocusRingColor = () => {
+    const path = location.pathname;
+    const searchParams = new URLSearchParams(location.search);
+
+    // Check if we're on the reset password step (step=2)
+    if (path === '/forgot-password' && searchParams.get('step') === '2') {
+      return 'focus-within:ring-green-500'; // Green for reset password step
+    }
+    switch (path) {
+      case '/sign-up':
+        return 'focus-within:ring-green-500'; // Green for sign-up
+      case '/forgot-password':
+        return 'focus-within:ring-red-500'; // Red for forgot-password verification step
+      default:
+        return 'focus-within:ring-blue-500'; // Default blue
     }
   };
 
@@ -300,7 +320,7 @@ export default function Header() {
                 
                 {/* Search */}
                 <div className="p-6 border-b border-gray-200">
-                  <form onSubmit={handleSubmit} className="flex items-center bg-gray-50 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:bg-white transition-all">
+                  <form onSubmit={handleSubmit} className={`flex items-center bg-gray-50 rounded-xl overflow-hidden focus-within:ring-2 ${getSearchFocusRingColor()} focus-within:bg-white transition-all`}>
                     <input
                       type="text"
                       placeholder="Search properties..."
