@@ -263,16 +263,10 @@ export default function Profile() {
   const [deleteOtpLoading, setDeleteOtpLoading] = useState(false);
   const [deleteResendTimer, setDeleteResendTimer] = useState(0);
   const [deleteCanResend, setDeleteCanResend] = useState(true);
+  // (Removed duplicate delete OTP state block)
   const [showTransferPasswordModal, setShowTransferPasswordModal] = useState(false);
   const [transferDeletePassword, setTransferDeletePassword] = useState("");
   const [transferDeleteError, setTransferDeleteError] = useState("");
-  const [deleteOtp, setDeleteOtp] = useState("");
-  const [deleteOtpSent, setDeleteOtpSent] = useState(false);
-  const [deleteOtpError, setDeleteOtpError] = useState("");
-  const [deleteOtpAttempts, setDeleteOtpAttempts] = useState(0);
-  const [deleteOtpLoading, setDeleteOtpLoading] = useState(false);
-  const [deleteResendTimer, setDeleteResendTimer] = useState(0);
-  const [deleteCanResend, setDeleteCanResend] = useState(true);
   const [transferOtp, setTransferOtp] = useState("");
   const [transferOtpSent, setTransferOtpSent] = useState(false);
   const [transferOtpError, setTransferOtpError] = useState("");
@@ -1022,7 +1016,7 @@ export default function Profile() {
     setDeleteError("");
     if (!deletePassword) { setDeleteError('Password is required'); return; }
     // Step 1: verify password
-    const res = await fetch(`${API_BASE_URL}/api/auth/verify-password`, { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password: deletePassword }) });
+    const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-password`, { method:'POST', body: JSON.stringify({ password: deletePassword }) });
     if (!res.ok) {
       setShowPasswordModal(false);
       toast.error("For your security, you've been signed out automatically.");
@@ -1039,7 +1033,7 @@ export default function Profile() {
     setDeleteOtpSent(false);
     try {
       setDeleteOtpLoading(true);
-      const sendRes = await fetch(`${API_BASE_URL}/api/auth/send-forgot-password-otp`, { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: currentUser.email }) });
+      const sendRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-forgot-password-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email }) });
       const sendData = await sendRes.json();
       if (!sendRes.ok || sendData.success === false) {
         setDeleteError(sendData.message || 'Failed to send OTP');
@@ -1055,7 +1049,7 @@ export default function Profile() {
 
   const resendDeleteOtp = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/send-forgot-password-otp`, { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: currentUser.email }) });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-forgot-password-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email }) });
       const data = await res.json();
       return res.ok && data.success !== false;
     } catch (_) { return false; }
@@ -1065,7 +1059,7 @@ export default function Profile() {
     setDeleteOtpError("");
     if (!deleteOtp || deleteOtp.length !== 6) { setDeleteOtpError('Enter 6-digit OTP'); return; }
     try {
-      const vRes = await fetch(`${API_BASE_URL}/api/auth/verify-otp`, { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: currentUser.email, otp: deleteOtp }) });
+      const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email, otp: deleteOtp }) });
       const vData = await vRes.json();
       if (!vRes.ok || vData.success === false || vData.type !== 'forgotPassword') {
         const att = deleteOtpAttempts + 1; setDeleteOtpAttempts(att);
@@ -1085,7 +1079,7 @@ export default function Profile() {
       // OTP verified -> proceed to delete
       const apiUrl = `${API_BASE_URL}/api/user/delete/${currentUser._id}`;
       const options = { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password: deletePassword }), credentials:'include' };
-      const res = await fetch(apiUrl, options);
+      const res = await authenticatedFetch(apiUrl, options);
       const data = await res.json();
       if (!res.ok) { setDeleteError(data.message || 'Account deletion failed'); return; }
       dispatch(deleteUserSuccess(data));
@@ -1134,10 +1128,8 @@ export default function Profile() {
     try {
       setTransferLoading(true);
       // Verify password using common endpoint
-      const verifyRes = await fetch(`${API_BASE_URL}/api/auth/verify-password`, {
+      const verifyRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-password`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ password: transferDeletePassword })
       });
       if (!verifyRes.ok) {
@@ -1148,10 +1140,8 @@ export default function Profile() {
         return;
       }
       // Send OTP to root admin email
-      const sendRes = await fetch(`${API_BASE_URL}/api/auth/send-forgot-password-otp`, {
+      const sendRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-forgot-password-otp`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ email: currentUser.email })
       });
       const sendData = await sendRes.json();
@@ -1172,7 +1162,7 @@ export default function Profile() {
 
   const resendTransferOtp = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/send-forgot-password-otp`, { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({ email: currentUser.email }) });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-forgot-password-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email }) });
       const data = await res.json();
       return res.ok && data.success !== false;
     } catch (_) { return false; }
@@ -1182,7 +1172,7 @@ export default function Profile() {
     setTransferOtpError("");
     if (!transferOtp || transferOtp.length !== 6) { setTransferOtpError('Enter 6-digit OTP'); return; }
     try {
-      const vRes = await fetch(`${API_BASE_URL}/api/auth/verify-otp`, { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({ email: currentUser.email, otp: transferOtp }) });
+      const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email, otp: transferOtp }) });
       const vData = await vRes.json();
       if (!vRes.ok || vData.success === false || vData.type !== 'forgotPassword') {
         const att = transferOtpAttempts + 1; setTransferOtpAttempts(att);
