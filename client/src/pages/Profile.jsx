@@ -266,6 +266,9 @@ export default function Profile() {
   const [deleteReasonOpen, setDeleteReasonOpen] = useState(false);
   const [deleteReason, setDeleteReason] = useState("");
   const [deleteOtherReason, setDeleteOtherReason] = useState("");
+  const [deleteVerifying, setDeleteVerifying] = useState(false);
+  const [deleteProcessing, setDeleteProcessing] = useState(false);
+  const [deleteDeleting, setDeleteDeleting] = useState(false);
   // (Removed duplicate delete OTP state block)
   const [showTransferPasswordModal, setShowTransferPasswordModal] = useState(false);
   const [transferDeletePassword, setTransferDeletePassword] = useState("");
@@ -1027,6 +1030,7 @@ export default function Profile() {
     setDeleteError("");
     if (!deletePassword) { setDeleteError('Password is required'); return; }
     // Step 1: verify password
+    setDeleteVerifying(true);
     const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-password`, { method:'POST', body: JSON.stringify({ password: deletePassword }) });
     if (!res.ok) {
       setShowPasswordModal(false);
@@ -1036,10 +1040,12 @@ export default function Profile() {
       const signoutData = await signoutRes.json();
       if (signoutData.success === false) dispatch(signoutUserFailure(signoutData.message)); else dispatch(signoutUserSuccess(signoutData));
       navigate('/sign-in', { replace: true });
+      setDeleteVerifying(false);
       return;
     }
     // Step 2: open reason dropdown step
     setDeleteReasonOpen(true);
+    setDeleteVerifying(false);
   };
 
   const handleContinueAfterReason = async () => {
@@ -1048,7 +1054,7 @@ export default function Profile() {
     setDeleteOtp("");
     setDeleteOtpSent(false);
     try {
-      setDeleteOtpLoading(true);
+      setDeleteProcessing(true);
       const sendRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-forgot-password-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email }) });
       const sendData = await sendRes.json();
       if (!sendRes.ok || sendData.success === false) {
@@ -1059,7 +1065,7 @@ export default function Profile() {
       setDeleteCanResend(false);
       setDeleteResendTimer(30);
     } finally {
-      setDeleteOtpLoading(false);
+      setDeleteProcessing(false);
     }
   };
 
@@ -1075,6 +1081,7 @@ export default function Profile() {
     setDeleteOtpError("");
     if (!deleteOtp || deleteOtp.length !== 6) { setDeleteOtpError('Enter 6-digit OTP'); return; }
     try {
+      setDeleteDeleting(true);
       const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email, otp: deleteOtp }) });
       const vData = await vRes.json();
       if (!vRes.ok || vData.success === false || vData.type !== 'forgotPassword') {
@@ -1090,6 +1097,7 @@ export default function Profile() {
           navigate('/sign-in', { replace: true });
           return;
         }
+        setDeleteDeleting(false);
         return;
       }
       // OTP verified -> proceed to delete
@@ -1098,13 +1106,15 @@ export default function Profile() {
       const options = { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload), credentials:'include' };
       const res = await authenticatedFetch(apiUrl, options);
       const data = await res.json();
-      if (!res.ok) { setDeleteError(data.message || 'Account deletion failed'); return; }
+      if (!res.ok) { setDeleteError(data.message || 'Account deletion failed'); setDeleteDeleting(false); return; }
       dispatch(deleteUserSuccess(data));
       setShowPasswordModal(false);
       toast.success("Account deleted successfully. Thank you for being with us — we hope to serve you again in the future!");
       navigate('/');
     } catch (_) {
       setDeleteOtpError('Verification failed');
+    } finally {
+      setDeleteDeleting(false);
     }
   };
 
@@ -2666,7 +2676,7 @@ export default function Profile() {
                   <button
                     type="submit"
                     className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
-                  >{deleteOtpSent ? 'Delete' : (deleteReasonOpen ? 'Continue' : 'Verify')}</button>
+                  >{deleteOtpSent ? (deleteDeleting ? 'Deleting...' : 'Delete') : (deleteReasonOpen ? (deleteProcessing ? 'Processing...' : 'Continue') : (deleteVerifying ? 'Verifying...' : 'Verify'))}</button>
                 </div>
               </form>
             </div>
