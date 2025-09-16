@@ -551,7 +551,7 @@ const GeminiChatbox = () => {
                                 <div className="p-1.5 md:p-2 bg-white/10 rounded-lg border border-white/20">
                                     <FaRobot size={16} className="opacity-90" />
                                 </div>
-                                <div className="leading-tight hidden sm:block">
+                                <div className="leading-tight block">
                                     <div className="text-xs md:text-sm font-semibold">
                                         Gemini AI
                                     </div>
