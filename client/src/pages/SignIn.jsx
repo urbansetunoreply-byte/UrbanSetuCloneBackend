@@ -872,7 +872,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                             {otpSent ? "Signing In..." : "Sending OTP..."}
                                         </div>
                                     ) : (
-                                        otpSent ? "Verify & Sign In" : "Send OTP"
+                                        otpSent ? "Sign In" : "Send OTP"
                                     )}
                                 </button>
                             </form>
