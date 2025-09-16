@@ -21,6 +21,7 @@ export default function AdminSecurityModeration() {
   const [filters, setFilters] = useState({ email: '', ip: '', lockedOnly: false, captchaOnly: false });
   const [pwdFilters, setPwdFilters] = useState({ email: '', ip: '', identifier: '', userId: '' });
   const [otpRefreshing, setOtpRefreshing] = useState(false);
+  const [passwordRefreshing, setPasswordRefreshing] = useState(false);
 
   const fetchStats = async () => {
     setLoading(true);
@@ -61,7 +62,7 @@ export default function AdminSecurityModeration() {
   };
 
   const fetchPasswordLockouts = async () => {
-    setLoadingPasswords(true);
+    setPasswordRefreshing(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/auth/password-lockouts`, { credentials: 'include' });
       const data = await res.json();
@@ -71,7 +72,7 @@ export default function AdminSecurityModeration() {
       // show inline error but don't overwrite main error
       console.error(e);
     } finally {
-      setLoadingPasswords(false);
+      setPasswordRefreshing(false);
     }
   };
 
@@ -493,8 +494,17 @@ export default function AdminSecurityModeration() {
                 onClick={fetchPasswordLockouts} 
                 className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 flex items-center gap-2"
               >
-                <FaRedo className="w-4 h-4" />
-                Refresh
+                {passwordRefreshing ? (
+                  <>
+                    <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+                    Refreshing...
+                  </>
+                ) : (
+                  <>
+                    <FaRedo className="w-4 h-4" />
+                    Refresh
+                  </>
+                )}
               </button>
             </div>
             {/* Enhanced Filter Section for Password Lockouts */}
@@ -542,12 +552,6 @@ export default function AdminSecurityModeration() {
                 </div>
               </div>
             </div>
-            {loadingPasswords ? (
-              <div className="flex items-center justify-center p-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                <span className="ml-3 text-gray-600">Loading password lockouts...</span>
-              </div>
-            ) : (
               <div className="overflow-auto rounded-lg border border-gray-200">
                 <table className="min-w-full text-sm table-fixed">
                   <colgroup>
@@ -678,7 +682,7 @@ export default function AdminSecurityModeration() {
                   </tbody>
               </table>
             </div>
-          )}
+          
           </div>
         </div>
       </div>

@@ -1232,7 +1232,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Analytical Insights - For Strategic Decisions */}
-        <div className="mb-8 order-1">
+        <div className="mb-12 order-1">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
@@ -1245,14 +1245,14 @@ export default function AdminDashboard() {
 
           {/* Performance & Sentiment Analysis */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-rose-600 mr-2" /> Top Owners by Rating</h3>
               {analytics.performance.topOwnersByRating.length === 0 ? (
                 <p className="text-sm text-gray-500">Not enough data yet.</p>
               ) : (
                 <div className="space-y-2">
                   {analytics.performance.topOwnersByRating.map((o, idx) => (
-                    <div key={idx} className="flex items-center justify-between text-sm">
+                    <div key={idx} className="flex items-center justify-between text-sm border-b last:border-b-0 border-gray-100 py-2">
                       <span className="text-gray-600">{o.ownerName}</span>
                       <span className="font-semibold text-gray-800">{o.avgRating} ⭐ ({o.listings} listings)</span>
                     </div>
@@ -1260,7 +1260,7 @@ export default function AdminDashboard() {
                 </div>
               )}
             </div>
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaStar className="text-yellow-500 mr-2" /> Review Sentiment</h3>
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
@@ -1727,7 +1727,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Property Listings - Recent Activity */}
-        <div className="mb-8 max-w-6xl w-full mx-auto px-2 sm:px-4 md:px-8">
+        <div className="mb-12 max-w-6xl w-full mx-auto px-2 sm:px-4 md:px-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg">
