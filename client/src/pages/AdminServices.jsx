@@ -11,13 +11,20 @@ export default function AdminServices() {
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-  const fetchNotifications = async () => {
+  const fetchServiceRequests = async () => {
     if (!currentUser) return;
     setLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/requests/services`, { credentials: 'include' });
       const data = await res.json();
       setItems(Array.isArray(data) ? data : []);
+    } catch (_) {}
+    setLoading(false);
+  };
+  const fetchMoverRequests = async () => {
+    if (!currentUser) return;
+    setLoading(true);
+    try {
       const mres = await fetch(`${API_BASE_URL}/api/requests/movers`, { credentials: 'include' });
       const mdata = await mres.json();
       setMovers(Array.isArray(mdata) ? mdata : []);
@@ -25,7 +32,7 @@ export default function AdminServices() {
     setLoading(false);
   };
 
-  useEffect(() => { fetchNotifications(); }, [currentUser?._id]);
+  useEffect(() => { fetchServiceRequests(); fetchMoverRequests(); }, [currentUser?._id]);
 
   const filtered = useMemo(() => items, [items]);
 
@@ -46,7 +53,7 @@ export default function AdminServices() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold flex items-center gap-2"><FaTools className="text-purple-700"/> Service Requests</h1>
         <div className="flex items-center gap-3">
-          <button onClick={fetchNotifications} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button>
+          <button onClick={fetchServiceRequests} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button>
         </div>
       </div>
 
@@ -118,7 +125,7 @@ export default function AdminServices() {
       <div className="mt-10 border-t border-gray-200 pt-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold flex items-center gap-2"><FaTruckMoving className="text-blue-600"/> Movers Requests</h2>
-          <button onClick={fetchNotifications} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button>
+          <button onClick={fetchMoverRequests} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button>
         </div>
         {loading ? (
           <div className="text-gray-600">Loading...</div>

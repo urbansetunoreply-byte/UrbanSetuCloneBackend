@@ -327,6 +327,8 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                     setShowOtpRecaptcha(false);
                 } else if (data.message && data.message.includes("reCAPTCHA")) {
                     setOtpRecaptchaError(data.message);
+                    // Force remount to ensure widget appears reliably
+                    setOtpRecaptchaKey((k) => k + 1);
                     setShowOtpRecaptcha(true);
                 } else if (data.requiresCaptcha) {
                     setOtpRequiresCaptcha(true);
@@ -480,8 +482,9 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                 // Handle reCAPTCHA errors
                 if (data.message.includes("reCAPTCHA")) {
                     setRecaptchaError("reCAPTCHA verification is required due to multiple failed attempts or requests");
-                    // If token expired/used, force full reset + remount so checkbox returns
+                    // Force full reset + remount so checkbox returns reliably
                     resetRecaptcha();
+                    setRecaptchaKey((k) => k + 1);
                     setShowRecaptcha(true);
                 } else {
                     // Increment failed attempts counter
