@@ -29,6 +29,7 @@ const GeminiChatbox = () => {
     const [unreadCount, setUnreadCount] = useState(0);
     const [isExpanded, setIsExpanded] = useState(false);
     const lastUserMessageRef = useRef('');
+    const [tone, setTone] = useState('neutral'); // new: tone option
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -289,7 +290,10 @@ const GeminiChatbox = () => {
         setSendIconAnimating(true);
         setTimeout(() => setSendIconAnimating(false), 800);
 
-        const userMessage = inputMessage.trim();
+        let userMessage = inputMessage.trim();
+        if (tone && tone !== 'neutral') {
+            userMessage = `[Tone: ${tone}] ${userMessage}`;
+        }
         setInputMessage('');
         setMessages(prev => [...prev, { role: 'user', content: userMessage, timestamp: new Date().toISOString() }]);
         lastUserMessageRef.current = userMessage;
@@ -537,8 +541,8 @@ const GeminiChatbox = () => {
 
             {/* Chat Window */}
             {isOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4 md:p-0 md:items-end md:justify-end gemini-chatbox-modal">
-                    <div className={`bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col relative ${isExpanded ? 'w-full max-w-3xl h-[80vh] md:mb-12 md:mr-12' : 'w-full max-w-md h-full max-h-[90vh] md:w-96 md:h-[500px] md:mb-32 md:mr-6 md:max-h-[500px]'}`}>
+                <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4 md:p-0 md:items-end md:justify-end gemini-chatbox-modal animate-fadeIn">
+                    <div className={`bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col relative ${isExpanded ? 'w-full max-w-3xl h-[80vh] md:mb-12 md:mr-12' : 'w-full max-w-md h-full max-h-[90vh] md:w-96 md:h-[500px] md:mb-32 md:mr-6 md:max-h-[500px]'} animate-slideUp`}>
                         {/* Header */}
                         <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-t-2xl flex items-center justify-between flex-shrink-0">
                             <div className="flex items-center space-x-3">
@@ -549,6 +553,19 @@ const GeminiChatbox = () => {
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
+                                {/* Tone selector */}
+                                <select
+                                    value={tone}
+                                    onChange={(e) => setTone(e.target.value)}
+                                    className="hidden md:block text-white/90 bg-white/10 hover:bg-white/20 border border-white/30 text-xs px-2 py-1 rounded outline-none"
+                                    title="Response tone"
+                                    aria-label="Response tone"
+                                >
+                                    <option className="text-gray-800" value="neutral">Neutral</option>
+                                    <option className="text-gray-800" value="friendly">Friendly</option>
+                                    <option className="text-gray-800" value="formal">Formal</option>
+                                    <option className="text-gray-800" value="concise">Concise</option>
+                                </select>
                                 <button
                                     onClick={() => setIsExpanded(expanded => !expanded)}
                                     className="hidden md:block text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
@@ -766,9 +783,25 @@ const GeminiChatbox = () => {
                 </div>
             )}
 
-            {/* Send button animation styles */}
+            {/* Animation styles */}
             <style>
                 {`
+                @keyframes fadeIn {
+                  from { opacity: 0; }
+                  to { opacity: 1; }
+                }
+                @keyframes slideUp {
+                  from {
+                    opacity: 0;
+                    transform: translateY(20px) scale(0.98);
+                  }
+                  to {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                  }
+                }
+                .animate-fadeIn { animation: fadeIn 0.25s ease-out; }
+                .animate-slideUp { animation: slideUp 0.28s ease-out; }
                 @keyframes sendIconFly {
                   0% {
                     transform: translate(0, 0) scale(1);

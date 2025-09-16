@@ -325,6 +325,7 @@ export default function Profile() {
 
   // Hide My Appointments button in admin context
   const isAdminProfile = window.location.pathname.startsWith('/admin');
+  const isAdmin = currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin');
 
   // Add custom animations to head
   useEffect(() => {
@@ -2175,7 +2176,7 @@ export default function Profile() {
         )}
 
         {/* Stats Section - show below profile card if not editing, below edit form if editing */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className={`grid grid-cols-1 md:grid-cols-2 ${isAdmin ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-4 mb-6`}>
           <div className={`bg-white rounded-xl shadow-lg p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-450' : 'opacity-0 scale-95'}`}>
             <div className={`bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-blue-200 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
               <FaHome className="w-5 h-5 text-blue-600 group-hover:text-blue-700 transition-colors duration-300" />
@@ -2185,7 +2186,7 @@ export default function Profile() {
             </h3>
             <p className="text-sm text-gray-600 group-hover:text-blue-500 transition-colors duration-300">My Listings</p>
           </div>
-          <div className={`bg-white rounded-xl shadow-lg p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-600' : 'opacity-0 scale-95'}`}>
+          <div className={`bg-white rounded-xl shadow-lg ${isAdmin ? 'p-6' : 'p-4'} text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-600' : 'opacity-0 scale-95'}`}>
             <div className={`bg-green-100 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-green-200 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
               <FaCalendarAlt className="w-5 h-5 text-green-600 group-hover:text-green-700 transition-colors duration-300" />
             </div>
@@ -2194,7 +2195,7 @@ export default function Profile() {
             </h3>
             <p className="text-sm text-gray-600 group-hover:text-green-500 transition-colors duration-300">Appointments</p>
           </div>
-          <div className={`bg-white rounded-xl shadow-lg p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-750' : 'opacity-0 scale-95'}`}>
+          <div className={`bg-white rounded-xl shadow-lg ${isAdmin ? 'p-6' : 'p-4'} text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-750' : 'opacity-0 scale-95'}`}>
             <div className={`bg-red-100 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-red-200 transition-all duration-300 ${animationClasses.heartbeat} group-hover:scale-110`}>
               <FaHeart className="w-5 h-5 text-red-600 group-hover:text-red-700 transition-colors duration-300" />
             </div>
@@ -2203,6 +2204,7 @@ export default function Profile() {
             </h3>
             <p className="text-sm text-gray-600 group-hover:text-red-500 transition-colors duration-300">Wishlist Items</p>
           </div>
+          {!isAdmin && (
           <div className={`bg-white rounded-xl shadow-lg p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-900' : 'opacity-0 scale-95'}`}>
             <div className={`bg-purple-100 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-purple-200 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
               <FaEye className="w-5 h-5 text-purple-600 group-hover:text-purple-700 transition-colors duration-300" />
@@ -2212,6 +2214,7 @@ export default function Profile() {
             </h3>
             <p className="text-sm text-gray-600 group-hover:text-purple-500 transition-colors duration-300">Watchlist Items</p>
           </div>
+          )}
         </div>
 
         {/* Quick Actions Section */}
@@ -2226,7 +2229,7 @@ export default function Profile() {
               onClick={handleShowListings}
               className={`bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-450`}
             >
-              <FaHome className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
+              <FaHome className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:-translate-y-0.5`} />
               <span className="font-medium text-xs sm:text-sm">My Listings</span>
             </button>
             
@@ -2234,7 +2237,7 @@ export default function Profile() {
               to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? "/admin/appointments" : "/user/my-appointments"}
               className={`bg-green-500 text-white p-3 rounded-lg hover:bg-green-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-600`}
             >
-              <FaCalendarAlt className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
+              <FaCalendarAlt className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:-translate-y-0.5`} />
               <span className="font-medium text-xs sm:text-sm">{(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? 'Appointments' : 'My Appointments'}</span>
             </Link>
             
@@ -2243,7 +2246,7 @@ export default function Profile() {
                 to="/user/wishlist"
                 className={`bg-red-500 text-white p-3 rounded-lg hover:bg-red-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-750`}
               >
-                <FaHeart className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.heartbeat}`} />
+                <FaHeart className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:scale-110`} />
                 <span className="font-medium text-xs sm:text-sm">My Wishlist</span>
               </Link>
             )}
@@ -2253,7 +2256,7 @@ export default function Profile() {
                 to="/user/watchlist"
                 className={`bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-800`}
               >
-                <FaEye className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
+                <FaEye className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:-translate-y-0.5`} />
                 <span className="font-medium text-xs sm:text-sm">My Watchlist</span>
               </Link>
             )}
