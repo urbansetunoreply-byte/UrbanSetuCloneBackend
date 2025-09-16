@@ -29,7 +29,8 @@ const GeminiChatbox = () => {
     const [unreadCount, setUnreadCount] = useState(0);
     const [isExpanded, setIsExpanded] = useState(false);
     const lastUserMessageRef = useRef('');
-    const [tone, setTone] = useState('neutral'); // new: tone option
+    const [tone, setTone] = useState('neutral'); // modes dropdown (tone)
+    const [isHeaderMenuOpen, setIsHeaderMenuOpen] = useState(false);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -543,77 +544,93 @@ const GeminiChatbox = () => {
             {isOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4 md:p-0 md:items-end md:justify-end gemini-chatbox-modal animate-fadeIn">
                     <div className={`bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col relative ${isExpanded ? 'w-full max-w-3xl h-[80vh] md:mb-12 md:mr-12' : 'w-full max-w-md h-full max-h-[90vh] md:w-96 md:h-[500px] md:mb-32 md:mr-6 md:max-h-[500px]'} animate-slideUp`}>
-                        {/* Header */}
-                        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-t-2xl flex items-center justify-between flex-shrink-0">
-                            <div className="flex items-center space-x-3">
-                                <FaRobot size={20} />
-                                <div>
-                                    <h3 className="font-semibold">Gemini AI Assistant</h3>
-                                    <p className="text-xs opacity-90">Real Estate Helper</p>
-                                </div>
-                            </div>
+                        {/* Header: only three controls - modes dropdown, options (kebab), close */}
+                        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 md:p-4 rounded-t-2xl flex items-center justify-between flex-shrink-0 relative">
+                            {/* Modes dropdown (visible on mobile and desktop) */}
                             <div className="flex items-center gap-2">
-                                {/* Tone selector */}
+                                <FaRobot size={16} className="opacity-90 md:hidden" />
                                 <select
                                     value={tone}
                                     onChange={(e) => setTone(e.target.value)}
-                                    className="hidden md:block text-white/90 bg-white/10 hover:bg-white/20 border border-white/30 text-xs px-2 py-1 rounded outline-none"
-                                    title="Response tone"
-                                    aria-label="Response tone"
+                                    className="text-white/90 bg-white/10 hover:bg-white/20 border border-white/30 text-xs px-2 py-1 rounded outline-none max-w-[130px] md:max-w-none"
+                                    title="Modes"
+                                    aria-label="Modes"
                                 >
                                     <option className="text-gray-800" value="neutral">Neutral</option>
                                     <option className="text-gray-800" value="friendly">Friendly</option>
                                     <option className="text-gray-800" value="formal">Formal</option>
                                     <option className="text-gray-800" value="concise">Concise</option>
                                 </select>
+                            </div>
+
+                            {/* Right controls: kebab menu + close */}
+                            <div className="flex items-center gap-2 relative">
                                 <button
-                                    onClick={() => setIsExpanded(expanded => !expanded)}
-                                    className="hidden md:block text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
-                                    title={isExpanded ? 'Collapse' : 'Expand'}
-                                    aria-label={isExpanded ? 'Collapse' : 'Expand'}
-                                >
-                                    {isExpanded ? 'Collapse' : 'Expand'}
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        try {
-                                            const lines = messages.map(m => `${m.role === 'user' ? 'You' : 'Gemini'}: ${m.content}`);
-                                            const blob = new Blob([lines.join('\n\n')], { type: 'text/plain;charset=utf-8' });
-                                            const url = URL.createObjectURL(blob);
-                                            const a = document.createElement('a');
-                                            a.href = url;
-                                            a.download = `gemini_chat_${new Date().toISOString().split('T')[0]}.txt`;
-                                            document.body.appendChild(a);
-                                            a.click();
-                                            document.body.removeChild(a);
-                                            URL.revokeObjectURL(url);
-                                        } catch (e) {
-                                            toast.error('Failed to export transcript');
-                                        }
-                                    }}
+                                    onClick={() => setIsHeaderMenuOpen(open => !open)}
                                     className="text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
-                                    title="Export transcript"
-                                    aria-label="Export transcript"
+                                    title="More options"
+                                    aria-label="More options"
                                 >
-                                    Export
+                                    ⋯
                                 </button>
-                                {/* Hide clear button when no user messages */}
-                                {messages && (messages.length > 1 || messages.some(m => m.role === 'user')) && (
-                                    <button
-                                        onClick={() => setShowConfirmClear(true)}
-                                        className="text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
-                                        title="Clear Chat"
-                                        aria-label="Clear Chat"
-                                    >
-                                        Clear
-                                    </button>
-                                )}
                                 <button
                                     onClick={() => setIsOpen(false)}
                                     className="text-white hover:text-gray-200 transition-colors"
+                                    aria-label="Close"
                                 >
                                     <FaTimes size={16} />
                                 </button>
+
+                                {/* Dropdown menu */}
+                                {isHeaderMenuOpen && (
+                                    <div className="absolute right-0 top-full mt-2 bg-white text-gray-800 rounded shadow-lg border border-gray-200 w-40 z-50">
+                                        <ul className="py-1 text-sm">
+                                            {/* Expand/Collapse only on desktop */}
+                                            <li className="hidden md:block">
+                                                <button
+                                                    onClick={() => { setIsExpanded(expanded => !expanded); setIsHeaderMenuOpen(false); }}
+                                                    className="w-full text-left px-3 py-2 hover:bg-gray-100"
+                                                >
+                                                    {isExpanded ? 'Collapse' : 'Expand'}
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button
+                                                    onClick={() => {
+                                                        try {
+                                                            const lines = messages.map(m => `${m.role === 'user' ? 'You' : 'Gemini'}: ${m.content}`);
+                                                            const blob = new Blob([lines.join('\n\n')], { type: 'text/plain;charset=utf-8' });
+                                                            const url = URL.createObjectURL(blob);
+                                                            const a = document.createElement('a');
+                                                            a.href = url;
+                                                            a.download = `gemini_chat_${new Date().toISOString().split('T')[0]}.txt`;
+                                                            document.body.appendChild(a);
+                                                            a.click();
+                                                            document.body.removeChild(a);
+                                                            URL.revokeObjectURL(url);
+                                                            setIsHeaderMenuOpen(false);
+                                                        } catch (e) {
+                                                            toast.error('Failed to export transcript');
+                                                        }
+                                                    }}
+                                                    className="w-full text-left px-3 py-2 hover:bg-gray-100"
+                                                >
+                                                    Export
+                                                </button>
+                                            </li>
+                                            {(messages && (messages.length > 1 || messages.some(m => m.role === 'user'))) && (
+                                                <li>
+                                                    <button
+                                                        onClick={() => { setIsHeaderMenuOpen(false); setShowConfirmClear(true); }}
+                                                        className="w-full text-left px-3 py-2 hover:bg-gray-100"
+                                                    >
+                                                        Clear
+                                                    </button>
+                                                </li>
+                                            )}
+                                        </ul>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
