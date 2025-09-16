@@ -826,21 +826,16 @@ export default function AdminDashboard() {
 
       {/* Enhanced Analytics Dashboard */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg">
-            <FaChartLine className="text-white text-xl" />
-          </div>
-          <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Analytics Overview</h2>
-        </div>
-        
         {/* Critical Operations - Most Urgent for Admin Daily Tasks */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-gradient-to-r from-red-500 to-orange-500 rounded-lg">
-              <FaExclamationTriangle className="text-white text-xl" />
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-r from-red-500 to-orange-500 rounded-lg">
+                <FaExclamationTriangle className="text-white text-xl" />
+              </div>
+              <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Critical Operations</h2>
             </div>
-            <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Critical Operations</h2>
-            <span className="text-sm text-gray-500">(Requires Immediate Attention)</span>
+            <span className="text-sm text-gray-500 hidden sm:block">(Requires Immediate Attention)</span>
           </div>
           
           {/* Security & Fraud Monitoring */}
@@ -976,11 +971,14 @@ export default function AdminDashboard() {
 
         {/* Core Business Metrics - Essential for Platform Health */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg">
-              <FaChartLine className="text-white text-xl" />
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg">
+                <FaChartLine className="text-white text-xl" />
+              </div>
+              <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Core Business Metrics</h2>
             </div>
-            <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Core Business Metrics</h2>
+            <span className="text-sm text-gray-500 hidden sm:block">(Essential for Platform Health)</span>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-6">
@@ -1063,11 +1061,14 @@ export default function AdminDashboard() {
 
         {/* Market Performance & Insights */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg">
-              <FaChartLine className="text-white text-xl" />
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg">
+                <FaChartLine className="text-white text-xl" />
+              </div>
+              <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Market Performance & Insights</h2>
             </div>
-            <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Market Performance & Insights</h2>
+            <span className="text-sm text-gray-500 hidden sm:block">(Business Intelligence)</span>
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -1212,12 +1213,14 @@ export default function AdminDashboard() {
 
         {/* Analytical Insights - For Strategic Decisions */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
-              <FaStar className="text-white text-xl" />
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
+                <FaStar className="text-white text-xl" />
+              </div>
+              <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Analytical Insights</h2>
             </div>
-            <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Analytical Insights</h2>
-            <span className="text-sm text-gray-500">(Strategic Decision Support)</span>
+            <span className="text-sm text-gray-500 hidden sm:block">(Strategic Decision Support)</span>
           </div>
 
           {/* Performance & Sentiment Analysis */}
@@ -1410,12 +1413,14 @@ export default function AdminDashboard() {
 
         {/* Quick Actions - High Priority Admin Tasks */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg">
-              <FaChartLine className="text-white text-xl" />
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg">
+                <FaChartLine className="text-white text-xl" />
+              </div>
+              <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Quick Actions</h2>
             </div>
-            <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Quick Actions</h2>
-            <span className="text-sm text-gray-500">(Direct Access to Management Pages)</span>
+            <span className="text-sm text-gray-500 hidden sm:block">(Direct Access to Management Pages)</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 lg:gap-6">
             <button
@@ -1500,12 +1505,14 @@ export default function AdminDashboard() {
 
         {/* Detailed Analytics - For Deep Analysis */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-gradient-to-r from-gray-500 to-slate-500 rounded-lg">
-              <FaChartLine className="text-white text-xl" />
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-r from-gray-500 to-slate-500 rounded-lg">
+                <FaChartLine className="text-white text-xl" />
+              </div>
+              <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Detailed Analytics</h2>
             </div>
-            <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Detailed Analytics</h2>
-            <span className="text-sm text-gray-500">(Deep Analysis & Historical Data)</span>
+            <span className="text-sm text-gray-500 hidden sm:block">(Deep Analysis & Historical Data)</span>
           </div>
 
           {/* Top Rated Properties */}
@@ -1701,12 +1708,14 @@ export default function AdminDashboard() {
 
         {/* Property Listings - Recent Activity */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg">
-              <FaHome className="text-white text-xl" />
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg">
+                <FaHome className="text-white text-xl" />
+              </div>
+              <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Property Listings</h2>
             </div>
-            <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Property Listings</h2>
-            <span className="text-sm text-gray-500">(Recent Activity & Management)</span>
+            <span className="text-sm text-gray-500 hidden sm:block">(Recent Activity & Management)</span>
           </div>
         </div>
 
