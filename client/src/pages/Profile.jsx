@@ -245,7 +245,8 @@ export default function Profile() {
   const [userStats, setUserStats] = useState({
     listings: 0,
     appointments: 0,
-    wishlist: 0
+    wishlist: 0,
+    watchlist: 0
   });
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [admins, setAdmins] = useState([]);
@@ -376,6 +377,21 @@ export default function Profile() {
     }
   }, [wishlist, currentUser]);
 
+  // Function to fetch watchlist count
+  const fetchWatchlistCount = async () => {
+    if (!currentUser?._id) return 0;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/watchlist/user/${currentUser._id}`, { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        return data.length || 0;
+      }
+    } catch (error) {
+      console.error('Error fetching watchlist count:', error);
+    }
+    return 0;
+  };
+
   // Timer effect for resend OTP
   useEffect(() => {
     let interval = null;
@@ -409,6 +425,8 @@ export default function Profile() {
 
   const fetchUserStats = async () => {
     try {
+      // Fetch watchlist count for all users
+      const watchlistCount = await fetchWatchlistCount();
 
       if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
         // Fetch admin-specific stats
@@ -425,7 +443,8 @@ export default function Profile() {
             ? listingsData.filter(listing => listing.userRef === currentUser._id).length
             : 0,
           appointments: Array.isArray(appointmentsData) ? appointmentsData.length : 0,
-          wishlist: prev.wishlist // Keep the wishlist count from context
+          wishlist: prev.wishlist, // Keep the wishlist count from context
+          watchlist: watchlistCount
         }));
       } else {
         // Fetch regular user stats
@@ -440,7 +459,8 @@ export default function Profile() {
         setUserStats(prev => ({
           listings: Array.isArray(listingsData) ? listingsData.length : 0,
           appointments: Array.isArray(appointmentsData) ? appointmentsData.length : 0,
-          wishlist: prev.wishlist // Keep the wishlist count from context
+          wishlist: prev.wishlist, // Keep the wishlist count from context
+          watchlist: watchlistCount
         }));
       }
     } catch (error) {
@@ -449,7 +469,8 @@ export default function Profile() {
       setUserStats(prev => ({
         listings: 0,
         appointments: 0,
-        wishlist: prev.wishlist // Keep the wishlist count from context
+        wishlist: prev.wishlist, // Keep the wishlist count from context
+        watchlist: 0
       }));
     }
   };
@@ -2154,33 +2175,42 @@ export default function Profile() {
         )}
 
         {/* Stats Section - show below profile card if not editing, below edit form if editing */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <div className={`bg-white rounded-xl shadow-lg p-6 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-450' : 'opacity-0 scale-95'}`}>
-            <div className={`bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-200 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
-              <FaHome className="w-6 h-6 text-blue-600 group-hover:text-blue-700 transition-colors duration-300" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className={`bg-white rounded-xl shadow-lg p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-450' : 'opacity-0 scale-95'}`}>
+            <div className={`bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-blue-200 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
+              <FaHome className="w-5 h-5 text-blue-600 group-hover:text-blue-700 transition-colors duration-300" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors duration-300">
+            <h3 className="text-xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors duration-300">
               {statsAnimated ? <AnimatedCounter end={userStats.listings} delay={500} /> : userStats.listings}
             </h3>
-            <p className="text-gray-600 group-hover:text-blue-500 transition-colors duration-300">My Listings</p>
+            <p className="text-sm text-gray-600 group-hover:text-blue-500 transition-colors duration-300">My Listings</p>
           </div>
-          <div className={`bg-white rounded-xl shadow-lg p-6 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-600' : 'opacity-0 scale-95'}`}>
-            <div className={`bg-green-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-green-200 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
-              <FaCalendarAlt className="w-6 h-6 text-green-600 group-hover:text-green-700 transition-colors duration-300" />
+          <div className={`bg-white rounded-xl shadow-lg p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-600' : 'opacity-0 scale-95'}`}>
+            <div className={`bg-green-100 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-green-200 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
+              <FaCalendarAlt className="w-5 h-5 text-green-600 group-hover:text-green-700 transition-colors duration-300" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 group-hover:text-green-600 transition-colors duration-300">
+            <h3 className="text-xl font-bold text-gray-800 group-hover:text-green-600 transition-colors duration-300">
               {statsAnimated ? <AnimatedCounter end={userStats.appointments} delay={650} /> : userStats.appointments}
             </h3>
-            <p className="text-gray-600 group-hover:text-green-500 transition-colors duration-300">Appointments</p>
+            <p className="text-sm text-gray-600 group-hover:text-green-500 transition-colors duration-300">Appointments</p>
           </div>
-          <div className={`bg-white rounded-xl shadow-lg p-6 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-750' : 'opacity-0 scale-95'}`}>
-            <div className={`bg-red-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-red-200 transition-all duration-300 ${animationClasses.heartbeat} group-hover:scale-110`}>
-              <FaHeart className="w-6 h-6 text-red-600 group-hover:text-red-700 transition-colors duration-300" />
+          <div className={`bg-white rounded-xl shadow-lg p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-750' : 'opacity-0 scale-95'}`}>
+            <div className={`bg-red-100 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-red-200 transition-all duration-300 ${animationClasses.heartbeat} group-hover:scale-110`}>
+              <FaHeart className="w-5 h-5 text-red-600 group-hover:text-red-700 transition-colors duration-300" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 group-hover:text-red-600 transition-colors duration-300">
+            <h3 className="text-xl font-bold text-gray-800 group-hover:text-red-600 transition-colors duration-300">
               {statsAnimated ? <AnimatedCounter end={userStats.wishlist} delay={800} /> : userStats.wishlist}
             </h3>
-            <p className="text-gray-600 group-hover:text-red-500 transition-colors duration-300">Wishlist Items</p>
+            <p className="text-sm text-gray-600 group-hover:text-red-500 transition-colors duration-300">Wishlist Items</p>
+          </div>
+          <div className={`bg-white rounded-xl shadow-lg p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-900' : 'opacity-0 scale-95'}`}>
+            <div className={`bg-purple-100 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-purple-200 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
+              <FaEye className="w-5 h-5 text-purple-600 group-hover:text-purple-700 transition-colors duration-300" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 group-hover:text-purple-600 transition-colors duration-300">
+              {statsAnimated ? <AnimatedCounter end={userStats.watchlist} delay={950} /> : userStats.watchlist}
+            </h3>
+            <p className="text-sm text-gray-600 group-hover:text-purple-500 transition-colors duration-300">Watchlist Items</p>
           </div>
         </div>
 
