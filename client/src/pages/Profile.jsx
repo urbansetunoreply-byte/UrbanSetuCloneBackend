@@ -2203,15 +2203,17 @@ export default function Profile() {
             </h3>
             <p className="text-sm text-gray-600 group-hover:text-red-500 transition-colors duration-300">Wishlist Items</p>
           </div>
-          <div className={`bg-white rounded-xl shadow-lg p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-900' : 'opacity-0 scale-95'}`}>
-            <div className={`bg-purple-100 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-purple-200 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
-              <FaEye className="w-5 h-5 text-purple-600 group-hover:text-purple-700 transition-colors duration-300" />
+          {!(currentUser?.role === 'admin' || currentUser?.role === 'rootadmin') && (
+            <div className={`bg-white rounded-xl shadow-lg p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-900' : 'opacity-0 scale-95'}`}>
+              <div className={`bg-purple-100 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-purple-200 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
+                <FaEye className="w-5 h-5 text-purple-600 group-hover:text-purple-700 transition-colors duration-300" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 group-hover:text-purple-600 transition-colors duration-300">
+                {statsAnimated ? <AnimatedCounter end={userStats.watchlist} delay={950} /> : userStats.watchlist}
+              </h3>
+              <p className="text-sm text-gray-600 group-hover:text-purple-500 transition-colors duration-300">Watchlist Items</p>
             </div>
-            <h3 className="text-xl font-bold text-gray-800 group-hover:text-purple-600 transition-colors duration-300">
-              {statsAnimated ? <AnimatedCounter end={userStats.watchlist} delay={950} /> : userStats.watchlist}
-            </h3>
-            <p className="text-sm text-gray-600 group-hover:text-purple-500 transition-colors duration-300">Watchlist Items</p>
-          </div>
+          )}
         </div>
 
         {/* Quick Actions Section */}

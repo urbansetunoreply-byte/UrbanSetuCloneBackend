@@ -1232,7 +1232,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Analytical Insights - For Strategic Decisions */}
-        <div className="mb-8">
+        <div className="mb-8 order-1">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
@@ -1432,7 +1432,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick Actions - High Priority Admin Tasks */}
-        <div className="mb-8">
+        <div className="mb-8 order-2">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg">
@@ -1457,7 +1457,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </button>
-            <Link to="/admin/reviews" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-gray-100 hover:border-yellow-200">
+            <Link to="/admin/reviews" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 hover:border-yellow-200">
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="bg-gradient-to-r from-yellow-100 to-yellow-200 p-4 rounded-xl group-hover:from-yellow-200 group-hover:to-yellow-300 transition-all duration-300">
                   <FaStar className="text-2xl text-yellow-600" />
@@ -1473,7 +1473,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </Link>
-            <Link to="/admin/explore" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-gray-100 hover:border-green-200">
+            <Link to="/admin/explore" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 hover:border-green-200">
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="bg-gradient-to-r from-green-100 to-green-200 p-4 rounded-xl group-hover:from-green-200 group-hover:to-green-300 transition-all duration-300">
                   <FaHome className="text-2xl text-green-600" />
@@ -1484,7 +1484,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </Link>
-            <Link to="/admin/payments" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-gray-100 hover:border-emerald-200">
+            <Link to="/admin/payments" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 hover:border-emerald-200">
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="bg-gradient-to-r from-emerald-100 to-emerald-200 p-4 rounded-xl group-hover:from-emerald-200 group-hover:to-emerald-300 transition-all duration-300">
                   <FaRupeeSign className="text-2xl text-emerald-600" />
@@ -1495,7 +1495,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </Link>
-            <Link to="/admin/fraudmanagement" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-gray-100 hover:border-red-200">
+            <Link to="/admin/fraudmanagement" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 hover:border-red-200">
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="bg-gradient-to-r from-red-100 to-red-200 p-4 rounded-xl group-hover:from-red-200 group-hover:to-red-300 transition-all duration-300">
                   <FaExclamationTriangle className="text-2xl text-red-600" />
@@ -1510,7 +1510,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </Link>
-            <Link to="/admin/security-moderation" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-gray-100 hover:border-indigo-200">
+            <Link to="/admin/security-moderation" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 hover:border-indigo-200">
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="bg-gradient-to-r from-indigo-100 to-indigo-200 p-4 rounded-xl group-hover:from-indigo-200 group-hover:to-indigo-300 transition-all duration-300">
                   <FaShieldAlt className="text-2xl text-indigo-600" />
@@ -1524,7 +1524,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Detailed Analytics - For Deep Analysis */}
-        <div className="mb-8">
+        <div className="mb-8 order-3">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-gradient-to-r from-gray-500 to-slate-500 rounded-lg">
@@ -1727,7 +1727,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Property Listings - Recent Activity */}
-        <div className="mb-8">
+        <div className="mb-8 max-w-6xl w-full mx-auto px-2 sm:px-4 md:px-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg">
