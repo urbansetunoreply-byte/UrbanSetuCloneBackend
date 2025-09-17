@@ -1,4 +1,5 @@
 import User from "../models/user.model.js";
+import DeletedAccount from "../models/deletedAccount.model.js";
 import { generateOTP, sendSignupOTPEmail, sendForgotPasswordOTPEmail, sendProfileEmailOTPEmail } from "../utils/emailService.js";
 import { errorHandler } from "../utils/error.js";
 import { logSecurityEvent } from "../middleware/security.js";
@@ -35,6 +36,37 @@ export const sendOTP = async (req, res, next) => {
         message: "An account with this email already exists. Please sign in instead!"
       });
     }
+
+    // Block OTP for softbanned/purged accounts based on policy
+    try {
+      const del = await DeletedAccount.findOne({ email: emailLower });
+      if (del) {
+        const policy = del.policy || {};
+        // Permanent ban
+        if (policy.banType === 'ban') {
+          return res.status(403).json({
+            success: false,
+            message: "Your account is permanently banned and cannot sign up again."
+          });
+        }
+        // Cooling-off period
+        if (!del.purgedAt && typeof policy.allowResignupAfterDays === 'number' && policy.allowResignupAfterDays > 0 && del.deletedAt) {
+          const allowAfter = new Date(del.deletedAt.getTime() + policy.allowResignupAfterDays * 24 * 60 * 60 * 1000);
+          if (new Date() < allowAfter) {
+            const msLeft = allowAfter.getTime() - Date.now();
+            const days = Math.floor(msLeft / (24*60*60*1000));
+            const hours = Math.floor((msLeft % (24*60*60*1000)) / (60*60*1000));
+            const minutes = Math.floor((msLeft % (60*60*1000)) / (60*1000));
+            const waitMsg = days > 0 ? `${days} day(s)` : (hours > 0 ? `${hours} hour(s)` : `${minutes} minute(s)`);
+            return res.status(403).json({
+              success: false,
+              message: `Your account is softbanned. Please try again after ${waitMsg}.`
+            });
+          }
+        }
+        // If purged but not ban: still keep as historical; allow signup (unless policy says ban)
+      }
+    } catch (_) {}
 
     // Increment OTP request count
     if (otpTracking) {

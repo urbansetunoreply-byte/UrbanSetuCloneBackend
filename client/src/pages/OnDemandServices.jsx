@@ -186,6 +186,9 @@ export default function OnDemandServices() {
                     <div className="text-sm text-gray-800">Date: {req.moveDate}</div>
                     <div className="text-sm text-gray-800">Size: {req.size}</div>
                     {req.notes && (<div className="text-sm text-gray-700">Notes: {req.notes}</div>)}
+                    {req.status==='pending' && (
+                      <button onClick={async()=>{ try{ await fetch(`${API_BASE_URL}/api/requests/movers/${req._id}`, { method:'PATCH', credentials:'include', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ status: 'cancelled' }) }); toast.success('Movers request cancelled'); fetchMyMoverRequests(); } catch(_){ toast.error('Failed to cancel'); } }} className="mt-2 text-xs px-2 py-1 rounded bg-gray-200">Cancel</button>
+                    )}
                   </li>
                 ))}
               </ul>

@@ -6,30 +6,31 @@ export default function AdminServices() {
   const { currentUser } = useSelector((state) => state.user);
   const [items, setItems] = useState([]);
   const [movers, setMovers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingServices, setLoadingServices] = useState(true);
+  const [loadingMovers, setLoadingMovers] = useState(true);
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   const fetchServiceRequests = async () => {
     if (!currentUser) return;
-    setLoading(true);
+    setLoadingServices(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/requests/services`, { credentials: 'include' });
       const data = await res.json();
       setItems(Array.isArray(data) ? data : []);
     } catch (_) {}
-    setLoading(false);
+    setLoadingServices(false);
   };
   const fetchMoverRequests = async () => {
     if (!currentUser) return;
-    setLoading(true);
+    setLoadingMovers(true);
     try {
       const mres = await fetch(`${API_BASE_URL}/api/requests/movers`, { credentials: 'include' });
       const mdata = await mres.json();
       setMovers(Array.isArray(mdata) ? mdata : []);
     } catch (_) {}
-    setLoading(false);
+    setLoadingMovers(false);
   };
 
   useEffect(() => { fetchServiceRequests(); fetchMoverRequests(); }, [currentUser?._id]);
@@ -77,7 +78,7 @@ export default function AdminServices() {
         </div>
       </div>
 
-      {loading ? (
+      {loadingServices ? (
         <div className="text-gray-600">Loading...</div>
       ) : (
         <div className="bg-white rounded-xl shadow overflow-auto">
@@ -108,7 +109,7 @@ export default function AdminServices() {
                         {email && (
                           <a href={`mailto:${email}`} className="px-2 py-1 rounded bg-blue-600 text-white text-xs inline-flex items-center gap-1"><FaEnvelope/> Email</a>
                         )}
-                        <select value={n.status} onChange={async(e)=>{try{await fetch(`${API_BASE_URL}/api/requests/services/${n._id}`,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:e.target.value})}); fetchNotifications();}catch(_){}}} className="text-xs border rounded px-2 py-1">
+                        <select value={n.status} onChange={async(e)=>{const newStatus=e.target.value; try{setItems(prev=>prev.map(it=>it._id===n._id?{...it,status:newStatus}:it)); await fetch(`${API_BASE_URL}/api/requests/services/${n._id}`,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:newStatus})});}catch(_){ setItems(prev=>prev.map(it=>it._id===n._id?{...it,status:n.status}:it)); }} } className="text-xs border rounded px-2 py-1">
                           {['pending','in_progress','completed','cancelled'].map(s=> <option key={s} value={s}>{s}</option>)}
                         </select>
                       </div>
@@ -127,7 +128,7 @@ export default function AdminServices() {
           <h2 className="text-xl font-bold flex items-center gap-2"><FaTruckMoving className="text-blue-600"/> Movers Requests</h2>
           <button onClick={fetchMoverRequests} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button>
         </div>
-        {loading ? (
+        {loadingMovers ? (
           <div className="text-gray-600">Loading...</div>
         ) : movers.length === 0 ? (
           <div className="text-gray-600">No movers requests found.</div>
@@ -159,7 +160,7 @@ export default function AdminServices() {
                         {n.requesterEmail && (
                           <a href={`mailto:${n.requesterEmail}`} className="px-2 py-1 rounded bg-blue-600 text-white text-xs inline-flex items-center gap-1"><FaEnvelope/> Email</a>
                         )}
-                        <select value={n.status} onChange={async(e)=>{try{await fetch(`${API_BASE_URL}/api/requests/movers/${n._id}`,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:e.target.value})}); fetchNotifications();}catch(_){}}} className="text-xs border rounded px-2 py-1">
+                        <select value={n.status} onChange={async(e)=>{const newStatus=e.target.value; try{setMovers(prev=>prev.map(it=>it._id===n._id?{...it,status:newStatus}:it)); await fetch(`${API_BASE_URL}/api/requests/movers/${n._id}`,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:newStatus})});}catch(_){ setMovers(prev=>prev.map(it=>it._id===n._id?{...it,status:n.status}:it)); }} } className="text-xs border rounded px-2 py-1">
                           {['pending','in_progress','completed','cancelled'].map(s=> <option key={s} value={s}>{s}</option>)}
                         </select>
                       </div>

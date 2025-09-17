@@ -1189,7 +1189,13 @@ export default function AdminManagement() {
                                   <button onClick={async ()=>{ if(!confirm('Permanently purge this account? This cannot be undone.')) return; const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts/purge/${acc._id}`, { method:'DELETE', credentials:'include' }); const data = await res.json(); if(res.ok){ toast.success('Account purged'); fetchSoftbannedAccounts(); fetchPurgedAccounts(); } else { toast.error(data.message||'Purge failed'); } }} className="px-3 py-1 bg-red-600 text-white rounded-lg text-xs">Purge</button>
                                 </div>
                               ) : (
-                                <span className="text-xs text-gray-500">View only</span>
+                                <div className="flex gap-2">
+                                  {acc.role === 'user' ? (
+                                    <button onClick={async ()=>{ if(!confirm('Restore this account?')) return; const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts/restore/${acc._id}`, { method:'POST', credentials:'include' }); const data = await res.json(); if(res.ok){ toast.success('Account restored'); fetchSoftbannedAccounts(); } else { toast.error(data.message||'Restore failed'); } }} className="px-3 py-1 bg-green-600 text-white rounded-lg text-xs">Restore</button>
+                                  ) : (
+                                    <span className="text-xs text-gray-500">View only</span>
+                                  )}
+                                </div>
                               )}
                             </td>
                           </tr>
