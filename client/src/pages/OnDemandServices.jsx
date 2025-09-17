@@ -129,9 +129,6 @@ export default function OnDemandServices() {
     <div className="max-w-5xl mx-auto px-2 sm:px-4 py-6 sm:py-10">
       <div className="flex items-center justify-between mb-4 sm:mb-6">
         <h1 className="text-2xl font-bold">On-Demand Services</h1>
-        <div className="flex items-center gap-2">
-          <button onClick={() => { fetchMyRequests(); fetchMyMoverRequests(); }} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button>
-        </div>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
         {services.map(s => (
@@ -164,7 +161,6 @@ export default function OnDemandServices() {
       <div className="mt-10 border-t border-gray-200 pt-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold flex items-center gap-2"><FaTruckMoving className="text-blue-600"/> Packers & Movers</h2>
-          <button onClick={fetchMyMoverRequests} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button>
         </div>
         <form onSubmit={submitMovers} className="bg-white rounded-xl shadow p-4 sm:p-5 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -199,7 +195,10 @@ export default function OnDemandServices() {
         <div className="mt-6 text-sm text-gray-600 flex items-center gap-2"><FaMapMarkerAlt/> Service available in major cities.</div>
         {currentUser && (
           <div className="mt-6 sm:mt-8 bg-white rounded-xl shadow p-4">
-            <h3 className="text-lg font-semibold mb-2">My Movers Requests</h3>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-lg font-semibold">My Movers Requests</h3>
+              <button onClick={fetchMyMoverRequests} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
               <input className="border rounded p-2 text-sm" placeholder="Search" value={moversFilters.q} onChange={e=>setMoversFilters(f=>({...f,q:e.target.value}))} />
               <select className="border rounded p-2 text-sm" value={moversFilters.status} onChange={e=>setMoversFilters(f=>({...f,status:e.target.value}))}>
@@ -246,7 +245,10 @@ export default function OnDemandServices() {
       {/* My Requests */}
       {currentUser && (
         <div className="mt-6 sm:mt-8 bg-white rounded-xl shadow p-4">
-          <h3 className="text-lg font-semibold mb-2">My Service Requests</h3>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg font-semibold">My Service Requests</h3>
+            <button onClick={fetchMyRequests} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
             <input className="border rounded p-2 text-sm" placeholder="Search" value={serviceFilters.q} onChange={e=>setServiceFilters(f=>({...f,q:e.target.value}))} />
             <select className="border rounded p-2 text-sm" value={serviceFilters.status} onChange={e=>setServiceFilters(f=>({...f,status:e.target.value}))}>

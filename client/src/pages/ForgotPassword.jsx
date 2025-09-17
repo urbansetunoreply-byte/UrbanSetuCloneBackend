@@ -254,8 +254,8 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
     }
 
     setOtpLoading(true);
-    // Lock email immediately on send/resend attempt until user clicks edit icon
-    setEmailLocked(true);
+    // Only lock email if request ultimately succeeds
+    // setEmailLocked(true);
     setOtpError("");
 
     try {
@@ -285,6 +285,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
 
       if (data.success) {
         setOtpSent(true);
+        setEmailLocked(true);
         setSuccess("OTP sent successfully to your email");
         setTimeout(() => setSuccess(""), 3000);
         
@@ -313,9 +314,12 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
         } else {
           setOtpError(data.message);
         }
+        // Ensure email remains editable on failure
+        setEmailLocked(false);
       }
     } catch (error) {
       setOtpError("Failed to send OTP. Please try again.");
+      setEmailLocked(false);
     } finally {
       setOtpLoading(false);
     }
