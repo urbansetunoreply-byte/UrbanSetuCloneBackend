@@ -177,7 +177,7 @@ export const getDeletedAccounts = async (req, res, next) => {
       return next(errorHandler(403, 'Access denied'));
     }
     const isRoot = currentUser.role === 'rootadmin' || currentUser.isDefaultAdmin;
-    const { role, q, from, to, deletedBy, page = 1, limit = 50 } = req.query;
+    const { role, q, from, to, deletedBy, purgedBy, page = 1, limit = 50 } = req.query;
     const filter = {};
     if (!isRoot) filter.role = 'user';
     if (role && (role === 'user' || role === 'admin')) filter.role = role;
@@ -186,11 +186,14 @@ export const getDeletedAccounts = async (req, res, next) => {
       { email: new RegExp(q, 'i') }
     ];
     if (from || to) {
-      filter.deletedAt = {};
-      if (from) filter.deletedAt.$gte = new Date(from);
-      if (to) filter.deletedAt.$lte = new Date(to);
+      // For purged accounts, filter by purgedAt, otherwise by deletedAt
+      const dateField = purgedBy ? 'purgedAt' : 'deletedAt';
+      filter[dateField] = {};
+      if (from) filter[dateField].$gte = new Date(from);
+      if (to) filter[dateField].$lte = new Date(to);
     }
     if (deletedBy) filter.deletedBy = deletedBy === 'self' ? 'self' : deletedBy;
+    if (purgedBy) filter.purgedBy = purgedBy;
     const skip = (Number(page) - 1) * Number(limit);
     const [items, total] = await Promise.all([
       DeletedAccount.find(filter).sort({ deletedAt: -1 }).skip(skip).limit(Number(limit)),
@@ -252,7 +255,7 @@ export const purgeDeletedAccount = async (req, res, next) => {
     record.purgedAt = new Date();
     record.purgedBy = currentUser._id;
     await record.save();
-    await DeletedAccount.findByIdAndDelete(id);
+    // Don't delete the record - keep it for purged accounts display
     await AuditLog.create({ action: 'purge', performedBy: currentUser._id, targetAccount: record._id, targetEmail: record.email });
     res.json({ success: true, message: 'Deleted account purged' });
   } catch (err) {
