@@ -137,7 +137,24 @@ export const deleteUserOrAdmin = async (req, res, next) => {
         deletedAt: new Date(),
         deletedBy: currentUser._id,
         reason: req.body?.reason || '',
-        policy: req.body?.policy
+        policy: req.body?.policy,
+        // Capture original user data to allow exact restoration without losing password/profile
+        originalData: {
+          username: user.username,
+          email: user.email,
+          password: user.password,
+          mobileNumber: user.mobileNumber,
+          address: user.address,
+          gender: user.gender,
+          avatar: user.avatar,
+          role: user.role,
+          isDefaultAdmin: user.isDefaultAdmin,
+          adminApprovalStatus: user.adminApprovalStatus,
+          adminApprovalDate: user.adminApprovalDate,
+          approvedBy: user.approvedBy,
+          adminRequestDate: user.adminRequestDate,
+          status: user.status,
+        }
       });
       await User.findByIdAndDelete(id);
       await AuditLog.create({ action: 'soft_delete', performedBy: currentUser._id, targetAccount: delRecUser._id, targetEmail: delRecUser.email, details: { type: 'admin_delete', role: 'user' } });
@@ -156,7 +173,23 @@ export const deleteUserOrAdmin = async (req, res, next) => {
         deletedAt: new Date(),
         deletedBy: currentUser._id,
         reason: req.body?.reason || '',
-        policy: req.body?.policy
+        policy: req.body?.policy,
+        originalData: {
+          username: admin.username,
+          email: admin.email,
+          password: admin.password,
+          mobileNumber: admin.mobileNumber,
+          address: admin.address,
+          gender: admin.gender,
+          avatar: admin.avatar,
+          role: admin.role,
+          isDefaultAdmin: admin.isDefaultAdmin,
+          adminApprovalStatus: admin.adminApprovalStatus,
+          adminApprovalDate: admin.adminApprovalDate,
+          approvedBy: admin.approvedBy,
+          adminRequestDate: admin.adminRequestDate,
+          status: admin.status,
+        }
       });
       await User.findByIdAndDelete(id);
       await AuditLog.create({ action: 'soft_delete', performedBy: currentUser._id, targetAccount: delRecAdmin._id, targetEmail: delRecAdmin.email, details: { type: 'admin_delete', role: 'admin' } });
@@ -227,15 +260,20 @@ export const restoreDeletedAccount = async (req, res, next) => {
       _id: record.accountId, // Use the original accountId to preserve all relationships
       username,
       email: record.email,
-      password: bcrypt.hashSync(Math.random().toString(36).slice(-10), 10),
+      // Use original hashed password if captured, else generate a random one
+      password: original.password || bcrypt.hashSync(Math.random().toString(36).slice(-10), 10),
       role: record.role,
-      adminApprovalStatus: record.role === 'admin' ? 'approved' : undefined,
+      adminApprovalStatus: original.adminApprovalStatus !== undefined ? original.adminApprovalStatus : (record.role === 'admin' ? 'approved' : undefined),
       status: 'active',
       mobileNumber,
       isGeneratedMobile: !original.mobileNumber,
       address: original.address || '',
       gender: original.gender || undefined,
-      avatar: original.avatar || undefined
+      avatar: original.avatar || undefined,
+      isDefaultAdmin: original.isDefaultAdmin || false,
+      approvedBy: original.approvedBy || undefined,
+      adminApprovalDate: original.adminApprovalDate || undefined,
+      adminRequestDate: original.adminRequestDate || undefined
     });
     await restored.save();
     await AuditLog.create({ action: 'restore', performedBy: currentUser._id, targetAccount: record._id, targetEmail: record.email });
