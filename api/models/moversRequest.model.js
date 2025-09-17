@@ -10,6 +10,7 @@ const moversRequestSchema = new mongoose.Schema({
   size: { type: String, required: true },
   notes: { type: String },
   status: { type: String, enum: ['pending','in_progress','completed','cancelled'], default: 'pending' },
+  reinitiateCount: { type: Number, default: 0 },
 }, { timestamps: true });
 
 const MoversRequest = mongoose.model('MoversRequest', moversRequestSchema);

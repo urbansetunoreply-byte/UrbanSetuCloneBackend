@@ -227,9 +227,15 @@ export default function OnDemandServices() {
                     <div className="text-sm text-gray-800">Date: {req.moveDate}</div>
                     <div className="text-sm text-gray-800">Size: {req.size}</div>
                     {req.notes && (<div className="text-sm text-gray-700">Notes: {req.notes}</div>)}
-                    {req.status==='pending' && (
-                      <button onClick={async()=>{ try{ await fetch(`${API_BASE_URL}/api/requests/movers/${req._id}`, { method:'PATCH', credentials:'include', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ status: 'cancelled' }) }); toast.success('Movers request cancelled'); fetchMyMoverRequests(); } catch(_){ toast.error('Failed to cancel'); } }} className="mt-2 text-xs px-2 py-1 rounded bg-gray-200">Cancel</button>
-                    )}
+                    <div className="mt-2 flex items-center gap-2">
+                      {req.status==='pending' && (
+                        <button onClick={async()=>{ try{ await fetch(`${API_BASE_URL}/api/requests/movers/${req._id}`, { method:'PATCH', credentials:'include', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ status: 'cancelled' }) }); toast.success('Movers request cancelled'); fetchMyMoverRequests(); } catch(_){ toast.error('Failed to cancel'); } }} className="text-xs px-2 py-1 rounded bg-gray-200">Cancel</button>
+                      )}
+                      {req.status==='cancelled' && (req.reinitiateCount ?? 0) < 2 && (
+                        <button onClick={async()=>{ try{ const r = await fetch(`${API_BASE_URL}/api/requests/movers/${req._id}/reinitiate`, { method:'POST', credentials:'include' }); const data = await r.json(); if(r.ok){ toast.success('Movers request re-initiated'); fetchMyMoverRequests(); } else { toast.error(data.message||'Failed to reinitiate'); } } catch(_){ toast.error('Failed to reinitiate'); } }} className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">Re-initiate ({2 - (req.reinitiateCount||0)} left)</button>
+                      )}
+                      <button onClick={async()=>{ if(!confirm('Delete this request permanently?')) return; try{ const r = await fetch(`${API_BASE_URL}/api/requests/movers/${req._id}`, { method:'DELETE', credentials:'include' }); if(r.ok){ toast.success('Deleted'); setMyMoverRequests(prev=>prev.filter(x=>x._id!==req._id)); } else { const d=await r.json(); toast.error(d.message||'Delete failed'); } } catch(_){ toast.error('Delete failed'); } }} className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">Delete</button>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -266,9 +272,15 @@ export default function OnDemandServices() {
                   <div className="text-sm text-gray-800">Date: {req.preferredDate}</div>
                   <div className="text-sm text-gray-800">Address: {req.address}</div>
                   {req.notes && (<div className="text-sm text-gray-700">Notes: {req.notes}</div>)}
-                  {req.status==='pending' && (
-                    <button onClick={async()=>{try{await fetch(`${API_BASE_URL}/api/requests/services/${req._id}`,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'cancelled'})}); toast.success('Service request cancelled'); fetchMyRequests();}catch(_){ toast.error('Failed to cancel'); }}} className="mt-2 text-xs px-2 py-1 rounded bg-gray-200">Cancel</button>
-                  )}
+                  <div className="mt-2 flex items-center gap-2">
+                    {req.status==='pending' && (
+                      <button onClick={async()=>{try{await fetch(`${API_BASE_URL}/api/requests/services/${req._id}`,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'cancelled'})}); toast.success('Service request cancelled'); fetchMyRequests();}catch(_){ toast.error('Failed to cancel'); }}} className="text-xs px-2 py-1 rounded bg-gray-200">Cancel</button>
+                    )}
+                    {req.status==='cancelled' && (req.reinitiateCount ?? 0) < 2 && (
+                      <button onClick={async()=>{ try{ const r = await fetch(`${API_BASE_URL}/api/requests/services/${req._id}/reinitiate`, { method:'POST', credentials:'include' }); const data = await r.json(); if(r.ok){ toast.success('Service request re-initiated'); fetchMyRequests(); } else { toast.error(data.message||'Failed to reinitiate'); } } catch(_){ toast.error('Failed to reinitiate'); } }} className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">Re-initiate ({2 - (req.reinitiateCount||0)} left)</button>
+                    )}
+                    <button onClick={async()=>{ if(!confirm('Delete this request permanently?')) return; try{ const r = await fetch(`${API_BASE_URL}/api/requests/services/${req._id}`, { method:'DELETE', credentials:'include' }); if(r.ok){ toast.success('Deleted'); setMyRequests(prev=>prev.filter(x=>x._id!==req._id)); } else { const d=await r.json(); toast.error(d.message||'Delete failed'); } } catch(_){ toast.error('Delete failed'); } }} className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">Delete</button>
+                  </div>
                 </li>
               ))}
             </ul>

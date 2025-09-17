@@ -45,6 +45,34 @@ router.patch('/movers/:id', verifyToken, async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+// Reinitiate movers (owner only, max 2 attempts)
+router.post('/movers/:id/reinitiate', verifyToken, async (req, res, next) => {
+  try {
+    const doc = await MoversRequest.findById(req.params.id);
+    if (!doc) return res.status(404).json({ message: 'Not found' });
+    if (doc.userId.toString() !== req.user.id) return res.status(403).json({ message: 'Forbidden' });
+    if (doc.reinitiateCount >= 2) return res.status(400).json({ message: 'Reinitiate limit reached' });
+    if (doc.status !== 'cancelled') return res.status(400).json({ message: 'Only cancelled requests can be reinitiated' });
+    doc.status = 'pending';
+    doc.reinitiateCount += 1;
+    await doc.save();
+    res.json(doc);
+  } catch (e) { next(e); }
+});
+
+// Delete movers (owner or admin)
+router.delete('/movers/:id', verifyToken, async (req, res, next) => {
+  try {
+    const doc = await MoversRequest.findById(req.params.id);
+    if (!doc) return res.status(404).json({ message: 'Not found' });
+    const isAdmin = req.user.role === 'admin' || req.user.role === 'rootadmin';
+    const isOwner = doc.userId.toString() === req.user.id;
+    if (!isAdmin && !isOwner) return res.status(403).json({ message: 'Forbidden' });
+    await doc.deleteOne();
+    res.json({ success: true });
+  } catch (e) { next(e); }
+});
+
 // Create service request
 router.post('/services', verifyToken, async (req, res, next) => {
   try {
@@ -82,6 +110,34 @@ router.patch('/services/:id', verifyToken, async (req, res, next) => {
     doc.status = status;
     await doc.save();
     res.json(doc);
+  } catch (e) { next(e); }
+});
+
+// Reinitiate service (owner only, max 2 attempts)
+router.post('/services/:id/reinitiate', verifyToken, async (req, res, next) => {
+  try {
+    const doc = await ServiceRequest.findById(req.params.id);
+    if (!doc) return res.status(404).json({ message: 'Not found' });
+    if (doc.userId.toString() !== req.user.id) return res.status(403).json({ message: 'Forbidden' });
+    if (doc.reinitiateCount >= 2) return res.status(400).json({ message: 'Reinitiate limit reached' });
+    if (doc.status !== 'cancelled') return res.status(400).json({ message: 'Only cancelled requests can be reinitiated' });
+    doc.status = 'pending';
+    doc.reinitiateCount += 1;
+    await doc.save();
+    res.json(doc);
+  } catch (e) { next(e); }
+});
+
+// Delete service (owner or admin)
+router.delete('/services/:id', verifyToken, async (req, res, next) => {
+  try {
+    const doc = await ServiceRequest.findById(req.params.id);
+    if (!doc) return res.status(404).json({ message: 'Not found' });
+    const isAdmin = req.user.role === 'admin' || req.user.role === 'rootadmin';
+    const isOwner = doc.userId.toString() === req.user.id;
+    if (!isAdmin && !isOwner) return res.status(403).json({ message: 'Forbidden' });
+    await doc.deleteOne();
+    res.json({ success: true });
   } catch (e) { next(e); }
 });
 

@@ -131,6 +131,7 @@ export default function AdminServices() {
                         <select value={n.status} onChange={async(e)=>{const newStatus=e.target.value; try{setItems(prev=>prev.map(it=>it._id===n._id?{...it,status:newStatus}:it)); await fetch(`${API_BASE_URL}/api/requests/services/${n._id}`,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:newStatus})});}catch(_){ setItems(prev=>prev.map(it=>it._id===n._id?{...it,status:n.status}:it)); }} } className="text-xs border rounded px-2 py-1">
                           {['pending','in_progress','completed','cancelled'].map(s=> <option key={s} value={s}>{s}</option>)}
                         </select>
+                        <button onClick={async()=>{ if(!confirm('Delete this service request?')) return; try{ const r= await fetch(`${API_BASE_URL}/api/requests/services/${n._id}`, { method:'DELETE', credentials:'include' }); if(r.ok){ setItems(prev=>prev.filter(x=>x._id!==n._id)); } } catch(_){} }} className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">Delete</button>
                       </div>
                     </td>
                   </tr>
@@ -198,6 +199,7 @@ export default function AdminServices() {
                         <select value={n.status} onChange={async(e)=>{const newStatus=e.target.value; try{setMovers(prev=>prev.map(it=>it._id===n._id?{...it,status:newStatus}:it)); await fetch(`${API_BASE_URL}/api/requests/movers/${n._id}`,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:newStatus})});}catch(_){ setMovers(prev=>prev.map(it=>it._id===n._id?{...it,status:n.status}:it)); }} } className="text-xs border rounded px-2 py-1">
                           {['pending','in_progress','completed','cancelled'].map(s=> <option key={s} value={s}>{s}</option>)}
                         </select>
+                        <button onClick={async()=>{ if(!confirm('Delete this movers request?')) return; try{ const r= await fetch(`${API_BASE_URL}/api/requests/movers/${n._id}`, { method:'DELETE', credentials:'include' }); if(r.ok){ setMovers(prev=>prev.filter(x=>x._id!==n._id)); } } catch(_){} }} className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">Delete</button>
                       </div>
                     </td>
                   </tr>
