@@ -522,6 +522,33 @@ export const sendLoginOTP = async (req, res, next) => {
         // Check if user exists with the email
         const user = await User.findOne({ email: emailLower });
         if (!user) {
+            // If no user, check if this email is softbanned/purged and communicate appropriately
+            try {
+                const del = await DeletedAccount.findOne({ email: emailLower });
+                if (del) {
+                    const policy = del.policy || {};
+                    if (policy.banType === 'ban') {
+                        return res.status(403).json({
+                            success: false,
+                            message: 'This account was permanently removed and cannot sign in.'
+                        });
+                    }
+                    if (!del.purgedAt && typeof policy.allowResignupAfterDays === 'number' && policy.allowResignupAfterDays > 0 && del.deletedAt) {
+                        const allowAfter = new Date(del.deletedAt.getTime() + policy.allowResignupAfterDays * 24 * 60 * 60 * 1000);
+                        if (new Date() < allowAfter) {
+                            const msLeft = allowAfter.getTime() - Date.now();
+                            const days = Math.floor(msLeft / (24*60*60*1000));
+                            const hours = Math.floor((msLeft % (24*60*60*1000)) / (60*60*1000));
+                            const minutes = Math.floor((msLeft % (60*60*1000)) / (60*1000));
+                            const waitMsg = days > 0 ? `${days} day(s)` : (hours > 0 ? `${hours} hour(s)` : `${minutes} minute(s)`);
+                            return res.status(403).json({
+                                success: false,
+                                message: `Your account is softbanned. Please try again after ${waitMsg}.`
+                            });
+                        }
+                    }
+                }
+            } catch (_) {}
             return res.status(400).json({
                 success: false,
                 message: "We couldn't find an account with this email. Sign up to create one."
@@ -535,6 +562,28 @@ export const sendLoginOTP = async (req, res, next) => {
                 message: "Your account has been suspended. Please contact support."
             });
         }
+
+        // Also block OTP for softbanned/purged policies (edge case: if account still exists but also recorded)
+        try {
+            const del = await DeletedAccount.findOne({ email: emailLower });
+            if (del) {
+                const policy = del.policy || {};
+                if (policy.banType === 'ban') {
+                    return res.status(403).json({ success: false, message: 'This account is permanently banned.' });
+                }
+                if (!del.purgedAt && typeof policy.allowResignupAfterDays === 'number' && policy.allowResignupAfterDays > 0 && del.deletedAt) {
+                    const allowAfter = new Date(del.deletedAt.getTime() + policy.allowResignupAfterDays * 24 * 60 * 60 * 1000);
+                    if (new Date() < allowAfter) {
+                        const msLeft = allowAfter.getTime() - Date.now();
+                        const days = Math.floor(msLeft / (24*60*60*1000));
+                        const hours = Math.floor((msLeft % (24*60*60*1000)) / (60*60*1000));
+                        const minutes = Math.floor((msLeft % (60*60*1000)) / (60*1000));
+                        const waitMsg = days > 0 ? `${days} day(s)` : (hours > 0 ? `${hours} hour(s)` : `${minutes} minute(s)`);
+                        return res.status(403).json({ success: false, message: `Your account is softbanned. Please try again after ${waitMsg}.` });
+                    }
+                }
+            }
+        } catch(_) {}
 
         // Block OTP sending if account is password-locked due to failed attempts
         try {

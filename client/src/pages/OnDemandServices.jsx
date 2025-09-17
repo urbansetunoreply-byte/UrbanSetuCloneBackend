@@ -17,10 +17,12 @@ export default function OnDemandServices() {
   const [details, setDetails] = useState({ date: '', address: '', notes: '' });
   const [loading, setLoading] = useState(false);
   const [myRequests, setMyRequests] = useState([]);
+  const [serviceFilters, setServiceFilters] = useState({ q: '', status: 'all' });
   // Movers merge
   const [moversForm, setMoversForm] = useState({ from: '', to: '', date: '', size: '1BHK', notes: '' });
   const [moversSubmitting, setMoversSubmitting] = useState(false);
   const [myMoverRequests, setMyMoverRequests] = useState([]);
+  const [moversFilters, setMoversFilters] = useState({ q: '', status: 'all' });
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   const fetchMyRequests = async () => {
@@ -63,6 +65,18 @@ export default function OnDemandServices() {
       if (res.ok) {
         toast.success('Service request submitted');
         fetchMyRequests();
+        // Notify admins
+        try {
+          await fetch(`${API_BASE_URL}/api/notifications/notify-admins`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title: 'New Service Request',
+              message: `${currentUser?.username || 'A user'} requested services: ${selected.join(', ')} on ${details.date}.`
+            })
+          });
+        } catch(_) {}
       } else {
         toast.error('Failed to submit request');
       }
@@ -88,6 +102,18 @@ export default function OnDemandServices() {
       if (res.ok) {
         toast.success('Movers request submitted');
         fetchMyMoverRequests();
+        // Notify admins
+        try {
+          await fetch(`${API_BASE_URL}/api/notifications/notify-admins`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title: 'New Movers Request',
+              message: `${currentUser?.username || 'A user'} requested movers from "${moversForm.from}" to "${moversForm.to}" on ${moversForm.date}.`
+            })
+          });
+        } catch(_) {}
       } else {
         toast.error('Failed to submit movers request');
       }
@@ -174,11 +200,26 @@ export default function OnDemandServices() {
         {currentUser && (
           <div className="mt-6 sm:mt-8 bg-white rounded-xl shadow p-4">
             <h3 className="text-lg font-semibold mb-2">My Movers Requests</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
+              <input className="border rounded p-2 text-sm" placeholder="Search" value={moversFilters.q} onChange={e=>setMoversFilters(f=>({...f,q:e.target.value}))} />
+              <select className="border rounded p-2 text-sm" value={moversFilters.status} onChange={e=>setMoversFilters(f=>({...f,status:e.target.value}))}>
+                {['all','pending','in_progress','completed','cancelled'].map(s=> <option key={s} value={s}>{s}</option>)}
+              </select>
+              <button className="px-3 py-2 bg-gray-100 rounded text-sm" onClick={()=>setMoversFilters({ q:'', status:'all' })}>Clear</button>
+            </div>
             {myMoverRequests.length === 0 ? (
               <p className="text-sm text-gray-600">No requests yet.</p>
             ) : (
               <ul className="divide-y">
-                {myMoverRequests.map(req => (
+                {myMoverRequests.filter(req=>{
+                  const matchQ = moversFilters.q.trim() ? (
+                    (req.fromAddress||'').toLowerCase().includes(moversFilters.q.toLowerCase()) ||
+                    (req.toAddress||'').toLowerCase().includes(moversFilters.q.toLowerCase()) ||
+                    (req.size||'').toLowerCase().includes(moversFilters.q.toLowerCase())
+                  ) : true;
+                  const matchStatus = moversFilters.status==='all' ? true : req.status===moversFilters.status;
+                  return matchQ && matchStatus;
+                }).map(req => (
                   <li key={req._id} className="py-2">
                     <div className="text-xs text-gray-500">{new Date(req.createdAt).toLocaleString()} — <span className={`px-2 py-0.5 rounded text-white text-[10px] ${req.status==='completed'?'bg-green-600':req.status==='in_progress'?'bg-blue-600':req.status==='cancelled'?'bg-gray-500':'bg-orange-500'}`}>{req.status}</span></div>
                     <div className="text-sm text-gray-800">From: {req.fromAddress}</div>
@@ -200,11 +241,25 @@ export default function OnDemandServices() {
       {currentUser && (
         <div className="mt-6 sm:mt-8 bg-white rounded-xl shadow p-4">
           <h3 className="text-lg font-semibold mb-2">My Service Requests</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
+            <input className="border rounded p-2 text-sm" placeholder="Search" value={serviceFilters.q} onChange={e=>setServiceFilters(f=>({...f,q:e.target.value}))} />
+            <select className="border rounded p-2 text-sm" value={serviceFilters.status} onChange={e=>setServiceFilters(f=>({...f,status:e.target.value}))}>
+              {['all','pending','in_progress','completed','cancelled'].map(s=> <option key={s} value={s}>{s}</option>)}
+            </select>
+            <button className="px-3 py-2 bg-gray-100 rounded text-sm" onClick={()=>setServiceFilters({ q:'', status:'all' })}>Clear</button>
+          </div>
           {myRequests.length === 0 ? (
             <p className="text-sm text-gray-600">No requests yet.</p>
           ) : (
             <ul className="divide-y">
-              {myRequests.map(req => (
+              {myRequests.filter(req=>{
+                const matchQ = serviceFilters.q.trim() ? (
+                  (req.address||'').toLowerCase().includes(serviceFilters.q.toLowerCase()) ||
+                  (Array.isArray(req.services)? req.services.join(', '):'').toLowerCase().includes(serviceFilters.q.toLowerCase())
+                ) : true;
+                const matchStatus = serviceFilters.status==='all' ? true : req.status===serviceFilters.status;
+                return matchQ && matchStatus;
+              }).map(req => (
                 <li key={req._id} className="py-2">
                   <div className="text-xs text-gray-500">{new Date(req.createdAt).toLocaleString()} — <span className={`px-2 py-0.5 rounded text-white text-[10px] ${req.status==='completed'?'bg-green-600':req.status==='in_progress'?'bg-blue-600':req.status==='cancelled'?'bg-gray-500':'bg-orange-500'}`}>{req.status}</span></div>
                   <div className="text-sm text-gray-800">Services: {req.services?.join(', ')}</div>
@@ -212,7 +267,7 @@ export default function OnDemandServices() {
                   <div className="text-sm text-gray-800">Address: {req.address}</div>
                   {req.notes && (<div className="text-sm text-gray-700">Notes: {req.notes}</div>)}
                   {req.status==='pending' && (
-                    <button onClick={async()=>{try{await fetch(`${API_BASE_URL}/api/requests/services/${req._id}`,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'cancelled'})});fetchMyRequests();}catch(_){}}} className="mt-2 text-xs px-2 py-1 rounded bg-gray-200">Cancel</button>
+                    <button onClick={async()=>{try{await fetch(`${API_BASE_URL}/api/requests/services/${req._id}`,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'cancelled'})}); toast.success('Service request cancelled'); fetchMyRequests();}catch(_){ toast.error('Failed to cancel'); }}} className="mt-2 text-xs px-2 py-1 rounded bg-gray-200">Cancel</button>
                   )}
                 </li>
               ))}

@@ -5,7 +5,9 @@ import { FaTools, FaEnvelope, FaCheckCircle, FaTruckMoving } from 'react-icons/f
 export default function AdminServices() {
   const { currentUser } = useSelector((state) => state.user);
   const [items, setItems] = useState([]);
+  const [serviceFilters, setServiceFilters] = useState({ q: '', status: 'all' });
   const [movers, setMovers] = useState([]);
+  const [moversFilters, setMoversFilters] = useState({ q: '', status: 'all' });
   const [loadingServices, setLoadingServices] = useState(true);
   const [loadingMovers, setLoadingMovers] = useState(true);
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
@@ -35,7 +37,17 @@ export default function AdminServices() {
 
   useEffect(() => { fetchServiceRequests(); fetchMoverRequests(); }, [currentUser?._id]);
 
-  const filtered = useMemo(() => items, [items]);
+  const filtered = useMemo(() => {
+    return items.filter(n => {
+      const matchQ = serviceFilters.q.trim() ? (
+        (n.requesterName||'').toLowerCase().includes(serviceFilters.q.toLowerCase()) ||
+        (n.requesterEmail||'').toLowerCase().includes(serviceFilters.q.toLowerCase()) ||
+        (Array.isArray(n.services)? n.services.join(', '):'').toLowerCase().includes(serviceFilters.q.toLowerCase())
+      ) : true;
+      const matchStatus = serviceFilters.status==='all' ? true : n.status===serviceFilters.status;
+      return matchQ && matchStatus;
+    });
+  }, [items, serviceFilters]);
 
   const markAsRead = async (id) => {
     try {
@@ -78,6 +90,13 @@ export default function AdminServices() {
         </div>
       </div>
 
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
+        <input className="border rounded p-2 text-sm" placeholder="Search" value={serviceFilters.q} onChange={e=>setServiceFilters(f=>({...f,q:e.target.value}))} />
+        <select className="border rounded p-2 text-sm" value={serviceFilters.status} onChange={e=>setServiceFilters(f=>({...f,status:e.target.value}))}>
+          {['all','pending','in_progress','completed','cancelled'].map(s=> <option key={s} value={s}>{s}</option>)}
+        </select>
+        <button className="px-3 py-2 bg-gray-100 rounded text-sm" onClick={()=>setServiceFilters({ q:'', status:'all' })}>Clear</button>
+      </div>
       {loadingServices ? (
         <div className="text-gray-600">Loading...</div>
       ) : (
@@ -128,6 +147,13 @@ export default function AdminServices() {
           <h2 className="text-xl font-bold flex items-center gap-2"><FaTruckMoving className="text-blue-600"/> Movers Requests</h2>
           <button onClick={fetchMoverRequests} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button>
         </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
+          <input className="border rounded p-2 text-sm" placeholder="Search" value={moversFilters.q} onChange={e=>setMoversFilters(f=>({...f,q:e.target.value}))} />
+          <select className="border rounded p-2 text-sm" value={moversFilters.status} onChange={e=>setMoversFilters(f=>({...f,status:e.target.value}))}>
+            {['all','pending','in_progress','completed','cancelled'].map(s=> <option key={s} value={s}>{s}</option>)}
+          </select>
+          <button className="px-3 py-2 bg-gray-100 rounded text-sm" onClick={()=>setMoversFilters({ q:'', status:'all' })}>Clear</button>
+        </div>
         {loadingMovers ? (
           <div className="text-gray-600">Loading...</div>
         ) : movers.length === 0 ? (
@@ -144,7 +170,16 @@ export default function AdminServices() {
                 </tr>
               </thead>
               <tbody>
-                {movers.map(n => (
+                {movers.filter(n=>{
+                  const matchQ = moversFilters.q.trim() ? (
+                    (n.requesterName||'').toLowerCase().includes(moversFilters.q.toLowerCase()) ||
+                    (n.requesterEmail||'').toLowerCase().includes(moversFilters.q.toLowerCase()) ||
+                    (n.fromAddress||'').toLowerCase().includes(moversFilters.q.toLowerCase()) ||
+                    (n.toAddress||'').toLowerCase().includes(moversFilters.q.toLowerCase())
+                  ) : true;
+                  const matchStatus = moversFilters.status==='all' ? true : n.status===moversFilters.status;
+                  return matchQ && matchStatus;
+                }).map(n => (
                   <tr key={n._id} className="border-t">
                     <td className="px-4 py-3 whitespace-nowrap">{new Date(n.createdAt).toLocaleString()}</td>
                     <td className="px-4 py-3">{n.requesterName} ({n.requesterEmail})</td>

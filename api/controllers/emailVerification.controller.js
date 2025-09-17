@@ -161,10 +161,28 @@ export const sendForgotPasswordOTP = async (req, res, next) => {
     // Check if user exists with the email
     const user = await User.findOne({ email: emailLower });
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "No account found with that email address."
-      });
+      // If no active user found, but email is softbanned/purged, show policy-based reason
+      try {
+        const del = await DeletedAccount.findOne({ email: emailLower });
+        if (del) {
+          const policy = del.policy || {};
+          if (policy.banType === 'ban') {
+            return res.status(403).json({ success: false, message: 'This account was permanently removed and cannot recover password.' });
+          }
+          if (!del.purgedAt && typeof policy.allowResignupAfterDays === 'number' && policy.allowResignupAfterDays > 0 && del.deletedAt) {
+            const allowAfter = new Date(del.deletedAt.getTime() + policy.allowResignupAfterDays * 24 * 60 * 60 * 1000);
+            if (new Date() < allowAfter) {
+              const msLeft = allowAfter.getTime() - Date.now();
+              const days = Math.floor(msLeft / (24*60*60*1000));
+              const hours = Math.floor((msLeft % (24*60*60*1000)) / (60*60*1000));
+              const minutes = Math.floor((msLeft % (60*60*1000)) / (60*1000));
+              const waitMsg = days > 0 ? `${days} day(s)` : (hours > 0 ? `${hours} hour(s)` : `${minutes} minute(s)`);
+              return res.status(403).json({ success: false, message: `Your account is softbanned. Please try again after ${waitMsg}.` });
+            }
+          }
+        }
+      } catch (_) {}
+      return res.status(404).json({ success: false, message: "No account found with that email address." });
     }
 
     // Block OTP sending for suspended accounts
@@ -256,6 +274,28 @@ export const sendProfileEmailOTP = async (req, res, next) => {
         message: "This email is already in use by another account. Please choose a different email."
       });
     }
+
+    // Block verifying profile email if target email is softbanned/purged under ban/cooldown
+    try {
+      const del = await DeletedAccount.findOne({ email: emailLower });
+      if (del) {
+        const policy = del.policy || {};
+        if (policy.banType === 'ban') {
+          return res.status(403).json({ success: false, message: 'This email is blocked due to a permanent ban.' });
+        }
+        if (!del.purgedAt && typeof policy.allowResignupAfterDays === 'number' && policy.allowResignupAfterDays > 0 && del.deletedAt) {
+          const allowAfter = new Date(del.deletedAt.getTime() + policy.allowResignupAfterDays * 24 * 60 * 60 * 1000);
+          if (new Date() < allowAfter) {
+            const msLeft = allowAfter.getTime() - Date.now();
+            const days = Math.floor(msLeft / (24*60*60*1000));
+            const hours = Math.floor((msLeft % (24*60*60*1000)) / (60*60*1000));
+            const minutes = Math.floor((msLeft % (60*60*1000)) / (60*1000));
+            const waitMsg = days > 0 ? `${days} day(s)` : (hours > 0 ? `${hours} hour(s)` : `${minutes} minute(s)`);
+            return res.status(403).json({ success: false, message: `This email is under a softban. Try again after ${waitMsg}.` });
+          }
+        }
+      }
+    } catch (_) {}
 
     // Increment OTP request count
     await otpTracking.incrementOtpRequest();
