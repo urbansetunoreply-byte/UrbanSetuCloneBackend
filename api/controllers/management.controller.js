@@ -221,7 +221,10 @@ export const restoreDeletedAccount = async (req, res, next) => {
     // Ensure required fields
     const username = original.username || record.name || 'Restored User';
     const mobileNumber = original.mobileNumber && String(original.mobileNumber).match(/^\d{10}$/) ? String(original.mobileNumber) : String(Math.floor(1000000000 + Math.random() * 9000000000));
+    
+    // CRITICAL FIX: Preserve the original user ID to maintain relationships
     const restored = new User({
+      _id: record.accountId, // Use the original accountId to preserve all relationships
       username,
       email: record.email,
       password: bcrypt.hashSync(Math.random().toString(36).slice(-10), 10),

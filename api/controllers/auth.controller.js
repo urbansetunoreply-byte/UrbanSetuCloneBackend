@@ -129,6 +129,27 @@ export const SignIn=async(req,res,next)=>{
     try{
         const validUser=await User.findOne({email: emailLower})
         if (!validUser){
+            // Check if this email is softbanned/purged and communicate appropriately
+            try {
+                const del = await DeletedAccount.findOne({ email: emailLower });
+                if (del) {
+                    const policy = del.policy || {};
+                    if (policy.banType === 'ban') {
+                        return next(errorHandler(403, "This account is temporarily suspended. Please reach out to support for help."));
+                    }
+                    if (!del.purgedAt && typeof policy.allowResignupAfterDays === 'number' && policy.allowResignupAfterDays > 0 && del.deletedAt) {
+                        const allowAfter = new Date(del.deletedAt.getTime() + policy.allowResignupAfterDays * 24 * 60 * 60 * 1000);
+                        if (new Date() < allowAfter) {
+                            const msLeft = allowAfter.getTime() - Date.now();
+                            const days = Math.floor(msLeft / (24*60*60*1000));
+                            const hours = Math.floor((msLeft % (24*60*60*1000)) / (60*60*1000));
+                            const minutes = Math.floor((msLeft % (60*60*1000)) / (60*1000));
+                            const waitMsg = days > 0 ? `${days} day(s)` : (hours > 0 ? `${hours} hour(s)` : `${minutes} minute(s)`);
+                            return next(errorHandler(403, `This account is temporarily suspended. Please reach out to support for help.`));
+                        }
+                    }
+                }
+            } catch (_) {}
             // Track failed attempt
             trackFailedAttempt(identifier);
             logSecurityEvent('failed_login', { email: emailLower, reason: 'user_not_found' });
@@ -145,8 +166,30 @@ export const SignIn=async(req,res,next)=>{
         
         if (validUser.status === 'suspended') {
             logSecurityEvent('suspended_account_attempt', { email: emailLower, userId: validUser._id });
-            return next(errorHandler(403, "Your account is suspended. Please contact support."));
+            return next(errorHandler(403, "This account is temporarily suspended. Please reach out to support for help."));
         }
+        
+        // Also check for softbanned/purged policies (edge case: if account still exists but also recorded)
+        try {
+            const del = await DeletedAccount.findOne({ email: emailLower });
+            if (del) {
+                const policy = del.policy || {};
+                if (policy.banType === 'ban') {
+                    return next(errorHandler(403, "This account is temporarily suspended. Please reach out to support for help."));
+                }
+                if (!del.purgedAt && typeof policy.allowResignupAfterDays === 'number' && policy.allowResignupAfterDays > 0 && del.deletedAt) {
+                    const allowAfter = new Date(del.deletedAt.getTime() + policy.allowResignupAfterDays * 24 * 60 * 60 * 1000);
+                    if (new Date() < allowAfter) {
+                        const msLeft = allowAfter.getTime() - Date.now();
+                        const days = Math.floor(msLeft / (24*60*60*1000));
+                        const hours = Math.floor((msLeft % (24*60*60*1000)) / (60*60*1000));
+                        const minutes = Math.floor((msLeft % (60*60*1000)) / (60*1000));
+                        const waitMsg = days > 0 ? `${days} day(s)` : (hours > 0 ? `${hours} hour(s)` : `${minutes} minute(s)`);
+                        return next(errorHandler(403, "This account is temporarily suspended. Please reach out to support for help."));
+                    }
+                }
+            }
+        } catch(_) {}
         
         const validPassword=await bcryptjs.compareSync(password,validUser.password)
         if (!validPassword){
