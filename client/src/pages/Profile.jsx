@@ -2016,6 +2016,10 @@ export default function Profile() {
                       )}
                     </div>
                   )}
+                  {/* Show OTP errors below email when OTP field is not open (e.g., softbanned/cooldown) */}
+                  {otpError && !otpSent && (
+                    <p className="text-red-500 text-sm mt-2">{otpError}</p>
+                  )}
                   
                   {/* OTP sent message */}
                   {otpSent && !emailVerified && (
