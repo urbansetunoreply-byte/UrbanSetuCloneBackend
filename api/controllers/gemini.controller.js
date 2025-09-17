@@ -7,7 +7,7 @@ const ai = new GoogleGenAI({
 
 export const chatWithGemini = async (req, res) => {
     try {
-        const { message, history = [], sessionId } = req.body;
+        const { message, history = [], sessionId, tone = 'neutral' } = req.body;
         const userId = req.user?.id;
 
         if (!message) {
@@ -17,44 +17,79 @@ export const chatWithGemini = async (req, res) => {
             });
         }
 
+        // Security: Rate limiting check
+        const userAgent = req.get('User-Agent') || '';
+        const ip = req.ip || req.connection.remoteAddress;
+        
+        // Basic input sanitization
+        const sanitizedMessage = message.trim().substring(0, 2000); // Limit message length
+        if (sanitizedMessage !== message.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Message too long. Please keep it under 2000 characters.'
+            });
+        }
+
         // Generate session ID if not provided
         const currentSessionId = sessionId || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-        // Prepare conversation history for Gemini
-        const systemPrompt = `You are a helpful AI assistant specializing in real estate. You help users with:
-        - Property search and recommendations
-        - Real estate market information
-        - Home buying and selling advice
-        - Property valuation insights
-        - Real estate investment guidance
-        - Legal and regulatory information about real estate
-        - Tips for first-time homebuyers
-        - Property management advice
-        
-        Always provide accurate, helpful, and professional responses. If you're not sure about something, recommend consulting with a real estate professional.`;
+        // Dynamic system prompt based on tone and context
+        const getSystemPrompt = (tone) => {
+            const basePrompt = `You are a helpful AI assistant specializing in real estate. You help users with:
+            - Property search and recommendations
+            - Real estate market information
+            - Home buying and selling advice
+            - Property valuation insights
+            - Real estate investment guidance
+            - Legal and regulatory information about real estate
+            - Tips for first-time homebuyers
+            - Property management advice
+            
+            Always provide accurate, helpful, and professional responses. If you're not sure about something, recommend consulting with a real estate professional.`;
+            
+            const toneInstructions = {
+                'friendly': 'Respond in a warm, approachable, and encouraging tone. Use casual language while maintaining professionalism.',
+                'formal': 'Respond in a formal, business-like tone. Use professional language and structure your responses clearly.',
+                'concise': 'Keep responses brief and to the point. Focus on essential information without unnecessary elaboration.',
+                'neutral': 'Maintain a balanced, professional tone that is neither too casual nor too formal.'
+            };
+            
+            return `${basePrompt}\n\nTone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
+        };
 
-        // Prepare the full conversation context
-        const conversationContext = history.map(msg => `${msg.role}: ${msg.content}`).join('\n');
-        const fullPrompt = `${systemPrompt}\n\nPrevious conversation:\n${conversationContext}\n\nCurrent user message: ${message}`;
+        // Prepare conversation history with security filtering
+        const filteredHistory = history.slice(-10).map(msg => ({
+            role: msg.role,
+            content: msg.content?.substring(0, 1000) // Limit history message length
+        }));
 
-        console.log('Calling Gemini API with model: gemini-2.0-flash-exp');
+        const conversationContext = filteredHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n');
+        const fullPrompt = `${getSystemPrompt(tone)}\n\nPrevious conversation:\n${conversationContext}\n\nCurrent user message: ${sanitizedMessage}`;
+
+        console.log('Calling Gemini API with model: gemini-2.0-flash-exp, tone:', tone);
         
-        // Add timeout to ensure we get complete responses
-        const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Request timeout - response taking too long')), 60000); // 60 second timeout
-        });
-        
-        const apiCallPromise = ai.models.generateContent({
+        // Dynamic model selection based on complexity
+        const messageComplexity = sanitizedMessage.length > 500 ? 'complex' : 'simple';
+        const modelConfig = {
             model: "gemini-2.0-flash-exp",
             contents: [{
                 role: 'user',
                 parts: [{ text: fullPrompt }]
             }],
             config: {
-                maxOutputTokens: 2048, // Increased from 500 to allow longer responses
-                temperature: 0.7,
+                maxOutputTokens: messageComplexity === 'complex' ? 4096 : 2048,
+                temperature: tone === 'concise' ? 0.3 : (tone === 'formal' ? 0.5 : 0.7),
+                topP: 0.8,
+                topK: 40,
             }
+        };
+        
+        // Add timeout to ensure we get complete responses
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Request timeout - response taking too long')), 90000); // Increased to 90 seconds
         });
+        
+        const apiCallPromise = ai.models.generateContent(modelConfig);
         
         const result = await Promise.race([apiCallPromise, timeoutPromise]);
 

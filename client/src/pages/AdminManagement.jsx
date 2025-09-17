@@ -1364,8 +1364,15 @@ export default function AdminManagement() {
                     })()}
                     {/* Suspension details */}
                     {selectedAccount.status === 'suspended' && (
-                      <div className="flex items-center gap-2 text-gray-700 text-sm">
-                        <span><strong>Suspended on:</strong> {selectedAccount.suspendedAt ? new Date(selectedAccount.suspendedAt).toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' }) : 'N/A'}</span>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-gray-700 text-sm">
+                          <span><strong>Suspended on:</strong> {selectedAccount.suspendedAt ? new Date(selectedAccount.suspendedAt).toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' }) : 'N/A'}</span>
+                        </div>
+                        {selectedAccount.suspendedBy && (
+                          <div className="flex items-center gap-2 text-gray-700 text-sm">
+                            <span><strong>Suspended by:</strong> {selectedAccount.suspendedBy?.username || selectedAccount.suspendedBy?.email || selectedAccount.suspendedBy}</span>
+                          </div>
+                        )}
                       </div>
                     )}
                     {selectedAccount.type === 'admin' && (
@@ -1394,12 +1401,6 @@ export default function AdminManagement() {
                           <span><strong>Is Default Admin:</strong> {selectedAccount.isDefaultAdmin ? 'Yes' : 'No'}</span>
                         </div>
                       </>
-                    )}
-                    {/* Show who suspended (rootadmin only) */}
-                    {selectedAccount.status === 'suspended' && currentUser.role === 'rootadmin' && selectedAccount.suspendedBy && (
-                      <div className="flex items-center gap-2 text-gray-700 text-sm">
-                        <span><strong>Suspended by:</strong> {selectedAccount.suspendedBy?.username || selectedAccount.suspendedBy?.email || selectedAccount.suspendedBy}</span>
-                      </div>
                     )}
                   </div>
                 </>
