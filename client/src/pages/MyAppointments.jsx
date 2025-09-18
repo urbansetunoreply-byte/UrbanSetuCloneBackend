@@ -3355,6 +3355,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
 
   // Reactions functions
   const handleQuickReaction = async (messageId, emoji) => {
+    if (isChatSendBlocked) {
+      toast.info('Reactions disabled for this appointment status. You can view chat history.');
+      return;
+    }
+    
     try {
       const message = comments.find(c => c._id === messageId);
       if (!message) {
@@ -3400,6 +3405,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   };
 
   const toggleReactionsBar = (messageId) => {
+    if (isChatSendBlocked) {
+      toast.info('Reactions disabled for this appointment status. You can view chat history.');
+      return;
+    }
+    
     if (reactionsMessageId === messageId && showReactionsBar) {
       setShowReactionsBar(false);
       setReactionsMessageId(null);
@@ -5847,14 +5857,25 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                               </span>
                               {/* Options icon - visible for all messages including deleted ones */}
                               <button
-                                className={`${c.senderEmail === currentUser.email ? 'text-blue-200 hover:text-white' : 'text-gray-500 hover:text-gray-700'} transition-all duration-200 hover:scale-110 p-1 rounded-full hover:bg-white hover:bg-opacity-20 ml-1`}
+                                className={`${
+                                  isChatSendBlocked 
+                                    ? 'text-gray-400 cursor-not-allowed' 
+                                    : c.senderEmail === currentUser.email 
+                                      ? 'text-blue-200 hover:text-white' 
+                                      : 'text-gray-500 hover:text-gray-700'
+                                } transition-all duration-200 ${!isChatSendBlocked ? 'hover:scale-110' : ''} p-1 rounded-full ${!isChatSendBlocked ? 'hover:bg-white hover:bg-opacity-20' : ''} ml-1`}
                                 onClick={(e) => { 
                                   e.stopPropagation(); 
+                                  if (isChatSendBlocked) {
+                                    toast.info('Reactions disabled for this appointment status. You can view chat history.');
+                                    return;
+                                  }
                                   setHeaderOptionsMessageId(c._id); 
                                   toggleReactionsBar(c._id);
                                 }}
-                                title="Message options"
-                                aria-label="Message options"
+                                disabled={isChatSendBlocked}
+                                title={isChatSendBlocked ? "Reactions disabled for this appointment status" : "Message options"}
+                                aria-label={isChatSendBlocked ? "Reactions disabled for this appointment status" : "Message options"}
                               >
                                 <FaEllipsisV size={12} />
                               </button>
@@ -5942,75 +5963,98 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                               {/* Quick reaction buttons */}
                               <button
                                 onClick={() => handleQuickReaction(c._id, '👍')}
-                                className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                                  c.reactions?.some(r => r.emoji === '👍' && r.userId === currentUser._id)
-                                    ? 'bg-blue-100 border-2 border-blue-400'
-                                    : 'bg-gray-50 hover:bg-gray-100'
+                                className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
+                                  isChatSendBlocked 
+                                    ? 'bg-gray-200 cursor-not-allowed opacity-50' 
+                                    : c.reactions?.some(r => r.emoji === '👍' && r.userId === currentUser._id)
+                                      ? 'bg-blue-100 border-2 border-blue-400'
+                                      : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
                                 }`}
-                                title="Like"
+                                disabled={isChatSendBlocked}
+                                title={isChatSendBlocked ? "Reactions disabled" : "Like"}
                               >
                                 👍
                               </button>
                               <button
                                 onClick={() => handleQuickReaction(c._id, '❤️')}
-                                className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                                  c.reactions?.some(r => r.emoji === '❤️' && r.userId === currentUser._id)
-                                    ? 'bg-blue-100 border-2 border-blue-400'
-                                    : 'bg-gray-50 hover:bg-gray-100'
+                                className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
+                                  isChatSendBlocked 
+                                    ? 'bg-gray-200 cursor-not-allowed opacity-50' 
+                                    : c.reactions?.some(r => r.emoji === '❤️' && r.userId === currentUser._id)
+                                      ? 'bg-blue-100 border-2 border-blue-400'
+                                      : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
                                 }`}
-                                title="Love"
+                                disabled={isChatSendBlocked}
+                                title={isChatSendBlocked ? "Reactions disabled" : "Love"}
                               >
                                 ❤️
                               </button>
                               <button
                                 onClick={() => handleQuickReaction(c._id, '😂')}
-                                className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                                  c.reactions?.some(r => r.emoji === '😂' && r.userId === currentUser._id)
-                                    ? 'bg-blue-100 border-2 border-blue-400'
-                                    : 'bg-gray-50 hover:bg-gray-100'
+                                className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
+                                  isChatSendBlocked 
+                                    ? 'bg-gray-200 cursor-not-allowed opacity-50' 
+                                    : c.reactions?.some(r => r.emoji === '😂' && r.userId === currentUser._id)
+                                      ? 'bg-blue-100 border-2 border-blue-400'
+                                      : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
                                 }`}
-                                title="Laugh"
+                                disabled={isChatSendBlocked}
+                                title={isChatSendBlocked ? "Reactions disabled" : "Laugh"}
                               >
                                 😂
                               </button>
                               <button
                                 onClick={() => handleQuickReaction(c._id, '😮')}
-                                className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                                  c.reactions?.some(r => r.emoji === '😮' && r.userId === currentUser._id)
-                                    ? 'bg-blue-100 border-2 border-blue-400'
-                                    : 'bg-gray-50 hover:bg-gray-100'
+                                className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
+                                  isChatSendBlocked 
+                                    ? 'bg-gray-200 cursor-not-allowed opacity-50' 
+                                    : c.reactions?.some(r => r.emoji === '😮' && r.userId === currentUser._id)
+                                      ? 'bg-blue-100 border-2 border-blue-400'
+                                      : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
                                 }`}
-                                title="Wow"
+                                disabled={isChatSendBlocked}
+                                title={isChatSendBlocked ? "Reactions disabled" : "Wow"}
                               >
                                 😮
                               </button>
                               <button
                                 onClick={() => handleQuickReaction(c._id, '😢')}
-                                className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                                  c.reactions?.some(r => r.emoji === '😢' && r.userId === currentUser._id)
-                                    ? 'bg-blue-100 border-2 border-blue-400'
-                                    : 'bg-gray-50 hover:bg-gray-100'
+                                className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
+                                  isChatSendBlocked 
+                                    ? 'bg-gray-200 cursor-not-allowed opacity-50' 
+                                    : c.reactions?.some(r => r.emoji === '😢' && r.userId === currentUser._id)
+                                      ? 'bg-blue-100 border-2 border-blue-400'
+                                      : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
                                 }`}
-                                title="Sad"
+                                disabled={isChatSendBlocked}
+                                title={isChatSendBlocked ? "Reactions disabled" : "Sad"}
                               >
                                 😢
                               </button>
                               <button
                                 onClick={() => handleQuickReaction(c._id, '😡')}
-                                className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                                  c.reactions?.some(r => r.emoji === '😡' && r.userId === currentUser._id)
-                                    ? 'bg-blue-100 border-2 border-blue-400'
-                                    : 'bg-gray-50 hover:bg-gray-100'
+                                className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
+                                  isChatSendBlocked 
+                                    ? 'bg-gray-200 cursor-not-allowed opacity-50' 
+                                    : c.reactions?.some(r => r.emoji === '😡' && r.userId === currentUser._id)
+                                      ? 'bg-blue-100 border-2 border-blue-400'
+                                      : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
                                 }`}
-                                title="Angry"
+                                disabled={isChatSendBlocked}
+                                title={isChatSendBlocked ? "Reactions disabled" : "Angry"}
                               >
                                 😡
                               </button>
                               <div className="w-px h-6 bg-gray-300 mx-1"></div>
                               <button
                                 onClick={toggleReactionsEmojiPicker}
-                                className="w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform bg-gray-50 hover:bg-gray-100 rounded-full"
-                                title="More emojis"
+                                className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
+                                  isChatSendBlocked 
+                                    ? 'bg-gray-200 cursor-not-allowed opacity-50' 
+                                    : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                                }`}
+                                disabled={isChatSendBlocked}
+                                title={isChatSendBlocked ? "Reactions disabled" : "More emojis"}
                               >
                                 ➕
                               </button>
@@ -6068,75 +6112,98 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           {/* Quick reaction buttons */}
                           <button
                             onClick={() => handleQuickReaction(comment._id, '👍')}
-                            className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                              comment.reactions?.some(r => r.emoji === '👍' && r.userId === currentUser._id)
-                                ? 'bg-blue-100 border-2 border-blue-400'
-                                : 'bg-gray-50 hover:bg-gray-100'
+                            className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
+                              isChatSendBlocked 
+                                ? 'bg-gray-200 cursor-not-allowed opacity-50' 
+                                : comment.reactions?.some(r => r.emoji === '👍' && r.userId === currentUser._id)
+                                  ? 'bg-blue-100 border-2 border-blue-400'
+                                  : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
                             }`}
-                            title="Like"
+                            disabled={isChatSendBlocked}
+                            title={isChatSendBlocked ? "Reactions disabled" : "Like"}
                           >
                             👍
                           </button>
                           <button
                             onClick={() => handleQuickReaction(comment._id, '❤️')}
-                            className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                              comment.reactions?.some(r => r.emoji === '❤️' && r.userId === currentUser._id)
-                                ? 'bg-blue-100 border-2 border-blue-400'
-                                : 'bg-gray-50 hover:bg-gray-100'
+                            className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
+                              isChatSendBlocked 
+                                ? 'bg-gray-200 cursor-not-allowed opacity-50' 
+                                : comment.reactions?.some(r => r.emoji === '❤️' && r.userId === currentUser._id)
+                                  ? 'bg-blue-100 border-2 border-blue-400'
+                                  : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
                             }`}
-                            title="Love"
+                            disabled={isChatSendBlocked}
+                            title={isChatSendBlocked ? "Reactions disabled" : "Love"}
                           >
                             ❤️
                           </button>
                           <button
                             onClick={() => handleQuickReaction(comment._id, '😂')}
-                            className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                              comment.reactions?.some(r => r.emoji === '😂' && r.userId === currentUser._id)
-                                ? 'bg-blue-100 border-2 border-blue-400'
-                                : 'bg-gray-50 hover:bg-gray-100'
+                            className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
+                              isChatSendBlocked 
+                                ? 'bg-gray-200 cursor-not-allowed opacity-50' 
+                                : comment.reactions?.some(r => r.emoji === '😂' && r.userId === currentUser._id)
+                                  ? 'bg-blue-100 border-2 border-blue-400'
+                                  : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
                             }`}
-                            title="Laugh"
+                            disabled={isChatSendBlocked}
+                            title={isChatSendBlocked ? "Reactions disabled" : "Laugh"}
                           >
                             😂
                           </button>
                           <button
                             onClick={() => handleQuickReaction(comment._id, '😮')}
-                            className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                              comment.reactions?.some(r => r.emoji === '😮' && r.userId === currentUser._id)
-                                ? 'bg-blue-100 border-2 border-blue-400'
-                                : 'bg-gray-50 hover:bg-gray-100'
+                            className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
+                              isChatSendBlocked 
+                                ? 'bg-gray-200 cursor-not-allowed opacity-50' 
+                                : comment.reactions?.some(r => r.emoji === '😮' && r.userId === currentUser._id)
+                                  ? 'bg-blue-100 border-2 border-blue-400'
+                                  : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
                             }`}
-                            title="Wow"
+                            disabled={isChatSendBlocked}
+                            title={isChatSendBlocked ? "Reactions disabled" : "Wow"}
                           >
                             😮
                           </button>
                           <button
                             onClick={() => handleQuickReaction(comment._id, '😢')}
-                            className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                              comment.reactions?.some(r => r.emoji === '😢' && r.userId === currentUser._id)
-                                ? 'bg-blue-100 border-2 border-blue-400'
-                                : 'bg-gray-50 hover:bg-gray-100'
+                            className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
+                              isChatSendBlocked 
+                                ? 'bg-gray-200 cursor-not-allowed opacity-50' 
+                                : comment.reactions?.some(r => r.emoji === '😢' && r.userId === currentUser._id)
+                                  ? 'bg-blue-100 border-2 border-blue-400'
+                                  : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
                             }`}
-                            title="Sad"
+                            disabled={isChatSendBlocked}
+                            title={isChatSendBlocked ? "Reactions disabled" : "Sad"}
                           >
                             😢
                           </button>
                           <button
                             onClick={() => handleQuickReaction(comment._id, '😡')}
-                            className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                              comment.reactions?.some(r => r.emoji === '😡' && r.userId === currentUser._id)
-                                ? 'bg-blue-100 border-2 border-blue-400'
-                                : 'bg-gray-50 hover:bg-gray-100'
+                            className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
+                              isChatSendBlocked 
+                                ? 'bg-gray-200 cursor-not-allowed opacity-50' 
+                                : comment.reactions?.some(r => r.emoji === '😡' && r.userId === currentUser._id)
+                                  ? 'bg-blue-100 border-2 border-blue-400'
+                                  : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
                             }`}
-                            title="Angry"
+                            disabled={isChatSendBlocked}
+                            title={isChatSendBlocked ? "Reactions disabled" : "Angry"}
                           >
                             😡
                           </button>
                           <div className="w-px h-6 bg-gray-300 mx-1"></div>
                           <button
                             onClick={toggleReactionsEmojiPicker}
-                            className="w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform bg-gray-50 hover:bg-gray-100 rounded-full"
-                            title="More emojis"
+                            className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
+                              isChatSendBlocked 
+                                ? 'bg-gray-200 cursor-not-allowed opacity-50' 
+                                : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                            }`}
+                            disabled={isChatSendBlocked}
+                            title={isChatSendBlocked ? "Reactions disabled" : "More emojis"}
                           >
                             ➕
                           </button>

@@ -1218,6 +1218,167 @@ function getDateLabel(date) {
   return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
+function AdminPaymentStatusCell({ appointmentId }) {
+  const [payment, setPayment] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+  const [appointment, setAppointment] = React.useState(null);
+  const [toggling, setToggling] = React.useState(false);
+  const [showStatusOptions, setShowStatusOptions] = React.useState(false);
+
+  React.useEffect(() => {
+    async function fetchPayment() {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/payments/history?appointmentId=${appointmentId}`, { credentials: 'include' });
+        const data = await res.json();
+        if (res.ok && Array.isArray(data.payments) && data.payments.length > 0) {
+          setPayment(data.payments[0]);
+        } else {
+          setPayment(null);
+        }
+      } catch {
+        setPayment(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+    async function fetchAppointment() {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/bookings/${appointmentId}`, { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          setAppointment(data);
+        }
+      } catch {}
+    }
+    fetchPayment();
+    fetchAppointment();
+  }, [appointmentId]);
+
+  // Close status options when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showStatusOptions && !event.target.closest('.status-options-container')) {
+        setShowStatusOptions(false);
+      }
+    };
+
+    if (showStatusOptions) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showStatusOptions]);
+
+  const handleStatusChange = async (newStatus) => {
+    if (!appointment) return;
+    if (appointment?.paymentConfirmed === newStatus) return;
+    setToggling(true);
+    setShowStatusOptions(false);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/bookings/${appointmentId}/payment-status`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentConfirmed: newStatus })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAppointment(data.appointment);
+      }
+    } finally {
+      setToggling(false);
+    }
+  };
+
+  const statusButton = (
+    <div className="mt-1 relative status-options-container">
+      <button
+        onClick={() => setShowStatusOptions(!showStatusOptions)}
+        disabled={toggling}
+        className="text-[10px] px-2 py-1 rounded border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        title="Change payment status"
+      >
+        {toggling ? 'Updating...' : 'Change Status'}
+      </button>
+      
+      {showStatusOptions && (
+        <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 min-w-[120px]">
+          {!appointment?.paymentConfirmed ? (
+            <button
+              onClick={() => handleStatusChange(true)}
+              className="w-full text-left px-3 py-2 text-[10px] text-green-700 hover:bg-green-50 border-b border-gray-100"
+            >
+              Mark Paid
+            </button>
+          ) : (
+            <button
+              onClick={() => handleStatusChange(false)}
+              className="w-full text-left px-3 py-2 text-[10px] text-red-700 hover:bg-red-50 border-b border-gray-100"
+            >
+              Mark Unpaid
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
+  if (loading) {
+    return <FaSpinner className="animate-spin text-blue-600 mx-auto" />;
+  }
+
+  if (!payment) {
+    return (
+      <div className="flex flex-col items-center gap-1">
+        <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pending</span>
+        {statusButton}
+      </div>
+    );
+  }
+
+  const color = payment.status === 'completed'
+    ? 'bg-green-100 text-green-800'
+    : payment.status === 'pending'
+    ? 'bg-yellow-100 text-yellow-800'
+    : payment.status === 'failed'
+    ? 'bg-red-100 text-red-800'
+    : payment.status === 'refunded'
+    ? 'bg-blue-100 text-blue-800'
+    : payment.status === 'partially_refunded'
+    ? 'bg-orange-100 text-orange-800'
+    : 'bg-gray-100 text-gray-800';
+
+  const label = payment.status === 'completed'
+    ? 'Paid'
+    : payment.status === 'pending'
+    ? 'Pending'
+    : payment.status === 'failed'
+    ? 'Failed'
+    : payment.status === 'refunded'
+    ? 'Refunded'
+    : payment.status === 'partially_refunded'
+    ? 'Partial Refund'
+    : payment.status;
+
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${color}`}>{label}</span>
+      {typeof payment.amount === 'number' && (
+        <div className="text-[10px] text-gray-500 inline-flex items-center gap-1">
+          {((payment.currency || 'USD') === 'USD') ? (
+            <span>$ {Number(payment.amount).toFixed(2)}</span>
+          ) : (
+            <span>$ {payment.amount}</span>
+          )}
+        </div>
+      )}
+      {appointment?.paymentConfirmed && (
+        <div className="text-[10px] text-green-700 font-semibold">✓ Admin Confirmed</div>
+      )}
+      {statusButton}
+    </div>
+  );
+}
+
 function AdminAppointmentRow({ 
   appt, 
   currentUser, 
@@ -6519,167 +6680,5 @@ function AdminAppointmentRow({
 
       </td>
     </tr>
-  );
-}
-
-function AdminPaymentStatusCell({ appointmentId }) {
-  const [payment, setPayment] = React.useState(null);
-  const [loading, setLoading] = React.useState(true);
-  const [appointment, setAppointment] = React.useState(null);
-  const [toggling, setToggling] = React.useState(false);
-  const [showStatusOptions, setShowStatusOptions] = React.useState(false);
-
-  React.useEffect(() => {
-    async function fetchPayment() {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/payments/history?appointmentId=${appointmentId}`, { credentials: 'include' });
-        const data = await res.json();
-        if (res.ok && Array.isArray(data.payments) && data.payments.length > 0) {
-          setPayment(data.payments[0]);
-        } else {
-          setPayment(null);
-        }
-      } catch {
-        setPayment(null);
-      } finally {
-        setLoading(false);
-      }
-    }
-    async function fetchAppointment() {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/bookings/${appointmentId}`, { credentials: 'include' });
-        if (res.ok) {
-          const data = await res.json();
-          setAppointment(data);
-        }
-      } catch {}
-    }
-    fetchPayment();
-    fetchAppointment();
-  }, [appointmentId]);
-
-  // Close status options when clicking outside
-  React.useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (showStatusOptions && !event.target.closest('.status-options-container')) {
-        setShowStatusOptions(false);
-      }
-    };
-
-    if (showStatusOptions) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [showStatusOptions]);
-
-  if (loading) {
-    return <FaSpinner className="animate-spin text-blue-600 mx-auto" />;
-  }
-
-  if (!payment) {
-    return (
-      <div className="flex flex-col items-center gap-1">
-        <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pending</span>
-        {statusButton}
-      </div>
-    );
-  }
-
-  const color = payment.status === 'completed'
-    ? 'bg-green-100 text-green-800'
-    : payment.status === 'pending'
-    ? 'bg-yellow-100 text-yellow-800'
-    : payment.status === 'failed'
-    ? 'bg-red-100 text-red-800'
-    : payment.status === 'refunded'
-    ? 'bg-blue-100 text-blue-800'
-    : payment.status === 'partially_refunded'
-    ? 'bg-orange-100 text-orange-800'
-    : 'bg-gray-100 text-gray-800';
-
-  const label = payment.status === 'completed'
-    ? 'Paid'
-    : payment.status === 'pending'
-    ? 'Pending'
-    : payment.status === 'failed'
-    ? 'Failed'
-    : payment.status === 'refunded'
-    ? 'Refunded'
-    : payment.status === 'partially_refunded'
-    ? 'Partial Refund'
-    : payment.status;
-
-
-  const handleStatusChange = async (newStatus) => {
-    if (!appointment) return;
-    if (appointment?.paymentConfirmed === newStatus) return;
-    setToggling(true);
-    setShowStatusOptions(false);
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/bookings/${appointmentId}/payment-status`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentConfirmed: newStatus })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setAppointment(data.appointment);
-      }
-    } finally {
-      setToggling(false);
-    }
-  };
-
-  const statusButton = (
-    <div className="mt-1 relative status-options-container">
-      <button
-        onClick={() => setShowStatusOptions(!showStatusOptions)}
-        disabled={toggling}
-        className="text-[10px] px-2 py-1 rounded border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-        title="Change payment status"
-      >
-        {toggling ? 'Updating...' : 'Change Status'}
-      </button>
-      
-      {showStatusOptions && (
-        <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 min-w-[120px]">
-          {!appointment?.paymentConfirmed ? (
-            <button
-              onClick={() => handleStatusChange(true)}
-              className="w-full text-left px-3 py-2 text-[10px] text-green-700 hover:bg-green-50 border-b border-gray-100"
-            >
-              Mark Paid
-            </button>
-          ) : (
-            <button
-              onClick={() => handleStatusChange(false)}
-              className="w-full text-left px-3 py-2 text-[10px] text-red-700 hover:bg-red-50 border-b border-gray-100"
-            >
-              Mark Unpaid
-            </button>
-          )}
-        </div>
-      )}
-    </div>
-  );
-
-  return (
-    <div className="flex flex-col items-center gap-1">
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${color}`}>{label}</span>
-      {typeof payment.amount === 'number' && (
-        <div className="text-[10px] text-gray-500 inline-flex items-center gap-1">
-          {((payment.currency || 'USD') === 'USD') ? (
-            <span>$ {Number(payment.amount).toFixed(2)}</span>
-          ) : (
-            <span>$ {payment.amount}</span>
-          )}
-        </div>
-      )}
-      {appointment?.paymentConfirmed && (
-        <div className="text-[10px] text-green-700 font-semibold">✓ Admin Confirmed</div>
-      )}
-      {statusButton}
-    </div>
   );
 }
