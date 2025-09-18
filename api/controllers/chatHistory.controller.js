@@ -230,10 +230,13 @@ export const updateChatSession = async (req, res) => {
             });
         }
 
-        if (!messages || !Array.isArray(messages)) {
+        // At least one of messages or name should be provided
+        const hasMessages = Array.isArray(messages);
+        const hasName = typeof name === 'string';
+        if (!hasMessages && !hasName) {
             return res.status(400).json({
                 success: false,
-                message: 'Messages array is required'
+                message: 'Nothing to update. Provide messages or name.'
             });
         }
 
@@ -251,11 +254,11 @@ export const updateChatSession = async (req, res) => {
         }
 
         // Update the session with new messages and optional name
-        if (Array.isArray(messages)) {
+        if (hasMessages) {
             chatHistory.messages = messages;
             chatHistory.totalMessages = totalMessages || messages.length;
         }
-        if (typeof name === 'string') {
+        if (hasName) {
             chatHistory.name = name.trim().slice(0, 80) || null;
         }
         chatHistory.lastActivity = new Date();

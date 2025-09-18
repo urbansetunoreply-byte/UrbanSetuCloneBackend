@@ -126,6 +126,28 @@ export const chatWithGemini = async (req, res) => {
                 const chatHistory = await ChatHistory.findOrCreateSession(userId, currentSessionId);
                 await chatHistory.addMessage('user', message);
                 await chatHistory.addMessage('assistant', responseText);
+
+                // Auto-title: if no name yet and at least two messages, generate a short title
+                if (!chatHistory.name && chatHistory.messages && chatHistory.messages.length >= 2) {
+                    try {
+                        const convoForTitle = chatHistory.messages.slice(0, 8).map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n');
+                        const titlePrompt = `${getSystemPrompt('concise')}\n\nSummarize the chat into a short 4-7 word descriptive title without quotes.\n\nChat:\n${convoForTitle}`;
+                        const titleResult = await ai.models.generateContent({
+                            model: 'gemini-2.0-flash-exp',
+                            contents: [{ role: 'user', parts: [{ text: titlePrompt }] }],
+                            config: { maxOutputTokens: 16, temperature: 0.3 }
+                        });
+                        const titleRaw = titleResult.text || '';
+                        const title = titleRaw.replace(/[\n\r]+/g, ' ').slice(0, 80).trim();
+                        if (title) {
+                            chatHistory.name = title;
+                            await chatHistory.save();
+                        }
+                    } catch (e) {
+                        console.warn('Auto-title generation failed:', e?.message || e);
+                    }
+                }
+
                 console.log('Chat history saved successfully');
             } catch (historyError) {
                 console.error('Error saving chat history:', historyError);

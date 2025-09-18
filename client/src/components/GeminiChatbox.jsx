@@ -1542,20 +1542,28 @@ const GeminiChatbox = () => {
                                                                     Delete chat
                                                                 </button>
                                                                 <button
-                                                                    onClick={(e) => {
+                                                                    onClick={async (e) => {
                                                                         e.stopPropagation();
-                                                                        // Share entire chat by downloading a .txt
-                                                                        const lines = (session.messages || []).map(m => `${m.role === 'user' ? 'You' : 'Gemini'}: ${m.content}`);
-                                                                        const blob = new Blob([lines.join('\n\n')], { type: 'text/plain;charset=utf-8' });
-                                                                        const url = URL.createObjectURL(blob);
-                                                                        const a = document.createElement('a');
-                                                                        a.href = url;
-                                                                        a.download = `chat_${session.sessionId}.txt`;
-                                                                        document.body.appendChild(a);
-                                                                        a.click();
-                                                                        document.body.removeChild(a);
-                                                                        URL.revokeObjectURL(url);
-                                                                        e.currentTarget.parentElement?.classList.add('hidden');
+                                                                        try {
+                                                                            // Load full chat messages for this chat and reuse same share logic as header
+                                                                            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+                                                                            const resp = await fetch(`${API_BASE_URL}/api/chat-history/session/${session.sessionId}`, { credentials: 'include' });
+                                                                            const data = await resp.json();
+                                                                            if (!resp.ok || !data?.data?.messages) throw new Error('load');
+                                                                            const lines = data.data.messages.map(m => `${m.role === 'user' ? 'You' : 'Gemini'}: ${m.content}`);
+                                                                            const blob = new Blob([lines.join('\n\n')], { type: 'text/plain;charset=utf-8' });
+                                                                            const url = URL.createObjectURL(blob);
+                                                                            const a = document.createElement('a');
+                                                                            a.href = url;
+                                                                            a.download = `gemini_chat_${new Date().toISOString().split('T')[0]}.txt`;
+                                                                            document.body.appendChild(a);
+                                                                            a.click();
+                                                                            document.body.removeChild(a);
+                                                                            URL.revokeObjectURL(url);
+                                                                            e.currentTarget.parentElement?.classList.add('hidden');
+                                                                        } catch {
+                                                                            toast.error('Failed to share chat');
+                                                                        }
                                                                     }}
                                                                     className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
                                                                 >
