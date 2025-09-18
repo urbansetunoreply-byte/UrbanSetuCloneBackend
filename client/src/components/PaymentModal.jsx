@@ -132,6 +132,9 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
               toast.error('Payment capture failed');
             }
           },
+          onCancel: () => {
+            toast.info('Payment cancelled. You can try again later.');
+          },
           onError: (err) => {
             console.error('PayPal error', err);
             toast.error('Payment failed or cancelled.');
@@ -207,7 +210,12 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                   Payment Required
                 </h2>
                 <button
-                  onClick={onClose}
+                  onClick={() => {
+                    if (!paymentSuccess) {
+                      toast.info('Payment not completed. You can pay later from My Appointments.');
+                    }
+                    onClose();
+                  }}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
                   <FaTimes className="text-xl" />
@@ -266,6 +274,11 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                   <div className="bg-gray-50 rounded-lg p-4 mb-6">
                     <h5 className="font-semibold text-gray-800 mb-2">Payment Platform</h5>
                     <div className="text-sm text-gray-700">PayPal</div>
+                    <ul className="list-disc pl-5 mt-3 text-sm text-gray-600 space-y-1">
+                      <li>Click "Load PayPal Button" and complete payment in the PayPal popup.</li>
+                      <li>On approval, we verify and confirm your booking automatically.</li>
+                      <li>If you cancel or close PayPal, you can retry from My Appointments.</li>
+                    </ul>
                   </div>
 
                   {/* Security Notice */}
@@ -286,7 +299,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
               onClick={handlePayment}
               className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700"
             >
-              Load PayPal Button
+              {loading ? 'Loading…' : 'Load PayPal Button'}
             </button>
           </div>
                 </>
