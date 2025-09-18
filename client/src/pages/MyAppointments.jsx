@@ -5168,22 +5168,24 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           </button>
                           {showChatOptionsMenu && (
                             <div className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-20 min-w-[180px] chat-options-menu">
-                              {/* Contact Information option */}
-                              <button
-                                className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
-                                onClick={() => {
-                                  onShowOtherParty({
-                                    ...otherParty,
-                                    isOnline: isOtherPartyOnlineInTable,
-                                    isTyping: isOtherPartyTyping,
-                                    lastSeen: otherPartyLastSeenInTable
-                                  });
-                                  setShowChatOptionsMenu(false);
-                                }}
-                              >
-                                <FaInfoCircle className="text-sm" />
-                                Contact Information
-                              </button>
+                              {/* Contact Information option - only show for accepted status */}
+                              {canSeeContactInfo && (
+                                <button
+                                  className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+                                  onClick={() => {
+                                    onShowOtherParty({
+                                      ...otherParty,
+                                      isOnline: isOtherPartyOnlineInTable,
+                                      isTyping: isOtherPartyTyping,
+                                      lastSeen: otherPartyLastSeenInTable
+                                    });
+                                    setShowChatOptionsMenu(false);
+                                  }}
+                                >
+                                  <FaInfoCircle className="text-sm" />
+                                  Contact Information
+                                </button>
+                              )}
                               {/* Refresh option */}
                               <button
                                 className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"

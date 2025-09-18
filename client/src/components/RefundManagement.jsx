@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FaUndo, FaDollarSign, FaExclamationTriangle, FaCheckCircle, FaTimes, FaSpinner, FaSearch, FaFilter } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
@@ -17,14 +17,42 @@ const RefundManagement = () => {
     status: 'completed',
     search: ''
   });
+  const [searchTimeout, setSearchTimeout] = useState(null);
 
+  // Debounced search effect - no loading indicator for search
   useEffect(() => {
-    fetchPayments();
-  }, [filters]);
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+    
+    const timeout = setTimeout(() => {
+      fetchPayments(false); // No loading indicator for search
+    }, 300); // 300ms debounce
+    
+    setSearchTimeout(timeout);
+    
+    return () => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+    };
+  }, [filters.search]);
 
-  const fetchPayments = async () => {
+  // Status filter effect (immediate, no debounce) - show loading for status changes
+  useEffect(() => {
+    fetchPayments(true); // Show loading for status filter changes
+  }, [filters.status]);
+
+  // Initial load effect
+  useEffect(() => {
+    fetchPayments(true); // Show loading for initial load
+  }, []);
+
+  const fetchPayments = async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) {
+        setLoading(true);
+      }
       const queryParams = new URLSearchParams({
         status: 'completed',
         ...filters
@@ -44,7 +72,9 @@ const RefundManagement = () => {
       console.error('Error fetching payments:', error);
       toast.error('An error occurred while fetching payments');
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   };
 
@@ -81,7 +111,7 @@ const RefundManagement = () => {
       if (response.ok) {
         toast.success('Refund processed successfully');
         setShowRefundModal(false);
-        fetchPayments(); // Refresh the list
+        fetchPayments(false); // Refresh the list without loading indicator
       } else {
         toast.error(data.message || 'Failed to process refund');
       }
