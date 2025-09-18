@@ -220,7 +220,7 @@ export const clearAllChatHistory = async (req, res) => {
 export const updateChatSession = async (req, res) => {
     try {
         const { sessionId } = req.params;
-        const { messages, totalMessages } = req.body;
+        const { messages, totalMessages, name } = req.body;
         const userId = req.user.id;
 
         if (!sessionId) {
@@ -250,9 +250,14 @@ export const updateChatSession = async (req, res) => {
             });
         }
 
-        // Update the session with new messages
-        chatHistory.messages = messages;
-        chatHistory.totalMessages = totalMessages || messages.length;
+        // Update the session with new messages and optional name
+        if (Array.isArray(messages)) {
+            chatHistory.messages = messages;
+            chatHistory.totalMessages = totalMessages || messages.length;
+        }
+        if (typeof name === 'string') {
+            chatHistory.name = name.trim().slice(0, 80) || null;
+        }
         chatHistory.lastActivity = new Date();
 
         await chatHistory.save();

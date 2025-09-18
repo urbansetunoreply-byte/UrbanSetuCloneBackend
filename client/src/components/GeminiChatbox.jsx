@@ -980,13 +980,14 @@ const GeminiChatbox = () => {
                                             <li className="hidden md:block">
                                                 <button
                                                     onClick={() => { setIsExpanded(expanded => !expanded); setIsHeaderMenuOpen(false); }}
-                                                    className="w-full text-left px-3 py-2 hover:bg-gray-100"
+                                                    className="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2"
                                                 >
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h7v2H6v5H4V4zm10 0h6v6h-2V6h-4V4zM4 14h2v4h4v2H4v-6zm14 0h2v6h-6v-2h4v-4z"/></svg>
                                                     {isExpanded ? 'Collapse' : 'Expand'}
                                                 </button>
                                             </li>
                                             
-                                            {/* Export */}
+                                            {/* Share current chat */}
                                             <li>
                                                 <button
                                                     onClick={() => {
@@ -1003,13 +1004,13 @@ const GeminiChatbox = () => {
                                                             URL.revokeObjectURL(url);
                                                             setIsHeaderMenuOpen(false);
                                                         } catch (e) {
-                                                            toast.error('Failed to export transcript');
+                                                            toast.error('Failed to share chat');
                                                         }
                                                     }}
                                                     className="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2"
                                                 >
-                                                    <FaDownload size={12} className="text-green-500" />
-                                                    Export
+                                                    <FaShare size={12} className="text-green-500" />
+                                                    Share Chat
                                                 </button>
                                             </li>
                                             
@@ -1029,8 +1030,9 @@ const GeminiChatbox = () => {
                                                 <li>
                                                     <button
                                                         onClick={() => { setIsHeaderMenuOpen(false); setShowConfirmClear(true); }}
-                                                        className="w-full text-left px-3 py-2 hover:bg-gray-100 text-red-600"
+                                                        className="w-full text-left px-3 py-2 hover:bg-gray-100 text-red-600 flex items-center gap-2"
                                                     >
+                                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
                                                         Clear Chat
                                                     </button>
                                                 </li>
@@ -1441,6 +1443,7 @@ const GeminiChatbox = () => {
                                         <div className="flex items-center gap-2">
                                             <button
                                                 onClick={async () => {
+                                                    if (!window.confirm('Delete ALL chats? This cannot be undone.')) return;
                                                     try {
                                                         const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
                                                         await fetch(`${API_BASE_URL}/api/gemini/sessions`, {
@@ -1505,7 +1508,7 @@ const GeminiChatbox = () => {
                                                             className="flex-1 text-left"
                                                         >
                                                             <div className="text-sm font-medium text-gray-800">
-                                                                Chat {idx + 1}
+                                                                {session.name?.trim() ? session.name : `Chat ${idx + 1}`}
                                                             </div>
                                                             <div className="text-xs text-gray-600">
                                                                 {new Date(session.lastMessageAt).toLocaleString()}
@@ -1514,17 +1517,75 @@ const GeminiChatbox = () => {
                                                                 {session.messageCount} messages
                                                             </div>
                                                         </button>
-                                                        <button
-                                                            onClick={() => {
-                                                                if (window.confirm('Delete this chat?')) {
-                                                                    deleteSession(session.sessionId);
-                                                                }
-                                                            }}
-                                                            className="ml-2 p-1 text-red-600 hover:text-red-700 hover:bg-red-100 rounded transition-all duration-200"
-                                                            title="Delete chat"
-                                                        >
-                                                            <FaTimes size={12} />
-                                                        </button>
+                                                        <div className="relative">
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    const menu = e.currentTarget.nextSibling;
+                                                                    if (menu) menu.classList.toggle('hidden');
+                                                                }}
+                                                                className="ml-2 p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-all duration-200"
+                                                                title="Chat options"
+                                                            >
+                                                                ⋯
+                                                            </button>
+                                                            <div className="hidden absolute right-0 top-6 bg-white border border-gray-200 rounded shadow-lg z-10 w-36">
+                                                                <button
+                                                                    onClick={async (e) => {
+                                                                        e.stopPropagation();
+                                                                        if (!window.confirm('Delete this chat?')) return;
+                                                                        await deleteSession(session.sessionId);
+                                                                        e.currentTarget.parentElement?.classList.add('hidden');
+                                                                    }}
+                                                                    className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
+                                                                >
+                                                                    Delete chat
+                                                                </button>
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        // Share entire chat by downloading a .txt
+                                                                        const lines = (session.messages || []).map(m => `${m.role === 'user' ? 'You' : 'Gemini'}: ${m.content}`);
+                                                                        const blob = new Blob([lines.join('\n\n')], { type: 'text/plain;charset=utf-8' });
+                                                                        const url = URL.createObjectURL(blob);
+                                                                        const a = document.createElement('a');
+                                                                        a.href = url;
+                                                                        a.download = `chat_${session.sessionId}.txt`;
+                                                                        document.body.appendChild(a);
+                                                                        a.click();
+                                                                        document.body.removeChild(a);
+                                                                        URL.revokeObjectURL(url);
+                                                                        e.currentTarget.parentElement?.classList.add('hidden');
+                                                                    }}
+                                                                    className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
+                                                                >
+                                                                    Share chat
+                                                                </button>
+                                                                <button
+                                                                    onClick={async (e) => {
+                                                                        e.stopPropagation();
+                                                                        const newName = prompt('Enter chat name');
+                                                                        if (newName === null) return;
+                                                                        try {
+                                                                            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+                                                                            await fetch(`${API_BASE_URL}/api/chat-history/session/${session.sessionId}`, {
+                                                                                method: 'PUT',
+                                                                                credentials: 'include',
+                                                                                headers: { 'Content-Type': 'application/json' },
+                                                                                body: JSON.stringify({ name: newName })
+                                                                            });
+                                                                            await loadChatSessions();
+                                                                            e.currentTarget.parentElement?.classList.add('hidden');
+                                                                        } catch {
+                                                                            toast.error('Failed to rename chat');
+                                                                        }
+                                                                    }}
+                                                                    className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
+                                                                >
+                                                                    Rename
+                                                                </button>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ))}

@@ -6,6 +6,12 @@ const chatHistorySchema = new mongoose.Schema({
     ref: "User",
     required: true
   },
+  name: {
+    type: String,
+    default: null,
+    trim: true,
+    maxlength: 80
+  },
   sessionId: {
     type: String,
     required: true,
@@ -100,12 +106,13 @@ chatHistorySchema.statics.getUserSessions = async function(userId) {
     userId, 
     isActive: true 
   })
-  .select('sessionId totalMessages lastActivity createdAt')
+  .select('sessionId totalMessages lastActivity createdAt name')
   .sort({ lastActivity: -1 })
   .limit(20); // Limit to last 20 sessions
   
   return sessions.map(session => ({
     sessionId: session.sessionId,
+    name: session.name,
     messageCount: session.totalMessages,
     lastMessageAt: session.lastActivity,
     createdAt: session.createdAt
