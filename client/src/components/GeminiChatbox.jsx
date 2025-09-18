@@ -45,6 +45,7 @@ const GeminiChatbox = () => {
     const [showMessageMenu, setShowMessageMenu] = useState(false);
     const [highlightedMessage, setHighlightedMessage] = useState(null);
     const [selectedHistoryIds, setSelectedHistoryIds] = useState([]);
+    const [openHistoryMenuSessionId, setOpenHistoryMenuSessionId] = useState(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -1521,21 +1522,21 @@ const GeminiChatbox = () => {
                                                             <button
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    const menu = e.currentTarget.nextSibling;
-                                                                    if (menu) menu.classList.toggle('hidden');
+                                                                    setOpenHistoryMenuSessionId(prev => prev === session.sessionId ? null : session.sessionId);
                                                                 }}
                                                                 className="ml-2 p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-all duration-200"
                                                                 title="Chat options"
                                                             >
                                                                 ⋯
                                                             </button>
-                                                            <div className="hidden absolute right-0 top-6 bg-white border border-gray-200 rounded shadow-lg z-10 w-36">
+                                                            {openHistoryMenuSessionId === session.sessionId && (
+                                                            <div className="absolute right-0 top-6 bg-white border border-gray-200 rounded shadow-lg z-10 w-36">
                                                                 <button
                                                                     onClick={async (e) => {
                                                                         e.stopPropagation();
                                                                         if (!window.confirm('Delete this chat?')) return;
                                                                         await deleteSession(session.sessionId);
-                                                                        e.currentTarget.parentElement?.classList.add('hidden');
+                                                                        setOpenHistoryMenuSessionId(null);
                                                                     }}
                                                                     className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
                                                                 >
@@ -1560,7 +1561,7 @@ const GeminiChatbox = () => {
                                                                             a.click();
                                                                             document.body.removeChild(a);
                                                                             URL.revokeObjectURL(url);
-                                                                            e.currentTarget.parentElement?.classList.add('hidden');
+                                                                            setOpenHistoryMenuSessionId(null);
                                                                         } catch {
                                                                             toast.error('Failed to share chat');
                                                                         }
@@ -1583,7 +1584,7 @@ const GeminiChatbox = () => {
                                                                                 body: JSON.stringify({ name: newName })
                                                                             });
                                                                             await loadChatSessions();
-                                                                            e.currentTarget.parentElement?.classList.add('hidden');
+                                                                            setOpenHistoryMenuSessionId(null);
                                                                         } catch {
                                                                             toast.error('Failed to rename chat');
                                                                         }
@@ -1593,6 +1594,7 @@ const GeminiChatbox = () => {
                                                                     Rename
                                                                 </button>
                                                             </div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1618,7 +1620,7 @@ const GeminiChatbox = () => {
                                         </div>
                                     )}
                                     <div className="flex justify-end mt-4">
-                                        <button onClick={() => setShowHistory(false)} className="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-700">Close</button>
+                                        <button onClick={() => { setShowHistory(false); setOpenHistoryMenuSessionId(null); }} className="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-700">Close</button>
                                     </div>
                                 </div>
                             </div>
