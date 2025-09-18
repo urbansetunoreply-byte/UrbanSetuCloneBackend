@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 
 // Obtain OAuth access token from PayPal
-async function getPayPalAccessToken() {
+export async function getPayPalAccessToken() {
   const clientId = process.env.PAYPAL_CLIENT_ID;
   const secret = process.env.PAYPAL_SECRET;
   const baseUrl = process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com';

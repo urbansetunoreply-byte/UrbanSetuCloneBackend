@@ -6,7 +6,7 @@ import Listing from "../models/listing.model.js";
 import User from "../models/user.model.js";
 import { verifyToken } from '../utils/verify.js';
 import crypto from 'crypto';
-import { createPayPalOrder, capturePayPalOrder } from '../controllers/paypalController.js';
+import { createPayPalOrder, capturePayPalOrder, getPayPalAccessToken } from '../controllers/paypalController.js';
 
 const router = express.Router();
 
@@ -403,3 +403,24 @@ export default router;
 // PayPal helper endpoints
 router.post('/paypal/create-order', verifyToken, createPayPalOrder);
 router.post('/paypal/capture-order', verifyToken, capturePayPalOrder);
+
+// PayPal debug endpoint to verify credentials and token acquisition
+router.get('/paypal/debug', verifyToken, async (req, res) => {
+  try {
+    const clientIdMasked = process.env.PAYPAL_CLIENT_ID
+      ? process.env.PAYPAL_CLIENT_ID.slice(0, 6) + '...' + process.env.PAYPAL_CLIENT_ID.slice(-4)
+      : null;
+    const baseUrl = process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com';
+    const hasSecret = Boolean(process.env.PAYPAL_SECRET);
+    const { accessToken } = await getPayPalAccessToken();
+    return res.json({
+      ok: true,
+      baseUrl,
+      clientIdMasked,
+      hasSecret,
+      tokenSample: accessToken ? accessToken.slice(0, 8) + '...' : null
+    });
+  } catch (e) {
+    return res.status(500).json({ ok: false, error: e?.message || String(e) });
+  }
+});
