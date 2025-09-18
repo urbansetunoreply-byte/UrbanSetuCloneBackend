@@ -5885,24 +5885,19 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                               {/* Options icon - visible for all messages including deleted ones */}
                               <button
                                 className={`${
-                                  isChatSendBlocked 
-                                    ? 'text-gray-400 cursor-not-allowed' 
-                                    : c.senderEmail === currentUser.email 
-                                      ? 'text-blue-200 hover:text-white' 
-                                      : 'text-gray-500 hover:text-gray-700'
-                                } transition-all duration-200 ${!isChatSendBlocked ? 'hover:scale-110' : ''} p-1 rounded-full ${!isChatSendBlocked ? 'hover:bg-white hover:bg-opacity-20' : ''} ml-1`}
+                                  c.senderEmail === currentUser.email 
+                                    ? 'text-blue-200 hover:text-white' 
+                                    : 'text-gray-500 hover:text-gray-700'
+                                } transition-all duration-200 hover:scale-110 p-1 rounded-full hover:bg-white hover:bg-opacity-20 ml-1`}
                                 onClick={(e) => { 
                                   e.stopPropagation(); 
-                                  if (isChatSendBlocked) {
-                                    toast.info('Reactions disabled for this appointment status. You can view chat history.');
-                                    return;
-                                  }
                                   setHeaderOptionsMessageId(c._id); 
-                                  toggleReactionsBar(c._id);
+                                  if (!isChatSendBlocked) {
+                                    toggleReactionsBar(c._id);
+                                  }
                                 }}
-                                disabled={isChatSendBlocked}
-                                title={isChatSendBlocked ? "Reactions disabled for this appointment status" : "Message options"}
-                                aria-label={isChatSendBlocked ? "Reactions disabled for this appointment status" : "Message options"}
+                                title="Message options"
+                                aria-label="Message options"
                               >
                                 <FaEllipsisV size={12} />
                               </button>
