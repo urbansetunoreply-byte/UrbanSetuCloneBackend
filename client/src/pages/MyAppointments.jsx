@@ -2597,7 +2597,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   // Handle delete confirmation modal
   const handleDeleteClick = (message) => {
     setMessageToDelete(message);
-    setDeleteForBoth(true); // Default to delete for both
+    setDeleteForBoth(isChatSendBlocked ? false : true); // Default to delete for both, but false for frozen chat
     setShowDeleteModal(true);
   };
 
@@ -4633,7 +4633,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                             return;
                                           }
                                           setMessageToDelete(selectedMsg);
-                                          setDeleteForBoth(isSentMessage);
+                                          setDeleteForBoth(isChatSendBlocked ? false : isSentMessage);
                                           setShowDeleteModal(true);
                                           setIsSelectionMode(false);
                                           setSelectedMessages([]);
@@ -4875,7 +4875,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                 const allSent = selectedMessages.every(msg => msg.senderEmail === currentUser.email);
                                 const hasReceived = selectedMessages.some(msg => msg.senderEmail !== currentUser.email);
                                 setMessageToDelete(selectedMessages);
-                                setDeleteForBoth(allSent && !hasReceived);
+                                setDeleteForBoth(isChatSendBlocked ? false : (allSent && !hasReceived));
                                 setShowDeleteModal(true);
                                 setIsSelectionMode(false);
                                 setSelectedMessages([]);
@@ -7435,24 +7435,36 @@ You can lock this chat again at any time from the options.</p>
                 </p>
                 
                 <div className="mb-6">
-                  <label className="flex items-center gap-3 cursor-pointer">
+                  <label className={`flex items-center gap-3 ${isChatSendBlocked ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
                     <input
                       type="checkbox"
                       checked={deleteForBoth}
-                      onChange={(e) => setDeleteForBoth(e.target.checked)}
-                      className="form-checkbox h-4 w-4 text-red-600 rounded border-gray-300 focus:ring-red-500"
+                      onChange={(e) => {
+                        if (isChatSendBlocked) {
+                          toast.info('Delete for everyone is disabled for this appointment status. Only delete for me is allowed.');
+                          return;
+                        }
+                        setDeleteForBoth(e.target.checked);
+                      }}
+                      disabled={isChatSendBlocked}
+                      className={`form-checkbox h-4 w-4 text-red-600 rounded border-gray-300 focus:ring-red-500 ${
+                        isChatSendBlocked ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
                     />
-                    <span className="text-sm text-gray-700">
+                    <span className={`text-sm ${isChatSendBlocked ? 'text-gray-400' : 'text-gray-700'}`}>
                       Also delete for{' '}
-                      <span className="font-medium text-gray-900">
+                      <span className={`font-medium ${isChatSendBlocked ? 'text-gray-400' : 'text-gray-900'}`}>
                         {otherParty?.username || 'other user'}
                       </span>
+                      {isChatSendBlocked && ' (Disabled for this appointment status)'}
                     </span>
                   </label>
-                  <p className="text-xs text-gray-500 mt-1 ml-7">
-                    {deleteForBoth 
-                      ? (Array.isArray(messageToDelete) ? 'The selected messages will be permanently deleted for everyone' : 'The message will be permanently deleted for everyone')
-                      : (Array.isArray(messageToDelete) ? 'The selected messages will only be deleted for you' : 'The message will only be deleted for you')
+                  <p className={`text-xs mt-1 ml-7 ${isChatSendBlocked ? 'text-gray-400' : 'text-gray-500'}`}>
+                    {isChatSendBlocked 
+                      ? (Array.isArray(messageToDelete) ? 'The selected messages will only be deleted for you' : 'The message will only be deleted for you')
+                      : deleteForBoth 
+                        ? (Array.isArray(messageToDelete) ? 'The selected messages will be permanently deleted for everyone' : 'The message will be permanently deleted for everyone')
+                        : (Array.isArray(messageToDelete) ? 'The selected messages will only be deleted for you' : 'The message will only be deleted for you')
                     }
                   </p>
                 </div>
