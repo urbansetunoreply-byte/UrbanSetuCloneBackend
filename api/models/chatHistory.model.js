@@ -94,6 +94,24 @@ chatHistorySchema.methods.deactivate = function() {
   return this.save();
 };
 
+// Static method to get user's chat sessions
+chatHistorySchema.statics.getUserSessions = async function(userId) {
+  const sessions = await this.find({ 
+    userId, 
+    isActive: true 
+  })
+  .select('sessionId totalMessages lastActivity createdAt')
+  .sort({ lastActivity: -1 })
+  .limit(20); // Limit to last 20 sessions
+  
+  return sessions.map(session => ({
+    sessionId: session.sessionId,
+    messageCount: session.totalMessages,
+    lastMessageAt: session.lastActivity,
+    createdAt: session.createdAt
+  }));
+};
+
 const ChatHistory = mongoose.model("ChatHistory", chatHistorySchema);
 
 export default ChatHistory;

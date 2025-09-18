@@ -189,42 +189,59 @@ export default function AdminManagement() {
 
   // Optimistic UI for suspend
   const handleSuspend = async (id, type) => {
-    // Optimistically update UI
-    if (type === 'user') {
-      setUsers(prev => prev.map(u => u._id === id ? { ...u, status: u.status === 'active' ? 'suspended' : 'active' } : u));
-    } else {
-      setAdmins(prev => prev.map(a => a._id === id ? { ...a, status: a.status === 'active' ? 'suspended' : 'active' } : a));
-    }
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/admin/management/suspend/${type}/${id}`, {
-        method: "PATCH",
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (res.ok) {
-        toast.success(`${type === "user" ? "User" : "Admin"} status updated`);
-        setSuspendError((prev) => ({ ...prev, [id]: undefined }));
-        // Emit socket event
-        socket.emit(type === 'user' ? 'user_update' : 'admin_update', { type: 'update', [type]: data, userId: id });
-        // Emit global signout event for the affected user
-        socket.emit('force_signout', { 
-          userId: id, 
-          action: 'suspend', 
-          message: `Your account has been ${data.status === 'suspended' ? 'suspended' : 'activated'}. You have been signed out.` 
-        });
+    const account = type === 'user' ? users.find(u => u._id === id) : admins.find(a => a._id === id);
+    const isSuspending = account?.status === 'active';
+    const actionText = isSuspending ? 'suspend' : 'activate';
+    const actionTextCapitalized = isSuspending ? 'Suspend' : 'Activate';
+
+    const performSuspend = async () => {
+      // Optimistically update UI
+      if (type === 'user') {
+        setUsers(prev => prev.map(u => u._id === id ? { ...u, status: u.status === 'active' ? 'suspended' : 'active' } : u));
       } else {
-        // Rollback
+        setAdmins(prev => prev.map(a => a._id === id ? { ...a, status: a.status === 'active' ? 'suspended' : 'active' } : a));
+      }
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/management/suspend/${type}/${id}`, {
+          method: "PATCH",
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (res.ok) {
+          toast.success(`${type === "user" ? "User" : "Admin"} status updated`);
+          setSuspendError((prev) => ({ ...prev, [id]: undefined }));
+          // Emit socket event
+          socket.emit(type === 'user' ? 'user_update' : 'admin_update', { type: 'update', [type]: data, userId: id });
+          // Emit global signout event for the affected user
+          socket.emit('force_signout', { 
+            userId: id, 
+            action: 'suspend', 
+            message: `Your account has been ${data.status === 'suspended' ? 'suspended' : 'activated'}. You have been signed out.` 
+          });
+        } else {
+          // Rollback
+          fetchData();
+          toast.error(data.message || "Failed to update status");
+          setSuspendError((prev) => ({ ...prev, [id]: "Can't able to suspend account, may be softbanned or moved" }));
+          setTimeout(() => setSuspendError((prev) => ({ ...prev, [id]: undefined })), 4000);
+        }
+      } catch (err) {
         fetchData();
-        toast.error(data.message || "Failed to update status");
-        setSuspendError((prev) => ({ ...prev, [id]: "Can't able to suspend account, may be softbanned or moved" }));
+        toast.error("Failed to update status");
+        setSuspendError((prev) => ({ ...prev, [id]: "Can't able to suspend account, may be deleted or moved" }));
         setTimeout(() => setSuspendError((prev) => ({ ...prev, [id]: undefined })), 4000);
       }
-    } catch (err) {
-      fetchData();
-      toast.error("Failed to update status");
-      setSuspendError((prev) => ({ ...prev, [id]: "Can't able to suspend account, may be deleted or moved" }));
-      setTimeout(() => setSuspendError((prev) => ({ ...prev, [id]: undefined })), 4000);
-    }
+    };
+
+    showConfirmation(
+      `${actionTextCapitalized} ${type === "user" ? "User" : "Admin"}`,
+      `Are you sure you want to ${actionText} this ${type}? ${isSuspending ? 'They will be signed out and unable to access their account.' : 'They will regain access to their account.'}`,
+      performSuspend,
+      {
+        confirmText: actionTextCapitalized,
+        confirmButtonClass: isSuspending ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600'
+      }
+    );
   };
 
   // Optimistic UI for delete

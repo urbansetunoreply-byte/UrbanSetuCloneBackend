@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaCheck } from 'react-icons/fa';
+import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaCheck, FaDownload, FaUpload, FaCog, FaLightbulb, FaHistory, FaBookmark, FaShare, FaThumbsUp, FaThumbsDown, FaRegBookmark, FaBookmark as FaBookmarkSolid } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { formatLinksInText } from '../utils/linkFormatter.jsx';
 import { useSelector } from 'react-redux';
@@ -32,6 +32,17 @@ const GeminiChatbox = () => {
     const [tone, setTone] = useState(() => localStorage.getItem('gemini_tone') || 'neutral'); // modes dropdown (tone)
     const [isHeaderMenuOpen, setIsHeaderMenuOpen] = useState(false);
     const [showFeatures, setShowFeatures] = useState(false);
+    const [bookmarkedMessages, setBookmarkedMessages] = useState(() => JSON.parse(localStorage.getItem('gemini_bookmarks') || '[]'));
+    const [messageRatings, setMessageRatings] = useState(() => JSON.parse(localStorage.getItem('gemini_ratings') || '{}'));
+    const [showSettings, setShowSettings] = useState(false);
+    const [showBookmarks, setShowBookmarks] = useState(false);
+    const [showHistory, setShowHistory] = useState(false);
+    const [chatSessions, setChatSessions] = useState([]);
+    const [isTyping, setIsTyping] = useState(false);
+    const [typingText, setTypingText] = useState('');
+    const [showQuickActions, setShowQuickActions] = useState(false);
+    const [selectedMessage, setSelectedMessage] = useState(null);
+    const [showMessageMenu, setShowMessageMenu] = useState(false);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -501,6 +512,113 @@ const GeminiChatbox = () => {
         }
     };
 
+    // Enhanced features helper functions
+    const toggleBookmark = (messageIndex, message) => {
+        const bookmarkKey = `${messageIndex}_${message.timestamp}`;
+        const isBookmarked = bookmarkedMessages.some(bm => bm.key === bookmarkKey);
+        
+        let newBookmarks;
+        if (isBookmarked) {
+            newBookmarks = bookmarkedMessages.filter(bm => bm.key !== bookmarkKey);
+            toast.success('Bookmark removed');
+        } else {
+            newBookmarks = [...bookmarkedMessages, {
+                key: bookmarkKey,
+                content: message.content,
+                timestamp: message.timestamp,
+                role: message.role,
+                sessionId: sessionId
+            }];
+            toast.success('Message bookmarked');
+        }
+        
+        setBookmarkedMessages(newBookmarks);
+        localStorage.setItem('gemini_bookmarks', JSON.stringify(newBookmarks));
+    };
+
+    const rateMessage = (messageIndex, rating) => {
+        const ratingKey = `${messageIndex}_${messages[messageIndex]?.timestamp}`;
+        const newRatings = { ...messageRatings, [ratingKey]: rating };
+        setMessageRatings(newRatings);
+        localStorage.setItem('gemini_ratings', JSON.stringify(newRatings));
+        toast.success(rating === 'up' ? 'Thanks for the feedback!' : 'Feedback recorded');
+    };
+
+    const shareMessage = async (message) => {
+        const shareData = {
+            title: 'Gemini AI Response',
+            text: message.content,
+            url: window.location.href
+        };
+        
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData);
+                toast.success('Message shared!');
+            } catch (err) {
+                copyToClipboard(message.content);
+            }
+        } else {
+            copyToClipboard(message.content);
+        }
+    };
+
+    const loadChatSessions = async () => {
+        if (!currentUser) return;
+        
+        try {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+            const response = await fetch(`${API_BASE_URL}/api/chat-history/sessions`, {
+                credentials: 'include'
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                setChatSessions(data.sessions || []);
+            }
+        } catch (error) {
+            console.error('Error loading chat sessions:', error);
+        }
+    };
+
+    const loadSessionHistory = async (sessionId) => {
+        try {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+            const response = await fetch(`${API_BASE_URL}/api/chat-history/session/${sessionId}`, {
+                credentials: 'include'
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.data.messages) {
+                    setMessages(data.data.messages);
+                    setSessionId(sessionId);
+                    localStorage.setItem('gemini_session_id', sessionId);
+                    toast.success('Session loaded');
+                }
+            }
+        } catch (error) {
+            console.error('Error loading session:', error);
+            toast.error('Failed to load session');
+        }
+    };
+
+    const simulateTyping = (text) => {
+        setIsTyping(true);
+        setTypingText('');
+        let index = 0;
+        
+        const typeInterval = setInterval(() => {
+            if (index < text.length) {
+                setTypingText(text.substring(0, index + 1));
+                index++;
+            } else {
+                clearInterval(typeInterval);
+                setIsTyping(false);
+            }
+        }, 30);
+    };
+
     return (
         <>
             {/* Enhanced Floating AI Chat Button */}
@@ -564,21 +682,50 @@ const GeminiChatbox = () => {
                                 </div>
                             </div>
 
-                            {/* Right controls: modes dropdown + kebab menu + close */}
-                            <div className="flex items-center gap-2 relative flex-shrink-0">
-                                {/* Modes dropdown moved to the right, before options */}
+                            {/* Right controls: modes dropdown + quick actions + kebab menu + close */}
+                            <div className="flex items-center gap-1 relative flex-shrink-0">
+                                {/* Modes dropdown */}
                                 <select
                                     value={tone}
                                     onChange={(e) => { setTone(e.target.value); localStorage.setItem('gemini_tone', e.target.value); }}
-                                    className="text-white/90 bg-white/10 hover:bg-white/20 border border-white/30 text-[10px] md:text-xs px-2 py-1 rounded outline-none max-w-[120px] md:max-w-[140px]"
-                                    title="Modes"
-                                    aria-label="Modes"
+                                    className="text-white/90 bg-white/10 hover:bg-white/20 border border-white/30 text-[10px] md:text-xs px-2 py-1 rounded outline-none max-w-[100px] md:max-w-[120px]"
+                                    title="Response Tone"
+                                    aria-label="Response Tone"
                                 >
                                     <option className="text-gray-800" value="neutral">Neutral</option>
                                     <option className="text-gray-800" value="friendly">Friendly</option>
                                     <option className="text-gray-800" value="formal">Formal</option>
                                     <option className="text-gray-800" value="concise">Concise</option>
                                 </select>
+                                
+                                {/* Quick action buttons */}
+                                <button
+                                    onClick={() => setShowQuickActions(!showQuickActions)}
+                                    className="text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
+                                    title="Quick Actions"
+                                    aria-label="Quick Actions"
+                                >
+                                    <FaLightbulb size={12} />
+                                </button>
+                                
+                                <button
+                                    onClick={() => { setShowBookmarks(true); loadChatSessions(); }}
+                                    className="text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
+                                    title="Bookmarks"
+                                    aria-label="Bookmarks"
+                                >
+                                    <FaBookmark size={12} />
+                                </button>
+                                
+                                <button
+                                    onClick={() => { setShowHistory(true); loadChatSessions(); }}
+                                    className="text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
+                                    title="Chat History"
+                                    aria-label="Chat History"
+                                >
+                                    <FaHistory size={12} />
+                                </button>
+                                
                                 <button
                                     onClick={() => setIsHeaderMenuOpen(open => !open)}
                                     className="inline-flex text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
@@ -679,7 +826,7 @@ const GeminiChatbox = () => {
                                             </div>
                                         )}
 
-                                        {/* Action buttons */}
+                                        {/* Enhanced Action buttons */}
                                         <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
                                             {/* Copy icon for all messages */}
                                             <button
@@ -688,8 +835,57 @@ const GeminiChatbox = () => {
                                                 title="Copy message"
                                                 aria-label="Copy message"
                                             >
-                                                <FaCopy size={14} />
+                                                <FaCopy size={12} />
                                             </button>
+                                            
+                                            {/* Bookmark button for assistant messages */}
+                                            {message.role === 'assistant' && !message.isError && (
+                                                <button
+                                                    onClick={() => toggleBookmark(index, message)}
+                                                    className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-all duration-200"
+                                                    title="Bookmark message"
+                                                    aria-label="Bookmark message"
+                                                >
+                                                    {bookmarkedMessages.some(bm => bm.key === `${index}_${message.timestamp}`) ? 
+                                                        <FaBookmarkSolid size={12} className="text-yellow-500" /> : 
+                                                        <FaRegBookmark size={12} />
+                                                    }
+                                                </button>
+                                            )}
+                                            
+                                            {/* Share button for assistant messages */}
+                                            {message.role === 'assistant' && !message.isError && (
+                                                <button
+                                                    onClick={() => shareMessage(message)}
+                                                    className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-all duration-200"
+                                                    title="Share message"
+                                                    aria-label="Share message"
+                                                >
+                                                    <FaShare size={12} />
+                                                </button>
+                                            )}
+                                            
+                                            {/* Rating buttons for assistant messages */}
+                                            {message.role === 'assistant' && !message.isError && (
+                                                <div className="flex gap-1">
+                                                    <button
+                                                        onClick={() => rateMessage(index, 'up')}
+                                                        className="p-1 text-gray-500 hover:text-green-600 hover:bg-green-100 rounded transition-all duration-200"
+                                                        title="Good response"
+                                                        aria-label="Good response"
+                                                    >
+                                                        <FaThumbsUp size={12} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => rateMessage(index, 'down')}
+                                                        className="p-1 text-gray-500 hover:text-red-600 hover:bg-red-100 rounded transition-all duration-200"
+                                                        title="Poor response"
+                                                        aria-label="Poor response"
+                                                    >
+                                                        <FaThumbsDown size={12} />
+                                                    </button>
+                                                </div>
+                                            )}
                                             
                                             {/* Retry button for failed messages */}
                                             {message.isError && message.originalUserMessage && (
@@ -700,7 +896,7 @@ const GeminiChatbox = () => {
                                                     title="Retry message"
                                                     aria-label="Retry message"
                                                 >
-                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                                                         <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
                                                     </svg>
                                                 </button>
@@ -765,20 +961,59 @@ const GeminiChatbox = () => {
                             </div>
                         )}
 
-                        {/* Features modal */}
+                        {/* Enhanced Features modal */}
                         {showFeatures && (
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
-                                <div className="bg-white rounded-xl shadow-xl p-5 w-96 max-w-full">
-                                    <h4 className="font-semibold mb-3">Gemini Features</h4>
-                                    <ul className="text-sm text-gray-700 list-disc pl-5 space-y-1">
-                                        <li>Conversation history (per-session)</li>
-                                        <li>Export transcript to .txt</li>
-                                        <li>Modes: Neutral, Friendly, Formal, Concise</li>
-                                        <li>Quick prompts and keyboard shortcuts</li>
-                                        <li>Retry failed responses</li>
-                                        <li>Copy any message</li>
-                                        <li>Mobile-friendly modal and scroll lock</li>
-                                    </ul>
+                                <div className="bg-white rounded-xl shadow-xl p-5 w-96 max-w-full max-h-[80vh] overflow-y-auto">
+                                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                                        <FaRobot className="text-blue-500" />
+                                        Gemini AI Features
+                                    </h4>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <h5 className="font-medium text-gray-800 mb-2">💬 Chat Features</h5>
+                                            <ul className="text-sm text-gray-700 list-disc pl-5 space-y-1">
+                                                <li>Real-time conversation with AI</li>
+                                                <li>Multiple response tones (Neutral, Friendly, Formal, Concise)</li>
+                                                <li>Session-based chat history</li>
+                                                <li>Export conversations to .txt</li>
+                                                <li>Retry failed responses</li>
+                                            </ul>
+                                        </div>
+                                        
+                                        <div>
+                                            <h5 className="font-medium text-gray-800 mb-2">🔖 Message Management</h5>
+                                            <ul className="text-sm text-gray-700 list-disc pl-5 space-y-1">
+                                                <li>Bookmark important responses</li>
+                                                <li>Rate responses (thumbs up/down)</li>
+                                                <li>Share messages via native sharing</li>
+                                                <li>Copy any message to clipboard</li>
+                                            </ul>
+                                        </div>
+                                        
+                                        <div>
+                                            <h5 className="font-medium text-gray-800 mb-2">⚡ Quick Actions</h5>
+                                            <ul className="text-sm text-gray-700 list-disc pl-5 space-y-1">
+                                                <li>Property search assistance</li>
+                                                <li>Market analysis guidance</li>
+                                                <li>Home buying process help</li>
+                                                <li>Investment advice</li>
+                                                <li>Legal information</li>
+                                                <li>Property management tips</li>
+                                            </ul>
+                                        </div>
+                                        
+                                        <div>
+                                            <h5 className="font-medium text-gray-800 mb-2">📱 User Experience</h5>
+                                            <ul className="text-sm text-gray-700 list-disc pl-5 space-y-1">
+                                                <li>Mobile-friendly responsive design</li>
+                                                <li>Keyboard shortcuts (Ctrl+F, Esc)</li>
+                                                <li>Auto-scroll to latest messages</li>
+                                                <li>Typing indicators</li>
+                                                <li>Unread message notifications</li>
+                                            </ul>
+                                        </div>
+                                    </div>
                                     <div className="flex justify-end mt-4">
                                         <button onClick={() => setShowFeatures(false)} className="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-700">Close</button>
                                     </div>
@@ -826,6 +1061,134 @@ const GeminiChatbox = () => {
                                 )}
                             </form>
                         </div>
+                        {/* Quick Actions Modal */}
+                        {showQuickActions && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                                <div className="bg-white rounded-xl shadow-xl p-5 w-96 max-w-full">
+                                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                                        <FaLightbulb className="text-yellow-500" />
+                                        Quick Actions
+                                    </h4>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {[
+                                            { icon: '🏠', text: 'Property Search', prompt: 'Help me find properties in my area' },
+                                            { icon: '💰', text: 'Market Analysis', prompt: 'Analyze the real estate market trends' },
+                                            { icon: '📋', text: 'Buying Guide', prompt: 'Guide me through the home buying process' },
+                                            { icon: '📊', text: 'Investment Tips', prompt: 'Give me real estate investment advice' },
+                                            { icon: '⚖️', text: 'Legal Info', prompt: 'Explain real estate legal requirements' },
+                                            { icon: '🔧', text: 'Property Management', prompt: 'Help with property management tips' }
+                                        ].map((action, idx) => (
+                                            <button
+                                                key={idx}
+                                                onClick={() => {
+                                                    setInputMessage(action.prompt);
+                                                    setShowQuickActions(false);
+                                                    setTimeout(() => handleSubmit(new Event('submit')), 0);
+                                                }}
+                                                className="p-3 text-left border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-blue-300 transition-all duration-200"
+                                            >
+                                                <div className="text-lg mb-1">{action.icon}</div>
+                                                <div className="text-sm font-medium text-gray-800">{action.text}</div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div className="flex justify-end mt-4">
+                                        <button onClick={() => setShowQuickActions(false)} className="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-700">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Bookmarks Modal */}
+                        {showBookmarks && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                                <div className="bg-white rounded-xl shadow-xl p-5 w-96 max-w-full max-h-[80vh] overflow-y-auto">
+                                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                                        <FaBookmark className="text-yellow-500" />
+                                        Bookmarked Messages
+                                    </h4>
+                                    {bookmarkedMessages.length === 0 ? (
+                                        <p className="text-gray-500 text-center py-8">No bookmarked messages yet</p>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {bookmarkedMessages.map((bookmark, idx) => (
+                                                <div key={idx} className="p-3 border border-gray-200 rounded-lg">
+                                                    <div className="text-sm text-gray-600 mb-2">
+                                                        {new Date(bookmark.timestamp).toLocaleString()}
+                                                    </div>
+                                                    <div className="text-sm text-gray-800 mb-2 line-clamp-3">
+                                                        {bookmark.content}
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={() => copyToClipboard(bookmark.content)}
+                                                            className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded"
+                                                        >
+                                                            Copy
+                                                        </button>
+                                                        <button
+                                                            onClick={() => {
+                                                                const newBookmarks = bookmarkedMessages.filter((_, i) => i !== idx);
+                                                                setBookmarkedMessages(newBookmarks);
+                                                                localStorage.setItem('gemini_bookmarks', JSON.stringify(newBookmarks));
+                                                            }}
+                                                            className="text-xs px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded"
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                    <div className="flex justify-end mt-4">
+                                        <button onClick={() => setShowBookmarks(false)} className="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-700">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Chat History Modal */}
+                        {showHistory && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                                <div className="bg-white rounded-xl shadow-xl p-5 w-96 max-w-full max-h-[80vh] overflow-y-auto">
+                                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                                        <FaHistory className="text-blue-500" />
+                                        Chat History
+                                    </h4>
+                                    {chatSessions.length === 0 ? (
+                                        <p className="text-gray-500 text-center py-8">No chat history found</p>
+                                    ) : (
+                                        <div className="space-y-2">
+                                            {chatSessions.map((session, idx) => (
+                                                <button
+                                                    key={idx}
+                                                    onClick={() => {
+                                                        loadSessionHistory(session.sessionId);
+                                                        setShowHistory(false);
+                                                    }}
+                                                    className="w-full p-3 text-left border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-blue-300 transition-all duration-200"
+                                                >
+                                                    <div className="text-sm font-medium text-gray-800">
+                                                        Session {idx + 1}
+                                                    </div>
+                                                    <div className="text-xs text-gray-600">
+                                                        {new Date(session.lastMessageAt).toLocaleString()}
+                                                    </div>
+                                                    <div className="text-xs text-gray-500">
+                                                        {session.messageCount} messages
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                    <div className="flex justify-end mt-4">
+                                        <button onClick={() => setShowHistory(false)} className="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-700">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Clear confirmation modal */}
                         {showConfirmClear && (
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">

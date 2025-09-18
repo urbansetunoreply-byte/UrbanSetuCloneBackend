@@ -33,25 +33,47 @@ export const chatWithGemini = async (req, res) => {
         // Generate session ID if not provided
         const currentSessionId = sessionId || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-        // Dynamic system prompt based on tone and context
+        // Enhanced system prompt with more comprehensive real estate knowledge
         const getSystemPrompt = (tone) => {
-            const basePrompt = `You are a helpful AI assistant specializing in real estate. You help users with:
-            - Property search and recommendations
-            - Real estate market information
-            - Home buying and selling advice
-            - Property valuation insights
-            - Real estate investment guidance
-            - Legal and regulatory information about real estate
-            - Tips for first-time homebuyers
-            - Property management advice
-            
-            Always provide accurate, helpful, and professional responses. If you're not sure about something, recommend consulting with a real estate professional.`;
+            const basePrompt = `You are Gemini, an advanced AI assistant specializing in real estate. You provide comprehensive help with:
+
+            PROPERTY SEARCH & RECOMMENDATIONS:
+            - Finding properties based on budget, location, and preferences
+            - Neighborhood analysis and local amenities
+            - Property comparison and evaluation
+            - Market trends and pricing insights
+
+            HOME BUYING & SELLING:
+            - Step-by-step buying process guidance
+            - Selling strategies and pricing advice
+            - Negotiation tips and market timing
+            - Closing process and documentation
+
+            INVESTMENT & FINANCE:
+            - Real estate investment strategies
+            - ROI calculations and market analysis
+            - Financing options and mortgage guidance
+            - Tax implications and benefits
+
+            LEGAL & REGULATORY:
+            - Property laws and regulations
+            - Contract terms and conditions
+            - Zoning laws and restrictions
+            - Title and deed information
+
+            PROPERTY MANAGEMENT:
+            - Landlord-tenant relationships
+            - Maintenance and repairs
+            - Rental pricing and market analysis
+            - Property improvement tips
+
+            Always provide accurate, helpful, and professional responses. When uncertain, recommend consulting with licensed real estate professionals, attorneys, or financial advisors. Include relevant examples and actionable advice when possible.`;
             
             const toneInstructions = {
-                'friendly': 'Respond in a warm, approachable, and encouraging tone. Use casual language while maintaining professionalism.',
-                'formal': 'Respond in a formal, business-like tone. Use professional language and structure your responses clearly.',
-                'concise': 'Keep responses brief and to the point. Focus on essential information without unnecessary elaboration.',
-                'neutral': 'Maintain a balanced, professional tone that is neither too casual nor too formal.'
+                'friendly': 'Respond in a warm, approachable, and encouraging tone. Use casual language while maintaining professionalism. Be supportive and encouraging, especially for first-time buyers.',
+                'formal': 'Respond in a formal, business-like tone. Use professional language and structure your responses clearly with bullet points and sections. Focus on facts and data.',
+                'concise': 'Keep responses brief and to the point. Focus on essential information without unnecessary elaboration. Use bullet points and short paragraphs.',
+                'neutral': 'Maintain a balanced, professional tone that is neither too casual nor too formal. Provide comprehensive information in a clear, organized manner.'
             };
             
             return `${basePrompt}\n\nTone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
@@ -153,6 +175,33 @@ export const chatWithGemini = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Sorry, I\'m having trouble processing your request. Please try again later.'
+        });
+    }
+};
+
+// Get user's chat sessions
+export const getUserChatSessions = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required'
+            });
+        }
+
+        const sessions = await ChatHistory.getUserSessions(userId);
+        
+        res.status(200).json({
+            success: true,
+            sessions: sessions
+        });
+    } catch (error) {
+        console.error('Error getting chat sessions:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to retrieve chat sessions'
         });
     }
 };
