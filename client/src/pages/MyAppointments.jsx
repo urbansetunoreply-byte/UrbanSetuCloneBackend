@@ -1758,6 +1758,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   };
 
   const handleImageFiles = (files) => {
+    // Check if chat sending is blocked for this appointment status
+    if (isChatSendBlocked) {
+      toast.info('Image sending disabled for this appointment status. You can view chat history.');
+      return;
+    }
+    
     // Check if adding these files would exceed the 10 image limit
     const totalFiles = (selectedFiles?.length || 0) + files.length;
     if (totalFiles > 10) {
@@ -1790,6 +1796,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
 
   const handleSendImagesWithCaptions = async () => {
     if (!selectedFiles || selectedFiles.length === 0) return;
+    
+    // Check if chat sending is blocked for this appointment status
+    if (isChatSendBlocked) {
+      toast.info('Image sending disabled for this appointment status. You can view chat history.');
+      return;
+    }
     
     setUploadingFile(true);
     setUploadProgress(0);
@@ -5563,12 +5575,16 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                     onDragOver={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      setIsDragOver(true);
+                      if (!isChatSendBlocked) {
+                        setIsDragOver(true);
+                      }
                     }}
                     onDragEnter={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      setIsDragOver(true);
+                      if (!isChatSendBlocked) {
+                        setIsDragOver(true);
+                      }
                     }}
                     onDragLeave={(e) => {
                       e.preventDefault();
@@ -5581,6 +5597,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                       e.preventDefault();
                       e.stopPropagation();
                       setIsDragOver(false);
+                      
+                      if (isChatSendBlocked) {
+                        toast.info('Image sending disabled for this appointment status. You can view chat history.');
+                        return;
+                      }
                       
                       const files = Array.from(e.dataTransfer.files);
                       const imageFiles = files.filter(file => file.type.startsWith('image/'));
@@ -6402,17 +6423,22 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                       />
                     </div>
                     {/* File Upload Button - Inside textarea on the right (WhatsApp style) */}
-                    <label className={`absolute right-3 bottom-3 flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300 cursor-pointer ${
-                      uploadingFile 
+                    <label className={`absolute right-3 bottom-3 flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300 ${
+                      uploadingFile || isChatSendBlocked
                         ? 'bg-gray-400 cursor-not-allowed' 
-                        : 'bg-gray-100 hover:bg-gray-200 hover:shadow-md active:scale-95'
+                        : 'bg-gray-100 hover:bg-gray-200 hover:shadow-md active:scale-95 cursor-pointer'
                     }`}>
                       <input
                         type="file"
                         accept="image/*"
                         multiple
                         className="hidden"
+                        disabled={isChatSendBlocked || uploadingFile}
                         onChange={(e) => {
+                          if (isChatSendBlocked) {
+                            e.target.value = '';
+                            return;
+                          }
                           const files = e.target.files;
                           if (files && files.length > 0) {
                             handleFileUpload(files);
@@ -6420,7 +6446,6 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           // Reset the input
                           e.target.value = '';
                         }}
-                        disabled={uploadingFile}
                       />
                       {uploadingFile ? (
                         <div className="animate-spin w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full"></div>
@@ -6699,7 +6724,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                               )}
                               <button
                                 onClick={handleSendImagesWithCaptions}
-                                className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors"
+                                disabled={isChatSendBlocked}
+                                className={`py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+                                  isChatSendBlocked 
+                                    ? 'bg-gray-400 text-gray-200 cursor-not-allowed' 
+                                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                                }`}
                               >
                                 {`Send ${selectedFiles.length} Image${selectedFiles.length !== 1 ? 's' : ''}`}
                               </button>
