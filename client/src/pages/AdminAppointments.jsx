@@ -1318,13 +1318,25 @@ function AdminPaymentStatusCell({ appointmentId, appointment }) {
   if (!payment) {
     return (
       <div className="flex flex-col items-center gap-1">
-        <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pending</span>
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+          appointment?.paymentConfirmed 
+            ? 'bg-green-100 text-green-800' 
+            : 'bg-yellow-100 text-yellow-800'
+        }`}>
+          {appointment?.paymentConfirmed ? 'Paid (Admin)' : 'Pending'}
+        </span>
+        {appointment?.paymentConfirmed && (
+          <div className="text-[10px] text-green-700 font-semibold">✓ Admin Confirmed</div>
+        )}
         {statusButton}
       </div>
     );
   }
 
-  const color = payment.status === 'completed'
+  // If admin has marked as paid, show green color regardless of payment status
+  const color = appointment?.paymentConfirmed
+    ? 'bg-green-100 text-green-800'
+    : payment.status === 'completed'
     ? 'bg-green-100 text-green-800'
     : payment.status === 'pending'
     ? 'bg-yellow-100 text-yellow-800'
@@ -1336,7 +1348,10 @@ function AdminPaymentStatusCell({ appointmentId, appointment }) {
     ? 'bg-orange-100 text-orange-800'
     : 'bg-gray-100 text-gray-800';
 
-  const label = payment.status === 'completed'
+  // If admin has marked as paid, show as paid regardless of payment status
+  const label = appointment?.paymentConfirmed
+    ? 'Paid (Admin)'
+    : payment.status === 'completed'
     ? 'Paid'
     : payment.status === 'pending'
     ? 'Pending'
