@@ -5079,9 +5079,22 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                       {selectedMessageForHeaderOptions.pinned ? 'Unpin' : 'Pin'}
                                     </button>
                                     <button
-                                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                                      onClick={() => { startEditing(selectedMessageForHeaderOptions); setShowHeaderMoreMenu(false); setHeaderOptionsMessageId(null); }}
-                                      disabled={editingComment !== null}
+                                      className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 ${
+                                        isChatSendBlocked || editingComment !== null
+                                          ? 'text-gray-400 cursor-not-allowed'
+                                          : 'text-gray-700 hover:bg-gray-100'
+                                      }`}
+                                      onClick={() => { 
+                                        if (isChatSendBlocked) {
+                                          toast.info('Edit disabled for this appointment status. You can view chat history.');
+                                          return;
+                                        }
+                                        startEditing(selectedMessageForHeaderOptions); 
+                                        setShowHeaderMoreMenu(false); 
+                                        setHeaderOptionsMessageId(null); 
+                                      }}
+                                      disabled={isChatSendBlocked || editingComment !== null}
+                                      title={isChatSendBlocked ? "Edit disabled for this appointment status" : "Edit message"}
                                     >
                                       <FaPen className="text-sm" />
                                       Edit
