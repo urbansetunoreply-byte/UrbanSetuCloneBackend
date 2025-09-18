@@ -27,7 +27,8 @@ async function getPayPalAccessToken() {
 
 export const createPayPalOrder = async (req, res) => {
   try {
-    const { amount, currency = 'INR' } = req.body;
+    const { amount, currency } = req.body;
+    const resolvedCurrency = (currency || 'USD').toUpperCase();
     const { accessToken, baseUrl } = await getPayPalAccessToken();
 
     const orderRes = await fetch(`${baseUrl}/v2/checkout/orders`, {
@@ -40,7 +41,7 @@ export const createPayPalOrder = async (req, res) => {
         intent: 'CAPTURE',
         purchase_units: [
           {
-            amount: { currency_code: currency, value: amount }
+            amount: { currency_code: resolvedCurrency, value: String(Number(amount).toFixed(2)) }
           }
         ]
       })
