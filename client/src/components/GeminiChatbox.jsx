@@ -53,12 +53,32 @@ const GeminiChatbox = () => {
     const [showRenameModal, setShowRenameModal] = useState(false);
     const [renameTargetSessionId, setRenameTargetSessionId] = useState(null);
     const [renameInput, setRenameInput] = useState('');
+    // Floating date label like WhatsApp
+    const [floatingDateLabel, setFloatingDateLabel] = useState('');
+    const [showFloatingDate, setShowFloatingDate] = useState(false);
+    const floatingHideTimeoutRef = useRef(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
     const scrollToBottomInstant = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+    };
+
+    // Helpers for date divider and labels
+    const isSameDay = (a, b) => {
+        const da = new Date(a);
+        const db = new Date(b);
+        return da.getFullYear() === db.getFullYear() && da.getMonth() === db.getMonth() && da.getDate() === db.getDate();
+    };
+    const getDateLabel = (iso) => {
+        const d = new Date(iso);
+        const today = new Date();
+        const yest = new Date();
+        yest.setDate(today.getDate() - 1);
+        if (isSameDay(d, today)) return 'Today';
+        if (isSameDay(d, yest)) return 'Yesterday';
+        return d.toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' });
     };
 
     // Generate or retrieve session ID
@@ -304,11 +324,35 @@ const GeminiChatbox = () => {
         const compute = () => {
             const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
             setIsScrolledUp(distanceFromBottom > 80);
+
+            // Floating date label: find the first fully visible message and use its date
+            const children = Array.from(el.querySelectorAll('[data-message-index]'));
+            let currentIndex = 0;
+            for (let i = 0; i < children.length; i++) {
+                const node = children[i];
+                const top = node.offsetTop;
+                const bottom = top + node.offsetHeight;
+                if (bottom >= el.scrollTop + 8) { // 8px tolerance
+                    currentIndex = Number(node.getAttribute('data-message-index')) || 0;
+                    break;
+                }
+            }
+            const msg = messages[currentIndex];
+            if (msg && msg.timestamp) {
+                const label = getDateLabel(msg.timestamp);
+                setFloatingDateLabel(label);
+                setShowFloatingDate(true);
+                if (floatingHideTimeoutRef.current) clearTimeout(floatingHideTimeoutRef.current);
+                floatingHideTimeoutRef.current = setTimeout(() => setShowFloatingDate(false), 1000);
+            }
         };
         compute();
         const onScroll = () => compute();
         el.addEventListener('scroll', onScroll);
-        return () => el.removeEventListener('scroll', onScroll);
+        return () => {
+            el.removeEventListener('scroll', onScroll);
+            if (floatingHideTimeoutRef.current) clearTimeout(floatingHideTimeoutRef.current);
+        };
     }, [isOpen, messages]);
 
     const handleSubmit = async (e) => {
@@ -1051,138 +1095,152 @@ const GeminiChatbox = () => {
                             </div>
                         </div>
 
-                        {/* Messages */}
-                        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
-                            {messages.map((message, index) => (
-                                <div
-                                    key={index}
-                                    data-message-index={index}
-                                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} ${
-                                        highlightedMessage === index ? 'animate-pulse' : ''
-                                    }`}
-                                >
-                                    <div
-                                        className={`max-w-[85%] p-3 rounded-2xl break-words relative group ${
-                                            message.role === 'user'
-                                                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
-                                                : message.isError 
-                                                    ? 'bg-red-100 text-red-800 border border-red-200'
-                                                    : 'bg-gray-100 text-gray-800'
-                                        } ${
-                                            highlightedMessage === index 
-                                                ? 'ring-4 ring-yellow-400 ring-opacity-50 shadow-lg transform scale-105' 
-                                                : ''
-                                        } transition-all duration-300`}
-                                    >
-                                        <p className="text-sm whitespace-pre-wrap leading-relaxed">{formatLinksInText(message.content, message.role === 'user')}</p>
-                                        
-                                        {/* Message footer with timestamp and actions */}
-                                        <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-200/20">
-                                            {message.timestamp && (
-                                                <div className={`${message.role === 'user' ? 'text-white/80' : message.isError ? 'text-red-600' : 'text-gray-500'} text-[10px]`}>
-                                                    {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                </div>
-                                            )}
-                                            
-                                            {/* Action buttons */}
-                                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
-                                                {/* Copy icon for all messages */}
-                                                <button
-                                                    onClick={() => copyToClipboard(message.content)}
-                                                    className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-all duration-200"
-                                                    title="Copy message"
-                                                    aria-label="Copy message"
-                                                >
-                                                    <FaCopy size={10} />
-                                                </button>
+                        {/* Messages with date dividers */}
+                        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 relative">
+                            {messages.map((message, index) => {
+                                const showDivider = index === 0 || !isSameDay(messages[index - 1]?.timestamp, message.timestamp);
+                                const dividerLabel = showDivider ? getDateLabel(message.timestamp) : '';
+                                return (
+                                    <React.Fragment key={index}>
+                                        {showDivider && (
+                                            <div className="flex items-center my-2">
+                                                <div className="flex-1 h-px bg-gray-200" />
+                                                <span className="mx-3 text-xs text-gray-600 bg-white px-3 py-1 rounded-full border border-gray-200 shadow-sm">
+                                                    {dividerLabel}
+                                                </span>
+                                                <div className="flex-1 h-px bg-gray-200" />
+                                            </div>
+                                        )}
+                                        <div
+                                            data-message-index={index}
+                                            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} ${
+                                                highlightedMessage === index ? 'animate-pulse' : ''
+                                            }`}
+                                        >
+                                            <div
+                                                className={`max-w-[85%] p-3 rounded-2xl break-words relative group ${
+                                                    message.role === 'user'
+                                                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                                                        : message.isError 
+                                                            ? 'bg-red-100 text-red-800 border border-red-200'
+                                                            : 'bg-gray-100 text-gray-800'
+                                                } ${
+                                                    highlightedMessage === index 
+                                                        ? 'ring-4 ring-yellow-400 ring-opacity-50 shadow-lg transform scale-105' 
+                                                        : ''
+                                                } transition-all duration-300`}
+                                            >
+                                                <p className="text-sm whitespace-pre-wrap leading-relaxed">{formatLinksInText(message.content, message.role === 'user')}</p>
                                                 
-                                                {/* Bookmark button for assistant messages */}
-                                                {message.role === 'assistant' && !message.isError && (
-                                                    <button
-                                                        onClick={() => toggleBookmark(index, message)}
-                                                        className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-all duration-200"
-                                                        title="Bookmark message"
-                                                        aria-label="Bookmark message"
-                                                    >
-                                                        {(() => {
-                                                            const currentSessionId = getOrCreateSessionId();
-                                                            const bookmarkKey = `${currentSessionId}_${index}_${message.timestamp}`;
-                                                            return bookmarkedMessages.some(bm => bm.key === bookmarkKey) ? 
-                                                                <FaBookmarkSolid size={10} className="text-yellow-500" /> : 
-                                                                <FaRegBookmark size={10} className="text-gray-500" />
-                                                        })()}
-                                                    </button>
-                                                )}
-                                                
-                                                {/* Share button for assistant messages */}
-                                                {message.role === 'assistant' && !message.isError && (
-                                                    <button
-                                                        onClick={() => shareMessage(message)}
-                                                        className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-all duration-200"
-                                                        title="Share message"
-                                                        aria-label="Share message"
-                                                    >
-                                                        <FaShare size={10} />
-                                                    </button>
-                                                )}
-                                                
-                                                {/* Rating buttons for assistant messages */}
-                                                {message.role === 'assistant' && !message.isError && (
-                                                    <div className="flex gap-1">
+                                                {/* Message footer with timestamp and actions */}
+                                                <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-200/20">
+                                                    {message.timestamp && (
+                                                        <div className={`${message.role === 'user' ? 'text-white/80' : message.isError ? 'text-red-600' : 'text-gray-500'} text-[10px]`}>
+                                                            {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        </div>
+                                                    )}
+                                                    
+                                                    {/* Action buttons */}
+                                                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                                                        {/* Copy icon for all messages */}
                                                         <button
-                                                            onClick={() => rateMessage(index, 'up')}
-                                                            className={`p-1 rounded transition-all duration-200 ${
-                                                                messageRatings[`${index}_${message.timestamp}`] === 'up' 
-                                                                    ? 'text-green-600 bg-green-100' 
-                                                                    : 'text-gray-500 hover:text-green-600 hover:bg-green-100'
-                                                            }`}
-                                                            title="Good response"
-                                                            aria-label="Good response"
+                                                            onClick={() => copyToClipboard(message.content)}
+                                                            className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-all duration-200"
+                                                            title="Copy message"
+                                                            aria-label="Copy message"
                                                         >
-                                                            <FaThumbsUp size={10} />
+                                                            <FaCopy size={10} />
                                                         </button>
-                                                        <button
-                                                            onClick={() => rateMessage(index, 'down')}
-                                                            className={`p-1 rounded transition-all duration-200 ${
-                                                                messageRatings[`${index}_${message.timestamp}`] === 'down' 
-                                                                    ? 'text-red-600 bg-red-100' 
-                                                                    : 'text-gray-500 hover:text-red-600 hover:bg-red-100'
-                                                            }`}
-                                                            title="Poor response"
-                                                            aria-label="Poor response"
-                                                        >
-                                                            <FaThumbsDown size={10} />
-                                                        </button>
+                                                        
+                                                        {/* Bookmark button for assistant messages */}
+                                                        {message.role === 'assistant' && !message.isError && (
+                                                            <button
+                                                                onClick={() => toggleBookmark(index, message)}
+                                                                className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-all duration-200"
+                                                                title="Bookmark message"
+                                                                aria-label="Bookmark message"
+                                                            >
+                                                                {(() => {
+                                                                    const currentSessionId = getOrCreateSessionId();
+                                                                    const bookmarkKey = `${currentSessionId}_${index}_${message.timestamp}`;
+                                                                    return bookmarkedMessages.some(bm => bm.key === bookmarkKey) ? 
+                                                                        <FaBookmarkSolid size={10} className="text-yellow-500" /> : 
+                                                                        <FaRegBookmark size={10} className="text-gray-500" />
+                                                                })()}
+                                                            </button>
+                                                        )}
+                                                        
+                                                        {/* Share button for assistant messages */}
+                                                        {message.role === 'assistant' && !message.isError && (
+                                                            <button
+                                                                onClick={() => shareMessage(message)}
+                                                                className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-all duration-200"
+                                                                title="Share message"
+                                                                aria-label="Share message"
+                                                            >
+                                                                <FaShare size={10} />
+                                                            </button>
+                                                        )}
+                                                        
+                                                        {/* Rating buttons for assistant messages */}
+                                                        {message.role === 'assistant' && !message.isError && (
+                                                            <div className="flex gap-1">
+                                                                <button
+                                                                    onClick={() => rateMessage(index, 'up')}
+                                                                    className={`p-1 rounded transition-all duration-200 ${
+                                                                        messageRatings[`${index}_${message.timestamp}`] === 'up' 
+                                                                            ? 'text-green-600 bg-green-100' 
+                                                                            : 'text-gray-500 hover:text-green-600 hover:bg-green-100'
+                                                                    }`}
+                                                                    title="Good response"
+                                                                    aria-label="Good response"
+                                                                >
+                                                                    <FaThumbsUp size={10} />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => rateMessage(index, 'down')}
+                                                                    className={`p-1 rounded transition-all duration-200 ${
+                                                                        messageRatings[`${index}_${message.timestamp}`] === 'down' 
+                                                                            ? 'text-red-600 bg-red-100' 
+                                                                            : 'text-gray-500 hover:text-red-600 hover:bg-red-100'
+                                                                    }`}
+                                                                    title="Poor response"
+                                                                    aria-label="Poor response"
+                                                                >
+                                                                    <FaThumbsDown size={10} />
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                        
+                                                        {/* Retry buttons */}
+                                                        {message.role === 'assistant' && (
+                                                            <button
+                                                                onClick={() => {
+                                                                    const previousUserMessage = (() => {
+                                                                        for (let i = index - 1; i >= 0; i--) {
+                                                                            if (messages[i]?.role === 'user') return messages[i].content;
+                                                                        }
+                                                                        return lastUserMessageRef.current;
+                                                                    })();
+                                                                    if (previousUserMessage) retryMessage(previousUserMessage, index);
+                                                                }}
+                                                                disabled={isLoading}
+                                                                className="p-1 text-blue-600 hover:text-blue-700 hover:bg-blue-100 rounded transition-all duration-200 disabled:opacity-50"
+                                                                title="Try Again"
+                                                                aria-label="Try Again"
+                                                            >
+                                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                                                    <path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26l1.46-1.46C6.26 13.86 6 12.97 6 12c0-3.31 2.69-6 6-6zm5.76 1.74L16.3 9.2C17.74 10.14 18.5 11.49 18.5 13c0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z"/>
+                                                                </svg>
+                                                            </button>
+                                                        )}
                                                     </div>
-                                                )}
-                                                
-                                                {/* Retry buttons */}
-                                                {message.role === 'assistant' && (
-                                                    <button
-                                                        onClick={() => {
-                                                            const previousUserMessage = (() => {
-                                                                for (let i = index - 1; i >= 0; i--) {
-                                                                    if (messages[i]?.role === 'user') return messages[i].content;
-                                                                }
-                                                                return lastUserMessageRef.current;
-                                                            })();
-                                                            if (previousUserMessage) retryMessage(previousUserMessage, index);
-                                                        }}
-                                                        disabled={isLoading}
-                                                        className="p-1 text-blue-600 hover:text-blue-700 hover:bg-blue-100 rounded transition-all duration-200 disabled:opacity-50"
-                                                        title="Try Again"
-                                                        aria-label="Try Again"
-                                                    >
-                                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                                                            <path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26l1.46-1.46C6.26 13.86 6 12.97 6 12c0-3.31 2.69-6 6-6zm5.76 1.74L16.3 9.2C17.74 10.14 18.5 11.49 18.5 13c0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z"/>
-                                                        </svg>
-                                                    </button>
-                                                )}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                            ))}
+                                    </React.Fragment>
+                                );
+                            })}
                             {isLoading && (
                                 <div className="flex justify-start">
                                     <div className="bg-gray-100 text-gray-800 p-3 rounded-2xl">
@@ -1214,6 +1272,15 @@ const GeminiChatbox = () => {
                                         <path d="M12 16l-6-6h12l-6 6z" />
                                     </svg>
                                 </button>
+                            </div>
+                        )}
+
+                        {/* Floating date label */}
+                        {showFloatingDate && floatingDateLabel && (
+                            <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30">
+                                <div className="bg-gray-800 text-white text-xs px-3 py-1 rounded-full opacity-90 shadow">
+                                    {floatingDateLabel}
+                                </div>
                             </div>
                         )}
 

@@ -46,14 +46,21 @@ export const createPayPalOrder = async (req, res) => {
       })
     });
 
-    const order = await orderRes.json();
+    const orderText = await orderRes.text();
+    let order;
+    try {
+      order = JSON.parse(orderText);
+    } catch (e) {
+      // Ensure we always return JSON to the client
+      return res.status(500).json({ message: 'Error creating PayPal order', details: orderText });
+    }
     if (!orderRes.ok) {
       return res.status(500).json({ message: 'Error creating PayPal order', details: order });
     }
     res.json(order);
   } catch (err) {
     console.error(err);
-    res.status(500).send('Error creating PayPal order');
+    res.status(500).json({ message: 'Error creating PayPal order', error: err?.message || 'Unknown error' });
   }
 };
 
@@ -70,14 +77,20 @@ export const capturePayPalOrder = async (req, res) => {
       }
     });
 
-    const capture = await captureRes.json();
+    const captureText = await captureRes.text();
+    let capture;
+    try {
+      capture = JSON.parse(captureText);
+    } catch (e) {
+      return res.status(500).json({ message: 'Error capturing PayPal order', details: captureText });
+    }
     if (!captureRes.ok) {
       return res.status(500).json({ message: 'Error capturing PayPal order', details: capture });
     }
     res.json(capture);
   } catch (err) {
     console.error(err);
-    res.status(500).send('Error capturing PayPal order');
+    res.status(500).json({ message: 'Error capturing PayPal order', error: err?.message || 'Unknown error' });
   }
 };
 

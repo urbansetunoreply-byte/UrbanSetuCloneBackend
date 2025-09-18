@@ -64,6 +64,27 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
 
     try {
       setLoading(true);
+      // Dynamically load PayPal SDK if not present
+      const loadPayPalSDK = () => new Promise((resolve, reject) => {
+        if (window && window.paypal) return resolve();
+        const existing = document.querySelector('script[src*="paypal.com/sdk/js"]');
+        if (existing) {
+          existing.addEventListener('load', () => resolve());
+          existing.addEventListener('error', (e) => reject(new Error('Failed to load PayPal SDK')));
+          return;
+        }
+        const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID;
+        if (!clientId) return reject(new Error('Missing VITE_PAYPAL_CLIENT_ID'));
+        const script = document.createElement('script');
+        script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=INR&intent=authorize`;
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('Failed to load PayPal SDK'));
+        document.body.appendChild(script);
+      });
+
+      await loadPayPalSDK();
+
       // Render PayPal Buttons
       if (window && window.paypal) {
         const amount = paymentData?.paypal?.amount || paymentData?.payment?.amount;
@@ -79,9 +100,13 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({ amount: amount.toString() })
+                body: JSON.stringify({ amount: Number(amount).toFixed(2) })
               });
-              const order = await orderRes.json();
+              const text = await orderRes.text();
+              let order;
+              try { order = JSON.parse(text); } catch (e) {
+                throw new Error(text || 'Invalid JSON from create-order');
+              }
               if (!orderRes.ok) throw new Error(order.message || 'Failed to create PayPal order');
               return order.id;
             } catch (e) {
@@ -91,7 +116,17 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
           },
           onApprove: async (data, actions) => {
             try {
-              const details = await actions.order.capture();
+              // Capture via actions may fail if permissions; fallback to server capture
+              try {
+                await actions.order.capture();
+              } catch (e) {
+                await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/paypal/capture-order`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include',
+                  body: JSON.stringify({ orderId: data.orderID })
+                });
+              }
               await verifyPayment({ paypal_order_id: data.orderID });
             } catch (e) {
               toast.error('Payment capture failed');
@@ -109,6 +144,8 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
     } catch (error) {
       console.error('Payment error:', error);
       toast.error('Payment failed. Please try again.');
+    }
+    finally {
       setLoading(false);
     }
   };
