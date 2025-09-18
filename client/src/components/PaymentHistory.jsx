@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaRupeeSign, FaDownload, FaEye, FaClock, FaCheckCircle, FaTimes, FaExclamationTriangle, FaSpinner } from 'react-icons/fa';
+import { FaDollarSign, FaDownload, FaEye, FaClock, FaCheckCircle, FaTimes, FaExclamationTriangle, FaSpinner } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
 const PaymentHistory = ({ userId }) => {
@@ -137,7 +137,7 @@ const PaymentHistory = ({ userId }) => {
       {/* Payment List */}
       {payments.length === 0 ? (
         <div className="text-center py-8">
-          <FaRupeeSign className="text-6xl text-gray-300 mx-auto mb-4" />
+          <FaDollarSign className="text-6xl text-gray-300 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-600 mb-2">No Payments Found</h3>
           <p className="text-gray-500">You haven't made any payments yet.</p>
         </div>
@@ -159,7 +159,7 @@ const PaymentHistory = ({ userId }) => {
                 </div>
                 <div className="text-right">
                   <div className="text-lg font-bold text-gray-800">
-                    {((payment.currency || 'USD') === 'USD') ? `$ ${Number(payment.amount).toFixed(2)}` : `₹${payment.amount.toLocaleString()}`}
+                    {`$ ${Number(payment.amount).toFixed(2)}`}
                   </div>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(payment.status)}`}>
                     {payment.status}
@@ -191,7 +191,7 @@ const PaymentHistory = ({ userId }) => {
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-red-800 font-medium">Refunded Amount:</span>
-                      <p className="text-red-600">₹{payment.refundAmount.toLocaleString()}</p>
+                      <p className="text-red-600">$ {Number(payment.refundAmount).toFixed(2)}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-red-600">

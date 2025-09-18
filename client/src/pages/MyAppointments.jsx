@@ -4456,44 +4456,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
             </div>
           )}
           <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 rounded-3xl shadow-2xl w-full h-full max-w-6xl max-h-full p-0 relative animate-fadeIn flex flex-col border border-gray-200 transform transition-all duration-500 hover:shadow-3xl overflow-hidden">
-            { (typeof isChatDisabled !== 'undefined' ? isChatDisabled : isChatSendBlocked) ? (
-              <div className="flex flex-col items-center justify-center flex-1 p-8 min-h-96 relative">
-                <button
-                  onClick={() => setShowChatModal(false)}
-                  className="absolute top-4 right-4 text-gray-600 hover:text-gray-800 bg-white/80 hover:bg-white rounded-full p-2 shadow focus:outline-none"
-                  aria-label="Close chat"
-                  title="Close"
-                >
-                  <FaTimes size={18} />
-                </button>
-                <FaCommentDots className="text-6xl text-gray-400 mb-6" />
-                <div className="text-xl font-semibold text-gray-500 text-center">
-                  {!isUpcoming 
-                    ? "Chat not available for outdated appointments"
-                    : appt.status === 'rejected'
-                      ? "Chat not available for rejected appointments"
-                      : appt.status === 'cancelledByAdmin'
-                        ? "Chat not available for appointments cancelled by admin"
-                        : appt.status === 'cancelledByBuyer'
-                          ? "Chat not available for appointments cancelled by buyer"
-                          : "Chat not available for appointments cancelled by seller"
-                  }
-                </div>
-                <div className="text-gray-400 text-center mt-2">
-                  {!isUpcoming 
-                    ? "This appointment has already passed"
-                    : appt.status === 'rejected'
-                      ? "This appointment has been rejected"
-                      : appt.status === 'cancelledByAdmin'
-                        ? "This appointment has been cancelled by admin"
-                        : appt.status === 'cancelledByBuyer'
-                          ? "This appointment has been cancelled by buyer"
-                          : "This appointment has been cancelled by seller"
-                  }
-                </div>
-              </div>
-            ) : (
-              <>
+            <>
                 {/* Chat Header (sticky on mobile to avoid URL bar overlap) */}
                 <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 sm:py-4 border-b-2 border-blue-700 bg-gradient-to-r from-blue-700 via-purple-700 to-blue-900 rounded-t-3xl relative shadow-2xl flex-shrink-0 md:sticky md:top-0 sticky top-[env(safe-area-inset-top,0px)] z-30">
                   {isSelectionMode ? (
@@ -6368,7 +6331,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                     />
                     {isChatSendBlocked && (
                       <div className="text-xs text-red-600 mt-1 ml-1 font-semibold">
-                        Sending new messages is disabled for rejected/cancelled/outdated appointments. Chat remains readable.
+                        Sending new messages is disabled for this appointment. Chat remains readable.
                       </div>
                     )}
                     {/* Emoji Button - Inside textarea on the right */}
@@ -6843,8 +6806,13 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                     50% { box-shadow: 0 0 25px rgba(168, 85, 247, 0.9); }
                   }
                 `}</style>
+                {/* If sending is blocked, show an informational banner under header */}
+                { (typeof isChatDisabled !== 'undefined' ? isChatDisabled : isChatSendBlocked) && (
+                  <div className="px-4 sm:px-6 py-2 bg-yellow-50 text-yellow-800 text-sm border-b border-yellow-200">
+                    Sending new messages is disabled for this appointment status. You can still open and read the chat history.
+                  </div>
+                )}
               </>
-            )}
             
             {/* Floating Scroll to bottom button - WhatsApp style */}
             {!isAtBottom && !(typeof isChatDisabled !== 'undefined' ? isChatDisabled : isChatSendBlocked) && !editingComment && !replyTo && (
