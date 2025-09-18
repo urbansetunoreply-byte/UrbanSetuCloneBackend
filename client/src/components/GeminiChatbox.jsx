@@ -31,6 +31,8 @@ const GeminiChatbox = () => {
     const lastUserMessageRef = useRef('');
     const [tone, setTone] = useState(() => localStorage.getItem('gemini_tone') || 'neutral'); // modes dropdown (tone)
     const [isHeaderMenuOpen, setIsHeaderMenuOpen] = useState(false);
+    const headerMenuButtonRef = useRef(null);
+    const headerMenuRef = useRef(null);
     const [showFeatures, setShowFeatures] = useState(false);
     const [bookmarkedMessages, setBookmarkedMessages] = useState(() => JSON.parse(localStorage.getItem('gemini_bookmarks') || '[]'));
     const [messageRatings, setMessageRatings] = useState(() => JSON.parse(localStorage.getItem('gemini_ratings') || '{}'));
@@ -221,6 +223,24 @@ const GeminiChatbox = () => {
             window.removeEventListener('clearChatHistory', handleClearChatHistory);
         };
     }, []);
+
+    // Close header menu when clicking outside of menu or button
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (!isHeaderMenuOpen) return;
+            const clickedInsideButton = headerMenuButtonRef.current && headerMenuButtonRef.current.contains(event.target);
+            const clickedInsideMenu = headerMenuRef.current && headerMenuRef.current.contains(event.target);
+            if (!clickedInsideButton && !clickedInsideMenu) {
+                setIsHeaderMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside, { passive: true });
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+        };
+    }, [isHeaderMenuOpen]);
 
     // Keyboard shortcuts: Ctrl+F focus, Esc close
     useEffect(() => {
@@ -961,6 +981,7 @@ const GeminiChatbox = () => {
                                 </select>
                                 
                                 <button
+                                    ref={headerMenuButtonRef}
                                     onClick={() => setIsHeaderMenuOpen(open => !open)}
                                     className="inline-flex text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
                                     title="More options"
@@ -978,7 +999,7 @@ const GeminiChatbox = () => {
 
                                 {/* Dropdown menu */}
                                 {isHeaderMenuOpen && (
-                                    <div className="absolute right-0 top-full mt-2 bg-white text-gray-800 rounded shadow-lg border border-gray-200 w-48 z-50">
+                                    <div ref={headerMenuRef} className="absolute right-0 top-full mt-2 bg-white text-gray-800 rounded shadow-lg border border-gray-200 w-48 z-50">
                                         <ul className="py-1 text-sm">
                                             {/* New Chat */}
                                             <li>
@@ -1097,6 +1118,16 @@ const GeminiChatbox = () => {
 
                         {/* Messages with date dividers */}
                         <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 relative">
+                            {/* Floating Date Indicator (sticky below header) */}
+                            {showFloatingDate && floatingDateLabel && (
+                                <div className={`sticky top-0 left-0 right-0 z-30 pointer-events-none`}>
+                                    <div className="w-full flex justify-center py-2">
+                                        <div className="bg-blue-600 text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white">
+                                            {floatingDateLabel}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                             {messages.map((message, index) => {
                                 const showDivider = index === 0 || !isSameDay(messages[index - 1]?.timestamp, message.timestamp);
                                 const dividerLabel = showDivider ? getDateLabel(message.timestamp) : '';
@@ -1276,13 +1307,7 @@ const GeminiChatbox = () => {
                         )}
 
                         {/* Floating date label */}
-                        {showFloatingDate && floatingDateLabel && (
-                            <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30">
-                                <div className="bg-gray-800 text-white text-xs px-3 py-1 rounded-full opacity-90 shadow">
-                                    {floatingDateLabel}
-                                </div>
-                            </div>
-                        )}
+                        {/* Removed old absolute-positioned floating date label */}
 
                         {/* Quick suggestion prompts - always visible at bottom */}
                         {messages && (
