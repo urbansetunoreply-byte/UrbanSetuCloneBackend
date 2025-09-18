@@ -6332,22 +6332,46 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                     )}
                     {/* Formatting toolbar */}
                     <div className="flex flex-wrap items-center gap-2 mb-2">
-                      <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
+                      <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
+                        if (isChatSendBlocked) {
+                          toast.info('Formatting disabled for this appointment status. You can view chat history.');
+                          return;
+                        }
                         const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = comment || ''; const selected = base.slice(start, end); const wrapped = `**${selected || 'bold'}**`; const next = base.slice(0,start)+wrapped+base.slice(end); setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2, start+2+(selected||'bold').length);}catch(_){}} ,0);
-                      }}>B</button>
-                      <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100 italic" onClick={() => {
+                      }} disabled={isChatSendBlocked}>B</button>
+                      <button type="button" className={`px-2 py-1 text-xs rounded border italic ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
+                        if (isChatSendBlocked) {
+                          toast.info('Formatting disabled for this appointment status. You can view chat history.');
+                          return;
+                        }
                         const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = comment || ''; const selected = base.slice(start, end); const wrapped = `*${selected || 'italic'}*`; const next = base.slice(0,start)+wrapped+base.slice(end); setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+1, start+1+(selected||'italic').length);}catch(_){}} ,0);
-                      }}>I</button>
-                      <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100 underline" onClick={() => {
+                      }} disabled={isChatSendBlocked}>I</button>
+                      <button type="button" className={`px-2 py-1 text-xs rounded border underline ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
+                        if (isChatSendBlocked) {
+                          toast.info('Formatting disabled for this appointment status. You can view chat history.');
+                          return;
+                        }
                         const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = comment || ''; const selected = base.slice(start, end); const wrapped = `__${selected || 'underline'}__`; const next = base.slice(0,start)+wrapped+base.slice(end); setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2, start+2+(selected||'underline').length);}catch(_){}} ,0);
-                      }}>U</button>
-                      <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
+                      }} disabled={isChatSendBlocked}>U</button>
+                      <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
+                        if (isChatSendBlocked) {
+                          toast.info('Formatting disabled for this appointment status. You can view chat history.');
+                          return;
+                        }
                         const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = comment || ''; const selected = base.slice(start, end); const wrapped = `~~${selected || 'strike'}~~`; const next = base.slice(0,start)+wrapped+base.slice(end); setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2, start+2+(selected||'strike').length);}catch(_){}} ,0);
-                      }}>S</button>
-                      <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
+                      }} disabled={isChatSendBlocked}>S</button>
+                      <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
+                        if (isChatSendBlocked) {
+                          toast.info('Formatting disabled for this appointment status. You can view chat history.');
+                          return;
+                        }
                         const el = inputRef.current; if (!el) return; const base = comment || ''; const start = el.selectionStart || 0; const before = base.slice(0,start); const after = base.slice(start); const next = `${before}- ${after}`; setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2, start+2);}catch(_){}} ,0);
-                      }}>• List</button>
-                      <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
+                      }} disabled={isChatSendBlocked}>• List</button>
+                      <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
+                        if (isChatSendBlocked) {
+                          toast.info('Formatting disabled for this appointment status. You can view chat history.');
+                          return;
+                        }
                         const el = inputRef.current; if (!el) return; const base = comment || ''; const start = el.selectionStart || 0; const before = base.slice(0,start); const after = base.slice(start); 
                         // Find existing numbered list items to determine next number
                         const lines = before.split('\n');
@@ -6368,19 +6392,35 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         }
                         
                         const next = `${before}${nextNum}. ${after}`; setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+(nextNum.toString().length)+2, start+(nextNum.toString().length)+2);}catch(_){}} ,0);
-                      }}>1. List</button>
-                      <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
+                      }} disabled={isChatSendBlocked}>1. List</button>
+                      <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
+                        if (isChatSendBlocked) {
+                          toast.info('Formatting disabled for this appointment status. You can view chat history.');
+                          return;
+                        }
                         const el = inputRef.current; if (!el) return; const base = comment || ''; const start = el.selectionStart || 0; const before = base.slice(0,start); const after = base.slice(start); const next = `${before}> ${after}`; setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2, start+2);}catch(_){}} ,0);
-                      }}>&gt; Quote</button>
-                      <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" title="Tag Property" onClick={() => {
+                      }} disabled={isChatSendBlocked}>&gt; Quote</button>
+                      <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} title="Tag Property" onClick={() => {
+                        if (isChatSendBlocked) {
+                          toast.info('Formatting disabled for this appointment status. You can view chat history.');
+                          return;
+                        }
                         const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const base = comment || ''; const insert = '@'; const next = base.slice(0,start)+insert+base.slice(start); setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+1, start+1);}catch(_){}} ,0);
-                      }}>@Prop</button>
-                      <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" title="Insert appointment card" onClick={() => {
+                      }} disabled={isChatSendBlocked}>@Prop</button>
+                      <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} title="Insert appointment card" onClick={() => {
+                        if (isChatSendBlocked) {
+                          toast.info('Formatting disabled for this appointment status. You can view chat history.');
+                          return;
+                        }
                         const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const base = comment || ''; const card = '[Appointment: date • time • with]'; const next = base.slice(0,start)+card+base.slice(start); setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+13, start+13);}catch(_){}} ,0);
-                      }}>Appt</button>
-                      <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" title="Insert service link" onClick={() => {
+                      }} disabled={isChatSendBlocked}>Appt</button>
+                      <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} title="Insert service link" onClick={() => {
+                        if (isChatSendBlocked) {
+                          toast.info('Formatting disabled for this appointment status. You can view chat history.');
+                          return;
+                        }
                         const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const base = comment || ''; const link = 'Book Movers: /user/movers'; const next = base.slice(0,start)+link+base.slice(start); setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start, start);}catch(_){}} ,0);
-                      }}>Service</button>
+                      }} disabled={isChatSendBlocked}>Service</button>
                     </div>
                     {/* Property mention suggestions */}
                     {comment && /@[^\s]*$/.test(comment) && (
