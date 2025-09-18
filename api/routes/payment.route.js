@@ -43,9 +43,9 @@ router.post("/create-intent", verifyToken, async (req, res) => {
       return res.status(403).json({ message: "You can only make payments for your own appointments." });
     }
 
-    // Advance amount: Flat ₹100 per property (as per requirement)
+    // Advance amount: Flat $5 per property (updated requirement)
     const listing = appointment.listingId;
-    const advanceAmount = 100;
+    const advanceAmount = 5;
     
     // Create payment record
     const payment = new Payment({
@@ -66,7 +66,7 @@ router.post("/create-intent", verifyToken, async (req, res) => {
     res.status(201).json({
       message: "Payment intent created successfully",
       payment: payment,
-      paypal: { amount: advanceAmount, currency: 'INR' }
+      paypal: { amount: advanceAmount, currency: 'USD' }
     });
   } catch (err) {
     console.error("Error creating payment intent:", err);

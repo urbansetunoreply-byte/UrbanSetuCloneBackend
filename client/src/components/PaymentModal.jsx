@@ -76,7 +76,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID;
         if (!clientId) return reject(new Error('Missing VITE_PAYPAL_CLIENT_ID'));
         const script = document.createElement('script');
-        script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=INR&intent=authorize`;
+        script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=USD&intent=capture`;
         script.async = true;
         script.onload = () => resolve();
         script.onerror = () => reject(new Error('Failed to load PayPal SDK'));
@@ -100,7 +100,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({ amount: Number(amount).toFixed(2) })
+                body: JSON.stringify({ amount: Number(amount).toFixed(2), currency: 'USD' })
               });
               const text = await orderRes.text();
               let order;
@@ -247,17 +247,17 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-gray-600">Advance Payment (Flat)</span>
-                        <span className="font-medium">₹{paymentData.payment.amount.toLocaleString()}</span>
+                        <span className="font-medium">$ {Number(paymentData.payment.amount).toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between text-sm text-gray-500">
                         <span>Note</span>
-                        <span>₹100 advance to confirm booking</span>
+                        <span>$5 advance to confirm booking</span>
                       </div>
                     </div>
                     <div className="border-t border-blue-200 mt-3 pt-3">
                       <div className="flex justify-between font-semibold text-blue-800">
                         <span>Total Amount</span>
-                        <span>₹{paymentData.payment.amount.toLocaleString()}</span>
+                        <span>$ {Number(paymentData.payment.amount).toFixed(2)}</span>
                       </div>
                     </div>
                   </div>
@@ -320,7 +320,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Amount Paid:</span>
-                    <span className="font-medium">₹{paymentData.payment.amount.toLocaleString()}</span>
+                    <span className="font-medium">$ {Number(paymentData.payment.amount).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Payment ID:</span>
