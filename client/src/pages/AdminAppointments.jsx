@@ -6577,7 +6577,12 @@ function AdminPaymentStatusCell({ appointmentId }) {
   }
 
   if (!payment) {
-    return <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pending</span>;
+    return (
+      <div className="flex flex-col items-center gap-1">
+        <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pending</span>
+        {statusButton}
+      </div>
+    );
   }
 
   const color = payment.status === 'completed'
@@ -6638,7 +6643,7 @@ function AdminPaymentStatusCell({ appointmentId }) {
       </button>
       
       {showStatusOptions && (
-        <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 min-w-[120px]">
+        <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 min-w-[120px]">
           {!appointment?.paymentConfirmed ? (
             <button
               onClick={() => handleStatusChange(true)}

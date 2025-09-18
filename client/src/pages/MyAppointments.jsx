@@ -4786,15 +4786,23 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                               )}
                             </button>
                             <button
-                              className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                              className={`rounded-full p-2 transition-colors ${
+                                isChatSendBlocked 
+                                  ? 'text-gray-400 bg-white/5 cursor-not-allowed' 
+                                  : 'text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20'
+                              }`}
                               onClick={() => {
+                                if (isChatSendBlocked) {
+                                  toast.info('Pinning disabled for this appointment status. You can view chat history.');
+                                  return;
+                                }
                                 // For multi-select, open pin modal with selected messages
                                 setMessageToPin(selectedMessages);
                                 setShowPinModal(true);
                               }}
-                              title="Pin all selected messages"
-                              aria-label="Pin all selected messages"
-                              disabled={multiSelectActions.pinning}
+                              title={isChatSendBlocked ? "Pinning disabled for this appointment status" : "Pin all selected messages"}
+                              aria-label={isChatSendBlocked ? "Pinning disabled for this appointment status" : "Pin all selected messages"}
+                              disabled={multiSelectActions.pinning || isChatSendBlocked}
                             >
                               {multiSelectActions.pinning ? (
                                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -4817,8 +4825,16 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                               <FaCopy size={18} />
                             </button>
                             <button
-                              className="text-white hover:text-red-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                              className={`rounded-full p-2 transition-colors ${
+                                isChatSendBlocked 
+                                  ? 'text-gray-400 bg-white/5 cursor-not-allowed' 
+                                  : 'text-white hover:text-red-200 bg-white/10 hover:bg-white/20'
+                              }`}
                               onClick={() => {
+                                if (isChatSendBlocked) {
+                                  toast.info('Delete disabled for this appointment status. You can view chat history.');
+                                  return;
+                                }
                                 const allSent = selectedMessages.every(msg => msg.senderEmail === currentUser.email);
                                 const hasReceived = selectedMessages.some(msg => msg.senderEmail !== currentUser.email);
                                 setMessageToDelete(selectedMessages);
@@ -4827,8 +4843,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                 setIsSelectionMode(false);
                                 setSelectedMessages([]);
                               }}
-                              title="Delete all selected messages"
-                              aria-label="Delete all selected messages"
+                              disabled={isChatSendBlocked}
+                              title={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete all selected messages"}
+                              aria-label={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete all selected messages"}
                             >
                               <FaTrash size={18} />
                             </button>
@@ -4939,8 +4956,16 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         {/* Delete inline (sent: delete for everyone; received: delete locally) */}
                         {!selectedMessageForHeaderOptions.deleted && (
                           <button
-                            className="text-white hover:text-red-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                            className={`rounded-full p-2 transition-colors ${
+                              isChatSendBlocked 
+                                ? 'text-gray-400 bg-white/5 cursor-not-allowed' 
+                                : 'text-white hover:text-red-200 bg-white/10 hover:bg-white/20'
+                            }`}
                             onClick={() => { 
+                              if (isChatSendBlocked) {
+                                toast.info('Delete disabled for this appointment status. You can view chat history.');
+                                return;
+                              }
                               if (selectedMessageForHeaderOptions.senderEmail === currentUser.email) {
                                 handleDeleteClick(selectedMessageForHeaderOptions);
                               } else {
@@ -4948,8 +4973,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                               }
                               setHeaderOptionsMessageId(null);
                             }}
-                            title="Delete"
-                            aria-label="Delete"
+                            disabled={isChatSendBlocked}
+                            title={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete"}
+                            aria-label={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete"}
                           >
                             <FaTrash size={18} />
                           </button>
@@ -4991,8 +5017,16 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                       Info
                                     </button>
                                     <button
-                                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                      className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 ${
+                                        isChatSendBlocked 
+                                          ? 'text-gray-400 cursor-not-allowed' 
+                                          : 'text-gray-700 hover:bg-gray-100'
+                                      }`}
                                       onClick={() => {
+                                        if (isChatSendBlocked) {
+                                          toast.info('Pinning disabled for this appointment status. You can view chat history.');
+                                          return;
+                                        }
                                         if (selectedMessageForHeaderOptions.pinned) {
                                           handlePinMessage(selectedMessageForHeaderOptions, false);
                                         } else {
@@ -5002,7 +5036,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                         setShowHeaderMoreMenu(false);
                                         setHeaderOptionsMessageId(null);
                                       }}
-                                      disabled={pinningSaving}
+                                      disabled={pinningSaving || isChatSendBlocked}
                                     >
                                       <FaThumbtack className="text-sm" />
                                       {selectedMessageForHeaderOptions.pinned ? 'Unpin' : 'Pin'}
@@ -5033,8 +5067,16 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                       </button>
                                     )}
                                     <button
-                                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                      className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 ${
+                                        isChatSendBlocked 
+                                          ? 'text-gray-400 cursor-not-allowed' 
+                                          : 'text-gray-700 hover:bg-gray-100'
+                                      }`}
                                       onClick={() => {
+                                        if (isChatSendBlocked) {
+                                          toast.info('Pinning disabled for this appointment status. You can view chat history.');
+                                          return;
+                                        }
                                         if (selectedMessageForHeaderOptions.pinned) {
                                           handlePinMessage(selectedMessageForHeaderOptions, false);
                                         } else {
@@ -5044,7 +5086,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                         setShowHeaderMoreMenu(false);
                                         setHeaderOptionsMessageId(null);
                                       }}
-                                      disabled={pinningSaving}
+                                      disabled={pinningSaving || isChatSendBlocked}
                                     >
                                       <FaThumbtack className="text-sm" />
                                       {selectedMessageForHeaderOptions.pinned ? 'Unpin' : 'Pin'}
@@ -6391,6 +6433,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                     <div className="absolute right-12 bottom-3">
                       <EmojiButton 
                         onEmojiClick={(emoji) => {
+                          // Check if chat sending is blocked for this appointment status
+                          if (isChatSendBlocked) {
+                            toast.info('Emoji sending disabled for this appointment status. You can view chat history.');
+                            return;
+                          }
+                          
                           // Use live input value and caret selection for robust insertion
                           const el = inputRef?.current;
                           const baseText = el ? el.value : comment;
@@ -6420,6 +6468,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         }}
                         className="w-8 h-8"
                         inputRef={inputRef}
+                        disabled={isChatSendBlocked}
                       />
                     </div>
                     {/* File Upload Button - Inside textarea on the right (WhatsApp style) */}
@@ -6668,6 +6717,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         <div className="absolute right-2 top-2">
                           <EmojiButton 
                             onEmojiClick={(emoji) => {
+                              // Check if chat sending is blocked for this appointment status
+                              if (isChatSendBlocked) {
+                                toast.info('Emoji sending disabled for this appointment status. You can view chat history.');
+                                return;
+                              }
+                              
                               const currentCaption = imageCaptions[selectedFiles[previewIndex]?.name] || '';
                               setImageCaptions(prev => ({
                                 ...prev,
@@ -6675,6 +6730,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                               }));
                             }}
                             className="w-6 h-6"
+                            disabled={isChatSendBlocked}
                           />
                         </div>
                         <div className="text-xs text-gray-500 mt-1 text-right">
