@@ -46,6 +46,13 @@ const GeminiChatbox = () => {
     const [highlightedMessage, setHighlightedMessage] = useState(null);
     const [selectedHistoryIds, setSelectedHistoryIds] = useState([]);
     const [openHistoryMenuSessionId, setOpenHistoryMenuSessionId] = useState(null);
+    const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
+    const [showDeleteSelectedModal, setShowDeleteSelectedModal] = useState(false);
+    const [deleteTargetSessionId, setDeleteTargetSessionId] = useState(null);
+    const [showDeleteSingleModal, setShowDeleteSingleModal] = useState(false);
+    const [showRenameModal, setShowRenameModal] = useState(false);
+    const [renameTargetSessionId, setRenameTargetSessionId] = useState(null);
+    const [renameInput, setRenameInput] = useState('');
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -1443,23 +1450,7 @@ const GeminiChatbox = () => {
                                         </h4>
                                         <div className="flex items-center gap-2">
                                             <button
-                                                onClick={async () => {
-                                                    if (!window.confirm('Delete ALL chats? This cannot be undone.')) return;
-                                                    try {
-                                                        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-                                                        await fetch(`${API_BASE_URL}/api/gemini/sessions`, {
-                                                            method: 'DELETE',
-                                                            credentials: 'include'
-                                                        });
-                                                        // Ensure at least one chat exists
-                                                        await createNewSession();
-                                                        await loadChatSessions();
-                                                        toast.success('All chats deleted');
-                                                        setShowHistory(false);
-                                                    } catch (e) {
-                                                        toast.error('Failed to delete all chats');
-                                                    }
-                                                }}
+                                                onClick={() => setShowDeleteAllModal(true)}
                                                 className="px-3 py-1.5 text-xs rounded bg-red-600 text-white hover:bg-red-700"
                                             >
                                                 Delete All
@@ -1509,7 +1500,7 @@ const GeminiChatbox = () => {
                                                             className="flex-1 text-left"
                                                         >
                                                             <div className="text-sm font-medium text-gray-800">
-                                                                {session.name?.trim() ? session.name : `Chat ${idx + 1}`}
+                                                                {session.name?.trim() ? session.name : `New chat ${idx + 1}`}
                                                             </div>
                                                             <div className="text-xs text-gray-600">
                                                                 {new Date(session.lastMessageAt).toLocaleString()}
@@ -1532,11 +1523,10 @@ const GeminiChatbox = () => {
                                                             {openHistoryMenuSessionId === session.sessionId && (
                                                             <div className="absolute right-0 top-6 bg-white border border-gray-200 rounded shadow-lg z-10 w-36">
                                                                 <button
-                                                                    onClick={async (e) => {
+                                                                    onClick={(e) => {
                                                                         e.stopPropagation();
-                                                                        if (!window.confirm('Delete this chat?')) return;
-                                                                        await deleteSession(session.sessionId);
-                                                                        setOpenHistoryMenuSessionId(null);
+                                                                        setDeleteTargetSessionId(session.sessionId);
+                                                                        setShowDeleteSingleModal(true);
                                                                     }}
                                                                     className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
                                                                 >
@@ -1546,7 +1536,6 @@ const GeminiChatbox = () => {
                                                                     onClick={async (e) => {
                                                                         e.stopPropagation();
                                                                         try {
-                                                                            // Load full chat messages for this chat and reuse same share logic as header
                                                                             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
                                                                             const resp = await fetch(`${API_BASE_URL}/api/chat-history/session/${session.sessionId}`, { credentials: 'include' });
                                                                             const data = await resp.json();
@@ -1571,23 +1560,12 @@ const GeminiChatbox = () => {
                                                                     Share chat
                                                                 </button>
                                                                 <button
-                                                                    onClick={async (e) => {
+                                                                    onClick={(e) => {
                                                                         e.stopPropagation();
-                                                                        const newName = prompt('Enter chat name');
-                                                                        if (newName === null) return;
-                                                                        try {
-                                                                            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-                                                                            await fetch(`${API_BASE_URL}/api/chat-history/session/${session.sessionId}`, {
-                                                                                method: 'PUT',
-                                                                                credentials: 'include',
-                                                                                headers: { 'Content-Type': 'application/json' },
-                                                                                body: JSON.stringify({ name: newName })
-                                                                            });
-                                                                            await loadChatSessions();
-                                                                            setOpenHistoryMenuSessionId(null);
-                                                                        } catch {
-                                                                            toast.error('Failed to rename chat');
-                                                                        }
+                                                                        setRenameTargetSessionId(session.sessionId);
+                                                                        const currentName = session.name?.trim() || '';
+                                                                        setRenameInput(currentName);
+                                                                        setShowRenameModal(true);
                                                                     }}
                                                                     className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
                                                                 >
@@ -1602,15 +1580,7 @@ const GeminiChatbox = () => {
                                             {selectedHistoryIds.length > 0 && (
                                                 <div className="flex justify-end">
                                                     <button
-                                                        onClick={async () => {
-                                                            if (!window.confirm('Delete selected chats?')) return;
-                                                            for (const id of selectedHistoryIds) {
-                                                                await deleteSession(id);
-                                                            }
-                                                            setSelectedHistoryIds([]);
-                                                            await loadChatSessions();
-                                                            toast.success('Selected chats deleted');
-                                                        }}
+                                                        onClick={() => setShowDeleteSelectedModal(true)}
                                                         className="px-3 py-1.5 text-xs rounded bg-red-600 text-white hover:bg-red-700"
                                                     >
                                                         Delete Selected
@@ -1639,6 +1609,125 @@ const GeminiChatbox = () => {
                                 </div>
                             </div>
                         )}
+
+        {/* Delete All Chats Modal */}
+        {showDeleteAllModal && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                <div className="bg-white rounded-xl shadow-xl p-5 w-80">
+                    <h4 className="font-semibold mb-2">Delete all chats?</h4>
+                    <p className="text-sm text-gray-600 mb-4">This cannot be undone.</p>
+                    <div className="flex justify-end gap-2">
+                        <button onClick={() => setShowDeleteAllModal(false)} className="px-3 py-1.5 text-sm rounded border border-gray-300 text-gray-700">Cancel</button>
+                        <button onClick={async () => {
+                            try {
+                                const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+                                await fetch(`${API_BASE_URL}/api/gemini/sessions`, { method: 'DELETE', credentials: 'include' });
+                                await createNewSession();
+                                await loadChatSessions();
+                                toast.success('All chats deleted');
+                                setShowHistory(false);
+                            } catch (e) {
+                                toast.error('Failed to delete all chats');
+                            } finally {
+                                setShowDeleteAllModal(false);
+                            }
+                        }} className="px-3 py-1.5 text-sm rounded bg-red-600 text-white hover:bg-red-700">Delete</button>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {/* Delete Selected Chats Modal */}
+        {showDeleteSelectedModal && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                <div className="bg-white rounded-xl shadow-xl p-5 w-80">
+                    <h4 className="font-semibold mb-2">Delete selected chats?</h4>
+                    <p className="text-sm text-gray-600 mb-4">This cannot be undone.</p>
+                    <div className="flex justify-end gap-2">
+                        <button onClick={() => setShowDeleteSelectedModal(false)} className="px-3 py-1.5 text-sm rounded border border-gray-300 text-gray-700">Cancel</button>
+                        <button onClick={async () => {
+                            try {
+                                for (const id of selectedHistoryIds) { await deleteSession(id); }
+                                setSelectedHistoryIds([]);
+                                await loadChatSessions();
+                                toast.success('Selected chats deleted');
+                            } catch (e) {
+                                toast.error('Failed to delete selected chats');
+                            } finally {
+                                setShowDeleteSelectedModal(false);
+                            }
+                        }} className="px-3 py-1.5 text-sm rounded bg-red-600 text-white hover:bg-red-700">Delete</button>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {/* Delete Single Chat Modal */}
+        {showDeleteSingleModal && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                <div className="bg-white rounded-xl shadow-xl p-5 w-80">
+                    <h4 className="font-semibold mb-2">Delete this chat?</h4>
+                    <p className="text-sm text-gray-600 mb-4">This cannot be undone.</p>
+                    <div className="flex justify-end gap-2">
+                        <button onClick={() => setShowDeleteSingleModal(false)} className="px-3 py-1.5 text-sm rounded border border-gray-300 text-gray-700">Cancel</button>
+                        <button onClick={async () => {
+                            try {
+                                if (deleteTargetSessionId) { await deleteSession(deleteTargetSessionId); }
+                                await loadChatSessions();
+                                toast.success('Chat deleted');
+                            } catch (e) {
+                                toast.error('Failed to delete chat');
+                            } finally {
+                                setDeleteTargetSessionId(null);
+                                setShowDeleteSingleModal(false);
+                                setOpenHistoryMenuSessionId(null);
+                            }
+                        }} className="px-3 py-1.5 text-sm rounded bg-red-600 text-white hover:bg-red-700">Delete</button>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {/* Rename Chat Modal */}
+        {showRenameModal && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                <div className="bg-white rounded-xl shadow-xl p-5 w-96 max-w-full">
+                    <h4 className="font-semibold mb-2">Rename chat</h4>
+                    <input
+                        type="text"
+                        value={renameInput}
+                        onChange={(e) => setRenameInput(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded mb-4"
+                        placeholder="Enter chat name"
+                        maxLength={80}
+                        autoFocus
+                    />
+                    <div className="flex justify-end gap-2">
+                        <button onClick={() => { setShowRenameModal(false); setRenameTargetSessionId(null); }} className="px-3 py-1.5 text-sm rounded border border-gray-300 text-gray-700">Cancel</button>
+                        <button onClick={async () => {
+                            try {
+                                const name = renameInput.trim();
+                                const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+                                await fetch(`${API_BASE_URL}/api/chat-history/session/${renameTargetSessionId}`, {
+                                    method: 'PUT',
+                                    credentials: 'include',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ name })
+                                });
+                                await loadChatSessions();
+                                toast.success('Chat renamed');
+                            } catch {
+                                toast.error('Failed to rename chat');
+                            } finally {
+                                setShowRenameModal(false);
+                                setRenameTargetSessionId(null);
+                                setOpenHistoryMenuSessionId(null);
+                            }
+                        }} className="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-700">Save</button>
+                    </div>
+                </div>
+            </div>
+        )}
                     </div>
                 </div>
             )}
