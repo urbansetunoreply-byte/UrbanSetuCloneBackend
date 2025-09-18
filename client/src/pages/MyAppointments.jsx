@@ -2538,8 +2538,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   // Add function to check if appointment is upcoming
   const isUpcoming = new Date(appt.date) > new Date() || (new Date(appt.date).toDateString() === new Date().toDateString() && (!appt.time || appt.time > new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })));
   
-  // Check if chat should be disabled (for outdated, rejected, cancelled by admin, cancelled by buyer, or cancelled by seller appointments)
-  const isChatDisabled = !isUpcoming || appt.status === 'rejected' || appt.status === 'cancelledByAdmin' || appt.status === 'cancelledByBuyer' || appt.status === 'cancelledBySeller';
+  // Chat availability: keep chat open for all but block sending for certain statuses
+  const isChatSendBlocked = !isUpcoming || appt.status === 'rejected' || appt.status === 'cancelledByAdmin' || appt.status === 'cancelledByBuyer' || appt.status === 'cancelledBySeller' || appt.status === 'deletedByAdmin';
   
   const canSeeContactInfo = (isAdmin || appt.status === 'accepted') && isUpcoming && 
     appt.status !== 'cancelledByBuyer' && appt.status !== 'cancelledBySeller' && 
@@ -2688,6 +2688,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
 
   const handleCommentSend = async () => {
     if (!comment.trim()) return;
+    if (isChatSendBlocked) {
+      toast.info('Sending disabled for this appointment status. You can view chat history.');
+      return;
+    }
     // Close emoji picker on send
     window.dispatchEvent(new Event('closeEmojiPicker'));
     
@@ -4130,14 +4134,16 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                     {/* Seller approve/deny buttons for pending, upcoming appointments */}
                     {isSeller && appt.status === "pending" && (
                       <>
+                        {/* Accept only if buyer paid; otherwise show Accept and Reject */}
                         <button
                           className="text-green-500 hover:text-green-700 text-xl disabled:opacity-50"
                           onClick={() => handleStatusUpdate(appt._id, "accepted")}
-                          disabled={actionLoading === appt._id + "accepted"}
-                          title="Accept Appointment"
+                          disabled={actionLoading === appt._id + "accepted" || !appt.paymentConfirmed}
+                          title={appt.paymentConfirmed ? "Accept Appointment" : "Accept enabled after buyer payment"}
                         >
                           <FaCheck />
                         </button>
+                        {!appt.paymentConfirmed && (
                         <button
                           className="text-red-500 hover:text-red-700 text-xl disabled:opacity-50"
                           onClick={() => handleStatusUpdate(appt._id, "rejected")}
@@ -4146,6 +4152,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         >
                           <FaTimes />
                         </button>
+                        )}
                       </>
                     )}
                     {/* Seller cancel button after approval */}
@@ -4243,22 +4250,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         <td className="border p-2 text-center relative">
           <button
             className={`flex items-center justify-center rounded-full p-3 shadow-lg mx-auto relative transform transition-all duration-200 group ${
-              isChatDisabled 
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-50' 
-                : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white hover:shadow-xl hover:scale-105'
+              'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white hover:shadow-xl hover:scale-105'
             }`}
-            title={isChatDisabled ? (
-              !isUpcoming 
-                ? "Chat not available for outdated appointments" 
-                : appt.status === 'rejected'
-                  ? "Chat not available for rejected appointments"
-                  : appt.status === 'cancelledByAdmin'
-                    ? "Chat not available for appointments cancelled by admin"
-                    : appt.status === 'cancelledByBuyer'
-                      ? "Chat not available for appointments cancelled by buyer"
-                      : "Chat not available for appointments cancelled by seller"
-            ) : "Open Chat"}
-            onClick={isChatDisabled ? undefined : () => {
+            title={"Open Chat"}
+            onClick={() => {
               if ((chatLocked || chatLockStatusLoading) && !chatAccessGranted) {
                 setShowChatUnlockModal(true);
               } else {
@@ -4269,37 +4264,31 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                 }));
               }
             }}
-            disabled={isChatDisabled}
           >
-            <FaCommentDots size={22} className={!isChatDisabled ? "group-hover:animate-pulse" : ""} />
-            {!isChatDisabled && (
+            <FaCommentDots size={22} className={"group-hover:animate-pulse"} />
+            {
               <div className="absolute inset-0 bg-white rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
-            )}
+            }
             {/* Show lock icon if chat is locked or loading */}
-            {(chatLocked || chatLockStatusLoading) && !chatAccessGranted && !isChatDisabled && (
+            {(chatLocked || chatLockStatusLoading) && !chatAccessGranted && (
               <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] text-center font-bold border-2 border-white">
                 {chatLockStatusLoading ? '⏳' : '🔒'}
               </span>
             )}
             {/* Typing indicator - highest priority (hide if locked or loading) */}
-            {isOtherPartyTyping && !isChatDisabled && !((chatLocked || chatLockStatusLoading) && !chatAccessGranted) && (
+            {isOtherPartyTyping && !((chatLocked || chatLockStatusLoading) && !chatAccessGranted) && (
               <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] text-center font-bold border-2 border-white animate-pulse">
                 ...
               </span>
             )}
             {/* Unread count when not typing (hide if locked or loading) */}
-            {!isOtherPartyTyping && unreadNewMessages > 0 && isChatDisabled && !((chatLocked || chatLockStatusLoading) && !chatAccessGranted) && (
-              <span className="absolute -top-1 -right-1 bg-gray-400 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] text-center font-bold border-2 border-white">
-                {unreadNewMessages}
-              </span>
-            )}
-            {!isOtherPartyTyping && unreadNewMessages > 0 && !isChatDisabled && !((chatLocked || chatLockStatusLoading) && !chatAccessGranted) && (
+            {!isOtherPartyTyping && unreadNewMessages > 0 && !((chatLocked || chatLockStatusLoading) && !chatAccessGranted) && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] text-center font-bold border-2 border-white">
                 {unreadNewMessages}
               </span>
             )}
             {/* Online status green dot - show when no typing and no unread count (hide if locked or loading) */}
-            {!isOtherPartyTyping && unreadNewMessages === 0 && isOtherPartyOnlineInTable && !isChatDisabled && !((chatLocked || chatLockStatusLoading) && !chatAccessGranted) && (
+            {!isOtherPartyTyping && unreadNewMessages === 0 && isOtherPartyOnlineInTable && !((chatLocked || chatLockStatusLoading) && !chatAccessGranted) && (
               <span className="absolute -top-1 -right-1 bg-green-500 border-2 border-white rounded-full w-3 h-3"></span>
             )}
           </button>
@@ -6262,9 +6251,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         wordBreak: 'break-all',
                         overflowWrap: 'break-word'
                       }}
-                      placeholder={editingComment ? "Edit your message..." : "Type a message..."}
+                      placeholder={isChatSendBlocked ? "Sending disabled for this appointment status. Chat history is available." : (editingComment ? "Edit your message..." : "Type a message...")}
                       value={comment}
                       onChange={e => {
+                        if (isChatSendBlocked) { return; }
                         const value = e.target.value;
                         setComment(value);
                         
@@ -6334,6 +6324,14 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         }
                       }}
                       onKeyDown={e => { 
+                        if (isChatSendBlocked) {
+                          // Allow navigation keys but block input/submit
+                          if (e.key === 'Enter' || e.key.length === 1) {
+                            e.preventDefault();
+                            toast.info('Sending disabled for this appointment status.');
+                          }
+                          return;
+                        }
                         // Check if this is a desktop viewport only
                         const isDesktop = window.matchMedia('(min-width: 768px)').matches;
                         
@@ -6368,6 +6366,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                       }}
                       ref={inputRef}
                     />
+                    {isChatSendBlocked && (
+                      <div className="text-xs text-red-600 mt-1 ml-1 font-semibold">
+                        Sending new messages is disabled for rejected/cancelled/outdated appointments. Chat remains readable.
+                      </div>
+                    )}
                     {/* Emoji Button - Inside textarea on the right */}
                     <div className="absolute right-12 bottom-3">
                       <EmojiButton 
@@ -8482,6 +8485,9 @@ function PaymentStatusCell({ appointment }) {
             <FaDownload /> Receipt
           </a>
         ) : null
+      )}
+      {appointment?.paymentConfirmed && (
+        <div className="text-[10px] text-green-700 font-semibold">Marked Paid</div>
       )}
 
       {showPayModal && (

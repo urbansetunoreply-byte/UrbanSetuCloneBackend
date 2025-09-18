@@ -95,11 +95,9 @@ router.post("/verify", verifyToken, async (req, res) => {
 
     await payment.save();
 
-    // Update appointment status to confirmed
+    // Update appointment status/payment flags
     await Booking.findByIdAndUpdate(payment.appointmentId, {
-      status: 'accepted',
-      paymentConfirmed: true,
-      paymentId: payment._id
+      paymentConfirmed: true
     });
 
     // Generate receipt URL (mock). Fall back to API URL if CLIENT_URL missing

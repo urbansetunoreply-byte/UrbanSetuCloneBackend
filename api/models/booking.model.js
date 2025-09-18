@@ -144,6 +144,8 @@ const bookingSchema = new mongoose.Schema({
   // Temporary access tracking (doesn't persist - only for current session)
   buyerChatAccessGranted: { type: Boolean, default: false },
   sellerChatAccessGranted: { type: Boolean, default: false },
+  // Payment status tracking
+  paymentConfirmed: { type: Boolean, default: false },
 });
 
 const booking = mongoose.model("Booking", bookingSchema);

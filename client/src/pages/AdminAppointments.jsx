@@ -6508,6 +6508,8 @@ function AdminAppointmentRow({
 function AdminPaymentStatusCell({ appointmentId }) {
   const [payment, setPayment] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
+  const [appointment, setAppointment] = React.useState(null);
+  const [toggling, setToggling] = React.useState(false);
 
   React.useEffect(() => {
     async function fetchPayment() {
@@ -6525,7 +6527,17 @@ function AdminPaymentStatusCell({ appointmentId }) {
         setLoading(false);
       }
     }
+    async function fetchAppointment() {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/bookings/${appointmentId}`, { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          setAppointment(data);
+        }
+      } catch {}
+    }
     fetchPayment();
+    fetchAppointment();
   }, [appointmentId]);
 
   if (loading) {
@@ -6560,6 +6572,36 @@ function AdminPaymentStatusCell({ appointmentId }) {
     ? 'Partial Refund'
     : payment.status;
 
+  async function togglePaymentConfirmed() {
+    if (!appointment) return;
+    setToggling(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/bookings/${appointmentId}/payment-status`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentConfirmed: !appointment.paymentConfirmed })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAppointment(data.appointment);
+      }
+    } finally {
+      setToggling(false);
+    }
+  }
+
+  const adminToggle = (
+    <button
+      onClick={togglePaymentConfirmed}
+      disabled={toggling}
+      className={`mt-1 text-[10px] px-2 py-0.5 rounded ${appointment?.paymentConfirmed ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-800'} disabled:opacity-50`}
+      title="Toggle payment confirmed for this appointment"
+    >
+      {toggling ? 'Saving...' : (appointment?.paymentConfirmed ? 'Mark Unpaid' : 'Mark Paid')}
+    </button>
+  );
+
   return (
     <div className="flex flex-col items-center gap-1">
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${color}`}>{label}</span>
@@ -6568,6 +6610,7 @@ function AdminPaymentStatusCell({ appointmentId }) {
           <FaRupeeSign /> {payment.amount}
         </div>
       )}
+      {adminToggle}
     </div>
   );
 }

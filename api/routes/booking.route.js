@@ -113,6 +113,41 @@ router.post("/", verifyToken, async (req, res) => {
   }
 });
 
+// PATCH: Admin toggle payment status for an appointment
+router.patch('/:id/payment-status', verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { paymentConfirmed } = req.body;
+    const requesterId = req.user.id;
+    const user = await User.findById(requesterId);
+    const isAdmin = (user && user.role === 'admin' && user.adminApprovalStatus === 'approved') || (user && user.role === 'rootadmin');
+    if (!isAdmin) {
+      return res.status(403).json({ message: 'Only admins can change payment status.' });
+    }
+
+    const appt = await booking.findByIdAndUpdate(
+      id,
+      { paymentConfirmed: Boolean(paymentConfirmed) },
+      { new: true }
+    ).populate('buyerId', 'username email mobileNumber avatar')
+     .populate('sellerId', 'username email mobileNumber avatar')
+     .populate('listingId', '_id name address');
+    if (!appt) {
+      return res.status(404).json({ message: 'Appointment not found.' });
+    }
+
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('appointmentUpdate', { appointmentId: id, updatedAppointment: appt });
+      io.to('admin_*').emit('appointmentUpdate', { appointmentId: id, updatedAppointment: appt });
+    }
+    return res.status(200).json({ message: 'Payment status updated.', appointment: appt });
+  } catch (err) {
+    console.error('Error updating payment status:', err);
+    return res.status(500).json({ message: 'Failed to update payment status.' });
+  }
+});
+
 // GET: Fetch all bookings (for admin - read only)
 router.get("/", async (req, res) => {
   try {
