@@ -343,7 +343,23 @@ export default function AdminAppointments() {
         )
       );
     };
+    
+    // Listen for payment status updates
+    const handlePaymentStatusUpdate = (data) => {
+      setAppointments(prev => 
+        prev.map(appt => 
+          appt._id === data.appointmentId ? { ...appt, paymentConfirmed: data.paymentConfirmed } : appt
+        )
+      );
+      setArchivedAppointments(prev => 
+        prev.map(appt => 
+          appt._id === data.appointmentId ? { ...appt, paymentConfirmed: data.paymentConfirmed } : appt
+        )
+      );
+    };
+    
     socket.on('appointmentUpdate', handleAppointmentUpdate);
+    socket.on('paymentStatusUpdated', handlePaymentStatusUpdate);
 
     // Listen for new appointments
     const handleAppointmentCreated = (data) => {
@@ -374,6 +390,7 @@ export default function AdminAppointments() {
       socket.off('profileUpdated', handleProfileUpdate);
       socket.off('commentUpdate', handleCommentUpdate);
       socket.off('appointmentUpdate', handleAppointmentUpdate);
+      socket.off('paymentStatusUpdated', handlePaymentStatusUpdate);
       socket.off('appointmentCreated', handleAppointmentCreated);
       socket.off('connect', handleConnect);
       socket.off('disconnect', handleDisconnect);
@@ -6637,6 +6654,9 @@ function AdminPaymentStatusCell({ appointmentId }) {
             <span>$ {payment.amount}</span>
           )}
         </div>
+      )}
+      {appointment?.paymentConfirmed && (
+        <div className="text-[10px] text-green-700 font-semibold">✓ Admin Confirmed</div>
       )}
       {adminToggle}
     </div>

@@ -210,9 +210,21 @@ export default function MyAppointments() {
         )
       );
     }
+    
+    function handlePaymentStatusUpdate(data) {
+      setAppointments((prev) =>
+        prev.map(appt =>
+          appt._id === data.appointmentId ? { ...appt, paymentConfirmed: data.paymentConfirmed } : appt
+        )
+      );
+    }
+    
     socket.on('appointmentUpdate', handleAppointmentUpdate);
+    socket.on('paymentStatusUpdated', handlePaymentStatusUpdate);
+    
     return () => {
       socket.off('appointmentUpdate', handleAppointmentUpdate);
+      socket.off('paymentStatusUpdated', handlePaymentStatusUpdate);
     };
   }, []);
 
@@ -8356,7 +8368,7 @@ function PaymentStatusCell({ appointment }) {
   
   useEffect(() => {
     fetchPaymentStatus();
-  }, [appointment._id]);
+  }, [appointment._id, appointment.paymentConfirmed]); // Add paymentConfirmed dependency
 
   const fetchPaymentStatus = async () => {
     try {
@@ -8378,64 +8390,56 @@ function PaymentStatusCell({ appointment }) {
     return <FaSpinner className="animate-spin text-blue-600" />;
   }
 
-  if (!paymentStatus) {
-    return (
-      <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-        Pending
-      </span>
-    );
-  }
+  // Determine the display status based on both payment status and admin confirmation
+  const getDisplayStatus = () => {
+    // If admin has marked as paid, show as paid regardless of payment status
+    if (appointment.paymentConfirmed) {
+      return { status: 'admin_confirmed', text: 'Paid (Admin)', color: 'bg-green-100 text-green-800' };
+    }
+    
+    // If no payment record exists, show pending
+    if (!paymentStatus) {
+      return { status: 'pending', text: 'Pending', color: 'bg-yellow-100 text-yellow-800' };
+    }
+    
+    // Use actual payment status
+    return getPaymentStatusInfo(paymentStatus.status);
+  };
 
-  const getPaymentStatusColor = (status) => {
+  const getPaymentStatusInfo = (status) => {
     switch (status) {
       case 'completed':
-        return 'bg-green-100 text-green-800';
+        return { status: 'completed', text: 'Paid', color: 'bg-green-100 text-green-800' };
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
+        return { status: 'pending', text: 'Pending', color: 'bg-yellow-100 text-yellow-800' };
       case 'failed':
-        return 'bg-red-100 text-red-800';
+        return { status: 'failed', text: 'Failed', color: 'bg-red-100 text-red-800' };
       case 'refunded':
-        return 'bg-blue-100 text-blue-800';
+        return { status: 'refunded', text: 'Refunded', color: 'bg-blue-100 text-blue-800' };
       case 'partially_refunded':
-        return 'bg-orange-100 text-orange-800';
+        return { status: 'partially_refunded', text: 'Partial Refund', color: 'bg-orange-100 text-orange-800' };
       default:
-        return 'bg-gray-100 text-gray-800';
+        return { status: 'unknown', text: status, color: 'bg-gray-100 text-gray-800' };
     }
   };
 
-  const getPaymentStatusText = (status) => {
-    switch (status) {
-      case 'completed':
-        return 'Paid';
-      case 'pending':
-        return 'Pending';
-      case 'failed':
-        return 'Failed';
-      case 'refunded':
-        return 'Refunded';
-      case 'partially_refunded':
-        return 'Partial Refund';
-      default:
-        return status;
-    }
-  };
-
-  const isPending = paymentStatus && paymentStatus.status !== 'completed';
+  const displayStatus = getDisplayStatus();
+  const isPending = !appointment.paymentConfirmed && (!paymentStatus || paymentStatus.status !== 'completed');
   
   return (
     <div className="flex flex-col items-center gap-2">
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(paymentStatus.status)}`}>
-        {getPaymentStatusText(paymentStatus.status)}
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${displayStatus.color}`}>
+        {displayStatus.text}
       </span>
       <div className="text-xs text-gray-500">
         $5.00
       </div>
-      {paymentStatus.refundAmount > 0 && (
+      {paymentStatus && paymentStatus.refundAmount > 0 && (
         <div className="text-xs text-red-500">
           Refunded: ${paymentStatus.refundAmount.toLocaleString()}
         </div>
       )}
-      {!paymentStatus || isPending ? (
+      {isPending ? (
         <button
           className="mt-1 inline-flex items-center gap-1 text-white bg-blue-600 hover:bg-blue-700 text-xs font-semibold px-3 py-1 rounded"
           onClick={() => setShowPayModal(true)}
@@ -8443,7 +8447,7 @@ function PaymentStatusCell({ appointment }) {
           <FaDollarSign /> Pay Now
         </button>
       ) : (
-        paymentStatus.receiptUrl ? (
+        paymentStatus && paymentStatus.receiptUrl ? (
           <a
             href={paymentStatus.receiptUrl}
             target="_blank"
@@ -8455,7 +8459,7 @@ function PaymentStatusCell({ appointment }) {
         ) : null
       )}
       {appointment?.paymentConfirmed && (
-        <div className="text-[10px] text-green-700 font-semibold">Marked Paid</div>
+        <div className="text-[10px] text-green-700 font-semibold">✓ Admin Confirmed</div>
       )}
 
       {showPayModal && (

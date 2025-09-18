@@ -139,7 +139,9 @@ router.patch('/:id/payment-status', verifyToken, async (req, res) => {
     const io = req.app.get('io');
     if (io) {
       io.emit('appointmentUpdate', { appointmentId: id, updatedAppointment: appt });
+      io.emit('paymentStatusUpdated', { appointmentId: id, paymentConfirmed: appt.paymentConfirmed });
       io.to('admin_*').emit('appointmentUpdate', { appointmentId: id, updatedAppointment: appt });
+      io.to('admin_*').emit('paymentStatusUpdated', { appointmentId: id, paymentConfirmed: appt.paymentConfirmed });
     }
     return res.status(200).json({ message: 'Payment status updated.', appointment: appt });
   } catch (err) {
