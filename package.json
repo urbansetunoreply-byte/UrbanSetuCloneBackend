@@ -38,7 +38,7 @@
     "multer-storage-cloudinary": "^4.0.0",
     "nodemailer": "^7.0.5",
     "nodemon": "^3.1.10",
-    "razorpay": "^2.9.6",
+    
     "react-hot-toast": "^2.5.2",
     "react-swipeable": "^7.0.2",
     "socket.io": "^4.8.1"

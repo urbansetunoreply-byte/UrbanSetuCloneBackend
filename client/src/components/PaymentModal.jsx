@@ -7,7 +7,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
   const [paymentData, setPaymentData] = useState(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [receiptUrl, setReceiptUrl] = useState('');
-  const [preferredMethod, setPreferredMethod] = useState('auto'); // auto, card, upi, netbanking
+  const [preferredMethod, setPreferredMethod] = useState('paypal');
 
   useEffect(() => {
     if (isOpen && appointment) {
@@ -64,34 +64,46 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
 
     try {
       setLoading(true);
-      // Use Razorpay Checkout if available, else show error
-      if (window && window.Razorpay) {
-        const options = {
-          key: paymentData.key,
-          amount: paymentData.razorpayOrder.amount,
-          currency: paymentData.razorpayOrder.currency,
-          name: "Property Booking",
-          description: `Advance payment for ${appointment.propertyName}`,
-          order_id: paymentData.razorpayOrder.id,
-          handler: async function (response) {
-            await verifyPayment(response);
+      // Render PayPal Buttons
+      if (window && window.paypal) {
+        const amount = paymentData?.paypal?.amount || paymentData?.payment?.amount;
+        const containerId = `paypal-button-container-${appointment._id}`;
+        const existing = document.getElementById(containerId);
+        if (existing) {
+          existing.innerHTML = '';
+        }
+        window.paypal.Buttons({
+          createOrder: async (_data, actions) => {
+            try {
+              const orderRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/paypal/create-order`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ amount: amount.toString() })
+              });
+              const order = await orderRes.json();
+              if (!orderRes.ok) throw new Error(order.message || 'Failed to create PayPal order');
+              return order.id;
+            } catch (e) {
+              toast.error('Failed to initialize PayPal');
+              throw e;
+            }
           },
-          prefill: {
-            name: appointment.buyerId?.username || '',
-            email: appointment.buyerId?.email || '',
+          onApprove: async (data, actions) => {
+            try {
+              const details = await actions.order.capture();
+              await verifyPayment({ paypal_order_id: data.orderID });
+            } catch (e) {
+              toast.error('Payment capture failed');
+            }
           },
-          theme: { color: "#3B82F6" },
-          method: preferredMethod === 'auto' ? undefined : { [preferredMethod]: '1' }
-        };
-        const rzp = new window.Razorpay(options);
-        rzp.on('payment.failed', function () {
-          toast.error('Payment failed or cancelled.');
-          setLoading(false);
-        });
-        rzp.open();
+          onError: (err) => {
+            console.error('PayPal error', err);
+            toast.error('Payment failed or cancelled.');
+          }
+        }).render(`#${containerId}`);
       } else {
-        toast.error('Payment gateway unavailable. Please try again later.');
-        setLoading(false);
+        toast.error('PayPal SDK not loaded.');
       }
 
     } catch (error) {
@@ -111,9 +123,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         credentials: 'include',
         body: JSON.stringify({
           paymentId: paymentData.payment.paymentId,
-          razorpayPaymentId: response.razorpay_payment_id,
-          razorpayOrderId: response.razorpay_order_id,
-          razorpaySignature: response.razorpay_signature,
+          paypalOrderId: response.paypal_order_id || response.paypalOrderId || response.orderID,
           clientIp: (window && window.__CLIENT_IP__) || undefined,
           userAgent: navigator.userAgent
         })
@@ -215,17 +225,10 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                     </div>
                   </div>
 
-                  {/* Payment Method Selection */}
+                  {/* Payment Method */}
                   <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                    <h5 className="font-semibold text-gray-800 mb-2">Payment Method</h5>
-                    <div className="flex flex-wrap gap-3 text-sm">
-                      {['auto','card','upi','netbanking'].map(method => (
-                        <label key={method} className={`px-3 py-1 rounded-full border cursor-pointer ${preferredMethod===method ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300'}`}>
-                          <input type="radio" name="method" value={method} className="hidden" onChange={()=>setPreferredMethod(method)} checked={preferredMethod===method} />
-                          {method === 'auto' ? 'Auto' : method.charAt(0).toUpperCase()+method.slice(1)}
-                        </label>
-                      ))}
-                    </div>
+                    <h5 className="font-semibold text-gray-800 mb-2">Payment Platform</h5>
+                    <div className="text-sm text-gray-700">PayPal</div>
                   </div>
 
                   {/* Security Notice */}
@@ -233,33 +236,22 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                     <div className="flex items-start gap-3">
                       <FaShieldAlt className="text-green-600 mt-1" />
                       <div>
-                        <h5 className="font-semibold text-green-800 mb-1">Secure Payment</h5>
-                        <p className="text-sm text-green-700">
-                          Your payment is processed securely through Razorpay. 
-                          You can request a full refund if the appointment is cancelled.
-                        </p>
+                <h5 className="font-semibold text-green-800 mb-1">Secure Payment via PayPal</h5>
+                <p className="text-sm text-green-700">Your payment is processed securely through PayPal. You can request a full refund if the appointment is cancelled.</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Payment Button */}
-                  <button
-                    onClick={handlePayment}
-                    disabled={loading}
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {loading ? (
-                      <>
-                        <FaSpinner className="animate-spin" />
-                        Processing Payment...
-                      </>
-                    ) : (
-                      <>
-                        <FaRupeeSign />
-                        Pay ₹{paymentData.payment.amount.toLocaleString()}
-                      </>
-                    )}
-                  </button>
+          <div className="space-y-2">
+            <div id={`paypal-button-container-${appointment._id}`} />
+            <button
+              onClick={handlePayment}
+              className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700"
+            >
+              Load PayPal Button
+            </button>
+          </div>
                 </>
               ) : (
                 <div className="text-center py-8">

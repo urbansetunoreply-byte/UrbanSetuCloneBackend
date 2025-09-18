@@ -6,7 +6,7 @@ import Listing from "../models/listing.model.js";
 import User from "../models/user.model.js";
 import { verifyToken } from '../utils/verify.js';
 import crypto from 'crypto';
-import Razorpay from 'razorpay';
+import { createPayPalOrder, capturePayPalOrder } from '../controllers/paypalController.js';
 
 const router = express.Router();
 
@@ -20,10 +20,7 @@ const generateReceiptNumber = () => {
   return 'RCP_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
 };
 
-// Initialize Razorpay instance if keys are present
-const razorpayInstance = (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET)
-  ? new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET })
-  : null;
+// Razorpay removed
 
 // POST: Create payment intent (advance payment for booking)
 router.post("/create-intent", verifyToken, async (req, res) => {
@@ -58,42 +55,18 @@ router.post("/create-intent", verifyToken, async (req, res) => {
       listingId: listing._id,
       amount: advanceAmount,
       paymentType,
-      gateway: 'razorpay', // Default to Razorpay
+      gateway: 'paypal',
       status: 'pending',
       receiptNumber: generateReceiptNumber()
     });
 
     await payment.save();
 
-    // Create Razorpay order using SDK if configured, else fallback to mock for dev
-    let razorpayOrder;
-    if (razorpayInstance) {
-      try {
-        const order = await razorpayInstance.orders.create({
-          amount: advanceAmount * 100,
-          currency: 'INR',
-          receipt: payment.receiptNumber
-        });
-        razorpayOrder = order;
-      } catch (e) {
-        console.error('Failed to create Razorpay order:', e);
-        return res.status(500).json({ message: 'Failed to initialize payment gateway' });
-      }
-    } else {
-      razorpayOrder = {
-        id: `order_${payment.paymentId}`,
-        amount: advanceAmount * 100,
-        currency: 'INR',
-        receipt: payment.receiptNumber,
-        status: 'created'
-      };
-    }
-
+    // For PayPal, client will create order using amount. Return necessary info only.
     res.status(201).json({
       message: "Payment intent created successfully",
       payment: payment,
-      razorpayOrder: razorpayOrder,
-      key: process.env.RAZORPAY_KEY_ID || 'rzp_test_RFphKnf5uivCkc' // client uses this to initialize Checkout
+      paypal: { amount: advanceAmount, currency: 'INR' }
     });
   } catch (err) {
     console.error("Error creating payment intent:", err);
@@ -101,31 +74,10 @@ router.post("/create-intent", verifyToken, async (req, res) => {
   }
 });
 
-// POST: Verify payment (Razorpay webhook)
+// POST: Verify payment (PayPal capture webhook-like endpoint)
 router.post("/verify", verifyToken, async (req, res) => {
   try {
-    const { paymentId, razorpayPaymentId, razorpayOrderId, razorpaySignature, clientIp, userAgent } = req.body;
-
-    // Verify Razorpay signature strictly using configured secret
-    let isSignatureValid = false;
-    try {
-      const keySecret = process.env.RAZORPAY_KEY_SECRET;
-      if (!keySecret) {
-        console.warn('RAZORPAY_KEY_SECRET not configured; rejecting verification in production');
-      }
-      const expectedSignature = crypto
-        .createHmac('sha256', keySecret || 'jRZdvqY0GlGVu451jk4oiBPY')
-        .update(`${razorpayOrderId}|${razorpayPaymentId}`)
-        .digest('hex');
-      isSignatureValid = expectedSignature === razorpaySignature;
-    } catch (_) {
-      isSignatureValid = false;
-    }
-
-    const allowDevBypass = (process.env.NODE_ENV !== 'production' || process.env.RAZORPAY_MOCK === 'true') && !process.env.RAZORPAY_KEY_SECRET;
-    if (!isSignatureValid && !allowDevBypass) {
-      return res.status(400).json({ message: "Invalid signature" });
-    }
+    const { paymentId, paypalOrderId, clientIp, userAgent } = req.body;
 
     // Update payment record
     const payment = await Payment.findOne({ paymentId });
@@ -134,9 +86,9 @@ router.post("/verify", verifyToken, async (req, res) => {
     }
 
     payment.status = 'completed';
-    payment.gatewayPaymentId = razorpayPaymentId;
-    payment.gatewayOrderId = razorpayOrderId;
-    payment.gatewaySignature = razorpaySignature;
+    payment.gatewayPaymentId = paypalOrderId;
+    payment.gatewayOrderId = paypalOrderId;
+    payment.gatewaySignature = undefined;
     payment.completedAt = new Date();
     payment.clientIp = clientIp || req.ip;
     payment.userAgent = userAgent || req.headers['user-agent'];
@@ -194,7 +146,7 @@ router.post("/monthly-rent", verifyToken, async (req, res) => {
       listingId: appointment.listingId._id,
       amount,
       paymentType: 'monthly_rent',
-      gateway: 'razorpay',
+      gateway: 'paypal',
       status: 'pending',
       receiptNumber: generateReceiptNumber(),
       metadata: {
@@ -234,7 +186,7 @@ router.post("/split-payment", verifyToken, async (req, res) => {
       listingId: appointment.listingId,
       amount: totalAmount,
       paymentType: 'split_payment',
-      gateway: 'razorpay',
+      gateway: 'paypal',
       status: 'pending',
       receiptNumber: generateReceiptNumber(),
       splitPayments: splitDetails.map(split => ({
@@ -447,3 +399,7 @@ router.get("/stats/overview", verifyToken, async (req, res) => {
 });
 
 export default router;
+
+// PayPal helper endpoints
+router.post('/paypal/create-order', verifyToken, createPayPalOrder);
+router.post('/paypal/capture-order', verifyToken, capturePayPalOrder);
