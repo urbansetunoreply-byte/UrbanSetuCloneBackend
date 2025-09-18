@@ -6527,6 +6527,7 @@ function AdminPaymentStatusCell({ appointmentId }) {
   const [loading, setLoading] = React.useState(true);
   const [appointment, setAppointment] = React.useState(null);
   const [toggling, setToggling] = React.useState(false);
+  const [showStatusOptions, setShowStatusOptions] = React.useState(false);
 
   React.useEffect(() => {
     async function fetchPayment() {
@@ -6556,6 +6557,20 @@ function AdminPaymentStatusCell({ appointmentId }) {
     fetchPayment();
     fetchAppointment();
   }, [appointmentId]);
+
+  // Close status options when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showStatusOptions && !event.target.closest('.status-options-container')) {
+        setShowStatusOptions(false);
+      }
+    };
+
+    if (showStatusOptions) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showStatusOptions]);
 
   if (loading) {
     return <FaSpinner className="animate-spin text-blue-600 mx-auto" />;
@@ -6589,15 +6604,18 @@ function AdminPaymentStatusCell({ appointmentId }) {
     ? 'Partial Refund'
     : payment.status;
 
-  async function togglePaymentConfirmed() {
+
+  const handleStatusChange = async (newStatus) => {
     if (!appointment) return;
+    if (appointment?.paymentConfirmed === newStatus) return;
     setToggling(true);
+    setShowStatusOptions(false);
     try {
       const res = await fetch(`${API_BASE_URL}/api/bookings/${appointmentId}/payment-status`, {
         method: 'PATCH',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentConfirmed: !appointment.paymentConfirmed })
+        body: JSON.stringify({ paymentConfirmed: newStatus })
       });
       if (res.ok) {
         const data = await res.json();
@@ -6606,40 +6624,38 @@ function AdminPaymentStatusCell({ appointmentId }) {
     } finally {
       setToggling(false);
     }
-  }
+  };
 
-  async function setPaymentConfirmed(nextValue) {
-    if (!appointment) return;
-    if (appointment?.paymentConfirmed === nextValue) return;
-    setToggling(true);
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/bookings/${appointmentId}/payment-status`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentConfirmed: nextValue })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setAppointment(data.appointment);
-      }
-    } finally {
-      setToggling(false);
-    }
-  }
-
-  const adminToggle = (
-    <div className="mt-1">
-      <select
-        value={appointment?.paymentConfirmed ? 'paid' : 'unpaid'}
-        onChange={(e) => setPaymentConfirmed(e.target.value === 'paid')}
+  const statusButton = (
+    <div className="mt-1 relative status-options-container">
+      <button
+        onClick={() => setShowStatusOptions(!showStatusOptions)}
         disabled={toggling}
-        className="text-[10px] px-2 py-1 rounded border border-gray-300 bg-white"
-        title="Mark payment status"
+        className="text-[10px] px-2 py-1 rounded border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        title="Change payment status"
       >
-        <option value="unpaid">Mark Unpaid</option>
-        <option value="paid">Mark Paid</option>
-      </select>
+        {toggling ? 'Updating...' : 'Change Status'}
+      </button>
+      
+      {showStatusOptions && (
+        <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 min-w-[120px]">
+          {!appointment?.paymentConfirmed ? (
+            <button
+              onClick={() => handleStatusChange(true)}
+              className="w-full text-left px-3 py-2 text-[10px] text-green-700 hover:bg-green-50 border-b border-gray-100"
+            >
+              Mark Paid
+            </button>
+          ) : (
+            <button
+              onClick={() => handleStatusChange(false)}
+              className="w-full text-left px-3 py-2 text-[10px] text-red-700 hover:bg-red-50 border-b border-gray-100"
+            >
+              Mark Unpaid
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 
@@ -6658,7 +6674,7 @@ function AdminPaymentStatusCell({ appointmentId }) {
       {appointment?.paymentConfirmed && (
         <div className="text-[10px] text-green-700 font-semibold">✓ Admin Confirmed</div>
       )}
-      {adminToggle}
+      {statusButton}
     </div>
   );
 }
