@@ -6,7 +6,6 @@ import "swiper/css/bundle";
 import "swiper/css/effect-fade";
 import "swiper/css/pagination";
 import ListingItem from "../components/ListingItem";
-import GeminiAIWrapper from "../components/GeminiAIWrapper";
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -270,7 +269,6 @@ export default function PublicHome() {
           </div>
         )}
       </div>
-      <GeminiAIWrapper />
       <ContactSupportWrapper />
     </div>
   );

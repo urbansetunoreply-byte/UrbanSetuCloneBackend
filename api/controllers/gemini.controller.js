@@ -1,5 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import ChatHistory from '../models/chatHistory.model.js';
+import MessageRating from '../models/messageRating.model.js';
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY || "AIzaSyBg9wSoffCi3RfbaQV6zwH78xoULd2jG0A"
@@ -202,6 +203,105 @@ export const getUserChatSessions = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Failed to retrieve chat sessions'
+        });
+    }
+};
+
+// Rate a message
+export const rateMessage = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        const { sessionId, messageIndex, messageTimestamp, rating, messageContent, messageRole } = req.body;
+        
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required'
+            });
+        }
+
+        if (!sessionId || messageIndex === undefined || !messageTimestamp || !rating || !messageContent || !messageRole) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields'
+            });
+        }
+
+        if (!['up', 'down'].includes(rating)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid rating value'
+            });
+        }
+
+        // Upsert rating (update if exists, create if not)
+        const ratingData = await MessageRating.findOneAndUpdate(
+            {
+                userId,
+                sessionId,
+                messageIndex,
+                messageTimestamp: new Date(messageTimestamp)
+            },
+            {
+                userId,
+                sessionId,
+                messageIndex,
+                messageTimestamp: new Date(messageTimestamp),
+                rating,
+                messageContent,
+                messageRole
+            },
+            { upsert: true, new: true }
+        );
+
+        res.status(200).json({
+            success: true,
+            message: 'Rating saved successfully',
+            rating: ratingData
+        });
+    } catch (error) {
+        console.error('Error rating message:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to save rating'
+        });
+    }
+};
+
+// Get message ratings for a session
+export const getMessageRatings = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        const { sessionId } = req.params;
+        
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required'
+            });
+        }
+
+        const ratings = await MessageRating.find({
+            userId,
+            sessionId
+        }).select('messageIndex messageTimestamp rating');
+
+        // Convert to object format for frontend
+        const ratingsObj = {};
+        ratings.forEach(rating => {
+            const key = `${rating.messageIndex}_${rating.messageTimestamp.toISOString()}`;
+            ratingsObj[key] = rating.rating;
+        });
+
+        res.status(200).json({
+            success: true,
+            ratings: ratingsObj
+        });
+    } catch (error) {
+        console.error('Error getting message ratings:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to retrieve ratings'
         });
     }
 };

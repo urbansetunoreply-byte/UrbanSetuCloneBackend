@@ -1,5 +1,5 @@
 import express from 'express';
-import { chatWithGemini, getUserChatSessions } from '../controllers/gemini.controller.js';
+import { chatWithGemini, getUserChatSessions, rateMessage, getMessageRatings } from '../controllers/gemini.controller.js';
 import { optionalAuth, verifyToken } from '../utils/verify.js';
 
 const router = express.Router();
@@ -9,5 +9,11 @@ router.post('/chat', optionalAuth, chatWithGemini);
 
 // Get user's chat sessions (requires authentication)
 router.get('/sessions', verifyToken, getUserChatSessions);
+
+// Rate a message (requires authentication)
+router.post('/rate', verifyToken, rateMessage);
+
+// Get message ratings for a session (requires authentication)
+router.get('/ratings/:sessionId', verifyToken, getMessageRatings);
 
 export default router;

@@ -43,6 +43,7 @@ const GeminiChatbox = () => {
     const [showQuickActions, setShowQuickActions] = useState(false);
     const [selectedMessage, setSelectedMessage] = useState(null);
     const [showMessageMenu, setShowMessageMenu] = useState(false);
+    const [highlightedMessage, setHighlightedMessage] = useState(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -157,6 +158,8 @@ const GeminiChatbox = () => {
         const currentSessionId = getOrCreateSessionId();
         if (currentUser && currentSessionId && !isHistoryLoaded) {
             loadChatHistory(currentSessionId);
+            // Load ratings for current session
+            loadMessageRatings(currentSessionId);
         } else if (!currentUser) {
             setIsHistoryLoaded(true);
         }
@@ -536,12 +539,48 @@ const GeminiChatbox = () => {
         localStorage.setItem('gemini_bookmarks', JSON.stringify(newBookmarks));
     };
 
-    const rateMessage = (messageIndex, rating) => {
-        const ratingKey = `${messageIndex}_${messages[messageIndex]?.timestamp}`;
-        const newRatings = { ...messageRatings, [ratingKey]: rating };
-        setMessageRatings(newRatings);
-        localStorage.setItem('gemini_ratings', JSON.stringify(newRatings));
-        toast.success(rating === 'up' ? 'Thanks for the feedback!' : 'Feedback recorded');
+    const rateMessage = async (messageIndex, rating) => {
+        if (!currentUser) {
+            toast.error('Please log in to rate messages');
+            return;
+        }
+
+        const message = messages[messageIndex];
+        if (!message) return;
+
+        try {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+            const currentSessionId = getOrCreateSessionId();
+            
+            const response = await fetch(`${API_BASE_URL}/api/gemini/rate`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    sessionId: currentSessionId,
+                    messageIndex,
+                    messageTimestamp: message.timestamp,
+                    rating,
+                    messageContent: message.content,
+                    messageRole: message.role
+                })
+            });
+
+            if (response.ok) {
+                const ratingKey = `${messageIndex}_${message.timestamp}`;
+                const newRatings = { ...messageRatings, [ratingKey]: rating };
+                setMessageRatings(newRatings);
+                localStorage.setItem('gemini_ratings', JSON.stringify(newRatings));
+                toast.success(rating === 'up' ? 'Thanks for the feedback!' : 'Feedback recorded');
+            } else {
+                toast.error('Failed to save rating');
+            }
+        } catch (error) {
+            console.error('Error rating message:', error);
+            toast.error('Failed to save rating');
+        }
     };
 
     const shareMessage = async (message) => {
@@ -568,13 +607,15 @@ const GeminiChatbox = () => {
         
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-            const response = await fetch(`${API_BASE_URL}/api/chat-history/sessions`, {
+            const response = await fetch(`${API_BASE_URL}/api/gemini/sessions`, {
                 credentials: 'include'
             });
             
             if (response.ok) {
                 const data = await response.json();
                 setChatSessions(data.sessions || []);
+            } else {
+                console.error('Failed to load chat sessions:', response.status);
             }
         } catch (error) {
             console.error('Error loading chat sessions:', error);
@@ -594,12 +635,37 @@ const GeminiChatbox = () => {
                     setMessages(data.data.messages);
                     setSessionId(sessionId);
                     localStorage.setItem('gemini_session_id', sessionId);
+                    
+                    // Load ratings for this session
+                    await loadMessageRatings(sessionId);
+                    
                     toast.success('Session loaded');
                 }
             }
         } catch (error) {
             console.error('Error loading session:', error);
             toast.error('Failed to load session');
+        }
+    };
+
+    const loadMessageRatings = async (sessionId) => {
+        if (!currentUser || !sessionId) return;
+        
+        try {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+            const response = await fetch(`${API_BASE_URL}/api/gemini/ratings/${sessionId}`, {
+                credentials: 'include'
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.ratings) {
+                    setMessageRatings(data.ratings);
+                    localStorage.setItem('gemini_ratings', JSON.stringify(data.ratings));
+                }
+            }
+        } catch (error) {
+            console.error('Error loading message ratings:', error);
         }
     };
 
@@ -617,6 +683,30 @@ const GeminiChatbox = () => {
                 setIsTyping(false);
             }
         }, 30);
+    };
+
+    const highlightMessage = (bookmarkKey) => {
+        // Find the message index by bookmark key
+        const messageIndex = messages.findIndex((message, index) => {
+            const key = `${index}_${message.timestamp}`;
+            return key === bookmarkKey;
+        });
+
+        if (messageIndex !== -1) {
+            setHighlightedMessage(messageIndex);
+            // Scroll to the message
+            setTimeout(() => {
+                const messageElement = document.querySelector(`[data-message-index="${messageIndex}"]`);
+                if (messageElement) {
+                    messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
+            
+            // Remove highlight after 3 seconds
+            setTimeout(() => {
+                setHighlightedMessage(null);
+            }, 3000);
+        }
     };
 
     return (
@@ -682,7 +772,7 @@ const GeminiChatbox = () => {
                                 </div>
                             </div>
 
-                            {/* Right controls: modes dropdown + quick actions + kebab menu + close */}
+                            {/* Right controls: modes dropdown + kebab menu + close */}
                             <div className="flex items-center gap-1 relative flex-shrink-0">
                                 {/* Modes dropdown */}
                                 <select
@@ -697,34 +787,6 @@ const GeminiChatbox = () => {
                                     <option className="text-gray-800" value="formal">Formal</option>
                                     <option className="text-gray-800" value="concise">Concise</option>
                                 </select>
-                                
-                                {/* Quick action buttons */}
-                                <button
-                                    onClick={() => setShowQuickActions(!showQuickActions)}
-                                    className="text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
-                                    title="Quick Actions"
-                                    aria-label="Quick Actions"
-                                >
-                                    <FaLightbulb size={12} />
-                                </button>
-                                
-                                <button
-                                    onClick={() => { setShowBookmarks(true); loadChatSessions(); }}
-                                    className="text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
-                                    title="Bookmarks"
-                                    aria-label="Bookmarks"
-                                >
-                                    <FaBookmark size={12} />
-                                </button>
-                                
-                                <button
-                                    onClick={() => { setShowHistory(true); loadChatSessions(); }}
-                                    className="text-white/90 hover:text-white text-xs px-2 py-1 rounded border border-white/30 hover:border-white transition-colors"
-                                    title="Chat History"
-                                    aria-label="Chat History"
-                                >
-                                    <FaHistory size={12} />
-                                </button>
                                 
                                 <button
                                     onClick={() => setIsHeaderMenuOpen(open => !open)}
@@ -744,8 +806,43 @@ const GeminiChatbox = () => {
 
                                 {/* Dropdown menu */}
                                 {isHeaderMenuOpen && (
-                                    <div className="absolute right-0 top-full mt-2 bg-white text-gray-800 rounded shadow-lg border border-gray-200 w-40 z-50">
+                                    <div className="absolute right-0 top-full mt-2 bg-white text-gray-800 rounded shadow-lg border border-gray-200 w-48 z-50">
                                         <ul className="py-1 text-sm">
+                                            {/* Quick Actions */}
+                                            <li>
+                                                <button
+                                                    onClick={() => { setShowQuickActions(true); setIsHeaderMenuOpen(false); }}
+                                                    className="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2"
+                                                >
+                                                    <FaLightbulb size={12} className="text-yellow-500" />
+                                                    Quick Actions
+                                                </button>
+                                            </li>
+                                            
+                                            {/* Bookmarks */}
+                                            <li>
+                                                <button
+                                                    onClick={() => { setShowBookmarks(true); loadChatSessions(); setIsHeaderMenuOpen(false); }}
+                                                    className="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2"
+                                                >
+                                                    <FaBookmark size={12} className="text-yellow-500" />
+                                                    Bookmarks
+                                                </button>
+                                            </li>
+                                            
+                                            {/* Chat History */}
+                                            <li>
+                                                <button
+                                                    onClick={() => { setShowHistory(true); loadChatSessions(); setIsHeaderMenuOpen(false); }}
+                                                    className="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2"
+                                                >
+                                                    <FaHistory size={12} className="text-blue-500" />
+                                                    Chat History
+                                                </button>
+                                            </li>
+                                            
+                                            <li className="border-t border-gray-200 my-1"></li>
+                                            
                                             {/* Expand/Collapse only on desktop */}
                                             <li className="hidden md:block">
                                                 <button
@@ -755,6 +852,8 @@ const GeminiChatbox = () => {
                                                     {isExpanded ? 'Collapse' : 'Expand'}
                                                 </button>
                                             </li>
+                                            
+                                            {/* Export */}
                                             <li>
                                                 <button
                                                     onClick={() => {
@@ -774,26 +873,32 @@ const GeminiChatbox = () => {
                                                             toast.error('Failed to export transcript');
                                                         }
                                                     }}
-                                                    className="w-full text-left px-3 py-2 hover:bg-gray-100"
+                                                    className="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2"
                                                 >
+                                                    <FaDownload size={12} className="text-green-500" />
                                                     Export
                                                 </button>
                                             </li>
+                                            
+                                            {/* Features */}
                                             <li>
                                                 <button
                                                     onClick={() => { setShowFeatures(true); setIsHeaderMenuOpen(false); }}
-                                                    className="w-full text-left px-3 py-2 hover:bg-gray-100"
+                                                    className="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2"
                                                 >
+                                                    <FaCog size={12} className="text-gray-500" />
                                                     Features
                                                 </button>
                                             </li>
+                                            
+                                            {/* Clear */}
                                             {(messages && (messages.length > 1 || messages.some(m => m.role === 'user'))) && (
                                                 <li>
                                                     <button
                                                         onClick={() => { setIsHeaderMenuOpen(false); setShowConfirmClear(true); }}
-                                                        className="w-full text-left px-3 py-2 hover:bg-gray-100"
+                                                        className="w-full text-left px-3 py-2 hover:bg-gray-100 text-red-600"
                                                     >
-                                                        Clear
+                                                        Clear Chat
                                                     </button>
                                                 </li>
                                             )}
@@ -808,7 +913,10 @@ const GeminiChatbox = () => {
                             {messages.map((message, index) => (
                                 <div
                                     key={index}
-                                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                    data-message-index={index}
+                                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} ${
+                                        highlightedMessage === index ? 'animate-pulse' : ''
+                                    }`}
                                 >
                                     <div
                                         className={`max-w-[85%] p-3 rounded-2xl break-words relative group ${
@@ -817,90 +925,106 @@ const GeminiChatbox = () => {
                                                 : message.isError 
                                                     ? 'bg-red-100 text-red-800 border border-red-200'
                                                     : 'bg-gray-100 text-gray-800'
-                                        }`}
+                                        } ${
+                                            highlightedMessage === index 
+                                                ? 'ring-4 ring-yellow-400 ring-opacity-50 shadow-lg transform scale-105' 
+                                                : ''
+                                        } transition-all duration-300`}
                                     >
-                                        <p className="text-sm whitespace-pre-wrap leading-relaxed pr-8">{formatLinksInText(message.content, message.role === 'user')}</p>
-                                        {message.timestamp && (
-                                            <div className={`${message.role === 'user' ? 'text-white/80' : message.isError ? 'text-red-600' : 'text-gray-500'} text-[10px] mt-1`}>
-                                                {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                            </div>
-                                        )}
-
-                                        {/* Enhanced Action buttons */}
-                                        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
-                                            {/* Copy icon for all messages */}
-                                            <button
-                                                onClick={() => copyToClipboard(message.content)}
-                                                className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-all duration-200"
-                                                title="Copy message"
-                                                aria-label="Copy message"
-                                            >
-                                                <FaCopy size={12} />
-                                            </button>
-                                            
-                                            {/* Bookmark button for assistant messages */}
-                                            {message.role === 'assistant' && !message.isError && (
-                                                <button
-                                                    onClick={() => toggleBookmark(index, message)}
-                                                    className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-all duration-200"
-                                                    title="Bookmark message"
-                                                    aria-label="Bookmark message"
-                                                >
-                                                    {bookmarkedMessages.some(bm => bm.key === `${index}_${message.timestamp}`) ? 
-                                                        <FaBookmarkSolid size={12} className="text-yellow-500" /> : 
-                                                        <FaRegBookmark size={12} />
-                                                    }
-                                                </button>
-                                            )}
-                                            
-                                            {/* Share button for assistant messages */}
-                                            {message.role === 'assistant' && !message.isError && (
-                                                <button
-                                                    onClick={() => shareMessage(message)}
-                                                    className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-all duration-200"
-                                                    title="Share message"
-                                                    aria-label="Share message"
-                                                >
-                                                    <FaShare size={12} />
-                                                </button>
-                                            )}
-                                            
-                                            {/* Rating buttons for assistant messages */}
-                                            {message.role === 'assistant' && !message.isError && (
-                                                <div className="flex gap-1">
-                                                    <button
-                                                        onClick={() => rateMessage(index, 'up')}
-                                                        className="p-1 text-gray-500 hover:text-green-600 hover:bg-green-100 rounded transition-all duration-200"
-                                                        title="Good response"
-                                                        aria-label="Good response"
-                                                    >
-                                                        <FaThumbsUp size={12} />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => rateMessage(index, 'down')}
-                                                        className="p-1 text-gray-500 hover:text-red-600 hover:bg-red-100 rounded transition-all duration-200"
-                                                        title="Poor response"
-                                                        aria-label="Poor response"
-                                                    >
-                                                        <FaThumbsDown size={12} />
-                                                    </button>
+                                        <p className="text-sm whitespace-pre-wrap leading-relaxed">{formatLinksInText(message.content, message.role === 'user')}</p>
+                                        
+                                        {/* Message footer with timestamp and actions */}
+                                        <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-200/20">
+                                            {message.timestamp && (
+                                                <div className={`${message.role === 'user' ? 'text-white/80' : message.isError ? 'text-red-600' : 'text-gray-500'} text-[10px]`}>
+                                                    {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                 </div>
                                             )}
                                             
-                                            {/* Retry button for failed messages */}
-                                            {message.isError && message.originalUserMessage && (
+                                            {/* Action buttons */}
+                                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                                                {/* Copy icon for all messages */}
                                                 <button
-                                                    onClick={() => retryMessage(message.originalUserMessage, index)}
-                                                    disabled={isLoading}
-                                                    className="p-1 text-red-600 hover:text-red-700 hover:bg-red-200 rounded transition-all duration-200 disabled:opacity-50"
-                                                    title="Retry message"
-                                                    aria-label="Retry message"
+                                                    onClick={() => copyToClipboard(message.content)}
+                                                    className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-all duration-200"
+                                                    title="Copy message"
+                                                    aria-label="Copy message"
                                                 >
-                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                                                        <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
-                                                    </svg>
+                                                    <FaCopy size={10} />
                                                 </button>
-                                            )}
+                                                
+                                                {/* Bookmark button for assistant messages */}
+                                                {message.role === 'assistant' && !message.isError && (
+                                                    <button
+                                                        onClick={() => toggleBookmark(index, message)}
+                                                        className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-all duration-200"
+                                                        title="Bookmark message"
+                                                        aria-label="Bookmark message"
+                                                    >
+                                                        {bookmarkedMessages.some(bm => bm.key === `${index}_${message.timestamp}`) ? 
+                                                            <FaBookmarkSolid size={10} className="text-yellow-500" /> : 
+                                                            <FaRegBookmark size={10} />
+                                                        }
+                                                    </button>
+                                                )}
+                                                
+                                                {/* Share button for assistant messages */}
+                                                {message.role === 'assistant' && !message.isError && (
+                                                    <button
+                                                        onClick={() => shareMessage(message)}
+                                                        className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-all duration-200"
+                                                        title="Share message"
+                                                        aria-label="Share message"
+                                                    >
+                                                        <FaShare size={10} />
+                                                    </button>
+                                                )}
+                                                
+                                                {/* Rating buttons for assistant messages */}
+                                                {message.role === 'assistant' && !message.isError && (
+                                                    <div className="flex gap-1">
+                                                        <button
+                                                            onClick={() => rateMessage(index, 'up')}
+                                                            className={`p-1 rounded transition-all duration-200 ${
+                                                                messageRatings[`${index}_${message.timestamp}`] === 'up' 
+                                                                    ? 'text-green-600 bg-green-100' 
+                                                                    : 'text-gray-500 hover:text-green-600 hover:bg-green-100'
+                                                            }`}
+                                                            title="Good response"
+                                                            aria-label="Good response"
+                                                        >
+                                                            <FaThumbsUp size={10} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => rateMessage(index, 'down')}
+                                                            className={`p-1 rounded transition-all duration-200 ${
+                                                                messageRatings[`${index}_${message.timestamp}`] === 'down' 
+                                                                    ? 'text-red-600 bg-red-100' 
+                                                                    : 'text-gray-500 hover:text-red-600 hover:bg-red-100'
+                                                            }`}
+                                                            title="Poor response"
+                                                            aria-label="Poor response"
+                                                        >
+                                                            <FaThumbsDown size={10} />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                                
+                                                {/* Retry button for failed messages */}
+                                                {message.isError && message.originalUserMessage && (
+                                                    <button
+                                                        onClick={() => retryMessage(message.originalUserMessage, index)}
+                                                        disabled={isLoading}
+                                                        className="p-1 text-red-600 hover:text-red-700 hover:bg-red-200 rounded transition-all duration-200 disabled:opacity-50"
+                                                        title="Retry message"
+                                                        aria-label="Retry message"
+                                                    >
+                                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                                            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                                                        </svg>
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1120,6 +1244,15 @@ const GeminiChatbox = () => {
                                                         {bookmark.content}
                                                     </div>
                                                     <div className="flex gap-2">
+                                                        <button
+                                                            onClick={() => {
+                                                                highlightMessage(bookmark.key);
+                                                                setShowBookmarks(false);
+                                                            }}
+                                                            className="text-xs px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded"
+                                                        >
+                                                            Go to Message
+                                                        </button>
                                                         <button
                                                             onClick={() => copyToClipboard(bookmark.content)}
                                                             className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded"

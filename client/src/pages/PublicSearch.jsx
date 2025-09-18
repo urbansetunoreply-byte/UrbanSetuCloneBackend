@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ListingItem from "../components/ListingItem";
-import GeminiAIWrapper from "../components/GeminiAIWrapper";
 import LocationSelector from "../components/LocationSelector";
 import data from "../data/countries+states+cities.json";
 import duckImg from "../assets/duck-go-final.gif";
@@ -347,7 +346,6 @@ export default function PublicSearch() {
                     )}
                 </div>
             </div>
-            <GeminiAIWrapper />
             <ContactSupportWrapper />
         </div>
     );
