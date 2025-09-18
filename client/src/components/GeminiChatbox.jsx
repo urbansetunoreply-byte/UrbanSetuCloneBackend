@@ -361,15 +361,28 @@ const GeminiChatbox = () => {
             if (msg && msg.timestamp) {
                 const label = getDateLabel(msg.timestamp);
                 setFloatingDateLabel(label);
-                // Show floating date only when user is scrolled up; hide when at bottom to prevent flicker
-                setShowFloatingDate(distanceFromBottom > 80);
+                // Visibility is controlled by scroll activity; compute only updates label
             }
         };
         compute();
-        const onScroll = () => compute();
+        const onScroll = () => {
+            compute();
+            // Show floating date while actively scrolling when not at bottom, hide after inactivity
+            const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+            if (distanceFromBottom > 80) {
+                setShowFloatingDate(true);
+                if (floatingHideTimeoutRef.current) clearTimeout(floatingHideTimeoutRef.current);
+                floatingHideTimeoutRef.current = setTimeout(() => {
+                    setShowFloatingDate(false);
+                }, 1000);
+            } else {
+                setShowFloatingDate(false);
+            }
+        };
         el.addEventListener('scroll', onScroll);
         return () => {
             el.removeEventListener('scroll', onScroll);
+            if (floatingHideTimeoutRef.current) clearTimeout(floatingHideTimeoutRef.current);
         };
     }, [isOpen, messages]);
 
