@@ -1218,10 +1218,9 @@ function getDateLabel(date) {
   return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-function AdminPaymentStatusCell({ appointmentId }) {
+function AdminPaymentStatusCell({ appointmentId, appointment }) {
   const [payment, setPayment] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
-  const [appointment, setAppointment] = React.useState(null);
   const [toggling, setToggling] = React.useState(false);
   const [showStatusOptions, setShowStatusOptions] = React.useState(false);
 
@@ -1241,17 +1240,7 @@ function AdminPaymentStatusCell({ appointmentId }) {
         setLoading(false);
       }
     }
-    async function fetchAppointment() {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/bookings/${appointmentId}`, { credentials: 'include' });
-        if (res.ok) {
-          const data = await res.json();
-          setAppointment(data);
-        }
-      } catch {}
-    }
     fetchPayment();
-    fetchAppointment();
   }, [appointmentId]);
 
   // Close status options when clicking outside
@@ -1281,8 +1270,8 @@ function AdminPaymentStatusCell({ appointmentId }) {
         body: JSON.stringify({ paymentConfirmed: newStatus })
       });
       if (res.ok) {
-        const data = await res.json();
-        setAppointment(data.appointment);
+        // The socket listener will handle updating the parent component's state
+        // No need to update local state here
       }
     } finally {
       setToggling(false);
@@ -3410,7 +3399,7 @@ function AdminAppointmentRow({
         </div>
       </td>
       <td className="border p-2 text-center">
-        <AdminPaymentStatusCell appointmentId={appt._id} />
+        <AdminPaymentStatusCell appointmentId={appt._id} appointment={appt} />
       </td>
       <td className="border p-2">
         <button
