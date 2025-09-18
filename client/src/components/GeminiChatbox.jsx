@@ -131,7 +131,8 @@ const GeminiChatbox = () => {
             }
 
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-            const response = await fetch(`${API_BASE_URL}/api/chat-history/clear-all`, {
+            const currentSessionId = getOrCreateSessionId();
+            const response = await fetch(`${API_BASE_URL}/api/chat-history/session/${currentSessionId}/clear`, {
                 method: 'DELETE',
                 credentials: 'include',
                 headers: {
@@ -140,11 +141,11 @@ const GeminiChatbox = () => {
             });
 
             if (response.ok) {
-                toast.success('Chat history cleared');
+                toast.success('Chat cleared');
                 clearLocalChatHistory();
             } else {
                 const errorData = await response.json();
-                toast.error(errorData.message || 'Failed to clear chat history');
+                toast.error(errorData.message || 'Failed to clear chat');
             }
         } catch (error) {
             console.error('Error clearing chat history:', error);
@@ -803,9 +804,10 @@ const GeminiChatbox = () => {
     };
 
     const highlightMessage = (bookmarkKey) => {
-        // Find the message index by bookmark key
+        // Find the message index by bookmark key (new format includes session ID)
         const messageIndex = messages.findIndex((message, index) => {
-            const key = `${index}_${message.timestamp}`;
+            const currentSessionId = getOrCreateSessionId();
+            const key = `${currentSessionId}_${index}_${message.timestamp}`;
             return key === bookmarkKey;
         });
 
@@ -1091,10 +1093,13 @@ const GeminiChatbox = () => {
                                                         title="Bookmark message"
                                                         aria-label="Bookmark message"
                                                     >
-                                                        {bookmarkedMessages.some(bm => bm.key === `${index}_${message.timestamp}`) ? 
-                                                            <FaBookmarkSolid size={10} className="text-yellow-500" /> : 
-                                                            <FaRegBookmark size={10} />
-                                                        }
+                                                        {(() => {
+                                                            const currentSessionId = getOrCreateSessionId();
+                                                            const bookmarkKey = `${currentSessionId}_${index}_${message.timestamp}`;
+                                                            return bookmarkedMessages.some(bm => bm.key === bookmarkKey) ? 
+                                                                <FaBookmarkSolid size={10} className="text-yellow-500" /> : 
+                                                                <FaRegBookmark size={10} className="text-gray-500" />
+                                                        })()}
                                                     </button>
                                                 )}
                                                 
