@@ -4622,16 +4622,25 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                       </button>
                                       {isSentMessage && null}
                                       <button
-                                        className="text-white hover:text-red-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                                        className={`rounded-full p-2 transition-colors ${
+                                          isChatSendBlocked 
+                                            ? 'text-gray-400 bg-white/5 cursor-not-allowed' 
+                                            : 'text-white hover:text-red-200 bg-white/10 hover:bg-white/20'
+                                        }`}
                                         onClick={() => { 
+                                          if (isChatSendBlocked) {
+                                            toast.info('Delete disabled for this appointment status. You can view chat history.');
+                                            return;
+                                          }
                                           setMessageToDelete(selectedMsg);
                                           setDeleteForBoth(isSentMessage);
                                           setShowDeleteModal(true);
                                           setIsSelectionMode(false);
                                           setSelectedMessages([]);
                                         }}
-                                        title="Delete"
-                                        aria-label="Delete"
+                                        disabled={isChatSendBlocked}
+                                        title={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete"}
+                                        aria-label={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete"}
                                       >
                                         <FaTrash size={18} />
                                       </button>
@@ -4639,8 +4648,16 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                   )}
                                   {selectedMsg.deleted && (
                                     <button
-                                      className="text-white hover:text-red-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                                      className={`rounded-full p-2 transition-colors ${
+                                        isChatSendBlocked 
+                                          ? 'text-gray-400 bg-white/5 cursor-not-allowed' 
+                                          : 'text-white hover:text-red-200 bg-white/10 hover:bg-white/20'
+                                      }`}
                                       onClick={async () => { 
+                                        if (isChatSendBlocked) {
+                                          toast.info('Delete disabled for this appointment status. You can view chat history.');
+                                          return;
+                                        }
                                         try {
                                           await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${selectedMsg._id}/remove-for-me`, 
                                             {},
@@ -4655,8 +4672,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                         setIsSelectionMode(false);
                                         setSelectedMessages([]);
                                       }}
-                                      title="Delete for me"
-                                      aria-label="Delete for me"
+                                      disabled={isChatSendBlocked}
+                                      title={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete for me"}
+                                      aria-label={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete for me"}
                                     >
                                       <FaTrash size={18} />
                                     </button>
@@ -4670,8 +4688,16 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           <div className="flex items-center gap-2">
                             {selectedMessages.some(msg => msg.deleted) ? (
                               <button
-                                className="text-white hover:text-red-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                                className={`rounded-full p-2 transition-colors ${
+                                  isChatSendBlocked 
+                                    ? 'text-gray-400 bg-white/5 cursor-not-allowed' 
+                                    : 'text-white hover:text-red-200 bg-white/10 hover:bg-white/20'
+                                }`}
                                 onClick={async () => {
+                                  if (isChatSendBlocked) {
+                                    toast.info('Delete disabled for this appointment status. You can view chat history.');
+                                    return;
+                                  }
                                   const ids = selectedMessages.map(msg => msg._id);
                                   try {
                                     await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comments/removed/sync`, 
@@ -4690,8 +4716,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                     toast.error(e.response?.data?.message || 'Failed to delete selected messages for you.');
                                   }
                                 }}
-                                title="Delete selected (for me)"
-                                aria-label="Delete selected (for me)"
+                                disabled={isChatSendBlocked}
+                                title={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete selected (for me)"}
+                                aria-label={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete selected (for me)"}
                               >
                                 <FaTrash size={18} />
                               </button>

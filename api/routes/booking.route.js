@@ -1279,11 +1279,15 @@ router.get('/archived', verifyToken, async (req, res) => {
       };
     }
 
+    console.log('Archived appointments query:', JSON.stringify(query, null, 2));
+    
     const archivedAppointments = await booking.find(query)
       .populate('buyerId', 'username email mobileNumber avatar')
       .populate('sellerId', 'username email mobileNumber avatar')
       .populate('listingId', '_id name address')
-      .sort({ archivedAt: -1 }); // Sort by most recently archived first
+      .sort({ archivedAt: -1, updatedAt: -1 }); // Sort by most recently archived first, fallback to updatedAt
+    
+    console.log('Found archived appointments:', archivedAppointments.length);
 
     // Add role information for regular users
     const appointmentsWithRole = archivedAppointments.map(appointment => {
