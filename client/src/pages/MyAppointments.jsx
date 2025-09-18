@@ -8648,7 +8648,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
 
   const displayStatus = getDisplayStatus();
   // Check if appointment is in a frozen status (no payment allowed)
-  const isFrozenStatus = ['rejected', 'cancelled by buyer', 'cancelled by seller', 'cancelled by admin', 'outdated'].includes(appointment.status);
+  const isFrozenStatus = ['rejected', 'cancelledByBuyer', 'cancelledBySeller', 'cancelledByAdmin', 'outdated'].includes(appointment.status);
   const isPending = !appointment.paymentConfirmed && (!paymentStatus || paymentStatus.status !== 'completed') && !isFrozenStatus;
   
   return (
