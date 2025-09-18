@@ -4128,7 +4128,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
           </span>
         </td>
         <td className="border p-2 text-center">
-          <PaymentStatusCell appointment={appt} />
+          <PaymentStatusCell appointment={appt} isBuyer={isBuyer} />
         </td>
         <td className="border p-2 text-center">
           <div className="flex flex-col gap-2">
@@ -8384,7 +8384,7 @@ You can lock this chat again at any time from the options.</p>
 }
 
 // Payment Status Cell Component
-function PaymentStatusCell({ appointment }) {
+function PaymentStatusCell({ appointment, isBuyer }) {
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showPayModal, setShowPayModal] = useState(false);
@@ -8454,38 +8454,45 @@ function PaymentStatusCell({ appointment }) {
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${displayStatus.color}`}>
         {displayStatus.text}
       </span>
-      <div className="text-xs text-gray-500">
-        $5.00
-      </div>
-      {paymentStatus && paymentStatus.refundAmount > 0 && (
-        <div className="text-xs text-red-500">
-          Refunded: ${paymentStatus.refundAmount.toLocaleString()}
-        </div>
+      
+      {/* Only show payment amount and Pay Now button for buyers */}
+      {isBuyer && (
+        <>
+          <div className="text-xs text-gray-500">
+            $5.00
+          </div>
+          {paymentStatus && paymentStatus.refundAmount > 0 && (
+            <div className="text-xs text-red-500">
+              Refunded: ${paymentStatus.refundAmount.toLocaleString()}
+            </div>
+          )}
+          {isPending ? (
+            <button
+              className="mt-1 inline-flex items-center gap-1 text-white bg-blue-600 hover:bg-blue-700 text-xs font-semibold px-3 py-1 rounded"
+              onClick={() => setShowPayModal(true)}
+            >
+              <FaDollarSign /> Pay Now
+            </button>
+          ) : (
+            paymentStatus && paymentStatus.receiptUrl ? (
+              <a
+                href={paymentStatus.receiptUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-1 inline-flex items-center gap-1 text-white bg-green-600 hover:bg-green-700 text-xs font-semibold px-3 py-1 rounded"
+              >
+                <FaDownload /> Receipt
+              </a>
+            ) : null
+          )}
+        </>
       )}
-      {isPending ? (
-        <button
-          className="mt-1 inline-flex items-center gap-1 text-white bg-blue-600 hover:bg-blue-700 text-xs font-semibold px-3 py-1 rounded"
-          onClick={() => setShowPayModal(true)}
-        >
-          <FaDollarSign /> Pay Now
-        </button>
-      ) : (
-        paymentStatus && paymentStatus.receiptUrl ? (
-          <a
-            href={paymentStatus.receiptUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-1 inline-flex items-center gap-1 text-white bg-green-600 hover:bg-green-700 text-xs font-semibold px-3 py-1 rounded"
-          >
-            <FaDownload /> Receipt
-          </a>
-        ) : null
-      )}
+      
       {appointment?.paymentConfirmed && (
         <div className="text-[10px] text-green-700 font-semibold">✓ Admin Confirmed</div>
       )}
 
-      {showPayModal && (
+      {showPayModal && isBuyer && (
         <PaymentModal
           isOpen={showPayModal}
           onClose={() => setShowPayModal(false)}
