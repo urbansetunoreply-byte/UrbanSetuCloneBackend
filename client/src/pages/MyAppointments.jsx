@@ -968,7 +968,13 @@ export default function MyAppointments() {
                     {selectedOtherParty.role || 'User'}
                   </p>
                   {/* Status text below role */}
-                  {selectedOtherParty.isTyping ? (
+                  {!canSeeContactInfo ? (
+                    <div className="mt-2">
+                      <span className="text-gray-600 font-medium text-xs bg-gray-100 px-3 py-1 rounded-full">
+                        Not available
+                      </span>
+                    </div>
+                  ) : selectedOtherParty.isTyping ? (
                     <div className="mt-2">
                       <span className="text-yellow-600 font-medium text-xs bg-yellow-100 px-3 py-1 rounded-full">
                         Typing...
