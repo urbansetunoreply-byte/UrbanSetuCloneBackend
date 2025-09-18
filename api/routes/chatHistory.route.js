@@ -6,7 +6,8 @@ import {
     getUserChatSessions,
     clearChatHistory,
     clearAllChatHistory,
-    deleteChatSession
+    deleteChatSession,
+    updateChatSession
 } from '../controllers/chatHistory.controller.js';
 
 const router = express.Router();
@@ -19,6 +20,9 @@ router.post('/save', saveChatMessage);
 
 // Get chat history for a specific session
 router.get('/session/:sessionId', getChatHistory);
+
+// Update an existing chat session
+router.put('/session/:sessionId', updateChatSession);
 
 // Get all chat sessions for the authenticated user
 router.get('/sessions', getUserChatSessions);

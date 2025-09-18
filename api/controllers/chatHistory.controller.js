@@ -216,6 +216,65 @@ export const clearAllChatHistory = async (req, res) => {
     }
 };
 
+// Update an existing chat session
+export const updateChatSession = async (req, res) => {
+    try {
+        const { sessionId } = req.params;
+        const { messages, totalMessages } = req.body;
+        const userId = req.user.id;
+
+        if (!sessionId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Session ID is required'
+            });
+        }
+
+        if (!messages || !Array.isArray(messages)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Messages array is required'
+            });
+        }
+
+        const chatHistory = await ChatHistory.findOne({
+            userId,
+            sessionId,
+            isActive: true
+        });
+
+        if (!chatHistory) {
+            return res.status(404).json({
+                success: false,
+                message: 'Chat session not found'
+            });
+        }
+
+        // Update the session with new messages
+        chatHistory.messages = messages;
+        chatHistory.totalMessages = totalMessages || messages.length;
+        chatHistory.lastActivity = new Date();
+
+        await chatHistory.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Chat session updated successfully',
+            data: {
+                sessionId: chatHistory.sessionId,
+                totalMessages: chatHistory.totalMessages
+            }
+        });
+
+    } catch (error) {
+        console.error('Error updating chat session:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to update chat session'
+        });
+    }
+};
+
 // Delete a specific chat session
 export const deleteChatSession = async (req, res) => {
     try {

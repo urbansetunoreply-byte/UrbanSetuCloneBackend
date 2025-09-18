@@ -305,3 +305,93 @@ export const getMessageRatings = async (req, res) => {
         });
     }
 };
+
+// Create a new chat session
+export const createNewSession = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required'
+            });
+        }
+
+        // Generate new session ID
+        const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        // Create new chat history with default welcome message
+        const defaultMessage = {
+            role: 'assistant',
+            content: 'Hello! I\'m your AI assistant powered by Gemini. How can I help you with your real estate needs today?',
+            timestamp: new Date().toISOString()
+        };
+
+        const chatHistory = new ChatHistory({
+            userId,
+            sessionId: newSessionId,
+            messages: [defaultMessage],
+            totalMessages: 1
+        });
+
+        await chatHistory.save();
+
+        res.status(200).json({
+            success: true,
+            sessionId: newSessionId,
+            message: 'New session created successfully'
+        });
+    } catch (error) {
+        console.error('Error creating new session:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to create new session'
+        });
+    }
+};
+
+// Delete a chat session
+export const deleteSession = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        const { sessionId } = req.params;
+        
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required'
+            });
+        }
+
+        // Delete the chat history
+        const result = await ChatHistory.findOneAndDelete({
+            userId,
+            sessionId
+        });
+
+        if (!result) {
+            return res.status(404).json({
+                success: false,
+                message: 'Session not found'
+            });
+        }
+
+        // Also delete associated ratings
+        await MessageRating.deleteMany({
+            userId,
+            sessionId
+        });
+
+        res.status(200).json({
+            success: true,
+            message: 'Session deleted successfully'
+        });
+    } catch (error) {
+        console.error('Error deleting session:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to delete session'
+        });
+    }
+};

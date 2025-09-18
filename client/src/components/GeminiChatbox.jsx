@@ -669,6 +669,106 @@ const GeminiChatbox = () => {
         }
     };
 
+    const createNewSession = async () => {
+        if (!currentUser) {
+            toast.error('Please log in to create new sessions');
+            return;
+        }
+
+        try {
+            // First, save the current session if it has messages beyond the default welcome message
+            const currentSessionId = getOrCreateSessionId();
+            if (messages.length > 1 || (messages.length === 1 && messages[0].role === 'user')) {
+                // Save current session to history
+                const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+                const saveResponse = await fetch(`${API_BASE_URL}/api/chat-history/session/${currentSessionId}`, {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        messages: messages,
+                        totalMessages: messages.length
+                    })
+                });
+                
+                if (!saveResponse.ok) {
+                    console.error('Failed to save current session');
+                }
+            }
+
+            // Now create a new session
+            const response = await fetch(`${API_BASE_URL}/api/gemini/sessions`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.sessionId) {
+                    // Set the new session ID
+                    setSessionId(data.sessionId);
+                    localStorage.setItem('gemini_session_id', data.sessionId);
+                    
+                    // Reset messages to default welcome message
+                    const defaultMessage = {
+                        role: 'assistant',
+                        content: 'Hello! I\'m your AI assistant powered by Gemini. How can I help you with your real estate needs today?',
+                        timestamp: new Date().toISOString()
+                    };
+                    setMessages([defaultMessage]);
+                    
+                    // Clear ratings for new session
+                    setMessageRatings({});
+                    localStorage.setItem('gemini_ratings', JSON.stringify({}));
+                    
+                    // Refresh chat sessions
+                    await loadChatSessions();
+                    
+                    toast.success('New chat session created');
+                }
+            } else {
+                toast.error('Failed to create new session');
+            }
+        } catch (error) {
+            console.error('Error creating new session:', error);
+            toast.error('Failed to create new session');
+        }
+    };
+
+    const deleteSession = async (sessionId) => {
+        if (!currentUser) {
+            toast.error('Please log in to delete sessions');
+            return;
+        }
+
+        try {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+            const response = await fetch(`${API_BASE_URL}/api/gemini/sessions/${sessionId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    // Refresh chat sessions
+                    await loadChatSessions();
+                    toast.success('Session deleted successfully');
+                }
+            } else {
+                toast.error('Failed to delete session');
+            }
+        } catch (error) {
+            console.error('Error deleting session:', error);
+            toast.error('Failed to delete session');
+        }
+    };
+
     const simulateTyping = (text) => {
         setIsTyping(true);
         setTypingText('');
@@ -808,6 +908,19 @@ const GeminiChatbox = () => {
                                 {isHeaderMenuOpen && (
                                     <div className="absolute right-0 top-full mt-2 bg-white text-gray-800 rounded shadow-lg border border-gray-200 w-48 z-50">
                                         <ul className="py-1 text-sm">
+                                            {/* New Chat */}
+                                            <li>
+                                                <button
+                                                    onClick={() => { createNewSession(); setIsHeaderMenuOpen(false); }}
+                                                    className="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2"
+                                                >
+                                                    <FaComments size={12} className="text-blue-500" />
+                                                    New Chat
+                                                </button>
+                                            </li>
+                                            
+                                            <li className="border-t border-gray-200 my-1"></li>
+                                            
                                             {/* Quick Actions */}
                                             <li>
                                                 <button
@@ -1285,33 +1398,59 @@ const GeminiChatbox = () => {
                         {showHistory && (
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
                                 <div className="bg-white rounded-xl shadow-xl p-5 w-96 max-w-full max-h-[80vh] overflow-y-auto">
-                                    <h4 className="font-semibold mb-3 flex items-center gap-2">
-                                        <FaHistory className="text-blue-500" />
-                                        Chat History
-                                    </h4>
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h4 className="font-semibold flex items-center gap-2">
+                                            <FaHistory className="text-blue-500" />
+                                            Chat History
+                                        </h4>
+                                        <button
+                                            onClick={() => { createNewSession(); setShowHistory(false); }}
+                                            className="px-3 py-1.5 text-xs rounded bg-green-600 text-white hover:bg-green-700 flex items-center gap-1"
+                                        >
+                                            <FaComments size={10} />
+                                            New Session
+                                        </button>
+                                    </div>
                                     {chatSessions.length === 0 ? (
                                         <p className="text-gray-500 text-center py-8">No chat history found</p>
                                     ) : (
                                         <div className="space-y-2">
                                             {chatSessions.map((session, idx) => (
-                                                <button
+                                                <div
                                                     key={idx}
-                                                    onClick={() => {
-                                                        loadSessionHistory(session.sessionId);
-                                                        setShowHistory(false);
-                                                    }}
-                                                    className="w-full p-3 text-left border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-blue-300 transition-all duration-200"
+                                                    className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-200"
                                                 >
-                                                    <div className="text-sm font-medium text-gray-800">
-                                                        Session {idx + 1}
+                                                    <div className="flex items-center justify-between">
+                                                        <button
+                                                            onClick={() => {
+                                                                loadSessionHistory(session.sessionId);
+                                                                setShowHistory(false);
+                                                            }}
+                                                            className="flex-1 text-left"
+                                                        >
+                                                            <div className="text-sm font-medium text-gray-800">
+                                                                Session {idx + 1}
+                                                            </div>
+                                                            <div className="text-xs text-gray-600">
+                                                                {new Date(session.lastMessageAt).toLocaleString()}
+                                                            </div>
+                                                            <div className="text-xs text-gray-500">
+                                                                {session.messageCount} messages
+                                                            </div>
+                                                        </button>
+                                                        <button
+                                                            onClick={() => {
+                                                                if (window.confirm('Are you sure you want to delete this session?')) {
+                                                                    deleteSession(session.sessionId);
+                                                                }
+                                                            }}
+                                                            className="ml-2 p-1 text-red-600 hover:text-red-700 hover:bg-red-100 rounded transition-all duration-200"
+                                                            title="Delete session"
+                                                        >
+                                                            <FaTimes size={12} />
+                                                        </button>
                                                     </div>
-                                                    <div className="text-xs text-gray-600">
-                                                        {new Date(session.lastMessageAt).toLocaleString()}
-                                                    </div>
-                                                    <div className="text-xs text-gray-500">
-                                                        {session.messageCount} messages
-                                                    </div>
-                                                </button>
+                                                </div>
                                             ))}
                                         </div>
                                     )}
