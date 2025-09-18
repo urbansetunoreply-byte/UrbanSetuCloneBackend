@@ -44,6 +44,7 @@ const GeminiChatbox = () => {
     const [selectedMessage, setSelectedMessage] = useState(null);
     const [showMessageMenu, setShowMessageMenu] = useState(false);
     const [highlightedMessage, setHighlightedMessage] = useState(null);
+    const [selectedHistoryIds, setSelectedHistoryIds] = useState([]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -1145,17 +1146,25 @@ const GeminiChatbox = () => {
                                                     </div>
                                                 )}
                                                 
-                                                {/* Retry button for failed messages */}
-                                                {message.isError && message.originalUserMessage && (
+                                                {/* Retry buttons */}
+                                                {message.role === 'assistant' && (
                                                     <button
-                                                        onClick={() => retryMessage(message.originalUserMessage, index)}
+                                                        onClick={() => {
+                                                            const previousUserMessage = (() => {
+                                                                for (let i = index - 1; i >= 0; i--) {
+                                                                    if (messages[i]?.role === 'user') return messages[i].content;
+                                                                }
+                                                                return lastUserMessageRef.current;
+                                                            })();
+                                                            if (previousUserMessage) retryMessage(previousUserMessage, index);
+                                                        }}
                                                         disabled={isLoading}
-                                                        className="p-1 text-red-600 hover:text-red-700 hover:bg-red-200 rounded transition-all duration-200 disabled:opacity-50"
-                                                        title="Retry message"
-                                                        aria-label="Retry message"
+                                                        className="p-1 text-blue-600 hover:text-blue-700 hover:bg-blue-100 rounded transition-all duration-200 disabled:opacity-50"
+                                                        title="Try Again"
+                                                        aria-label="Try Again"
                                                     >
                                                         <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                                                            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                                                            <path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26l1.46-1.46C6.26 13.86 6 12.97 6 12c0-3.31 2.69-6 6-6zm5.76 1.74L16.3 9.2C17.74 10.14 18.5 11.49 18.5 13c0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z"/>
                                                         </svg>
                                                     </button>
                                                 )}
@@ -1429,24 +1438,65 @@ const GeminiChatbox = () => {
                                             <FaHistory className="text-blue-500" />
                                             Chat History
                                         </h4>
-                                        <button
-                                            onClick={() => { createNewSession(); setShowHistory(false); }}
-                                            className="px-3 py-1.5 text-xs rounded bg-green-600 text-white hover:bg-green-700 flex items-center gap-1"
-                                        >
-                                            <FaComments size={10} />
-                                            New Session
-                                        </button>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={async () => {
+                                                    try {
+                                                        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+                                                        await fetch(`${API_BASE_URL}/api/gemini/sessions`, {
+                                                            method: 'DELETE',
+                                                            credentials: 'include'
+                                                        });
+                                                        // Ensure at least one chat exists
+                                                        await createNewSession();
+                                                        await loadChatSessions();
+                                                        toast.success('All chats deleted');
+                                                        setShowHistory(false);
+                                                    } catch (e) {
+                                                        toast.error('Failed to delete all chats');
+                                                    }
+                                                }}
+                                                className="px-3 py-1.5 text-xs rounded bg-red-600 text-white hover:bg-red-700"
+                                            >
+                                                Delete All
+                                            </button>
+                                            <button
+                                                onClick={() => { createNewSession(); setShowHistory(false); }}
+                                                className="px-3 py-1.5 text-xs rounded bg-green-600 text-white hover:bg-green-700 flex items-center gap-1"
+                                            >
+                                                <FaComments size={10} />
+                                                New Chat
+                                            </button>
+                                        </div>
                                     </div>
                                     {chatSessions.length === 0 ? (
-                                        <p className="text-gray-500 text-center py-8">No chat history found</p>
+                                        <div className="text-center py-8 space-y-3">
+                                            <p className="text-gray-500">No chats yet</p>
+                                            <button
+                                                onClick={async () => { await createNewSession(); await loadChatSessions(); setShowHistory(false); }}
+                                                className="px-3 py-1.5 text-xs rounded bg-green-600 text-white hover:bg-green-700"
+                                            >
+                                                Create First Chat
+                                            </button>
+                                        </div>
                                     ) : (
                                         <div className="space-y-2">
                                             {chatSessions.map((session, idx) => (
                                                 <div
-                                                    key={idx}
+                                                    key={session.sessionId || idx}
                                                     className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-200"
                                                 >
-                                                    <div className="flex items-center justify-between">
+                                                    <div className="flex items-center justify-between gap-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            className="mt-1"
+                                                            checked={selectedHistoryIds.includes(session.sessionId)}
+                                                            onChange={(e) => {
+                                                                const id = session.sessionId;
+                                                                setSelectedHistoryIds(prev => e.target.checked ? [...prev, id] : prev.filter(x => x !== id));
+                                                            }}
+                                                            aria-label="Select chat"
+                                                        />
                                                         <button
                                                             onClick={() => {
                                                                 loadSessionHistory(session.sessionId);
@@ -1455,7 +1505,7 @@ const GeminiChatbox = () => {
                                                             className="flex-1 text-left"
                                                         >
                                                             <div className="text-sm font-medium text-gray-800">
-                                                                Session {idx + 1}
+                                                                Chat {idx + 1}
                                                             </div>
                                                             <div className="text-xs text-gray-600">
                                                                 {new Date(session.lastMessageAt).toLocaleString()}
@@ -1466,18 +1516,36 @@ const GeminiChatbox = () => {
                                                         </button>
                                                         <button
                                                             onClick={() => {
-                                                                if (window.confirm('Are you sure you want to delete this session?')) {
+                                                                if (window.confirm('Delete this chat?')) {
                                                                     deleteSession(session.sessionId);
                                                                 }
                                                             }}
                                                             className="ml-2 p-1 text-red-600 hover:text-red-700 hover:bg-red-100 rounded transition-all duration-200"
-                                                            title="Delete session"
+                                                            title="Delete chat"
                                                         >
                                                             <FaTimes size={12} />
                                                         </button>
                                                     </div>
                                                 </div>
                                             ))}
+                                            {selectedHistoryIds.length > 0 && (
+                                                <div className="flex justify-end">
+                                                    <button
+                                                        onClick={async () => {
+                                                            if (!window.confirm('Delete selected chats?')) return;
+                                                            for (const id of selectedHistoryIds) {
+                                                                await deleteSession(id);
+                                                            }
+                                                            setSelectedHistoryIds([]);
+                                                            await loadChatSessions();
+                                                            toast.success('Selected chats deleted');
+                                                        }}
+                                                        className="px-3 py-1.5 text-xs rounded bg-red-600 text-white hover:bg-red-700"
+                                                    >
+                                                        Delete Selected
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                     <div className="flex justify-end mt-4">

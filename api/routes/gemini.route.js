@@ -1,5 +1,5 @@
 import express from 'express';
-import { chatWithGemini, getUserChatSessions, rateMessage, getMessageRatings, createNewSession, deleteSession } from '../controllers/gemini.controller.js';
+import { chatWithGemini, getUserChatSessions, rateMessage, getMessageRatings, createNewSession, deleteSession, deleteAllSessions } from '../controllers/gemini.controller.js';
 import { optionalAuth, verifyToken } from '../utils/verify.js';
 
 const router = express.Router();
@@ -15,6 +15,9 @@ router.post('/sessions', verifyToken, createNewSession);
 
 // Delete a chat session (requires authentication)
 router.delete('/sessions/:sessionId', verifyToken, deleteSession);
+
+// Delete all chat sessions (requires authentication)
+router.delete('/sessions', verifyToken, deleteAllSessions);
 
 // Rate a message (requires authentication)
 router.post('/rate', verifyToken, rateMessage);

@@ -395,3 +395,38 @@ export const deleteSession = async (req, res) => {
         });
     }
 };
+
+// Delete all chat sessions for the authenticated user
+export const deleteAllSessions = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required'
+            });
+        }
+
+        // Delete all chat histories for the user
+        const deleteHistoryResult = await ChatHistory.deleteMany({ userId });
+
+        // Delete all associated ratings
+        const deleteRatingsResult = await MessageRating.deleteMany({ userId });
+
+        res.status(200).json({
+            success: true,
+            message: 'All chats deleted successfully',
+            deleted: {
+                chats: deleteHistoryResult.deletedCount || 0,
+                ratings: deleteRatingsResult.deletedCount || 0
+            }
+        });
+    } catch (error) {
+        console.error('Error deleting all sessions:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to delete all chats'
+        });
+    }
+};
