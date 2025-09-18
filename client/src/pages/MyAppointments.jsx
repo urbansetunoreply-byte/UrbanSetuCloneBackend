@@ -4456,7 +4456,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
             </div>
           )}
           <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 rounded-3xl shadow-2xl w-full h-full max-w-6xl max-h-full p-0 relative animate-fadeIn flex flex-col border border-gray-200 transform transition-all duration-500 hover:shadow-3xl overflow-hidden">
-            { isChatDisabled ? (
+            { (typeof isChatDisabled !== 'undefined' ? isChatDisabled : isChatSendBlocked) ? (
               <div className="flex flex-col items-center justify-center flex-1 p-8 min-h-96 relative">
                 <button
                   onClick={() => setShowChatModal(false)}
@@ -6847,7 +6847,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
             )}
             
             {/* Floating Scroll to bottom button - WhatsApp style */}
-            {!isAtBottom && !isChatDisabled && !editingComment && !replyTo && (
+            {!isAtBottom && !(typeof isChatDisabled !== 'undefined' ? isChatDisabled : isChatSendBlocked) && !editingComment && !replyTo && (
               <div className="absolute bottom-20 right-6 z-20">
                 <button
                   onClick={() => {

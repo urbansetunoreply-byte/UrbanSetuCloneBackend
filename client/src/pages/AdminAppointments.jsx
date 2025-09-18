@@ -6591,15 +6591,39 @@ function AdminPaymentStatusCell({ appointmentId }) {
     }
   }
 
+  async function setPaymentConfirmed(nextValue) {
+    if (!appointment) return;
+    if (appointment?.paymentConfirmed === nextValue) return;
+    setToggling(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/bookings/${appointmentId}/payment-status`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentConfirmed: nextValue })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAppointment(data.appointment);
+      }
+    } finally {
+      setToggling(false);
+    }
+  }
+
   const adminToggle = (
-    <button
-      onClick={togglePaymentConfirmed}
-      disabled={toggling}
-      className={`mt-1 text-[10px] px-2 py-0.5 rounded ${appointment?.paymentConfirmed ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-800'} disabled:opacity-50`}
-      title="Toggle payment confirmed for this appointment"
-    >
-      {toggling ? 'Saving...' : (appointment?.paymentConfirmed ? 'Mark Unpaid' : 'Mark Paid')}
-    </button>
+    <div className="mt-1">
+      <select
+        value={appointment?.paymentConfirmed ? 'paid' : 'unpaid'}
+        onChange={(e) => setPaymentConfirmed(e.target.value === 'paid')}
+        disabled={toggling}
+        className="text-[10px] px-2 py-1 rounded border border-gray-300 bg-white"
+        title="Mark payment status"
+      >
+        <option value="unpaid">Mark Unpaid</option>
+        <option value="paid">Mark Paid</option>
+      </select>
+    </div>
   );
 
   return (
@@ -6607,7 +6631,11 @@ function AdminPaymentStatusCell({ appointmentId }) {
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${color}`}>{label}</span>
       {typeof payment.amount === 'number' && (
         <div className="text-[10px] text-gray-500 inline-flex items-center gap-1">
-          <FaRupeeSign /> {payment.amount}
+          {((payment.currency || 'USD') === 'USD') ? (
+            <span>$ {Number(payment.amount).toFixed(2)}</span>
+          ) : (
+            <><FaRupeeSign /> {payment.amount}</>
+          )}
         </div>
       )}
       {adminToggle}

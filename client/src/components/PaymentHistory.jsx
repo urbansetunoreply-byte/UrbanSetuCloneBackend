@@ -103,10 +103,7 @@ const PaymentHistory = ({ userId }) => {
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-          <FaRupeeSign className="text-green-600" />
-          Payment History
-        </h2>
+        <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">Payment History</h2>
       </div>
 
       {/* Filters */}
@@ -162,7 +159,7 @@ const PaymentHistory = ({ userId }) => {
                 </div>
                 <div className="text-right">
                   <div className="text-lg font-bold text-gray-800">
-                    ₹{payment.amount.toLocaleString()}
+                    {((payment.currency || 'USD') === 'USD') ? `$ ${Number(payment.amount).toFixed(2)}` : `₹${payment.amount.toLocaleString()}`}
                   </div>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(payment.status)}`}>
                     {payment.status}
