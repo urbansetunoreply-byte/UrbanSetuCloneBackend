@@ -377,13 +377,19 @@ export default function AdminManagement() {
 
   // Optimistic UI for promote
   const handlePromote = async (id) => {
+    // Check if account is suspended
+    const user = users.find(u => u._id === id);
+    if (user && user.status === 'suspended') {
+      toast.error("Cannot promote suspended account. Please remove suspension first.");
+      return;
+    }
+
     const performPromote = async () => {
       // Store original state for rollback
       const originalUsers = [...users];
       const originalAdmins = [...admins];
       
       // Optimistically move user to admins
-      const user = users.find(u => u._id === id);
       if (user) {
         setUsers(prev => prev.filter(u => u._id !== id));
         setAdmins(prev => [
@@ -435,13 +441,19 @@ export default function AdminManagement() {
 
   // Optimistic UI for demote
   const handleDemote = async (id) => {
+    // Check if account is suspended
+    const admin = admins.find(a => a._id === id);
+    if (admin && admin.status === 'suspended') {
+      toast.error("Cannot demote suspended account. Please remove suspension first.");
+      return;
+    }
+
     const performDemote = async () => {
       // Store original state for rollback
       const originalUsers = [...users];
       const originalAdmins = [...admins];
       
       // Optimistically move admin to users
-      const admin = admins.find(a => a._id === id);
       if (admin) {
         setAdmins(prev => prev.filter(a => a._id !== id));
         setUsers(prev => [
@@ -593,6 +605,68 @@ export default function AdminManagement() {
       confirmModalData.onConfirm();
     }
     handleConfirmModalClose();
+  };
+
+  // Helper functions for restore and purge
+  const handleRestore = async (accountId) => {
+    const performRestore = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts/restore/${accountId}`, { 
+          method: 'POST', 
+          credentials: 'include' 
+        });
+        const data = await res.json();
+        if (res.ok) {
+          toast.success('Account restored');
+          fetchSoftbannedAccounts();
+        } else {
+          toast.error(data.message || 'Restore failed');
+        }
+      } catch (err) {
+        toast.error('Failed to restore account');
+      }
+    };
+
+    showConfirmation(
+      'Restore Account',
+      'Are you sure you want to restore this account? The user will be able to sign in again.',
+      performRestore,
+      {
+        confirmText: 'Restore',
+        confirmButtonClass: 'bg-green-500 hover:bg-green-600'
+      }
+    );
+  };
+
+  const handlePurge = async (accountId) => {
+    const performPurge = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts/purge/${accountId}`, { 
+          method: 'DELETE', 
+          credentials: 'include' 
+        });
+        const data = await res.json();
+        if (res.ok) {
+          toast.success('Account purged');
+          fetchSoftbannedAccounts();
+          fetchPurgedAccounts();
+        } else {
+          toast.error(data.message || 'Purge failed');
+        }
+      } catch (err) {
+        toast.error('Failed to purge account');
+      }
+    };
+
+    showConfirmation(
+      'Permanently Purge Account',
+      'Are you sure you want to permanently purge this account? This action cannot be undone.',
+      performPurge,
+      {
+        confirmText: 'Purge',
+        confirmButtonClass: 'bg-red-500 hover:bg-red-600'
+      }
+    );
   };
 
   // Helper to start lockout timer
@@ -1185,13 +1259,13 @@ export default function AdminManagement() {
                             <td className="px-4 py-2 whitespace-nowrap">
                               {currentUser.isDefaultAdmin ? (
                                 <div className="flex gap-2">
-                                  <button onClick={async ()=>{ if(!confirm('Restore this account?')) return; const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts/restore/${acc._id}`, { method:'POST', credentials:'include' }); const data = await res.json(); if(res.ok){ toast.success('Account restored'); fetchSoftbannedAccounts(); } else { toast.error(data.message||'Restore failed'); } }} className="px-3 py-1 bg-green-600 text-white rounded-lg text-xs">Restore</button>
-                                  <button onClick={async ()=>{ if(!confirm('Permanently purge this account? This cannot be undone.')) return; const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts/purge/${acc._id}`, { method:'DELETE', credentials:'include' }); const data = await res.json(); if(res.ok){ toast.success('Account purged'); fetchSoftbannedAccounts(); fetchPurgedAccounts(); } else { toast.error(data.message||'Purge failed'); } }} className="px-3 py-1 bg-red-600 text-white rounded-lg text-xs">Purge</button>
+                                  <button onClick={() => handleRestore(acc._id)} className="px-3 py-1 bg-green-600 text-white rounded-lg text-xs">Restore</button>
+                                  <button onClick={() => handlePurge(acc._id)} className="px-3 py-1 bg-red-600 text-white rounded-lg text-xs">Purge</button>
                                 </div>
                               ) : (
                                 <div className="flex gap-2">
                                   {acc.role === 'user' ? (
-                                    <button onClick={async ()=>{ if(!confirm('Restore this account?')) return; const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts/restore/${acc._id}`, { method:'POST', credentials:'include' }); const data = await res.json(); if(res.ok){ toast.success('Account restored'); fetchSoftbannedAccounts(); } else { toast.error(data.message||'Restore failed'); } }} className="px-3 py-1 bg-green-600 text-white rounded-lg text-xs">Restore</button>
+                                    <button onClick={() => handleRestore(acc._id)} className="px-3 py-1 bg-green-600 text-white rounded-lg text-xs">Restore</button>
                                   ) : (
                                     <span className="text-xs text-gray-500">View only</span>
                                   )}
