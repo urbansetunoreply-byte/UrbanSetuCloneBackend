@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { FaTrash, FaSearch, FaPen, FaCheck, FaTimes, FaUserShield, FaUser, FaEnvelope, FaPhone, FaArchive, FaUndo, FaCommentDots, FaCheckDouble, FaBan, FaPaperPlane, FaCalendar, FaLightbulb, FaCopy, FaEllipsisV, FaFlag, FaCircle, FaInfoCircle, FaSync, FaStar, FaRegStar, FaThumbtack, FaCalendarAlt, FaCheckSquare, FaDownload, FaDollarSign, FaCreditCard, FaSpinner } from "react-icons/fa";
+import { FaTrash, FaSearch, FaPen, FaCheck, FaTimes, FaUserShield, FaUser, FaEnvelope, FaPhone, FaArchive, FaUndo, FaCommentDots, FaCheckDouble, FaBan, FaPaperPlane, FaCalendar, FaLightbulb, FaCopy, FaEllipsisV, FaFlag, FaCircle, FaInfoCircle, FaSync, FaStar, FaRegStar, FaThumbtack, FaCalendarAlt, FaCheckSquare, FaDownload, FaDollarSign, FaCreditCard, FaSpinner, FaExclamationTriangle } from "react-icons/fa";
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
 import UserAvatar from '../components/UserAvatar';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
@@ -31,6 +31,7 @@ export default function MyAppointments() {
   const [actionLoading, setActionLoading] = useState("");
   const [showOtherPartyModal, setShowOtherPartyModal] = useState(false);
   const [selectedOtherParty, setSelectedOtherParty] = useState(null);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [showReinitiateModal, setShowReinitiateModal] = useState(false);
@@ -825,7 +826,7 @@ export default function MyAppointments() {
                       handleStatusUpdate={handleStatusUpdate}
                       handleAdminDelete={handleAdminDelete}
                       actionLoading={actionLoading}
-                      onShowOtherParty={party => { setSelectedOtherParty(party); setShowOtherPartyModal(true); }}
+                      onShowOtherParty={(party, appointment) => { setSelectedOtherParty(party); setSelectedAppointment(appointment); setShowOtherPartyModal(true); }}
                       onOpenReinitiate={() => handleOpenReinitiate(appt)}
                       handleArchiveAppointment={handleArchiveAppointment}
                       handleUnarchiveAppointment={handleUnarchiveAppointment}
@@ -872,7 +873,7 @@ export default function MyAppointments() {
                     handleStatusUpdate={handleStatusUpdate}
                     handleAdminDelete={handleAdminDelete}
                     actionLoading={actionLoading}
-                    onShowOtherParty={party => { setSelectedOtherParty(party); setShowOtherPartyModal(true); }}
+                    onShowOtherParty={(party, appointment) => { setSelectedOtherParty(party); setSelectedAppointment(appointment); setShowOtherPartyModal(true); }}
                     onOpenReinitiate={() => handleOpenReinitiate(appt)}
                       handleArchiveAppointment={handleArchiveAppointment}
                       handleUnarchiveAppointment={handleUnarchiveAppointment}
@@ -902,7 +903,16 @@ export default function MyAppointments() {
           )
         )}
       {/* Other Party Details Modal - Enhanced Design */}
-      {showOtherPartyModal && selectedOtherParty && (
+      {showOtherPartyModal && selectedOtherParty && selectedAppointment && (() => {
+        // Determine if contact details should be shown based on appointment status
+        const isUpcoming = new Date(selectedAppointment.date) > new Date() || (new Date(selectedAppointment.date).toDateString() === new Date().toDateString() && (!selectedAppointment.time || selectedAppointment.time > new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })));
+        const isAdmin = currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin');
+        const canSeeContactInfo = (isAdmin || selectedAppointment.status === 'accepted') && isUpcoming && 
+          selectedAppointment.status !== 'cancelledByBuyer' && selectedAppointment.status !== 'cancelledBySeller' && 
+          selectedAppointment.status !== 'cancelledByAdmin' && selectedAppointment.status !== 'rejected' && 
+          selectedAppointment.status !== 'deletedByAdmin';
+        
+        return (
         <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4" style={{ overflow: 'hidden' }}>
                       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto relative animate-fadeIn">
               {/* Close button */}
@@ -1003,21 +1013,33 @@ export default function MyAppointments() {
             {/* Body with enhanced styling */}
             <div className="px-6 py-6 space-y-4">
               <div className="space-y-4">
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 border-blue-500">
-                  <FaEnvelope className="text-blue-500 w-5 h-5 flex-shrink-0" />
-                  <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Email</p>
-                    <p className="text-gray-800 font-medium">{selectedOtherParty.email}</p>
+                {canSeeContactInfo ? (
+                  <>
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 border-blue-500">
+                      <FaEnvelope className="text-blue-500 w-5 h-5 flex-shrink-0" />
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Email</p>
+                        <p className="text-gray-800 font-medium">{selectedOtherParty.email}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 border-green-500">
+                      <FaPhone className="text-green-500 w-5 h-5 flex-shrink-0" />
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Phone</p>
+                        <p className="text-gray-800 font-medium">{selectedOtherParty.mobileNumber || 'Not provided'}</p>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg border-l-4 border-yellow-500">
+                    <FaExclamationTriangle className="text-yellow-500 w-5 h-5 flex-shrink-0" />
+                    <div>
+                      <p className="text-xs text-yellow-700 uppercase tracking-wide font-semibold">Contact Information Restricted</p>
+                      <p className="text-yellow-800 font-medium">Contact details are only available for accepted appointments</p>
+                    </div>
                   </div>
-                </div>
-                
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 border-green-500">
-                  <FaPhone className="text-green-500 w-5 h-5 flex-shrink-0" />
-                  <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Phone</p>
-                    <p className="text-gray-800 font-medium">{selectedOtherParty.mobileNumber || 'Not provided'}</p>
-                  </div>
-                </div>
+                )}
 
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 border-purple-500">
                   <FaCalendar className="text-purple-500 w-5 h-5 flex-shrink-0" />
@@ -1038,7 +1060,8 @@ export default function MyAppointments() {
             </div>
           </div>
         </div>
-      )}
+        );
+      })()}
       {/* Reinitiate Modal */}
       {showReinitiateModal && reinitiateData && (
         <div className="modal-backdrop">
@@ -4071,7 +4094,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                   isOnline: isOtherPartyOnlineInTable,
                   isTyping: isOtherPartyTyping,
                   lastSeen: otherPartyLastSeenInTable
-                })}
+                }, appt)}
                 title="Click to view details"
               >
                 {otherParty?.username || 'Unknown'}
@@ -5063,7 +5086,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           isOnline: isOtherPartyOnlineInTable,
                           isTyping: isOtherPartyTyping,
                           lastSeen: otherPartyLastSeenInTable
-                        })}
+                        }, appt)}
                         title="Click to view user details"
                       >
                         {otherParty?.avatar ? (
@@ -5087,7 +5110,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                               isOnline: isOtherPartyOnlineInTable,
                               isTyping: isOtherPartyTyping,
                               lastSeen: otherPartyLastSeenInTable
-                            })}
+                            }, appt)}
                             title="Click to view user details"
                           >
                             {otherParty?.username || 'Unknown User'}
@@ -5190,7 +5213,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                       isOnline: isOtherPartyOnlineInTable,
                                       isTyping: isOtherPartyTyping,
                                       lastSeen: otherPartyLastSeenInTable
-                                    });
+                                    }, appt);
                                     setShowChatOptionsMenu(false);
                                   }}
                                 >
