@@ -30,7 +30,7 @@ const paymentSchema = new mongoose.Schema({
   },
   currency: {
     type: String,
-    default: 'INR'
+    default: 'USD'
   },
   paymentType: {
     type: String,

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaCreditCard, FaRupeeSign, FaShieldAlt, FaDownload, FaCheckCircle, FaTimes, FaSpinner } from 'react-icons/fa';
+import { FaCreditCard, FaDollarSign, FaShieldAlt, FaDownload, FaCheckCircle, FaTimes, FaSpinner } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
 const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {

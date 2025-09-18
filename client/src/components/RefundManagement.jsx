@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaUndo, FaRupeeSign, FaExclamationTriangle, FaCheckCircle, FaTimes, FaSpinner, FaSearch, FaFilter } from 'react-icons/fa';
+import { FaUndo, FaDollarSign, FaExclamationTriangle, FaCheckCircle, FaTimes, FaSpinner, FaSearch, FaFilter } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
 const RefundManagement = () => {
@@ -185,11 +185,11 @@ const RefundManagement = () => {
                 </td>
                 <td className="py-3 px-4">
                   <div className="font-semibold text-gray-800">
-                    ₹{payment.amount.toLocaleString()}
+                    ${payment.amount.toLocaleString()}
                   </div>
                   {payment.refundAmount > 0 && (
                     <div className="text-sm text-red-600">
-                      Refunded: ₹{payment.refundAmount.toLocaleString()}
+                      Refunded: ${payment.refundAmount.toLocaleString()}
                     </div>
                   )}
                 </td>
@@ -261,7 +261,7 @@ const RefundManagement = () => {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Amount:</span>
-                    <span className="font-medium">₹{selectedPayment.amount.toLocaleString()}</span>
+                    <span className="font-medium">${selectedPayment.amount.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Payment ID:</span>
@@ -290,7 +290,7 @@ const RefundManagement = () => {
                       }}
                       className="mr-2"
                     />
-                    Full Refund (₹{selectedPayment.amount.toLocaleString()})
+                    Full Refund (${selectedPayment.amount.toLocaleString()})
                   </label>
                   <label className="flex items-center">
                     <input
@@ -312,7 +312,7 @@ const RefundManagement = () => {
                     Refund Amount
                   </label>
                   <div className="relative">
-                    <FaRupeeSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <FaDollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                     <input
                       type="number"
                       value={refundForm.refundAmount}

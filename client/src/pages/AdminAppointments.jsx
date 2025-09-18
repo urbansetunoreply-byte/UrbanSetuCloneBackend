@@ -6634,7 +6634,7 @@ function AdminPaymentStatusCell({ appointmentId }) {
           {((payment.currency || 'USD') === 'USD') ? (
             <span>$ {Number(payment.amount).toFixed(2)}</span>
           ) : (
-            <><FaRupeeSign /> {payment.amount}</>
+            <span>$ {payment.amount}</span>
           )}
         </div>
       )}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaRupeeSign, FaCreditCard, FaChartLine, FaDownload, FaUndo, FaCheckCircle, FaTimes, FaExclamationTriangle, FaSpinner, FaUsers, FaHome, FaCalendar } from 'react-icons/fa';
+import { FaDollarSign, FaCreditCard, FaChartLine, FaDownload, FaUndo, FaCheckCircle, FaTimes, FaExclamationTriangle, FaSpinner, FaUsers, FaHome, FaCalendar } from 'react-icons/fa';
 import PaymentHistory from '../components/PaymentHistory';
 import RefundManagement from '../components/RefundManagement';
 
@@ -63,7 +63,7 @@ const PaymentDashboard = () => {
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div>
               <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-                <FaRupeeSign className="text-green-600" />
+                <FaDollarSign className="text-green-600" />
                 Payment Dashboard
               </h1>
               <p className="text-gray-600 mt-2">Manage payments, refunds, and financial analytics</p>
@@ -114,9 +114,9 @@ const PaymentDashboard = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-green-100 text-sm font-medium">Total Revenue</p>
-                      <p className="text-3xl font-bold">₹{stats.totalAmount.toLocaleString()}</p>
+                      <p className="text-3xl font-bold">${stats.totalAmount.toLocaleString()}</p>
                     </div>
-                    <FaRupeeSign className="text-4xl text-green-200" />
+                    <FaDollarSign className="text-4xl text-green-200" />
                   </div>
                 </div>
 
@@ -164,7 +164,7 @@ const PaymentDashboard = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-orange-100 text-sm font-medium">Total Refunds</p>
-                      <p className="text-3xl font-bold">₹{stats.totalRefunds.toLocaleString()}</p>
+                      <p className="text-3xl font-bold">${stats.totalRefunds.toLocaleString()}</p>
                     </div>
                     <FaUndo className="text-4xl text-orange-200" />
                   </div>
@@ -195,7 +195,7 @@ const PaymentDashboard = () => {
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="font-semibold text-gray-800">₹{month.amount.toLocaleString()}</div>
+                          <div className="font-semibold text-gray-800">${month.amount.toLocaleString()}</div>
                           <div className="text-sm text-gray-500">{month.count} payments</div>
                         </div>
                       </div>
