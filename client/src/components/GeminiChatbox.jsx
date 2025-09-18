@@ -115,6 +115,9 @@ const GeminiChatbox = () => {
         const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         localStorage.setItem('gemini_session_id', newSessionId);
         setSessionId(newSessionId);
+        // Clear ratings for new session
+        setMessageRatings({});
+        localStorage.setItem('gemini_ratings', JSON.stringify({}));
     };
 
     // Clear chat history (server + local) from within the chatbox header
@@ -517,7 +520,8 @@ const GeminiChatbox = () => {
 
     // Enhanced features helper functions
     const toggleBookmark = (messageIndex, message) => {
-        const bookmarkKey = `${messageIndex}_${message.timestamp}`;
+        const currentSessionId = getOrCreateSessionId();
+        const bookmarkKey = `${currentSessionId}_${messageIndex}_${message.timestamp}`;
         const isBookmarked = bookmarkedMessages.some(bm => bm.key === bookmarkKey);
         
         let newBookmarks;
@@ -530,7 +534,7 @@ const GeminiChatbox = () => {
                 content: message.content,
                 timestamp: message.timestamp,
                 role: message.role,
-                sessionId: sessionId
+                sessionId: currentSessionId
             }];
             toast.success('Message bookmarked');
         }
@@ -632,7 +636,19 @@ const GeminiChatbox = () => {
             if (response.ok) {
                 const data = await response.json();
                 if (data.success && data.data.messages) {
-                    setMessages(data.data.messages);
+                    // Ensure the first message is always the default welcome message
+                    const defaultMessage = {
+                        role: 'assistant',
+                        content: 'Hello! I\'m your AI assistant powered by Gemini. How can I help you with your real estate needs today?',
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    let sessionMessages = data.data.messages;
+                    if (sessionMessages.length === 0 || sessionMessages[0].content !== defaultMessage.content) {
+                        sessionMessages = [defaultMessage, ...sessionMessages];
+                    }
+                    
+                    setMessages(sessionMessages);
                     setSessionId(sessionId);
                     localStorage.setItem('gemini_session_id', sessionId);
                     
@@ -676,11 +692,12 @@ const GeminiChatbox = () => {
         }
 
         try {
-            // First, save the current session if it has messages beyond the default welcome message
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+            
+            // Always save the current session to history before creating new one
             const currentSessionId = getOrCreateSessionId();
-            if (messages.length > 1 || (messages.length === 1 && messages[0].role === 'user')) {
+            if (messages.length > 0) {
                 // Save current session to history
-                const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
                 const saveResponse = await fetch(`${API_BASE_URL}/api/chat-history/session/${currentSessionId}`, {
                     method: 'PUT',
                     credentials: 'include',
@@ -1344,11 +1361,14 @@ const GeminiChatbox = () => {
                                         <FaBookmark className="text-yellow-500" />
                                         Bookmarked Messages
                                     </h4>
-                                    {bookmarkedMessages.length === 0 ? (
-                                        <p className="text-gray-500 text-center py-8">No bookmarked messages yet</p>
-                                    ) : (
-                                        <div className="space-y-3">
-                                            {bookmarkedMessages.map((bookmark, idx) => (
+                                    {(() => {
+                                        const currentSessionId = getOrCreateSessionId();
+                                        const sessionBookmarks = bookmarkedMessages.filter(bm => bm.sessionId === currentSessionId);
+                                        return sessionBookmarks.length === 0 ? (
+                                            <p className="text-gray-500 text-center py-8">No bookmarked messages in this session</p>
+                                        ) : (
+                                            <div className="space-y-3">
+                                                {sessionBookmarks.map((bookmark, idx) => (
                                                 <div key={idx} className="p-3 border border-gray-200 rounded-lg">
                                                     <div className="text-sm text-gray-600 mb-2">
                                                         {new Date(bookmark.timestamp).toLocaleString()}
@@ -1374,7 +1394,7 @@ const GeminiChatbox = () => {
                                                         </button>
                                                         <button
                                                             onClick={() => {
-                                                                const newBookmarks = bookmarkedMessages.filter((_, i) => i !== idx);
+                                                                const newBookmarks = bookmarkedMessages.filter(bm => bm.key !== bookmark.key);
                                                                 setBookmarkedMessages(newBookmarks);
                                                                 localStorage.setItem('gemini_bookmarks', JSON.stringify(newBookmarks));
                                                             }}
@@ -1386,7 +1406,8 @@ const GeminiChatbox = () => {
                                                 </div>
                                             ))}
                                         </div>
-                                    )}
+                                        );
+                                    })()}
                                     <div className="flex justify-end mt-4">
                                         <button onClick={() => setShowBookmarks(false)} className="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-700">Close</button>
                                     </div>
