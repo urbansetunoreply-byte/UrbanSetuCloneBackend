@@ -681,6 +681,14 @@ export default function MyAppointments() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100 py-10 px-2 md:px-8">
+      {currentUser && (
+        <div className="max-w-7xl mx-auto mb-4 flex justify-end">
+          <Link to="/user/my-payments" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M2 7a2 2 0 012-2h16a2 2 0 012 2v3H2V7z" /><path d="M2 12h20v5a2 2 0 01-2 2H4a2 2 0 01-2-2v-5zm4 3a1 1 0 100 2h6a1 1 0 100-2H6z" /></svg>
+            Go to Payments
+          </Link>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-lg p-6">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
