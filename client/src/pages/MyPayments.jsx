@@ -67,7 +67,7 @@ const MyPayments = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+        <div className="bg-gradient-to-br from-white to-blue-50 rounded-xl shadow-lg p-4 sm:p-6 border border-blue-100">
           <div className="flex items-center gap-3 mb-4 flex-wrap">
             <input value={filters.q} onChange={(e)=>setFilters(prev=>({...prev,q:e.target.value}))} placeholder="Search payment ID or receipt" className="px-3 py-2 border rounded-lg text-sm" />
             <label className="text-sm text-gray-600">From:</label>
@@ -140,14 +140,18 @@ const MyPayments = () => {
           ) : (
             <div className="space-y-3">
               {payments.map((p) => (
-                <div key={p._id} className={`border rounded-lg p-4 ${p.status === 'completed' ? 'border-green-200 bg-green-50' : p.status === 'failed' ? 'border-red-200 bg-red-50' : 'border-yellow-200 bg-yellow-50'}`}>
+                <div key={p._id} className={`rounded-lg p-4 border ${p.status === 'completed' ? 'border-green-200 bg-gradient-to-r from-green-50 to-emerald-50' : p.status === 'failed' ? 'border-red-200 bg-gradient-to-r from-red-50 to-rose-50' : 'border-yellow-200 bg-gradient-to-r from-yellow-50 to-amber-50'} hover:shadow transition` }>
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="font-semibold text-gray-800">{p.appointmentId?.propertyName || 'Property Payment'}</div>
-                      <div className="text-xs text-gray-500">Gateway: {p.gateway?.toUpperCase()} • {p.currency === 'INR' ? '₹' : '$'}{Number(p.amount).toFixed(2)}</div>
+                      <div className="text-xs text-gray-500 flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">{p.gateway?.toUpperCase()}</span>
+                        <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">{p.currency || 'USD'}</span>
+                        <span>{p.currency === 'INR' ? '₹' : '$'}{Number(p.amount).toFixed(2)}</span>
+                      </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-xs text-gray-500">{new Date(p.createdAt).toLocaleDateString()}</div>
+                      <div className="text-xs text-gray-500">{new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
                       <div className="mt-1">{statusBadge(p.status)}</div>
                     </div>
                   </div>

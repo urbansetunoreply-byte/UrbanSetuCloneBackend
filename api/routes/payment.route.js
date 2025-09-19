@@ -165,10 +165,13 @@ router.get('/:paymentId/receipt', verifyToken, async (req, res) => {
 
     // Header
     // Title and branding
-    doc.fontSize(22).fillColor('#111827').text('UrbanSetu Payment Receipt', { align: 'center' });
+    doc.fontSize(26).fillColor('#111827').text('UrbanSetu Payment Receipt', { align: 'center' });
     doc.moveDown(0.5);
-    // Branding bar
-    doc.rect(doc.page.margins.left, doc.y, doc.page.width - doc.page.margins.left - doc.page.margins.right, 2).fill('#2563eb');
+    // Branding gradient bars
+    doc.save();
+    const barY = doc.y;
+    doc.rect(doc.page.margins.left, barY, (doc.page.width - doc.page.margins.left - doc.page.margins.right), 4).fill('#2563eb');
+    doc.restore();
     doc.moveDown();
     doc.moveDown(0.5);
     doc.fontSize(10).fillColor('#6b7280').text(new Date().toLocaleString('en-IN')); doc.moveDown();
@@ -205,7 +208,7 @@ router.get('/:paymentId/receipt', verifyToken, async (req, res) => {
     }
     doc.fontSize(11).fillColor('#065f46').text(note);
 
-    // Gateway badge
+    // Gateway badge and tags
     doc.moveDown();
     const badge = payment.gateway === 'razorpay' ? 'Razorpay' : (payment.gateway === 'paypal' ? 'PayPal' : 'Admin Approved');
     const badgeColor = payment.gateway === 'razorpay' ? '#0ea5e9' : (payment.gateway === 'paypal' ? '#2563eb' : '#10b981');
@@ -215,6 +218,9 @@ router.get('/:paymentId/receipt', verifyToken, async (req, res) => {
     doc.rect(x, y, 120, 20).fillOpacity(0.15).fill(badgeColor).fillOpacity(1).stroke(badgeColor);
     doc.fillColor('#111827').fontSize(10).text(`Platform: ${badge}`, x + 6, y + 5);
     doc.restore();
+    // Amount tag on right
+    const amt = `${currencySymbol} ${Number(payment.amount).toFixed(2)}`;
+    doc.fontSize(12).fillColor('#111827').text(amt, doc.page.width - doc.page.margins.right - 80, y + 4, { width: 80, align: 'right' });
 
     // Footer
     doc.moveDown(2);

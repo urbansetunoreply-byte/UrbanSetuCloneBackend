@@ -284,14 +284,14 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" style={{ overscrollBehavior: 'contain' }}>
-      <div className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-gradient-to-br from-blue-900/40 to-purple-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" style={{ overscrollBehavior: 'contain' }}>
+      <div className="rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white to-blue-50">
         {!paymentSuccess ? (
           <>
             {/* Header */}
-            <div className="p-6 border-b border-gray-200">
+            <div className="p-6 border-b border-blue-100 bg-gradient-to-r from-blue-50 to-purple-50">
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                <h2 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 flex items-center gap-2">
                   <FaCreditCard className="text-blue-600" />
                   Payment Required
                 </h2>
@@ -336,7 +336,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                     </div>
                   </div>
                   {/* Property Info */}
-                  <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-6 border border-blue-100">
                     <h3 className="font-semibold text-gray-800 mb-2">{appointment.propertyName}</h3>
                     <p className="text-sm text-gray-600 mb-2">{appointment.propertyDescription}</p>
                     <div className="flex items-center justify-between">
@@ -354,7 +354,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                   </div>
 
                   {/* Payment Summary */}
-                  <div className="bg-blue-50 rounded-lg p-4 mb-6">
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-6 border border-blue-100">
                     <h4 className="font-semibold text-blue-800 mb-3">Payment Summary</h4>
                     <div className="space-y-2">
                       <div className="flex justify-between">
@@ -377,7 +377,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                   </div>
 
                   {/* Payment Method */}
-                  <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-6 border border-blue-100">
                     <h5 className="font-semibold text-gray-800 mb-2">Payment Platform</h5>
                     <div className="text-sm text-gray-700">{preferredMethod === 'razorpay' ? 'Razorpay' : 'PayPal'}</div>
                     <ul className="list-disc pl-5 mt-3 text-sm text-gray-600 space-y-1">
@@ -397,7 +397,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                   </div>
 
                   {/* Technical Details */}
-                  <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-6 border border-blue-100">
                     <h5 className="font-semibold text-gray-800 mb-2">Payment Technical Details</h5>
                     <div className="text-xs text-gray-600 space-y-1">
                       {preferredMethod === 'razorpay' && paymentData?.razorpay && (
@@ -428,7 +428,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
             {preferredMethod === 'paypal' && <div id={`paypal-button-container-${appointment._id}`} />}
             <button
               onClick={handlePayment}
-              className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700"
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 shadow"
             >
               {loading ? 'Loading…' : (preferredMethod === 'razorpay' ? 'Pay via Razorpay' : 'Load PayPal Button')}
             </button>
