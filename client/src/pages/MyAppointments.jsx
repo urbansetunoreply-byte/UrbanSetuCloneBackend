@@ -821,6 +821,7 @@ export default function MyAppointments() {
                     <th className="border p-2">Purpose</th>
                     <th className="border p-2">Message</th>
                     <th className="border p-2">Status</th>
+                    <th className="border p-2">Payment</th>
                     <th className="border p-2">Actions</th>
                     <th className="border p-2">Connect</th>
                   </tr>
