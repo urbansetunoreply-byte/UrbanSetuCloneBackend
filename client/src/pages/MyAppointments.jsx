@@ -8662,6 +8662,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
     type: 'full'
   });
   const [submittingRefundRequest, setSubmittingRefundRequest] = useState(false);
+  const [refundRequestStatus, setRefundRequestStatus] = useState(null);
   
   useEffect(() => {
     fetchPaymentStatus();
@@ -8675,11 +8676,30 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       const data = await response.json();
       if (response.ok && data.payments.length > 0) {
         setPaymentStatus(data.payments[0]); // Get the latest payment
+        // Fetch refund request status
+        await fetchRefundRequestStatus(data.payments[0].paymentId);
       }
     } catch (error) {
       console.error('Error fetching payment status:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRefundRequestStatus = async (paymentId) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/refund-requests?paymentId=${paymentId}`, {
+        credentials: 'include'
+      });
+      const data = await response.json();
+      if (response.ok && data.refundRequests.length > 0) {
+        setRefundRequestStatus(data.refundRequests[0]);
+      } else {
+        setRefundRequestStatus(null);
+      }
+    } catch (error) {
+      console.error('Error fetching refund request status:', error);
+      setRefundRequestStatus(null);
     }
   };
 
@@ -8766,6 +8786,10 @@ function PaymentStatusCell({ appointment, isBuyer }) {
   const isAdminMarked = Boolean(paymentStatus?.metadata?.adminMarked);
   const isPending = !isAdminMarked && (!paymentStatus || paymentStatus.status !== 'completed') && !isFrozenStatus;
   
+  // Check if there's a pending or rejected refund request
+  const hasRefundRequest = refundRequestStatus && ['pending', 'rejected'].includes(refundRequestStatus.status);
+  const isRefundRequestRejected = refundRequestStatus && refundRequestStatus.status === 'rejected';
+  
   return (
     <div className="flex flex-col items-center gap-2">
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${displayStatus.color}`}>
@@ -8817,12 +8841,19 @@ function PaymentStatusCell({ appointment, isBuyer }) {
           ) : paymentStatus && paymentStatus.status === 'completed' && 
             ['rejected', 'cancelledByBuyer', 'cancelledBySeller', 'cancelledByAdmin'].includes(appointment.status) && 
             (!paymentStatus.refundAmount || paymentStatus.refundAmount === 0) ? (
-            <button
-              onClick={() => setShowRefundRequestModal(true)}
-              className="mt-1 inline-flex items-center gap-1 text-white bg-orange-600 hover:bg-orange-700 text-xs font-semibold px-3 py-1 rounded"
-            >
-              <FaUndo /> Request Refund
-            </button>
+            <>
+              {hasRefundRequest && (
+                <div className="text-xs text-orange-600 mb-1">
+                  {isRefundRequestRejected ? 'Refund Request Rejected' : 'Refund Requested'}
+                </div>
+              )}
+              <button
+                onClick={() => setShowRefundRequestModal(true)}
+                className="mt-1 inline-flex items-center gap-1 text-white bg-orange-600 hover:bg-orange-700 text-xs font-semibold px-3 py-1 rounded"
+              >
+                <FaUndo /> {isRefundRequestRejected ? 'Retry Refund Request' : 'Request Refund'}
+              </button>
+            </>
           ) : (
             paymentStatus && paymentStatus.receiptUrl ? (
               <a

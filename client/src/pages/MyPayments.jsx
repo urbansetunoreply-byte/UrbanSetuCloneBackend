@@ -142,7 +142,12 @@ const MyPayments = () => {
           ) : (
             <div className="space-y-3">
               {Array.isArray(payments) && payments.map((p) => (
-                <div key={p._id} className={`rounded-lg p-4 border ${p.status === 'completed' ? 'border-green-200 bg-gradient-to-r from-green-50 to-emerald-50' : p.status === 'failed' ? 'border-red-200 bg-gradient-to-r from-red-50 to-rose-50' : 'border-yellow-200 bg-gradient-to-r from-yellow-50 to-amber-50'} hover:shadow transition` }>
+                <div key={p._id} className={`rounded-lg p-4 border ${
+                  p.status === 'completed' ? 'border-green-200 bg-gradient-to-r from-green-50 to-emerald-50' : 
+                  p.status === 'failed' ? 'border-red-200 bg-gradient-to-r from-red-50 to-rose-50' : 
+                  p.status === 'refunded' || p.status === 'partially_refunded' ? 'border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50' :
+                  'border-yellow-200 bg-gradient-to-r from-yellow-50 to-amber-50'
+                } hover:shadow transition` }>
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="font-semibold text-gray-800">{p.appointmentId?.propertyName || 'Property Payment'}</div>

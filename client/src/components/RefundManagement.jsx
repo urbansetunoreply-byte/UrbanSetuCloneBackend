@@ -24,6 +24,8 @@ const RefundManagement = () => {
   const [showRefundRequestModal, setShowRefundRequestModal] = useState(false);
   const [adminNotes, setAdminNotes] = useState('');
   const [processingRequest, setProcessingRequest] = useState(false);
+  const [processingApprove, setProcessingApprove] = useState(false);
+  const [processingReject, setProcessingReject] = useState(false);
 
   // Debounced search effect - no loading indicator for search
   useEffect(() => {
@@ -166,7 +168,12 @@ const RefundManagement = () => {
     if (!selectedRefundRequest) return;
 
     try {
-      setProcessingRequest(true);
+      if (action === 'approved') {
+        setProcessingApprove(true);
+      } else if (action === 'rejected') {
+        setProcessingReject(true);
+      }
+      
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/refund-request/${selectedRefundRequest._id}`, {
         method: 'PUT',
         headers: {
@@ -193,7 +200,8 @@ const RefundManagement = () => {
       console.error(`Error ${action}ing refund request:`, error);
       toast.error(`An error occurred while ${action}ing refund request`);
     } finally {
-      setProcessingRequest(false);
+      setProcessingApprove(false);
+      setProcessingReject(false);
     }
   };
 
@@ -719,10 +727,10 @@ const RefundManagement = () => {
                 </button>
                 <button
                   onClick={() => handleRefundRequestAction('rejected')}
-                  disabled={processingRequest}
+                  disabled={processingApprove || processingReject}
                   className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {processingRequest ? (
+                  {processingReject ? (
                     <FaSpinner className="animate-spin" />
                   ) : (
                     <FaTimes />
@@ -731,10 +739,10 @@ const RefundManagement = () => {
                 </button>
                 <button
                   onClick={() => handleRefundRequestAction('approved')}
-                  disabled={processingRequest}
+                  disabled={processingApprove || processingReject}
                   className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {processingRequest ? (
+                  {processingApprove ? (
                     <FaSpinner className="animate-spin" />
                   ) : (
                     <FaCheckCircle />

@@ -163,7 +163,12 @@ const PaymentHistory = ({ userId }) => {
       ) : (
         <div className="space-y-4">
           {payments.map((payment) => (
-            <div key={payment._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+            <div key={payment._id} className={`border rounded-lg p-4 hover:shadow-md transition-shadow ${
+              payment.status === 'completed' ? 'border-green-200 bg-gradient-to-r from-green-50 to-emerald-50' : 
+              payment.status === 'failed' ? 'border-red-200 bg-gradient-to-r from-red-50 to-rose-50' : 
+              payment.status === 'refunded' || payment.status === 'partially_refunded' ? 'border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50' :
+              'border-yellow-200 bg-gradient-to-r from-yellow-50 to-amber-50'
+            }`}>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
                   {getStatusIcon(payment.status)}
