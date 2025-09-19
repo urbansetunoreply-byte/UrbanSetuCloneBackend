@@ -8,6 +8,7 @@ import { verifyToken } from '../utils/verify.js';
 import crypto from 'crypto';
 import { createPayPalOrder, capturePayPalOrder, getPayPalAccessToken } from '../controllers/paypalController.js';
 import fetch from 'node-fetch';
+import PDFDocument from 'pdfkit';
 
 const router = express.Router();
 
@@ -134,6 +135,74 @@ router.post("/create-intent", verifyToken, async (req, res) => {
   }
 });
 
+// GET: Stream PDF receipt
+router.get('/:paymentId/receipt', verifyToken, async (req, res) => {
+  try {
+    const { paymentId } = req.params;
+    const payment = await Payment.findOne({ paymentId })
+      .populate('appointmentId', 'propertyName date time status buyerId sellerId')
+      .populate('listingId', 'name address')
+      .populate('userId', 'username email');
+    if (!payment) return res.status(404).json({ message: 'Payment not found' });
+
+    // Authorization: buyer, seller, or admin
+    const user = await User.findById(req.user.id);
+    const isAdmin = user && (user.role === 'admin' || user.role === 'rootadmin');
+    const appt = payment.appointmentId;
+    const isBuyer = appt && ((appt.buyerId?._id || appt.buyerId)?.toString() === req.user.id);
+    const isSeller = appt && ((appt.sellerId?._id || appt.sellerId)?.toString() === req.user.id);
+    if (!isAdmin && !isBuyer && !isSeller) return res.status(403).json({ message: 'Unauthorized' });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="receipt_${payment.paymentId}.pdf"`);
+    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+    doc.pipe(res);
+
+    // Header
+    doc.fontSize(20).fillColor('#1f2937').text('UrbanSetu Payment Receipt', { align: 'center' });
+    doc.moveDown(0.5);
+    doc.fontSize(10).fillColor('#6b7280').text(new Date().toLocaleString('en-IN')); doc.moveDown();
+
+    // Payment summary
+    const currencySymbol = (payment.currency || 'USD') === 'INR' ? '₹' : '$';
+    const amountText = `${currencySymbol} ${Number(payment.amount).toFixed(2)}`;
+    doc.fontSize(12).fillColor('#111827').text(`Payment ID: ${payment.paymentId}`);
+    doc.text(`Status: ${payment.status}${payment.status === 'completed' ? '' : ' (Not Completed)'}`);
+    doc.text(`Gateway: ${payment.gateway?.toUpperCase()}`);
+    doc.text(`Amount: ${amountText}`);
+    if (payment.refundAmount > 0) doc.text(`Refunded: ${currencySymbol} ${Number(payment.refundAmount).toFixed(2)}`);
+    doc.moveDown();
+
+    // Appointment/listing info
+    doc.fontSize(12).text(`Property: ${payment.appointmentId?.propertyName || payment.listingId?.name || 'N/A'}`);
+    if (payment.appointmentId?.date) doc.text(`Appointment Date: ${new Date(payment.appointmentId.date).toLocaleDateString('en-IN')}`);
+    if (payment.appointmentId?.time) doc.text(`Appointment Time: ${payment.appointmentId.time}`);
+    doc.text(`Buyer: ${payment.userId?.username || ''}`);
+    doc.text(`Generated For: ${user.username || user.email}`);
+    doc.moveDown();
+
+    // Trust/verification note
+    let note = '';
+    if (payment.gateway === 'razorpay') {
+      note = payment.status === 'completed' ? 'Paid via Razorpay (verified)' : 'Pending via Razorpay';
+    } else if (payment.gateway === 'paypal') {
+      note = payment.status === 'completed' ? 'Paid via PayPal (verified)' : 'Pending via PayPal';
+    } else {
+      note = payment.status === 'completed' ? 'Marked paid by Admin (approved)' : 'Marked pending by Admin';
+    }
+    doc.fontSize(11).fillColor('#065f46').text(note);
+
+    // Footer
+    doc.moveDown(2);
+    doc.fontSize(9).fillColor('#6b7280').text('This is a system-generated receipt from UrbanSetu.', { align: 'center' });
+
+    doc.end();
+  } catch (e) {
+    console.error('Receipt PDF error:', e);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // POST: Verify payment (PayPal capture webhook-like endpoint)
 router.post("/verify", verifyToken, async (req, res) => {
   try {
@@ -161,10 +230,7 @@ router.post("/verify", verifyToken, async (req, res) => {
     });
 
     // Generate receipt URL (mock). Fall back to API URL if CLIENT_URL missing
-    const baseClient = process.env.CLIENT_URL || process.env.FRONTEND_URL || '';
-    const receiptUrl = baseClient
-      ? `${baseClient}/receipt/${payment.receiptNumber}`
-      : `/api/payments/${payment.paymentId}/receipt`;
+    const receiptUrl = `/api/payments/${payment.paymentId}/receipt`;
     payment.receiptUrl = receiptUrl;
     await payment.save();
 
@@ -214,10 +280,7 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
 
     await Booking.findByIdAndUpdate(payment.appointmentId, { paymentConfirmed: true });
 
-    const baseClient = process.env.CLIENT_URL || process.env.FRONTEND_URL || '';
-    const receiptUrl = baseClient
-      ? `${baseClient}/receipt/${payment.receiptNumber}`
-      : `/api/payments/${payment.paymentId}/receipt`;
+    const receiptUrl = `/api/payments/${payment.paymentId}/receipt`;
     payment.receiptUrl = receiptUrl;
     await payment.save();
 
@@ -654,10 +717,7 @@ router.post('/admin/mark-paid', verifyToken, async (req, res) => {
     if (gateway) payment.gateway = gateway;
 
     // Set receipt URL
-    const baseClient = process.env.CLIENT_URL || process.env.FRONTEND_URL || '';
-    const receiptUrl = baseClient
-      ? `${baseClient}/receipt/${payment.receiptNumber}`
-      : `/api/payments/${payment.paymentId}/receipt`;
+    const receiptUrl = `/api/payments/${payment.paymentId}/receipt`;
     payment.receiptUrl = receiptUrl;
     await payment.save();
 
