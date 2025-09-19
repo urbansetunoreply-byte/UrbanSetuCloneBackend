@@ -347,7 +347,16 @@ const PaymentDashboard = () => {
                           </div>
                           <div className="text-right">
                             <div className="text-lg font-bold">$ {Number(p.amount).toFixed(2)}</div>
-                            <div className="text-xs text-gray-500">{new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
+                            <div className="text-xs text-gray-500">
+                              {p.completedAt ? (
+                                <div>
+                                  <div>Paid: {new Date(p.completedAt).toLocaleDateString('en-GB')}</div>
+                                  <div className="text-gray-400">{new Date(p.completedAt).toLocaleTimeString('en-GB')}</div>
+                                </div>
+                              ) : (
+                                <div>Created: {new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
+                              )}
+                            </div>
                           </div>
                         </div>
                         <div className="mt-2">
@@ -404,7 +413,16 @@ const PaymentDashboard = () => {
                           </div>
                           <div className="text-right">
                             <div className="text-lg font-bold">₹ {Number(p.amount).toFixed(2)}</div>
-                            <div className="text-xs text-gray-500">{new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
+                            <div className="text-xs text-gray-500">
+                              {p.completedAt ? (
+                                <div>
+                                  <div>Paid: {new Date(p.completedAt).toLocaleDateString('en-GB')}</div>
+                                  <div className="text-gray-400">{new Date(p.completedAt).toLocaleTimeString('en-GB')}</div>
+                                </div>
+                              ) : (
+                                <div>Created: {new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
+                              )}
+                            </div>
                           </div>
                         </div>
                         <div className="mt-2">

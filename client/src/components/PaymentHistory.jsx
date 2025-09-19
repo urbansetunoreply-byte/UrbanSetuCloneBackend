@@ -193,7 +193,16 @@ const PaymentHistory = ({ userId }) => {
                 </div>
                 <div>
                   <span className="font-medium">Date:</span>
-                  <p>{new Date(payment.createdAt).toLocaleDateString()}</p>
+                  <p>
+                    {payment.completedAt ? (
+                      <div>
+                        <div>Paid: {new Date(payment.completedAt).toLocaleDateString()}</div>
+                        <div className="text-xs text-gray-500">{new Date(payment.completedAt).toLocaleTimeString()}</div>
+                      </div>
+                    ) : (
+                      <div>Created: {new Date(payment.createdAt).toLocaleDateString()}</div>
+                    )}
+                  </p>
                 </div>
                 <div>
                   <span className="font-medium">Property:</span>
