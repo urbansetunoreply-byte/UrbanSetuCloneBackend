@@ -85,8 +85,8 @@ const MyPayments = () => {
                   if (filters.q) params.set('q', filters.q);
                   if (filters.fromDate) params.set('fromDate', filters.fromDate);
                   if (filters.toDate) params.set('toDate', filters.toDate);
-                  const qs = params.toString();
-                  const url = `${import.meta.env.VITE_API_BASE_URL}/api/payments/export${qs ? `?${qs}` : ''}`;
+                const qs = params.toString();
+                const url = `${import.meta.env.VITE_API_BASE_URL}/api/payments/export-csv${qs ? `?${qs}` : ''}`;
                   const res = await fetch(url, { credentials: 'include' });
                   if (!res.ok) {
                     console.error('Export failed', await res.text());
@@ -136,6 +136,7 @@ const MyPayments = () => {
                       <div className="mt-1">{statusBadge(p.status)}</div>
                     </div>
                   </div>
+                  <div className="mt-2 text-xs text-gray-600">Payment ID: <span className="font-mono">{p.paymentId}</span></div>
                   <div className="mt-2 flex items-center gap-2">
                     {p.receiptUrl && (
                       <button onClick={()=>downloadReceipt(p.receiptUrl)} className="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 text-xs flex items-center gap-1">

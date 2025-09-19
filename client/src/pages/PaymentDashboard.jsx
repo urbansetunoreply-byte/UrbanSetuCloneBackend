@@ -352,7 +352,8 @@ const PaymentDashboard = () => {
                             {p.status}
                           </span>
                         </div>
-                        <div className="mt-2 text-xs text-gray-600">Gateway: {p.gateway?.toUpperCase()}</div>
+                        <div className="mt-2 text-xs text-gray-600">Payment ID: <span className="font-mono">{p.paymentId}</span></div>
+                        <div className="mt-1 text-xs text-gray-600">Gateway: {p.gateway?.toUpperCase()}</div>
                         {p.receiptUrl && (
                           <div className="mt-2 text-xs"><a className="text-blue-600 underline" href={p.receiptUrl} target="_blank" rel="noreferrer">Receipt</a></div>
                         )}
@@ -384,7 +385,8 @@ const PaymentDashboard = () => {
                             {p.status}
                           </span>
                         </div>
-                        <div className="mt-2 text-xs text-gray-600">Gateway: {p.gateway?.toUpperCase()}</div>
+                        <div className="mt-2 text-xs text-gray-600">Payment ID: <span className="font-mono">{p.paymentId}</span></div>
+                        <div className="mt-1 text-xs text-gray-600">Gateway: {p.gateway?.toUpperCase()}</div>
                         {p.receiptUrl && (
                           <div className="mt-2 text-xs"><a className="text-blue-600 underline" href={p.receiptUrl} target="_blank" rel="noreferrer">Receipt</a></div>
                         )}
