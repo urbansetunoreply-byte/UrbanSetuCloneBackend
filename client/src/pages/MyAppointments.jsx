@@ -8787,14 +8787,25 @@ function PaymentStatusCell({ appointment, isBuyer }) {
   const isPending = !isAdminMarked && (!paymentStatus || paymentStatus.status !== 'completed') && !isFrozenStatus;
   
   // Check if there's a pending or rejected refund request
-  const hasRefundRequest = refundRequestStatus && ['pending', 'rejected'].includes(refundRequestStatus.status);
+  const hasRefundRequest = refundRequestStatus && ['pending', 'rejected', 'approved'].includes(refundRequestStatus.status);
   const isRefundRequestRejected = refundRequestStatus && refundRequestStatus.status === 'rejected';
+  const isRefundRequestPending = refundRequestStatus && refundRequestStatus.status === 'pending';
+  const isRefundRequestApproved = refundRequestStatus && refundRequestStatus.status === 'approved';
   
   return (
     <div className="flex flex-col items-center gap-2">
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${displayStatus.color}`}>
         {displayStatus.text}
       </span>
+      
+      {/* Show refund request status */}
+      {hasRefundRequest && (
+        <div className="text-xs text-orange-600">
+          {isRefundRequestPending && 'Processing Refund Request'}
+          {isRefundRequestApproved && 'Refund Approved'}
+          {isRefundRequestRejected && 'Refund Rejected'}
+        </div>
+      )}
       
       {/* Only show payment amount and Pay Now button for buyers */}
       {isBuyer && (
@@ -8842,17 +8853,14 @@ function PaymentStatusCell({ appointment, isBuyer }) {
             ['rejected', 'cancelledByBuyer', 'cancelledBySeller', 'cancelledByAdmin'].includes(appointment.status) && 
             (!paymentStatus.refundAmount || paymentStatus.refundAmount === 0) ? (
             <>
-              {hasRefundRequest && (
-                <div className="text-xs text-orange-600 mb-1">
-                  {isRefundRequestRejected ? 'Refund Request Rejected' : 'Refund Requested'}
-                </div>
+              {!isRefundRequestApproved && (
+                <button
+                  onClick={() => setShowRefundRequestModal(true)}
+                  className="mt-1 inline-flex items-center gap-1 text-white bg-orange-600 hover:bg-orange-700 text-xs font-semibold px-3 py-1 rounded"
+                >
+                  <FaUndo /> {isRefundRequestRejected ? 'Retry Refund Request' : 'Request Refund'}
+                </button>
               )}
-              <button
-                onClick={() => setShowRefundRequestModal(true)}
-                className="mt-1 inline-flex items-center gap-1 text-white bg-orange-600 hover:bg-orange-700 text-xs font-semibold px-3 py-1 rounded"
-              >
-                <FaUndo /> {isRefundRequestRejected ? 'Retry Refund Request' : 'Request Refund'}
-              </button>
             </>
           ) : (
             paymentStatus && paymentStatus.receiptUrl ? (

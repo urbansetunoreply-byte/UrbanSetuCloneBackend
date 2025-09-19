@@ -339,7 +339,12 @@ const PaymentDashboard = () => {
                 ) : (
                   <div className="space-y-3">
                     {usdPayments.map((p) => (
-                      <div key={p._id} className={`border rounded-lg p-4 ${p.status === 'completed' ? 'border-green-200 bg-green-50' : p.status === 'failed' ? 'border-red-200 bg-red-50' : 'border-yellow-200 bg-yellow-50'}`}>
+                      <div key={p._id} className={`border rounded-lg p-4 ${
+                        p.status === 'completed' ? 'border-green-200 bg-green-50' : 
+                        p.status === 'failed' ? 'border-red-200 bg-red-50' : 
+                        p.status === 'refunded' || p.status === 'partially_refunded' ? 'border-blue-200 bg-blue-50' :
+                        'border-yellow-200 bg-yellow-50'
+                      }`}>
                         <div className="flex items-center justify-between">
                           <div>
                             <div className="font-semibold text-gray-800">{p.appointmentId?.propertyName || 'Property Payment'}</div>
@@ -354,6 +359,12 @@ const PaymentDashboard = () => {
                                   <div className="text-gray-400">{new Date(p.completedAt).toLocaleTimeString('en-GB')}</div>
                                   <div className="text-gray-300 mt-1">Created: {new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
                                   <div className="text-gray-300">{new Date(p.createdAt).toLocaleTimeString('en-GB')}</div>
+                                  {p.refundedAt && (
+                                    <>
+                                      <div className="text-red-400 mt-1">Refunded: {new Date(p.refundedAt).toLocaleDateString('en-GB')}</div>
+                                      <div className="text-red-300">{new Date(p.refundedAt).toLocaleTimeString('en-GB')}</div>
+                                    </>
+                                  )}
                                 </div>
                               ) : (
                                 <div>
@@ -365,7 +376,7 @@ const PaymentDashboard = () => {
                           </div>
                         </div>
                         <div className="mt-2">
-                          <span className={`px-2 py-1 text-[10px] rounded-full font-semibold ${p.status === 'completed' ? 'bg-green-100 text-green-700' : p.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                          <span className={`px-2 py-1 text-[10px] rounded-full font-semibold ${p.status === 'completed' ? 'bg-green-100 text-green-700' : p.status === 'failed' ? 'bg-red-100 text-red-700' : p.status === 'refunded' || p.status === 'partially_refunded' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'}`}>
                             {p.status}
                           </span>
                         </div>
@@ -410,7 +421,12 @@ const PaymentDashboard = () => {
                 ) : (
                   <div className="space-y-3">
                     {inrPayments.map((p) => (
-                      <div key={p._id} className={`border rounded-lg p-4 ${p.status === 'completed' ? 'border-green-200 bg-green-50' : p.status === 'failed' ? 'border-red-200 bg-red-50' : 'border-yellow-200 bg-yellow-50'}`}>
+                      <div key={p._id} className={`border rounded-lg p-4 ${
+                        p.status === 'completed' ? 'border-green-200 bg-green-50' : 
+                        p.status === 'failed' ? 'border-red-200 bg-red-50' : 
+                        p.status === 'refunded' || p.status === 'partially_refunded' ? 'border-blue-200 bg-blue-50' :
+                        'border-yellow-200 bg-yellow-50'
+                      }`}>
                         <div className="flex items-center justify-between">
                           <div>
                             <div className="font-semibold text-gray-800">{p.appointmentId?.propertyName || 'Property Payment'}</div>
@@ -425,6 +441,12 @@ const PaymentDashboard = () => {
                                   <div className="text-gray-400">{new Date(p.completedAt).toLocaleTimeString('en-GB')}</div>
                                   <div className="text-gray-300 mt-1">Created: {new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
                                   <div className="text-gray-300">{new Date(p.createdAt).toLocaleTimeString('en-GB')}</div>
+                                  {p.refundedAt && (
+                                    <>
+                                      <div className="text-red-400 mt-1">Refunded: {new Date(p.refundedAt).toLocaleDateString('en-GB')}</div>
+                                      <div className="text-red-300">{new Date(p.refundedAt).toLocaleTimeString('en-GB')}</div>
+                                    </>
+                                  )}
                                 </div>
                               ) : (
                                 <div>
@@ -436,7 +458,7 @@ const PaymentDashboard = () => {
                           </div>
                         </div>
                         <div className="mt-2">
-                          <span className={`px-2 py-1 text-[10px] rounded-full font-semibold ${p.status === 'completed' ? 'bg-green-100 text-green-700' : p.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                          <span className={`px-2 py-1 text-[10px] rounded-full font-semibold ${p.status === 'completed' ? 'bg-green-100 text-green-700' : p.status === 'failed' ? 'bg-red-100 text-red-700' : p.status === 'refunded' || p.status === 'partially_refunded' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'}`}>
                             {p.status}
                           </span>
                         </div>
