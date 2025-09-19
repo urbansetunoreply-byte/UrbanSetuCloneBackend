@@ -206,7 +206,7 @@ const PaymentDashboard = () => {
                 <div className="bg-gray-50 rounded-lg p-6">
                   <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
                     <FaChartLine className="text-blue-600" />
-                    Monthly Payment Trends
+                    Monthly Payment Trends (USD & INR)
                   </h3>
                   <div className="space-y-4">
                     {monthlyStats.map((month, index) => (
@@ -216,16 +216,22 @@ const PaymentDashboard = () => {
                             {new Date(month._id.year, month._id.month - 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                           </div>
                           <div className="flex-1 bg-gray-200 rounded-full h-4 relative">
-                            <div
-                              className="bg-blue-500 h-4 rounded-full transition-all duration-500"
-                              style={{
-                                width: `${Math.min(100, (month.amount / Math.max(...monthlyStats.map(m => m.amount))) * 100)}%`
-                              }}
-                            />
+                            <div className="absolute inset-y-0 left-0 flex w-full gap-1 px-1">
+                              <div
+                                className="h-4 rounded-l-full bg-blue-500 transition-all duration-500"
+                                style={{ width: `${Math.min(100, (month.amountUsd / Math.max(1, ...monthlyStats.map(m => m.amountUsd || 0))) * 100)}%` }}
+                                title={`USD: $${(month.amountUsd || 0).toLocaleString()}`}
+                              />
+                              <div
+                                className="h-4 rounded-r-full bg-emerald-500 transition-all duration-500"
+                                style={{ width: `${Math.min(100, (month.amountInr / Math.max(1, ...monthlyStats.map(m => m.amountInr || 0))) * 100)}%` }}
+                                title={`INR: ₹${(month.amountInr || 0).toLocaleString('en-IN')}`}
+                              />
+                            </div>
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="font-semibold text-gray-800">${month.amount.toLocaleString()}</div>
+                          <div className="font-semibold text-gray-800">$ {(month.amountUsd || 0).toLocaleString()} • ₹ {(month.amountInr || 0).toLocaleString('en-IN')}</div>
                           <div className="text-sm text-gray-500">{month.count} payments</div>
                         </div>
                       </div>
@@ -291,7 +297,24 @@ const PaymentDashboard = () => {
           )}
 
           {activeTab === 'history' && (
-            <div className="space-y-10">
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 mb-2">
+                <select onChange={async (e) => { await fetchAdminPayments(); }} className="px-3 py-2 border rounded-lg text-sm" disabled>
+                  <option>Currency: USD/INR</option>
+                </select>
+                <select id="admin-pay-status" onChange={async () => { await fetchAdminPayments(); }} className="px-3 py-2 border rounded-lg text-sm" disabled>
+                  <option value="">All Status</option>
+                  <option value="completed">Completed</option>
+                  <option value="pending">Pending</option>
+                  <option value="failed">Failed</option>
+                  <option value="refunded">Refunded</option>
+                </select>
+                <select id="admin-pay-gateway" onChange={async () => { await fetchAdminPayments(); }} className="px-3 py-2 border rounded-lg text-sm" disabled>
+                  <option value="">All Gateways</option>
+                  <option value="paypal">PayPal</option>
+                  <option value="razorpay">Razorpay</option>
+                </select>
+              </div>
               <div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-3">USD Payments ($)</h3>
                 {usdPayments.length === 0 ? (

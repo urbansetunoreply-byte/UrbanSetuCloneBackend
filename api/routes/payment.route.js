@@ -484,7 +484,9 @@ router.get("/stats/overview", verifyToken, async (req, res) => {
             month: { $month: '$createdAt' }
           },
           count: { $sum: 1 },
-          amount: { $sum: '$amount' }
+          amount: { $sum: '$amount' },
+          amountUsd: { $sum: { $cond: [{ $eq: ['$currency', 'USD'] }, '$amount', 0] } },
+          amountInr: { $sum: { $cond: [{ $eq: ['$currency', 'INR'] }, '$amount', 0] } }
         }
       },
       { $sort: { '_id.year': 1, '_id.month': 1 } }

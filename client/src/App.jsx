@@ -636,6 +636,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/user/watchlist" element={<Watchlist />} />
             <Route path="/user/appointment" element={<Appointment />} />
             <Route path="/user/my-appointments" element={<MyAppointments />} />
+            <Route path="/user/my-payments" element={<MyPayments />} />
             <Route path="/user/my-listings" element={<MyListings />} />
             <Route path="/user/services" element={<OnDemandServices />} />
             <Route path="/user/route-planner" element={<RoutePlanner />} />

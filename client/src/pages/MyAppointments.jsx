@@ -2023,7 +2023,6 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       setUnlockingChat(false);
     }
   };
-
   const handleRemoveLockFromMenu = async () => {
     if (!removeLockPassword) {
       toast.error('Please enter your password');
@@ -2749,7 +2748,6 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     setSelectedMessageForInfo(message);
     setShowMessageInfoModal(true);
   };
-
   const handleCommentSend = async () => {
     if (!comment.trim()) return;
     if (isChatSendBlocked) {
@@ -3548,7 +3546,6 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       }
     }
   }, [comments, currentUser._id, appt._id, socket]);
-
   // Track new messages and handle auto-scroll/unread count
   const prevCommentsLengthRef = useRef(comments.length);
   const prevCommentsRef = useRef(comments);
