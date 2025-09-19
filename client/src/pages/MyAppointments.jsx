@@ -8721,8 +8721,21 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       {/* Only show payment amount and Pay Now button for buyers */}
       {isBuyer && (
         <>
-          <div className="text-xs text-gray-500">
+          <div className="flex items-center gap-1 text-xs text-gray-500">
             $5.00
+            {/* Show info icon for pending/accepted appointments with payment not done */}
+            {!appointment.paymentConfirmed && (appointment.status === 'pending' || appointment.status === 'accepted') && (
+              <div className="relative group">
+                <FaInfoCircle 
+                  className="text-blue-500 hover:text-blue-700 cursor-pointer" 
+                  title="Pay the advance amount to confirm your booking and unlock full chat features."
+                />
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                  Pay the advance amount to confirm your booking and unlock full chat features.
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+                </div>
+              </div>
+            )}
           </div>
           {paymentStatus && paymentStatus.refundAmount > 0 && (
             <div className="text-xs text-red-500">
