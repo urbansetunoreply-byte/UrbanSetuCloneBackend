@@ -242,12 +242,26 @@ router.get('/:paymentId/receipt', verifyToken, async (req, res) => {
 // POST: Verify payment (PayPal capture webhook-like endpoint)
 router.post("/verify", verifyToken, async (req, res) => {
   try {
-    const { paymentId, paypalOrderId, clientIp, userAgent } = req.body;
+    const { paymentId, paypalOrderId, clientIp, userAgent, paymentStatus } = req.body;
 
     // Update payment record
     const payment = await Payment.findOne({ paymentId });
     if (!payment) {
       return res.status(404).json({ message: "Payment not found" });
+    }
+
+    // Check if payment was successful or failed
+    if (paymentStatus === 'failed' || !paypalOrderId) {
+      payment.status = 'failed';
+      payment.failedAt = new Date();
+      payment.clientIp = clientIp || req.ip;
+      payment.userAgent = userAgent || req.headers['user-agent'];
+      await payment.save();
+
+      return res.status(400).json({
+        message: "Payment failed",
+        payment: payment
+      });
     }
 
     payment.status = 'completed';
@@ -285,13 +299,27 @@ router.post("/verify", verifyToken, async (req, res) => {
 // Razorpay: Verify payment
 router.post('/razorpay/verify', verifyToken, async (req, res) => {
   try {
-    const { paymentId, razorpay_payment_id, razorpay_order_id, razorpay_signature, clientIp, userAgent } = req.body;
+    const { paymentId, razorpay_payment_id, razorpay_order_id, razorpay_signature, clientIp, userAgent, paymentStatus } = req.body;
     const payment = await Payment.findOne({ paymentId });
     if (!payment) {
       return res.status(404).json({ message: 'Payment not found' });
     }
     if (payment.gateway !== 'razorpay') {
       return res.status(400).json({ message: 'Invalid gateway for this payment' });
+    }
+
+    // Check if payment was successful or failed
+    if (paymentStatus === 'failed' || !razorpay_payment_id) {
+      payment.status = 'failed';
+      payment.failedAt = new Date();
+      payment.clientIp = clientIp || req.ip;
+      payment.userAgent = userAgent || req.headers['user-agent'];
+      await payment.save();
+
+      return res.status(400).json({
+        message: "Payment failed",
+        payment: payment
+      });
     }
 
     // Verify signature: hmac_sha256(order_id + '|' + payment_id)
@@ -303,7 +331,16 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
     hmac.update(`${razorpay_order_id}|${razorpay_payment_id}`);
     const expectedSignature = hmac.digest('hex');
     if (expectedSignature !== razorpay_signature) {
-      return res.status(400).json({ message: 'Signature verification failed' });
+      payment.status = 'failed';
+      payment.failedAt = new Date();
+      payment.clientIp = clientIp || req.ip;
+      payment.userAgent = userAgent || req.headers['user-agent'];
+      await payment.save();
+
+      return res.status(400).json({ 
+        message: 'Signature verification failed',
+        payment: payment
+      });
     }
 
     payment.status = 'completed';

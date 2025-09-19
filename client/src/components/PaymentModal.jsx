@@ -199,6 +199,10 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
           onError: (err) => {
             console.error('PayPal error', err);
             toast.error('Payment failed or cancelled.');
+            // Mark payment as failed
+            if (paymentData?.payment?.paymentId) {
+              handlePaymentFailure('PayPal payment failed');
+            }
           }
         }).render(`#${containerId}`);
       } else {
@@ -211,6 +215,37 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
     }
     finally {
       setLoading(false);
+    }
+  };
+
+  const handlePaymentFailure = async (reason) => {
+    try {
+      const verifyResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          paymentId: paymentData.payment.paymentId,
+          paymentStatus: 'failed',
+          clientIp: (window && window.__CLIENT_IP__) || undefined,
+          userAgent: navigator.userAgent
+        })
+      });
+
+      const verifyData = await verifyResponse.json();
+      if (verifyResponse.ok || verifyResponse.status === 400) {
+        // Payment marked as failed
+        toast.error(`Payment failed: ${reason}`);
+        setLoading(false);
+        setProcessingPayment(false);
+      }
+    } catch (error) {
+      console.error('Error marking payment as failed:', error);
+      toast.error('Payment failed');
+      setLoading(false);
+      setProcessingPayment(false);
     }
   };
 
@@ -273,10 +308,15 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         onPaymentSuccess(verifyData.payment);
       } else {
         toast.error(verifyData.message || 'Payment verification failed');
+        // If verification failed, mark payment as failed
+        if (verifyResponse.status === 400) {
+          await handlePaymentFailure('Razorpay verification failed');
+        }
       }
     } catch (error) {
       console.error('Verification error:', error);
       toast.error('Payment verification failed');
+      await handlePaymentFailure('Razorpay verification error');
     } finally {
       setLoading(false);
     }
