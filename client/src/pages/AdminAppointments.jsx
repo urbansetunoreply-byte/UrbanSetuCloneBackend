@@ -1355,9 +1355,10 @@ function AdminPaymentStatusCell({ appointmentId, appointment }) {
   }
 
   // Priority: User payment first, then admin marking
+  const isAdminMarked = Boolean(payment?.metadata?.adminMarked);
   const color = payment.status === 'completed'
     ? 'bg-green-100 text-green-800'
-    : appointment?.paymentConfirmed
+    : isAdminMarked
     ? 'bg-green-100 text-green-800'
     : payment.status === 'pending'
     ? 'bg-yellow-100 text-yellow-800'
@@ -1372,7 +1373,7 @@ function AdminPaymentStatusCell({ appointmentId, appointment }) {
   // Priority: User payment first, then admin marking
   const label = payment.status === 'completed'
     ? 'Paid'
-    : appointment?.paymentConfirmed
+    : isAdminMarked
     ? 'Paid (Admin)'
     : payment.status === 'pending'
     ? 'Pending'

@@ -8682,13 +8682,18 @@ function PaymentStatusCell({ appointment, isBuyer }) {
 
   // Determine the display status based on latest payment record only
   const getDisplayStatus = () => {
+    // First check if there's a payment record
+    if (!paymentStatus) {
+      return { status: 'pending', text: 'Pending', color: 'bg-yellow-100 text-yellow-800' };
+    }
+    
+    // Check if admin marked this payment
     const isAdminMarked = Boolean(paymentStatus?.metadata?.adminMarked);
     if (isAdminMarked) {
       return { status: 'admin_confirmed', text: 'Paid (Admin)', color: 'bg-green-100 text-green-800' };
     }
-    if (!paymentStatus) {
-      return { status: 'pending', text: 'Pending', color: 'bg-yellow-100 text-yellow-800' };
-    }
+    
+    // For user payments, show regular payment status
     return getPaymentStatusInfo(paymentStatus.status);
   };
 
