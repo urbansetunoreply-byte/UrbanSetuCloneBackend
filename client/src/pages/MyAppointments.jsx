@@ -965,7 +965,11 @@ export default function MyAppointments() {
                     )}
                   </h2>
                   <p className="text-sm text-gray-600 capitalize font-medium bg-white px-3 py-1 rounded-full shadow-sm">
-                    {selectedOtherParty.role || 'User'}
+                    {(() => {
+                      // Determine the opposite role based on current user's role in the appointment
+                      const currentUserRole = selectedAppointment.buyerId?._id === currentUser._id || selectedAppointment.buyerId === currentUser._id ? 'buyer' : 'seller';
+                      return currentUserRole === 'buyer' ? 'seller' : 'buyer';
+                    })()}
                   </p>
                   {/* Status text below role */}
                   {!canSeeContactInfo ? (
