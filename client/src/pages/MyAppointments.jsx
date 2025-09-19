@@ -2598,7 +2598,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   // Chat availability: keep chat open for all but block sending for certain statuses
   const isChatSendBlocked = !isUpcoming || appt.status === 'rejected' || appt.status === 'cancelledByAdmin' || appt.status === 'cancelledByBuyer' || appt.status === 'cancelledBySeller' || appt.status === 'deletedByAdmin';
   
-  const canSeeContactInfo = (isAdmin || appt.status === 'accepted' || appt.status === 'pending') && isUpcoming && 
+  const canSeeContactInfo = (isAdmin || appt.status === 'accepted') && isUpcoming && 
     appt.status !== 'cancelledByBuyer' && appt.status !== 'cancelledBySeller' && 
     appt.status !== 'cancelledByAdmin' && appt.status !== 'rejected' && 
     appt.status !== 'deletedByAdmin';
