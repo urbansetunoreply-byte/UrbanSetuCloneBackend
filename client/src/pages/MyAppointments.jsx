@@ -2598,6 +2598,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   // Chat availability: keep chat open for all but block sending for certain statuses
   const isChatSendBlocked = !isUpcoming || appt.status === 'rejected' || appt.status === 'cancelledByAdmin' || appt.status === 'cancelledByBuyer' || appt.status === 'cancelledBySeller' || appt.status === 'deletedByAdmin';
   
+  // Status indicators: hide for pending and frozen appointments
+  const isStatusHidden = appt.status === 'pending' || appt.status === 'rejected' || appt.status === 'cancelledByAdmin' || appt.status === 'cancelledByBuyer' || appt.status === 'cancelledBySeller' || appt.status === 'deletedByAdmin';
+  
   const canSeeContactInfo = (isAdmin || appt.status === 'accepted') && isUpcoming && 
     appt.status !== 'cancelledByBuyer' && appt.status !== 'cancelledBySeller' && 
     appt.status !== 'cancelledByAdmin' && appt.status !== 'rejected' && 
@@ -4342,20 +4345,20 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                 {chatLockStatusLoading ? '⏳' : '🔒'}
               </span>
             )}
-            {/* Typing indicator - highest priority (hide if locked, loading, or frozen chat) */}
-            {isOtherPartyTyping && !((chatLocked || chatLockStatusLoading) && !chatAccessGranted) && !isChatSendBlocked && (
+            {/* Typing indicator - highest priority (hide if locked, loading, or status hidden) */}
+            {isOtherPartyTyping && !((chatLocked || chatLockStatusLoading) && !chatAccessGranted) && !isStatusHidden && (
               <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] text-center font-bold border-2 border-white animate-pulse">
                 ...
               </span>
             )}
-            {/* Unread count when not typing (hide if locked, loading, or frozen chat) */}
-            {!isOtherPartyTyping && unreadNewMessages > 0 && !((chatLocked || chatLockStatusLoading) && !chatAccessGranted) && !isChatSendBlocked && (
+            {/* Unread count when not typing (hide if locked, loading, or status hidden) */}
+            {!isOtherPartyTyping && unreadNewMessages > 0 && !((chatLocked || chatLockStatusLoading) && !chatAccessGranted) && !isStatusHidden && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] text-center font-bold border-2 border-white">
                 {unreadNewMessages}
               </span>
             )}
-            {/* Online status green dot - show when no typing and no unread count (hide if locked, loading, or frozen chat) */}
-            {!isOtherPartyTyping && unreadNewMessages === 0 && isOtherPartyOnlineInTable && !((chatLocked || chatLockStatusLoading) && !chatAccessGranted) && !isChatSendBlocked && (
+            {/* Online status green dot - show when no typing and no unread count (hide if locked, loading, or status hidden) */}
+            {!isOtherPartyTyping && unreadNewMessages === 0 && isOtherPartyOnlineInTable && !((chatLocked || chatLockStatusLoading) && !chatAccessGranted) && !isStatusHidden && (
               <span className="absolute -top-1 -right-1 bg-green-500 border-2 border-white rounded-full w-3 h-3"></span>
             )}
           </button>
@@ -5231,7 +5234,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           </h3>
                           {/* Online status indicator - below name on mobile, inline on desktop */}
                           <div className={`flex items-center gap-1 sm:hidden ${(chatLocked || chatLockStatusLoading) ? 'max-w-[120px]' : ''}`}>
-                            {isChatSendBlocked ? (
+                            {isStatusHidden ? (
                               <span className={`text-gray-100 font-semibold text-[10px] bg-gray-500 bg-opacity-80 px-1.5 py-0.5 rounded-full whitespace-nowrap ${(chatLocked || chatLockStatusLoading) ? 'truncate' : ''}`}>Not available</span>
                             ) : isOtherPartyTyping ? (
                               <span className={`text-yellow-100 font-semibold text-[10px] bg-yellow-500 bg-opacity-80 px-1.5 py-0.5 rounded-full whitespace-nowrap ${(chatLocked || chatLockStatusLoading) ? 'truncate' : ''}`}>Typing...</span>
@@ -5245,7 +5248,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           </div>
                           {/* Online status indicator - inline on desktop only */}
                           <div className="hidden sm:flex items-center gap-1">
-                            {isChatSendBlocked ? (
+                            {isStatusHidden ? (
                               <span className="text-gray-100 font-semibold text-xs bg-gray-500 bg-opacity-80 px-2 py-1 rounded-full whitespace-nowrap">Not available</span>
                             ) : isOtherPartyTyping ? (
                               <span className="text-yellow-100 font-semibold text-xs bg-yellow-500 bg-opacity-80 px-2 py-1 rounded-full whitespace-nowrap">Typing...</span>
