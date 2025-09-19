@@ -611,6 +611,93 @@ router.get('/paypal/debug', verifyToken, async (req, res) => {
   }
 });
 
+// Admin: Mark appointment as paid (create/update Payment and set receipt)
+router.post('/admin/mark-paid', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || (user.role !== 'admin' && user.role !== 'rootadmin')) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+    const { appointmentId, currency, amount, gateway } = req.body;
+    if (!appointmentId) return res.status(400).json({ message: 'appointmentId is required' });
+
+    const appointment = await Booking.findById(appointmentId).populate('listingId', 'name');
+    if (!appointment) return res.status(404).json({ message: 'Appointment not found' });
+
+    // Find latest payment for this appointment
+    let payment = await Payment.findOne({ appointmentId }).sort({ createdAt: -1 });
+
+    if (!payment) {
+      // Create default advance payment if none exists
+      const resolvedCurrency = (currency || 'USD').toUpperCase();
+      const resolvedAmount = typeof amount === 'number' ? amount : (resolvedCurrency === 'INR' ? 100 : 5);
+      const resolvedGateway = gateway || (resolvedCurrency === 'INR' ? 'razorpay' : 'paypal');
+      payment = new Payment({
+        paymentId: generatePaymentId(),
+        appointmentId,
+        userId: appointment.buyerId,
+        listingId: appointment.listingId,
+        amount: resolvedAmount,
+        currency: resolvedCurrency,
+        paymentType: 'advance',
+        gateway: resolvedGateway,
+        status: 'pending',
+        receiptNumber: generateReceiptNumber()
+      });
+    }
+
+    // Mark as completed
+    payment.status = 'completed';
+    payment.completedAt = new Date();
+    if (currency) payment.currency = currency.toUpperCase();
+    if (typeof amount === 'number') payment.amount = amount;
+    if (gateway) payment.gateway = gateway;
+
+    // Set receipt URL
+    const baseClient = process.env.CLIENT_URL || process.env.FRONTEND_URL || '';
+    const receiptUrl = baseClient
+      ? `${baseClient}/receipt/${payment.receiptNumber}`
+      : `/api/payments/${payment.paymentId}/receipt`;
+    payment.receiptUrl = receiptUrl;
+    await payment.save();
+
+    // Mark appointment flag
+    await Booking.findByIdAndUpdate(appointmentId, { paymentConfirmed: true });
+
+    return res.json({ ok: true, payment, receiptUrl });
+  } catch (e) {
+    console.error('Admin mark-paid error:', e);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Admin: Mark appointment as unpaid (revert latest payment to pending)
+router.post('/admin/mark-unpaid', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || (user.role !== 'admin' && user.role !== 'rootadmin')) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+    const { appointmentId } = req.body;
+    if (!appointmentId) return res.status(400).json({ message: 'appointmentId is required' });
+
+    const payment = await Payment.findOne({ appointmentId }).sort({ createdAt: -1 });
+    if (payment) {
+      payment.status = 'pending';
+      payment.completedAt = undefined;
+      payment.receiptUrl = undefined;
+      await payment.save();
+    }
+
+    await Booking.findByIdAndUpdate(appointmentId, { paymentConfirmed: false });
+
+    return res.json({ ok: true, updated: Boolean(payment) });
+  } catch (e) {
+    console.error('Admin mark-unpaid error:', e);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // User: Export own payments CSV
 router.get('/export', verifyToken, async (req, res) => {
   try {

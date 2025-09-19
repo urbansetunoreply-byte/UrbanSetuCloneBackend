@@ -1269,15 +1269,30 @@ function AdminPaymentStatusCell({ appointmentId, appointment }) {
     setToggling(true);
     setShowStatusOptions(false);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/bookings/${appointmentId}/payment-status`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentConfirmed: newStatus })
-      });
-      if (res.ok) {
-        // The socket listener will handle updating the parent component's state
-        // No need to update local state here
+      if (newStatus) {
+        const res = await fetch(`${API_BASE_URL}/api/payments/admin/mark-paid`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ appointmentId })
+        });
+        if (res.ok) {
+          const hist = await fetch(`${API_BASE_URL}/api/payments/history?appointmentId=${appointmentId}`, { credentials: 'include' });
+          const data = await hist.json();
+          if (hist.ok && Array.isArray(data.payments)) setPayment(data.payments[0] || null);
+        }
+      } else {
+        const res = await fetch(`${API_BASE_URL}/api/payments/admin/mark-unpaid`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ appointmentId })
+        });
+        if (res.ok) {
+          const hist = await fetch(`${API_BASE_URL}/api/payments/history?appointmentId=${appointmentId}`, { credentials: 'include' });
+          const data = await hist.json();
+          if (hist.ok && Array.isArray(data.payments)) setPayment(data.payments[0] || null);
+        }
       }
     } finally {
       setToggling(false);
