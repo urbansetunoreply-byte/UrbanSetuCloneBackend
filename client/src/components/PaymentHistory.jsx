@@ -79,11 +79,30 @@ const PaymentHistory = ({ userId }) => {
   };
 
   const downloadReceipt = (receiptUrl) => {
-    if (receiptUrl) {
-      window.open(receiptUrl, '_blank');
-    } else {
+    if (!receiptUrl) {
       toast.info('Receipt not available');
+      return;
     }
+    (async () => {
+      try {
+        const res = await fetch(receiptUrl, { credentials: 'include' });
+        if (!res.ok) {
+          toast.error('Failed to download receipt');
+          return;
+        }
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'receipt.pdf';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      } catch (e) {
+        toast.error('Error downloading receipt');
+      }
+    })();
   };
 
   const handleFilterChange = (key, value) => {
@@ -219,12 +238,8 @@ const PaymentHistory = ({ userId }) => {
                       {payment.gateway.toUpperCase()} {payment.currency === 'INR' ? '₹' : '$'}
                     </span>
                   )}
-                  <button
-                    onClick={() => downloadReceipt(payment.receiptUrl)}
-                    className="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-1"
-                  >
-                    <FaDownload className="text-xs" />
-                    Receipt
+                  <button onClick={() => downloadReceipt(payment.receiptUrl)} className="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-1">
+                    <FaDownload className="text-xs" /> Receipt
                   </button>
                   <button
                     onClick={() => {

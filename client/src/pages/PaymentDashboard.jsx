@@ -358,7 +358,28 @@ const PaymentDashboard = () => {
                         <div className="mt-2 text-xs text-gray-600">Payment ID: <span className="font-mono">{p.paymentId}</span></div>
                         <div className="mt-1 text-xs text-gray-600">Gateway: {p.gateway?.toUpperCase()}</div>
                         {p.receiptUrl && (
-                          <div className="mt-2 text-xs"><a className="text-blue-600 underline" href={p.receiptUrl} target="_blank" rel="noreferrer">Receipt</a></div>
+                          <div className="mt-2 text-xs">
+                            <button
+                              onClick={async () => {
+                                try {
+                                  const res = await fetch(p.receiptUrl, { credentials: 'include' });
+                                  if (!res.ok) return;
+                                  const blob = await res.blob();
+                                  const url = window.URL.createObjectURL(blob);
+                                  const a = document.createElement('a');
+                                  a.href = url;
+                                  a.download = 'receipt.pdf';
+                                  document.body.appendChild(a);
+                                  a.click();
+                                  a.remove();
+                                  window.URL.revokeObjectURL(url);
+                                } catch {}
+                              }}
+                              className="text-blue-600 underline"
+                            >
+                              Receipt
+                            </button>
+                          </div>
                         )}
                       </div>
                     ))}
@@ -394,7 +415,28 @@ const PaymentDashboard = () => {
                         <div className="mt-2 text-xs text-gray-600">Payment ID: <span className="font-mono">{p.paymentId}</span></div>
                         <div className="mt-1 text-xs text-gray-600">Gateway: {p.gateway?.toUpperCase()}</div>
                         {p.receiptUrl && (
-                          <div className="mt-2 text-xs"><a className="text-blue-600 underline" href={p.receiptUrl} target="_blank" rel="noreferrer">Receipt</a></div>
+                          <div className="mt-2 text-xs">
+                            <button
+                              onClick={async () => {
+                                try {
+                                  const res = await fetch(p.receiptUrl, { credentials: 'include' });
+                                  if (!res.ok) return;
+                                  const blob = await res.blob();
+                                  const url = window.URL.createObjectURL(blob);
+                                  const a = document.createElement('a');
+                                  a.href = url;
+                                  a.download = 'receipt.pdf';
+                                  document.body.appendChild(a);
+                                  a.click();
+                                  a.remove();
+                                  window.URL.revokeObjectURL(url);
+                                } catch {}
+                              }}
+                              className="text-blue-600 underline"
+                            >
+                              Receipt
+                            </button>
+                          </div>
                         )}
                       </div>
                     ))}
