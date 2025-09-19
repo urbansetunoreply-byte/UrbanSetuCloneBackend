@@ -1354,10 +1354,10 @@ function AdminPaymentStatusCell({ appointmentId, appointment }) {
     );
   }
 
-  // If admin has marked as paid, show green color regardless of payment status
-  const color = appointment?.paymentConfirmed
+  // Priority: User payment first, then admin marking
+  const color = payment.status === 'completed'
     ? 'bg-green-100 text-green-800'
-    : payment.status === 'completed'
+    : appointment?.paymentConfirmed
     ? 'bg-green-100 text-green-800'
     : payment.status === 'pending'
     ? 'bg-yellow-100 text-yellow-800'
@@ -1369,11 +1369,11 @@ function AdminPaymentStatusCell({ appointmentId, appointment }) {
     ? 'bg-orange-100 text-orange-800'
     : 'bg-gray-100 text-gray-800';
 
-  // If admin has marked as paid, show as paid regardless of payment status
-  const label = appointment?.paymentConfirmed
-    ? 'Paid (Admin)'
-    : payment.status === 'completed'
+  // Priority: User payment first, then admin marking
+  const label = payment.status === 'completed'
     ? 'Paid'
+    : appointment?.paymentConfirmed
+    ? 'Paid (Admin)'
     : payment.status === 'pending'
     ? 'Pending'
     : payment.status === 'failed'

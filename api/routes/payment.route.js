@@ -753,6 +753,10 @@ router.post('/admin/mark-paid', verifyToken, async (req, res) => {
     if (currency) payment.currency = currency.toUpperCase();
     if (typeof amount === 'number') payment.amount = amount;
     if (gateway) payment.gateway = gateway;
+    
+    // Set metadata to indicate admin marked this payment
+    if (!payment.metadata) payment.metadata = {};
+    payment.metadata.adminMarked = true;
 
     // Set receipt URL
     const base = `${req.protocol}://${req.get('host')}`;
@@ -785,6 +789,12 @@ router.post('/admin/mark-unpaid', verifyToken, async (req, res) => {
       payment.status = 'pending';
       payment.completedAt = undefined;
       payment.receiptUrl = undefined;
+      
+      // Clear admin marked flag
+      if (payment.metadata) {
+        payment.metadata.adminMarked = false;
+      }
+      
       await payment.save();
     }
 
