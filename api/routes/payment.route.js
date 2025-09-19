@@ -516,6 +516,10 @@ router.post("/refund", verifyToken, async (req, res) => {
 // POST: Submit refund request
 router.post("/refund-request", verifyToken, async (req, res) => {
   try {
+    console.log("=== REFUND REQUEST DEBUG ===");
+    console.log("Request body:", req.body);
+    console.log("User ID:", req.user?.id);
+    
     const { paymentId, appointmentId, reason, requestedAmount, type } = req.body;
     const userId = req.user.id;
 
@@ -525,51 +529,78 @@ router.post("/refund-request", verifyToken, async (req, res) => {
     }
 
     // Check if payment exists and belongs to user
+    console.log("Looking for payment with ID:", paymentId);
     const payment = await Payment.findOne({ paymentId });
+    console.log("Payment found:", payment ? "Yes" : "No");
     if (!payment) {
+      console.log("Payment not found for ID:", paymentId);
       return res.status(404).json({ message: "Payment not found" });
     }
 
     // Check if user is authorized (buyer or seller of the appointment)
+    console.log("Looking for appointment with ID:", appointmentId);
     const appointment = await Booking.findById(appointmentId);
+    console.log("Appointment found:", appointment ? "Yes" : "No");
     if (!appointment) {
+      console.log("Appointment not found for ID:", appointmentId);
       return res.status(404).json({ message: "Appointment not found" });
     }
 
     const isBuyer = appointment.buyerId && appointment.buyerId.toString() === userId;
     const isSeller = appointment.sellerId && appointment.sellerId.toString() === userId;
+    console.log("User authorization - isBuyer:", isBuyer, "isSeller:", isSeller);
 
     if (!isBuyer && !isSeller) {
+      console.log("User not authorized for this appointment");
       return res.status(403).json({ message: "Unauthorized to request refund for this appointment" });
     }
 
     // Check if payment is completed
+    console.log("Payment status:", payment.status);
     if (payment.status !== 'completed') {
+      console.log("Payment not completed, status:", payment.status);
       return res.status(400).json({ message: "Only completed payments can be refunded" });
     }
 
     // Check if appointment status allows refund
     const eligibleStatuses = ['rejected', 'cancelledByBuyer', 'cancelledBySeller', 'cancelledByAdmin'];
+    console.log("Appointment status:", appointment.status);
+    console.log("Eligible statuses:", eligibleStatuses);
     if (!eligibleStatuses.includes(appointment.status)) {
+      console.log("Appointment status not eligible for refund");
       return res.status(400).json({ message: "Appointment status does not allow refund requests" });
     }
 
     // Check if refund amount is valid
+    console.log("Requested amount:", requestedAmount, "Payment amount:", payment.amount);
     if (requestedAmount > payment.amount) {
+      console.log("Requested amount exceeds payment amount");
       return res.status(400).json({ message: "Requested refund amount cannot exceed payment amount" });
     }
 
     // Check if there's already a pending refund request for this payment
+    console.log("Checking for existing refund requests...");
     const existingRequest = await RefundRequest.findOne({
       paymentId,
       status: { $in: ['pending', 'approved'] }
     });
+    console.log("Existing request found:", existingRequest ? "Yes" : "No");
 
     if (existingRequest) {
+      console.log("Refund request already exists");
       return res.status(400).json({ message: "A refund request already exists for this payment" });
     }
 
     // Create refund request
+    console.log("Creating refund request with data:", {
+      paymentId,
+      appointmentId,
+      userId,
+      requestedAmount,
+      type,
+      reason
+    });
+    
     const refundRequest = new RefundRequest({
       paymentId,
       appointmentId,
@@ -579,14 +610,18 @@ router.post("/refund-request", verifyToken, async (req, res) => {
       reason
     });
 
+    console.log("Saving refund request...");
     await refundRequest.save();
+    console.log("Refund request saved successfully with ID:", refundRequest._id);
 
     res.status(201).json({
       message: "Refund request submitted successfully",
       refundRequestId: refundRequest._id
     });
   } catch (err) {
+    console.error("=== REFUND REQUEST ERROR ===");
     console.error("Error creating refund request:", err);
+    console.error("Error stack:", err.stack);
     res.status(500).json({ message: "Server error" });
   }
 });
