@@ -540,7 +540,7 @@ const RefundManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                {refundRequests.map((request) => (
+                {refundRequests && refundRequests.map((request) => (
                   <tr key={request._id} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="py-3 px-4">
                       <div>
@@ -548,7 +548,7 @@ const RefundManagement = () => {
                           {request.appointmentId?.propertyName || 'N/A'}
                         </div>
                         <div className="text-sm text-gray-600">
-                          Payment ID: {request.paymentId}
+                          Payment ID: {request.paymentId?.paymentId || request.paymentId}
                         </div>
                       </div>
                     </td>
