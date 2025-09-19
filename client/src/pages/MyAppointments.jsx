@@ -8688,14 +8688,18 @@ function PaymentStatusCell({ appointment, isBuyer }) {
 
   const fetchRefundRequestStatus = async (paymentId) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/refund-requests?paymentId=${paymentId}`, {
+      console.log('Fetching refund request status for paymentId:', paymentId);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/refund-request-status/${paymentId}`, {
         credentials: 'include'
       });
       const data = await response.json();
-      if (response.ok && data.refundRequests.length > 0) {
-        setRefundRequestStatus(data.refundRequests[0]);
+      console.log('Refund request status response:', data);
+      if (response.ok && data.refundRequest) {
+        setRefundRequestStatus(data.refundRequest);
+        console.log('Set refund request status:', data.refundRequest);
       } else {
         setRefundRequestStatus(null);
+        console.log('No refund request found');
       }
     } catch (error) {
       console.error('Error fetching refund request status:', error);
@@ -8792,25 +8796,20 @@ function PaymentStatusCell({ appointment, isBuyer }) {
   const isRefundRequestPending = refundRequestStatus && refundRequestStatus.status === 'pending';
   const isRefundRequestApproved = refundRequestStatus && ['approved', 'processed'].includes(refundRequestStatus.status);
   
+  // Debug logging
+  console.log('Refund request status debug:', {
+    refundRequestStatus,
+    hasRefundRequest,
+    isRefundRequestRejected,
+    isRefundRequestPending,
+    isRefundRequestApproved
+  });
+  
   return (
     <div className="flex flex-col items-center gap-2">
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${displayStatus.color}`}>
         {displayStatus.text}
       </span>
-      
-      {/* Show refund request status */}
-      {hasRefundRequest && (
-        <div className={`text-xs ${
-          isRefundRequestPending ? 'text-orange-600' : 
-          isRefundRequestRejected ? 'text-red-600' : 
-          isRefundRequestApproved ? 'text-green-600' : 
-          'text-gray-600'
-        }`}>
-          {isRefundRequestPending && 'Processing Refund Request'}
-          {isRefundRequestApproved && 'Refund Request Approved'}
-          {isRefundRequestRejected && 'Refund Request Rejected'}
-        </div>
-      )}
       
       {/* Only show payment amount and Pay Now button for buyers */}
       {isBuyer && (
@@ -8838,6 +8837,18 @@ function PaymentStatusCell({ appointment, isBuyer }) {
                   {new Date(paymentStatus.refundedAt).toLocaleDateString('en-GB')} {new Date(paymentStatus.refundedAt).toLocaleTimeString('en-GB')}
                 </div>
               )}
+            </div>
+          )}
+          {hasRefundRequest && (
+            <div className={`text-xs ${
+              isRefundRequestPending ? 'text-orange-600' : 
+              isRefundRequestRejected ? 'text-red-600' : 
+              isRefundRequestApproved ? 'text-green-600' : 
+              'text-gray-600'
+            }`}>
+              {isRefundRequestPending && 'Processing Refund Request...'}
+              {isRefundRequestApproved && 'Refund Request Approved'}
+              {isRefundRequestRejected && 'Refund Request Rejected'}
             </div>
           )}
           {isPending ? (

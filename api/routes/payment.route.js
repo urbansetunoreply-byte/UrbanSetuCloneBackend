@@ -597,6 +597,29 @@ router.post("/refund-request", verifyToken, async (req, res) => {
   }
 });
 
+// GET: Get user's refund request status by payment ID
+router.get("/refund-request-status/:paymentId", verifyToken, async (req, res) => {
+  try {
+    const { paymentId } = req.params;
+    const userId = req.user.id;
+
+    // Find the refund request for this payment and user
+    const refundRequest = await RefundRequest.findOne({
+      paymentId: paymentId,
+      userId: userId
+    }).populate('appointmentId', 'propertyName date status buyerId sellerId');
+
+    if (!refundRequest) {
+      return res.status(200).json({ refundRequest: null });
+    }
+
+    res.status(200).json({ refundRequest });
+  } catch (err) {
+    console.error("Error fetching refund request status:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 // GET: Get refund requests (admin only)
 router.get("/refund-requests", verifyToken, async (req, res) => {
   try {
