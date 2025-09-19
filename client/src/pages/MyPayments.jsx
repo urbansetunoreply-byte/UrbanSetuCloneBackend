@@ -160,6 +160,12 @@ const MyPayments = () => {
                             <div className="text-gray-400">{new Date(p.completedAt).toLocaleTimeString('en-GB')}</div>
                             <div className="text-gray-300 mt-1">Created: {new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
                             <div className="text-gray-300">{new Date(p.createdAt).toLocaleTimeString('en-GB')}</div>
+                            {p.refundedAt && (
+                              <>
+                                <div className="text-red-400 mt-1">Refunded: {new Date(p.refundedAt).toLocaleDateString('en-GB')}</div>
+                                <div className="text-red-300">{new Date(p.refundedAt).toLocaleTimeString('en-GB')}</div>
+                              </>
+                            )}
                           </div>
                         ) : (
                           <div>

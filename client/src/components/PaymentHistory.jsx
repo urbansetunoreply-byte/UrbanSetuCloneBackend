@@ -200,6 +200,12 @@ const PaymentHistory = ({ userId }) => {
                         <div className="text-xs text-gray-500">{new Date(payment.completedAt).toLocaleTimeString()}</div>
                         <div className="text-xs text-gray-400 mt-1">Created: {new Date(payment.createdAt).toLocaleDateString()}</div>
                         <div className="text-xs text-gray-400">{new Date(payment.createdAt).toLocaleTimeString()}</div>
+                        {payment.refundedAt && (
+                          <>
+                            <div className="text-xs text-red-400 mt-1">Refunded: {new Date(payment.refundedAt).toLocaleDateString()}</div>
+                            <div className="text-xs text-red-300">{new Date(payment.refundedAt).toLocaleTimeString()}</div>
+                          </>
+                        )}
                       </div>
                     ) : (
                       <div>
@@ -224,11 +230,16 @@ const PaymentHistory = ({ userId }) => {
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-red-800 font-medium">Refunded Amount:</span>
-                      <p className="text-red-600">$ {Number(payment.refundAmount).toFixed(2)}</p>
+                      <p className="text-red-600">
+                        {(payment.currency || 'USD') === 'INR' ? '₹' : '$'} {Number(payment.refundAmount).toFixed(2)}
+                      </p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-red-600">
                         {payment.refundedAt ? new Date(payment.refundedAt).toLocaleDateString() : 'N/A'}
+                      </p>
+                      <p className="text-xs text-red-500">
+                        {payment.refundedAt ? new Date(payment.refundedAt).toLocaleTimeString() : ''}
                       </p>
                       {payment.refundReason && (
                         <p className="text-xs text-red-500">{payment.refundReason}</p>

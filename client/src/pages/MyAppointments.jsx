@@ -8792,7 +8792,12 @@ function PaymentStatusCell({ appointment, isBuyer }) {
           </div>
           {paymentStatus && paymentStatus.refundAmount > 0 && (
             <div className="text-xs text-red-500">
-              Refunded: ${paymentStatus.refundAmount.toLocaleString()}
+              <div>Refunded: {paymentStatus.currency === 'INR' ? '₹' : '$'}{paymentStatus.refundAmount.toLocaleString()}</div>
+              {paymentStatus.refundedAt && (
+                <div className="text-red-400">
+                  {new Date(paymentStatus.refundedAt).toLocaleDateString('en-GB')} {new Date(paymentStatus.refundedAt).toLocaleTimeString('en-GB')}
+                </div>
+              )}
             </div>
           )}
           {isPending ? (

@@ -1397,6 +1397,16 @@ function AdminPaymentStatusCell({ appointmentId, appointment }) {
           )}
         </div>
       )}
+      {payment.refundAmount > 0 && (
+        <div className="text-[10px] text-red-500">
+          <div>Refunded: {((payment.currency || 'USD') === 'INR') ? '₹' : '$'}{Number(payment.refundAmount).toFixed(2)}</div>
+          {payment.refundedAt && (
+            <div className="text-red-400">
+              {new Date(payment.refundedAt).toLocaleDateString('en-GB')} {new Date(payment.refundedAt).toLocaleTimeString('en-GB')}
+            </div>
+          )}
+        </div>
+      )}
       {appointment?.paymentConfirmed && (
         <div className="text-[10px] text-green-700 font-semibold">✓ Admin Confirmed</div>
       )}

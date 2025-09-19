@@ -187,7 +187,13 @@ router.get('/:paymentId/receipt', verifyToken, async (req, res) => {
     doc.text(`Status: ${payment.status}${payment.status === 'completed' ? '' : ' (Not Completed)'}`);
     doc.text(`Gateway: ${payment.gateway?.toUpperCase()}`);
     doc.text(`Amount: ${amountText}`);
-    if (payment.refundAmount > 0) doc.text(`Refunded: ${currencySymbol} ${Number(payment.refundAmount).toFixed(2)}`);
+    if (payment.refundAmount > 0) {
+      doc.text(`Refunded: ${currencySymbol} ${Number(payment.refundAmount).toFixed(2)}`);
+      if (payment.refundedAt) {
+        const refundedAt = new Date(payment.refundedAt);
+        doc.text(`Refunded Date: ${refundedAt.toLocaleDateString('en-GB')} ${refundedAt.toLocaleTimeString('en-GB')}`);
+      }
+    }
     doc.moveDown();
 
     // Appointment/listing info
