@@ -8751,7 +8751,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
               className="mt-1 inline-flex items-center gap-1 text-white bg-blue-600 hover:bg-blue-700 text-xs font-semibold px-3 py-1 rounded"
               onClick={() => setShowPayModal(true)}
             >
-              <FaMoneyBill /> Pay Now
+              <FaCreditCard /> Pay Now
             </button>
           ) : (
             paymentStatus && paymentStatus.receiptUrl ? (
