@@ -387,9 +387,12 @@ router.get("/history", verifyToken, async (req, res) => {
     if (gateway) query.gateway = gateway;
     if (currency) query.currency = currency.toUpperCase();
     if (q) {
+      const rx = new RegExp(q, 'i');
       query.$or = [
-        { paymentId: new RegExp(q, 'i') },
-        { receiptNumber: new RegExp(q, 'i') }
+        { paymentId: rx },
+        { receiptNumber: rx },
+        { 'appointmentId.propertyName': rx },
+        { 'listingId.name': rx }
       ];
     }
     if (fromDate || toDate) {
@@ -729,10 +732,13 @@ router.get('/admin/list', verifyToken, async (req, res) => {
     if (status) query.status = status;
     if (gateway) query.gateway = gateway;
     if (q) {
+      const rx = new RegExp(q, 'i');
       query.$or = [
-        { paymentId: new RegExp(q, 'i') },
-        { receiptNumber: new RegExp(q, 'i') },
-        { 'userId.username': new RegExp(q, 'i') }
+        { paymentId: rx },
+        { receiptNumber: rx },
+        { 'userId.username': rx },
+        { 'appointmentId.propertyName': rx },
+        { 'listingId.name': rx }
       ];
     }
     if (fromDate || toDate) {
