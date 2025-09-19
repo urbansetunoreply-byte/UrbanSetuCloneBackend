@@ -131,7 +131,7 @@ const MyPayments = () => {
               <FaSpinner className="animate-spin text-2xl text-blue-600" />
               <span className="ml-2 text-gray-600">Loading payments...</span>
             </div>
-          ) : payments.length === 0 ? (
+          ) : (payments?.length || 0) === 0 ? (
             <div className="text-center py-8">
               <FaMoneyBill className="text-6xl text-gray-300 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-600 mb-2">No Payments Found</h3>
@@ -139,7 +139,7 @@ const MyPayments = () => {
             </div>
           ) : (
             <div className="space-y-3">
-              {payments.map((p) => (
+              {Array.isArray(payments) && payments.map((p) => (
                 <div key={p._id} className={`rounded-lg p-4 border ${p.status === 'completed' ? 'border-green-200 bg-gradient-to-r from-green-50 to-emerald-50' : p.status === 'failed' ? 'border-red-200 bg-gradient-to-r from-red-50 to-rose-50' : 'border-yellow-200 bg-gradient-to-r from-yellow-50 to-amber-50'} hover:shadow transition` }>
                   <div className="flex items-center justify-between">
                     <div>

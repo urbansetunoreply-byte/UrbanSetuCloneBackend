@@ -222,9 +222,11 @@ router.get('/:paymentId/receipt', verifyToken, async (req, res) => {
     const amt = `${currencySymbol} ${Number(payment.amount).toFixed(2)}`;
     doc.fontSize(12).fillColor('#111827').text(amt, doc.page.width - doc.page.margins.right - 80, y + 4, { width: 80, align: 'right' });
 
-    // Footer
+    // Footer (centered across full content width)
     doc.moveDown(2);
-    doc.fontSize(9).fillColor('#6b7280').text('This is a system-generated receipt from UrbanSetu.', { align: 'center' });
+    const footerText = 'This is a system-generated receipt from UrbanSetu.';
+    const contentWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+    doc.fontSize(9).fillColor('#6b7280').text(footerText, doc.page.margins.left, doc.y, { width: contentWidth, align: 'center' });
 
     doc.end();
   } catch (e) {
