@@ -200,7 +200,10 @@ const PaymentHistory = ({ userId }) => {
                         <div className="text-xs text-gray-500">{new Date(payment.completedAt).toLocaleTimeString()}</div>
                       </div>
                     ) : (
-                      <div>Created: {new Date(payment.createdAt).toLocaleDateString()}</div>
+                      <div>
+                        <div>Created: {new Date(payment.createdAt).toLocaleDateString()}</div>
+                        <div className="text-xs text-gray-500">{new Date(payment.createdAt).toLocaleTimeString()}</div>
+                      </div>
                     )}
                   </p>
                 </div>
