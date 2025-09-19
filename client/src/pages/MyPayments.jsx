@@ -14,6 +14,7 @@ const MyPayments = () => {
       const params = new URLSearchParams();
       if (filters.status) params.set('status', filters.status);
       if (filters.gateway) params.set('gateway', filters.gateway);
+      if (filters.currency) params.set('currency', filters.currency);
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/history?${params.toString()}`, { credentials: 'include' });
       const data = await res.json();
       if (res.ok) setPayments(data.payments || []);
@@ -61,6 +62,11 @@ const MyPayments = () => {
               <option value="">All Gateways</option>
               <option value="paypal">PayPal</option>
               <option value="razorpay">Razorpay</option>
+            </select>
+            <select value={filters.currency} onChange={(e)=>setFilters(prev=>({...prev,currency:e.target.value}))} className="px-3 py-2 border rounded-lg text-sm">
+              <option value="">All Currencies</option>
+              <option value="USD">USD ($)</option>
+              <option value="INR">INR (₹)</option>
             </select>
           </div>
 

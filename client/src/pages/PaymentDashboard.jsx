@@ -11,6 +11,8 @@ const PaymentDashboard = () => {
     totalAmountUsd: 0,
     totalAmountInr: 0,
     totalRefunds: 0,
+    totalRefundsUsd: 0,
+    totalRefundsInr: 0,
     completedPayments: 0,
     pendingPayments: 0,
     failedPayments: 0
@@ -45,9 +47,13 @@ const PaymentDashboard = () => {
 
   const fetchAdminPayments = async () => {
     try {
+      const statusSel = document.getElementById('admin-pay-status');
+      const gatewaySel = document.getElementById('admin-pay-gateway');
+      const status = statusSel ? statusSel.value : '';
+      const gateway = gatewaySel ? gatewaySel.value : '';
       const [usdRes, inrRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?currency=USD&limit=50`, { credentials: 'include' }),
-        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?currency=INR&limit=50`, { credentials: 'include' })
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?currency=USD&limit=50&status=${encodeURIComponent(status)}&gateway=${encodeURIComponent(gateway)}`, { credentials: 'include' }),
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?currency=INR&limit=50&status=${encodeURIComponent(status)}&gateway=${encodeURIComponent(gateway)}`, { credentials: 'include' })
       ]);
       const usdData = await usdRes.json();
       const inrData = await inrRes.json();
@@ -194,7 +200,7 @@ const PaymentDashboard = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-orange-100 text-sm font-medium">Total Refunds</p>
-                      <p className="text-3xl font-bold">${stats.totalRefunds.toLocaleString()}</p>
+                      <p className="text-lg font-bold">$ {stats.totalRefundsUsd.toLocaleString()} • ₹ {stats.totalRefundsInr.toLocaleString('en-IN')}</p>
                     </div>
                     <FaUndo className="text-4xl text-orange-200" />
                   </div>
@@ -299,17 +305,14 @@ const PaymentDashboard = () => {
           {activeTab === 'history' && (
             <div className="space-y-6">
               <div className="flex items-center gap-3 mb-2">
-                <select onChange={async (e) => { await fetchAdminPayments(); }} className="px-3 py-2 border rounded-lg text-sm" disabled>
-                  <option>Currency: USD/INR</option>
-                </select>
-                <select id="admin-pay-status" onChange={async () => { await fetchAdminPayments(); }} className="px-3 py-2 border rounded-lg text-sm" disabled>
+                <select id="admin-pay-status" onChange={async () => { await fetchAdminPayments(); }} className="px-3 py-2 border rounded-lg text-sm">
                   <option value="">All Status</option>
                   <option value="completed">Completed</option>
                   <option value="pending">Pending</option>
                   <option value="failed">Failed</option>
                   <option value="refunded">Refunded</option>
                 </select>
-                <select id="admin-pay-gateway" onChange={async () => { await fetchAdminPayments(); }} className="px-3 py-2 border rounded-lg text-sm" disabled>
+                <select id="admin-pay-gateway" onChange={async () => { await fetchAdminPayments(); }} className="px-3 py-2 border rounded-lg text-sm">
                   <option value="">All Gateways</option>
                   <option value="paypal">PayPal</option>
                   <option value="razorpay">Razorpay</option>

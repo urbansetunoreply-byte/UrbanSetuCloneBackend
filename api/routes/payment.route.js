@@ -378,12 +378,14 @@ router.post("/refund", verifyToken, async (req, res) => {
 router.get("/history", verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
-    const { page = 1, limit = 10, status, paymentType, appointmentId } = req.query;
+    const { page = 1, limit = 10, status, paymentType, appointmentId, gateway, currency } = req.query;
 
     let query = { userId };
     if (status) query.status = status;
     if (paymentType) query.paymentType = paymentType;
     if (appointmentId) query.appointmentId = appointmentId;
+    if (gateway) query.gateway = gateway;
+    if (currency) query.currency = currency.toUpperCase();
     
     const payments = await Payment.find(query)
       .populate('appointmentId', 'propertyName date status')
@@ -458,6 +460,8 @@ router.get("/stats/overview", verifyToken, async (req, res) => {
           totalAmountUsd: { $sum: { $cond: [{ $eq: ['$currency', 'USD'] }, '$amount', 0] } },
           totalAmountInr: { $sum: { $cond: [{ $eq: ['$currency', 'INR'] }, '$amount', 0] } },
           totalRefunds: { $sum: '$refundAmount' },
+          totalRefundsUsd: { $sum: { $cond: [{ $eq: ['$currency', 'USD'] }, '$refundAmount', 0] } },
+          totalRefundsInr: { $sum: { $cond: [{ $eq: ['$currency', 'INR'] }, '$refundAmount', 0] } },
           completedPayments: {
             $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] }
           },
@@ -499,6 +503,8 @@ router.get("/stats/overview", verifyToken, async (req, res) => {
         totalAmountUsd: 0,
         totalAmountInr: 0,
         totalRefunds: 0,
+        totalRefundsUsd: 0,
+        totalRefundsInr: 0,
         completedPayments: 0,
         pendingPayments: 0,
         failedPayments: 0
