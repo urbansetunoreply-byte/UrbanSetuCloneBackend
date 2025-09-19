@@ -153,10 +153,15 @@ router.get('/:paymentId/receipt', verifyToken, async (req, res) => {
     const isSeller = appt && ((appt.sellerId?._id || appt.sellerId)?.toString() === req.user.id);
     if (!isAdmin && !isBuyer && !isSeller) return res.status(403).json({ message: 'Unauthorized' });
 
+    res.status(200);
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="receipt_${payment.paymentId}.pdf"`);
-    const doc = new PDFDocument({ size: 'A4', margin: 50 });
-    doc.pipe(res);
+    const doc = new PDFDocument({ size: 'A4', margin: 50, bufferPages: true });
+    doc.on('error', (e) => {
+      try { res.end(); } catch {}
+    });
+    const stream = doc.pipe(res);
+    stream.on('error', () => { try { res.end(); } catch {} });
 
     // Header
     doc.fontSize(20).fillColor('#1f2937').text('UrbanSetu Payment Receipt', { align: 'center' });

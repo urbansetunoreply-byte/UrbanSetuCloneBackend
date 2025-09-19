@@ -30,7 +30,22 @@ const MyPayments = () => {
     window.location.href = '/user/my-appointments';
   };
 
-  const downloadReceipt = (url) => { if (url) window.open(url, '_blank'); };
+  const downloadReceipt = async (url) => {
+    if (!url) return;
+    try {
+      const res = await fetch(url, { credentials: 'include' });
+      if (!res.ok) return;
+      const blob = await res.blob();
+      const objUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = objUrl;
+      a.download = 'receipt.pdf';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(objUrl);
+    } catch {}
+  };
 
   const statusBadge = (status) => {
     const cls = status === 'completed' ? 'bg-green-100 text-green-700' : status === 'failed' ? 'bg-red-100 text-red-700' : status === 'refunded' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700';
