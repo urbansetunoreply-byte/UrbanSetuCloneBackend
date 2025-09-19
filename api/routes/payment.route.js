@@ -616,7 +616,6 @@ router.get("/refund-requests", verifyToken, async (req, res) => {
     }
 
     const refundRequests = await RefundRequest.find(query)
-      .populate('paymentId', 'amount currency gateway paymentId')
       .populate('appointmentId', 'propertyName date status buyerId sellerId')
       .populate('userId', 'name email')
       .populate('processedBy', 'name email')
@@ -624,10 +623,21 @@ router.get("/refund-requests", verifyToken, async (req, res) => {
       .limit(limit * 1)
       .skip((page - 1) * limit);
 
+    // Manually populate payment data since paymentId is a string, not ObjectId
+    const refundRequestsWithPayments = await Promise.all(
+      refundRequests.map(async (request) => {
+        const payment = await Payment.findOne({ paymentId: request.paymentId });
+        return {
+          ...request.toObject(),
+          paymentId: payment
+        };
+      })
+    );
+
     const totalRequests = await RefundRequest.countDocuments(query);
 
     res.status(200).json({
-      refundRequests,
+      refundRequests: refundRequestsWithPayments,
       totalPages: Math.ceil(totalRequests / limit),
       currentPage: parseInt(page),
       totalRequests
@@ -654,7 +664,6 @@ router.put("/refund-request/:requestId", verifyToken, async (req, res) => {
     }
 
     const refundRequest = await RefundRequest.findById(requestId)
-      .populate('paymentId')
       .populate('appointmentId');
 
     if (!refundRequest) {
@@ -675,7 +684,7 @@ router.put("/refund-request/:requestId", verifyToken, async (req, res) => {
 
     // If approved, process the actual refund
     if (status === 'approved') {
-      const payment = refundRequest.paymentId;
+      const payment = await Payment.findOne({ paymentId: refundRequest.paymentId });
       
       // Update payment record
       payment.refundAmount = refundRequest.requestedAmount;

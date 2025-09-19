@@ -8880,7 +8880,9 @@ function PaymentStatusCell({ appointment, isBuyer }) {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Amount:</span>
-                    <span className="font-medium">${paymentStatus.amount.toLocaleString()}</span>
+                    <span className="font-medium">
+                      {paymentStatus.currency === 'INR' ? '₹' : '$'}{paymentStatus.amount.toLocaleString()}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Payment ID:</span>
@@ -8913,7 +8915,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
                       }}
                       className="mr-2"
                     />
-                    Full Refund (${paymentStatus.amount.toLocaleString()})
+                    Full Refund ({paymentStatus.currency === 'INR' ? '₹' : '$'}{paymentStatus.amount.toLocaleString()})
                   </label>
                   <label className="flex items-center">
                     <input
@@ -8935,7 +8937,9 @@ function PaymentStatusCell({ appointment, isBuyer }) {
                     Refund Amount
                   </label>
                   <div className="relative">
-                    <FaDollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 font-semibold">
+                      {paymentStatus.currency === 'INR' ? '₹' : '$'}
+                    </span>
                     <input
                       type="number"
                       value={refundRequestForm.amount}

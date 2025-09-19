@@ -564,7 +564,7 @@ const RefundManagement = () => {
                     </td>
                     <td className="py-3 px-4">
                       <div className="font-semibold text-gray-800">
-                        ${request.requestedAmount.toLocaleString()}
+                        {request.paymentId?.currency === 'INR' ? '₹' : '$'}{request.requestedAmount.toLocaleString()}
                       </div>
                       <div className="text-sm text-gray-600">
                         {request.type === 'full' ? 'Full Refund' : 'Partial Refund'}
@@ -670,11 +670,13 @@ const RefundManagement = () => {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Payment ID:</span>
-                      <span className="font-mono text-sm">{selectedRefundRequest.paymentId}</span>
+                      <span className="font-mono text-sm">{selectedRefundRequest.paymentId?.paymentId || selectedRefundRequest.paymentId}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Original Amount:</span>
-                      <span className="font-medium">${selectedRefundRequest.paymentId?.amount?.toLocaleString()}</span>
+                      <span className="font-medium">
+                        {selectedRefundRequest.paymentId?.currency === 'INR' ? '₹' : '$'}{selectedRefundRequest.paymentId?.amount?.toLocaleString()}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Gateway:</span>
