@@ -158,6 +158,8 @@ const MyPayments = () => {
                           <div>
                             <div>Paid: {new Date(p.completedAt).toLocaleDateString('en-GB')}</div>
                             <div className="text-gray-400">{new Date(p.completedAt).toLocaleTimeString('en-GB')}</div>
+                            <div className="text-gray-300 mt-1">Created: {new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
+                            <div className="text-gray-300">{new Date(p.createdAt).toLocaleTimeString('en-GB')}</div>
                           </div>
                         ) : (
                           <div>

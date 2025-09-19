@@ -198,6 +198,8 @@ const PaymentHistory = ({ userId }) => {
                       <div>
                         <div>Paid: {new Date(payment.completedAt).toLocaleDateString()}</div>
                         <div className="text-xs text-gray-500">{new Date(payment.completedAt).toLocaleTimeString()}</div>
+                        <div className="text-xs text-gray-400 mt-1">Created: {new Date(payment.createdAt).toLocaleDateString()}</div>
+                        <div className="text-xs text-gray-400">{new Date(payment.createdAt).toLocaleTimeString()}</div>
                       </div>
                     ) : (
                       <div>
