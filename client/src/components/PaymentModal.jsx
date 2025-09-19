@@ -7,11 +7,16 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
   const [paymentData, setPaymentData] = useState(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [receiptUrl, setReceiptUrl] = useState('');
-  const [preferredMethod, setPreferredMethod] = useState('paypal'); // 'paypal' for international, 'razorpay' for India
+  const [preferredMethod, setPreferredMethod] = useState(() => (appointment?.region === 'india' ? 'razorpay' : 'paypal')); // 'paypal' or 'razorpay'
 
   useEffect(() => {
     if (isOpen && appointment) {
-      createPaymentIntent();
+      // Initialize method from appointment region before creating intent
+      const methodFromAppt = appointment?.region === 'india' ? 'razorpay' : 'paypal';
+      setPreferredMethod(methodFromAppt);
+      setPaymentData(null);
+      setLoading(true);
+      setTimeout(createPaymentIntent, 0);
     }
     // Lock body scroll when modal is open
     if (isOpen) {
@@ -351,22 +356,18 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                       <div className="flex justify-between">
                         <span className="text-gray-600">Advance Payment (Flat)</span>
                         <span className="font-medium">
-                          {(paymentData?.payment?.currency || (preferredMethod === 'razorpay' ? 'INR' : 'USD')) === 'INR'
-                            ? `₹ ${Number(paymentData?.payment?.amount || 100).toFixed(2)}`
-                            : `$ ${Number(paymentData?.payment?.amount || 5).toFixed(2)}`}
+                          {preferredMethod === 'razorpay' ? `₹ ${Number((paymentData?.payment?.currency === 'INR' ? paymentData?.payment?.amount : 100)).toFixed(2)}` : `$ ${Number((paymentData?.payment?.currency === 'USD' ? paymentData?.payment?.amount : 5)).toFixed(2)}`}
                         </span>
                       </div>
                       <div className="flex justify-between text-sm text-gray-500">
                         <span>Note</span>
-                        <span>{(paymentData?.payment?.currency || (preferredMethod === 'razorpay' ? 'INR' : 'USD')) === 'INR' ? '₹100 advance to confirm booking' : '$5 advance to confirm booking'}</span>
+                        <span>{preferredMethod === 'razorpay' ? '₹100 advance to confirm booking' : '$5 advance to confirm booking'}</span>
                       </div>
                     </div>
                     <div className="border-t border-blue-200 mt-3 pt-3">
                       <div className="flex justify-between font-semibold text-blue-800">
                         <span>Total Amount</span>
-                        <span>{(paymentData?.payment?.currency || (preferredMethod === 'razorpay' ? 'INR' : 'USD')) === 'INR'
-                          ? `₹ ${Number(paymentData?.payment?.amount || 100).toFixed(2)}`
-                          : `$ ${Number(paymentData?.payment?.amount || 5).toFixed(2)}`}</span>
+                        <span>{preferredMethod === 'razorpay' ? `₹ ${Number((paymentData?.payment?.currency === 'INR' ? paymentData?.payment?.amount : 100)).toFixed(2)}` : `$ ${Number((paymentData?.payment?.currency === 'USD' ? paymentData?.payment?.amount : 5)).toFixed(2)}`}</span>
                       </div>
                     </div>
                   </div>
