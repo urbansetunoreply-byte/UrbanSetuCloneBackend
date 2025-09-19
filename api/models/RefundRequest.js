@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const refundRequestSchema = new mongoose.Schema({
   paymentId: {
@@ -62,4 +62,4 @@ refundRequestSchema.index({ userId: 1 });
 refundRequestSchema.index({ status: 1 });
 refundRequestSchema.index({ createdAt: -1 });
 
-module.exports = mongoose.model('RefundRequest', refundRequestSchema);
+export default mongoose.model('RefundRequest', refundRequestSchema);
