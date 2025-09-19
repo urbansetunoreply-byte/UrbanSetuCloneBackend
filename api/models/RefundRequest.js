@@ -48,8 +48,7 @@ const refundRequestSchema = new mongoose.Schema({
     type: Date
   },
   refundId: {
-    type: String,
-    unique: true
+    type: String
   }
 }, {
   timestamps: true
@@ -61,5 +60,6 @@ refundRequestSchema.index({ appointmentId: 1 });
 refundRequestSchema.index({ userId: 1 });
 refundRequestSchema.index({ status: 1 });
 refundRequestSchema.index({ createdAt: -1 });
+refundRequestSchema.index({ refundId: 1 }, { unique: true, sparse: true });
 
 export default mongoose.model('RefundRequest', refundRequestSchema);
