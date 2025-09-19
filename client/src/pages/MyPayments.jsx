@@ -56,9 +56,9 @@ const MyPayments = () => {
           <div className="flex items-center gap-3 mb-4 flex-wrap">
             <input value={filters.q} onChange={(e)=>setFilters(prev=>({...prev,q:e.target.value}))} placeholder="Search payment ID or receipt" className="px-3 py-2 border rounded-lg text-sm" />
             <label className="text-sm text-gray-600">From:</label>
-            <input type="date" value={filters.fromDate} onChange={(e)=>setFilters(prev=>({...prev,fromDate:e.target.value}))} className="px-3 py-2 border rounded-lg text-sm" />
+            <input type="date" value={filters.fromDate} max={new Date().toISOString().split('T')[0]} onChange={(e)=>setFilters(prev=>({...prev,fromDate:e.target.value}))} className="px-3 py-2 border rounded-lg text-sm" />
             <label className="text-sm text-gray-600">To:</label>
-            <input type="date" value={filters.toDate} onChange={(e)=>setFilters(prev=>({...prev,toDate:e.target.value}))} className="px-3 py-2 border rounded-lg text-sm" />
+            <input type="date" value={filters.toDate} max={new Date().toISOString().split('T')[0]} onChange={(e)=>setFilters(prev=>({...prev,toDate:e.target.value}))} className="px-3 py-2 border rounded-lg text-sm" />
             <select value={filters.status} onChange={(e)=>setFilters(prev=>({...prev,status:e.target.value}))} className="px-3 py-2 border rounded-lg text-sm">
               <option value="">All Status</option>
               <option value="completed">Completed</option>
@@ -118,7 +118,7 @@ const MyPayments = () => {
             </div>
           ) : payments.length === 0 ? (
             <div className="text-center py-8">
-              <FaDollarSign className="text-6xl text-gray-300 mx-auto mb-4" />
+              <FaMoneyBill className="text-6xl text-gray-300 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-600 mb-2">No Payments Found</h3>
               <p className="text-gray-500">You don't have any payments yet.</p>
             </div>

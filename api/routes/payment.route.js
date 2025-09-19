@@ -443,6 +443,14 @@ router.get('/export-csv', verifyToken, async (req, res) => {
       .populate('listingId', 'name address')
       .sort({ createdAt: -1 });
     const headers = ['PaymentID','Currency','Amount','Status','Gateway','Property','AppointmentDate','CreatedAt','Receipt'];
+    const formatDMY = (d) => {
+      if (!d) return '';
+      const dt = new Date(d);
+      const dd = String(dt.getDate()).padStart(2, '0');
+      const mm = String(dt.getMonth() + 1).padStart(2, '0');
+      const yyyy = dt.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    };
     const rows = payments.map(p => [
       p.paymentId,
       p.currency || 'USD',
@@ -450,8 +458,8 @@ router.get('/export-csv', verifyToken, async (req, res) => {
       p.status,
       p.gateway,
       p.appointmentId?.propertyName || '',
-      p.appointmentId?.date ? new Date(p.appointmentId.date).toISOString() : '',
-      p.createdAt ? new Date(p.createdAt).toISOString() : '',
+      formatDMY(p.appointmentId?.date),
+      formatDMY(p.createdAt),
       p.receiptUrl || ''
     ]);
     const csv = [headers.join(','), ...rows.map(r => r.map(v => typeof v === 'string' && v.includes(',') ? `"${v.replace(/"/g, '""')}"` : v).join(','))].join('\n');
@@ -676,6 +684,14 @@ router.get('/admin/export', verifyToken, async (req, res) => {
       .sort({ createdAt: -1 });
 
     const headers = ['PaymentID', 'Currency', 'Amount', 'Status', 'Gateway', 'User', 'Email', 'Property', 'AppointmentDate', 'CreatedAt', 'Receipt'];
+    const formatDMY = (d) => {
+      if (!d) return '';
+      const dt = new Date(d);
+      const dd = String(dt.getDate()).padStart(2, '0');
+      const mm = String(dt.getMonth() + 1).padStart(2, '0');
+      const yyyy = dt.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    };
     const rows = payments.map(p => [
       p.paymentId,
       p.currency || 'USD',
@@ -685,8 +701,8 @@ router.get('/admin/export', verifyToken, async (req, res) => {
       p.userId?.username || '',
       p.userId?.email || '',
       p.appointmentId?.propertyName || '',
-      p.appointmentId?.date ? new Date(p.appointmentId.date).toISOString() : '',
-      p.createdAt ? new Date(p.createdAt).toISOString() : '',
+      formatDMY(p.appointmentId?.date),
+      formatDMY(p.createdAt),
       p.receiptUrl || ''
     ]);
     const csv = [headers.join(','), ...rows.map(r => r.map(v => typeof v === 'string' && v.includes(',') ? `"${v.replace(/"/g, '""')}"` : v).join(','))].join('\n');

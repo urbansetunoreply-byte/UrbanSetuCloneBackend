@@ -313,9 +313,9 @@ const PaymentDashboard = () => {
               <div className="flex items-center gap-3 mb-2 flex-wrap">
                 <input id="admin-pay-q" placeholder="Search payment ID, receipt, user" className="px-3 py-2 border rounded-lg text-sm" onChange={async ()=>{ await fetchAdminPayments(); }} />
                 <label className="text-sm text-gray-600">From:</label>
-                <input id="admin-pay-from" type="date" className="px-3 py-2 border rounded-lg text-sm" onChange={async ()=>{ await fetchAdminPayments(); }} />
+                <input id="admin-pay-from" type="date" max={new Date().toISOString().split('T')[0]} className="px-3 py-2 border rounded-lg text-sm" onChange={async ()=>{ await fetchAdminPayments(); }} />
                 <label className="text-sm text-gray-600">To:</label>
-                <input id="admin-pay-to" type="date" className="px-3 py-2 border rounded-lg text-sm" onChange={async ()=>{ await fetchAdminPayments(); }} />
+                <input id="admin-pay-to" type="date" max={new Date().toISOString().split('T')[0]} className="px-3 py-2 border rounded-lg text-sm" onChange={async ()=>{ await fetchAdminPayments(); }} />
                 <select id="admin-pay-status" onChange={async () => { await fetchAdminPayments(); }} className="px-3 py-2 border rounded-lg text-sm">
                   <option value="">All Status</option>
                   <option value="completed">Completed</option>
@@ -332,7 +332,10 @@ const PaymentDashboard = () => {
               <div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-3">USD Payments ($)</h3>
                 {usdPayments.length === 0 ? (
-                  <div className="text-sm text-gray-500">No USD payments found.</div>
+                  <div className="text-center py-4 text-gray-500">
+                    <FaMoneyBill className="text-4xl text-gray-300 mx-auto mb-2" />
+                    <div>No USD payments found.</div>
+                  </div>
                 ) : (
                   <div className="space-y-3">
                     {usdPayments.map((p) => (
@@ -365,7 +368,10 @@ const PaymentDashboard = () => {
               <div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-3">INR Payments (₹)</h3>
                 {inrPayments.length === 0 ? (
-                  <div className="text-sm text-gray-500">No INR payments found.</div>
+                  <div className="text-center py-4 text-gray-500">
+                    <FaMoneyBill className="text-4xl text-gray-300 mx-auto mb-2" />
+                    <div>No INR payments found.</div>
+                  </div>
                 ) : (
                   <div className="space-y-3">
                     {inrPayments.map((p) => (
