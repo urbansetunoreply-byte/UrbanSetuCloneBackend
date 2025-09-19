@@ -591,6 +591,39 @@ router.post("/refund-request", verifyToken, async (req, res) => {
   }
 });
 
+// POST: Fix refundId index (migration endpoint)
+router.post("/fix-refund-index", verifyToken, async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: "Access denied. Admin role required." });
+    }
+
+    const db = mongoose.connection.db;
+    const collection = db.collection('refundrequests');
+
+    // Drop the existing unique index on refundId
+    try {
+      await collection.dropIndex('refundId_1');
+      console.log('Dropped existing refundId_1 index');
+    } catch (err) {
+      console.log('Index refundId_1 may not exist:', err.message);
+    }
+
+    // Create a new sparse unique index on refundId
+    await collection.createIndex({ refundId: 1 }, { unique: true, sparse: true });
+    console.log('Created new sparse unique index on refundId');
+
+    res.status(200).json({
+      message: "RefundId index fixed successfully",
+      details: "Dropped old unique index and created new sparse unique index"
+    });
+  } catch (err) {
+    console.error("Error fixing refundId index:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 // GET: Get refund requests (admin only)
 router.get("/refund-requests", verifyToken, async (req, res) => {
   try {
