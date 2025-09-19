@@ -8755,26 +8755,14 @@ function PaymentStatusCell({ appointment, isBuyer }) {
             </button>
           ) : (
             paymentStatus && paymentStatus.receiptUrl ? (
-              <button
-                onClick={async () => {
-                  try {
-                    const res = await fetch(paymentStatus.receiptUrl, { credentials: 'include' });
-                    if (!res.ok) return;
-                    const blob = await res.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'receipt.pdf';
-                    document.body.appendChild(a);
-                    a.click();
-                    a.remove();
-                    window.URL.revokeObjectURL(url);
-                  } catch {}
-                }}
+              <a
+                href={paymentStatus.receiptUrl}
+                target="_blank"
+                rel="noreferrer"
                 className="mt-1 inline-flex items-center gap-1 text-white bg-green-600 hover:bg-green-700 text-xs font-semibold px-3 py-1 rounded"
               >
                 <FaDownload /> Receipt
-              </button>
+              </a>
             ) : null
           )}
         </>
