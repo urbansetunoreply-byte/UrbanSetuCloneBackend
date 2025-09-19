@@ -95,7 +95,7 @@ const PaymentDashboard = () => {
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div>
               <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-                <FaDollarSign className="text-green-600" />
+                <FaMoneyBill className="text-green-600" />
                 Payment Dashboard
               </h1>
               <p className="text-gray-600 mt-2">Manage payments, refunds, and financial analytics</p>
