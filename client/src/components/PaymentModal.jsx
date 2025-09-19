@@ -341,7 +341,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                     <p className="text-sm text-gray-600 mb-2">{appointment.propertyDescription}</p>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-500">Appointment Date:</span>
-                      <span className="text-sm font-medium">{new Date(appointment.date).toLocaleDateString()}</span>
+                      <span className="text-sm font-medium">{new Date(appointment.date).toLocaleDateString('en-GB')}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-500">Time:</span>

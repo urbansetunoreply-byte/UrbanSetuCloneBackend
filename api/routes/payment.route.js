@@ -164,11 +164,19 @@ router.get('/:paymentId/receipt', verifyToken, async (req, res) => {
     stream.on('error', () => { try { res.end(); } catch {} });
 
     // Header
-    doc.fontSize(20).fillColor('#1f2937').text('UrbanSetu Payment Receipt', { align: 'center' });
+    // Title and branding
+    doc.fontSize(22).fillColor('#111827').text('UrbanSetu Payment Receipt', { align: 'center' });
+    doc.moveDown(0.5);
+    // Branding bar
+    doc.rect(doc.page.margins.left, doc.y, doc.page.width - doc.page.margins.left - doc.page.margins.right, 2).fill('#2563eb');
+    doc.moveDown();
     doc.moveDown(0.5);
     doc.fontSize(10).fillColor('#6b7280').text(new Date().toLocaleString('en-IN')); doc.moveDown();
 
-    // Payment summary
+    // Payment summary box
+    doc.moveDown();
+    doc.roundedRect(doc.page.margins.left, doc.y, doc.page.width - doc.page.margins.left - doc.page.margins.right, 110, 6).stroke('#e5e7eb');
+    doc.moveDown(0.4);
     const currencySymbol = (payment.currency || 'USD') === 'INR' ? '₹' : '$';
     const amountText = `${currencySymbol} ${Number(payment.amount).toFixed(2)}`;
     doc.fontSize(12).fillColor('#111827').text(`Payment ID: ${payment.paymentId}`);
@@ -180,7 +188,7 @@ router.get('/:paymentId/receipt', verifyToken, async (req, res) => {
 
     // Appointment/listing info
     doc.fontSize(12).text(`Property: ${payment.appointmentId?.propertyName || payment.listingId?.name || 'N/A'}`);
-    if (payment.appointmentId?.date) doc.text(`Appointment Date: ${new Date(payment.appointmentId.date).toLocaleDateString('en-IN')}`);
+    if (payment.appointmentId?.date) doc.text(`Appointment Date: ${new Date(payment.appointmentId.date).toLocaleDateString('en-GB')}`);
     if (payment.appointmentId?.time) doc.text(`Appointment Time: ${payment.appointmentId.time}`);
     doc.text(`Buyer: ${payment.userId?.username || ''}`);
     doc.text(`Generated For: ${user.username || user.email}`);
@@ -196,6 +204,17 @@ router.get('/:paymentId/receipt', verifyToken, async (req, res) => {
       note = payment.status === 'completed' ? 'Marked paid by Admin (approved)' : 'Marked pending by Admin';
     }
     doc.fontSize(11).fillColor('#065f46').text(note);
+
+    // Gateway badge
+    doc.moveDown();
+    const badge = payment.gateway === 'razorpay' ? 'Razorpay' : (payment.gateway === 'paypal' ? 'PayPal' : 'Admin Approved');
+    const badgeColor = payment.gateway === 'razorpay' ? '#0ea5e9' : (payment.gateway === 'paypal' ? '#2563eb' : '#10b981');
+    const x = doc.page.margins.left;
+    const y = doc.y;
+    doc.save();
+    doc.rect(x, y, 120, 20).fillOpacity(0.15).fill(badgeColor).fillOpacity(1).stroke(badgeColor);
+    doc.fillColor('#111827').fontSize(10).text(`Platform: ${badge}`, x + 6, y + 5);
+    doc.restore();
 
     // Footer
     doc.moveDown(2);
