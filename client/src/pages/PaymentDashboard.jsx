@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaDollarSign, FaCreditCard, FaChartLine, FaDownload, FaUndo, FaCheckCircle, FaTimes, FaExclamationTriangle, FaSpinner, FaUsers, FaHome, FaCalendar } from 'react-icons/fa';
+import { FaDollarSign, FaCreditCard, FaChartLine, FaDownload, FaUndo, FaCheckCircle, FaTimes, FaExclamationTriangle, FaSpinner, FaUsers, FaHome, FaCalendar, FaMoneyBill } from 'react-icons/fa';
 import PaymentHistory from '../components/PaymentHistory';
 import RefundManagement from '../components/RefundManagement';
 
