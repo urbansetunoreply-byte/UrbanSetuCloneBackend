@@ -531,3 +531,32 @@ router.get('/paypal/debug', verifyToken, async (req, res) => {
     return res.status(500).json({ ok: false, error: e?.message || String(e) });
   }
 });
+
+// Admin: List all payments with optional currency filter
+router.get('/admin/list', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (user.role !== 'admin' && user.role !== 'rootadmin') {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+    const { currency, status, gateway, page = 1, limit = 20 } = req.query;
+    const query = {};
+    if (currency) query.currency = currency.toUpperCase();
+    if (status) query.status = status;
+    if (gateway) query.gateway = gateway;
+
+    const payments = await Payment.find(query)
+      .populate('appointmentId', 'propertyName date status buyerId sellerId')
+      .populate('listingId', 'name address')
+      .populate('userId', 'username email')
+      .sort({ createdAt: -1 })
+      .limit(Number(limit))
+      .skip((Number(page) - 1) * Number(limit));
+    const total = await Payment.countDocuments(query);
+    return res.json({ payments, total, page: Number(page), totalPages: Math.ceil(total / Number(limit)) });
+  } catch (e) {
+    console.error('Admin list payments error:', e);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});

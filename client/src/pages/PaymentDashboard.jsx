@@ -15,9 +15,12 @@ const PaymentDashboard = () => {
   });
   const [monthlyStats, setMonthlyStats] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [usdPayments, setUsdPayments] = useState([]);
+  const [inrPayments, setInrPayments] = useState([]);
 
   useEffect(() => {
     fetchPaymentStats();
+    fetchAdminPayments();
   }, []);
 
   const fetchPaymentStats = async () => {
@@ -35,6 +38,21 @@ const PaymentDashboard = () => {
       console.error('Error fetching payment stats:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAdminPayments = async () => {
+    try {
+      const [usdRes, inrRes] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?currency=USD&limit=50`, { credentials: 'include' }),
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?currency=INR&limit=50`, { credentials: 'include' })
+      ]);
+      const usdData = await usdRes.json();
+      const inrData = await inrRes.json();
+      if (usdRes.ok) setUsdPayments(usdData.payments || []);
+      if (inrRes.ok) setInrPayments(inrData.payments || []);
+    } catch (e) {
+      // non-fatal
     }
   };
 
@@ -246,7 +264,62 @@ const PaymentDashboard = () => {
           )}
 
           {activeTab === 'history' && (
-            <PaymentHistory userId="all" />
+            <div className="space-y-10">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-800 mb-3">USD Payments ($)</h3>
+                {usdPayments.length === 0 ? (
+                  <div className="text-sm text-gray-500">No USD payments found.</div>
+                ) : (
+                  <div className="space-y-3">
+                    {usdPayments.map((p) => (
+                      <div key={p._id} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-semibold text-gray-800">{p.appointmentId?.propertyName || 'Property Payment'}</div>
+                            <div className="text-xs text-gray-500">Buyer: {p.userId?.username || 'N/A'}</div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-lg font-bold">$ {Number(p.amount).toFixed(2)}</div>
+                            <div className="text-xs text-gray-500">{new Date(p.createdAt).toLocaleDateString()}</div>
+                          </div>
+                        </div>
+                        <div className="mt-2 text-xs text-gray-600">Gateway: {p.gateway?.toUpperCase()}</div>
+                        {p.receiptUrl && (
+                          <div className="mt-2 text-xs"><a className="text-blue-600 underline" href={p.receiptUrl} target="_blank" rel="noreferrer">Receipt</a></div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-gray-800 mb-3">INR Payments (₹)</h3>
+                {inrPayments.length === 0 ? (
+                  <div className="text-sm text-gray-500">No INR payments found.</div>
+                ) : (
+                  <div className="space-y-3">
+                    {inrPayments.map((p) => (
+                      <div key={p._id} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-semibold text-gray-800">{p.appointmentId?.propertyName || 'Property Payment'}</div>
+                            <div className="text-xs text-gray-500">Buyer: {p.userId?.username || 'N/A'}</div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-lg font-bold">₹ {Number(p.amount).toFixed(2)}</div>
+                            <div className="text-xs text-gray-500">{new Date(p.createdAt).toLocaleDateString()}</div>
+                          </div>
+                        </div>
+                        <div className="mt-2 text-xs text-gray-600">Gateway: {p.gateway?.toUpperCase()}</div>
+                        {p.receiptUrl && (
+                          <div className="mt-2 text-xs"><a className="text-blue-600 underline" href={p.receiptUrl} target="_blank" rel="noreferrer">Receipt</a></div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           )}
 
           {activeTab === 'refunds' && (
