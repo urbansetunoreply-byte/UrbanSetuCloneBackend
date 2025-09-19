@@ -8786,11 +8786,11 @@ function PaymentStatusCell({ appointment, isBuyer }) {
   const isAdminMarked = Boolean(paymentStatus?.metadata?.adminMarked);
   const isPending = !isAdminMarked && (!paymentStatus || paymentStatus.status !== 'completed') && !isFrozenStatus;
   
-  // Check if there's a pending or rejected refund request
-  const hasRefundRequest = refundRequestStatus && ['pending', 'rejected', 'approved'].includes(refundRequestStatus.status);
+  // Check if there's a pending, approved, or rejected refund request
+  const hasRefundRequest = refundRequestStatus && ['pending', 'rejected', 'approved', 'processed'].includes(refundRequestStatus.status);
   const isRefundRequestRejected = refundRequestStatus && refundRequestStatus.status === 'rejected';
   const isRefundRequestPending = refundRequestStatus && refundRequestStatus.status === 'pending';
-  const isRefundRequestApproved = refundRequestStatus && refundRequestStatus.status === 'approved';
+  const isRefundRequestApproved = refundRequestStatus && ['approved', 'processed'].includes(refundRequestStatus.status);
   
   return (
     <div className="flex flex-col items-center gap-2">
@@ -8800,10 +8800,15 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       
       {/* Show refund request status */}
       {hasRefundRequest && (
-        <div className="text-xs text-orange-600">
+        <div className={`text-xs ${
+          isRefundRequestPending ? 'text-orange-600' : 
+          isRefundRequestRejected ? 'text-red-600' : 
+          isRefundRequestApproved ? 'text-green-600' : 
+          'text-gray-600'
+        }`}>
           {isRefundRequestPending && 'Processing Refund Request'}
-          {isRefundRequestApproved && 'Refund Approved'}
-          {isRefundRequestRejected && 'Refund Rejected'}
+          {isRefundRequestApproved && 'Refund Request Approved'}
+          {isRefundRequestRejected && 'Refund Request Rejected'}
         </div>
       )}
       
@@ -8853,7 +8858,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
             ['rejected', 'cancelledByBuyer', 'cancelledBySeller', 'cancelledByAdmin'].includes(appointment.status) && 
             (!paymentStatus.refundAmount || paymentStatus.refundAmount === 0) ? (
             <>
-              {!isRefundRequestApproved && (
+              {!isRefundRequestApproved && !isRefundRequestPending && (
                 <button
                   onClick={() => setShowRefundRequestModal(true)}
                   className="mt-1 inline-flex items-center gap-1 text-white bg-orange-600 hover:bg-orange-700 text-xs font-semibold px-3 py-1 rounded"
