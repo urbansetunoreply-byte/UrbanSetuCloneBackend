@@ -128,6 +128,11 @@ export default function Home() {
     <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen">
       {/* Hero Section */}
       <div className="text-center py-10 bg-gradient-to-r from-blue-600 to-purple-600 text-white animate-fade-in-down">
+        {currentUser && (
+          <div className="text-xl font-semibold mb-2 opacity-95">
+            {`Welcome ${currentUser.username || currentUser.name || currentUser.fullName || 'User'}!`}
+          </div>
+        )}
         <h1 className="text-4xl font-extrabold animate-fade-in">Find Your Dream Home</h1>
         <p className="mt-2 text-lg animate-fade-in delay-200">Discover the best homes at unbeatable prices</p>
         <Link to="/search" className="mt-4 inline-block bg-white text-blue-600 font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-gray-200 hover:scale-105 transition-all animate-fade-in-up delay-300">
