@@ -312,7 +312,9 @@ const PaymentDashboard = () => {
             <div className="space-y-6">
               <div className="flex items-center gap-3 mb-2 flex-wrap">
                 <input id="admin-pay-q" placeholder="Search payment ID, receipt, user" className="px-3 py-2 border rounded-lg text-sm" onChange={async ()=>{ await fetchAdminPayments(); }} />
+                <label className="text-sm text-gray-600">From:</label>
                 <input id="admin-pay-from" type="date" className="px-3 py-2 border rounded-lg text-sm" onChange={async ()=>{ await fetchAdminPayments(); }} />
+                <label className="text-sm text-gray-600">To:</label>
                 <input id="admin-pay-to" type="date" className="px-3 py-2 border rounded-lg text-sm" onChange={async ()=>{ await fetchAdminPayments(); }} />
                 <select id="admin-pay-status" onChange={async () => { await fetchAdminPayments(); }} className="px-3 py-2 border rounded-lg text-sm">
                   <option value="">All Status</option>

@@ -55,7 +55,9 @@ const MyPayments = () => {
         <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
           <div className="flex items-center gap-3 mb-4 flex-wrap">
             <input value={filters.q} onChange={(e)=>setFilters(prev=>({...prev,q:e.target.value}))} placeholder="Search payment ID or receipt" className="px-3 py-2 border rounded-lg text-sm" />
+            <label className="text-sm text-gray-600">From:</label>
             <input type="date" value={filters.fromDate} onChange={(e)=>setFilters(prev=>({...prev,fromDate:e.target.value}))} className="px-3 py-2 border rounded-lg text-sm" />
+            <label className="text-sm text-gray-600">To:</label>
             <input type="date" value={filters.toDate} onChange={(e)=>setFilters(prev=>({...prev,toDate:e.target.value}))} className="px-3 py-2 border rounded-lg text-sm" />
             <select value={filters.status} onChange={(e)=>setFilters(prev=>({...prev,status:e.target.value}))} className="px-3 py-2 border rounded-lg text-sm">
               <option value="">All Status</option>
@@ -76,23 +78,32 @@ const MyPayments = () => {
             </select>
             <button
               onClick={async ()=>{
-                const params = new URLSearchParams();
-                if (filters.status) params.set('status', filters.status);
-                if (filters.gateway) params.set('gateway', filters.gateway);
-                if (filters.q) params.set('q', filters.q);
-                if (filters.fromDate) params.set('fromDate', filters.fromDate);
-                if (filters.toDate) params.set('toDate', filters.toDate);
-                const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/export?${params.toString()}`, { credentials: 'include' });
-                if (!res.ok) return;
-                const blob = await res.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'my_payments.csv';
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                window.URL.revokeObjectURL(url);
+                try {
+                  const params = new URLSearchParams();
+                  if (filters.status) params.set('status', filters.status);
+                  if (filters.gateway) params.set('gateway', filters.gateway);
+                  if (filters.q) params.set('q', filters.q);
+                  if (filters.fromDate) params.set('fromDate', filters.fromDate);
+                  if (filters.toDate) params.set('toDate', filters.toDate);
+                  const qs = params.toString();
+                  const url = `${import.meta.env.VITE_API_BASE_URL}/api/payments/export${qs ? `?${qs}` : ''}`;
+                  const res = await fetch(url, { credentials: 'include' });
+                  if (!res.ok) {
+                    console.error('Export failed', await res.text());
+                    return;
+                  }
+                  const blob = await res.blob();
+                  const objUrl = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = objUrl;
+                  a.download = 'my_payments.csv';
+                  document.body.appendChild(a);
+                  a.click();
+                  a.remove();
+                  window.URL.revokeObjectURL(objUrl);
+                } catch (e) {
+                  console.error('Export error', e);
+                }
               }}
               className="px-3 py-2 bg-green-100 text-green-700 rounded-lg text-sm flex items-center gap-2"
             >
