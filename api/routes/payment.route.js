@@ -546,7 +546,7 @@ router.get('/export-csv', verifyToken, async (req, res) => {
       .populate('appointmentId', 'propertyName date status')
       .populate('listingId', 'name address')
       .sort({ createdAt: -1 });
-    const headers = ['PaymentID','Currency','Amount','Status','Gateway','Property','AppointmentDate','CreatedAt','Receipt'];
+    const headers = ['PaymentID','Currency','Amount','Status','Gateway','Property','AppointmentDate','CreatedDate','CreatedTime','PaidDate','PaidTime','Receipt'];
     const formatDMY = (d) => {
       if (!d) return '';
       const dt = new Date(d);
@@ -554,6 +554,11 @@ router.get('/export-csv', verifyToken, async (req, res) => {
       const mm = String(dt.getMonth() + 1).padStart(2, '0');
       const yyyy = dt.getFullYear();
       return `${dd}/${mm}/${yyyy}`;
+    };
+    const formatTime = (d) => {
+      if (!d) return '';
+      const dt = new Date(d);
+      return dt.toLocaleTimeString('en-GB');
     };
     const rows = payments.map(p => [
       p.paymentId,
@@ -564,6 +569,9 @@ router.get('/export-csv', verifyToken, async (req, res) => {
       p.appointmentId?.propertyName || '',
       formatDMY(p.appointmentId?.date),
       formatDMY(p.createdAt),
+      formatTime(p.createdAt),
+      p.completedAt ? formatDMY(p.completedAt) : '',
+      p.completedAt ? formatTime(p.completedAt) : '',
       p.receiptUrl || ''
     ]);
     const csv = [headers.join(','), ...rows.map(r => r.map(v => typeof v === 'string' && v.includes(',') ? `"${v.replace(/"/g, '""')}"` : v).join(','))].join('\n');
@@ -830,7 +838,20 @@ router.get('/export', verifyToken, async (req, res) => {
       .populate('appointmentId', 'propertyName date status')
       .populate('listingId', 'name address')
       .sort({ createdAt: -1 });
-    const headers = ['PaymentID','Currency','Amount','Status','Gateway','Property','AppointmentDate','CreatedAt','Receipt'];
+    const headers = ['PaymentID','Currency','Amount','Status','Gateway','Property','AppointmentDate','CreatedDate','CreatedTime','PaidDate','PaidTime','Receipt'];
+    const formatDMY = (d) => {
+      if (!d) return '';
+      const dt = new Date(d);
+      const dd = String(dt.getDate()).padStart(2, '0');
+      const mm = String(dt.getMonth() + 1).padStart(2, '0');
+      const yyyy = dt.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    };
+    const formatTime = (d) => {
+      if (!d) return '';
+      const dt = new Date(d);
+      return dt.toLocaleTimeString('en-GB');
+    };
     const rows = payments.map(p => [
       p.paymentId,
       p.currency || 'USD',
@@ -839,7 +860,10 @@ router.get('/export', verifyToken, async (req, res) => {
       p.gateway,
       p.appointmentId?.propertyName || '',
       p.appointmentId?.date ? new Date(p.appointmentId.date).toISOString() : '',
-      p.createdAt ? new Date(p.createdAt).toISOString() : '',
+      formatDMY(p.createdAt),
+      formatTime(p.createdAt),
+      p.completedAt ? formatDMY(p.completedAt) : '',
+      p.completedAt ? formatTime(p.completedAt) : '',
       p.receiptUrl || ''
     ]);
     const csv = [headers.join(','), ...rows.map(r => r.map(v => typeof v === 'string' && v.includes(',') ? `"${v.replace(/"/g, '""')}"` : v).join(','))].join('\n');
@@ -882,7 +906,7 @@ router.get('/admin/export', verifyToken, async (req, res) => {
       .populate('userId', 'username email')
       .sort({ createdAt: -1 });
 
-    const headers = ['PaymentID', 'Currency', 'Amount', 'Status', 'Gateway', 'User', 'Email', 'Property', 'AppointmentDate', 'CreatedAt', 'Receipt'];
+    const headers = ['PaymentID', 'Currency', 'Amount', 'Status', 'Gateway', 'User', 'Email', 'Property', 'AppointmentDate', 'CreatedDate', 'CreatedTime', 'PaidDate', 'PaidTime', 'Receipt'];
     const formatDMY = (d) => {
       if (!d) return '';
       const dt = new Date(d);
@@ -890,6 +914,11 @@ router.get('/admin/export', verifyToken, async (req, res) => {
       const mm = String(dt.getMonth() + 1).padStart(2, '0');
       const yyyy = dt.getFullYear();
       return `${dd}/${mm}/${yyyy}`;
+    };
+    const formatTime = (d) => {
+      if (!d) return '';
+      const dt = new Date(d);
+      return dt.toLocaleTimeString('en-GB');
     };
     const rows = payments.map(p => [
       p.paymentId,
@@ -902,6 +931,9 @@ router.get('/admin/export', verifyToken, async (req, res) => {
       p.appointmentId?.propertyName || '',
       formatDMY(p.appointmentId?.date),
       formatDMY(p.createdAt),
+      formatTime(p.createdAt),
+      p.completedAt ? formatDMY(p.completedAt) : '',
+      p.completedAt ? formatTime(p.completedAt) : '',
       p.receiptUrl || ''
     ]);
     const csv = [headers.join(','), ...rows.map(r => r.map(v => typeof v === 'string' && v.includes(',') ? `"${v.replace(/"/g, '""')}"` : v).join(','))].join('\n');
