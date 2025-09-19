@@ -56,6 +56,10 @@ const connectToMongoDB = async (retries = 3) => {
         try {
             await mongoose.connect(process.env.MONGO, mongoOptions);
             console.log("Connected to MongoDB!");
+            
+            // Run migration to fix refundId index
+            await fixRefundIdIndex();
+            
             return;
         } catch (error) {
             if (i === retries - 1) {
@@ -64,6 +68,35 @@ const connectToMongoDB = async (retries = 3) => {
             }
             await new Promise(resolve => setTimeout(resolve, 5000));
         }
+    }
+};
+
+// Migration function to fix refundId index
+const fixRefundIdIndex = async () => {
+    try {
+        const db = mongoose.connection.db;
+        const collection = db.collection('refundrequests');
+
+        // Check if the problematic index exists
+        const indexes = await collection.indexes();
+        const refundIdIndex = indexes.find(index => index.name === 'refundId_1' && index.unique && !index.sparse);
+        
+        if (refundIdIndex) {
+            console.log("Found problematic refundId index, fixing...");
+            
+            // Drop the existing unique index on refundId
+            await collection.dropIndex('refundId_1');
+            console.log("✅ Dropped existing refundId_1 index");
+            
+            // Create a new sparse unique index on refundId
+            await collection.createIndex({ refundId: 1 }, { unique: true, sparse: true });
+            console.log("✅ Created new sparse unique index on refundId");
+        } else {
+            console.log("RefundId index is already correct or doesn't exist");
+        }
+    } catch (error) {
+        console.error("Error during refundId index migration:", error.message);
+        // Don't exit the process, just log the error
     }
 };
 
