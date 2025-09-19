@@ -7,6 +7,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
   const [paymentData, setPaymentData] = useState(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [receiptUrl, setReceiptUrl] = useState('');
+  const [processingPayment, setProcessingPayment] = useState(false);
   const [preferredMethod, setPreferredMethod] = useState(() => (appointment?.region === 'india' ? 'razorpay' : 'paypal')); // 'paypal' or 'razorpay'
 
   useEffect(() => {
@@ -106,9 +107,12 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
           },
           handler: async (response) => {
             try {
+              setProcessingPayment(true);
               await verifyRazorpay(response);
             } catch (e) {
               toast.error('Verification failed');
+            } finally {
+              setProcessingPayment(false);
             }
           },
           modal: { ondismiss: () => toast.info('Payment cancelled. You can try again later.') }
@@ -170,6 +174,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
           },
           onApprove: async (data, actions) => {
             try {
+              setProcessingPayment(true);
               // Capture via actions may fail if permissions; fallback to server capture
               try {
                 await actions.order.capture();
@@ -184,6 +189,8 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
               await verifyPayment({ paypal_order_id: data.orderID });
             } catch (e) {
               toast.error('Payment capture failed');
+            } finally {
+              setProcessingPayment(false);
             }
           },
           onCancel: () => {
@@ -314,7 +321,15 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
 
             {/* Payment Details */}
             <div className="p-6">
-              {loading && !paymentData ? (
+              {processingPayment ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <FaSpinner className="animate-spin text-4xl text-blue-600 mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Processing Payment...</h3>
+                  <p className="text-gray-600 text-center">
+                    Please wait while we verify your payment. Do not close this window.
+                  </p>
+                </div>
+              ) : loading && !paymentData ? (
                 <div className="flex items-center justify-center py-8">
                   <FaSpinner className="animate-spin text-2xl text-blue-600" />
                   <span className="ml-2 text-gray-600">Preparing payment...</span>

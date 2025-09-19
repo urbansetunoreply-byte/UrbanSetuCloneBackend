@@ -775,6 +775,13 @@ router.post('/admin/mark-paid', verifyToken, async (req, res) => {
     // Mark appointment flag
     await Booking.findByIdAndUpdate(appointmentId, { paymentConfirmed: true });
 
+    // Emit socket event for real-time payment status update
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('paymentStatusUpdated', { appointmentId, paymentConfirmed: true });
+      io.to('admin_*').emit('paymentStatusUpdated', { appointmentId, paymentConfirmed: true });
+    }
+
     return res.json({ ok: true, payment, receiptUrl });
   } catch (e) {
     console.error('Admin mark-paid error:', e);
@@ -807,6 +814,13 @@ router.post('/admin/mark-unpaid', verifyToken, async (req, res) => {
     }
 
     await Booking.findByIdAndUpdate(appointmentId, { paymentConfirmed: false });
+
+    // Emit socket event for real-time payment status update
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('paymentStatusUpdated', { appointmentId, paymentConfirmed: false });
+      io.to('admin_*').emit('paymentStatusUpdated', { appointmentId, paymentConfirmed: false });
+    }
 
     return res.json({ ok: true, updated: Boolean(payment) });
   } catch (e) {
