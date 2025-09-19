@@ -8655,6 +8655,13 @@ function PaymentStatusCell({ appointment, isBuyer }) {
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showPayModal, setShowPayModal] = useState(false);
+  const [showRefundRequestModal, setShowRefundRequestModal] = useState(false);
+  const [refundRequestForm, setRefundRequestForm] = useState({
+    reason: '',
+    amount: 0,
+    type: 'full'
+  });
+  const [submittingRefundRequest, setSubmittingRefundRequest] = useState(false);
   
   useEffect(() => {
     fetchPaymentStatus();
@@ -8714,6 +8721,45 @@ function PaymentStatusCell({ appointment, isBuyer }) {
     }
   };
 
+  const handleRefundRequest = async (e) => {
+    e.preventDefault();
+    if (!paymentStatus) return;
+
+    try {
+      setSubmittingRefundRequest(true);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/refund-request`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          paymentId: paymentStatus.paymentId,
+          appointmentId: appointment._id,
+          reason: refundRequestForm.reason,
+          requestedAmount: refundRequestForm.type === 'full' ? paymentStatus.amount : refundRequestForm.amount,
+          type: refundRequestForm.type
+        })
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        toast.success('Refund request submitted successfully');
+        setShowRefundRequestModal(false);
+        setRefundRequestForm({ reason: '', amount: 0, type: 'full' });
+        // Refresh payment status
+        fetchPaymentStatus();
+      } else {
+        toast.error(data.message || 'Failed to submit refund request');
+      }
+    } catch (error) {
+      console.error('Error submitting refund request:', error);
+      toast.error('An error occurred while submitting refund request');
+    } finally {
+      setSubmittingRefundRequest(false);
+    }
+  };
+
   const displayStatus = getDisplayStatus();
   // Check if appointment is in a frozen status (no payment allowed)
   const isFrozenStatus = ['rejected', 'cancelledByBuyer', 'cancelledBySeller', 'cancelledByAdmin', 'outdated'].includes(appointment.status);
@@ -8763,6 +8809,15 @@ function PaymentStatusCell({ appointment, isBuyer }) {
             >
               <FaCreditCard /> Retry Payment
             </button>
+          ) : paymentStatus && paymentStatus.status === 'completed' && 
+            ['rejected', 'cancelledByBuyer', 'cancelledBySeller', 'cancelledByAdmin'].includes(appointment.status) && 
+            (!paymentStatus.refundAmount || paymentStatus.refundAmount === 0) ? (
+            <button
+              onClick={() => setShowRefundRequestModal(true)}
+              className="mt-1 inline-flex items-center gap-1 text-white bg-orange-600 hover:bg-orange-700 text-xs font-semibold px-3 py-1 rounded"
+            >
+              <FaUndo /> Request Refund
+            </button>
           ) : (
             paymentStatus && paymentStatus.receiptUrl ? (
               <a
@@ -8792,6 +8847,152 @@ function PaymentStatusCell({ appointment, isBuyer }) {
             fetchPaymentStatus();
           }}
         />
+      )}
+
+      {/* Refund Request Modal */}
+      {showRefundRequestModal && paymentStatus && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                  <FaUndo className="text-orange-600" />
+                  Request Refund
+                </h3>
+                <button
+                  onClick={() => setShowRefundRequestModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <FaTimes className="text-xl" />
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleRefundRequest} className="p-6">
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Payment Details
+                </label>
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Property:</span>
+                    <span className="font-medium">{appointment.propertyName}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Amount:</span>
+                    <span className="font-medium">${paymentStatus.amount.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Payment ID:</span>
+                    <span className="font-mono text-sm">{paymentStatus.paymentId}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Appointment Status:</span>
+                    <span className="font-medium capitalize">{appointment.status.replace(/([A-Z])/g, ' $1').trim()}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Refund Type
+                </label>
+                <div className="flex gap-4">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="type"
+                      value="full"
+                      checked={refundRequestForm.type === 'full'}
+                      onChange={(e) => {
+                        setRefundRequestForm(prev => ({
+                          ...prev,
+                          type: e.target.value,
+                          amount: e.target.value === 'full' ? paymentStatus.amount : prev.amount
+                        }));
+                      }}
+                      className="mr-2"
+                    />
+                    Full Refund (${paymentStatus.amount.toLocaleString()})
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="type"
+                      value="partial"
+                      checked={refundRequestForm.type === 'partial'}
+                      onChange={(e) => setRefundRequestForm(prev => ({ ...prev, type: e.target.value }))}
+                      className="mr-2"
+                    />
+                    Partial Refund
+                  </label>
+                </div>
+              </div>
+
+              {refundRequestForm.type === 'partial' && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Refund Amount
+                  </label>
+                  <div className="relative">
+                    <FaDollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="number"
+                      value={refundRequestForm.amount}
+                      onChange={(e) => setRefundRequestForm(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
+                      max={paymentStatus.amount}
+                      min="1"
+                      step="0.01"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Refund Reason
+                </label>
+                <textarea
+                  value={refundRequestForm.reason}
+                  onChange={(e) => setRefundRequestForm(prev => ({ ...prev, reason: e.target.value }))}
+                  placeholder="Please explain why you need a refund..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows="3"
+                  required
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowRefundRequestModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingRefundRequest}
+                  className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {submittingRefundRequest ? (
+                    <>
+                      <FaSpinner className="animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <FaUndo />
+                      Submit Request
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

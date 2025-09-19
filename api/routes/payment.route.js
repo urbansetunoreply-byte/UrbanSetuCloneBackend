@@ -4,6 +4,7 @@ import Payment from "../models/payment.model.js";
 import Booking from "../models/booking.model.js";
 import Listing from "../models/listing.model.js";
 import User from "../models/user.model.js";
+import RefundRequest from "../models/RefundRequest.js";
 import { verifyToken } from '../utils/verify.js';
 import crypto from 'crypto';
 import { createPayPalOrder, capturePayPalOrder, getPayPalAccessToken } from '../controllers/paypalController.js';
@@ -508,6 +509,201 @@ router.post("/refund", verifyToken, async (req, res) => {
     });
   } catch (err) {
     console.error("Error processing refund:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// POST: Submit refund request
+router.post("/refund-request", verifyToken, async (req, res) => {
+  try {
+    const { paymentId, appointmentId, reason, requestedAmount, type } = req.body;
+    const userId = req.user.id;
+
+    // Validate required fields
+    if (!paymentId || !appointmentId || !reason || !requestedAmount || !type) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Check if payment exists and belongs to user
+    const payment = await Payment.findOne({ paymentId });
+    if (!payment) {
+      return res.status(404).json({ message: "Payment not found" });
+    }
+
+    // Check if user is authorized (buyer or seller of the appointment)
+    const appointment = await Booking.findById(appointmentId);
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    const isBuyer = appointment.buyerId && appointment.buyerId.toString() === userId;
+    const isSeller = appointment.sellerId && appointment.sellerId.toString() === userId;
+
+    if (!isBuyer && !isSeller) {
+      return res.status(403).json({ message: "Unauthorized to request refund for this appointment" });
+    }
+
+    // Check if payment is completed
+    if (payment.status !== 'completed') {
+      return res.status(400).json({ message: "Only completed payments can be refunded" });
+    }
+
+    // Check if appointment status allows refund
+    const eligibleStatuses = ['rejected', 'cancelledByBuyer', 'cancelledBySeller', 'cancelledByAdmin'];
+    if (!eligibleStatuses.includes(appointment.status)) {
+      return res.status(400).json({ message: "Appointment status does not allow refund requests" });
+    }
+
+    // Check if refund amount is valid
+    if (requestedAmount > payment.amount) {
+      return res.status(400).json({ message: "Requested refund amount cannot exceed payment amount" });
+    }
+
+    // Check if there's already a pending refund request for this payment
+    const existingRequest = await RefundRequest.findOne({
+      paymentId,
+      status: { $in: ['pending', 'approved'] }
+    });
+
+    if (existingRequest) {
+      return res.status(400).json({ message: "A refund request already exists for this payment" });
+    }
+
+    // Create refund request
+    const refundRequest = new RefundRequest({
+      paymentId,
+      appointmentId,
+      userId,
+      requestedAmount,
+      type,
+      reason
+    });
+
+    await refundRequest.save();
+
+    res.status(201).json({
+      message: "Refund request submitted successfully",
+      refundRequestId: refundRequest._id
+    });
+  } catch (err) {
+    console.error("Error creating refund request:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// GET: Get refund requests (admin only)
+router.get("/refund-requests", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { page = 1, limit = 10, status, search } = req.query;
+
+    // Check if user is admin
+    const user = await User.findById(userId);
+    const isAdmin = user.role === 'admin' || user.role === 'rootadmin';
+
+    if (!isAdmin) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    let query = {};
+    if (status) query.status = status;
+    if (search) {
+      query.$or = [
+        { paymentId: new RegExp(search, 'i') },
+        { reason: new RegExp(search, 'i') },
+        { 'appointmentId.propertyName': new RegExp(search, 'i') }
+      ];
+    }
+
+    const refundRequests = await RefundRequest.find(query)
+      .populate('paymentId', 'amount currency gateway paymentId')
+      .populate('appointmentId', 'propertyName date status buyerId sellerId')
+      .populate('userId', 'name email')
+      .populate('processedBy', 'name email')
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+
+    const totalRequests = await RefundRequest.countDocuments(query);
+
+    res.status(200).json({
+      refundRequests,
+      totalPages: Math.ceil(totalRequests / limit),
+      currentPage: parseInt(page),
+      totalRequests
+    });
+  } catch (err) {
+    console.error("Error fetching refund requests:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// PUT: Update refund request status (admin only)
+router.put("/refund-request/:requestId", verifyToken, async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const { status, adminNotes } = req.body;
+    const userId = req.user.id;
+
+    // Check if user is admin
+    const user = await User.findById(userId);
+    const isAdmin = user.role === 'admin' || user.role === 'rootadmin';
+
+    if (!isAdmin) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    const refundRequest = await RefundRequest.findById(requestId)
+      .populate('paymentId')
+      .populate('appointmentId');
+
+    if (!refundRequest) {
+      return res.status(404).json({ message: "Refund request not found" });
+    }
+
+    if (!['pending', 'approved', 'rejected', 'processed'].includes(status)) {
+      return res.status(400).json({ message: "Invalid status" });
+    }
+
+    // Update refund request
+    refundRequest.status = status;
+    refundRequest.adminNotes = adminNotes;
+    refundRequest.processedBy = userId;
+    refundRequest.processedAt = new Date();
+
+    await refundRequest.save();
+
+    // If approved, process the actual refund
+    if (status === 'approved') {
+      const payment = refundRequest.paymentId;
+      
+      // Update payment record
+      payment.refundAmount = refundRequest.requestedAmount;
+      payment.refundReason = refundRequest.reason;
+      payment.refundedAt = new Date();
+      payment.refundId = `refund_${Date.now()}`;
+      payment.status = refundRequest.requestedAmount === payment.amount ? 'refunded' : 'partially_refunded';
+
+      await payment.save();
+
+      // Update appointment status if fully refunded
+      if (payment.status === 'refunded') {
+        await Booking.findByIdAndUpdate(refundRequest.appointmentId, {
+          paymentRefunded: true
+        });
+      }
+
+      // Update refund request status to processed
+      refundRequest.status = 'processed';
+      await refundRequest.save();
+    }
+
+    res.status(200).json({
+      message: "Refund request updated successfully",
+      refundRequest
+    });
+  } catch (err) {
+    console.error("Error updating refund request:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
