@@ -230,7 +230,8 @@ router.post("/verify", verifyToken, async (req, res) => {
     });
 
     // Generate receipt URL (mock). Fall back to API URL if CLIENT_URL missing
-    const receiptUrl = `/api/payments/${payment.paymentId}/receipt`;
+    const base = `${req.protocol}://${req.get('host')}`;
+    const receiptUrl = `${base}/api/payments/${payment.paymentId}/receipt`;
     payment.receiptUrl = receiptUrl;
     await payment.save();
 
@@ -280,7 +281,8 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
 
     await Booking.findByIdAndUpdate(payment.appointmentId, { paymentConfirmed: true });
 
-    const receiptUrl = `/api/payments/${payment.paymentId}/receipt`;
+    const base = `${req.protocol}://${req.get('host')}`;
+    const receiptUrl = `${base}/api/payments/${payment.paymentId}/receipt`;
     payment.receiptUrl = receiptUrl;
     await payment.save();
 
@@ -717,7 +719,8 @@ router.post('/admin/mark-paid', verifyToken, async (req, res) => {
     if (gateway) payment.gateway = gateway;
 
     // Set receipt URL
-    const receiptUrl = `/api/payments/${payment.paymentId}/receipt`;
+    const base = `${req.protocol}://${req.get('host')}`;
+    const receiptUrl = `${base}/api/payments/${payment.paymentId}/receipt`;
     payment.receiptUrl = receiptUrl;
     await payment.save();
 
