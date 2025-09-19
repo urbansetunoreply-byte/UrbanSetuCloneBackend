@@ -8688,18 +8688,14 @@ function PaymentStatusCell({ appointment, isBuyer }) {
 
   const fetchRefundRequestStatus = async (paymentId) => {
     try {
-      console.log('Fetching refund request status for paymentId:', paymentId);
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/refund-request-status/${paymentId}`, {
         credentials: 'include'
       });
       const data = await response.json();
-      console.log('Refund request status response:', data);
       if (response.ok && data.refundRequest) {
         setRefundRequestStatus(data.refundRequest);
-        console.log('Set refund request status:', data.refundRequest);
       } else {
         setRefundRequestStatus(null);
-        console.log('No refund request found');
       }
     } catch (error) {
       console.error('Error fetching refund request status:', error);
@@ -8796,14 +8792,6 @@ function PaymentStatusCell({ appointment, isBuyer }) {
   const isRefundRequestPending = refundRequestStatus && refundRequestStatus.status === 'pending';
   const isRefundRequestApproved = refundRequestStatus && ['approved', 'processed'].includes(refundRequestStatus.status);
   
-  // Debug logging
-  console.log('Refund request status debug:', {
-    refundRequestStatus,
-    hasRefundRequest,
-    isRefundRequestRejected,
-    isRefundRequestPending,
-    isRefundRequestApproved
-  });
   
   return (
     <div className="flex flex-col items-center gap-2">
