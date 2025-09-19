@@ -8728,7 +8728,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       {isBuyer && (
         <>
           <div className="flex items-center gap-1 text-xs text-gray-500">
-            {/* Show info icon for pending/accepted appointments with payment not done */}
+            {/* Show info icon only when payment not done and not admin-paid */}
             {!appointment.paymentConfirmed && (appointment.status === 'pending' || appointment.status === 'accepted') && (
               <div className="relative group">
                 <FaInfoCircle 

@@ -193,6 +193,10 @@ router.get('/:paymentId/receipt', verifyToken, async (req, res) => {
     doc.fontSize(12).text(`Property: ${payment.appointmentId?.propertyName || payment.listingId?.name || 'N/A'}`);
     if (payment.appointmentId?.date) doc.text(`Appointment Date: ${new Date(payment.appointmentId.date).toLocaleDateString('en-GB')}`);
     if (payment.appointmentId?.time) doc.text(`Appointment Time: ${payment.appointmentId.time}`);
+    if (payment.completedAt) {
+      const paidAt = new Date(payment.completedAt);
+      doc.text(`Payment Date: ${paidAt.toLocaleDateString('en-GB')} ${paidAt.toLocaleTimeString('en-GB')}`);
+    }
     doc.text(`Buyer: ${payment.userId?.username || ''}`);
     doc.text(`Generated For: ${user.username || user.email}`);
     doc.moveDown();
