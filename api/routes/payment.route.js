@@ -481,10 +481,32 @@ router.get("/history", verifyToken, async (req, res) => {
     const userId = req.user.id;
     const { page = 1, limit = 10, status, paymentType, appointmentId, gateway, currency, q, fromDate, toDate } = req.query;
 
-    let query = { userId };
+    let query = {};
+    
+    // If appointmentId is provided, allow both buyer and seller to see payment data
+    if (appointmentId) {
+      // First, find the appointment to check if user is buyer or seller
+      const appointment = await Booking.findById(appointmentId);
+      if (appointment) {
+        const isBuyer = appointment.buyerId && appointment.buyerId.toString() === userId;
+        const isSeller = appointment.sellerId && appointment.sellerId.toString() === userId;
+        
+        if (isBuyer || isSeller) {
+          query.appointmentId = appointmentId;
+        } else {
+          // User is not involved in this appointment, return empty result
+          return res.json({ payments: [], totalPages: 0, currentPage: 1 });
+        }
+      } else {
+        return res.status(404).json({ message: 'Appointment not found' });
+      }
+    } else {
+      // For general payment history, only show user's own payments
+      query.userId = userId;
+    }
+    
     if (status) query.status = status;
     if (paymentType) query.paymentType = paymentType;
-    if (appointmentId) query.appointmentId = appointmentId;
     if (gateway) query.gateway = gateway;
     if (currency) query.currency = currency.toUpperCase();
     if (q) {
