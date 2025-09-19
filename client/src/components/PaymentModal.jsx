@@ -16,7 +16,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
       setPreferredMethod(methodFromAppt);
       setPaymentData(null);
       setLoading(true);
-      setTimeout(createPaymentIntent, 0);
+      setTimeout(() => createPaymentIntent(methodFromAppt), 0);
     }
     // Lock body scroll when modal is open
     if (isOpen) {
@@ -35,7 +35,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
     };
   }, [isOpen, appointment]);
 
-  const createPaymentIntent = async () => {
+  const createPaymentIntent = async (methodOverride) => {
     try {
       setLoading(true);
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/create-intent`, {
@@ -47,7 +47,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         body: JSON.stringify({
           appointmentId: appointment._id,
           paymentType: 'advance',
-          gateway: preferredMethod === 'razorpay' ? 'razorpay' : 'paypal'
+          gateway: (methodOverride || preferredMethod) === 'razorpay' ? 'razorpay' : 'paypal'
         })
       });
 
@@ -326,11 +326,11 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                     <h5 className="font-semibold text-gray-800 mb-2">Select Region</h5>
                     <div className="flex items-center gap-4 text-sm">
                       <label className="inline-flex items-center gap-2">
-                        <input type="radio" name="region" value="india" checked={preferredMethod === 'razorpay'} onChange={() => { setPreferredMethod('razorpay'); setLoading(true); setPaymentData(null); setTimeout(createPaymentIntent, 0); }} />
+                        <input type="radio" name="region" value="india" checked={preferredMethod === 'razorpay'} onChange={() => { const m='razorpay'; setPreferredMethod(m); setLoading(true); setPaymentData(null); setTimeout(() => createPaymentIntent(m), 0); }} />
                         <span>India (₹100 via Razorpay)</span>
                       </label>
                       <label className="inline-flex items-center gap-2">
-                        <input type="radio" name="region" value="international" checked={preferredMethod === 'paypal'} onChange={() => { setPreferredMethod('paypal'); setLoading(true); setPaymentData(null); setTimeout(createPaymentIntent, 0); }} />
+                        <input type="radio" name="region" value="international" checked={preferredMethod === 'paypal'} onChange={() => { const m='paypal'; setPreferredMethod(m); setLoading(true); setPaymentData(null); setTimeout(() => createPaymentIntent(m), 0); }} />
                         <span>International ($5 via PayPal)</span>
                       </label>
                     </div>
@@ -346,6 +346,10 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-500">Time:</span>
                       <span className="text-sm font-medium">{appointment.time}</span>
+                    </div>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-sm text-gray-500">Payment Initiated:</span>
+                      <span className="text-sm font-medium">{new Date().toLocaleString('en-GB')}</span>
                     </div>
                   </div>
 
@@ -390,6 +394,22 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                       )}
                       <li>If you cancel or close PayPal, you can retry from My Appointments.</li>
                     </ul>
+                  </div>
+
+                  {/* Technical Details */}
+                  <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                    <h5 className="font-semibold text-gray-800 mb-2">Payment Technical Details</h5>
+                    <div className="text-xs text-gray-600 space-y-1">
+                      {preferredMethod === 'razorpay' && paymentData?.razorpay && (
+                        <>
+                          <div>Order ID: <span className="font-mono">{paymentData.razorpay.orderId}</span></div>
+                          <div>Amount (paise): <span className="font-mono">{paymentData.razorpay.amount}</span></div>
+                        </>
+                      )}
+                      {preferredMethod === 'paypal' && (
+                        <div>Amount: <span className="font-mono">{paymentData?.paypal?.amount || paymentData?.payment?.amount}</span> USD</div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Security Notice */}

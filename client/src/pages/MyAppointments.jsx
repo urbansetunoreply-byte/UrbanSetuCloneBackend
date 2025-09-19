@@ -8776,7 +8776,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
         <PaymentModal
           isOpen={showPayModal}
           onClose={() => setShowPayModal(false)}
-          appointment={appointment}
+          appointment={{ ...appointment, region: 'india' }}
           onPaymentSuccess={(payment) => {
             setShowPayModal(false);
             fetchPaymentStatus();
