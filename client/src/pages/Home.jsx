@@ -129,8 +129,18 @@ export default function Home() {
       {/* Hero Section */}
       <div className="text-center py-10 bg-gradient-to-r from-blue-600 to-purple-600 text-white animate-fade-in-down">
         {currentUser && (
-          <div className="text-xl font-semibold mb-2 opacity-95">
-            {`Welcome ${currentUser.username || currentUser.name || currentUser.fullName || 'User'}!`}
+          <div className="mb-3">
+            <span
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 backdrop-blur-md shadow-sm text-base sm:text-lg font-semibold animate-fade-in"
+            >
+              {(() => {
+                const name = currentUser.firstName || currentUser.username || currentUser.name || currentUser.fullName || 'Friend';
+                const hour = new Date().getHours();
+                const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+                const emoji = hour < 12 ? '☀️' : hour < 18 ? '🌤️' : '🌙';
+                return `${greet}, ${name}! ${emoji}`;
+              })()}
+            </span>
           </div>
         )}
         <h1 className="text-4xl font-extrabold animate-fade-in">Find Your Dream Home</h1>

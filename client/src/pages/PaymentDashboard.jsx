@@ -8,6 +8,8 @@ const PaymentDashboard = () => {
   const [stats, setStats] = useState({
     totalPayments: 0,
     totalAmount: 0,
+    totalAmountUsd: 0,
+    totalAmountInr: 0,
     totalRefunds: 0,
     completedPayments: 0,
     pendingPayments: 0,
@@ -131,10 +133,20 @@ const PaymentDashboard = () => {
                 <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-green-100 text-sm font-medium">Total Revenue</p>
-                      <p className="text-3xl font-bold">${stats.totalAmount.toLocaleString()}</p>
+                      <p className="text-green-100 text-sm font-medium">Total Revenue (USD)</p>
+                      <p className="text-3xl font-bold">${stats.totalAmountUsd.toLocaleString()}</p>
                     </div>
                     <FaDollarSign className="text-4xl text-green-200" />
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-lg p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-emerald-100 text-sm font-medium">Total Revenue (INR)</p>
+                      <p className="text-3xl font-bold">₹{stats.totalAmountInr.toLocaleString('en-IN')}</p>
+                    </div>
+                    <FaCreditCard className="text-4xl text-emerald-200" />
                   </div>
                 </div>
 
@@ -249,6 +261,21 @@ const PaymentDashboard = () => {
                   </button>
                   
                   <button
+                    onClick={async () => {
+                      try {
+                        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/export`, { credentials: 'include' });
+                        if (!res.ok) return;
+                        const blob = await res.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'payments_export.csv';
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        window.URL.revokeObjectURL(url);
+                      } catch {}
+                    }}
                     className="bg-green-100 text-green-800 p-3 sm:p-4 rounded-lg hover:bg-green-200 transition-colors flex items-center gap-2 sm:gap-3"
                     title="Export CSV of payments"
                   >
@@ -272,7 +299,7 @@ const PaymentDashboard = () => {
                 ) : (
                   <div className="space-y-3">
                     {usdPayments.map((p) => (
-                      <div key={p._id} className="border border-gray-200 rounded-lg p-4">
+                      <div key={p._id} className={`border rounded-lg p-4 ${p.status === 'completed' ? 'border-green-200 bg-green-50' : p.status === 'failed' ? 'border-red-200 bg-red-50' : 'border-yellow-200 bg-yellow-50'}`}>
                         <div className="flex items-center justify-between">
                           <div>
                             <div className="font-semibold text-gray-800">{p.appointmentId?.propertyName || 'Property Payment'}</div>
@@ -282,6 +309,11 @@ const PaymentDashboard = () => {
                             <div className="text-lg font-bold">$ {Number(p.amount).toFixed(2)}</div>
                             <div className="text-xs text-gray-500">{new Date(p.createdAt).toLocaleDateString()}</div>
                           </div>
+                        </div>
+                        <div className="mt-2">
+                          <span className={`px-2 py-1 text-[10px] rounded-full font-semibold ${p.status === 'completed' ? 'bg-green-100 text-green-700' : p.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                            {p.status}
+                          </span>
                         </div>
                         <div className="mt-2 text-xs text-gray-600">Gateway: {p.gateway?.toUpperCase()}</div>
                         {p.receiptUrl && (
@@ -299,7 +331,7 @@ const PaymentDashboard = () => {
                 ) : (
                   <div className="space-y-3">
                     {inrPayments.map((p) => (
-                      <div key={p._id} className="border border-gray-200 rounded-lg p-4">
+                      <div key={p._id} className={`border rounded-lg p-4 ${p.status === 'completed' ? 'border-green-200 bg-green-50' : p.status === 'failed' ? 'border-red-200 bg-red-50' : 'border-yellow-200 bg-yellow-50'}`}>
                         <div className="flex items-center justify-between">
                           <div>
                             <div className="font-semibold text-gray-800">{p.appointmentId?.propertyName || 'Property Payment'}</div>
@@ -309,6 +341,11 @@ const PaymentDashboard = () => {
                             <div className="text-lg font-bold">₹ {Number(p.amount).toFixed(2)}</div>
                             <div className="text-xs text-gray-500">{new Date(p.createdAt).toLocaleDateString()}</div>
                           </div>
+                        </div>
+                        <div className="mt-2">
+                          <span className={`px-2 py-1 text-[10px] rounded-full font-semibold ${p.status === 'completed' ? 'bg-green-100 text-green-700' : p.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                            {p.status}
+                          </span>
                         </div>
                         <div className="mt-2 text-xs text-gray-600">Gateway: {p.gateway?.toUpperCase()}</div>
                         {p.receiptUrl && (

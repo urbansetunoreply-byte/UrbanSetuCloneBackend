@@ -455,6 +455,8 @@ router.get("/stats/overview", verifyToken, async (req, res) => {
           _id: null,
           totalPayments: { $sum: 1 },
           totalAmount: { $sum: '$amount' },
+          totalAmountUsd: { $sum: { $cond: [{ $eq: ['$currency', 'USD'] }, '$amount', 0] } },
+          totalAmountInr: { $sum: { $cond: [{ $eq: ['$currency', 'INR'] }, '$amount', 0] } },
           totalRefunds: { $sum: '$refundAmount' },
           completedPayments: {
             $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] }
@@ -492,6 +494,8 @@ router.get("/stats/overview", verifyToken, async (req, res) => {
       overview: stats[0] || {
         totalPayments: 0,
         totalAmount: 0,
+        totalAmountUsd: 0,
+        totalAmountInr: 0,
         totalRefunds: 0,
         completedPayments: 0,
         pendingPayments: 0,
@@ -529,6 +533,50 @@ router.get('/paypal/debug', verifyToken, async (req, res) => {
     });
   } catch (e) {
     return res.status(500).json({ ok: false, error: e?.message || String(e) });
+  }
+});
+
+// Admin: Export payments CSV
+router.get('/admin/export', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (user.role !== 'admin' && user.role !== 'rootadmin') {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+    const { currency, status, gateway } = req.query;
+    const query = {};
+    if (currency) query.currency = currency.toUpperCase();
+    if (status) query.status = status;
+    if (gateway) query.gateway = gateway;
+
+    const payments = await Payment.find(query)
+      .populate('appointmentId', 'propertyName date status')
+      .populate('listingId', 'name address')
+      .populate('userId', 'username email')
+      .sort({ createdAt: -1 });
+
+    const headers = ['PaymentID', 'Currency', 'Amount', 'Status', 'Gateway', 'User', 'Email', 'Property', 'AppointmentDate', 'CreatedAt', 'Receipt'];
+    const rows = payments.map(p => [
+      p.paymentId,
+      p.currency || 'USD',
+      p.amount,
+      p.status,
+      p.gateway,
+      p.userId?.username || '',
+      p.userId?.email || '',
+      p.appointmentId?.propertyName || '',
+      p.appointmentId?.date ? new Date(p.appointmentId.date).toISOString() : '',
+      p.createdAt ? new Date(p.createdAt).toISOString() : '',
+      p.receiptUrl || ''
+    ]);
+    const csv = [headers.join(','), ...rows.map(r => r.map(v => typeof v === 'string' && v.includes(',') ? `"${v.replace(/"/g, '""')}"` : v).join(','))].join('\n');
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="payments_export.csv"');
+    return res.send(csv);
+  } catch (e) {
+    console.error('Admin export payments error:', e);
+    return res.status(500).json({ message: 'Server error' });
   }
 });
 
