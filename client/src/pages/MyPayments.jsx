@@ -18,6 +18,8 @@ const MyPayments = () => {
       if (filters.q) params.set('q', filters.q);
       if (filters.fromDate) params.set('fromDate', filters.fromDate);
       if (filters.toDate) params.set('toDate', filters.toDate);
+      // Show all payments (high cap)
+      params.set('limit', '1000');
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/history?${params.toString()}`, { credentials: 'include' });
       const data = await res.json();
       if (res.ok) setPayments(data.payments || []);
