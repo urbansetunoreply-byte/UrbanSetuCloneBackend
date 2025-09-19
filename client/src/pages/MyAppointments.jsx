@@ -8680,19 +8680,15 @@ function PaymentStatusCell({ appointment, isBuyer }) {
     return <FaSpinner className="animate-spin text-blue-600" />;
   }
 
-  // Determine the display status based on both payment status and admin confirmation
+  // Determine the display status based on latest payment record only
   const getDisplayStatus = () => {
-    // If admin has marked as paid, show as paid regardless of payment status
-    if (appointment.paymentConfirmed) {
+    const isAdminMarked = Boolean(paymentStatus?.metadata?.adminMarked);
+    if (isAdminMarked) {
       return { status: 'admin_confirmed', text: 'Paid (Admin)', color: 'bg-green-100 text-green-800' };
     }
-    
-    // If no payment record exists, show pending
     if (!paymentStatus) {
       return { status: 'pending', text: 'Pending', color: 'bg-yellow-100 text-yellow-800' };
     }
-    
-    // Use actual payment status
     return getPaymentStatusInfo(paymentStatus.status);
   };
 
@@ -8716,7 +8712,8 @@ function PaymentStatusCell({ appointment, isBuyer }) {
   const displayStatus = getDisplayStatus();
   // Check if appointment is in a frozen status (no payment allowed)
   const isFrozenStatus = ['rejected', 'cancelledByBuyer', 'cancelledBySeller', 'cancelledByAdmin', 'outdated'].includes(appointment.status);
-  const isPending = !appointment.paymentConfirmed && (!paymentStatus || paymentStatus.status !== 'completed') && !isFrozenStatus;
+  const isAdminMarked = Boolean(paymentStatus?.metadata?.adminMarked);
+  const isPending = !isAdminMarked && (!paymentStatus || paymentStatus.status !== 'completed') && !isFrozenStatus;
   
   return (
     <div className="flex flex-col items-center gap-2">
@@ -8728,8 +8725,8 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       {isBuyer && (
         <>
           <div className="flex items-center gap-1 text-xs text-gray-500">
-            {/* Show info icon only when payment not done and not admin-paid */}
-            {!appointment.paymentConfirmed && (appointment.status === 'pending' || appointment.status === 'accepted') && (
+            {/* Show info icon only when not paid and not admin-marked */}
+            {(!paymentStatus || (paymentStatus.status !== 'completed' && !isAdminMarked)) && (appointment.status === 'pending' || appointment.status === 'accepted') && (
               <div className="relative group">
                 <FaInfoCircle 
                   className="text-blue-500 hover:text-blue-700 cursor-pointer" 
@@ -8769,7 +8766,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
         </>
       )}
       
-      {appointment?.paymentConfirmed && (
+      {isAdminMarked && (
         <div className="text-[10px] text-green-700 font-semibold">✓ Admin Confirmed</div>
       )}
 
