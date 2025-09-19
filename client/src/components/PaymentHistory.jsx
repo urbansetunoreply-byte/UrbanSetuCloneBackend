@@ -159,7 +159,7 @@ const PaymentHistory = ({ userId }) => {
                 </div>
                 <div className="text-right">
                   <div className="text-lg font-bold text-gray-800">
-                    {`$ ${Number(payment.amount).toFixed(2)}`}
+                    {(payment.currency || 'USD') === 'INR' ? `₹ ${Number(payment.amount).toFixed(2)}` : `$ ${Number(payment.amount).toFixed(2)}`}
                   </div>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(payment.status)}`}>
                     {payment.status}
@@ -205,7 +205,7 @@ const PaymentHistory = ({ userId }) => {
                 </div>
               )}
 
-              <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-500">
                   {payment.completedAt ? (
                     <span>Completed on {new Date(payment.completedAt).toLocaleDateString()}</span>
@@ -214,6 +214,11 @@ const PaymentHistory = ({ userId }) => {
                   )}
                 </div>
                 <div className="flex gap-2">
+                  {payment.gateway && (
+                    <span className="px-2 py-1 text-[10px] rounded bg-gray-100 text-gray-700 border border-gray-200">
+                      {payment.gateway.toUpperCase()} {payment.currency === 'INR' ? '₹' : '$'}
+                    </span>
+                  )}
                   <button
                     onClick={() => downloadReceipt(payment.receiptUrl)}
                     className="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-1"

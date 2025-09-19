@@ -7,6 +7,7 @@ import User from "../models/user.model.js";
 import { verifyToken } from '../utils/verify.js';
 import crypto from 'crypto';
 import { createPayPalOrder, capturePayPalOrder, getPayPalAccessToken } from '../controllers/paypalController.js';
+import fetch from 'node-fetch';
 
 const router = express.Router();
 
@@ -20,12 +21,21 @@ const generateReceiptNumber = () => {
   return 'RCP_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
 };
 
-// Razorpay removed
+// Razorpay helpers
+const getRazorpayAuthHeader = () => {
+  const keyId = process.env.RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  if (!keyId || !keySecret) {
+    throw new Error('Missing Razorpay credentials. Ensure RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET are set.');
+  }
+  const auth = Buffer.from(`${keyId}:${keySecret}`).toString('base64');
+  return { keyId, authHeader: `Basic ${auth}` };
+};
 
 // POST: Create payment intent (advance payment for booking)
 router.post("/create-intent", verifyToken, async (req, res) => {
   try {
-    const { appointmentId, amount, paymentType = 'advance' } = req.body;
+    const { appointmentId, amount, paymentType = 'advance', gateway = 'paypal' } = req.body;
     const userId = req.user.id;
 
     // Validate appointment
@@ -43,31 +53,81 @@ router.post("/create-intent", verifyToken, async (req, res) => {
       return res.status(403).json({ message: "You can only make payments for your own appointments." });
     }
 
-    // Advance amount: Flat $5 per property (updated requirement)
     const listing = appointment.listingId;
-    const advanceAmount = 5;
-    
-    // Create payment record
-    const payment = new Payment({
-      paymentId: generatePaymentId(),
-      appointmentId,
-      userId,
-      listingId: listing._id,
-      amount: advanceAmount,
-      paymentType,
-      gateway: 'paypal',
-      status: 'pending',
-      receiptNumber: generateReceiptNumber()
-    });
+    // Determine gateway and amounts
+    if (gateway === 'razorpay') {
+      // INR ₹100 advance via Razorpay
+      const advanceAmountInr = 100; // rupees
+      const payment = new Payment({
+        paymentId: generatePaymentId(),
+        appointmentId,
+        userId,
+        listingId: listing._id,
+        amount: advanceAmountInr,
+        currency: 'INR',
+        paymentType,
+        gateway: 'razorpay',
+        status: 'pending',
+        receiptNumber: generateReceiptNumber()
+      });
+      await payment.save();
 
-    await payment.save();
+      // Create Razorpay order (amount in paise)
+      const { keyId, authHeader } = getRazorpayAuthHeader();
+      const orderRes = await fetch('https://api.razorpay.com/v1/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': authHeader
+        },
+        body: JSON.stringify({
+          amount: advanceAmountInr * 100,
+          currency: 'INR',
+          receipt: payment.receiptNumber,
+          payment_capture: 1,
+          notes: { appointmentId: String(appointmentId), paymentId: payment.paymentId }
+        })
+      });
+      const orderText = await orderRes.text();
+      let order;
+      try { order = JSON.parse(orderText); } catch (e) {
+        console.error('Razorpay create-order non-JSON:', orderText);
+        return res.status(500).json({ message: 'Error creating Razorpay order', details: orderText });
+      }
+      if (!orderRes.ok) {
+        console.error('Razorpay create-order error:', order);
+        return res.status(500).json({ message: 'Error creating Razorpay order', details: order });
+      }
+      payment.gatewayOrderId = order.id;
+      await payment.save();
 
-    // For PayPal, client will create order using amount. Return necessary info only.
-    res.status(201).json({
-      message: "Payment intent created successfully",
-      payment: payment,
-      paypal: { amount: advanceAmount, currency: 'USD' }
-    });
+      return res.status(201).json({
+        message: 'Payment intent (Razorpay) created successfully',
+        payment,
+        razorpay: { orderId: order.id, amount: advanceAmountInr * 100, currency: 'INR', keyId }
+      });
+    } else {
+      // Default PayPal USD $5 advance
+      const advanceAmountUsd = 5;
+      const payment = new Payment({
+        paymentId: generatePaymentId(),
+        appointmentId,
+        userId,
+        listingId: listing._id,
+        amount: advanceAmountUsd,
+        currency: 'USD',
+        paymentType,
+        gateway: 'paypal',
+        status: 'pending',
+        receiptNumber: generateReceiptNumber()
+      });
+      await payment.save();
+      return res.status(201).json({
+        message: 'Payment intent created successfully',
+        payment,
+        paypal: { amount: advanceAmountUsd, currency: 'USD' }
+      });
+    }
   } catch (err) {
     console.error("Error creating payment intent:", err);
     res.status(500).json({ message: "Server error" });
@@ -116,6 +176,55 @@ router.post("/verify", verifyToken, async (req, res) => {
   } catch (err) {
     console.error("Error verifying payment:", err);
     res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Razorpay: Verify payment
+router.post('/razorpay/verify', verifyToken, async (req, res) => {
+  try {
+    const { paymentId, razorpay_payment_id, razorpay_order_id, razorpay_signature, clientIp, userAgent } = req.body;
+    const payment = await Payment.findOne({ paymentId });
+    if (!payment) {
+      return res.status(404).json({ message: 'Payment not found' });
+    }
+    if (payment.gateway !== 'razorpay') {
+      return res.status(400).json({ message: 'Invalid gateway for this payment' });
+    }
+
+    // Verify signature: hmac_sha256(order_id + '|' + payment_id)
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!keySecret) {
+      return res.status(500).json({ message: 'Razorpay secret not configured' });
+    }
+    const hmac = crypto.createHmac('sha256', keySecret);
+    hmac.update(`${razorpay_order_id}|${razorpay_payment_id}`);
+    const expectedSignature = hmac.digest('hex');
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({ message: 'Signature verification failed' });
+    }
+
+    payment.status = 'completed';
+    payment.gatewayPaymentId = razorpay_payment_id;
+    payment.gatewayOrderId = razorpay_order_id;
+    payment.gatewaySignature = razorpay_signature;
+    payment.completedAt = new Date();
+    payment.clientIp = clientIp || req.ip;
+    payment.userAgent = userAgent || req.headers['user-agent'];
+    await payment.save();
+
+    await Booking.findByIdAndUpdate(payment.appointmentId, { paymentConfirmed: true });
+
+    const baseClient = process.env.CLIENT_URL || process.env.FRONTEND_URL || '';
+    const receiptUrl = baseClient
+      ? `${baseClient}/receipt/${payment.receiptNumber}`
+      : `/api/payments/${payment.paymentId}/receipt`;
+    payment.receiptUrl = receiptUrl;
+    await payment.save();
+
+    return res.json({ message: 'Payment verified successfully', payment, receiptUrl });
+  } catch (err) {
+    console.error('Razorpay verify error:', err);
+    return res.status(500).json({ message: 'Server error' });
   }
 });
 

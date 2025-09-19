@@ -33,6 +33,7 @@ export default function Appointment() {
   const [hasActiveAppointment, setHasActiveAppointment] = useState(false);
   const [checkingActive, setCheckingActive] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [region, setRegion] = useState('international'); // 'india' or 'international'
   const [appointmentData, setAppointmentData] = useState(null);
   const [paymentStatus, setPaymentStatus] = useState(null); // 'success' or 'failed'
   const [showPaymentMessage, setShowPaymentMessage] = useState(false);
@@ -140,7 +141,7 @@ export default function Appointment() {
       const data = await res.json();
       if (res.ok) {
         // Store appointment data and show payment modal
-        setAppointmentData(data.appointment);
+        setAppointmentData({ ...data.appointment, region });
         setShowPaymentModal(true);
       } else {
         toast.error(data.message || "Failed to book appointment.");
@@ -314,6 +315,21 @@ export default function Appointment() {
               </label>
             </div>
             
+            {/* Region Selection */}
+            <div className="bg-gray-50 rounded-lg p-3">
+              <div className="text-sm font-semibold text-gray-700 mb-2">Select Region</div>
+              <div className="flex items-center gap-4 text-sm">
+                <label className="inline-flex items-center gap-2">
+                  <input type="radio" name="region" value="india" checked={region === 'india'} onChange={() => setRegion('india')} />
+                  <span>India (₹100 via Razorpay)</span>
+                </label>
+                <label className="inline-flex items-center gap-2">
+                  <input type="radio" name="region" value="international" checked={region === 'international'} onChange={() => setRegion('international')} />
+                  <span>International ($5 via PayPal)</span>
+                </label>
+              </div>
+            </div>
+
             <div className="flex justify-center mt-6">
               <button
                 type="submit"

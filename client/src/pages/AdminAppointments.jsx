@@ -1368,10 +1368,10 @@ function AdminPaymentStatusCell({ appointmentId, appointment }) {
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${color}`}>{label}</span>
       {typeof payment.amount === 'number' && (
         <div className="text-[10px] text-gray-500 inline-flex items-center gap-1">
-          {((payment.currency || 'USD') === 'USD') ? (
-            <span>$ {Number(payment.amount).toFixed(2)}</span>
+          {((payment.currency || 'USD') === 'INR') ? (
+            <span>₹ {Number(payment.amount).toFixed(2)}</span>
           ) : (
-            <span>$ {payment.amount}</span>
+            <span>$ {Number(payment.amount).toFixed(2)}</span>
           )}
         </div>
       )}
