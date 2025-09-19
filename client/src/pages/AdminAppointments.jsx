@@ -630,7 +630,6 @@ export default function AdminAppointments() {
     }
     setUserLoading(false);
   };
-
   // Filter and search logic
   const filteredAppointments = useMemo(() => {
     return appointments.filter((appt) => {
@@ -803,6 +802,12 @@ export default function AdminAppointments() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100 py-10 px-2 md:px-8">
+      <div className="max-w-7xl mx-auto mb-4 flex justify-end">
+        <a href="/admin/payments" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M2 7a2 2 0 012-2h16a2 2 0 012 2v3H2V7z" /><path d="M2 12h20v5a2 2 0 01-2 2H4a2 2 0 01-2-2v-5zm4 3a1 1 0 100 2h6a1 1 0 100-2H6z" /></svg>
+          Go to Payments
+        </a>
+      </div>
       <ToastContainer
         position="top-center"
         autoClose={2000}
@@ -1217,7 +1222,6 @@ function getDateLabel(date) {
   if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
   return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
-
 function AdminPaymentStatusCell({ appointmentId, appointment }) {
   const [payment, setPayment] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
@@ -1865,7 +1869,6 @@ function AdminAppointmentRow({
   }, [currentSearchIndex, searchResults]);
 
   // Removed handleClickOutside functionality - options now only close when clicking three dots again
-
   // Sync localComments with parent comments for real-time updates
   React.useEffect(() => {
     const serverComments = appt.comments || [];
@@ -2398,7 +2401,6 @@ function AdminAppointmentRow({
       toast.error(error.response?.data?.message || "Failed to send image.");
     }
   };
-
   // Chat image download function (similar to ImagePreview logic)
   const handleDownloadChatImage = async (imageUrl, messageId) => {
     if (!imageUrl || typeof imageUrl !== 'string') {
@@ -3038,7 +3040,6 @@ function AdminAppointmentRow({
     setSearchQuery(query);
     performSearch(query);
   };
-
   const handleSearchKeyDown = (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -3382,7 +3383,6 @@ function AdminAppointmentRow({
       return updated;
     });
   }, [appt._id]);
-
   return (
           <tr className={`hover:bg-blue-50 transition align-top ${isArchived ? 'bg-gray-50' : ''} ${!isUpcoming ? (isArchived ? 'bg-gray-100' : 'bg-gray-100') : ''}`}>
       <td className="border p-2">
@@ -5062,7 +5062,6 @@ function AdminAppointmentRow({
                 }
                 return null;
               })()}
-              
               {/* Quick Reactions Modal */}
               {showReactionsEmojiPicker && (
                 <div 
@@ -5214,376 +5213,6 @@ function AdminAppointmentRow({
                   </div>
                 </div>
               )}
-              
-                              {/* Reply indicator */}
-                {replyTo && (
-                  <div className="px-4 mb-2">
-                    <div className="flex items-center bg-blue-50 border-l-4 border-blue-400 px-2 py-1 rounded">
-                      <span className="text-xs text-gray-700 font-semibold mr-2">Replying to:</span>
-                      <span className="text-xs text-gray-600 truncate max-w-[200px]">{replyTo.message?.substring(0, 40)}{replyTo.message?.length > 40 ? '...' : ''}</span>
-                      <button className="ml-auto text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-1 transition-colors" onClick={() => setReplyTo(null)} title="Cancel reply">
-                        <FaTimes className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-
-              
-              {/* Edit indicator */}
-              {editingComment && (
-                <div className="px-4 mb-2">
-                  <div className="flex items-center bg-yellow-50 border-l-4 border-yellow-400 px-2 py-1 rounded">
-                    <span className="text-xs text-yellow-700 font-semibold mr-2">✏️ Editing message:</span>
-                    <span className="text-xs text-yellow-600 truncate">{editText}</span>
-                    <button 
-                      className="ml-auto text-yellow-400 hover:text-yellow-700 bg-yellow-100 hover:bg-yellow-200 rounded-full p-1 transition-colors" 
-                      onClick={() => { 
-                        setEditingComment(null); 
-                        setEditText(""); 
-                        // Restore original draft and clear it after a small delay to ensure state update
-                        const draftToRestore = originalDraft;
-                        setNewComment(draftToRestore);
-                        setTimeout(() => {
-                          setOriginalDraft(""); // Clear stored draft after restoration
-                        }, 100);
-                        setDetectedUrl(null);
-                        setPreviewDismissed(false);
-                        // Auto-resize textarea for restored draft with proper timing
-                        setTimeout(() => {
-                          if (inputRef.current) {
-                            // Force a re-render by triggering the input event
-                            const event = new Event('input', { bubbles: true });
-                            inputRef.current.dispatchEvent(event);
-                            // Reset height first, then calculate proper height
-                            inputRef.current.style.height = '48px';
-                            const scrollHeight = inputRef.current.scrollHeight;
-                            const maxHeight = 144;
-                            
-                            if (scrollHeight <= maxHeight) {
-                              inputRef.current.style.height = scrollHeight + 'px';
-                              inputRef.current.style.overflowY = 'hidden';
-                            } else {
-                              inputRef.current.style.height = maxHeight + 'px';
-                              inputRef.current.style.overflowY = 'auto';
-                            }
-                          }
-                        }, 100);
-                      }} 
-                      title="Cancel edit"
-                    >
-                      <FaTimes className="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
-              )}
-              
-              <div className="flex gap-2 mt-1 px-3 pb-2 flex-shrink-0 bg-gradient-to-b from-transparent to-white pt-2 items-end">
-                {/* Message Input Container with Attachment and Emoji Icons Inside */}
-                <div className="flex-1 relative">
-                                    {/* Link Preview Container with Height and Width Constraints */}
-                  {detectedUrl && (
-                    <div className="max-h-32 max-w-full overflow-y-auto mb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                      <LinkPreview
-                        url={detectedUrl}
-                        onRemove={() => {
-                          setDetectedUrl(null);
-                          setPreviewDismissed(true);
-                        }}
-                        className="w-full"
-                        showRemoveButton={true}
-                        clickable={false}
-                      />
-                    </div>
-                  )}
-                  {/* Formatting toolbar */}
-                  <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
-                      const el = inputRef.current; if (!el) return; const start = el.selectionStart||0; const end=el.selectionEnd||0; const base=newComment||''; const selected=base.slice(start,end); const wrapped=`**${selected||'bold'}**`; const next=base.slice(0,start)+wrapped+base.slice(end); setNewComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2,start+2+(selected||'bold').length);}catch(_){}} ,0);
-                    }}>B</button>
-                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100 italic" onClick={() => {
-                      const el = inputRef.current; if (!el) return; const start = el.selectionStart||0; const end=el.selectionEnd||0; const base=newComment||''; const selected=base.slice(start,end); const wrapped=`*${selected||'italic'}*`; const next=base.slice(0,start)+wrapped+base.slice(end); setNewComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+1,start+1+(selected||'italic').length);}catch(_){}} ,0);
-                    }}>I</button>
-                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100 underline" onClick={() => {
-                      const el = inputRef.current; if (!el) return; const start = el.selectionStart||0; const end=el.selectionEnd||0; const base=newComment||''; const selected=base.slice(start,end); const wrapped=`__${selected||'underline'}__`; const next=base.slice(0,start)+wrapped+base.slice(end); setNewComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2,start+2+(selected||'underline').length);}catch(_){}} ,0);
-                    }}>U</button>
-                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
-                      const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = newComment || ''; const selected = base.slice(start, end); const wrapped = `~~${selected || 'strike'}~~`; const next = base.slice(0, start) + wrapped + base.slice(end); setNewComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 2, start + 2 + (selected || 'strike').length); } catch (_) {} }, 0);
-                    }}>S</button>
-                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
-                      const el=inputRef.current; if(!el)return; const base=newComment||''; const start=el.selectionStart||0; setNewComment(base.slice(0,start)+`- `+base.slice(start));
-                    }}>• List</button>
-                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
-                      const el=inputRef.current; if(!el)return; const base=newComment||''; const start=el.selectionStart||0; const before = base.slice(0,start); const after = base.slice(start); 
-                      // Find existing numbered list items to determine next number
-                      const lines = before.split('\n');
-                      let nextNum = 1;
-                      
-                      // Check if we're continuing a list
-                      for (let i = lines.length - 1; i >= 0; i--) {
-                        const line = lines[i].trim();
-                        const match = line.match(/^(\d+)\.\s/);
-                        if (match) {
-                          nextNum = parseInt(match[1]) + 1;
-                          break;
-                        } else if (line && !line.match(/^\s*$/)) {
-                          // Non-empty, non-numbered line found, reset to 1
-                          break;
-                        }
-                      }
-                      
-                      setNewComment(base.slice(0,start)+`${nextNum}. `+base.slice(start));
-                    }}>1. List</button>
-                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
-                      const el=inputRef.current; if(!el)return; const base=newComment||''; const start=el.selectionStart||0; setNewComment(base.slice(0,start)+`> `+base.slice(start));
-                    }}>&gt; Quote</button>
-                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" title="Tag Property" onClick={() => {
-                      const el=inputRef.current; if(!el)return; const start=el.selectionStart||0; const base=newComment||''; const insert='@'; setNewComment(base.slice(0,start)+insert+base.slice(start));
-                    }}>@Prop</button>
-                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" title="Insert appointment card" onClick={() => {
-                      const el=inputRef.current; if(!el)return; const start=el.selectionStart||0; const base=newComment||''; const card='[Appointment: date • time • with]'; setNewComment(base.slice(0,start)+card+base.slice(start));
-                    }}>Appt</button>
-                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" title="Insert service link" onClick={() => {
-                      const el=inputRef.current; if(!el)return; const start=el.selectionStart||0; const base=newComment||''; const link='Book Movers: /user/movers'; setNewComment(base.slice(0,start)+link+base.slice(start));
-                    }}>Service</button>
-                  </div>
-                  {/* Property mention suggestions */}
-                  {newComment && /@[^\s]*$/.test(newComment) && (
-                    <div className="absolute bottom-16 left-2 right-2 bg-white border rounded shadow-lg max-h-48 overflow-auto z-30">
-                      {(() => {
-                        const query = (newComment.match(/@([^\s]*)$/)?.[1] || '').toLowerCase();
-                        const apptSource = (typeof appointments !== 'undefined' && Array.isArray(appointments) && appointments.length > 0) ? appointments : [appt].filter(Boolean);
-                        const apptProps = apptSource.map(a => ({ id: a?.listingId?._id || a?.listingId, name: a?.propertyName || a?.listingId?.name || 'Property' }));
-                        const combined = [...apptProps, ...allProperties];
-                        const uniqueProps = Array.from(new Set(combined.filter(p => p.id && p.name).map(p => JSON.stringify(p))))
-                          .map(s => JSON.parse(s))
-                          .filter(p => p.name && p.name.toLowerCase().includes(query));
-                        if (uniqueProps.length === 0) return <div className="px-3 py-2 text-sm text-gray-500">No matches</div>;
-                        return uniqueProps.slice(0,8).map(p => (
-                          <button key={p.id} type="button" className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100" onClick={() => {
-                            const el = inputRef.current; const base = newComment || ''; const m = base.match(/@([^\s]*)$/); if (!m) return; const start = base.lastIndexOf('@');
-                            const token = `@[${p.name}](${p.id})`;
-                            const next = base.slice(0,start) + token + ' ' + base.slice(start + m[0].length);
-                            setNewComment(next);
-                            setTimeout(()=>{ try{ el?.focus(); el?.setSelectionRange(start+token.length+1, start+token.length+1);}catch(_){}} ,0);
-                          }}>{p.name}</button>
-                        ));
-                      })()}
-                    </div>
-                  )}
-                  <textarea
-                    rows={1}
-                    className="w-full pl-4 pr-20 py-3 border-2 border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 shadow-lg transition-all duration-300 bg-white resize-none whitespace-pre-wrap break-all hover:border-blue-300 hover:shadow-xl focus:shadow-2xl transform hover:scale-[1.01] overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
-                    style={{
-                      minHeight: '48px',
-                      maxHeight: '144px', // 6 lines * 24px line height
-                      lineHeight: '24px',
-                      wordBreak: 'break-all',
-                      overflowWrap: 'break-word'
-                    }}
-                    placeholder={editingComment ? "Edit your message..." : "Type a message..."}
-                    value={newComment}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setNewComment(value);
-                      
-                                              // Detect URLs in the input
-                        const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
-                        const urls = value.match(urlRegex);
-                        if (urls && urls.length > 0) {
-                          setDetectedUrl(urls[0]);
-                          setPreviewDismissed(false); // Reset dismissed flag for new URL
-                        } else {
-                          setDetectedUrl(null);
-                          setPreviewDismissed(false);
-                        }
-                      
-                      if (editingComment) {
-                        setEditText(value);
-                      }
-                      
-                      // If cleared entirely, restore to original height
-                      if ((e.target.value || '').trim() === '') {
-                        const textarea = e.target;
-                        textarea.style.height = '48px';
-                        textarea.style.overflowY = 'hidden';
-                        return;
-                      }
-                      
-                      // Auto-expand textarea (WhatsApp style) with scrolling support
-                      const textarea = e.target;
-                      textarea.style.height = '48px'; // Reset to min height
-                      const scrollHeight = textarea.scrollHeight;
-                      const maxHeight = 144; // 6 lines max
-                      
-                      if (scrollHeight <= maxHeight) {
-                        // If content fits within max height, expand the textarea
-                        textarea.style.height = scrollHeight + 'px';
-                        textarea.style.overflowY = 'hidden';
-                      } else {
-                        // If content exceeds max height, set to max height and enable scrolling
-                        textarea.style.height = maxHeight + 'px';
-                        textarea.style.overflowY = 'auto';
-                      }
-                    }}
-                    onClick={() => {
-                      if (headerOptionsMessageId) {
-                        setHeaderOptionsMessageId(null);
-                        toast.info("You can hit reply icon in header to reply");
-                      }
-                    }}
-                    onScroll={(e) => {
-                      // Prevent scroll event from propagating to parent chat container
-                      e.stopPropagation();
-                    }}
-                    onPaste={(e) => {
-                      const items = Array.from(e.clipboardData.items);
-                      const imageItems = items.filter(item => item.type.startsWith('image/'));
-                      
-                      if (imageItems.length > 0) {
-                        e.preventDefault();
-                        const imageItem = imageItems[0];
-                        const file = imageItem.getAsFile();
-                        if (file) {
-                          handleImageFiles([file]);
-                        }
-                      }
-                    }}
-                    onKeyDown={e => { 
-                      // Check if this is a desktop viewport only
-                      const isDesktop = window.matchMedia('(min-width: 768px)').matches;
-                      
-                      if (e.key === 'Enter') {
-                        // Avoid sending while composing (IME)
-                        if (e.isComposing || e.keyCode === 229) return;
-                        // For desktop: Enter sends message, Shift+Enter creates new line
-                        if (isDesktop && !e.shiftKey) {
-                          e.preventDefault();
-                          if (editingComment) {
-                            handleEditComment(editingComment);
-                          } else {
-                            handleCommentSend();
-                          }
-                        }
-                        // For mobile or with Shift+Enter: allow new line (default behavior)
-                        // Ctrl+Enter or Cmd+Enter still works on all devices
-                        else if ((e.ctrlKey || e.metaKey)) {
-                          e.preventDefault();
-                          if (editingComment) {
-                            handleEditComment(editingComment);
-                          } else {
-                            handleCommentSend();
-                          }
-                        }
-                      }
-                    }}
-                    ref={inputRef}
-                  />
-                  {/* Emoji Button - Inside textarea on the right */}
-                  <div className="absolute right-12 bottom-2">
-                    <EmojiButton 
-                      onEmojiClick={(emoji) => {
-                        // Use live input value and caret selection for robust insertion
-                        const el = inputRef?.current;
-                        const baseText = el ? el.value : newComment;
-                        let start = baseText.length;
-                        let end = baseText.length;
-                        try {
-                          if (el && typeof el.selectionStart === 'number' && typeof el.selectionEnd === 'number') {
-                            start = el.selectionStart;
-                            end = el.selectionEnd;
-                          }
-                        } catch (_) {}
-                        const newText = baseText.slice(0, start) + emoji + baseText.slice(end);
-                        setNewComment(newText);
-                        if (editingComment) {
-                          setEditText(newText);
-                        }
-                        // Restore caret after inserted emoji just after the emoji
-                        setTimeout(() => {
-                          try {
-                            if (el) {
-                              const caretPos = start + emoji.length;
-                              el.focus();
-                              el.setSelectionRange(caretPos, caretPos);
-                            }
-                          } catch (_) {}
-                        }, 0);
-                      }}
-                      className="w-8 h-8"
-                        inputRef={inputRef}
-                    />
-                  </div>
-                  {/* File Upload Button - Inside textarea on the right (WhatsApp style) */}
-                  <label className={`absolute right-3 bottom-3 flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300 cursor-pointer ${
-                    uploadingFile 
-                      ? 'bg-gray-400 cursor-not-allowed' 
-                      : 'bg-gray-100 hover:bg-gray-200 hover:shadow-md active:scale-95'
-                  }`}>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      className="hidden"
-                      onChange={(e) => {
-                        const files = e.target.files;
-                        if (files && files.length > 0) {
-                          handleFileUpload(files);
-                        }
-                        // Reset the input
-                        e.target.value = '';
-                      }}
-                      disabled={uploadingFile}
-                    />
-                    {uploadingFile ? (
-                      <div className="animate-spin w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full"></div>
-                    ) : (
-                      <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                      </svg>
-                    )}
-                  </label>
-                </div>
-                
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (editingComment) {
-                      handleEditComment(editingComment);
-                    } else {
-                      handleCommentSend();
-                    }
-                  }}
-                                      disabled={editingComment ? savingComment === editingComment : !newComment.trim()}
-                  className="bg-gradient-to-r from-blue-600 to-purple-700 text-white w-12 h-12 rounded-full shadow-lg hover:from-blue-700 hover:to-purple-800 hover:shadow-xl transform hover:scale-110 transition-all duration-300 disabled:opacity-50 disabled:transform-none flex items-center justify-center hover:shadow-2xl active:scale-95 group"
-                >
-                  {editingComment ? (
-                    savingComment === editingComment ? (
-                      <FaPen className="text-lg text-white animate-editSaving" />
-                    ) : (
-                      <FaPen className="text-lg text-white group-hover:scale-110 transition-transform duration-200" />
-                    )
-                  ) : (
-                      <div className="relative">
-                        {sendIconSent ? (
-                          <FaCheck className="text-lg text-white group-hover:scale-110 transition-all duration-300 send-icon animate-sent" />
-                        ) : (
-                          <FaPaperPlane className={`text-lg text-white group-hover:scale-110 transition-all duration-300 send-icon ${sendIconAnimating ? 'animate-fly' : ''}`} />
-                        )}
-                      </div>
-                    )}
-                </button>
-              </div>
-              
-              {/* File Upload Error */}
-              {fileUploadError && (
-                <div className="px-3 pb-2">
-                  <div className="text-red-500 text-sm bg-red-50 p-2 rounded-lg border border-red-200">
-                    {fileUploadError}
-                  </div>
-                </div>
-              )}
-              
               {/* Multi-Image Preview Modal - Positioned as overlay */}
               {showImagePreviewModal && selectedFiles.length > 0 && (
                 <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -6209,7 +5838,6 @@ function AdminAppointmentRow({
             </div>
           </div>
         )}
-
         {/* Archive Appointment Modal */}
         {showArchiveModal && appointmentToHandle === appt._id && (
           <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">

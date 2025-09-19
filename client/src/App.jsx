@@ -68,6 +68,7 @@ const UserReviews = lazy(() => import("./pages/UserReviews"));
 const AdminFraudManagement = lazy(() => import('./pages/AdminFraudManagement'));
 const PaymentDashboard = lazy(() => import('./pages/PaymentDashboard'));
 const AdminSecurityModeration = lazy(() => import('./pages/AdminSecurityModeration'));
+const MyPayments = lazy(() => import('./pages/MyPayments'));
 
 // Loading component
 const LoadingSpinner = () => (
