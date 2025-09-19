@@ -321,11 +321,11 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                     <h5 className="font-semibold text-gray-800 mb-2">Select Region</h5>
                     <div className="flex items-center gap-4 text-sm">
                       <label className="inline-flex items-center gap-2">
-                        <input type="radio" name="region" value="india" checked={preferredMethod === 'razorpay'} onChange={() => { setPreferredMethod('razorpay'); setPaymentData(null); setTimeout(createPaymentIntent, 0); }} />
+                        <input type="radio" name="region" value="india" checked={preferredMethod === 'razorpay'} onChange={() => { setPreferredMethod('razorpay'); setLoading(true); setPaymentData(null); setTimeout(createPaymentIntent, 0); }} />
                         <span>India (₹100 via Razorpay)</span>
                       </label>
                       <label className="inline-flex items-center gap-2">
-                        <input type="radio" name="region" value="international" checked={preferredMethod === 'paypal'} onChange={() => { setPreferredMethod('paypal'); setPaymentData(null); setTimeout(createPaymentIntent, 0); }} />
+                        <input type="radio" name="region" value="international" checked={preferredMethod === 'paypal'} onChange={() => { setPreferredMethod('paypal'); setLoading(true); setPaymentData(null); setTimeout(createPaymentIntent, 0); }} />
                         <span>International ($5 via PayPal)</span>
                       </label>
                     </div>
@@ -344,26 +344,29 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                     </div>
                   </div>
 
-                  {/* Payment Summary */
-                  }
+                  {/* Payment Summary */}
                   <div className="bg-blue-50 rounded-lg p-4 mb-6">
                     <h4 className="font-semibold text-blue-800 mb-3">Payment Summary</h4>
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-gray-600">Advance Payment (Flat)</span>
                         <span className="font-medium">
-                          {paymentData.payment.currency === 'INR' ? `₹ ${Number(paymentData.payment.amount).toFixed(2)}` : `$ ${Number(paymentData.payment.amount).toFixed(2)}`}
+                          {(paymentData?.payment?.currency || (preferredMethod === 'razorpay' ? 'INR' : 'USD')) === 'INR'
+                            ? `₹ ${Number(paymentData?.payment?.amount || 100).toFixed(2)}`
+                            : `$ ${Number(paymentData?.payment?.amount || 5).toFixed(2)}`}
                         </span>
                       </div>
                       <div className="flex justify-between text-sm text-gray-500">
                         <span>Note</span>
-                        <span>{paymentData.payment.currency === 'INR' ? '₹100 advance to confirm booking' : '$5 advance to confirm booking'}</span>
+                        <span>{(paymentData?.payment?.currency || (preferredMethod === 'razorpay' ? 'INR' : 'USD')) === 'INR' ? '₹100 advance to confirm booking' : '$5 advance to confirm booking'}</span>
                       </div>
                     </div>
                     <div className="border-t border-blue-200 mt-3 pt-3">
                       <div className="flex justify-between font-semibold text-blue-800">
                         <span>Total Amount</span>
-                        <span>{paymentData.payment.currency === 'INR' ? `₹ ${Number(paymentData.payment.amount).toFixed(2)}` : `$ ${Number(paymentData.payment.amount).toFixed(2)}`}</span>
+                        <span>{(paymentData?.payment?.currency || (preferredMethod === 'razorpay' ? 'INR' : 'USD')) === 'INR'
+                          ? `₹ ${Number(paymentData?.payment?.amount || 100).toFixed(2)}`
+                          : `$ ${Number(paymentData?.payment?.amount || 5).toFixed(2)}`}</span>
                       </div>
                     </div>
                   </div>

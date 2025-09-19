@@ -8722,7 +8722,6 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       {isBuyer && (
         <>
           <div className="flex items-center gap-1 text-xs text-gray-500">
-            $5.00
             {/* Show info icon for pending/accepted appointments with payment not done */}
             {!appointment.paymentConfirmed && (appointment.status === 'pending' || appointment.status === 'accepted') && (
               <div className="relative group">
