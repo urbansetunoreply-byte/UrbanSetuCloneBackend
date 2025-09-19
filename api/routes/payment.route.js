@@ -5,6 +5,7 @@ import Booking from "../models/booking.model.js";
 import Listing from "../models/listing.model.js";
 import User from "../models/user.model.js";
 import RefundRequest from "../models/RefundRequest.js";
+import Notification from "../models/notification.model.js";
 import { verifyToken } from '../utils/verify.js';
 import crypto from 'crypto';
 import { createPayPalOrder, capturePayPalOrder, getPayPalAccessToken } from '../controllers/paypalController.js';
@@ -982,6 +983,125 @@ router.get("/stats/overview", verifyToken, async (req, res) => {
     });
   } catch (err) {
     console.error("Error fetching payment stats:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// POST: Submit appeal for rejected refund request
+router.post("/refund-appeal", verifyToken, async (req, res) => {
+  try {
+    const { refundRequestId, appealReason, appealText } = req.body;
+    const userId = req.user.id;
+
+    // Validate required fields
+    if (!refundRequestId || !appealReason || !appealText) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Find the refund request
+    const refundRequest = await RefundRequest.findById(refundRequestId)
+      .populate('appointmentId', 'propertyName date status buyerId sellerId')
+      .populate('userId', 'name email');
+
+    if (!refundRequest) {
+      return res.status(404).json({ message: "Refund request not found" });
+    }
+
+    // Check if user is authorized (only the original requester can appeal)
+    if (refundRequest.userId._id.toString() !== userId) {
+      return res.status(403).json({ message: "Unauthorized to appeal this refund request" });
+    }
+
+    // Check if refund request is rejected
+    if (refundRequest.status !== 'rejected') {
+      return res.status(400).json({ message: "Only rejected refund requests can be appealed" });
+    }
+
+    // Check if already appealed
+    if (refundRequest.isAppealed) {
+      return res.status(400).json({ message: "This refund request has already been appealed" });
+    }
+
+    // Update refund request with appeal information
+    refundRequest.appealReason = appealReason;
+    refundRequest.appealText = appealText;
+    refundRequest.appealSubmittedAt = new Date();
+    refundRequest.isAppealed = true;
+
+    await refundRequest.save();
+
+    // Create notification for all admins
+    const admins = await User.find({
+      $or: [
+        { role: 'admin' },
+        { role: 'rootadmin' },
+        { isDefaultAdmin: true },
+        { isAdmin: true }
+      ]
+    });
+
+    const notifications = admins.map(admin => ({
+      userId: admin._id,
+      type: 'refund_appeal_submitted',
+      title: 'New Refund Appeal Submitted',
+      message: `A refund appeal has been submitted for payment ${refundRequest.paymentId} by ${refundRequest.userId.name || refundRequest.userId.email}. Property: ${refundRequest.appointmentId.propertyName}. Appeal Reason: ${appealReason}`,
+      adminId: userId,
+      isRead: false
+    }));
+
+    await Notification.insertMany(notifications);
+
+    res.status(200).json({
+      message: "Appeal submitted successfully. Please wait for response.",
+      appealSubmittedAt: refundRequest.appealSubmittedAt
+    });
+  } catch (err) {
+    console.error("Error submitting appeal:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// PUT: Reopen case for rejected refund request (admin only)
+router.put("/refund-request/:requestId/reopen", verifyToken, async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const userId = req.user.id;
+
+    // Check if user is admin
+    const user = await User.findById(userId);
+    const isAdmin = user.role === 'admin' || user.role === 'rootadmin' || user.isDefaultAdmin || user.isAdmin;
+
+    if (!isAdmin) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    const refundRequest = await RefundRequest.findById(requestId)
+      .populate('appointmentId')
+      .populate('userId', 'name email');
+
+    if (!refundRequest) {
+      return res.status(404).json({ message: "Refund request not found" });
+    }
+
+    // Check if refund request is rejected
+    if (refundRequest.status !== 'rejected') {
+      return res.status(400).json({ message: "Only rejected refund requests can be reopened" });
+    }
+
+    // Update refund request to reopen case
+    refundRequest.caseReopened = true;
+    refundRequest.caseReopenedAt = new Date();
+    refundRequest.caseReopenedBy = userId;
+    refundRequest.status = 'pending'; // Reset status to pending for review
+
+    await refundRequest.save();
+
+    res.status(200).json({
+      message: "Case reopened successfully",
+      refundRequest: refundRequest
+    });
+  } catch (err) {
+    console.error("Error reopening case:", err);
     res.status(500).json({ message: "Server error" });
   }
 });

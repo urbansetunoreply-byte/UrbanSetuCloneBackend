@@ -29,7 +29,8 @@ const notificationSchema = new mongoose.Schema(
         'appointment_reinitiated_by_admin',
         'appointment_accepted_by_seller',
         'appointment_rejected_by_seller',
-        'appointment_reinitiated_by_user'
+        'appointment_reinitiated_by_user',
+        'refund_appeal_submitted'
       ],
     },
     title: {

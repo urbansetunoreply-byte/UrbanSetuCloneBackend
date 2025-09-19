@@ -49,6 +49,32 @@ const refundRequestSchema = new mongoose.Schema({
   },
   refundId: {
     type: String
+  },
+  appealReason: {
+    type: String,
+    trim: true
+  },
+  appealText: {
+    type: String,
+    trim: true
+  },
+  appealSubmittedAt: {
+    type: Date
+  },
+  isAppealed: {
+    type: Boolean,
+    default: false
+  },
+  caseReopened: {
+    type: Boolean,
+    default: false
+  },
+  caseReopenedAt: {
+    type: Date
+  },
+  caseReopenedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   }
 }, {
   timestamps: true

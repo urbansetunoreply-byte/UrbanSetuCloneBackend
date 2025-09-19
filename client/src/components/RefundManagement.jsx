@@ -205,6 +205,29 @@ const RefundManagement = () => {
     }
   };
 
+  const handleReopenCase = async (request) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/refund-request/${request._id}/reopen`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        toast.success('Case reopened successfully');
+        fetchRefundRequests(false);
+      } else {
+        toast.error(data.message || 'Failed to reopen case');
+      }
+    } catch (error) {
+      console.error('Error reopening case:', error);
+      toast.error('An error occurred while reopening case');
+    }
+  };
+
   const canRefund = (payment) => {
     return payment.status === 'completed' && payment.refundAmount === 0;
   };
@@ -602,6 +625,14 @@ const RefundManagement = () => {
                           <FaCheckCircle className="text-xs" />
                           Review
                         </button>
+                      ) : request.status === 'rejected' ? (
+                        <button
+                          onClick={() => handleReopenCase(request)}
+                          className="px-3 py-1 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors flex items-center gap-1"
+                        >
+                          <FaUndo className="text-xs" />
+                          Reopen Case
+                        </button>
                       ) : (
                         <span className="text-gray-400 text-sm">
                           {request.processedBy?.name || 'N/A'}
@@ -704,6 +735,43 @@ const RefundManagement = () => {
                   <p className="text-gray-700">{selectedRefundRequest.reason}</p>
                 </div>
               </div>
+
+              {selectedRefundRequest.isAppealed && (
+                <div className="mb-6">
+                  <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <FaUndo className="text-purple-600" />
+                    Appeal Information
+                  </h4>
+                  <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
+                    <div className="mb-2">
+                      <span className="text-sm font-medium text-gray-600">Appeal Reason:</span>
+                      <p className="text-gray-700">{selectedRefundRequest.appealReason}</p>
+                    </div>
+                    <div className="mb-2">
+                      <span className="text-sm font-medium text-gray-600">Appeal Details:</span>
+                      <p className="text-gray-700">{selectedRefundRequest.appealText}</p>
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      Submitted: {new Date(selectedRefundRequest.appealSubmittedAt).toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {selectedRefundRequest.caseReopened && (
+                <div className="mb-6">
+                  <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <FaRedo className="text-green-600" />
+                    Case Reopened
+                  </h4>
+                  <div className="bg-green-50 rounded-lg p-3 border border-green-200">
+                    <p className="text-gray-700">This case has been reopened for review.</p>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Reopened: {new Date(selectedRefundRequest.caseReopenedAt).toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
