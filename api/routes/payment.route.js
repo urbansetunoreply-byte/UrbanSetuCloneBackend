@@ -378,7 +378,7 @@ router.post("/refund", verifyToken, async (req, res) => {
 router.get("/history", verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
-    const { page = 1, limit = 10, status, paymentType, appointmentId, gateway, currency } = req.query;
+    const { page = 1, limit = 10, status, paymentType, appointmentId, gateway, currency, q, fromDate, toDate } = req.query;
 
     let query = { userId };
     if (status) query.status = status;
@@ -386,6 +386,17 @@ router.get("/history", verifyToken, async (req, res) => {
     if (appointmentId) query.appointmentId = appointmentId;
     if (gateway) query.gateway = gateway;
     if (currency) query.currency = currency.toUpperCase();
+    if (q) {
+      query.$or = [
+        { paymentId: new RegExp(q, 'i') },
+        { receiptNumber: new RegExp(q, 'i') }
+      ];
+    }
+    if (fromDate || toDate) {
+      query.createdAt = {};
+      if (fromDate) query.createdAt.$gte = new Date(fromDate);
+      if (toDate) query.createdAt.$lte = new Date(toDate);
+    }
     
     const payments = await Payment.find(query)
       .populate('appointmentId', 'propertyName date status')
@@ -544,6 +555,50 @@ router.get('/paypal/debug', verifyToken, async (req, res) => {
   }
 });
 
+// User: Export own payments CSV
+router.get('/export', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { status, gateway, q, fromDate, toDate } = req.query;
+    const query = { userId };
+    if (status) query.status = status;
+    if (gateway) query.gateway = gateway;
+    if (q) {
+      query.$or = [
+        { paymentId: new RegExp(q, 'i') },
+        { receiptNumber: new RegExp(q, 'i') }
+      ];
+    }
+    if (fromDate || toDate) {
+      query.createdAt = {};
+      if (fromDate) query.createdAt.$gte = new Date(fromDate);
+      if (toDate) query.createdAt.$lte = new Date(toDate);
+    }
+    const payments = await Payment.find(query)
+      .populate('appointmentId', 'propertyName date status')
+      .populate('listingId', 'name address')
+      .sort({ createdAt: -1 });
+    const headers = ['PaymentID','Currency','Amount','Status','Gateway','Property','AppointmentDate','CreatedAt','Receipt'];
+    const rows = payments.map(p => [
+      p.paymentId,
+      p.currency || 'USD',
+      p.amount,
+      p.status,
+      p.gateway,
+      p.appointmentId?.propertyName || '',
+      p.appointmentId?.date ? new Date(p.appointmentId.date).toISOString() : '',
+      p.createdAt ? new Date(p.createdAt).toISOString() : '',
+      p.receiptUrl || ''
+    ]);
+    const csv = [headers.join(','), ...rows.map(r => r.map(v => typeof v === 'string' && v.includes(',') ? `"${v.replace(/"/g, '""')}"` : v).join(','))].join('\n');
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="my_payments.csv"');
+    return res.send(csv);
+  } catch (e) {
+    console.error('User export payments error:', e);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
 // Admin: Export payments CSV
 router.get('/admin/export', verifyToken, async (req, res) => {
   try {
@@ -552,11 +607,22 @@ router.get('/admin/export', verifyToken, async (req, res) => {
     if (user.role !== 'admin' && user.role !== 'rootadmin') {
       return res.status(403).json({ message: 'Unauthorized' });
     }
-    const { currency, status, gateway } = req.query;
+    const { currency, status, gateway, q, fromDate, toDate } = req.query;
     const query = {};
     if (currency) query.currency = currency.toUpperCase();
     if (status) query.status = status;
     if (gateway) query.gateway = gateway;
+    if (q) {
+      query.$or = [
+        { paymentId: new RegExp(q, 'i') },
+        { receiptNumber: new RegExp(q, 'i') }
+      ];
+    }
+    if (fromDate || toDate) {
+      query.createdAt = {};
+      if (fromDate) query.createdAt.$gte = new Date(fromDate);
+      if (toDate) query.createdAt.$lte = new Date(toDate);
+    }
 
     const payments = await Payment.find(query)
       .populate('appointmentId', 'propertyName date status')
@@ -596,11 +662,23 @@ router.get('/admin/list', verifyToken, async (req, res) => {
     if (user.role !== 'admin' && user.role !== 'rootadmin') {
       return res.status(403).json({ message: 'Unauthorized' });
     }
-    const { currency, status, gateway, page = 1, limit = 20 } = req.query;
+    const { currency, status, gateway, page = 1, limit = 20, q, fromDate, toDate } = req.query;
     const query = {};
     if (currency) query.currency = currency.toUpperCase();
     if (status) query.status = status;
     if (gateway) query.gateway = gateway;
+    if (q) {
+      query.$or = [
+        { paymentId: new RegExp(q, 'i') },
+        { receiptNumber: new RegExp(q, 'i') },
+        { 'userId.username': new RegExp(q, 'i') }
+      ];
+    }
+    if (fromDate || toDate) {
+      query.createdAt = {};
+      if (fromDate) query.createdAt.$gte = new Date(fromDate);
+      if (toDate) query.createdAt.$lte = new Date(toDate);
+    }
 
     const payments = await Payment.find(query)
       .populate('appointmentId', 'propertyName date status buyerId sellerId')

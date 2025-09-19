@@ -49,11 +49,17 @@ const PaymentDashboard = () => {
     try {
       const statusSel = document.getElementById('admin-pay-status');
       const gatewaySel = document.getElementById('admin-pay-gateway');
+      const qSel = document.getElementById('admin-pay-q');
+      const fromSel = document.getElementById('admin-pay-from');
+      const toSel = document.getElementById('admin-pay-to');
       const status = statusSel ? statusSel.value : '';
       const gateway = gatewaySel ? gatewaySel.value : '';
+      const q = qSel ? qSel.value : '';
+      const fromDate = fromSel ? fromSel.value : '';
+      const toDate = toSel ? toSel.value : '';
       const [usdRes, inrRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?currency=USD&limit=50&status=${encodeURIComponent(status)}&gateway=${encodeURIComponent(gateway)}`, { credentials: 'include' }),
-        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?currency=INR&limit=50&status=${encodeURIComponent(status)}&gateway=${encodeURIComponent(gateway)}`, { credentials: 'include' })
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?currency=USD&limit=50&status=${encodeURIComponent(status)}&gateway=${encodeURIComponent(gateway)}&q=${encodeURIComponent(q)}&fromDate=${encodeURIComponent(fromDate)}&toDate=${encodeURIComponent(toDate)}`, { credentials: 'include' }),
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?currency=INR&limit=50&status=${encodeURIComponent(status)}&gateway=${encodeURIComponent(gateway)}&q=${encodeURIComponent(q)}&fromDate=${encodeURIComponent(fromDate)}&toDate=${encodeURIComponent(toDate)}`, { credentials: 'include' })
       ]);
       const usdData = await usdRes.json();
       const inrData = await inrRes.json();
@@ -304,7 +310,10 @@ const PaymentDashboard = () => {
 
           {activeTab === 'history' && (
             <div className="space-y-6">
-              <div className="flex items-center gap-3 mb-2">
+              <div className="flex items-center gap-3 mb-2 flex-wrap">
+                <input id="admin-pay-q" placeholder="Search payment ID, receipt, user" className="px-3 py-2 border rounded-lg text-sm" onChange={async ()=>{ await fetchAdminPayments(); }} />
+                <input id="admin-pay-from" type="date" className="px-3 py-2 border rounded-lg text-sm" onChange={async ()=>{ await fetchAdminPayments(); }} />
+                <input id="admin-pay-to" type="date" className="px-3 py-2 border rounded-lg text-sm" onChange={async ()=>{ await fetchAdminPayments(); }} />
                 <select id="admin-pay-status" onChange={async () => { await fetchAdminPayments(); }} className="px-3 py-2 border rounded-lg text-sm">
                   <option value="">All Status</option>
                   <option value="completed">Completed</option>
