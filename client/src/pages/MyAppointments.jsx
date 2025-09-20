@@ -1389,6 +1389,30 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       document.body.style.overflow = 'unset';
     };
   }, [showChatLockModal, showChatUnlockModal, showForgotPasswordModal, showRemoveLockModal]);
+
+  // Lock body scroll when refund request modal is open
+  useEffect(() => {
+    if (showRefundRequestModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showRefundRequestModal]);
+
+  // Lock body scroll when appeal modal is open
+  useEffect(() => {
+    if (showAppealModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showAppealModal]);
   
   // Cleanup undo timer when chat modal closes or component unmounts
   useEffect(() => {

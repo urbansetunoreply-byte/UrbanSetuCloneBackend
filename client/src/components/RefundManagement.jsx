@@ -18,6 +18,15 @@ const RefundManagement = () => {
     status: 'completed',
     search: ''
   });
+  const [refundRequestFilters, setRefundRequestFilters] = useState({
+    search: '',
+    status: '',
+    type: '',
+    currency: '',
+    dateFrom: '',
+    dateTo: '',
+    user: ''
+  });
   const [searchTimeout, setSearchTimeout] = useState(null);
   const [activeTab, setActiveTab] = useState('payments'); // 'payments' or 'requests'
   const [selectedRefundRequest, setSelectedRefundRequest] = useState(null);
@@ -26,6 +35,19 @@ const RefundManagement = () => {
   const [processingRequest, setProcessingRequest] = useState(false);
   const [processingApprove, setProcessingApprove] = useState(false);
   const [processingReject, setProcessingReject] = useState(false);
+
+  // Lock body scroll when refund request modal is open
+  useEffect(() => {
+    if (showRefundRequestModal) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+    
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, [showRefundRequestModal]);
 
   // Debounced search effect - no loading indicator for search
   useEffect(() => {
@@ -50,6 +72,30 @@ const RefundManagement = () => {
   useEffect(() => {
     fetchPayments(true); // Show loading for status filter changes
   }, [filters.status]);
+
+  // Refund request search effect - debounced
+  useEffect(() => {
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+    
+    const timeout = setTimeout(() => {
+      fetchRefundRequests(false); // No loading indicator for search
+    }, 300); // 300ms debounce
+    
+    setSearchTimeout(timeout);
+    
+    return () => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+    };
+  }, [refundRequestFilters.search]);
+
+  // Refund request filter effects (immediate, no debounce) - show loading for filter changes
+  useEffect(() => {
+    fetchRefundRequests(true); // Show loading for filter changes
+  }, [refundRequestFilters.status, refundRequestFilters.type, refundRequestFilters.currency, refundRequestFilters.dateFrom, refundRequestFilters.dateTo, refundRequestFilters.user]);
 
   // Initial load effect
   useEffect(() => {
@@ -93,7 +139,14 @@ const RefundManagement = () => {
         setLoading(true);
       }
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/refund-requests`, {
+      const queryParams = new URLSearchParams();
+      Object.entries(refundRequestFilters).forEach(([key, value]) => {
+        if (value) {
+          queryParams.append(key, value);
+        }
+      });
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/refund-requests?${queryParams}`, {
         credentials: 'include'
       });
 
@@ -556,6 +609,115 @@ const RefundManagement = () => {
 
       {activeTab === 'requests' && (
         <>
+          {/* Refund Requests Filters */}
+          <div className="bg-gray-50 rounded-lg p-4 mb-6">
+            <div className="flex items-center gap-2 mb-4">
+              <FaFilter className="text-gray-600" />
+              <h3 className="text-lg font-semibold text-gray-800">Filter Refund Requests</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {/* Search */}
+              <div className="relative">
+                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search by property, user, or reason..."
+                  value={refundRequestFilters.search}
+                  onChange={(e) => setRefundRequestFilters(prev => ({ ...prev, search: e.target.value }))}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* Status Filter */}
+              <select
+                value={refundRequestFilters.status}
+                onChange={(e) => setRefundRequestFilters(prev => ({ ...prev, status: e.target.value }))}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+                <option value="processed">Processed</option>
+              </select>
+
+              {/* Type Filter */}
+              <select
+                value={refundRequestFilters.type}
+                onChange={(e) => setRefundRequestFilters(prev => ({ ...prev, type: e.target.value }))}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All Types</option>
+                <option value="full">Full Refund</option>
+                <option value="partial">Partial Refund</option>
+              </select>
+
+              {/* Currency Filter */}
+              <select
+                value={refundRequestFilters.currency}
+                onChange={(e) => setRefundRequestFilters(prev => ({ ...prev, currency: e.target.value }))}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All Currencies</option>
+                <option value="USD">USD ($)</option>
+                <option value="INR">INR (₹)</option>
+              </select>
+
+              {/* Date From */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+                <input
+                  type="date"
+                  value={refundRequestFilters.dateFrom}
+                  onChange={(e) => setRefundRequestFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* Date To */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+                <input
+                  type="date"
+                  value={refundRequestFilters.dateTo}
+                  onChange={(e) => setRefundRequestFilters(prev => ({ ...prev, dateTo: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* User Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">User</label>
+                <input
+                  type="text"
+                  placeholder="Search by user name or email..."
+                  value={refundRequestFilters.user}
+                  onChange={(e) => setRefundRequestFilters(prev => ({ ...prev, user: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* Clear Filters Button */}
+              <div className="flex items-end">
+                <button
+                  onClick={() => setRefundRequestFilters({
+                    search: '',
+                    status: '',
+                    type: '',
+                    currency: '',
+                    dateFrom: '',
+                    dateTo: '',
+                    user: ''
+                  })}
+                  className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center gap-2"
+                >
+                  <FaTimes className="text-sm" />
+                  Clear Filters
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* Refund Requests Table */}
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -689,7 +851,9 @@ const RefundManagement = () => {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Amount:</span>
-                      <span className="font-medium">${selectedRefundRequest.requestedAmount.toLocaleString()}</span>
+                      <span className="font-medium">
+                        {selectedRefundRequest.paymentId?.currency === 'INR' ? '₹' : '$'}{selectedRefundRequest.requestedAmount.toLocaleString()}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Type:</span>
