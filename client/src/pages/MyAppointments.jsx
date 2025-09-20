@@ -8695,6 +8695,42 @@ function PaymentStatusCell({ appointment, isBuyer }) {
     fetchPaymentStatus();
   }, [appointment._id, appointment.paymentConfirmed]); // Add paymentConfirmed dependency
 
+  // Lock body scroll when refund request modal is open
+  useEffect(() => {
+    if (showRefundRequestModal) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, [showRefundRequestModal]);
+
+  // Lock body scroll when appeal modal is open
+  useEffect(() => {
+    if (showAppealModal) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, [showAppealModal]);
+
+  // Lock body scroll when pay modal is open
+  useEffect(() => {
+    if (showPayModal) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, [showPayModal]);
+
   const fetchPaymentStatus = async () => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/history?appointmentId=${appointment._id}`, {
