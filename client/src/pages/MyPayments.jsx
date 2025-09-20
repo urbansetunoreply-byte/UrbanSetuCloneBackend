@@ -156,6 +156,11 @@ const MyPayments = () => {
                         <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">{p.gateway?.toUpperCase()}</span>
                         <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">{p.currency || 'USD'}</span>
                         <span>{p.currency === 'INR' ? '₹' : '$'}{Number(p.amount).toFixed(2)}</span>
+                        {p.refundAmount > 0 && (
+                          <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-700">
+                            Refunded: {p.currency === 'INR' ? '₹' : '$'}{Number(p.refundAmount).toFixed(2)}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div className="text-right">

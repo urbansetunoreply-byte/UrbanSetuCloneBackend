@@ -353,6 +353,11 @@ const PaymentDashboard = () => {
                           </div>
                           <div className="text-right">
                             <div className="text-lg font-bold">$ {Number(p.amount).toFixed(2)}</div>
+                            {p.refundAmount > 0 && (
+                              <div className="text-sm text-red-600 font-semibold">
+                                Refunded: $ {Number(p.refundAmount).toFixed(2)}
+                              </div>
+                            )}
                             <div className="text-xs text-gray-500">
                               {p.completedAt ? (
                                 <div>
@@ -435,6 +440,11 @@ const PaymentDashboard = () => {
                           </div>
                           <div className="text-right">
                             <div className="text-lg font-bold">₹ {Number(p.amount).toFixed(2)}</div>
+                            {p.refundAmount > 0 && (
+                              <div className="text-sm text-red-600 font-semibold">
+                                Refunded: ₹ {Number(p.refundAmount).toFixed(2)}
+                              </div>
+                            )}
                             <div className="text-xs text-gray-500">
                               {p.completedAt ? (
                                 <div>
