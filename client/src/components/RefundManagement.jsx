@@ -866,11 +866,11 @@ const RefundManagement = () => {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Requested Date:</span>
-                      <span className="font-medium">{new Date(selectedRefundRequest.createdAt).toLocaleDateString()}</span>
+                      <span className="font-medium">{new Date(selectedRefundRequest.createdAt).toLocaleDateString('en-GB')}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Requested Time:</span>
-                      <span className="font-medium">{new Date(selectedRefundRequest.createdAt).toLocaleTimeString()}</span>
+                      <span className="font-medium">{new Date(selectedRefundRequest.createdAt).toLocaleTimeString('en-GB')}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Status:</span>
@@ -929,7 +929,7 @@ const RefundManagement = () => {
                       <p className="text-gray-700">{selectedRefundRequest.appealText}</p>
                     </div>
                     <div className="text-xs text-gray-500">
-                      Submitted: {new Date(selectedRefundRequest.appealSubmittedAt).toLocaleString()}
+                      Submitted: {new Date(selectedRefundRequest.appealSubmittedAt).toLocaleString('en-GB')}
                     </div>
                   </div>
                 </div>
@@ -944,7 +944,7 @@ const RefundManagement = () => {
                   <div className="bg-green-50 rounded-lg p-3 border border-green-200">
                     <p className="text-gray-700">This case has been reopened for review.</p>
                     <div className="text-xs text-gray-500 mt-1">
-                      Reopened: {new Date(selectedRefundRequest.caseReopenedAt).toLocaleString()}
+                      Reopened: {new Date(selectedRefundRequest.caseReopenedAt).toLocaleString('en-GB')}
                     </div>
                   </div>
                 </div>
