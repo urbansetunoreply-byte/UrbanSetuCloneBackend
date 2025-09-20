@@ -1364,6 +1364,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const [removingLock, setRemovingLock] = useState(false);
   const [forgotPasswordProcessing, setForgotPasswordProcessing] = useState(false);
   
+  // Refund and appeal modal states
+  const [showRefundRequestModal, setShowRefundRequestModal] = useState(false);
+  const [showAppealModal, setShowAppealModal] = useState(false);
+  
   // Lock body scroll when specific modals are open (Cancel or Remove Appointment)
   useEffect(() => {
     const shouldLock = showCancelModal || showPermanentDeleteModal;
