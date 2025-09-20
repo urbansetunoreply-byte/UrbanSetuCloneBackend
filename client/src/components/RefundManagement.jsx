@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaUndo, FaDollarSign, FaExclamationTriangle, FaCheckCircle, FaTimes, FaSpinner, FaSearch, FaFilter, FaRedo } from 'react-icons/fa';
+import { FaUndo, FaDollarSign, FaExclamationTriangle, FaCheckCircle, FaTimes, FaSpinner, FaSearch, FaFilter, FaRedo, FaInfo } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
 const RefundManagement = () => {
@@ -35,6 +35,10 @@ const RefundManagement = () => {
   const [processingRequest, setProcessingRequest] = useState(false);
   const [processingApprove, setProcessingApprove] = useState(false);
   const [processingReject, setProcessingReject] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(false);
+  const [selectedInfoRequest, setSelectedInfoRequest] = useState(null);
+  const [showReopenConfirmModal, setShowReopenConfirmModal] = useState(false);
+  const [reopenReason, setReopenReason] = useState('');
 
   // Lock body scroll when refund request modal is open
   useEffect(() => {
@@ -280,18 +284,34 @@ const RefundManagement = () => {
   };
 
   const handleReopenCase = async (request) => {
+    setSelectedInfoRequest(request);
+    setReopenReason('');
+    setShowReopenConfirmModal(true);
+  };
+
+  const handleReopenConfirm = async () => {
+    if (!selectedInfoRequest || !reopenReason.trim()) {
+      toast.error('Please provide a reason for reopening the case');
+      return;
+    }
+
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/refund-request/${request._id}/reopen`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/refund-request/${selectedInfoRequest._id}/reopen`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include'
+        credentials: 'include',
+        body: JSON.stringify({
+          reason: reopenReason
+        })
       });
 
       const data = await response.json();
       if (response.ok) {
         toast.success('Case reopened successfully');
+        setShowReopenConfirmModal(false);
+        setReopenReason('');
         fetchRefundRequests(false);
       } else {
         toast.error(data.message || 'Failed to reopen case');
@@ -300,6 +320,11 @@ const RefundManagement = () => {
       console.error('Error reopening case:', error);
       toast.error('An error occurred while reopening case');
     }
+  };
+
+  const handleInfoClick = (request) => {
+    setSelectedInfoRequest(request);
+    setShowInfoModal(true);
   };
 
   const canRefund = (payment) => {
@@ -793,27 +818,46 @@ const RefundManagement = () => {
                       </div>
                     </td>
                     <td className="py-3 px-4">
-                      {request.status === 'pending' ? (
-                        <button
-                          onClick={() => handleRefundRequestClick(request)}
-                          className="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-1"
-                        >
-                          <FaCheckCircle className="text-xs" />
-                          Review
-                        </button>
-                      ) : request.status === 'rejected' ? (
-                        <button
-                          onClick={() => handleReopenCase(request)}
-                          className="px-3 py-1 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors flex items-center gap-1"
-                        >
-                          <FaUndo className="text-xs" />
-                          Reopen Case
-                        </button>
-                      ) : (
-                        <span className="text-gray-400 text-sm">
-                          {request.processedBy?.name || 'N/A'}
-                        </span>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {request.status === 'pending' ? (
+                          <button
+                            onClick={() => handleRefundRequestClick(request)}
+                            className="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-1"
+                          >
+                            <FaCheckCircle className="text-xs" />
+                            Review
+                          </button>
+                        ) : request.status === 'rejected' ? (
+                          <>
+                            <button
+                              onClick={() => handleInfoClick(request)}
+                              className="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-1"
+                            >
+                              <FaInfo className="text-xs" />
+                              Info
+                            </button>
+                            <button
+                              onClick={() => handleReopenCase(request)}
+                              className="px-3 py-1 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors flex items-center gap-1"
+                            >
+                              <FaUndo className="text-xs" />
+                              Reopen Case
+                            </button>
+                          </>
+                        ) : request.status === 'approved' ? (
+                          <button
+                            onClick={() => handleInfoClick(request)}
+                            className="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-1"
+                          >
+                            <FaInfo className="text-xs" />
+                            Info
+                          </button>
+                        ) : (
+                          <span className="text-gray-400 text-sm">
+                            {request.processedBy?.name || 'N/A'}
+                          </span>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -1044,6 +1088,261 @@ const RefundManagement = () => {
                     <FaCheckCircle />
                   )}
                   Approve
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Info Modal */}
+      {showInfoModal && selectedInfoRequest && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+            <div className="p-6 border-b border-gray-200 flex-shrink-0">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                  <FaInfo className="text-blue-600" />
+                  Refund Request Details
+                </h3>
+                <button
+                  onClick={() => setShowInfoModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <FaTimes className="text-xl" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 overflow-y-auto flex-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <h4 className="font-semibold text-gray-800 mb-3">Request Details</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Property:</span>
+                      <span className="font-medium">{selectedInfoRequest.appointmentId?.propertyName}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">User:</span>
+                      <span className="font-medium">{selectedInfoRequest.userId?.name || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Requested Amount:</span>
+                      <span className="font-medium">
+                        {selectedInfoRequest.paymentId?.currency === 'INR' ? '₹' : '$'}{selectedInfoRequest.requestedAmount.toLocaleString()}
+                      </span>
+                    </div>
+                    {selectedInfoRequest.adminRefundAmount && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Admin Override Amount:</span>
+                        <span className="font-medium text-blue-600">
+                          {selectedInfoRequest.paymentId?.currency === 'INR' ? '₹' : '$'}{selectedInfoRequest.adminRefundAmount.toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                    {selectedInfoRequest.paymentId?.refundAmount > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Actual Refunded Amount:</span>
+                        <span className="font-medium text-green-600">
+                          {selectedInfoRequest.paymentId?.currency === 'INR' ? '₹' : '$'}{selectedInfoRequest.paymentId.refundAmount.toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Type:</span>
+                      <span className="font-medium capitalize">{selectedInfoRequest.type} Refund</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Status:</span>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRefundRequestStatusColor(selectedInfoRequest.status)}`}>
+                        {getRefundRequestStatusText(selectedInfoRequest.status)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Requested Date:</span>
+                      <span className="font-medium">{new Date(selectedInfoRequest.createdAt).toLocaleDateString('en-GB')}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Requested Time:</span>
+                      <span className="font-medium">{new Date(selectedInfoRequest.createdAt).toLocaleTimeString('en-GB')}</span>
+                    </div>
+                    {selectedInfoRequest.processedAt && (
+                      <>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Processed Date:</span>
+                          <span className="font-medium">{new Date(selectedInfoRequest.processedAt).toLocaleDateString('en-GB')}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Processed Time:</span>
+                          <span className="font-medium">{new Date(selectedInfoRequest.processedAt).toLocaleTimeString('en-GB')}</span>
+                        </div>
+                      </>
+                    )}
+                    {selectedInfoRequest.processedBy && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Processed By:</span>
+                        <span className="font-medium">{selectedInfoRequest.processedBy.name || 'N/A'}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold text-gray-800 mb-3">Payment Details</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Payment ID:</span>
+                      <span className="font-mono text-sm">{selectedInfoRequest.paymentId?.paymentId || selectedInfoRequest.paymentId}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Original Amount:</span>
+                      <span className="font-medium">
+                        {selectedInfoRequest.paymentId?.currency === 'INR' ? '₹' : '$'}{selectedInfoRequest.paymentId?.amount?.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Gateway:</span>
+                      <span className="font-medium capitalize">{selectedInfoRequest.paymentId?.gateway}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Appointment Status:</span>
+                      <span className="font-medium capitalize">{selectedInfoRequest.appointmentId?.status?.replace(/([A-Z])/g, ' $1').trim()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Payment Created:</span>
+                      <span className="font-medium">{selectedInfoRequest.paymentId?.createdAt ? new Date(selectedInfoRequest.paymentId.createdAt).toLocaleDateString('en-GB') : 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Payment Completed:</span>
+                      <span className="font-medium">{selectedInfoRequest.paymentId?.completedAt ? new Date(selectedInfoRequest.paymentId.completedAt).toLocaleDateString('en-GB') : 'N/A'}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <h4 className="font-semibold text-gray-800 mb-2">Refund Reason</h4>
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-gray-700">{selectedInfoRequest.reason}</p>
+                </div>
+              </div>
+
+              {selectedInfoRequest.adminNotes && (
+                <div className="mb-6">
+                  <h4 className="font-semibold text-gray-800 mb-2">Admin Notes</h4>
+                  <div className="bg-blue-50 rounded-lg p-3">
+                    <p className="text-gray-700">{selectedInfoRequest.adminNotes}</p>
+                  </div>
+                </div>
+              )}
+
+              {selectedInfoRequest.isAppealed && (
+                <div className="mb-6">
+                  <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <FaUndo className="text-purple-600" />
+                    Appeal Information
+                  </h4>
+                  <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
+                    <div className="mb-2">
+                      <span className="text-sm font-medium text-gray-600">Appeal Reason:</span>
+                      <p className="text-gray-700">{selectedInfoRequest.appealReason}</p>
+                    </div>
+                    <div className="mb-2">
+                      <span className="text-sm font-medium text-gray-600">Appeal Details:</span>
+                      <p className="text-gray-700">{selectedInfoRequest.appealText}</p>
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      Submitted: {new Date(selectedInfoRequest.appealSubmittedAt).toLocaleString('en-GB')}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {selectedInfoRequest.caseReopened && (
+                <div className="mb-6">
+                  <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <FaRedo className="text-green-600" />
+                    Case Reopened
+                  </h4>
+                  <div className="bg-green-50 rounded-lg p-3 border border-green-200">
+                    <p className="text-gray-700">This case has been reopened for review.</p>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Reopened: {new Date(selectedInfoRequest.caseReopenedAt).toLocaleString('en-GB')}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 border-t border-gray-200 flex-shrink-0">
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowInfoModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reopen Case Confirmation Modal */}
+      {showReopenConfirmModal && selectedInfoRequest && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                  <FaUndo className="text-green-600" />
+                  Reopen Case
+                </h3>
+                <button
+                  onClick={() => setShowReopenConfirmModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <FaTimes className="text-xl" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <div className="mb-4">
+                <p className="text-gray-700 mb-4">
+                  Are you sure you want to reopen this case? Please provide a reason for reopening.
+                </p>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Reason for Reopening
+                  </label>
+                  <textarea
+                    value={reopenReason}
+                    onChange={(e) => setReopenReason(e.target.value)}
+                    placeholder="Enter reason for reopening this case..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    rows="3"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-200">
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowReopenConfirmModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleReopenConfirm}
+                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                >
+                  <FaUndo />
+                  Reopen Case
                 </button>
               </div>
             </div>
