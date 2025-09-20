@@ -429,7 +429,7 @@ const RefundManagement = () => {
                 </td>
                 <td className="py-3 px-4">
                   <div className="text-sm text-gray-600">
-                    {new Date(payment.createdAt).toLocaleDateString()}
+                    {new Date(payment.createdAt).toLocaleDateString('en-GB')}
                   </div>
                 </td>
                 <td className="py-3 px-4">
@@ -777,7 +777,7 @@ const RefundManagement = () => {
                     </td>
                     <td className="py-3 px-4">
                       <div className="text-sm text-gray-600">
-                        {new Date(request.createdAt).toLocaleDateString()}
+                        {new Date(request.createdAt).toLocaleDateString('en-GB')}
                       </div>
                       <div className="text-xs text-gray-500">
                         {new Date(request.createdAt).toLocaleTimeString()}

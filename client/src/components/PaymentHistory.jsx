@@ -201,21 +201,21 @@ const PaymentHistory = ({ userId }) => {
                   <p>
                     {payment.completedAt ? (
                       <div>
-                        <div>Paid: {new Date(payment.completedAt).toLocaleDateString()}</div>
-                        <div className="text-xs text-gray-500">{new Date(payment.completedAt).toLocaleTimeString()}</div>
-                        <div className="text-xs text-gray-400 mt-1">Created: {new Date(payment.createdAt).toLocaleDateString()}</div>
-                        <div className="text-xs text-gray-400">{new Date(payment.createdAt).toLocaleTimeString()}</div>
+                        <div>Paid: {new Date(payment.completedAt).toLocaleDateString('en-GB')}</div>
+                        <div className="text-xs text-gray-500">{new Date(payment.completedAt).toLocaleTimeString('en-GB')}</div>
+                        <div className="text-xs text-gray-400 mt-1">Created: {new Date(payment.createdAt).toLocaleDateString('en-GB')}</div>
+                        <div className="text-xs text-gray-400">{new Date(payment.createdAt).toLocaleTimeString('en-GB')}</div>
                         {payment.refundedAt && (
                           <>
-                            <div className="text-xs text-red-400 mt-1">Refunded: {new Date(payment.refundedAt).toLocaleDateString()}</div>
-                            <div className="text-xs text-red-300">{new Date(payment.refundedAt).toLocaleTimeString()}</div>
+                            <div className="text-xs text-red-400 mt-1">Refunded: {new Date(payment.refundedAt).toLocaleDateString('en-GB')}</div>
+                            <div className="text-xs text-red-300">{new Date(payment.refundedAt).toLocaleTimeString('en-GB')}</div>
                           </>
                         )}
                       </div>
                     ) : (
                       <div>
-                        <div>Created: {new Date(payment.createdAt).toLocaleDateString()}</div>
-                        <div className="text-xs text-gray-500">{new Date(payment.createdAt).toLocaleTimeString()}</div>
+                        <div>Created: {new Date(payment.createdAt).toLocaleDateString('en-GB')}</div>
+                        <div className="text-xs text-gray-500">{new Date(payment.createdAt).toLocaleTimeString('en-GB')}</div>
                       </div>
                     )}
                   </p>
@@ -241,10 +241,10 @@ const PaymentHistory = ({ userId }) => {
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-red-600">
-                        {payment.refundedAt ? new Date(payment.refundedAt).toLocaleDateString() : 'N/A'}
+                        {payment.refundedAt ? new Date(payment.refundedAt).toLocaleDateString('en-GB') : 'N/A'}
                       </p>
                       <p className="text-xs text-red-500">
-                        {payment.refundedAt ? new Date(payment.refundedAt).toLocaleTimeString() : ''}
+                        {payment.refundedAt ? new Date(payment.refundedAt).toLocaleTimeString('en-GB') : ''}
                       </p>
                       {payment.refundReason && (
                         <p className="text-xs text-red-500">{payment.refundReason}</p>
@@ -257,9 +257,9 @@ const PaymentHistory = ({ userId }) => {
                 <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-500">
                   {payment.completedAt ? (
-                    <span>Completed on {new Date(payment.completedAt).toLocaleDateString()}</span>
+                    <span>Completed on {new Date(payment.completedAt).toLocaleDateString('en-GB')}</span>
                   ) : (
-                    <span>Created on {new Date(payment.createdAt).toLocaleDateString()}</span>
+                    <span>Created on {new Date(payment.createdAt).toLocaleDateString('en-GB')}</span>
                   )}
                 </div>
                 <div className="flex gap-2">
