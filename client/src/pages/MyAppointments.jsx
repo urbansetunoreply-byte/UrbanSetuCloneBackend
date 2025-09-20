@@ -1385,36 +1385,36 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   useEffect(() => {
     const shouldLock = showChatLockModal || showChatUnlockModal || showForgotPasswordModal || showRemoveLockModal;
     if (shouldLock) {
-      document.body.style.overflow = 'hidden';
+      document.body.classList.add('modal-open');
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.classList.remove('modal-open');
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.classList.remove('modal-open');
     };
   }, [showChatLockModal, showChatUnlockModal, showForgotPasswordModal, showRemoveLockModal]);
 
   // Lock body scroll when refund request modal is open
   useEffect(() => {
     if (showRefundRequestModal) {
-      document.body.style.overflow = 'hidden';
+      document.body.classList.add('modal-open');
     } else {
-      document.body.style.overflow = '';
+      document.body.classList.remove('modal-open');
     }
     return () => {
-      document.body.style.overflow = '';
+      document.body.classList.remove('modal-open');
     };
   }, [showRefundRequestModal]);
 
   // Lock body scroll when appeal modal is open
   useEffect(() => {
     if (showAppealModal) {
-      document.body.style.overflow = 'hidden';
+      document.body.classList.add('modal-open');
     } else {
-      document.body.style.overflow = '';
+      document.body.classList.remove('modal-open');
     }
     return () => {
-      document.body.style.overflow = '';
+      document.body.classList.remove('modal-open');
     };
   }, [showAppealModal]);
   
@@ -3837,19 +3837,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   // Lock body scroll when chat modal is open
   useEffect(() => {
     if (showChatModal) {
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
+      document.body.classList.add('modal-open');
     } else {
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
+      document.body.classList.remove('modal-open');
     }
-    
     return () => {
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
+      document.body.classList.remove('modal-open');
     };
   }, [showChatModal]);
 

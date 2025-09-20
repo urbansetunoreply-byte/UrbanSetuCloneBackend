@@ -90,12 +90,12 @@ const RefundManagement = () => {
         clearTimeout(timeout);
       }
     };
-  }, [refundRequestFilters.search]);
+  }, [refundRequestFilters.search, refundRequestFilters.user]);
 
   // Refund request filter effects (immediate, no debounce) - show loading for filter changes
   useEffect(() => {
     fetchRefundRequests(true); // Show loading for filter changes
-  }, [refundRequestFilters.status, refundRequestFilters.type, refundRequestFilters.currency, refundRequestFilters.dateFrom, refundRequestFilters.dateTo, refundRequestFilters.user]);
+  }, [refundRequestFilters.status, refundRequestFilters.type, refundRequestFilters.currency, refundRequestFilters.dateFrom, refundRequestFilters.dateTo]);
 
   // Initial load effect
   useEffect(() => {
@@ -670,6 +670,7 @@ const RefundManagement = () => {
                   type="date"
                   value={refundRequestFilters.dateFrom}
                   onChange={(e) => setRefundRequestFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
+                  max={new Date().toISOString().split('T')[0]}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -681,6 +682,7 @@ const RefundManagement = () => {
                   type="date"
                   value={refundRequestFilters.dateTo}
                   onChange={(e) => setRefundRequestFilters(prev => ({ ...prev, dateTo: e.target.value }))}
+                  max={new Date().toISOString().split('T')[0]}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -728,7 +730,7 @@ const RefundManagement = () => {
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Amount</th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Reason</th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Status</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Date</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Date & Time</th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Actions</th>
                 </tr>
               </thead>
@@ -776,6 +778,9 @@ const RefundManagement = () => {
                     <td className="py-3 px-4">
                       <div className="text-sm text-gray-600">
                         {new Date(request.createdAt).toLocaleDateString()}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {new Date(request.createdAt).toLocaleTimeString()}
                       </div>
                     </td>
                     <td className="py-3 px-4">
@@ -847,7 +852,7 @@ const RefundManagement = () => {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">User:</span>
-                      <span className="font-medium">{selectedRefundRequest.userId?.name}</span>
+                      <span className="font-medium">{selectedRefundRequest.userId?.name || 'N/A'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Amount:</span>
@@ -858,6 +863,14 @@ const RefundManagement = () => {
                     <div className="flex justify-between">
                       <span className="text-gray-600">Type:</span>
                       <span className="font-medium capitalize">{selectedRefundRequest.type} Refund</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Requested Date:</span>
+                      <span className="font-medium">{new Date(selectedRefundRequest.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Requested Time:</span>
+                      <span className="font-medium">{new Date(selectedRefundRequest.createdAt).toLocaleTimeString()}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Status:</span>
