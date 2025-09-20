@@ -658,8 +658,8 @@ const RefundManagement = () => {
       {/* Refund Request Modal */}
       {showRefundRequestModal && selectedRefundRequest && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full">
-            <div className="p-6 border-b border-gray-200">
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+            <div className="p-6 border-b border-gray-200 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                   <FaCheckCircle className="text-blue-600" />
@@ -674,7 +674,7 @@ const RefundManagement = () => {
               </div>
             </div>
 
-            <div className="p-6">
+            <div className="p-6 overflow-y-auto flex-1">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                   <h4 className="font-semibold text-gray-800 mb-3">Request Details</h4>
@@ -786,6 +786,9 @@ const RefundManagement = () => {
                 />
               </div>
 
+            </div>
+
+            <div className="p-6 border-t border-gray-200 flex-shrink-0">
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowRefundRequestModal(false)}
