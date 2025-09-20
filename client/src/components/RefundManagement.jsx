@@ -780,7 +780,7 @@ const RefundManagement = () => {
                         {new Date(request.createdAt).toLocaleDateString('en-GB')}
                       </div>
                       <div className="text-xs text-gray-500">
-                        {new Date(request.createdAt).toLocaleTimeString()}
+                        {new Date(request.createdAt).toLocaleTimeString('en-GB')}
                       </div>
                     </td>
                     <td className="py-3 px-4">
