@@ -32,6 +32,7 @@ const RefundManagement = () => {
   const [selectedRefundRequest, setSelectedRefundRequest] = useState(null);
   const [showRefundRequestModal, setShowRefundRequestModal] = useState(false);
   const [adminNotes, setAdminNotes] = useState('');
+  const [adminRefundAmount, setAdminRefundAmount] = useState('');
   const [processingRequest, setProcessingRequest] = useState(false);
   const [processingApprove, setProcessingApprove] = useState(false);
   const [processingReject, setProcessingReject] = useState(false);
@@ -214,11 +215,21 @@ const RefundManagement = () => {
   const handleRefundRequestClick = (request) => {
     setSelectedRefundRequest(request);
     setAdminNotes('');
+    setAdminRefundAmount(request.requestedAmount.toString());
     setShowRefundRequestModal(true);
   };
 
   const handleRefundRequestAction = async (action) => {
     if (!selectedRefundRequest) return;
+
+    // Validate admin refund amount if approving
+    if (action === 'approved' && adminRefundAmount) {
+      const maxAmount = selectedRefundRequest.paymentId?.amount || selectedRefundRequest.requestedAmount;
+      if (parseFloat(adminRefundAmount) < 0 || parseFloat(adminRefundAmount) > maxAmount) {
+        toast.error('Invalid refund amount. Must be between 0 and the maximum payment amount.');
+        return;
+      }
+    }
 
     try {
       if (action === 'approved') {
@@ -235,7 +246,8 @@ const RefundManagement = () => {
         credentials: 'include',
         body: JSON.stringify({
           status: action,
-          adminNotes: adminNotes
+          adminNotes: adminNotes,
+          adminRefundAmount: action === 'approved' ? parseFloat(adminRefundAmount) : undefined
         })
       });
 
@@ -244,6 +256,7 @@ const RefundManagement = () => {
         toast.success(`Refund request ${action} successfully`);
         setShowRefundRequestModal(false);
         setAdminNotes('');
+        setAdminRefundAmount('');
         fetchRefundRequests(false);
         fetchPayments(false);
       } else {
@@ -855,11 +868,19 @@ const RefundManagement = () => {
                       <span className="font-medium">{selectedRefundRequest.userId?.name || 'N/A'}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Amount:</span>
+                      <span className="text-gray-600">Requested Amount:</span>
                       <span className="font-medium">
                         {selectedRefundRequest.paymentId?.currency === 'INR' ? '₹' : '$'}{selectedRefundRequest.requestedAmount.toLocaleString()}
                       </span>
                     </div>
+                    {selectedRefundRequest.adminRefundAmount && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Admin Override:</span>
+                        <span className="font-medium text-blue-600">
+                          {selectedRefundRequest.paymentId?.currency === 'INR' ? '₹' : '$'}{selectedRefundRequest.adminRefundAmount.toLocaleString()}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex justify-between">
                       <span className="text-gray-600">Type:</span>
                       <span className="font-medium capitalize">{selectedRefundRequest.type} Refund</span>
@@ -961,6 +982,29 @@ const RefundManagement = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   rows="3"
                 />
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Refund Amount (Admin Override)
+                </label>
+                <div className="relative">
+                  <FaDollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="number"
+                    value={adminRefundAmount}
+                    onChange={(e) => setAdminRefundAmount(e.target.value)}
+                    min="0"
+                    max={selectedRefundRequest.paymentId?.amount || selectedRefundRequest.requestedAmount}
+                    step="0.01"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter refund amount"
+                  />
+                </div>
+                <div className="mt-1 text-sm text-gray-600">
+                  <div>Requested: {selectedRefundRequest.paymentId?.currency === 'INR' ? '₹' : '$'}{selectedRefundRequest.requestedAmount.toLocaleString()}</div>
+                  <div>Maximum: {selectedRefundRequest.paymentId?.currency === 'INR' ? '₹' : '$'}{(selectedRefundRequest.paymentId?.amount || selectedRefundRequest.requestedAmount).toLocaleString()}</div>
+                </div>
               </div>
 
             </div>

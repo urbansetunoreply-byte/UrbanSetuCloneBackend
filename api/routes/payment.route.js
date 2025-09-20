@@ -682,7 +682,7 @@ router.get("/refund-requests", verifyToken, async (req, res) => {
 router.put("/refund-request/:requestId", verifyToken, async (req, res) => {
   try {
     const { requestId } = req.params;
-    const { status, adminNotes } = req.body;
+    const { status, adminNotes, adminRefundAmount } = req.body;
     const userId = req.user.id;
 
     // Check if user is admin
@@ -707,6 +707,9 @@ router.put("/refund-request/:requestId", verifyToken, async (req, res) => {
     // Update refund request
     refundRequest.status = status;
     refundRequest.adminNotes = adminNotes;
+    if (adminRefundAmount !== undefined) {
+      refundRequest.adminRefundAmount = adminRefundAmount;
+    }
     refundRequest.processedBy = userId;
     refundRequest.processedAt = new Date();
 
@@ -716,12 +719,20 @@ router.put("/refund-request/:requestId", verifyToken, async (req, res) => {
     if (status === 'approved') {
       const payment = await Payment.findOne({ paymentId: refundRequest.paymentId });
       
+      // Use admin override amount if provided, otherwise use requested amount
+      const finalRefundAmount = adminRefundAmount !== undefined ? adminRefundAmount : refundRequest.requestedAmount;
+      
+      // Validate refund amount
+      if (finalRefundAmount < 0 || finalRefundAmount > payment.amount) {
+        return res.status(400).json({ message: "Invalid refund amount" });
+      }
+      
       // Update payment record
-      payment.refundAmount = refundRequest.requestedAmount;
+      payment.refundAmount = finalRefundAmount;
       payment.refundReason = refundRequest.reason;
       payment.refundedAt = new Date();
       payment.refundId = `refund_${Date.now()}`;
-      payment.status = refundRequest.requestedAmount === payment.amount ? 'refunded' : 'partially_refunded';
+      payment.status = finalRefundAmount === payment.amount ? 'refunded' : 'partially_refunded';
 
       await payment.save();
 

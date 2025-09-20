@@ -40,6 +40,10 @@ const refundRequestSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  adminRefundAmount: {
+    type: Number,
+    min: 0
+  },
   processedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
