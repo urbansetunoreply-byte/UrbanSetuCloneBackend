@@ -322,6 +322,7 @@ const PaymentDashboard = () => {
                   <option value="pending">Pending</option>
                   <option value="failed">Failed</option>
                   <option value="refunded">Refunded</option>
+                  <option value="partially_refunded">Partially Refunded</option>
                 </select>
                 <select id="admin-pay-gateway" onChange={async () => { await fetchAdminPayments(); }} className="px-3 py-2 border rounded-lg text-sm">
                   <option value="">All Gateways</option>

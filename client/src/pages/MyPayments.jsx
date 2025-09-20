@@ -82,6 +82,7 @@ const MyPayments = () => {
               <option value="pending">Pending</option>
               <option value="failed">Failed</option>
               <option value="refunded">Refunded</option>
+              <option value="partially_refunded">Partially Refunded</option>
             </select>
             <select value={filters.gateway} onChange={(e)=>setFilters(prev=>({...prev,gateway:e.target.value}))} className="px-3 py-2 border rounded-lg text-sm">
               <option value="">All Gateways</option>

@@ -15,7 +15,7 @@ const RefundManagement = () => {
   });
   const [processingRefund, setProcessingRefund] = useState(false);
   const [filters, setFilters] = useState({
-    status: 'completed',
+    status: '',
     search: ''
   });
   const [refundRequestFilters, setRefundRequestFilters] = useState({
@@ -24,8 +24,7 @@ const RefundManagement = () => {
     type: '',
     currency: '',
     dateFrom: '',
-    dateTo: '',
-    user: ''
+    dateTo: ''
   });
   const [searchTimeout, setSearchTimeout] = useState(null);
   const [activeTab, setActiveTab] = useState('payments'); // 'payments' or 'requests'
@@ -91,7 +90,7 @@ const RefundManagement = () => {
         clearTimeout(timeout);
       }
     };
-  }, [refundRequestFilters.search, refundRequestFilters.user]);
+  }, [refundRequestFilters.search]);
 
   // Refund request filter effects (immediate, no debounce) - show loading for filter changes
   useEffect(() => {
@@ -109,10 +108,17 @@ const RefundManagement = () => {
       if (showLoading) {
         setLoading(true);
       }
-      const queryParams = new URLSearchParams({
-        status: 'completed',
-        ...filters
-      });
+      const queryParams = new URLSearchParams();
+      
+      // Only add status filter if it's selected
+      if (filters.status) {
+        queryParams.set('status', filters.status);
+      }
+      
+      // Add other filters
+      if (filters.search) {
+        queryParams.set('q', filters.search);
+      }
 
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/history?${queryParams}`, {
         credentials: 'include'
@@ -120,13 +126,15 @@ const RefundManagement = () => {
 
       const data = await response.json();
       if (response.ok) {
-        setPayments(data.payments);
+        setPayments(data.payments || []);
       } else {
         toast.error(data.message || 'Failed to fetch payments');
+        setPayments([]);
       }
     } catch (error) {
       console.error('Error fetching payments:', error);
       toast.error('An error occurred while fetching payments');
+      setPayments([]);
     } finally {
       if (showLoading) {
         setLoading(false);
@@ -393,6 +401,7 @@ const RefundManagement = () => {
               onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
+              <option value="">All Status</option>
               <option value="completed">Completed Payments</option>
               <option value="refunded">Refunded Payments</option>
               <option value="partially_refunded">Partially Refunded</option>
@@ -634,7 +643,7 @@ const RefundManagement = () => {
                 <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search by property, user, or reason..."
+                  placeholder="Search by property, user, reason, or email..."
                   value={refundRequestFilters.search}
                   onChange={(e) => setRefundRequestFilters(prev => ({ ...prev, search: e.target.value }))}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -700,18 +709,6 @@ const RefundManagement = () => {
                 />
               </div>
 
-              {/* User Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">User</label>
-                <input
-                  type="text"
-                  placeholder="Search by user name or email..."
-                  value={refundRequestFilters.user}
-                  onChange={(e) => setRefundRequestFilters(prev => ({ ...prev, user: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
               {/* Clear Filters Button */}
               <div className="flex items-end">
                 <button
@@ -721,8 +718,7 @@ const RefundManagement = () => {
                     type: '',
                     currency: '',
                     dateFrom: '',
-                    dateTo: '',
-                    user: ''
+                    dateTo: ''
                   })}
                   className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center gap-2"
                 >
@@ -875,9 +871,17 @@ const RefundManagement = () => {
                     </div>
                     {selectedRefundRequest.adminRefundAmount && (
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Admin Override:</span>
+                        <span className="text-gray-600">Admin Override Amount:</span>
                         <span className="font-medium text-blue-600">
                           {selectedRefundRequest.paymentId?.currency === 'INR' ? '₹' : '$'}{selectedRefundRequest.adminRefundAmount.toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                    {selectedRefundRequest.paymentId?.refundAmount > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Actual Refunded Amount:</span>
+                        <span className="font-medium text-green-600">
+                          {selectedRefundRequest.paymentId?.currency === 'INR' ? '₹' : '$'}{selectedRefundRequest.paymentId.refundAmount.toLocaleString()}
                         </span>
                       </div>
                     )}

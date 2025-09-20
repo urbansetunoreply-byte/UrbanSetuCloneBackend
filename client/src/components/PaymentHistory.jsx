@@ -54,6 +54,8 @@ const PaymentHistory = ({ userId }) => {
         return <FaTimes className="text-red-500" />;
       case 'refunded':
         return <FaExclamationTriangle className="text-blue-500" />;
+      case 'partially_refunded':
+        return <FaExclamationTriangle className="text-orange-500" />;
       default:
         return <FaClock className="text-gray-500" />;
     }
@@ -69,6 +71,8 @@ const PaymentHistory = ({ userId }) => {
         return 'text-red-600 bg-red-100';
       case 'refunded':
         return 'text-blue-600 bg-blue-100';
+      case 'partially_refunded':
+        return 'text-orange-600 bg-orange-100';
       default:
         return 'text-gray-600 bg-gray-100';
     }
@@ -137,6 +141,7 @@ const PaymentHistory = ({ userId }) => {
           <option value="pending">Pending</option>
           <option value="failed">Failed</option>
           <option value="refunded">Refunded</option>
+          <option value="partially_refunded">Partially Refunded</option>
         </select>
 
         <select
