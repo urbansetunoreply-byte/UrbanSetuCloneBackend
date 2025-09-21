@@ -196,23 +196,23 @@ export default function Home() {
           <p className="text-white/90 text-lg">Trusted by thousands of users worldwide</p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div className="text-center bg-white/20 backdrop-blur-md rounded-xl p-6 border border-white/30 hover:bg-white/30 transition-all duration-300 hover:scale-105 shadow-lg">
-            <FaHome className="text-4xl text-yellow-400 mx-auto mb-4 drop-shadow-lg" />
+          <div className="text-center bg-gradient-to-br from-blue-600/80 to-purple-600/80 backdrop-blur-md rounded-xl p-6 border border-blue-400/30 hover:from-blue-500/90 hover:to-purple-500/90 transition-all duration-300 hover:scale-105 shadow-xl">
+            <FaHome className="text-4xl text-yellow-300 mx-auto mb-4 drop-shadow-lg" />
             <div className="text-3xl font-bold text-white mb-2 drop-shadow-lg">{stats.properties.toLocaleString()}+</div>
             <div className="text-white text-base font-semibold">Properties</div>
           </div>
-          <div className="text-center bg-white/20 backdrop-blur-md rounded-xl p-6 border border-white/30 hover:bg-white/30 transition-all duration-300 hover:scale-105 shadow-lg">
-            <FaUsers className="text-4xl text-blue-400 mx-auto mb-4 drop-shadow-lg" />
+          <div className="text-center bg-gradient-to-br from-green-600/80 to-teal-600/80 backdrop-blur-md rounded-xl p-6 border border-green-400/30 hover:from-green-500/90 hover:to-teal-500/90 transition-all duration-300 hover:scale-105 shadow-xl">
+            <FaUsers className="text-4xl text-blue-300 mx-auto mb-4 drop-shadow-lg" />
             <div className="text-3xl font-bold text-white mb-2 drop-shadow-lg">{stats.users.toLocaleString()}+</div>
             <div className="text-white text-base font-semibold">Happy Users</div>
           </div>
-          <div className="text-center bg-white/20 backdrop-blur-md rounded-xl p-6 border border-white/30 hover:bg-white/30 transition-all duration-300 hover:scale-105 shadow-lg">
-            <FaChartLine className="text-4xl text-green-400 mx-auto mb-4 drop-shadow-lg" />
+          <div className="text-center bg-gradient-to-br from-purple-600/80 to-pink-600/80 backdrop-blur-md rounded-xl p-6 border border-purple-400/30 hover:from-purple-500/90 hover:to-pink-500/90 transition-all duration-300 hover:scale-105 shadow-xl">
+            <FaChartLine className="text-4xl text-green-300 mx-auto mb-4 drop-shadow-lg" />
             <div className="text-3xl font-bold text-white mb-2 drop-shadow-lg">{stats.transactions.toLocaleString()}+</div>
             <div className="text-white text-base font-semibold">Transactions</div>
           </div>
-          <div className="text-center bg-white/20 backdrop-blur-md rounded-xl p-6 border border-white/30 hover:bg-white/30 transition-all duration-300 hover:scale-105 shadow-lg">
-            <FaStar className="text-4xl text-purple-400 mx-auto mb-4 drop-shadow-lg" />
+          <div className="text-center bg-gradient-to-br from-orange-600/80 to-red-600/80 backdrop-blur-md rounded-xl p-6 border border-orange-400/30 hover:from-orange-500/90 hover:to-red-500/90 transition-all duration-300 hover:scale-105 shadow-xl">
+            <FaStar className="text-4xl text-yellow-300 mx-auto mb-4 drop-shadow-lg" />
             <div className="text-3xl font-bold text-white mb-2 drop-shadow-lg">{stats.satisfaction}%</div>
             <div className="text-white text-base font-semibold">Satisfaction</div>
           </div>
