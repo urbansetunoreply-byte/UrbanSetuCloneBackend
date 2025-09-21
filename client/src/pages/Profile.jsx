@@ -2464,20 +2464,51 @@ export default function Profile() {
               Change Password
             </button>
             
+            {/* Device Management for all users */}
+            <button
+              onClick={() => navigate('/device-management')}
+              className={`w-full bg-indigo-500 text-white px-6 py-3 rounded-lg hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp} animation-delay-900`}
+            >
+              <FaShieldAlt className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:${animationClasses.wiggle}`} />
+              <span className="group-hover:animate-pulse">Device Management</span>
+            </button>
+
             {(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
               <button
                 onClick={() => navigate('/admin/management')}
-                className={`w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp} animation-delay-900`}
+                className={`w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp} animation-delay-1050`}
               >
                 <FaUser className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:${animationClasses.wiggle}`} />
                 <span className="group-hover:animate-pulse">Accounts</span>
+              </button>
+            )}
+
+            {/* Session Management for admins */}
+            {(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
+              <button
+                onClick={() => navigate('/session-management')}
+                className={`w-full bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp} animation-delay-1200`}
+              >
+                <FaTools className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:${animationClasses.wiggle}`} />
+                <span className="group-hover:animate-pulse">Session Management</span>
+              </button>
+            )}
+
+            {/* Session Audit Logs for root admin only */}
+            {currentUser.role === 'rootadmin' && (
+              <button
+                onClick={() => navigate('/session-audit-logs')}
+                className={`w-full bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp} animation-delay-1350`}
+              >
+                <FaExclamationTriangle className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:${animationClasses.wiggle}`} />
+                <span className="group-hover:animate-pulse">Audit Logs</span>
               </button>
             )}
               
             {currentUser.isDefaultAdmin && (
               <button
                 onClick={onShowTransferModal}
-                className={`w-full bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp} animation-delay-1050`}
+                className={`w-full bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp} animation-delay-1500`}
               >
                 <FaCrown className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:${animationClasses.bounce} text-yellow-200`} />
                 Transfer Rights
@@ -2505,7 +2536,7 @@ export default function Profile() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <button
                 onClick={onHandleSignout}
-                className={`bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp} animation-delay-1200`}
+                className={`bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp} animation-delay-1650`}
               >
                 <FaSignOutAlt className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:-translate-x-1`} />
                 Sign Out
@@ -2513,7 +2544,7 @@ export default function Profile() {
               
               <button
                 onClick={onHandleDelete}
-                className={`bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp} animation-delay-1350`}
+                className={`bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp} animation-delay-1800`}
               >
                 <FaTrash className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:${animationClasses.wiggle}`} />
                 Delete Account

@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { generateTokenPair } from './jwtUtils.js';
+import User from '../models/user.model.js';
+import SessionAuditLog from '../models/sessionAuditLog.model.js';
 
 // Store for active sessions (in production, use Redis)
 const activeSessions = new Map();
@@ -135,21 +137,289 @@ export const detectConcurrentLogins = (userId, currentSessionId) => {
     };
 };
 
-// Clean up old sessions (keep only last 5 per user)
-export const cleanupOldSessions = (userId) => {
-    const userSessions = getUserSessions(userId);
+// Role-based session limits
+const SESSION_LIMITS = {
+    user: 5,
+    admin: 2,
+    rootadmin: 1
+};
+
+// Get device info from user agent
+export const getDeviceInfo = (userAgent) => {
+    if (!userAgent) return 'Unknown Device';
     
-    if (userSessions.length > 5) {
-        // Sort by last activity and keep only the 5 most recent
-        const sortedSessions = userSessions.sort((a, b) => b.lastActivity - a.lastActivity);
-        const sessionsToRevoke = sortedSessions.slice(5);
+    // Simple device detection
+    if (userAgent.includes('Mobile') || userAgent.includes('Android')) {
+        return 'Mobile Device';
+    } else if (userAgent.includes('iPhone') || userAgent.includes('iPad')) {
+        return 'iOS Device';
+    } else if (userAgent.includes('Windows')) {
+        return 'Windows PC';
+    } else if (userAgent.includes('Mac')) {
+        return 'Mac';
+    } else if (userAgent.includes('Linux')) {
+        return 'Linux PC';
+    } else {
+        return 'Desktop';
+    }
+};
+
+// Get location from IP (simplified - in production use a proper geo service)
+export const getLocationFromIP = (ip) => {
+    // This is a simplified version - in production, use a service like geoip-lite
+    if (ip === '127.0.0.1' || ip === '::1') {
+        return 'Local Development';
+    }
+    return 'Unknown Location';
+};
+
+// Create a new session with enhanced tracking
+export const createEnhancedSession = async (userId, req) => {
+    const sessionId = jwt.sign(
+        { 
+            userId, 
+            type: 'session',
+            timestamp: Date.now()
+        }, 
+        process.env.JWT_TOKEN, 
+        { expiresIn: '7d' }
+    );
+    
+    const ip = req.ip || req.connection.remoteAddress;
+    const userAgent = req.get('User-Agent');
+    const device = getDeviceInfo(userAgent);
+    const location = getLocationFromIP(ip);
+    
+    const session = {
+        sessionId,
+        userId,
+        ip,
+        device,
+        location,
+        userAgent,
+        createdAt: Date.now(),
+        expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days
+        lastActivity: Date.now(),
+        isActive: true
+    };
+    
+    activeSessions.set(sessionId, session);
+    
+    // Update user's active sessions in database
+    await User.findByIdAndUpdate(userId, {
+        $push: {
+            activeSessions: {
+                sessionId,
+                ip,
+                device,
+                location,
+                loginTime: new Date(),
+                lastActive: new Date()
+            }
+        },
+        $set: {
+            lastKnownIp: ip,
+            lastKnownDevice: device
+        }
+    });
+    
+    return session;
+};
+
+// Check for suspicious login
+export const checkSuspiciousLogin = async (userId, ip, device) => {
+    const user = await User.findById(userId);
+    if (!user) return { isSuspicious: false };
+    
+    const isSuspicious = (
+        user.lastKnownIp && user.lastKnownIp !== ip
+    ) || (
+        user.lastKnownDevice && user.lastKnownDevice !== device
+    );
+    
+    return {
+        isSuspicious,
+        reason: isSuspicious ? 'New IP or device detected' : null,
+        previousIp: user.lastKnownIp,
+        previousDevice: user.lastKnownDevice
+    };
+};
+
+// Enforce role-based session limits
+export const enforceSessionLimits = async (userId, userRole) => {
+    const limit = SESSION_LIMITS[userRole] || SESSION_LIMITS.user;
+    const user = await User.findById(userId);
+    
+    if (!user || !user.activeSessions) return 0;
+    
+    if (user.activeSessions.length >= limit) {
+        // Sort by lastActive and remove oldest sessions
+        const sortedSessions = user.activeSessions.sort((a, b) => 
+            new Date(a.lastActive) - new Date(b.lastActive)
+        );
         
+        const sessionsToRemove = sortedSessions.slice(0, user.activeSessions.length - limit + 1);
+        
+        // Remove from database
+        const sessionIdsToRemove = sessionsToRemove.map(s => s.sessionId);
+        await User.findByIdAndUpdate(userId, {
+            $pull: {
+                activeSessions: {
+                    sessionId: { $in: sessionIdsToRemove }
+                }
+            }
+        });
+        
+        // Remove from active sessions map
+        sessionsToRemove.forEach(session => {
+            revokeSession(session.sessionId);
+        });
+        
+        // Log session cleanup
+        await SessionAuditLog.create({
+            userId,
+            action: 'session_cleaned',
+            role: userRole,
+            sessionId: 'multiple',
+            ip: 'system',
+            device: 'system',
+            additionalInfo: `Removed ${sessionsToRemove.length} old sessions to enforce ${limit} session limit`
+        });
+        
+        return sessionsToRemove.length;
+    }
+    
+    return 0;
+};
+
+// Log session action
+export const logSessionAction = async (userId, action, sessionId, ip, device, location, additionalInfo = null, isSuspicious = false, suspiciousReason = null, performedBy = null) => {
+    const user = await User.findById(userId);
+    if (!user) return;
+    
+    await SessionAuditLog.create({
+        userId,
+        action,
+        role: user.role,
+        sessionId,
+        ip,
+        device,
+        location,
+        additionalInfo,
+        isSuspicious,
+        suspiciousReason,
+        performedBy
+    });
+};
+
+// Clean up old sessions (role-based)
+export const cleanupOldSessions = async (userId, userRole) => {
+    const limit = SESSION_LIMITS[userRole] || SESSION_LIMITS.user;
+    const user = await User.findById(userId);
+    
+    if (!user || !user.activeSessions) return 0;
+    
+    if (user.activeSessions.length > limit) {
+        // Sort by last activity and keep only the most recent
+        const sortedSessions = user.activeSessions.sort((a, b) => 
+            new Date(b.lastActive) - new Date(a.lastActive)
+        );
+        const sessionsToRevoke = sortedSessions.slice(limit);
+        
+        // Remove from database
+        const sessionIdsToRemove = sessionsToRevoke.map(s => s.sessionId);
+        await User.findByIdAndUpdate(userId, {
+            $pull: {
+                activeSessions: {
+                    sessionId: { $in: sessionIdsToRemove }
+                }
+            }
+        });
+        
+        // Remove from active sessions map
         sessionsToRevoke.forEach(session => {
             revokeSession(session.sessionId);
         });
+        
+        // Log session cleanup
+        await logSessionAction(
+            userId, 
+            'session_cleaned', 
+            'multiple', 
+            'system', 
+            'system', 
+            'system',
+            `Removed ${sessionsToRevoke.length} old sessions to enforce ${limit} session limit`
+        );
         
         return sessionsToRevoke.length;
     }
     
     return 0;
+};
+
+// Get user's active sessions from database
+export const getUserActiveSessions = async (userId) => {
+    const user = await User.findById(userId).select('activeSessions');
+    if (!user || !user.activeSessions) return [];
+    
+    return user.activeSessions.map(session => ({
+        sessionId: session.sessionId,
+        ip: session.ip,
+        device: session.device,
+        location: session.location,
+        loginTime: session.loginTime,
+        lastActive: session.lastActive,
+        isCurrent: false // Will be set by caller
+    }));
+};
+
+// Revoke session from database
+export const revokeSessionFromDB = async (userId, sessionId) => {
+    await User.findByIdAndUpdate(userId, {
+        $pull: {
+            activeSessions: { sessionId }
+        }
+    });
+    
+    // Also remove from active sessions map
+    revokeSession(sessionId);
+};
+
+// Revoke all user sessions from database
+export const revokeAllUserSessionsFromDB = async (userId) => {
+    const user = await User.findById(userId);
+    if (!user || !user.activeSessions) return 0;
+    
+    const sessionCount = user.activeSessions.length;
+    
+    // Clear from database
+    await User.findByIdAndUpdate(userId, {
+        $set: { activeSessions: [] }
+    });
+    
+    // Clear from active sessions map
+    user.activeSessions.forEach(session => {
+        revokeSession(session.sessionId);
+    });
+    
+    return sessionCount;
+};
+
+// Update session activity in database
+export const updateSessionActivityInDB = async (userId, sessionId) => {
+    await User.findOneAndUpdate(
+        { 
+            _id: userId, 
+            'activeSessions.sessionId': sessionId 
+        },
+        { 
+            $set: { 
+                'activeSessions.$.lastActive': new Date() 
+            } 
+        }
+    );
+    
+    // Also update in memory
+    updateSessionActivity(sessionId);
 };

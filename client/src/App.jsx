@@ -69,6 +69,9 @@ const AdminFraudManagement = lazy(() => import('./pages/AdminFraudManagement'));
 const PaymentDashboard = lazy(() => import('./pages/PaymentDashboard'));
 const AdminSecurityModeration = lazy(() => import('./pages/AdminSecurityModeration'));
 const MyPayments = lazy(() => import('./pages/MyPayments'));
+const DeviceManagement = lazy(() => import('./pages/DeviceManagement'));
+const SessionManagement = lazy(() => import('./pages/SessionManagement'));
+const SessionAuditLogs = lazy(() => import('./pages/SessionAuditLogs'));
 
 // Loading component
 const LoadingSpinner = () => (
@@ -645,6 +648,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/user/terms" element={<UserTerms />} />
             <Route path="/user/privacy" element={<UserPrivacy />} />
             <Route path="/user/reviews" element={<UserReviews />} />
+            <Route path="/device-management" element={<DeviceManagement />} />
           </Route>
 
           {/* Admin Routes */}
@@ -672,6 +676,8 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/admin/fraudmanagement" element={<AdminFraudManagement />} />
             <Route path="/admin/payments" element={<PaymentDashboard />} />
             <Route path="/admin/security-moderation" element={<AdminSecurityModeration />} />
+            <Route path="/session-management" element={<SessionManagement />} />
+            <Route path="/session-audit-logs" element={<SessionAuditLogs />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

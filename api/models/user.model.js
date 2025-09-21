@@ -89,6 +89,42 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     default: null
+  },
+  activeSessions: [
+    {
+      sessionId: {
+        type: String,
+        required: true
+      },
+      ip: {
+        type: String,
+        required: true
+      },
+      device: {
+        type: String,
+        required: true
+      },
+      location: {
+        type: String,
+        required: false
+      },
+      loginTime: {
+        type: Date,
+        default: Date.now
+      },
+      lastActive: {
+        type: Date,
+        default: Date.now
+      }
+    }
+  ],
+  lastKnownIp: {
+    type: String,
+    default: null
+  },
+  lastKnownDevice: {
+    type: String,
+    default: null
   }
 }, { timestamps: true });
 

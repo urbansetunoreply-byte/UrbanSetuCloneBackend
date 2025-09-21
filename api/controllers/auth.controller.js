@@ -6,10 +6,20 @@ import jwt from 'jsonwebtoken'
 import { generateOTP, sendSignupOTPEmail,sendLoginOTPEmail } from "../utils/emailService.js";
 import { generateTokenPair, setSecureCookies, clearAuthCookies } from "../utils/jwtUtils.js";
 import { trackFailedAttempt, clearFailedAttempts, logSecurityEvent, sendAdminAlert, isAccountLocked, checkSuspiciousLogin, checkSuspiciousSignup, getAccountLockRemainingMs } from "../middleware/security.js";
-import { createSession, updateSessionActivity, detectConcurrentLogins, cleanupOldSessions } from "../utils/sessionManager.js";
+import { 
+  createEnhancedSession, 
+  updateSessionActivity, 
+  detectConcurrentLogins, 
+  cleanupOldSessions,
+  checkSuspiciousLogin,
+  enforceSessionLimits,
+  logSessionAction
+} from "../utils/sessionManager.js";
+import { sendNewLoginEmail, sendSuspiciousLoginEmail } from "../utils/emailService.js";
 import OtpTracking from "../models/otpTracking.model.js";
 import DeletedAccount from "../models/deletedAccount.model.js";
 import { validateEmail } from "../utils/emailValidation.js";
+import { getDeviceInfo, getLocationFromIP } from "../utils/sessionManager.js";
 
 export const SignUp=async (req,res,next)=>{
     const {username,email,password,role,mobileNumber,address,emailVerified}=req.body;
@@ -237,18 +247,63 @@ export const SignIn=async(req,res,next)=>{
         // Clear failed attempts on successful login
         clearFailedAttempts(identifier);
         
-        // Check for suspicious login patterns
+        // Get device info and check for suspicious login
         const userAgent = req.get('User-Agent');
-        checkSuspiciousLogin(validUser._id, identifier, userAgent);
+        const device = getDeviceInfo(userAgent);
+        const location = getLocationFromIP(identifier);
         
-        // Create new session
-        const session = createSession(validUser._id, req);
+        // Check for suspicious login patterns
+        const suspiciousCheck = await checkSuspiciousLogin(validUser._id, identifier, device);
+        
+        // Create enhanced session
+        const session = await createEnhancedSession(validUser._id, req);
+        
+        // Enforce role-based session limits
+        await enforceSessionLimits(validUser._id, validUser.role);
         
         // Check for concurrent logins
         const concurrentInfo = detectConcurrentLogins(validUser._id, session.sessionId);
         
-        // Clean up old sessions (keep only last 5)
-        cleanupOldSessions(validUser._id);
+        // Send email notifications
+        try {
+            // Always send new login notification
+            await sendNewLoginEmail(
+                validUser.email,
+                device,
+                identifier,
+                location,
+                new Date()
+            );
+            
+            // Send suspicious login alert if detected
+            if (suspiciousCheck.isSuspicious) {
+                await sendSuspiciousLoginEmail(
+                    validUser.email,
+                    device,
+                    identifier,
+                    location,
+                    suspiciousCheck.previousDevice,
+                    suspiciousCheck.previousIp,
+                    'Unknown Location' // Previous location not stored
+                );
+            }
+        } catch (emailError) {
+            console.error('Email notification error:', emailError);
+            // Don't fail login if email fails
+        }
+        
+        // Log session action
+        await logSessionAction(
+            validUser._id,
+            'login',
+            session.sessionId,
+            identifier,
+            device,
+            location,
+            `Successful login with ${concurrentInfo.activeSessions} concurrent sessions`,
+            suspiciousCheck.isSuspicious,
+            suspiciousCheck.reason
+        );
         
         // Log successful login
         logSecurityEvent('successful_login', { 
@@ -872,6 +927,20 @@ export const verifyLoginOTP = async (req, res, next) => {
             });
         }
 
+        // Get device info and check for suspicious login
+        const userAgent = req.get('User-Agent');
+        const device = getDeviceInfo(userAgent);
+        const location = getLocationFromIP(req.ip);
+        
+        // Check for suspicious login patterns
+        const suspiciousCheck = await checkSuspiciousLogin(user._id, req.ip, device);
+        
+        // Create enhanced session
+        const session = await createEnhancedSession(user._id, req);
+        
+        // Enforce role-based session limits
+        await enforceSessionLimits(user._id, user.role);
+        
         // Generate token pair
         const { accessToken, refreshToken } = generateTokenPair({ id: user._id });
         
@@ -883,6 +952,47 @@ export const verifyLoginOTP = async (req, res, next) => {
             await otpTracking.resetTracking();
             await otpTracking.clearLockout?.();
         }
+        
+        // Send email notifications
+        try {
+            // Always send new login notification
+            await sendNewLoginEmail(
+                user.email,
+                device,
+                req.ip,
+                location,
+                new Date()
+            );
+            
+            // Send suspicious login alert if detected
+            if (suspiciousCheck.isSuspicious) {
+                await sendSuspiciousLoginEmail(
+                    user.email,
+                    device,
+                    req.ip,
+                    location,
+                    suspiciousCheck.previousDevice,
+                    suspiciousCheck.previousIp,
+                    'Unknown Location' // Previous location not stored
+                );
+            }
+        } catch (emailError) {
+            console.error('Email notification error:', emailError);
+            // Don't fail login if email fails
+        }
+        
+        // Log session action
+        await logSessionAction(
+            user._id,
+            'login',
+            session.sessionId,
+            req.ip,
+            device,
+            location,
+            'OTP login successful',
+            suspiciousCheck.isSuspicious,
+            suspiciousCheck.reason
+        );
         
         // Log successful OTP login
         logSecurityEvent('otp_login_successful', {
