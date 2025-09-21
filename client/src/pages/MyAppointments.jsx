@@ -569,28 +569,7 @@ export default function MyAppointments() {
   // Filtering and pagination is now handled in useEffect
   // Use appointments directly since they are already filtered and paginated
 
-  // Defensive: ensure archivedAppointments is always an array
-  const filteredArchivedAppointments = Array.isArray(archivedAppointments) ? archivedAppointments.filter((appt) => {
-    const isOutdated = new Date(appt.date) < new Date() || (new Date(appt.date).toDateString() === new Date().toDateString() && appt.time && appt.time < new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-    const matchesStatus =
-      statusFilter === "all" ? true :
-      statusFilter === "outdated" ? isOutdated :
-      appt.status === statusFilter;
-    const matchesRole = roleFilter === "all" ? true : appt.role === roleFilter;
-    const matchesSearch =
-      appt.propertyName?.toLowerCase().includes(search.toLowerCase()) ||
-      appt.message?.toLowerCase().includes(search.toLowerCase()) ||
-      appt.buyerId?.username?.toLowerCase().includes(search.toLowerCase()) ||
-      appt.sellerId?.username?.toLowerCase().includes(search.toLowerCase());
-    let matchesDate = true;
-    if (startDate) {
-      matchesDate = matchesDate && new Date(appt.date) >= new Date(startDate);
-    }
-    if (endDate) {
-      matchesDate = matchesDate && new Date(appt.date) <= new Date(endDate);
-    }
-    return matchesStatus && matchesRole && matchesSearch && matchesDate;
-  }) : [];
+  // Filtering and pagination for archived appointments is now handled in useEffect
 
   function handleOpenReinitiate(appt) {
     setReinitiateData({

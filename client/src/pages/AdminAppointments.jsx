@@ -32,7 +32,7 @@ export default function AdminAppointments() {
   const [totalPages, setTotalPages] = useState(1);
   const [archivedCurrentPage, setArchivedCurrentPage] = useState(1);
   const [archivedTotalPages, setArchivedTotalPages] = useState(1);
-  const [archivedAppointmentsWithComments, setFilteredArchivedAppointments] = useState([]);
+  const [filteredArchivedAppointments, setFilteredArchivedAppointments] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [showUserModal, setShowUserModal] = useState(false);
   const [userLoading, setUserLoading] = useState(false);
@@ -725,7 +725,7 @@ export default function AdminAppointments() {
 
   // Filtering and pagination for archived appointments is now handled in useEffect
   // Apply comments updates to current archived appointments
-  const archivedAppointmentsWithComments = archivedAppointmentsWithComments.map((appt) => ({
+  const archivedAppointmentsWithComments = filteredArchivedAppointments.map((appt) => ({
     ...appt,
     comments: updatedComments[appt._id] || appt.comments || []
   }));
