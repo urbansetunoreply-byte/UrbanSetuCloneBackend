@@ -31,6 +31,9 @@ export default function MyAppointments() {
   const [roleFilter, setRoleFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [archivedCurrentPage, setArchivedCurrentPage] = useState(1);
+  const [archivedTotalPages, setArchivedTotalPages] = useState(1);
+  const [filteredArchivedAppointments, setFilteredArchivedAppointments] = useState([]);
   const [actionLoading, setActionLoading] = useState("");
   const [showOtherPartyModal, setShowOtherPartyModal] = useState(false);
   const [selectedOtherParty, setSelectedOtherParty] = useState(null);
@@ -163,6 +166,44 @@ export default function MyAppointments() {
     console.log(`Page ${currentPage} of ${totalPages}, showing ${currentPageAppts.length} appointments`);
     setAppointments(currentPageAppts);
   }, [allAppointments, currentPage, search, statusFilter, roleFilter, startDate, endDate, currentUser]);
+
+  // Separate useEffect for archived appointments pagination and filtering
+  useEffect(() => {
+    if (archivedAppointments.length === 0) return;
+    
+    // Apply filters to archived appointments
+    let filteredArchivedAppts = archivedAppointments.filter((appt) => {
+      const isOutdated = new Date(appt.date) < new Date() || (new Date(appt.date).toDateString() === new Date().toDateString() && appt.time && appt.time < new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      const matchesStatus =
+        statusFilter === "all" ? true :
+        statusFilter === "outdated" ? isOutdated :
+        appt.status === statusFilter;
+      const matchesRole = roleFilter === "all" ? true : appt.role === roleFilter;
+      const matchesSearch =
+        appt.propertyName?.toLowerCase().includes(search.toLowerCase()) ||
+        appt.message?.toLowerCase().includes(search.toLowerCase()) ||
+        appt.buyerId?.username?.toLowerCase().includes(search.toLowerCase()) ||
+        appt.sellerId?.username?.toLowerCase().includes(search.toLowerCase());
+      const matchesDateRange = 
+        (!startDate || new Date(appt.date) >= new Date(startDate)) &&
+        (!endDate || new Date(appt.date) <= new Date(endDate));
+      
+      return matchesStatus && matchesRole && matchesSearch && matchesDateRange;
+    });
+    
+    // Calculate pagination for archived appointments
+    const itemsPerPage = 10;
+    const totalPages = Math.ceil(filteredArchivedAppts.length / itemsPerPage);
+    setArchivedTotalPages(totalPages);
+    
+    // Get current page items for archived appointments
+    const startIndex = (archivedCurrentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentPageArchivedAppts = filteredArchivedAppts.slice(startIndex, endIndex);
+    
+    console.log(`Archived Page ${archivedCurrentPage} of ${totalPages}, showing ${currentPageArchivedAppts.length} archived appointments`);
+    setFilteredArchivedAppointments(currentPageArchivedAppts);
+  }, [archivedAppointments, archivedCurrentPage, search, statusFilter, roleFilter, startDate, endDate]);
 
   useEffect(() => {
     // Listen for permanent delete events
@@ -741,7 +782,11 @@ export default function MyAppointments() {
             </button>
             {/* Archived appointments toggle for all users */}
             <button
-              onClick={() => setShowArchived(!showArchived)}
+              onClick={() => {
+                setShowArchived(!showArchived);
+                setCurrentPage(1); // Reset to first page when switching
+                setArchivedCurrentPage(1); // Reset archived page to first page when switching
+              }}
               className={`bg-gradient-to-r text-white px-2.5 py-1.5 rounded-md transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1 sm:gap-2 text-xs sm:text-base flex-1 sm:flex-none sm:w-auto sm:px-4 sm:py-2 sm:rounded-md justify-center ${
                 showArchived 
                   ? 'from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600' 
@@ -941,7 +986,7 @@ export default function MyAppointments() {
           )
         )}
 
-        {/* Pagination */}
+        {/* Pagination for regular appointments */}
         {!showArchived && totalPages > 1 && (
           <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
             <div className="text-sm text-gray-700">
@@ -964,6 +1009,37 @@ export default function MyAppointments() {
                   toast.info(`Navigated to page ${Math.min(totalPages, currentPage + 1)}`);
                 }}
                 disabled={currentPage === totalPages}
+                className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Pagination for archived appointments */}
+        {showArchived && archivedTotalPages > 1 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
+            <div className="text-sm text-gray-700">
+              Archived Page {archivedCurrentPage} of {archivedTotalPages}
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <button
+                onClick={() => {
+                  setArchivedCurrentPage(Math.max(1, archivedCurrentPage - 1));
+                  toast.info(`Navigated to archived page ${Math.max(1, archivedCurrentPage - 1)}`);
+                }}
+                disabled={archivedCurrentPage === 1}
+                className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => {
+                  setArchivedCurrentPage(Math.min(archivedTotalPages, archivedCurrentPage + 1));
+                  toast.info(`Navigated to archived page ${Math.min(archivedTotalPages, archivedCurrentPage + 1)}`);
+                }}
+                disabled={archivedCurrentPage === archivedTotalPages}
                 className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
               >
                 Next

@@ -30,6 +30,9 @@ export default function AdminAppointments() {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [archivedCurrentPage, setArchivedCurrentPage] = useState(1);
+  const [archivedTotalPages, setArchivedTotalPages] = useState(1);
+  const [archivedAppointmentsWithComments, setFilteredArchivedAppointments] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [showUserModal, setShowUserModal] = useState(false);
   const [userLoading, setUserLoading] = useState(false);
@@ -441,6 +444,44 @@ export default function AdminAppointments() {
     setAppointments(currentPageAppts);
   }, [allAppointments, currentPage, search, statusFilter, startDate, endDate]);
 
+  // Separate useEffect for archived appointments pagination and filtering
+  useEffect(() => {
+    if (archivedAppointments.length === 0) return;
+    
+    // Apply filters to archived appointments
+    let filteredArchivedAppts = archivedAppointments.filter((appt) => {
+      const isOutdated = new Date(appt.date) < new Date() || (new Date(appt.date).toDateString() === new Date().toDateString() && appt.time && appt.time < new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      const matchesStatus =
+        statusFilter === "all" ? true :
+        statusFilter === "outdated" ? isOutdated :
+        appt.status === statusFilter;
+      const matchesSearch =
+        appt.buyerId?.email?.toLowerCase().includes(search.toLowerCase()) ||
+        appt.sellerId?.email?.toLowerCase().includes(search.toLowerCase()) ||
+        appt.buyerId?.username?.toLowerCase().includes(search.toLowerCase()) ||
+        appt.sellerId?.username?.toLowerCase().includes(search.toLowerCase()) ||
+        appt.propertyName?.toLowerCase().includes(search.toLowerCase());
+      const matchesDateRange = 
+        (!startDate || new Date(appt.date) >= new Date(startDate)) &&
+        (!endDate || new Date(appt.date) <= new Date(endDate));
+      
+      return matchesStatus && matchesSearch && matchesDateRange;
+    });
+    
+    // Calculate pagination for archived appointments
+    const itemsPerPage = 10;
+    const totalPages = Math.ceil(filteredArchivedAppts.length / itemsPerPage);
+    setArchivedTotalPages(totalPages);
+    
+    // Get current page items for archived appointments
+    const startIndex = (archivedCurrentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentPageArchivedAppts = filteredArchivedAppts.slice(startIndex, endIndex);
+    
+    console.log(`Admin Archived Page ${archivedCurrentPage} of ${totalPages}, showing ${currentPageArchivedAppts.length} archived appointments`);
+    setFilteredArchivedAppointments(currentPageArchivedAppts);
+  }, [archivedAppointments, archivedCurrentPage, search, statusFilter, startDate, endDate]);
+
   // Lock background scroll when user modal is open
   useEffect(() => {
     if (showUserModal) {
@@ -682,33 +723,12 @@ export default function AdminAppointments() {
     comments: updatedComments[appt._id] || appt.comments || []
   }));
 
-  const filteredArchivedAppointments = useMemo(() => {
-    return archivedAppointments.filter((appt) => {
-      const isOutdated = new Date(appt.date) < new Date() || (new Date(appt.date).toDateString() === new Date().toDateString() && appt.time && appt.time < new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-      const matchesStatus =
-        statusFilter === "all" ? true :
-        statusFilter === "outdated" ? isOutdated :
-        appt.status === statusFilter;
-      const matchesRole = true; // role filter removed
-      const matchesSearch =
-        appt.buyerId?.email?.toLowerCase().includes(search.toLowerCase()) ||
-        appt.sellerId?.email?.toLowerCase().includes(search.toLowerCase()) ||
-        appt.propertyName?.toLowerCase().includes(search.toLowerCase()) ||
-        appt.buyerId?.username?.toLowerCase().includes(search.toLowerCase()) ||
-        appt.sellerId?.username?.toLowerCase().includes(search.toLowerCase());
-      let matchesDate = true;
-      if (startDate) {
-        matchesDate = matchesDate && new Date(appt.date) >= new Date(startDate);
-      }
-      if (endDate) {
-        matchesDate = matchesDate && new Date(appt.date) <= new Date(endDate);
-      }
-      return matchesStatus && matchesRole && matchesSearch && matchesDate;
-    }).map((appt) => ({
-      ...appt,
-      comments: updatedComments[appt._id] || appt.comments || []
-    }));
-  }, [archivedAppointments, statusFilter, search, startDate, endDate, updatedComments]);
+  // Filtering and pagination for archived appointments is now handled in useEffect
+  // Apply comments updates to current archived appointments
+  const archivedAppointmentsWithComments = archivedAppointmentsWithComments.map((appt) => ({
+    ...appt,
+    comments: updatedComments[appt._id] || appt.comments || []
+  }));
 
   // Add this function to fetch latest data on demand
   const handleManualRefresh = async () => {
@@ -845,7 +865,7 @@ export default function AdminAppointments() {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-6">
           <h3 className="text-2xl sm:text-3xl font-extrabold text-blue-700 drop-shadow">
             {showArchived 
-              ? `Archived Appointments (${filteredArchivedAppointments.length})`
+              ? `Archived Appointments (${archivedAppointmentsWithComments.length})`
               : `All Appointments (${appointmentsWithComments.length})`}
           </h3>
           <div className="flex flex-row w-full sm:w-auto gap-2 sm:gap-4 justify-center sm:justify-end mt-2 sm:mt-0">
@@ -857,7 +877,11 @@ export default function AdminAppointments() {
               Refresh
             </button>
             <button
-              onClick={() => setShowArchived(!showArchived)}
+              onClick={() => {
+                setShowArchived(!showArchived);
+                setCurrentPage(1); // Reset to first page when switching
+                setArchivedCurrentPage(1); // Reset archived page to first page when switching
+              }}
               className={`bg-gradient-to-r text-white px-2.5 py-1.5 rounded-md transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1 sm:gap-2 text-xs sm:text-base w-1/2 sm:w-auto sm:px-6 sm:py-3 sm:rounded-lg justify-center ${
                 showArchived 
                   ? 'from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600' 
@@ -942,7 +966,7 @@ export default function AdminAppointments() {
         
         {showArchived ? (
           // Archived Appointments Section
-            filteredArchivedAppointments.length === 0 ? (
+            archivedAppointmentsWithComments.length === 0 ? (
               <div className="text-center text-gray-500 text-lg">No archived appointments found.</div>
             ) : (
               <div className="overflow-x-auto">
@@ -962,7 +986,7 @@ export default function AdminAppointments() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredArchivedAppointments.map((appt) => (
+                    {archivedAppointmentsWithComments.map((appt) => (
                       <AdminAppointmentRow
                         key={appt._id}
                         appt={appt}
@@ -1086,7 +1110,7 @@ export default function AdminAppointments() {
           )
         )}
 
-        {/* Pagination */}
+        {/* Pagination for regular appointments */}
         {!showArchived && totalPages > 1 && (
           <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
             <div className="text-sm text-gray-700">
@@ -1109,6 +1133,37 @@ export default function AdminAppointments() {
                   toast.info(`Navigated to page ${Math.min(totalPages, currentPage + 1)}`);
                 }}
                 disabled={currentPage === totalPages}
+                className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Pagination for archived appointments */}
+        {showArchived && archivedTotalPages > 1 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
+            <div className="text-sm text-gray-700">
+              Archived Page {archivedCurrentPage} of {archivedTotalPages}
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <button
+                onClick={() => {
+                  setArchivedCurrentPage(Math.max(1, archivedCurrentPage - 1));
+                  toast.info(`Navigated to archived page ${Math.max(1, archivedCurrentPage - 1)}`);
+                }}
+                disabled={archivedCurrentPage === 1}
+                className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => {
+                  setArchivedCurrentPage(Math.min(archivedTotalPages, archivedCurrentPage + 1));
+                  toast.info(`Navigated to archived page ${Math.min(archivedTotalPages, archivedCurrentPage + 1)}`);
+                }}
+                disabled={archivedCurrentPage === archivedTotalPages}
                 className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
               >
                 Next
