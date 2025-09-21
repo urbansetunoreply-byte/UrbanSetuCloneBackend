@@ -8973,8 +8973,15 @@ function PaymentStatusCell({ appointment, isBuyer }) {
               {!isRefundRequestApproved && !isRefundRequestPending && (
                 <>
                   {isRefundRequestRejected && refundRequestStatus.isAppealed ? (
-                    <div className="mt-1 text-xs text-gray-600">
-                      Appeal submitted please wait for response...
+                    <div className="relative group mb-1">
+                      <FaInfoCircle 
+                        className="text-blue-500 hover:text-blue-700 cursor-pointer text-xs" 
+                        title="Appeal submitted please wait for response..."
+                      />
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-blue-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                        Appeal submitted please wait for response...
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-blue-800"></div>
+                      </div>
                     </div>
                   ) : isRefundRequestRejected && !isCaseReopened ? (
                     <>
