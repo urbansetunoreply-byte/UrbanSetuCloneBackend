@@ -27,6 +27,8 @@ export default function AdminAppointments() {
   const [statusFilter, setStatusFilter] = useState("all");
   // Removed role filter
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [selectedUser, setSelectedUser] = useState(null);
   const [showUserModal, setShowUserModal] = useState(false);
   const [userLoading, setUserLoading] = useState(false);
@@ -128,16 +130,28 @@ export default function AdminAppointments() {
   // Define fetch functions outside useEffect so they can be used in socket handlers
   const fetchAppointments = useCallback(async () => {
     try {
-      const { data } = await axios.get(`${API_BASE_URL}/api/bookings`, { 
+      // Build query parameters for pagination and filters
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: '10'
+      });
+      
+      if (search) params.append('search', search);
+      if (statusFilter !== 'all') params.append('status', statusFilter);
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
+      
+      const { data } = await axios.get(`${API_BASE_URL}/api/bookings?${params}`, { 
         withCredentials: true 
       });
-      setAppointments(data);
+      setAppointments(data.appointments || data);
+      setTotalPages(data.totalPages || 1);
       setLoading(false);
     } catch (err) {
       console.error("Failed to fetch appointments", err);
       setLoading(false);
     }
-  }, []);
+  }, [currentPage, search, statusFilter, startDate, endDate]);
 
   const fetchArchivedAppointments = useCallback(async () => {
     try {
@@ -395,7 +409,7 @@ export default function AdminAppointments() {
       socket.off('connect', handleConnect);
       socket.off('disconnect', handleDisconnect);
     };
-  }, [fetchAppointments, fetchArchivedAppointments, currentUser]);
+  }, [fetchAppointments, fetchArchivedAppointments, currentUser, currentPage, search, statusFilter, startDate, endDate]);
 
   // Lock background scroll when user modal is open
   useEffect(() => {
@@ -1062,6 +1076,37 @@ export default function AdminAppointments() {
               </table>
             </div>
           )
+        )}
+
+        {/* Pagination */}
+        {!showArchived && totalPages > 1 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
+            <div className="text-sm text-gray-700">
+              Page {currentPage} of {totalPages}
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <button
+                onClick={() => {
+                  setCurrentPage(Math.max(1, currentPage - 1));
+                  toast.info(`Navigated to page ${Math.max(1, currentPage - 1)}`);
+                }}
+                disabled={currentPage === 1}
+                className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => {
+                  setCurrentPage(Math.min(totalPages, currentPage + 1));
+                  toast.info(`Navigated to page ${Math.min(totalPages, currentPage + 1)}`);
+                }}
+                disabled={currentPage === totalPages}
+                className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+              >
+                Next
+              </button>
+            </div>
+          </div>
         )}
       </div>
 

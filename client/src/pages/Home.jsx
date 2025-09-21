@@ -23,6 +23,14 @@ export default function Home() {
   const [isSliderVisible, setIsSliderVisible] = useState(false);
   const [stats, setStats] = useState({ properties: 0, users: 0, transactions: 0, satisfaction: 0 });
   const [isStatsVisible, setIsStatsVisible] = useState(false);
+  const [isHeroVisible, setIsHeroVisible] = useState(false);
+  const [isFeaturesVisible, setIsFeaturesVisible] = useState(false);
+  const [isTestimonialsVisible, setIsTestimonialsVisible] = useState(false);
+  const [isHowItWorksVisible, setIsHowItWorksVisible] = useState(false);
+  const [isPlatformVisible, setIsPlatformVisible] = useState(false);
+  const [isCTAVisible, setIsCTAVisible] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isParallaxActive, setIsParallaxActive] = useState(false);
   const swiperRef = useRef(null);
   const navigate = useNavigate();
   const isUser = window.location.pathname.startsWith('/user');
@@ -118,6 +126,69 @@ export default function Home() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Mouse tracking for parallax effects
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+
+    const handleScroll = () => {
+      setIsParallaxActive(window.scrollY > 100);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('scroll', handleScroll);
+    
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  // Intersection Observer for scroll animations
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const section = entry.target.dataset.section;
+          switch (section) {
+            case 'hero':
+              setIsHeroVisible(true);
+              break;
+            case 'features':
+              setIsFeaturesVisible(true);
+              break;
+            case 'testimonials':
+              setIsTestimonialsVisible(true);
+              break;
+            case 'how-it-works':
+              setIsHowItWorksVisible(true);
+              break;
+            case 'platform':
+              setIsPlatformVisible(true);
+              break;
+            case 'cta':
+              setIsCTAVisible(true);
+              break;
+            default:
+              break;
+          }
+        }
+      });
+    }, observerOptions);
+
+    // Observe all sections
+    const sections = document.querySelectorAll('[data-section]');
+    sections.forEach(section => observer.observe(section));
+
+    return () => observer.disconnect();
+  }, []);
+
   // Fetch statistics
   useEffect(() => {
     const fetchStats = async () => {
@@ -178,27 +249,76 @@ export default function Home() {
   return (
     <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen">
       {/* Hero Section */}
-      <div className="text-center py-10 bg-gradient-to-r from-blue-600 to-purple-600 text-white animate-fade-in-down">
-        {currentUser && (
-          <div className="mb-3">
-            <span
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 backdrop-blur-md shadow-sm text-base sm:text-lg font-semibold animate-fade-in"
+      <div 
+        className="relative text-center py-16 bg-gradient-to-r from-blue-600 to-purple-600 text-white overflow-hidden"
+        data-section="hero"
+        style={{
+          transform: `translateY(${isParallaxActive ? -20 : 0}px)`,
+          transition: 'transform 0.3s ease-out'
+        }}
+      >
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div 
+            className="absolute w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse"
+            style={{
+              left: `${mousePosition.x * 0.1}px`,
+              top: `${mousePosition.y * 0.1}px`,
+              transform: 'translate(-50%, -50%)'
+            }}
+          />
+          <div 
+            className="absolute w-32 h-32 bg-yellow-300/20 rounded-full blur-2xl animate-bounce"
+            style={{
+              right: `${mousePosition.x * 0.05}px`,
+              bottom: `${mousePosition.y * 0.05}px`,
+              transform: 'translate(50%, 50%)'
+            }}
+          />
+        </div>
+
+        <div className={`relative z-10 transition-all duration-1000 ${isHeroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          {currentUser && (
+            <div className="mb-6">
+              <span
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/20 backdrop-blur-md shadow-lg text-lg font-semibold animate-bounce"
+                style={{ animationDelay: '0.5s' }}
+              >
+                {(() => {
+                  const name = currentUser.firstName || currentUser.username || currentUser.name || currentUser.fullName || 'Friend';
+                  const hour = new Date().getHours();
+                  const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+                  const emoji = hour < 12 ? '☀️' : hour < 18 ? '🌤️' : '🌙';
+                  return `${greet}, ${name}! ${emoji}`;
+                })()}
+              </span>
+            </div>
+          )}
+          <h1 className="text-5xl md:text-6xl font-extrabold mb-4 animate-pulse">
+            Find Your Dream Home
+          </h1>
+          <p className="text-xl md:text-2xl mb-8 animate-pulse" style={{ animationDelay: '0.2s' }}>
+            Discover the best homes at unbeatable prices
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link 
+              to="/search" 
+              className="inline-flex items-center gap-2 bg-white text-blue-600 font-bold px-8 py-4 rounded-xl shadow-2xl hover:bg-gray-100 hover:scale-110 transition-all duration-300 animate-bounce"
+              style={{ animationDelay: '0.4s' }}
             >
-              {(() => {
-                const name = currentUser.firstName || currentUser.username || currentUser.name || currentUser.fullName || 'Friend';
-                const hour = new Date().getHours();
-                const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-                const emoji = hour < 12 ? '☀️' : hour < 18 ? '🌤️' : '🌙';
-                return `${greet}, ${name}! ${emoji}`;
-              })()}
-            </span>
+              <FaRocket className="text-xl" />
+              Start Exploring
+            </Link>
+            <Link 
+              to="/about" 
+              className="inline-flex items-center gap-2 bg-transparent border-2 border-white text-white font-bold px-8 py-4 rounded-xl hover:bg-white hover:text-blue-600 transition-all duration-300 animate-bounce"
+              style={{ animationDelay: '0.6s' }}
+            >
+              <FaInfoCircle className="text-xl" />
+              Learn More
+            </Link>
           </div>
-        )}
-        <h1 className="text-4xl font-extrabold animate-fade-in">Find Your Dream Home</h1>
-        <p className="mt-2 text-lg animate-fade-in delay-200">Discover the best homes at unbeatable prices</p>
-        <Link to="/search" className="mt-4 inline-block bg-white text-blue-600 font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-gray-200 hover:scale-105 transition-all animate-fade-in-up delay-300">
-          Start Exploring
-        </Link>
+        </div>
       </div>
 
       {/* Statistics Section */}
@@ -232,55 +352,55 @@ export default function Home() {
       </div>
 
       {/* Features Showcase */}
-      <div className="max-w-6xl mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Why Choose UrbanSetu?</h2>
-          <p className="text-gray-600 text-lg">Discover the features that make us the preferred choice for real estate</p>
+      <div className="max-w-6xl mx-auto px-4 py-16" data-section="features">
+        <div className={`text-center mb-12 transition-all duration-1000 ${isFeaturesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4 animate-pulse">Why Choose UrbanSetu?</h2>
+          <p className="text-gray-600 text-lg animate-pulse" style={{ animationDelay: '0.2s' }}>Discover the features that make us the preferred choice for real estate</p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 transition-all duration-1000 ${isFeaturesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 animate-spin" style={{ animationDuration: '3s' }}>
               <FaSearch className="text-2xl text-blue-600" />
             </div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2">Smart Search</h3>
             <p className="text-gray-600">AI-powered search with advanced filters to find your perfect property</p>
           </div>
           
-          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4 animate-bounce">
               <FaShieldAlt className="text-2xl text-green-600" />
             </div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2">Secure Transactions</h3>
             <p className="text-gray-600">Bank-level security for all your real estate transactions</p>
           </div>
           
-          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100">
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4 animate-pulse">
               <FaAward className="text-2xl text-purple-600" />
             </div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2">Verified Properties</h3>
             <p className="text-gray-600">All properties are verified and quality-checked by our experts</p>
           </div>
           
-          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100">
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
+          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4 animate-ping">
               <FaRocket className="text-2xl text-orange-600" />
             </div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2">Fast Processing</h3>
             <p className="text-gray-600">Quick approval and processing for all your real estate needs</p>
           </div>
           
-          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100">
-            <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center mb-4">
+          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
+            <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center mb-4 animate-pulse">
               <FaHeart className="text-2xl text-teal-600" />
             </div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2">24/7 Support</h3>
             <p className="text-gray-600">Round-the-clock customer support for all your queries</p>
           </div>
           
-          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100">
-            <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mb-4">
+          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+            <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mb-4 animate-spin" style={{ animationDuration: '4s' }}>
               <FaGem className="text-2xl text-pink-600" />
             </div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2">Premium Experience</h3>
@@ -290,16 +410,16 @@ export default function Home() {
       </div>
 
       {/* Testimonials Section */}
-      <div className="max-w-6xl mx-auto px-4 py-16 bg-gradient-to-r from-blue-50 to-purple-50">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">What Our Users Say</h2>
-          <p className="text-gray-600 text-lg">Real stories from satisfied customers</p>
+      <div className="max-w-6xl mx-auto px-4 py-16 bg-gradient-to-r from-blue-50 to-purple-50" data-section="testimonials">
+        <div className={`text-center mb-12 transition-all duration-1000 ${isTestimonialsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4 animate-pulse">What Our Users Say</h2>
+          <p className="text-gray-600 text-lg animate-pulse" style={{ animationDelay: '0.2s' }}>Real stories from satisfied customers</p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+        <div className={`grid grid-cols-1 md:grid-cols-3 gap-8 transition-all duration-1000 ${isTestimonialsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
             <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4 animate-spin" style={{ animationDuration: '3s' }}>
                 <FaQuoteLeft className="text-blue-600" />
               </div>
               <div>
@@ -310,14 +430,14 @@ export default function Home() {
             <p className="text-gray-700 italic">"UrbanSetu made finding my dream home so easy! The AI recommendations were spot-on and saved me weeks of searching."</p>
             <div className="flex items-center mt-4">
               {[...Array(5)].map((_, i) => (
-                <FaStar key={i} className="text-yellow-400 text-sm" />
+                <FaStar key={i} className="text-yellow-400 text-sm animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />
               ))}
             </div>
           </div>
           
-          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
             <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4 animate-bounce">
                 <FaQuoteLeft className="text-green-600" />
               </div>
               <div>
@@ -328,14 +448,14 @@ export default function Home() {
             <p className="text-gray-700 italic">"The platform's analytics and tools have revolutionized how I manage my listings. My sales have increased by 40%!"</p>
             <div className="flex items-center mt-4">
               {[...Array(5)].map((_, i) => (
-                <FaStar key={i} className="text-yellow-400 text-sm" />
+                <FaStar key={i} className="text-yellow-400 text-sm animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />
               ))}
             </div>
           </div>
           
-          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
             <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mr-4">
+              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mr-4 animate-ping">
                 <FaQuoteLeft className="text-purple-600" />
               </div>
               <div>
@@ -346,7 +466,7 @@ export default function Home() {
             <p className="text-gray-700 italic">"The secure transaction system and verified properties give me complete confidence in every investment decision."</p>
             <div className="flex items-center mt-4">
               {[...Array(5)].map((_, i) => (
-                <FaStar key={i} className="text-yellow-400 text-sm" />
+                <FaStar key={i} className="text-yellow-400 text-sm animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />
               ))}
             </div>
           </div>

@@ -28,6 +28,8 @@ export default function MyAppointments() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [roleFilter, setRoleFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [actionLoading, setActionLoading] = useState("");
   const [showOtherPartyModal, setShowOtherPartyModal] = useState(false);
   const [selectedOtherParty, setSelectedOtherParty] = useState(null);
@@ -83,10 +85,25 @@ export default function MyAppointments() {
       try {
         setLoading(true);
         setError(null);
-        const { data } = await axios.get(`${API_BASE_URL}/api/bookings/my`, {
+        
+        // Build query parameters for pagination and filters
+        const params = new URLSearchParams({
+          page: currentPage.toString(),
+          limit: '10'
+        });
+        
+        if (search) params.append('search', search);
+        if (statusFilter !== 'all') params.append('status', statusFilter);
+        if (roleFilter !== 'all') params.append('role', roleFilter);
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+        
+        const { data } = await axios.get(`${API_BASE_URL}/api/bookings/my?${params}`, {
           withCredentials: true
         });
-        setAppointments(data);
+        
+        setAppointments(data.appointments || data);
+        setTotalPages(data.totalPages || 1);
       } catch (err) {
         setError("Failed to load appointments. Please try again.");
       } finally {
@@ -111,7 +128,7 @@ export default function MyAppointments() {
     };
     fetchAppointments();
     fetchArchivedAppointments();
-  }, [currentUser]);
+  }, [currentUser, currentPage, search, statusFilter, roleFilter, startDate, endDate]);
 
   useEffect(() => {
     // Listen for permanent delete events
@@ -911,6 +928,38 @@ export default function MyAppointments() {
           </div>
           )
         )}
+
+        {/* Pagination */}
+        {!showArchived && totalPages > 1 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
+            <div className="text-sm text-gray-700">
+              Page {currentPage} of {totalPages}
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <button
+                onClick={() => {
+                  setCurrentPage(Math.max(1, currentPage - 1));
+                  toast.info(`Navigated to page ${Math.max(1, currentPage - 1)}`);
+                }}
+                disabled={currentPage === 1}
+                className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => {
+                  setCurrentPage(Math.min(totalPages, currentPage + 1));
+                  toast.info(`Navigated to page ${Math.min(totalPages, currentPage + 1)}`);
+                }}
+                disabled={currentPage === totalPages}
+                className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+
       {/* Other Party Details Modal - Enhanced Design */}
       {showOtherPartyModal && selectedOtherParty && selectedAppointment && (() => {
         // Determine if contact details should be shown based on appointment status
