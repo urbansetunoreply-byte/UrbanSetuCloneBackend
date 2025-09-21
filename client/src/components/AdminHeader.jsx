@@ -283,7 +283,7 @@ export default function AdminHeader() {
             </div>
           </Link>
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-4">
+          <nav className="hidden lg:flex items-center space-x-6">
             {/* Desktop Search */}
             <div className="flex items-center">
               {!searchOpen ? (
@@ -396,7 +396,7 @@ export default function AdminHeader() {
 function AdminNavLinks({ mobile = false, onNavigate, pendingCount, handleSignout, currentUser }) {
   const navigate = useNavigate();
   return (
-    <ul className={`${mobile ? 'flex flex-col gap-1' : 'flex items-center space-x-3'}`}>
+    <ul className={`${mobile ? 'flex flex-col gap-1' : 'flex items-center space-x-4'}`}>
       {/* Admin Navigation Links */}
       <Link to="/admin" onClick={onNavigate}>
         <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10'}`}>

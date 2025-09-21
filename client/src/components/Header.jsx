@@ -273,7 +273,7 @@ export default function Header() {
           </Link>
           
           {/* Desktop Navigation - Right Side */}
-          <nav className="hidden lg:flex items-center space-x-4">
+          <nav className="hidden lg:flex items-center space-x-6">
             <UserNavLinks />
           </nav>
 
@@ -407,7 +407,7 @@ function UserNavLinks({ mobile = false, onNavigate }) {
   
 
   return (
-    <ul className={`${mobile ? 'flex flex-col gap-1' : 'flex items-center space-x-3'}`}>
+    <ul className={`${mobile ? 'flex flex-col gap-1' : 'flex items-center space-x-4'}`}>
       {/* Desktop Search */}
       {!mobile && (
         <li className="flex items-center">
