@@ -8783,6 +8783,13 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       return { status: 'admin_confirmed', text: 'Paid (Admin)', color: 'bg-green-100 text-green-800' };
     }
     
+    // For sellers, hide refund-related statuses (refunded, partially_refunded, failed)
+    // Only show these statuses to buyers
+    if (!isBuyer && ['refunded', 'partially_refunded', 'failed'].includes(paymentStatus.status)) {
+      // For sellers, show as completed/paid instead of refund statuses
+      return { status: 'completed', text: 'Paid', color: 'bg-green-100 text-green-800' };
+    }
+    
     // For user payments, show regular payment status
     return getPaymentStatusInfo(paymentStatus.status);
   };
