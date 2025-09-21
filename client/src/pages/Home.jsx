@@ -9,7 +9,7 @@ import ListingItem from "../components/ListingItem";
 import { useSelector } from "react-redux";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import GeminiAIWrapper from "../components/GeminiAIWrapper";
-import { FaHome, FaSearch, FaHeart, FaStar, FaMapMarkerAlt, FaPhone, FaEnvelope, FaShieldAlt, FaAward, FaUsers, FaChartLine, FaLightbulb, FaRocket, FaGem } from "react-icons/fa";
+import { FaHome, FaSearch, FaHeart, FaStar, FaMapMarkerAlt, FaPhone, FaEnvelope, FaShieldAlt, FaAward, FaUsers, FaChartLine, FaLightbulb, FaRocket, FaGem, FaQuoteLeft, FaQuoteRight, FaCheckCircle, FaClock, FaHandshake, FaGlobe, FaMobile, FaDesktop, FaTablet } from "react-icons/fa";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -191,26 +191,30 @@ export default function Home() {
 
       {/* Statistics Section */}
       <div className={`max-w-6xl mx-auto px-4 py-12 transition-all duration-1000 ${isStatsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div className="text-center mb-8">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Our Impact in Numbers</h2>
+          <p className="text-white/90 text-lg">Trusted by thousands of users worldwide</p>
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div className="text-center bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300 hover:scale-105">
-            <FaHome className="text-3xl text-yellow-400 mx-auto mb-3" />
-            <div className="text-2xl font-bold text-white">{stats.properties.toLocaleString()}+</div>
-            <div className="text-white/70 text-sm">Properties</div>
+          <div className="text-center bg-white/20 backdrop-blur-md rounded-xl p-6 border border-white/30 hover:bg-white/30 transition-all duration-300 hover:scale-105 shadow-lg">
+            <FaHome className="text-4xl text-yellow-400 mx-auto mb-4 drop-shadow-lg" />
+            <div className="text-3xl font-bold text-white mb-2 drop-shadow-lg">{stats.properties.toLocaleString()}+</div>
+            <div className="text-white text-base font-semibold">Properties</div>
           </div>
-          <div className="text-center bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300 hover:scale-105">
-            <FaUsers className="text-3xl text-blue-400 mx-auto mb-3" />
-            <div className="text-2xl font-bold text-white">{stats.users.toLocaleString()}+</div>
-            <div className="text-white/70 text-sm">Happy Users</div>
+          <div className="text-center bg-white/20 backdrop-blur-md rounded-xl p-6 border border-white/30 hover:bg-white/30 transition-all duration-300 hover:scale-105 shadow-lg">
+            <FaUsers className="text-4xl text-blue-400 mx-auto mb-4 drop-shadow-lg" />
+            <div className="text-3xl font-bold text-white mb-2 drop-shadow-lg">{stats.users.toLocaleString()}+</div>
+            <div className="text-white text-base font-semibold">Happy Users</div>
           </div>
-          <div className="text-center bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300 hover:scale-105">
-            <FaChartLine className="text-3xl text-green-400 mx-auto mb-3" />
-            <div className="text-2xl font-bold text-white">{stats.transactions.toLocaleString()}+</div>
-            <div className="text-white/70 text-sm">Transactions</div>
+          <div className="text-center bg-white/20 backdrop-blur-md rounded-xl p-6 border border-white/30 hover:bg-white/30 transition-all duration-300 hover:scale-105 shadow-lg">
+            <FaChartLine className="text-4xl text-green-400 mx-auto mb-4 drop-shadow-lg" />
+            <div className="text-3xl font-bold text-white mb-2 drop-shadow-lg">{stats.transactions.toLocaleString()}+</div>
+            <div className="text-white text-base font-semibold">Transactions</div>
           </div>
-          <div className="text-center bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300 hover:scale-105">
-            <FaStar className="text-3xl text-purple-400 mx-auto mb-3" />
-            <div className="text-2xl font-bold text-white">{stats.satisfaction}%</div>
-            <div className="text-white/70 text-sm">Satisfaction</div>
+          <div className="text-center bg-white/20 backdrop-blur-md rounded-xl p-6 border border-white/30 hover:bg-white/30 transition-all duration-300 hover:scale-105 shadow-lg">
+            <FaStar className="text-4xl text-purple-400 mx-auto mb-4 drop-shadow-lg" />
+            <div className="text-3xl font-bold text-white mb-2 drop-shadow-lg">{stats.satisfaction}%</div>
+            <div className="text-white text-base font-semibold">Satisfaction</div>
           </div>
         </div>
       </div>
@@ -269,6 +273,156 @@ export default function Home() {
             </div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2">Premium Experience</h3>
             <p className="text-gray-600">Luxury real estate experience with exclusive properties</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Testimonials Section */}
+      <div className="max-w-6xl mx-auto px-4 py-16 bg-gradient-to-r from-blue-50 to-purple-50">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">What Our Users Say</h2>
+          <p className="text-gray-600 text-lg">Real stories from satisfied customers</p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                <FaQuoteLeft className="text-blue-600" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-gray-800">Sarah Johnson</h4>
+                <p className="text-gray-600 text-sm">Property Buyer</p>
+              </div>
+            </div>
+            <p className="text-gray-700 italic">"UrbanSetu made finding my dream home so easy! The AI recommendations were spot-on and saved me weeks of searching."</p>
+            <div className="flex items-center mt-4">
+              {[...Array(5)].map((_, i) => (
+                <FaStar key={i} className="text-yellow-400 text-sm" />
+              ))}
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                <FaQuoteLeft className="text-green-600" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-gray-800">Michael Chen</h4>
+                <p className="text-gray-600 text-sm">Real Estate Agent</p>
+              </div>
+            </div>
+            <p className="text-gray-700 italic">"The platform's analytics and tools have revolutionized how I manage my listings. My sales have increased by 40%!"</p>
+            <div className="flex items-center mt-4">
+              {[...Array(5)].map((_, i) => (
+                <FaStar key={i} className="text-yellow-400 text-sm" />
+              ))}
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mr-4">
+                <FaQuoteLeft className="text-purple-600" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-gray-800">Emily Rodriguez</h4>
+                <p className="text-gray-600 text-sm">Property Investor</p>
+              </div>
+            </div>
+            <p className="text-gray-700 italic">"The secure transaction system and verified properties give me complete confidence in every investment decision."</p>
+            <div className="flex items-center mt-4">
+              {[...Array(5)].map((_, i) => (
+                <FaStar key={i} className="text-yellow-400 text-sm" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* How It Works Section */}
+      <div className="max-w-6xl mx-auto px-4 py-16">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">How It Works</h2>
+          <p className="text-gray-600 text-lg">Simple steps to find your perfect property</p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FaSearch className="text-2xl text-blue-600" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">1. Search</h3>
+            <p className="text-gray-600">Use our AI-powered search to find properties that match your criteria</p>
+          </div>
+          
+          <div className="text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FaCheckCircle className="text-2xl text-green-600" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">2. Verify</h3>
+            <p className="text-gray-600">All properties are verified and quality-checked by our experts</p>
+          </div>
+          
+          <div className="text-center">
+            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FaHandshake className="text-2xl text-purple-600" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">3. Connect</h3>
+            <p className="text-gray-600">Connect with property owners and schedule viewings</p>
+          </div>
+          
+          <div className="text-center">
+            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FaHome className="text-2xl text-orange-600" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">4. Secure</h3>
+            <p className="text-gray-600">Complete secure transactions with our protected payment system</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Platform Features Section */}
+      <div className="max-w-6xl mx-auto px-4 py-16 bg-gradient-to-r from-gray-50 to-blue-50">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Multi-Platform Access</h2>
+          <p className="text-gray-600 text-lg">Access UrbanSetu from any device, anywhere</p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="text-center bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <FaDesktop className="text-5xl text-blue-600 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">Desktop</h3>
+            <p className="text-gray-600">Full-featured experience with advanced analytics and management tools</p>
+          </div>
+          
+          <div className="text-center bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <FaMobile className="text-5xl text-green-600 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">Mobile</h3>
+            <p className="text-gray-600">On-the-go access with push notifications and location-based search</p>
+          </div>
+          
+          <div className="text-center bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <FaTablet className="text-5xl text-purple-600 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">Tablet</h3>
+            <p className="text-gray-600">Perfect balance of portability and functionality for property viewing</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Call to Action Section */}
+      <div className="max-w-6xl mx-auto px-4 py-16">
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-12 text-center text-white">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Find Your Dream Property?</h2>
+          <p className="text-xl mb-8 text-blue-100">Join thousands of satisfied users and discover your perfect home today</p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/search" className="bg-white text-blue-600 font-semibold px-8 py-4 rounded-lg shadow-lg hover:bg-gray-100 hover:scale-105 transition-all">
+              Start Searching
+            </Link>
+            <Link to="/about" className="bg-transparent border-2 border-white text-white font-semibold px-8 py-4 rounded-lg hover:bg-white hover:text-blue-600 transition-all">
+              Learn More
+            </Link>
           </div>
         </div>
       </div>
