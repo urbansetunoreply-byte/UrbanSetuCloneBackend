@@ -8954,7 +8954,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
             >
               <FaCreditCard /> Pay Now
             </button>
-          ) : paymentStatus && paymentStatus.status === 'failed' ? (
+          ) : paymentStatus && paymentStatus.status === 'failed' && !isFrozenStatus ? (
             <button
               onClick={() => setShowPayModal(true)}
               className="mt-1 inline-flex items-center gap-1 text-white bg-red-600 hover:bg-red-700 text-xs font-semibold px-3 py-1 rounded"
