@@ -78,7 +78,31 @@ img {
     animation: slideInLeft 0.8s cubic-bezier(0.23, 1, 0.32, 1) both;
   }
   .animate-slide-in-right {
-    animation: slideInRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+    animation: slideInRight 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  }
+  .animate-mobile-menu-in {
+    animation: mobileMenuIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  }
+  .animate-mobile-menu-out {
+    animation: mobileMenuOut 0.3s cubic-bezier(0.55, 0.055, 0.675, 0.19) both;
+  }
+  .animate-mobile-backdrop-in {
+    animation: mobileBackdropIn 0.3s ease-out both;
+  }
+  .animate-mobile-backdrop-out {
+    animation: mobileBackdropOut 0.2s ease-in both;
+  }
+  .animate-mobile-item-in {
+    animation: mobileItemIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  }
+  .animate-mobile-item-in-delay-1 {
+    animation: mobileItemIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s both;
+  }
+  .animate-mobile-item-in-delay-2 {
+    animation: mobileItemIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s both;
+  }
+  .animate-mobile-item-in-delay-3 {
+    animation: mobileItemIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s both;
   }
   .animate-slide-out-right {
     animation: slideOutRight 0.3s cubic-bezier(0.55, 0.055, 0.675, 0.19) both;
@@ -248,6 +272,61 @@ img {
   to { 
     opacity: 1; 
     transform: translateX(0); 
+  }
+}
+
+@keyframes mobileMenuIn {
+  from { 
+    opacity: 0; 
+    transform: translateX(100%) scale(0.95); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateX(0) scale(1); 
+  }
+}
+
+@keyframes mobileMenuOut {
+  from { 
+    opacity: 1; 
+    transform: translateX(0) scale(1); 
+  }
+  to { 
+    opacity: 0; 
+    transform: translateX(100%) scale(0.95); 
+  }
+}
+
+@keyframes mobileBackdropIn {
+  from { 
+    opacity: 0; 
+    backdrop-filter: blur(0px);
+  }
+  to { 
+    opacity: 1; 
+    backdrop-filter: blur(8px);
+  }
+}
+
+@keyframes mobileBackdropOut {
+  from { 
+    opacity: 1; 
+    backdrop-filter: blur(8px);
+  }
+  to { 
+    opacity: 0; 
+    backdrop-filter: blur(0px);
+  }
+}
+
+@keyframes mobileItemIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px) scale(0.95); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
   }
 }
 @keyframes slideOutRight {
