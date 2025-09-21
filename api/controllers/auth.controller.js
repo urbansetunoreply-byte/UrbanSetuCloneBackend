@@ -5,7 +5,7 @@ import { errorHandler } from "../utils/error.js";
 import jwt from 'jsonwebtoken'
 import { generateOTP, sendSignupOTPEmail,sendLoginOTPEmail } from "../utils/emailService.js";
 import { generateTokenPair, setSecureCookies, clearAuthCookies } from "../utils/jwtUtils.js";
-import { trackFailedAttempt, clearFailedAttempts, logSecurityEvent, sendAdminAlert, isAccountLocked, checkSuspiciousLogin, checkSuspiciousSignup, getAccountLockRemainingMs } from "../middleware/security.js";
+import { trackFailedAttempt, clearFailedAttempts, logSecurityEvent, sendAdminAlert, isAccountLocked, checkSuspiciousSignup, getAccountLockRemainingMs } from "../middleware/security.js";
 import { 
   createEnhancedSession, 
   updateSessionActivity, 

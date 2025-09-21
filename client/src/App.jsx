@@ -648,7 +648,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/user/terms" element={<UserTerms />} />
             <Route path="/user/privacy" element={<UserPrivacy />} />
             <Route path="/user/reviews" element={<UserReviews />} />
-            <Route path="/device-management" element={<DeviceManagement />} />
+            <Route path="/user/device-management" element={<DeviceManagement />} />
           </Route>
 
           {/* Admin Routes */}
@@ -676,8 +676,9 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/admin/fraudmanagement" element={<AdminFraudManagement />} />
             <Route path="/admin/payments" element={<PaymentDashboard />} />
             <Route path="/admin/security-moderation" element={<AdminSecurityModeration />} />
-            <Route path="/session-management" element={<SessionManagement />} />
-            <Route path="/session-audit-logs" element={<SessionAuditLogs />} />
+            <Route path="/admin/device-management" element={<DeviceManagement />} />
+            <Route path="/admin/session-management" element={<SessionManagement />} />
+            <Route path="/admin/session-audit-logs" element={<SessionAuditLogs />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

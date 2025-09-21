@@ -2466,7 +2466,7 @@ export default function Profile() {
             
             {/* Device Management for all users */}
             <button
-              onClick={() => navigate('/device-management')}
+              onClick={() => navigate((currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? '/admin/device-management' : '/user/device-management')}
               className={`w-full bg-indigo-500 text-white px-6 py-3 rounded-lg hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp} animation-delay-900`}
             >
               <FaShieldAlt className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:${animationClasses.wiggle}`} />
@@ -2486,7 +2486,7 @@ export default function Profile() {
             {/* Session Management for admins */}
             {(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
               <button
-                onClick={() => navigate('/session-management')}
+                onClick={() => navigate('/admin/session-management')}
                 className={`w-full bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp} animation-delay-1200`}
               >
                 <FaTools className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:${animationClasses.wiggle}`} />
@@ -2497,7 +2497,7 @@ export default function Profile() {
             {/* Session Audit Logs for root admin only */}
             {currentUser.role === 'rootadmin' && (
               <button
-                onClick={() => navigate('/session-audit-logs')}
+                onClick={() => navigate('/admin/session-audit-logs')}
                 className={`w-full bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp} animation-delay-1350`}
               >
                 <FaExclamationTriangle className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:${animationClasses.wiggle}`} />
