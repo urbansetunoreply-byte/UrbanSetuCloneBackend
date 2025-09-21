@@ -38,8 +38,8 @@ export const validateEmail = (email, options = {}) => {
   
   // Check for suspicious patterns in local part
   const suspiciousPatterns = [
-    // More than 3 consecutive digits
-    /\d{4,}/,
+    // More than 5 consecutive digits(rare in legit mails)
+    /\d{6,}/,
     // Common disposable email patterns in local part
     /^(temp|test|fake|dummy|spam|trash|junk|throwaway|disposable|temporary)/i,
     // Random character patterns
