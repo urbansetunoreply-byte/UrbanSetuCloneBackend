@@ -21,6 +21,7 @@ import chatHistoryRouter from "./routes/chatHistory.route.js";
 import uploadRouter from "./routes/upload.route.js";
 import paymentRouter from "./routes/payment.route.js";
 import sessionRouter from "./routes/session.route.js";
+import fraudRouter from "./routes/fraud.route.js";
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import http from 'http';
@@ -425,6 +426,7 @@ app.use("/api/upload", uploadRouter);
 app.use("/api/ai", aiRouter);
 app.use("/api/payments", paymentRouter);
 app.use("/api/sessions", sessionRouter);
+app.use("/api/fraud", fraudRouter);
 console.log('All API routes registered successfully');
 
 const startServer = () => {

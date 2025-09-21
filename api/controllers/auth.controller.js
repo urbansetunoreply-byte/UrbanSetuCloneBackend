@@ -9,6 +9,7 @@ import { trackFailedAttempt, clearFailedAttempts, logSecurityEvent, sendAdminAle
 import { createSession, updateSessionActivity, detectConcurrentLogins, cleanupOldSessions } from "../utils/sessionManager.js";
 import OtpTracking from "../models/otpTracking.model.js";
 import DeletedAccount from "../models/deletedAccount.model.js";
+import { validateEmail } from "../utils/emailValidation.js";
 
 export const SignUp=async (req,res,next)=>{
     const {username,email,password,role,mobileNumber,address,emailVerified}=req.body;
@@ -27,6 +28,30 @@ export const SignUp=async (req,res,next)=>{
     // Check if email is verified
     if (!emailVerified) {
         return next(errorHandler(400, "Please verify your email address before creating an account"));
+    }
+
+    // Validate email for fraud detection
+    const ip = req.ip || req.connection.remoteAddress;
+    const userAgent = req.get('User-Agent');
+    const emailValidation = validateEmail(email, {
+        logSecurity: true,
+        context: 'signup',
+        ip,
+        userAgent
+    });
+
+    if (!emailValidation.isValid) {
+        // Log fraud attempt for security monitoring
+        if (emailValidation.isFraud) {
+            logSecurityEvent('fraud_email_signup_attempt', {
+                email: emailLower,
+                reason: emailValidation.reason,
+                ip,
+                userAgent,
+                username
+            });
+        }
+        return next(errorHandler(400, emailValidation.message));
     }
     
     try {
@@ -552,6 +577,32 @@ export const sendLoginOTP = async (req, res, next) => {
     }
 
     const emailLower = email.toLowerCase();
+
+    // Validate email for fraud detection
+    const ip = req.ip || req.connection.remoteAddress;
+    const userAgent = req.get('User-Agent');
+    const emailValidation = validateEmail(email, {
+        logSecurity: true,
+        context: 'login_otp',
+        ip,
+        userAgent
+    });
+
+    if (!emailValidation.isValid) {
+        // Log fraud attempt for security monitoring
+        if (emailValidation.isFraud) {
+            logSecurityEvent('fraud_email_login_otp_attempt', {
+                email: emailLower,
+                reason: emailValidation.reason,
+                ip,
+                userAgent
+            });
+        }
+        return res.status(400).json({
+            success: false,
+            message: emailValidation.message
+        });
+    }
 
     try {
         // Check active lockout due to excessive OTP requests

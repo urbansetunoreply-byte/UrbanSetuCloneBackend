@@ -4,6 +4,7 @@ import { generateOTP, sendSignupOTPEmail, sendForgotPasswordOTPEmail, sendProfil
 import { errorHandler } from "../utils/error.js";
 import { logSecurityEvent } from "../middleware/security.js";
 import OtpTracking from "../models/otpTracking.model.js";
+import { validateEmail } from "../utils/emailValidation.js";
 
 // Store OTPs temporarily (in production, use Redis or database)
 const otpStore = new Map();
@@ -18,6 +19,32 @@ export const sendOTP = async (req, res, next) => {
   }
 
   const emailLower = email.toLowerCase();
+
+  // Validate email for fraud detection
+  const ip = req.ip || req.connection.remoteAddress;
+  const userAgent = req.get('User-Agent');
+  const emailValidation = validateEmail(email, {
+    logSecurity: true,
+    context: 'signup_otp',
+    ip,
+    userAgent
+  });
+
+  if (!emailValidation.isValid) {
+    // Log fraud attempt for security monitoring
+    if (emailValidation.isFraud) {
+      logSecurityEvent('fraud_email_otp_attempt', {
+        email: emailLower,
+        reason: emailValidation.reason,
+        ip,
+        userAgent
+      });
+    }
+    return res.status(400).json({
+      success: false,
+      message: emailValidation.message
+    });
+  }
 
   try {
     // Check active lockout
@@ -149,6 +176,32 @@ export const sendForgotPasswordOTP = async (req, res, next) => {
 
   const emailLower = email.toLowerCase();
 
+  // Validate email for fraud detection
+  const ip = req.ip || req.connection.remoteAddress;
+  const userAgent = req.get('User-Agent');
+  const emailValidation = validateEmail(email, {
+    logSecurity: true,
+    context: 'forgot_password_otp',
+    ip,
+    userAgent
+  });
+
+  if (!emailValidation.isValid) {
+    // Log fraud attempt for security monitoring
+    if (emailValidation.isFraud) {
+      logSecurityEvent('fraud_email_forgot_password_otp_attempt', {
+        email: emailLower,
+        reason: emailValidation.reason,
+        ip,
+        userAgent
+      });
+    }
+    return res.status(400).json({
+      success: false,
+      message: emailValidation.message
+    });
+  }
+
   try {
     // Check lockout
     if (otpTracking && otpTracking.isLocked && otpTracking.isLocked()) {
@@ -264,6 +317,32 @@ export const sendProfileEmailOTP = async (req, res, next) => {
   }
 
   const emailLower = email.toLowerCase();
+
+  // Validate email for fraud detection
+  const ip = req.ip || req.connection.remoteAddress;
+  const userAgent = req.get('User-Agent');
+  const emailValidation = validateEmail(email, {
+    logSecurity: true,
+    context: 'profile_email_otp',
+    ip,
+    userAgent
+  });
+
+  if (!emailValidation.isValid) {
+    // Log fraud attempt for security monitoring
+    if (emailValidation.isFraud) {
+      logSecurityEvent('fraud_email_profile_otp_attempt', {
+        email: emailLower,
+        reason: emailValidation.reason,
+        ip,
+        userAgent
+      });
+    }
+    return res.status(400).json({
+      success: false,
+      message: emailValidation.message
+    });
+  }
 
   try {
     // Check if email already exists (but allow if it's the same user)

@@ -7,6 +7,8 @@ import AuditLog from '../models/auditLog.model.js';
 import bcryptjs from "bcryptjs"
 import Review from "../models/review.model.js";
 import ReviewReply from "../models/reviewReply.model.js";
+import { validateEmail } from "../utils/emailValidation.js";
+import { logSecurityEvent } from "../middleware/security.js";
 
 export const test=(req,res)=>{
     res.send("Hello Api")
@@ -39,6 +41,30 @@ export const updateUser=async (req,res,next)=>{
         }
         // Check for duplicate email if changed
         if (req.body.email && req.body.email !== user.email) {
+            // Validate email for fraud detection
+            const ip = req.ip || req.connection.remoteAddress;
+            const userAgent = req.get('User-Agent');
+            const emailValidation = validateEmail(req.body.email, {
+                logSecurity: true,
+                context: 'profile_email_update',
+                ip,
+                userAgent
+            });
+
+            if (!emailValidation.isValid) {
+                // Log fraud attempt for security monitoring
+                if (emailValidation.isFraud) {
+                    logSecurityEvent('fraud_email_profile_update_attempt', {
+                        email: req.body.email.toLowerCase(),
+                        reason: emailValidation.reason,
+                        ip,
+                        userAgent,
+                        userId: req.params.id
+                    });
+                }
+                return res.status(200).json({ status: "email_invalid", message: emailValidation.message });
+            }
+
             const existingEmail = await User.findOne({ email: req.body.email, _id: { $ne: req.params.id } });
             if (existingEmail) {
                 return res.status(200).json({ status: "email_exists" });
