@@ -23,6 +23,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export default function MyAppointments() {
   const { currentUser } = useSelector((state) => state.user);
   const [appointments, setAppointments] = useState([]);
+  const [allAppointments, setAllAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
@@ -86,25 +87,16 @@ export default function MyAppointments() {
         setLoading(true);
         setError(null);
         
-        // Build query parameters for pagination and filters
-        const params = new URLSearchParams({
-          page: currentPage.toString(),
-          limit: '10'
-        });
-        
-        if (search) params.append('search', search);
-        if (statusFilter !== 'all') params.append('status', statusFilter);
-        if (roleFilter !== 'all') params.append('role', roleFilter);
-        if (startDate) params.append('startDate', startDate);
-        if (endDate) params.append('endDate', endDate);
-        
-        const { data } = await axios.get(`${API_BASE_URL}/api/bookings/my?${params}`, {
+        // First, fetch all appointments without pagination
+        const { data } = await axios.get(`${API_BASE_URL}/api/bookings/my`, {
           withCredentials: true
         });
         
-        console.log('Appointments API response:', data);
-        setAppointments(data.appointments || data);
-        setTotalPages(data.totalPages || data.pages || Math.ceil((data.appointments || data).length / 10) || 1);
+        console.log('All appointments fetched:', data);
+        const allAppts = data.appointments || data;
+        setAllAppointments(allAppts);
+        
+        // Just store all appointments, filtering and pagination will be handled in separate useEffect
       } catch (err) {
         setError("Failed to load appointments. Please try again.");
       } finally {
@@ -129,7 +121,48 @@ export default function MyAppointments() {
     };
     fetchAppointments();
     fetchArchivedAppointments();
-  }, [currentUser, currentPage, search, statusFilter, roleFilter, startDate, endDate]);
+  }, [currentUser]);
+
+  // Separate useEffect for pagination and filtering
+  useEffect(() => {
+    if (allAppointments.length === 0) return;
+    
+    // Apply filters
+    let filteredAppts = allAppointments.filter((appt) => {
+      if (currentUser._id === appt.buyerId?._id?.toString() && appt.visibleToBuyer === false) return false;
+      if (currentUser._id === appt.sellerId?._id?.toString() && appt.visibleToSeller === false) return false;
+      const isOutdated = new Date(appt.date) < new Date() || (new Date(appt.date).toDateString() === new Date().toDateString() && appt.time && appt.time < new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      if (statusFilter === 'outdated') {
+        return isOutdated;
+      }
+      const matchesStatus = statusFilter === "all" ? true : appt.status === statusFilter;
+      const matchesRole = roleFilter === "all" ? true : appt.role === roleFilter;
+      const matchesSearch =
+        appt.propertyName?.toLowerCase().includes(search.toLowerCase()) ||
+        appt.buyerId?.email?.toLowerCase().includes(search.toLowerCase()) ||
+        appt.sellerId?.email?.toLowerCase().includes(search.toLowerCase()) ||
+        appt.buyerId?.username?.toLowerCase().includes(search.toLowerCase()) ||
+        appt.sellerId?.username?.toLowerCase().includes(search.toLowerCase());
+      const matchesDateRange = 
+        (!startDate || new Date(appt.date) >= new Date(startDate)) &&
+        (!endDate || new Date(appt.date) <= new Date(endDate));
+      
+      return matchesStatus && matchesRole && matchesSearch && matchesDateRange;
+    });
+    
+    // Calculate pagination
+    const itemsPerPage = 10;
+    const totalPages = Math.ceil(filteredAppts.length / itemsPerPage);
+    setTotalPages(totalPages);
+    
+    // Get current page items
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentPageAppts = filteredAppts.slice(startIndex, endIndex);
+    
+    console.log(`Page ${currentPage} of ${totalPages}, showing ${currentPageAppts.length} appointments`);
+    setAppointments(currentPageAppts);
+  }, [allAppointments, currentPage, search, statusFilter, roleFilter, startDate, endDate, currentUser]);
 
   useEffect(() => {
     // Listen for permanent delete events
@@ -492,30 +525,8 @@ export default function MyAppointments() {
     }
   };
 
-  // Filter appointments by status, role, search, and date range
-  const filteredAppointments = appointments.filter((appt) => {
-    if (currentUser._id === appt.buyerId?._id?.toString() && appt.visibleToBuyer === false) return false;
-    if (currentUser._id === appt.sellerId?._id?.toString() && appt.visibleToSeller === false) return false;
-    const isOutdated = new Date(appt.date) < new Date() || (new Date(appt.date).toDateString() === new Date().toDateString() && appt.time && appt.time < new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-    if (statusFilter === 'outdated') {
-      return isOutdated;
-    }
-    const matchesStatus = statusFilter === "all" ? true : appt.status === statusFilter;
-    const matchesRole = roleFilter === "all" ? true : appt.role === roleFilter;
-    const matchesSearch =
-      appt.propertyName?.toLowerCase().includes(search.toLowerCase()) ||
-      appt.message?.toLowerCase().includes(search.toLowerCase()) ||
-      appt.buyerId?.username?.toLowerCase().includes(search.toLowerCase()) ||
-      appt.sellerId?.username?.toLowerCase().includes(search.toLowerCase());
-    let matchesDate = true;
-    if (startDate) {
-      matchesDate = matchesDate && new Date(appt.date) >= new Date(startDate);
-    }
-    if (endDate) {
-      matchesDate = matchesDate && new Date(appt.date) <= new Date(endDate);
-    }
-    return matchesStatus && matchesRole && matchesSearch && matchesDate;
-  });
+  // Filtering and pagination is now handled in useEffect
+  // Use appointments directly since they are already filtered and paginated
 
   // Defensive: ensure archivedAppointments is always an array
   const filteredArchivedAppointments = Array.isArray(archivedAppointments) ? archivedAppointments.filter((appt) => {
@@ -712,7 +723,7 @@ export default function MyAppointments() {
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
           <div>
             <h3 className="text-2xl md:text-3xl font-extrabold text-blue-700 drop-shadow">
-              {showArchived ? `Archived Appointments (${filteredArchivedAppointments.length})` : `My Appointments (${filteredAppointments.length})`}
+              {showArchived ? `Archived Appointments (${filteredArchivedAppointments.length})` : `My Appointments (${appointments.length})`}
             </h3>
             {!showArchived && (
               <p className="text-sm text-gray-600 mt-1">
@@ -872,7 +883,7 @@ export default function MyAppointments() {
           </div>
           )
         ) : (
-          filteredAppointments.length === 0 ? (
+          appointments.length === 0 ? (
             <div className="text-center text-gray-500 text-lg">No appointments found.</div>
         ) : (
           <div className="overflow-x-auto">
@@ -892,7 +903,7 @@ export default function MyAppointments() {
                 </tr>
               </thead>
               <tbody>
-                {filteredAppointments.map((appt) => (
+                {appointments.map((appt) => (
                   <AppointmentRow 
                     key={appt._id} 
                     appt={appt} 

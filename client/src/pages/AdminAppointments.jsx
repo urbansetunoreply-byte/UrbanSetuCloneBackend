@@ -22,6 +22,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export default function AdminAppointments() {
   const { currentUser } = useSelector((state) => state.user);
   const [appointments, setAppointments] = useState([]);
+  const [allAppointments, setAllAppointments] = useState([]);
   const [archivedAppointments, setArchivedAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
@@ -130,29 +131,19 @@ export default function AdminAppointments() {
   // Define fetch functions outside useEffect so they can be used in socket handlers
   const fetchAppointments = useCallback(async () => {
     try {
-      // Build query parameters for pagination and filters
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: '10'
-      });
-      
-      if (search) params.append('search', search);
-      if (statusFilter !== 'all') params.append('status', statusFilter);
-      if (startDate) params.append('startDate', startDate);
-      if (endDate) params.append('endDate', endDate);
-      
-      const { data } = await axios.get(`${API_BASE_URL}/api/bookings?${params}`, { 
+      // Fetch all appointments without pagination
+      const { data } = await axios.get(`${API_BASE_URL}/api/bookings`, { 
         withCredentials: true 
       });
-      console.log('Admin Appointments API response:', data);
-      setAppointments(data.appointments || data);
-      setTotalPages(data.totalPages || data.pages || Math.ceil((data.appointments || data).length / 10) || 1);
+      console.log('All admin appointments fetched:', data);
+      const allAppts = data.appointments || data;
+      setAllAppointments(allAppts);
       setLoading(false);
     } catch (err) {
       console.error("Failed to fetch appointments", err);
       setLoading(false);
     }
-  }, [currentPage, search, statusFilter, startDate, endDate]);
+  }, []);
 
   const fetchArchivedAppointments = useCallback(async () => {
     try {
@@ -410,7 +401,45 @@ export default function AdminAppointments() {
       socket.off('connect', handleConnect);
       socket.off('disconnect', handleDisconnect);
     };
-  }, [fetchAppointments, fetchArchivedAppointments, currentUser, currentPage, search, statusFilter, startDate, endDate]);
+  }, [fetchAppointments, fetchArchivedAppointments, currentUser]);
+
+  // Separate useEffect for pagination and filtering
+  useEffect(() => {
+    if (allAppointments.length === 0) return;
+    
+    // Apply filters
+    let filteredAppts = allAppointments.filter((appt) => {
+      const isOutdated = new Date(appt.date) < new Date() || (new Date(appt.date).toDateString() === new Date().toDateString() && appt.time && appt.time < new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      const matchesStatus =
+        statusFilter === "all" ? true :
+        statusFilter === "outdated" ? isOutdated :
+        appt.status === statusFilter;
+      const matchesSearch =
+        appt.buyerId?.email?.toLowerCase().includes(search.toLowerCase()) ||
+        appt.sellerId?.email?.toLowerCase().includes(search.toLowerCase()) ||
+        appt.buyerId?.username?.toLowerCase().includes(search.toLowerCase()) ||
+        appt.sellerId?.username?.toLowerCase().includes(search.toLowerCase()) ||
+        appt.propertyName?.toLowerCase().includes(search.toLowerCase());
+      const matchesDateRange = 
+        (!startDate || new Date(appt.date) >= new Date(startDate)) &&
+        (!endDate || new Date(appt.date) <= new Date(endDate));
+      
+      return matchesStatus && matchesSearch && matchesDateRange;
+    });
+    
+    // Calculate pagination
+    const itemsPerPage = 10;
+    const totalPages = Math.ceil(filteredAppts.length / itemsPerPage);
+    setTotalPages(totalPages);
+    
+    // Get current page items
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentPageAppts = filteredAppts.slice(startIndex, endIndex);
+    
+    console.log(`Admin Page ${currentPage} of ${totalPages}, showing ${currentPageAppts.length} appointments`);
+    setAppointments(currentPageAppts);
+  }, [allAppointments, currentPage, search, statusFilter, startDate, endDate]);
 
   // Lock background scroll when user modal is open
   useEffect(() => {
@@ -646,34 +675,12 @@ export default function AdminAppointments() {
     setUserLoading(false);
   };
 
-  // Filter and search logic
-  const filteredAppointments = useMemo(() => {
-    return appointments.filter((appt) => {
-      const isOutdated = new Date(appt.date) < new Date() || (new Date(appt.date).toDateString() === new Date().toDateString() && appt.time && appt.time < new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-      const matchesStatus =
-        statusFilter === "all" ? true :
-        statusFilter === "outdated" ? isOutdated :
-        appt.status === statusFilter;
-      const matchesRole = true; // role filter removed
-      const matchesSearch =
-        appt.buyerId?.email?.toLowerCase().includes(search.toLowerCase()) ||
-        appt.sellerId?.email?.toLowerCase().includes(search.toLowerCase()) ||
-        appt.propertyName?.toLowerCase().includes(search.toLowerCase()) ||
-        appt.buyerId?.username?.toLowerCase().includes(search.toLowerCase()) ||
-        appt.sellerId?.username?.toLowerCase().includes(search.toLowerCase());
-      let matchesDate = true;
-      if (startDate) {
-        matchesDate = matchesDate && new Date(appt.date) >= new Date(startDate);
-      }
-      if (endDate) {
-        matchesDate = matchesDate && new Date(appt.date) <= new Date(endDate);
-      }
-      return matchesStatus && matchesRole && matchesSearch && matchesDate;
-    }).map((appt) => ({
-      ...appt,
-      comments: updatedComments[appt._id] || appt.comments || []
-    }));
-  }, [appointments, statusFilter, search, startDate, endDate, updatedComments]);
+  // Filtering and pagination is now handled in useEffect
+  // Apply comments updates to current appointments
+  const appointmentsWithComments = appointments.map((appt) => ({
+    ...appt,
+    comments: updatedComments[appt._id] || appt.comments || []
+  }));
 
   const filteredArchivedAppointments = useMemo(() => {
     return archivedAppointments.filter((appt) => {
@@ -839,7 +846,7 @@ export default function AdminAppointments() {
           <h3 className="text-2xl sm:text-3xl font-extrabold text-blue-700 drop-shadow">
             {showArchived 
               ? `Archived Appointments (${filteredArchivedAppointments.length})`
-              : `All Appointments (${filteredAppointments.length})`}
+              : `All Appointments (${appointmentsWithComments.length})`}
           </h3>
           <div className="flex flex-row w-full sm:w-auto gap-2 sm:gap-4 justify-center sm:justify-end mt-2 sm:mt-0">
             <button
@@ -1007,7 +1014,7 @@ export default function AdminAppointments() {
             )
         ) : (
           // Active Appointments Section
-          filteredAppointments.length === 0 ? (
+          appointmentsWithComments.length === 0 ? (
             <div className="text-center text-gray-500 text-lg">No appointments found.</div>
           ) : (
             <div className="overflow-x-auto">
@@ -1027,7 +1034,7 @@ export default function AdminAppointments() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredAppointments.map((appt) => (
+                  {appointmentsWithComments.map((appt) => (
                     <AdminAppointmentRow
                       key={appt._id}
                       appt={appt}
