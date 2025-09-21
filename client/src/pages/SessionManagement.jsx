@@ -26,19 +26,23 @@ const SessionManagement = () => {
         role: filterRole
       });
 
-      const res = await fetch(`/api/session-management/admin/all-sessions?${params}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/all-sessions?${params}`, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
       });
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
       const data = await res.json();
       
       if (data.success) {
         setSessions(data.sessions);
         setTotalSessions(data.total);
       } else {
-        toast.error('Failed to fetch sessions');
+        toast.error(data.message || 'Failed to fetch sessions');
       }
     } catch (error) {
       console.error('Error fetching sessions:', error);
@@ -51,7 +55,7 @@ const SessionManagement = () => {
   const forceLogoutSession = async (sessionId, userId, reason) => {
     setRevokingSession(sessionId);
     try {
-      const res = await fetch('/api/session-management/admin/force-logout', {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/force-logout`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -63,6 +67,10 @@ const SessionManagement = () => {
           reason: reason || 'Admin action' 
         }),
       });
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
       const data = await res.json();
       
       if (data.success) {
@@ -88,7 +96,7 @@ const SessionManagement = () => {
     }
 
     try {
-      const res = await fetch('/api/session-management/admin/force-logout-all', {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/force-logout-all`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -99,6 +107,10 @@ const SessionManagement = () => {
           reason: reason || 'Admin action' 
         }),
       });
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
       const data = await res.json();
       
       if (data.success) {

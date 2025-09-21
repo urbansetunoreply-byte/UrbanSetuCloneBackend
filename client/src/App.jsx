@@ -98,7 +98,7 @@ const LoadingSpinner = () => (
   </div>
 );
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 // Utility function to normalize route based on role
 function normalizeRoute(path, role) {

@@ -29,19 +29,23 @@ const SessionAuditLogs = () => {
       if (filters.isSuspicious !== '') params.append('isSuspicious', filters.isSuspicious);
       if (filters.userId) params.append('userId', filters.userId);
 
-      const res = await fetch(`/api/session-management/admin/audit-logs?${params}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/audit-logs?${params}`, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
       });
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
       const data = await res.json();
       
       if (data.success) {
         setLogs(data.logs);
         setTotalLogs(data.total);
       } else {
-        toast.error('Failed to fetch audit logs');
+        toast.error(data.message || 'Failed to fetch audit logs');
       }
     } catch (error) {
       console.error('Error fetching audit logs:', error);

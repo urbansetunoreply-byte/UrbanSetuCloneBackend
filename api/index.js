@@ -431,6 +431,16 @@ app.use("/api/session-management", sessionManagementRouter);
 app.use("/api/fraud", fraudRouter);
 console.log('All API routes registered successfully');
 
+// Catch-all route for 404s - must be after all other routes
+app.use('*', (req, res) => {
+  res.status(404).json({ 
+    success: false, 
+    message: 'API endpoint not found',
+    path: req.originalUrl,
+    method: req.method
+  });
+});
+
 const startServer = () => {
   server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}!!!`);

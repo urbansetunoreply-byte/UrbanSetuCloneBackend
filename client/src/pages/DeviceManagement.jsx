@@ -14,18 +14,22 @@ const DeviceManagement = () => {
 
   const fetchSessions = async () => {
     try {
-      const res = await fetch('/api/session-management/my-sessions', {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/my-sessions`, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
       });
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
       const data = await res.json();
       
       if (data.success) {
         setSessions(data.sessions);
       } else {
-        toast.error('Failed to fetch sessions');
+        toast.error(data.message || 'Failed to fetch sessions');
       }
     } catch (error) {
       console.error('Error fetching sessions:', error);
@@ -38,7 +42,7 @@ const DeviceManagement = () => {
   const revokeSession = async (sessionId) => {
     setRevokingSession(sessionId);
     try {
-      const res = await fetch('/api/session-management/revoke-session', {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/revoke-session`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -46,6 +50,10 @@ const DeviceManagement = () => {
         },
         body: JSON.stringify({ sessionId }),
       });
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
       const data = await res.json();
       
       if (data.success) {
@@ -68,13 +76,17 @@ const DeviceManagement = () => {
     }
 
     try {
-      const res = await fetch('/api/session-management/revoke-all-sessions', {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/revoke-all-sessions`, {
         method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
       });
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
       const data = await res.json();
       
       if (data.success) {
