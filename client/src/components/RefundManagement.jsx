@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaUndo, FaDollarSign, FaExclamationTriangle, FaCheckCircle, FaTimes, FaSpinner, FaSearch, FaFilter, FaRedo, FaInfo } from 'react-icons/fa';
+import { FaUndo, FaDollarSign, FaRupeeSign, FaExclamationTriangle, FaCheckCircle, FaTimes, FaSpinner, FaSearch, FaFilter, FaRedo, FaInfo } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
 const RefundManagement = () => {
@@ -1045,7 +1045,11 @@ const RefundManagement = () => {
                   Refund Amount (Admin Override)
                 </label>
                 <div className="relative">
-                  <FaDollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  {selectedRefundRequest.paymentId?.currency === 'INR' ? (
+                    <FaRupeeSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  ) : (
+                    <FaDollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  )}
                   <input
                     type="number"
                     value={adminRefundAmount}
