@@ -8962,7 +8962,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
               <FaCreditCard /> Retry Payment
             </button>
           ) : paymentStatus && paymentStatus.status === 'completed' && 
-            ['rejected', 'cancelledByBuyer', 'cancelledBySeller', 'cancelledByAdmin'].includes(appointment.status) && 
+            ['rejected', 'cancelledBySeller', 'cancelledByAdmin'].includes(appointment.status) && 
             (!paymentStatus.refundAmount || paymentStatus.refundAmount === 0) ? (
             <>
               {!isRefundRequestApproved && !isRefundRequestPending && (
