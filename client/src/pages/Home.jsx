@@ -192,8 +192,8 @@ export default function Home() {
       {/* Statistics Section */}
       <div className={`max-w-6xl mx-auto px-4 py-12 transition-all duration-1000 ${isStatsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
         <div className="text-center mb-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Our Impact in Numbers</h2>
-          <p className="text-white/90 text-lg">Trusted by thousands of users worldwide</p>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4 drop-shadow-lg">Our Impact in Numbers</h2>
+          <p className="text-gray-700 text-lg font-medium">Trusted by thousands of users worldwide</p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div className="text-center bg-gradient-to-br from-blue-600/80 to-purple-600/80 backdrop-blur-md rounded-xl p-6 border border-blue-400/30 hover:from-blue-500/90 hover:to-purple-500/90 transition-all duration-300 hover:scale-105 shadow-xl">

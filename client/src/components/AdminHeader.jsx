@@ -421,7 +421,7 @@ function AdminNavLinks({ mobile = false, onNavigate, pendingCount, handleSignout
 
       {/* Movers removed; Services now includes movers section */}
       <Link to="/admin/services" onClick={onNavigate}>
-        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10'}`}>
+        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-3' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10'}`}>
           <FaTools className={`${mobile ? 'text-lg text-purple-600' : 'text-base text-purple-600'}`} />
           <span>Services</span>
         </li>
@@ -429,7 +429,7 @@ function AdminNavLinks({ mobile = false, onNavigate, pendingCount, handleSignout
       
       {currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin') && currentUser.adminApprovalStatus === 'approved' && (
         <Link to="/admin/requests" onClick={onNavigate}>
-          <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium relative' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base relative flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10'}`}>
+          <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium relative animate-mobile-item-in' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base relative flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10'}`}>
             <FaUserCheck className={`${mobile ? 'text-lg text-orange-500' : 'text-base text-orange-500'}`} /> 
             <span>Requests</span>
             {pendingCount > 0 && (
@@ -442,14 +442,14 @@ function AdminNavLinks({ mobile = false, onNavigate, pendingCount, handleSignout
       )}
       
       <Link to="/admin/about" onClick={onNavigate}>
-        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10'}`}>
+        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-1' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10'}`}>
           <FaInfoCircle className={`${mobile ? 'text-lg text-indigo-500' : 'text-base text-indigo-500'}`} /> 
           <span>About</span>
         </li>
       </Link>
       
       <Link to="/admin/explore" onClick={onNavigate}>
-        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10'}`}>
+        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-2' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10'}`}>
           <FaCompass className={`${mobile ? 'text-lg text-teal-500' : 'text-base text-teal-500'}`} /> 
           <span>Explore</span>
         </li>
@@ -460,10 +460,10 @@ function AdminNavLinks({ mobile = false, onNavigate, pendingCount, handleSignout
       </li>
       
       <li 
-        className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium cursor-pointer' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-sm cursor-pointer flex items-center gap-1'}`}
+        className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium cursor-pointer animate-mobile-item-in' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base cursor-pointer flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10'}`}
         onClick={() => { handleSignout(); if (onNavigate) onNavigate(); }}
       >
-        <FaSignOutAlt className={`${mobile ? 'text-lg text-red-500' : 'text-sm text-red-500'}`} /> 
+        <FaSignOutAlt className={`${mobile ? 'text-lg text-red-500' : 'text-base text-red-500'}`} /> 
         <span>Sign Out</span>
       </li>
       
