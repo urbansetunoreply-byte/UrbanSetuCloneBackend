@@ -102,8 +102,9 @@ export default function MyAppointments() {
           withCredentials: true
         });
         
+        console.log('Appointments API response:', data);
         setAppointments(data.appointments || data);
-        setTotalPages(data.totalPages || 1);
+        setTotalPages(data.totalPages || data.pages || Math.ceil((data.appointments || data).length / 10) || 1);
       } catch (err) {
         setError("Failed to load appointments. Please try again.");
       } finally {

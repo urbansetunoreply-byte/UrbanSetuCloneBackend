@@ -277,11 +277,11 @@ export default function Home() {
           />
         </div>
 
-        <div className={`relative z-10 transition-all duration-1000 ${isHeroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div className={`relative z-10 transition-all duration-1000 px-4 ${isHeroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           {currentUser && (
-            <div className="mb-6">
+            <div className="mb-4 sm:mb-6">
               <span
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/20 backdrop-blur-md shadow-lg text-lg font-semibold animate-bounce"
+                className="inline-flex items-center gap-2 px-4 py-2 sm:px-6 sm:py-3 rounded-full bg-white/20 backdrop-blur-md shadow-lg text-sm sm:text-lg font-semibold animate-bounce"
                 style={{ animationDelay: '0.5s' }}
               >
                 {(() => {
@@ -294,179 +294,179 @@ export default function Home() {
               </span>
             </div>
           )}
-          <h1 className="text-5xl md:text-6xl font-extrabold mb-4 animate-pulse">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-3 sm:mb-4 animate-pulse px-2">
             Find Your Dream Home
           </h1>
-          <p className="text-xl md:text-2xl mb-8 animate-pulse" style={{ animationDelay: '0.2s' }}>
+          <p className="text-lg sm:text-xl md:text-2xl mb-6 sm:mb-8 animate-pulse px-2" style={{ animationDelay: '0.2s' }}>
             Discover the best homes at unbeatable prices
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-4">
             <Link 
               to="/search" 
-              className="inline-flex items-center gap-2 bg-white text-blue-600 font-bold px-8 py-4 rounded-xl shadow-2xl hover:bg-gray-100 hover:scale-110 transition-all duration-300 animate-bounce"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-blue-600 font-bold px-6 py-3 sm:px-8 sm:py-4 rounded-xl shadow-2xl hover:bg-gray-100 hover:scale-105 transition-all duration-300 animate-bounce"
               style={{ animationDelay: '0.4s' }}
             >
-              <FaRocket className="text-xl" />
-              Start Exploring
+              <FaRocket className="text-lg sm:text-xl" />
+              <span className="text-sm sm:text-base">Start Exploring</span>
             </Link>
             <Link 
               to="/about" 
-              className="inline-flex items-center gap-2 bg-transparent border-2 border-white text-white font-bold px-8 py-4 rounded-xl hover:bg-white hover:text-blue-600 transition-all duration-300 animate-bounce"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-transparent border-2 border-white text-white font-bold px-6 py-3 sm:px-8 sm:py-4 rounded-xl hover:bg-white hover:text-blue-600 transition-all duration-300 animate-bounce"
               style={{ animationDelay: '0.6s' }}
             >
-              <FaInfoCircle className="text-xl" />
-              Learn More
+              <FaInfoCircle className="text-lg sm:text-xl" />
+              <span className="text-sm sm:text-base">Learn More</span>
             </Link>
           </div>
         </div>
       </div>
 
       {/* Statistics Section */}
-      <div className={`max-w-6xl mx-auto px-4 py-12 transition-all duration-1000 ${isStatsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-        <div className="text-center mb-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4 drop-shadow-lg">Our Impact in Numbers</h2>
-          <p className="text-gray-700 text-lg font-medium">Trusted by thousands of users worldwide</p>
+      <div className={`max-w-6xl mx-auto px-4 py-8 sm:py-12 transition-all duration-1000 ${isStatsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div className="text-center mb-6 sm:mb-8">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-3 sm:mb-4 drop-shadow-lg">Our Impact in Numbers</h2>
+          <p className="text-gray-700 text-base sm:text-lg font-medium">Trusted by thousands of users worldwide</p>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div className="text-center bg-gradient-to-br from-blue-600/80 to-purple-600/80 backdrop-blur-md rounded-xl p-6 border border-blue-400/30 hover:from-blue-500/90 hover:to-purple-500/90 transition-all duration-300 hover:scale-105 shadow-xl">
-            <FaHome className="text-4xl text-yellow-300 mx-auto mb-4 drop-shadow-lg" />
-            <div className="text-3xl font-bold text-white mb-2 drop-shadow-lg">{stats.properties.toLocaleString()}+</div>
-            <div className="text-white text-base font-semibold">Properties</div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+          <div className="text-center bg-gradient-to-br from-blue-600/80 to-purple-600/80 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-blue-400/30 hover:from-blue-500/90 hover:to-purple-500/90 transition-all duration-300 hover:scale-105 shadow-xl">
+            <FaHome className="text-2xl sm:text-4xl text-yellow-300 mx-auto mb-2 sm:mb-4 drop-shadow-lg" />
+            <div className="text-xl sm:text-3xl font-bold text-white mb-1 sm:mb-2 drop-shadow-lg">{stats.properties.toLocaleString()}+</div>
+            <div className="text-white text-sm sm:text-base font-semibold">Properties</div>
           </div>
-          <div className="text-center bg-gradient-to-br from-green-600/80 to-teal-600/80 backdrop-blur-md rounded-xl p-6 border border-green-400/30 hover:from-green-500/90 hover:to-teal-500/90 transition-all duration-300 hover:scale-105 shadow-xl">
-            <FaUsers className="text-4xl text-blue-300 mx-auto mb-4 drop-shadow-lg" />
-            <div className="text-3xl font-bold text-white mb-2 drop-shadow-lg">{stats.users.toLocaleString()}+</div>
-            <div className="text-white text-base font-semibold">Happy Users</div>
+          <div className="text-center bg-gradient-to-br from-green-600/80 to-teal-600/80 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-green-400/30 hover:from-green-500/90 hover:to-teal-500/90 transition-all duration-300 hover:scale-105 shadow-xl">
+            <FaUsers className="text-2xl sm:text-4xl text-blue-300 mx-auto mb-2 sm:mb-4 drop-shadow-lg" />
+            <div className="text-xl sm:text-3xl font-bold text-white mb-1 sm:mb-2 drop-shadow-lg">{stats.users.toLocaleString()}+</div>
+            <div className="text-white text-sm sm:text-base font-semibold">Happy Users</div>
           </div>
-          <div className="text-center bg-gradient-to-br from-purple-600/80 to-pink-600/80 backdrop-blur-md rounded-xl p-6 border border-purple-400/30 hover:from-purple-500/90 hover:to-pink-500/90 transition-all duration-300 hover:scale-105 shadow-xl">
-            <FaChartLine className="text-4xl text-green-300 mx-auto mb-4 drop-shadow-lg" />
-            <div className="text-3xl font-bold text-white mb-2 drop-shadow-lg">{stats.transactions.toLocaleString()}+</div>
-            <div className="text-white text-base font-semibold">Transactions</div>
+          <div className="text-center bg-gradient-to-br from-purple-600/80 to-pink-600/80 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-purple-400/30 hover:from-purple-500/90 hover:to-pink-500/90 transition-all duration-300 hover:scale-105 shadow-xl">
+            <FaChartLine className="text-2xl sm:text-4xl text-green-300 mx-auto mb-2 sm:mb-4 drop-shadow-lg" />
+            <div className="text-xl sm:text-3xl font-bold text-white mb-1 sm:mb-2 drop-shadow-lg">{stats.transactions.toLocaleString()}+</div>
+            <div className="text-white text-sm sm:text-base font-semibold">Transactions</div>
           </div>
-          <div className="text-center bg-gradient-to-br from-orange-600/80 to-red-600/80 backdrop-blur-md rounded-xl p-6 border border-orange-400/30 hover:from-orange-500/90 hover:to-red-500/90 transition-all duration-300 hover:scale-105 shadow-xl">
-            <FaStar className="text-4xl text-yellow-300 mx-auto mb-4 drop-shadow-lg" />
-            <div className="text-3xl font-bold text-white mb-2 drop-shadow-lg">{stats.satisfaction}%</div>
-            <div className="text-white text-base font-semibold">Satisfaction</div>
+          <div className="text-center bg-gradient-to-br from-orange-600/80 to-red-600/80 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-orange-400/30 hover:from-orange-500/90 hover:to-red-500/90 transition-all duration-300 hover:scale-105 shadow-xl">
+            <FaStar className="text-2xl sm:text-4xl text-yellow-300 mx-auto mb-2 sm:mb-4 drop-shadow-lg" />
+            <div className="text-xl sm:text-3xl font-bold text-white mb-1 sm:mb-2 drop-shadow-lg">{stats.satisfaction}%</div>
+            <div className="text-white text-sm sm:text-base font-semibold">Satisfaction</div>
           </div>
         </div>
       </div>
 
       {/* Features Showcase */}
-      <div className="max-w-6xl mx-auto px-4 py-16" data-section="features">
-        <div className={`text-center mb-12 transition-all duration-1000 ${isFeaturesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4 animate-pulse">Why Choose UrbanSetu?</h2>
-          <p className="text-gray-600 text-lg animate-pulse" style={{ animationDelay: '0.2s' }}>Discover the features that make us the preferred choice for real estate</p>
+      <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16" data-section="features">
+        <div className={`text-center mb-8 sm:mb-12 transition-all duration-1000 ${isFeaturesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-3 sm:mb-4 animate-pulse">Why Choose UrbanSetu?</h2>
+          <p className="text-gray-600 text-base sm:text-lg animate-pulse px-2" style={{ animationDelay: '0.2s' }}>Discover the features that make us the preferred choice for real estate</p>
         </div>
         
-        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 transition-all duration-1000 ${isFeaturesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 animate-spin" style={{ animationDuration: '3s' }}>
-              <FaSearch className="text-2xl text-blue-600" />
+        <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 transition-all duration-1000 ${isFeaturesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4 animate-spin" style={{ animationDuration: '3s' }}>
+              <FaSearch className="text-lg sm:text-2xl text-blue-600" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">Smart Search</h3>
-            <p className="text-gray-600">AI-powered search with advanced filters to find your perfect property</p>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Smart Search</h3>
+            <p className="text-gray-600 text-sm sm:text-base">AI-powered search with advanced filters to find your perfect property</p>
           </div>
           
-          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4 animate-bounce">
-              <FaShieldAlt className="text-2xl text-green-600" />
+          <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4 animate-bounce">
+              <FaShieldAlt className="text-lg sm:text-2xl text-green-600" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">Secure Transactions</h3>
-            <p className="text-gray-600">Bank-level security for all your real estate transactions</p>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Secure Transactions</h3>
+            <p className="text-gray-600 text-sm sm:text-base">Bank-level security for all your real estate transactions</p>
           </div>
           
-          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4 animate-pulse">
-              <FaAward className="text-2xl text-purple-600" />
+          <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4 animate-pulse">
+              <FaAward className="text-lg sm:text-2xl text-purple-600" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">Verified Properties</h3>
-            <p className="text-gray-600">All properties are verified and quality-checked by our experts</p>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Verified Properties</h3>
+            <p className="text-gray-600 text-sm sm:text-base">All properties are verified and quality-checked by our experts</p>
           </div>
           
-          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4 animate-ping">
-              <FaRocket className="text-2xl text-orange-600" />
+          <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4 animate-ping">
+              <FaRocket className="text-lg sm:text-2xl text-orange-600" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">Fast Processing</h3>
-            <p className="text-gray-600">Quick approval and processing for all your real estate needs</p>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Fast Processing</h3>
+            <p className="text-gray-600 text-sm sm:text-base">Quick approval and processing for all your real estate needs</p>
           </div>
           
-          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
-            <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center mb-4 animate-pulse">
-              <FaHeart className="text-2xl text-teal-600" />
+          <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-teal-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4 animate-pulse">
+              <FaHeart className="text-lg sm:text-2xl text-teal-600" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">24/7 Support</h3>
-            <p className="text-gray-600">Round-the-clock customer support for all your queries</p>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">24/7 Support</h3>
+            <p className="text-gray-600 text-sm sm:text-base">Round-the-clock customer support for all your queries</p>
           </div>
           
-          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
-            <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mb-4 animate-spin" style={{ animationDuration: '4s' }}>
-              <FaGem className="text-2xl text-pink-600" />
+          <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-pink-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4 animate-spin" style={{ animationDuration: '4s' }}>
+              <FaGem className="text-lg sm:text-2xl text-pink-600" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">Premium Experience</h3>
-            <p className="text-gray-600">Luxury real estate experience with exclusive properties</p>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Premium Experience</h3>
+            <p className="text-gray-600 text-sm sm:text-base">Luxury real estate experience with exclusive properties</p>
           </div>
         </div>
       </div>
 
       {/* Testimonials Section */}
-      <div className="max-w-6xl mx-auto px-4 py-16 bg-gradient-to-r from-blue-50 to-purple-50" data-section="testimonials">
-        <div className={`text-center mb-12 transition-all duration-1000 ${isTestimonialsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4 animate-pulse">What Our Users Say</h2>
-          <p className="text-gray-600 text-lg animate-pulse" style={{ animationDelay: '0.2s' }}>Real stories from satisfied customers</p>
+      <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16 bg-gradient-to-r from-blue-50 to-purple-50" data-section="testimonials">
+        <div className={`text-center mb-8 sm:mb-12 transition-all duration-1000 ${isTestimonialsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-3 sm:mb-4 animate-pulse">What Our Users Say</h2>
+          <p className="text-gray-600 text-base sm:text-lg animate-pulse px-2" style={{ animationDelay: '0.2s' }}>Real stories from satisfied customers</p>
         </div>
         
-        <div className={`grid grid-cols-1 md:grid-cols-3 gap-8 transition-all duration-1000 ${isTestimonialsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-            <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4 animate-spin" style={{ animationDuration: '3s' }}>
-                <FaQuoteLeft className="text-blue-600" />
+        <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 transition-all duration-1000 ${isTestimonialsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+            <div className="flex items-center mb-3 sm:mb-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-full flex items-center justify-center mr-3 sm:mr-4 animate-spin" style={{ animationDuration: '3s' }}>
+                <FaQuoteLeft className="text-blue-600 text-sm sm:text-base" />
               </div>
               <div>
-                <h4 className="font-semibold text-gray-800">Sarah Johnson</h4>
-                <p className="text-gray-600 text-sm">Property Buyer</p>
+                <h4 className="font-semibold text-gray-800 text-sm sm:text-base">Sarah Johnson</h4>
+                <p className="text-gray-600 text-xs sm:text-sm">Property Buyer</p>
               </div>
             </div>
-            <p className="text-gray-700 italic">"UrbanSetu made finding my dream home so easy! The AI recommendations were spot-on and saved me weeks of searching."</p>
-            <div className="flex items-center mt-4">
+            <p className="text-gray-700 italic text-sm sm:text-base">"UrbanSetu made finding my dream home so easy! The AI recommendations were spot-on and saved me weeks of searching."</p>
+            <div className="flex items-center mt-3 sm:mt-4">
               {[...Array(5)].map((_, i) => (
-                <FaStar key={i} className="text-yellow-400 text-sm animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />
+                <FaStar key={i} className="text-yellow-400 text-xs sm:text-sm animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />
               ))}
             </div>
           </div>
           
-          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4 animate-bounce">
-                <FaQuoteLeft className="text-green-600" />
+          <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <div className="flex items-center mb-3 sm:mb-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center mr-3 sm:mr-4 animate-bounce">
+                <FaQuoteLeft className="text-green-600 text-sm sm:text-base" />
               </div>
               <div>
-                <h4 className="font-semibold text-gray-800">Michael Chen</h4>
-                <p className="text-gray-600 text-sm">Real Estate Agent</p>
+                <h4 className="font-semibold text-gray-800 text-sm sm:text-base">Michael Chen</h4>
+                <p className="text-gray-600 text-xs sm:text-sm">Real Estate Agent</p>
               </div>
             </div>
-            <p className="text-gray-700 italic">"The platform's analytics and tools have revolutionized how I manage my listings. My sales have increased by 40%!"</p>
-            <div className="flex items-center mt-4">
+            <p className="text-gray-700 italic text-sm sm:text-base">"The platform's analytics and tools have revolutionized how I manage my listings. My sales have increased by 40%!"</p>
+            <div className="flex items-center mt-3 sm:mt-4">
               {[...Array(5)].map((_, i) => (
-                <FaStar key={i} className="text-yellow-400 text-sm animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />
+                <FaStar key={i} className="text-yellow-400 text-xs sm:text-sm animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />
               ))}
             </div>
           </div>
           
-          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-            <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mr-4 animate-ping">
-                <FaQuoteLeft className="text-purple-600" />
+          <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+            <div className="flex items-center mb-3 sm:mb-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-full flex items-center justify-center mr-3 sm:mr-4 animate-ping">
+                <FaQuoteLeft className="text-purple-600 text-sm sm:text-base" />
               </div>
               <div>
-                <h4 className="font-semibold text-gray-800">Emily Rodriguez</h4>
-                <p className="text-gray-600 text-sm">Property Investor</p>
+                <h4 className="font-semibold text-gray-800 text-sm sm:text-base">Emily Rodriguez</h4>
+                <p className="text-gray-600 text-xs sm:text-sm">Property Investor</p>
               </div>
             </div>
-            <p className="text-gray-700 italic">"The secure transaction system and verified properties give me complete confidence in every investment decision."</p>
-            <div className="flex items-center mt-4">
+            <p className="text-gray-700 italic text-sm sm:text-base">"The secure transaction system and verified properties give me complete confidence in every investment decision."</p>
+            <div className="flex items-center mt-3 sm:mt-4">
               {[...Array(5)].map((_, i) => (
-                <FaStar key={i} className="text-yellow-400 text-sm animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />
+                <FaStar key={i} className="text-yellow-400 text-xs sm:text-sm animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />
               ))}
             </div>
           </div>

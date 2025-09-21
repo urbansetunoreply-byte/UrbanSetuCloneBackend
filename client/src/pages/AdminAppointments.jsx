@@ -144,8 +144,9 @@ export default function AdminAppointments() {
       const { data } = await axios.get(`${API_BASE_URL}/api/bookings?${params}`, { 
         withCredentials: true 
       });
+      console.log('Admin Appointments API response:', data);
       setAppointments(data.appointments || data);
-      setTotalPages(data.totalPages || 1);
+      setTotalPages(data.totalPages || data.pages || Math.ceil((data.appointments || data).length / 10) || 1);
       setLoading(false);
     } catch (err) {
       console.error("Failed to fetch appointments", err);
