@@ -273,7 +273,7 @@ export default function Header() {
           </Link>
           
           {/* Desktop Navigation - Right Side */}
-          <nav className="hidden lg:flex items-center space-x-6">
+          <nav className="hidden lg:flex items-center space-x-2">
             <UserNavLinks />
           </nav>
 
@@ -407,7 +407,7 @@ function UserNavLinks({ mobile = false, onNavigate }) {
   
 
   return (
-    <ul className={`${mobile ? 'flex flex-col gap-1' : 'flex items-center space-x-4'}`}>
+    <ul className={`${mobile ? 'flex flex-col gap-1' : 'flex items-center space-x-1'}`}>
       {/* Desktop Search */}
       {!mobile && (
         <li className="flex items-center">
@@ -443,21 +443,21 @@ function UserNavLinks({ mobile = false, onNavigate }) {
       
       {/* Navigation Links */}
       <Link to={location.pathname.startsWith('/user') ? '/user' : '/'} onClick={onNavigate}>
-        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10'}`}>
+        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
           <FaHome className={`${mobile ? 'text-lg text-blue-500' : 'text-base text-blue-500'}`} /> 
           <span>Home</span>
         </li>
       </Link>
       
       <Link to="/about" onClick={onNavigate}>
-        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-1' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10'}`}>
+        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-1' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
           <FaInfoCircle className={`${mobile ? 'text-lg text-green-500' : 'text-base text-green-500'}`} /> 
           <span>About</span>
         </li>
       </Link>
       
       <Link to="/search" onClick={onNavigate}>
-        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-2' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10'}`}>
+        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-2' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
           <FaCompass className={`${mobile ? 'text-lg text-purple-500' : 'text-base text-purple-500'}`} /> 
           <span>Explore</span>
         </li>
@@ -468,13 +468,13 @@ function UserNavLinks({ mobile = false, onNavigate }) {
         <>
           {/* Movers removed */}
           <Link to="/user/services" onClick={onNavigate}>
-            <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-3' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10'}`}>
+            <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-3' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
               <FaTools className={`${mobile ? 'text-lg text-purple-600' : 'text-base text-purple-600'}`} />
               <span>Services</span>
             </li>
           </Link>
           <Link to="/user/route-planner" onClick={onNavigate}>
-            <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-3' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10'}`}>
+            <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-3' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
               <FaRoute className={`${mobile ? 'text-lg text-green-600' : 'text-base text-green-600'}`} />
               <span>{mobile ? 'Route Planner' : 'Route'}</span>
             </li>
@@ -485,28 +485,28 @@ function UserNavLinks({ mobile = false, onNavigate }) {
       {currentUser && (
         <>
           <Link to="/user/create-listing" onClick={onNavigate}>
-            <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10'}`}>
+            <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
               <FaPlus className={`${mobile ? 'text-lg text-orange-500' : 'text-base text-orange-500'}`} /> 
               <span>Add Property</span>
             </li>
           </Link>
           
           <Link to="/user/my-listings" onClick={onNavigate}>
-            <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-1' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10'}`}>
+            <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-1' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
               <FaList className={`${mobile ? 'text-lg text-indigo-500' : 'text-base text-indigo-500'}`} /> 
               <span>My Listings</span>
             </li>
           </Link>
           
           <Link to="/user/wishlist" onClick={onNavigate}>
-            <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-2' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10'}`}>
+            <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-2' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
               <FaHeart className={`${mobile ? 'text-lg text-red-500' : 'text-base text-red-500'}`} /> 
               <span>Wish List</span>
             </li>
           </Link>
           
           <Link to="/user/my-appointments" onClick={onNavigate}>
-            <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-3' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10'}`}>
+            <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-3' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
               <FaCalendarAlt className={`${mobile ? 'text-lg text-teal-500' : 'text-base text-teal-500'}`} /> 
               <span>My Appointments</span>
             </li>
@@ -521,7 +521,7 @@ function UserNavLinks({ mobile = false, onNavigate }) {
           </li>
           
           <li 
-            className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium cursor-pointer animate-mobile-item-in' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base cursor-pointer flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10'}`} 
+            className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium cursor-pointer animate-mobile-item-in' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base cursor-pointer flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`} 
             onClick={() => { handleSignout(); if (onNavigate) onNavigate(); }}
           >
             <FaSignOutAlt className={`${mobile ? 'text-lg text-red-500' : 'text-base text-red-500'}`} /> 
@@ -574,7 +574,7 @@ function UserNavLinks({ mobile = false, onNavigate }) {
         </>
       ) : (
         <Link to="/sign-in" onClick={onNavigate}>
-          <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10'}`}>
+          <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
             <FaUser className={`${mobile ? 'text-lg text-blue-500' : 'text-base text-blue-500'}`} /> 
             <span>Sign In</span>
           </li>
