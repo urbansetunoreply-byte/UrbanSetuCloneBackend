@@ -8924,6 +8924,20 @@ function PaymentStatusCell({ appointment, isBuyer }) {
                 </div>
               </div>
             )}
+            
+            {/* Show info icon for paid appointments */}
+            {(paymentStatus && paymentStatus.status === 'completed') || isAdminMarked ? (
+              <div className="relative group">
+                <FaInfoCircle 
+                  className="text-green-500 hover:text-green-700 cursor-pointer" 
+                  title="You have unlocked full features of chat. Enjoy seamlessly!"
+                />
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-green-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                  You have unlocked full features of chat. Enjoy seamlessly!
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-green-800"></div>
+                </div>
+              </div>
+            ) : null}
           </div>
           {paymentStatus && paymentStatus.refundAmount > 0 && (
             <div className="text-xs text-red-500">
