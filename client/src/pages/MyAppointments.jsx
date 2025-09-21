@@ -8986,33 +8986,80 @@ function PaymentStatusCell({ appointment, isBuyer }) {
                       Appeal submitted please wait for response...
                     </div>
                   ) : isRefundRequestRejected && !isCaseReopened ? (
-                    <button
-                      onClick={() => setShowAppealModal(true)}
-                      className="mt-1 inline-flex items-center gap-1 text-white bg-purple-600 hover:bg-purple-700 text-xs font-semibold px-3 py-1 rounded"
-                    >
-                      <FaUndo /> Appeal
-                    </button>
+                    <>
+                      {/* Info icon for appeal */}
+                      <div className="relative group mb-1">
+                        <FaInfoCircle 
+                          className="text-purple-500 hover:text-purple-700 cursor-pointer text-xs" 
+                          title="You can appeal your refund with valid proofs and reason"
+                        />
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-purple-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                          You can appeal your refund with valid proofs and reason
+                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-purple-800"></div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setShowAppealModal(true)}
+                        className="mt-1 inline-flex items-center gap-1 text-white bg-purple-600 hover:bg-purple-700 text-xs font-semibold px-3 py-1 rounded"
+                      >
+                        <FaUndo /> Appeal
+                      </button>
+                    </>
                   ) : (
-                    <button
-                      onClick={() => setShowRefundRequestModal(true)}
-                      className="mt-1 inline-flex items-center gap-1 text-white bg-orange-600 hover:bg-orange-700 text-xs font-semibold px-3 py-1 rounded"
-                    >
-                      <FaUndo /> {isCaseReopened ? 'Request Refund' : 'Request Refund'}
-                    </button>
+                    <>
+                      {/* Info icon for refund request */}
+                      <div className="relative group mb-1">
+                        <FaInfoCircle 
+                          className="text-orange-500 hover:text-orange-700 cursor-pointer text-xs" 
+                          title="You can raise a refund request now"
+                        />
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-orange-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                          You can raise a refund request now
+                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-orange-800"></div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setShowRefundRequestModal(true)}
+                        className="mt-1 inline-flex items-center gap-1 text-white bg-orange-600 hover:bg-orange-700 text-xs font-semibold px-3 py-1 rounded"
+                      >
+                        <FaUndo /> {isCaseReopened ? 'Request Refund' : 'Request Refund'}
+                      </button>
+                    </>
                   )}
                 </>
               )}
             </>
           ) : (
             paymentStatus && paymentStatus.receiptUrl ? (
-              <a
-                href={paymentStatus.receiptUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-1 inline-flex items-center gap-1 text-white bg-green-600 hover:bg-green-700 text-xs font-semibold px-3 py-1 rounded"
-              >
-                <FaDownload /> Receipt
-              </a>
+              <>
+                {/* Info icon for refunded status */}
+                {(paymentStatus.status === 'refunded' || paymentStatus.status === 'partially_refunded') && (
+                  <div className="relative group mb-1">
+                    <FaInfoCircle 
+                      className="text-red-500 hover:text-red-700 cursor-pointer text-xs" 
+                      title="Refund processed successfully"
+                    />
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-red-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                      <div>Refunded: {paymentStatus.currency === 'INR' ? '₹' : '$'}{paymentStatus.refundAmount.toLocaleString()}</div>
+                      {paymentStatus.refundedAt && (
+                        <div className="text-red-200">
+                          {new Date(paymentStatus.refundedAt).toLocaleDateString('en-GB')} {new Date(paymentStatus.refundedAt).toLocaleTimeString('en-GB')}
+                        </div>
+                      )}
+                      <div className="text-green-300">Refund Request Approved</div>
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-red-800"></div>
+                    </div>
+                  </div>
+                )}
+                <a
+                  href={paymentStatus.receiptUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-1 inline-flex items-center gap-1 text-white bg-green-600 hover:bg-green-700 text-xs font-semibold px-3 py-1 rounded"
+                >
+                  <FaDownload /> Receipt
+                </a>
+              </>
             ) : null
           )}
         </>
