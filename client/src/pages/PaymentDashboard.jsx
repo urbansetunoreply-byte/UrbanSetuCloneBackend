@@ -346,22 +346,22 @@ const PaymentDashboard = () => {
                         p.status === 'refunded' || p.status === 'partially_refunded' ? 'border-blue-200 bg-blue-50' :
                         'border-yellow-200 bg-yellow-50'
                       }`}>
-                        <div className="flex items-center justify-between">
-                          <div>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                          <div className="flex-1">
                             <div className="font-semibold text-gray-800">{p.appointmentId?.propertyName || 'Property Payment'}</div>
                             <div className="text-xs text-gray-500">Buyer: {p.userId?.username || 'N/A'}</div>
                           </div>
-                          <div className="text-right">
+                          <div className="flex flex-col sm:items-end gap-2">
                             <div className="text-lg font-bold">$ {Number(p.amount).toFixed(2)}</div>
                             {p.refundAmount > 0 && (
                               <div className="text-sm text-red-600 font-semibold">
                                 Refunded: $ {Number(p.refundAmount).toFixed(2)}
                               </div>
                             )}
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-gray-500 space-y-1">
                               {p.completedAt ? (
-                                <div>
-                                  <div>Paid: {new Date(p.completedAt).toLocaleDateString('en-GB')}</div>
+                                <div className="text-right">
+                                  <div className="font-medium">Paid: {new Date(p.completedAt).toLocaleDateString('en-GB')}</div>
                                   <div className="text-gray-400">{new Date(p.completedAt).toLocaleTimeString('en-GB')}</div>
                                   <div className="text-gray-300 mt-1">Created: {new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
                                   <div className="text-gray-300">{new Date(p.createdAt).toLocaleTimeString('en-GB')}</div>
@@ -373,8 +373,8 @@ const PaymentDashboard = () => {
                                   )}
                                 </div>
                               ) : (
-                                <div>
-                                  <div>Created: {new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
+                                <div className="text-right">
+                                  <div className="font-medium">Created: {new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
                                   <div className="text-gray-400">{new Date(p.createdAt).toLocaleTimeString('en-GB')}</div>
                                 </div>
                               )}
@@ -433,22 +433,22 @@ const PaymentDashboard = () => {
                         p.status === 'refunded' || p.status === 'partially_refunded' ? 'border-blue-200 bg-blue-50' :
                         'border-yellow-200 bg-yellow-50'
                       }`}>
-                        <div className="flex items-center justify-between">
-                          <div>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                          <div className="flex-1">
                             <div className="font-semibold text-gray-800">{p.appointmentId?.propertyName || 'Property Payment'}</div>
                             <div className="text-xs text-gray-500">Buyer: {p.userId?.username || 'N/A'}</div>
                           </div>
-                          <div className="text-right">
+                          <div className="flex flex-col sm:items-end gap-2">
                             <div className="text-lg font-bold">₹ {Number(p.amount).toFixed(2)}</div>
                             {p.refundAmount > 0 && (
                               <div className="text-sm text-red-600 font-semibold">
                                 Refunded: ₹ {Number(p.refundAmount).toFixed(2)}
                               </div>
                             )}
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-gray-500 space-y-1">
                               {p.completedAt ? (
-                                <div>
-                                  <div>Paid: {new Date(p.completedAt).toLocaleDateString('en-GB')}</div>
+                                <div className="text-right">
+                                  <div className="font-medium">Paid: {new Date(p.completedAt).toLocaleDateString('en-GB')}</div>
                                   <div className="text-gray-400">{new Date(p.completedAt).toLocaleTimeString('en-GB')}</div>
                                   <div className="text-gray-300 mt-1">Created: {new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
                                   <div className="text-gray-300">{new Date(p.createdAt).toLocaleTimeString('en-GB')}</div>
@@ -460,8 +460,8 @@ const PaymentDashboard = () => {
                                   )}
                                 </div>
                               ) : (
-                                <div>
-                                  <div>Created: {new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
+                                <div className="text-right">
+                                  <div className="font-medium">Created: {new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
                                   <div className="text-gray-400">{new Date(p.createdAt).toLocaleTimeString('en-GB')}</div>
                                 </div>
                               )}

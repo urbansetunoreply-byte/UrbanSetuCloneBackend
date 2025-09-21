@@ -852,6 +852,14 @@ const RefundManagement = () => {
                             <FaInfo className="text-xs" />
                             Info
                           </button>
+                        ) : request.status === 'processed' ? (
+                          <button
+                            onClick={() => handleInfoClick(request)}
+                            className="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-1"
+                          >
+                            <FaInfo className="text-xs" />
+                            Info
+                          </button>
                         ) : (
                           <span className="text-gray-400 text-sm">
                             {request.processedBy?.name || 'N/A'}

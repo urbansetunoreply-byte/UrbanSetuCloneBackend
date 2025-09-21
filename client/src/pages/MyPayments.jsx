@@ -149,10 +149,10 @@ const MyPayments = () => {
                   p.status === 'refunded' || p.status === 'partially_refunded' ? 'border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50' :
                   'border-yellow-200 bg-gradient-to-r from-yellow-50 to-amber-50'
                 } hover:shadow transition` }>
-                  <div className="flex items-center justify-between">
-                    <div>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="flex-1">
                       <div className="font-semibold text-gray-800">{p.appointmentId?.propertyName || 'Property Payment'}</div>
-                      <div className="text-xs text-gray-500 flex items-center gap-2">
+                      <div className="text-xs text-gray-500 flex flex-wrap items-center gap-2 mt-1">
                         <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">{p.gateway?.toUpperCase()}</span>
                         <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">{p.currency || 'USD'}</span>
                         <span>{p.currency === 'INR' ? '₹' : '$'}{Number(p.amount).toFixed(2)}</span>
@@ -163,11 +163,11 @@ const MyPayments = () => {
                         )}
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-xs text-gray-500">
+                    <div className="flex flex-col sm:items-end gap-2">
+                      <div className="text-xs text-gray-500 space-y-1">
                         {p.completedAt ? (
-                          <div>
-                            <div>Paid: {new Date(p.completedAt).toLocaleDateString('en-GB')}</div>
+                          <div className="text-right">
+                            <div className="font-medium">Paid: {new Date(p.completedAt).toLocaleDateString('en-GB')}</div>
                             <div className="text-gray-400">{new Date(p.completedAt).toLocaleTimeString('en-GB')}</div>
                             <div className="text-gray-300 mt-1">Created: {new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
                             <div className="text-gray-300">{new Date(p.createdAt).toLocaleTimeString('en-GB')}</div>
@@ -179,13 +179,13 @@ const MyPayments = () => {
                             )}
                           </div>
                         ) : (
-                          <div>
-                            <div>Created: {new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
+                          <div className="text-right">
+                            <div className="font-medium">Created: {new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
                             <div className="text-gray-400">{new Date(p.createdAt).toLocaleTimeString('en-GB')}</div>
                           </div>
                         )}
                       </div>
-                      <div className="mt-1">{statusBadge(p.status)}</div>
+                      <div>{statusBadge(p.status)}</div>
                     </div>
                   </div>
                   <div className="mt-2 text-xs text-gray-600">Payment ID: <span className="font-mono">{p.paymentId}</span></div>
@@ -195,7 +195,7 @@ const MyPayments = () => {
                         <FaDownload className="text-xs" /> Receipt
                       </button>
                     )}
-                    {p.status !== 'completed' && (
+                    {p.status !== 'completed' && p.status !== 'refunded' && p.status !== 'partially_refunded' && (
                       <button onClick={()=>payNow(p)} className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs flex items-center gap-1">
                         <FaCreditCard className="text-xs" /> Pay Now
                       </button>
