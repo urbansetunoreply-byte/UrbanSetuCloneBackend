@@ -8926,7 +8926,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
             )}
             
             {/* Show info icon for paid appointments */}
-            {(paymentStatus && paymentStatus.status === 'completed') || isAdminMarked ? (
+            {((paymentStatus && paymentStatus.status === 'completed') || isAdminMarked) && !isFrozenStatus ? (
               <div className="relative group">
                 <FaInfoCircle 
                   className="text-green-500 hover:text-green-700 cursor-pointer" 
