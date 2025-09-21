@@ -8939,26 +8939,17 @@ function PaymentStatusCell({ appointment, isBuyer }) {
               </div>
             ) : null}
           </div>
-          {paymentStatus && paymentStatus.refundAmount > 0 && (
-            <div className="text-xs text-red-500">
-              <div>Refunded: {paymentStatus.currency === 'INR' ? '₹' : '$'}{paymentStatus.refundAmount.toLocaleString()}</div>
-              {paymentStatus.refundedAt && (
-                <div className="text-red-400">
-                  {new Date(paymentStatus.refundedAt).toLocaleDateString('en-GB')} {new Date(paymentStatus.refundedAt).toLocaleTimeString('en-GB')}
-                </div>
-              )}
-            </div>
-          )}
-          {hasRefundRequest && (
-            <div className={`text-xs ${
-              isRefundRequestPending ? 'text-orange-600' : 
-              isRefundRequestRejected ? 'text-red-600' : 
-              isRefundRequestApproved ? 'text-green-600' : 
-              'text-gray-600'
-            }`}>
-              {isRefundRequestPending && 'Processing Refund Request...'}
-              {isRefundRequestApproved && 'Refund Request Approved'}
-              {isRefundRequestRejected && 'Refund Request Rejected'}
+          {/* Info icon for processing refund request */}
+          {hasRefundRequest && isRefundRequestPending && (
+            <div className="relative group mb-1">
+              <FaInfoCircle 
+                className="text-orange-500 hover:text-orange-700 cursor-pointer text-xs" 
+                title="Processing Refund Request..."
+              />
+              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-orange-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                Processing Refund Request...
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-orange-800"></div>
+              </div>
             </div>
           )}
           {isPending ? (
@@ -8987,6 +8978,17 @@ function PaymentStatusCell({ appointment, isBuyer }) {
                     </div>
                   ) : isRefundRequestRejected && !isCaseReopened ? (
                     <>
+                      {/* Info icon for refund request rejected */}
+                      <div className="relative group mb-1">
+                        <FaInfoCircle 
+                          className="text-red-500 hover:text-red-700 cursor-pointer text-xs" 
+                          title="Refund Request Rejected"
+                        />
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-red-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                          Refund Request Rejected
+                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-red-800"></div>
+                        </div>
+                      </div>
                       {/* Info icon for appeal */}
                       <div className="relative group mb-1">
                         <FaInfoCircle 
