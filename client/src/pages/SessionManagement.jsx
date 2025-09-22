@@ -7,6 +7,9 @@ const SessionManagement = () => {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [revokingSession, setRevokingSession] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [autoRefresh, setAutoRefresh] = useState(false);
+  const autoRefreshRef = useRef(null);
   const [filterRole, setFilterRole] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalSessions, setTotalSessions] = useState(0);
@@ -16,6 +19,7 @@ const SessionManagement = () => {
 
   useEffect(() => {
     fetchSessions();
+    return () => { if (autoRefreshRef.current) clearInterval(autoRefreshRef.current); };
   }, [filterRole, currentPage]);
 
   const fetchSessions = async () => {
@@ -26,11 +30,13 @@ const SessionManagement = () => {
         role: filterRole
       });
 
+      const controller = new AbortController();
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/all-sessions?${params}`, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
+        signal: controller.signal
       });
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
@@ -41,6 +47,7 @@ const SessionManagement = () => {
       if (data.success) {
         setSessions(data.sessions);
         setTotalSessions(data.total);
+        setLastUpdated(new Date());
       } else {
         toast.error(data.message || 'Failed to fetch sessions');
       }
@@ -50,6 +57,19 @@ const SessionManagement = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleAutoRefresh = () => {
+    setAutoRefresh((prev) => {
+      const next = !prev;
+      if (next) {
+        autoRefreshRef.current = setInterval(() => { fetchSessions(); }, 30000);
+      } else if (autoRefreshRef.current) {
+        clearInterval(autoRefreshRef.current);
+        autoRefreshRef.current = null;
+      }
+      return next;
+    });
   };
 
   const forceLogoutSession = async (sessionId, userId, reason) => {
@@ -207,10 +227,35 @@ const SessionManagement = () => {
                 </svg>
                 Refresh
               </button>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => { setLoading(true); fetchSessions(); }}
+                className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                title="Refresh sessions"
+              >
+                <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v6h6M20 20v-6h-6M20 8a8 8 0 10-3.879 6.804" />
+                </svg>
+                Refresh
+              </button>
+              <button
+                onClick={toggleAutoRefresh}
+                className={`inline-flex items-center px-3 py-2 border ${autoRefresh ? 'border-green-300 text-green-700' : 'border-gray-300 text-gray-700'} shadow-sm text-sm leading-4 font-medium rounded-md bg-white hover:bg-gray-50`}
+                title="Auto refresh every 30s"
+              >
+                <svg className={`h-4 w-4 mr-2 ${autoRefresh ? 'text-green-600' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {autoRefresh ? 'Auto: On' : 'Auto: Off'}
+              </button>
               <div className="text-right">
                 <p className="text-sm text-gray-500">Total Active Sessions</p>
                 <p className="text-2xl font-bold text-blue-600">{totalSessions}</p>
+                {lastUpdated && (
+                  <p className="text-xs text-gray-400 mt-1">Updated {lastUpdated.toLocaleTimeString()}</p>
+                )}
               </div>
+            </div>
             </div>
           </div>
         </div>
