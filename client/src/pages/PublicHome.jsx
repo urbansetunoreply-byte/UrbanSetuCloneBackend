@@ -147,7 +147,7 @@ export default function PublicHome() {
         const [propertiesRes, usersRes, transactionsRes] = await Promise.all([
           fetch(`${API_BASE_URL}/api/listing/count`),
           fetch(`${API_BASE_URL}/api/user/count`),
-          fetch(`${API_BASE_URL}/api/booking/count`)
+          fetch(`${API_BASE_URL}/api/bookings/count`)
         ]);
         
         const [propertiesData, usersData, transactionsData] = await Promise.all([
@@ -157,9 +157,9 @@ export default function PublicHome() {
         ]);
         
         setStats({
-          properties: propertiesData.count || 1250,
-          users: usersData.count || 5000,
-          transactions: transactionsData.count || 2500,
+          properties: Number(propertiesData.count) || 1250,
+          users: Number(usersData.count) || 5000,
+          transactions: Number(transactionsData.count) || 2500,
           satisfaction: 98
         });
         setIsStatsVisible(true);

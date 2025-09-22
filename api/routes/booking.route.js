@@ -1694,6 +1694,16 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// Count bookings
+router.get('/count', async (req, res) => {
+  try {
+    const total = await booking.countDocuments();
+    res.json({ count: total });
+  } catch (e) {
+    res.status(500).json({ message: 'Failed to count bookings' });
+  }
+});
+
 // PATCH: Persist per-user local chat clear for an appointment
 router.patch('/:id/chat/clear-local', verifyToken, async (req, res) => {
   try {

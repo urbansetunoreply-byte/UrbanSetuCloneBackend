@@ -58,6 +58,17 @@ const DeviceManagement = () => {
       
       if (data.success) {
         toast.success('Session revoked successfully');
+        // If the revoked session is current, trigger immediate logout via socket handler fallback
+        const currentSessionId = document.cookie.split('; ').find(r => r.startsWith('session_id='))?.split('=')[1];
+        if (currentSessionId && currentSessionId === sessionId) {
+          // Clear local auth and redirect
+          try { localStorage.removeItem('accessToken'); } catch (_) {}
+          document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
+          document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
+          document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
+          window.location.href = '/sign-in?error=session_revoked';
+          return;
+        }
         fetchSessions(); // Refresh the list
       } else {
         toast.error(data.message || 'Failed to revoke session');
@@ -91,7 +102,12 @@ const DeviceManagement = () => {
       
       if (data.success) {
         toast.success(data.message);
-        fetchSessions(); // Refresh the list
+        // After revoke-all, backend emits forceLogout to all user's sessions; ensure local logout too
+        try { localStorage.removeItem('accessToken'); } catch (_) {}
+        document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
+        document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
+        document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
+        window.location.href = '/sign-in?error=all_sessions_revoked';
       } else {
         toast.error(data.message || 'Failed to revoke sessions');
       }

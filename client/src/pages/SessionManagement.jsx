@@ -75,6 +75,16 @@ const SessionManagement = () => {
       
       if (data.success) {
         toast.success('Session force logged out successfully');
+        // If the admin is forcing logout of their own current session, ensure local logout
+        const currentSessionId = document.cookie.split('; ').find(r => r.startsWith('session_id='))?.split('=')[1];
+        if (currentSessionId && currentSessionId === sessionId) {
+          try { localStorage.removeItem('accessToken'); } catch (_) {}
+          document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
+          document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
+          document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
+          window.location.href = '/sign-in?error=forced_logout';
+          return;
+        }
         fetchSessions(); // Refresh the list
       } else {
         toast.error(data.message || 'Failed to force logout session');

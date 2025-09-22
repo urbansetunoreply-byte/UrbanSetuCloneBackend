@@ -118,4 +118,14 @@ router.post("/report/:listingId",verifyToken,async (req, res, next) => {
 router.get("/get/:id",getListing)
 router.get("/get",getListings)
 
+// Count listings
+router.get('/count', async (req, res) => {
+  try {
+    const total = await Listing.countDocuments();
+    res.json({ count: total });
+  } catch (e) {
+    res.status(500).json({ message: 'Failed to count listings' });
+  }
+})
+
 export default router

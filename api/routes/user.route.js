@@ -179,4 +179,14 @@ router.get("/validate-email/:email", verifyToken, getUserByEmailForAssignment);
 router.get("/check-email/:email", verifyToken, checkEmailAvailability);
 router.get("/check-mobile/:mobile", verifyToken, checkMobileAvailability);
 
+// Count users
+router.get('/count', async (req, res) => {
+  try {
+    const total = await User.countDocuments();
+    res.json({ count: total });
+  } catch (e) {
+    res.status(500).json({ message: 'Failed to count users' });
+  }
+});
+
 export default router
