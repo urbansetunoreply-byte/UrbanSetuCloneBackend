@@ -161,10 +161,9 @@ const SessionAuditLogs = () => {
                 {lastUpdated && (
                   <p className="text-xs text-gray-400 mt-1">Updated {lastUpdated.toLocaleTimeString()}</p>
                 )}
-              </div>
-            </div>
             </div>
           </div>
+        </div>
         </div>
 
         {/* Filters */}
