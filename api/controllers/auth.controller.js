@@ -40,28 +40,45 @@ export const SignUp=async (req,res,next)=>{
         return next(errorHandler(400, "Please verify your email address before creating an account"));
     }
 
-    // Validate email for fraud detection
+    // Validate email. If email is OTP-verified on the client, allow signup with basic format validation only.
     const ip = req.ip || req.connection.remoteAddress;
     const userAgent = req.get('User-Agent');
-    const emailValidation = validateEmail(email, {
-        logSecurity: true,
-        context: 'signup',
-        ip,
-        userAgent
-    });
 
-    if (!emailValidation.isValid) {
-        // Log fraud attempt for security monitoring
-        if (emailValidation.isFraud) {
-            logSecurityEvent('fraud_email_signup_attempt', {
-                email: emailLower,
-                reason: emailValidation.reason,
-                ip,
-                userAgent,
-                username
-            });
+    const basicEmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!basicEmailRegex.test(emailLower)) {
+        return next(errorHandler(400, 'Please enter a valid email address'));
+    }
+
+    // Only run fraud/disposable checks when email is not OTP-verified
+    if (!emailVerified) {
+        const emailValidation = validateEmail(email, {
+            logSecurity: true,
+            context: 'signup',
+            ip,
+            userAgent
+        });
+
+        if (!emailValidation.isValid) {
+            // Log fraud attempt for security monitoring
+            if (emailValidation.isFraud) {
+                logSecurityEvent('fraud_email_signup_attempt', {
+                    email: emailLower,
+                    reason: emailValidation.reason,
+                    ip,
+                    userAgent,
+                    username
+                });
+            }
+            return next(errorHandler(400, emailValidation.message));
         }
-        return next(errorHandler(400, emailValidation.message));
+    } else {
+        // Informational log that fraud checks were skipped due to verified email
+        logSecurityEvent('signup_email_verified_skip_fraud_checks', {
+            email: emailLower,
+            ip,
+            userAgent,
+            context: 'signup'
+        });
     }
     
     try {

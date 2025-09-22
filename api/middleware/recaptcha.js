@@ -143,8 +143,15 @@ export const validateRecaptcha = (options = {}) => {
                 : process.env.RECAPTCHA_SECRET_KEY;
             
             if (!secretKey) {
-                console.error(`Missing ${provider.toUpperCase()} secret key in environment variables`);
-                return next(errorHandler(500, 'reCAPTCHA configuration error'));
+                // In environments without configured secret, skip verification but log a warning
+                console.warn(`[reCAPTCHA] Missing ${provider.toUpperCase()} secret key. Skipping verification for ${req.path}`);
+                req.recaptchaVerification = {
+                    success: false,
+                    skipped: true,
+                    reason: 'missing_secret_key',
+                    provider
+                };
+                return next();
             }
             
             // Verify the token
