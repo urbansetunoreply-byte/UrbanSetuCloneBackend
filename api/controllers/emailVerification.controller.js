@@ -1,6 +1,6 @@
 import User from "../models/user.model.js";
 import DeletedAccount from "../models/deletedAccount.model.js";
-import { generateOTP, sendSignupOTPEmail, sendForgotPasswordOTPEmail, sendProfileEmailOTPEmail } from "../utils/emailService.js";
+import { generateOTP, sendSignupOTPEmail, sendForgotPasswordOTPEmail, sendProfileEmailOTPEmail, sendAccountDeletionOTPEmail, sendTransferRightsOTPEmail } from "../utils/emailService.js";
 import { errorHandler } from "../utils/error.js";
 import { logSecurityEvent } from "../middleware/security.js";
 import OtpTracking from "../models/otpTracking.model.js";
@@ -532,6 +532,84 @@ export const verifyOTP = async (req, res, next) => {
     next(error);
   }
 };
+// Send OTP for account deletion (must be authenticated)
+export const sendAccountDeletionOTP = async (req, res, next) => {
+  try {
+    if (!req.user || !req.user._id) {
+      return next(errorHandler(401, "Not authenticated"));
+    }
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return next(errorHandler(404, "User not found"));
+    }
+
+    const otp = generateOTP();
+    const emailLower = user.email.toLowerCase();
+    const expirationTime = Date.now() + 10 * 60 * 1000;
+    // Store OTP
+    otpStore.set(emailLower, {
+      otp,
+      expirationTime,
+      attempts: 0,
+      type: 'account_deletion',
+      userId: user._id
+    });
+
+    const emailResult = await sendAccountDeletionOTPEmail(emailLower, otp);
+    if (!emailResult.success) {
+      return res.status(500).json({ success: false, message: "Failed to send OTP. Please try again." });
+    }
+
+    logSecurityEvent('account_deletion_otp_request_successful', {
+      email: emailLower,
+      userId: user._id,
+      ip: req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
+    });
+
+    return res.status(200).json({ success: true, message: 'OTP sent successfully to your email' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Send OTP for transfer rights (root admin only)
+export const sendTransferRightsOTP = async (req, res, next) => {
+  try {
+    if (!req.user || (req.user.role !== 'rootadmin')) {
+      return next(errorHandler(403, "Only root admin can request this OTP"));
+    }
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return next(errorHandler(404, "User not found"));
+    }
+    const otp = generateOTP();
+    const emailLower = user.email.toLowerCase();
+    const expirationTime = Date.now() + 10 * 60 * 1000;
+    otpStore.set(emailLower, {
+      otp,
+      expirationTime,
+      attempts: 0,
+      type: 'transfer_rights',
+      userId: user._id
+    });
+
+    const emailResult = await sendTransferRightsOTPEmail(emailLower, otp);
+    if (!emailResult.success) {
+      return res.status(500).json({ success: false, message: "Failed to send OTP. Please try again." });
+    }
+
+    logSecurityEvent('transfer_rights_otp_request_successful', {
+      email: emailLower,
+      userId: user._id,
+      ip: req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
+    });
+
+    return res.status(200).json({ success: true, message: 'OTP sent successfully to your email' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 // Clean up expired OTPs periodically (optional)
 setInterval(() => {

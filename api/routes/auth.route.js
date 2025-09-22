@@ -5,7 +5,7 @@ import OtpTracking from '../models/otpTracking.model.js';
 import bcryptjs from 'bcryptjs';
 import User from '../models/user.model.js';
 import { verifyToken } from '../utils/verify.js';
-import { sendOTP, verifyOTP, sendForgotPasswordOTP, sendProfileEmailOTP } from '../controllers/emailVerification.controller.js';
+import { sendOTP, verifyOTP, sendForgotPasswordOTP, sendProfileEmailOTP, sendAccountDeletionOTP, sendTransferRightsOTP } from '../controllers/emailVerification.controller.js';
 import { signInRateLimit, signUpRateLimit, forgotPasswordRateLimit, otpRateLimit, otpVerifyRateLimit } from '../middleware/rateLimiter.js';
 import { generateCSRFToken, verifyCSRFToken, getCSRFToken } from '../middleware/csrf.js';
 import { bruteForceProtection, getFailedAttempts } from '../middleware/security.js';
@@ -36,6 +36,10 @@ router.post("/send-otp", otpRateLimit, verifyCSRFToken, ...otpRecaptchaMiddlewar
 router.post("/verify-otp", otpVerifyRateLimit, verifyCSRFToken, verifyOTP)
 router.post("/send-forgot-password-otp", otpRateLimit, verifyCSRFToken, ...otpRecaptchaMiddleware, sendForgotPasswordOTP)
 router.post("/send-profile-email-otp", otpRateLimit, verifyCSRFToken, ...otpRecaptchaMiddleware, sendProfileEmailOTP)
+// Account deletion OTP (must be authenticated)
+router.post("/send-account-deletion-otp", verifyToken, otpRateLimit, verifyCSRFToken, ...otpRecaptchaMiddleware, sendAccountDeletionOTP)
+// Transfer rights OTP (root admin only)
+router.post("/send-transfer-rights-otp", verifyToken, otpRateLimit, verifyCSRFToken, ...otpRecaptchaMiddleware, sendTransferRightsOTP)
 
 // OTP Login routes
 router.post("/send-login-otp", otpRateLimit, verifyCSRFToken, ...otpRecaptchaMiddleware, sendLoginOTP)
