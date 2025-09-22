@@ -67,6 +67,10 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
     if (urlStep === '2') {
       setStep(2);
     }
+    const emailFromQuery = searchParams.get('email');
+    if (emailFromQuery && !formData.email) {
+      setFormData(prev => ({ ...prev, email: emailFromQuery }));
+    }
   }, [location.search]);
 
   // Autofocus email field on initial page (step 1)

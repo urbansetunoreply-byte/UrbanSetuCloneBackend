@@ -228,6 +228,14 @@ export default function Header() {
                 <span>📞 +1 (555) 123-4567</span>
                 <span>✉️ info@urbansetu.com</span>
               </div>
+              {/* Mobile auth links when logged out */}
+              {!currentUser && (
+                <div className="md:hidden flex items-center gap-3">
+                  <Link to="/sign-up" className="text-white/80 hover:text-white text-sm" title="Sign Up">Sign Up</Link>
+                  <span className="text-white/40">|</span>
+                  <Link to="/sign-in" className="text-white/80 hover:text-white text-sm" title="Sign In">Sign In</Link>
+                </div>
+              )}
               {/* Mobile signout button for logged-in users */}
               {currentUser && (
                 <button

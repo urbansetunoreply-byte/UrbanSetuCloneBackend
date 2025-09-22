@@ -698,7 +698,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                         {/* Forgot Password Link */}
                                         <div className="text-right mt-2">
                                             <Link 
-                                                to="/forgot-password" 
+                                                to={`/forgot-password?email=${encodeURIComponent(formData.email)}`}
                                                 className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200"
                                             >
                                                 Forgot Password?
