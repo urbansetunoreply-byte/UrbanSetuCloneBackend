@@ -1055,7 +1055,7 @@ export default function Profile() {
     setDeleteOtpSent(false);
     try {
       setDeleteProcessing(true);
-      const sendRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-forgot-password-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email }) });
+      const sendRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-account-deletion-otp`, { method:'POST', body: JSON.stringify({}) });
       const sendData = await sendRes.json();
       if (!sendRes.ok || sendData.success === false) {
         setDeleteError(sendData.message || 'Failed to send OTP');
@@ -1071,7 +1071,7 @@ export default function Profile() {
 
   const resendDeleteOtp = async () => {
     try {
-      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-forgot-password-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email }) });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-account-deletion-otp`, { method:'POST', body: JSON.stringify({}) });
       const data = await res.json();
       return res.ok && data.success !== false;
     } catch (_) { return false; }
@@ -1167,9 +1167,9 @@ export default function Profile() {
         return;
       }
       // Send OTP to root admin email
-      const sendRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-forgot-password-otp`, {
+      const sendRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-transfer-rights-otp`, {
         method: 'POST',
-        body: JSON.stringify({ email: currentUser.email })
+        body: JSON.stringify({})
       });
       const sendData = await sendRes.json();
       if (!sendRes.ok || sendData.success === false) {
@@ -1189,7 +1189,7 @@ export default function Profile() {
 
   const resendTransferOtp = async () => {
     try {
-      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-forgot-password-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email }) });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-transfer-rights-otp`, { method:'POST', body: JSON.stringify({}) });
       const data = await res.json();
       return res.ok && data.success !== false;
     } catch (_) { return false; }
@@ -1343,9 +1343,9 @@ export default function Profile() {
         return;
       }
       // Step 2: send OTP
-      const sendRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-forgot-password-otp`, {
+      const sendRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-transfer-rights-otp`, {
         method: 'POST',
-        body: JSON.stringify({ email: currentUser.email })
+        body: JSON.stringify({})
       });
       const sendData = await sendRes.json();
       if (!sendRes.ok || sendData.success === false) {

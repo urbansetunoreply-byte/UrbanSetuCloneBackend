@@ -379,6 +379,9 @@ export const Google=async (req,res,next)=>{
             // Generate token pair
             const { accessToken, refreshToken } = generateTokenPair({ id: validUser._id });
             
+            // Create enhanced session for Google login as well
+            const session = await createEnhancedSession(validUser._id, req);
+            
             // Set secure cookies
             setSecureCookies(res, accessToken, refreshToken);
             // Expose session id
@@ -388,6 +391,34 @@ export const Google=async (req,res,next)=>{
                 sameSite: 'lax',
                 path: '/'
             });
+
+            // Send new login notifications
+            try {
+                const userAgent = req.get('User-Agent');
+                const device = getDeviceInfo(userAgent);
+                const location = getLocationFromIP(req.ip || req.connection.remoteAddress);
+                await sendNewLoginEmail(
+                    validUser.email,
+                    device,
+                    req.ip,
+                    location,
+                    new Date()
+                );
+                const suspiciousCheck = await checkSuspiciousLogin(validUser._id, req.ip, device);
+                if (suspiciousCheck.isSuspicious) {
+                    await sendSuspiciousLoginEmail(
+                        validUser.email,
+                        device,
+                        req.ip,
+                        location,
+                        suspiciousCheck.previousDevice,
+                        suspiciousCheck.previousIp,
+                        'Unknown Location'
+                    );
+                }
+            } catch (emailError) {
+                console.error('Google login notification error:', emailError);
+            }
             
             res.status(200).json({
                 _id: validUser._id,
@@ -402,6 +433,7 @@ export const Google=async (req,res,next)=>{
                 address: validUser.address,
                 gender: validUser.gender,
                 token: accessToken, // Keep for backward compatibility
+                sessionId: session.sessionId,
             });
         }
         else{
@@ -440,8 +472,34 @@ export const Google=async (req,res,next)=>{
             // Generate token pair
             const { accessToken, refreshToken } = generateTokenPair({ id: newUser._id });
             
+            // Create enhanced session for Google signup/login
+            const session = await createEnhancedSession(newUser._id, req);
+            
             // Set secure cookies
             setSecureCookies(res, accessToken, refreshToken);
+            // Expose session id
+            res.cookie('session_id', session.sessionId, {
+                httpOnly: false,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                path: '/'
+            });
+            
+            // Send new login email (first login)
+            try {
+                const userAgent = req.get('User-Agent');
+                const device = getDeviceInfo(userAgent);
+                const location = getLocationFromIP(req.ip || req.connection.remoteAddress);
+                await sendNewLoginEmail(
+                    newUser.email,
+                    device,
+                    req.ip,
+                    location,
+                    new Date()
+                );
+            } catch (emailError) {
+                console.error('Google signup login notification error:', emailError);
+            }
             
             res.status(200).json({
                 _id: newUser._id,
