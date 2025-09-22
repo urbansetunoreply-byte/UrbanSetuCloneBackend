@@ -166,11 +166,23 @@ export const getDeviceInfo = (userAgent) => {
 
 // Get location from IP (simplified - in production use a proper geo service)
 export const getLocationFromIP = (ip) => {
-    // This is a simplified version - in production, use a service like geoip-lite
-    if (ip === '127.0.0.1' || ip === '::1') {
-        return 'Local Development';
+    try {
+        // Normalize IPv6 localhost
+        if (!ip) return 'Unknown Location';
+        if (ip === '127.0.0.1' || ip === '::1') {
+            return 'Local Development';
+        }
+        // If behind proxy with x-forwarded-for, ip may be a CSV
+        const pureIp = String(ip).split(',')[0].trim();
+        // Lightweight mapping for common private ranges
+        if (pureIp.startsWith('10.') || pureIp.startsWith('192.168.') || pureIp.startsWith('172.16.') || pureIp.startsWith('172.31.')) {
+            return 'Private Network';
+        }
+        // Fallback to display IP only if no geo service configured
+        return `IP: ${pureIp}`;
+    } catch (_) {
+        return 'Unknown Location';
     }
-    return 'Unknown Location';
 };
 
 // Create a new session with enhanced tracking

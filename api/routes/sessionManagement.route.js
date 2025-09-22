@@ -5,7 +5,9 @@ import {
   revokeSessionFromDB, 
   revokeAllUserSessionsFromDB,
   logSessionAction,
-  updateSessionActivityInDB
+  updateSessionActivityInDB,
+  getDeviceInfo,
+  getLocationFromIP
 } from '../utils/sessionManager.js';
 import User from '../models/user.model.js';
 import SessionAuditLog from '../models/sessionAuditLog.model.js';
@@ -57,14 +59,22 @@ router.post('/revoke-session', verifyToken, async (req, res, next) => {
     // Revoke session
     await revokeSessionFromDB(userId, sessionId);
     
+  // Notify target session via socket to logout immediately
+  try {
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`session_${sessionId}`).emit('forceLogout', { reason: 'Session revoked by user' });
+    }
+  } catch (_) {}
+
     // Log action
     await logSessionAction(
       userId, 
       'logout', 
       sessionId, 
       req.ip, 
-      req.get('User-Agent') || 'Unknown',
-      'Unknown Location',
+      getDeviceInfo(req.get('User-Agent')),
+      getLocationFromIP(req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip),
       'User revoked session'
     );
     
@@ -80,14 +90,23 @@ router.post('/revoke-all-sessions', verifyToken, async (req, res, next) => {
     const userId = req.user._id;
     const sessionCount = await revokeAllUserSessionsFromDB(userId);
     
+  // Notify all (except possibly current) sessions to logout immediately
+  try {
+    const io = req.app.get('io');
+    if (io) {
+      // Broadcast to all of user's session rooms: we don't track rooms list, so emit by user room
+      io.to(userId.toString()).emit('forceLogout', { reason: 'All sessions revoked by user' });
+    }
+  } catch (_) {}
+
     // Log action
     await logSessionAction(
       userId, 
       'logout', 
       'all', 
       req.ip, 
-      req.get('User-Agent') || 'Unknown',
-      'Unknown Location',
+      getDeviceInfo(req.get('User-Agent')),
+      getLocationFromIP(req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip),
       `User revoked all ${sessionCount} sessions`
     );
     
@@ -181,6 +200,14 @@ router.post('/admin/force-logout', verifyToken, async (req, res, next) => {
     // Revoke session
     await revokeSessionFromDB(userId, sessionId);
     
+  // Notify target session for immediate logout
+  try {
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`session_${sessionId}`).emit('forceLogout', { reason });
+    }
+  } catch (_) {}
+
     // Send notification email
     await sendForcedLogoutEmail(
       targetUser.email, 
@@ -194,8 +221,8 @@ router.post('/admin/force-logout', verifyToken, async (req, res, next) => {
       'forced_logout', 
       sessionId, 
       req.ip, 
-      req.get('User-Agent') || 'Unknown',
-      'Unknown Location',
+      getDeviceInfo(req.get('User-Agent')),
+      getLocationFromIP(req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip),
       `Forced logout by ${req.user.username}: ${reason}`,
       false,
       null,
@@ -229,6 +256,14 @@ router.post('/admin/force-logout-all', verifyToken, async (req, res, next) => {
     
     const sessionCount = await revokeAllUserSessionsFromDB(userId);
     
+  // Notify all sessions of this user
+  try {
+    const io = req.app.get('io');
+    if (io) {
+      io.to(userId.toString()).emit('forceLogout', { reason });
+    }
+  } catch (_) {}
+
     // Send notification email
     await sendForcedLogoutEmail(
       targetUser.email, 
@@ -242,8 +277,8 @@ router.post('/admin/force-logout-all', verifyToken, async (req, res, next) => {
       'forced_logout', 
       'all', 
       req.ip, 
-      req.get('User-Agent') || 'Unknown',
-      'Unknown Location',
+      getDeviceInfo(req.get('User-Agent')),
+      getLocationFromIP(req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip),
       `Forced logout all sessions by ${req.user.username}: ${reason}`,
       false,
       null,
@@ -271,8 +306,17 @@ router.get('/admin/audit-logs', verifyToken, async (req, res, next) => {
     
     let filter = {};
     if (action) filter.action = action;
-    if (isSuspicious !== undefined) filter.isSuspicious = isSuspicious === 'true';
-    if (userId) filter.userId = userId;
+    if (isSuspicious !== undefined && isSuspicious !== '') filter.isSuspicious = isSuspicious === 'true';
+    if (userId) {
+      // Validate ObjectId-like string (24 hex chars) to avoid CastError on each keystroke
+      const isObjectIdLike = /^[a-fA-F0-9]{24}$/.test(String(userId));
+      if (isObjectIdLike) {
+        filter.userId = userId;
+      } else {
+        // If not a valid ObjectId yet, return empty result early to avoid DB error
+        return res.json({ success: true, logs: [], total: 0, page: parseInt(page), limit: parseInt(limit) });
+      }
+    }
     
     const logs = await SessionAuditLog.find(filter)
       .populate('userId', 'username email role')

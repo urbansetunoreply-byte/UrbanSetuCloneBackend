@@ -337,6 +337,13 @@ export const SignIn=async(req,res,next)=>{
         
         // Set secure cookies
         setSecureCookies(res, accessToken, refreshToken);
+        // Expose session id for client (non-httpOnly so client can identify current session)
+        res.cookie('session_id', session.sessionId, {
+            httpOnly: false,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/'
+        });
         
         res.status(200).json({
             _id: validUser._id,
@@ -351,6 +358,7 @@ export const SignIn=async(req,res,next)=>{
             address: validUser.address,
             gender: validUser.gender,
             token: accessToken, // Keep for backward compatibility
+            sessionId: session.sessionId
         });
     }
     catch(error){
@@ -373,6 +381,13 @@ export const Google=async (req,res,next)=>{
             
             // Set secure cookies
             setSecureCookies(res, accessToken, refreshToken);
+            // Expose session id
+            res.cookie('session_id', session.sessionId, {
+                httpOnly: false,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                path: '/'
+            });
             
             res.status(200).json({
                 _id: validUser._id,
@@ -442,6 +457,7 @@ export const Google=async (req,res,next)=>{
                 address: newUser.address,
                 gender: newUser.gender,
                 token: accessToken, // Keep for backward compatibility
+                sessionId: session.sessionId
             });
         }
     }

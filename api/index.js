@@ -209,6 +209,18 @@ io.use(async (socket, next) => {
 
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id, 'UserID:', socket.user?._id?.toString());
+  // Broadcast forced logout to a specific session
+  socket.on('forceLogoutSession', ({ userId, sessionId }) => {
+    // Server-originated event: admins will not emit this; backend emits to room directly below
+  });
+
+  // Allow server to emit to a particular session room for immediate logout
+  // Clients should join a room named by their session id after login
+  socket.on('registerSession', ({ sessionId }) => {
+    if (sessionId) {
+      socket.join(`session_${sessionId}`);
+    }
+  });
 
   // Track which user this socket belongs to
   let thisUserId = null;

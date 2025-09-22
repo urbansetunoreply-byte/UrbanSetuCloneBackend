@@ -18,9 +18,23 @@ export let socket = io(SOCKET_URL, {
   transports: ['websocket'],
 });
 
+// Current session id (from cookie or redux payload)
+function getSessionId() {
+  const match = document.cookie.split('; ').find(row => row.startsWith('session_id='));
+  return match ? decodeURIComponent(match.split('=')[1]) : null;
+}
+
+function registerSessionRoom() {
+  const sessionId = getSessionId();
+  if (sessionId && socket && socket.connected) {
+    socket.emit('registerSession', { sessionId });
+  }
+}
+
 // Add socket event listeners for debugging
 socket.on('connect', () => {
   console.log('[Socket] Connected to server');
+  registerSessionRoom();
 });
 
 socket.on('disconnect', () => {
@@ -29,6 +43,19 @@ socket.on('disconnect', () => {
 
 socket.on('connect_error', (error) => {
   console.log('[Socket] Connection error:', error);
+});
+
+// Listen for forced logout events
+socket.on('forceLogout', ({ reason }) => {
+  console.log('[Socket] Force logout received:', reason);
+  // Clear auth and reload to sign-in
+  try {
+    localStorage.removeItem('accessToken');
+  } catch (_) {}
+  document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
+  document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
+  document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
+  window.location.href = '/sign-in?error=forced_logout';
 });
 
 // Function to reconnect socket with new token (call after login/logout)
@@ -48,6 +75,7 @@ export function reconnectSocket() {
   // Add socket event listeners for debugging
   socket.on('connect', () => {
     console.log('[Socket] Reconnected to server');
+    registerSessionRoom();
   });
 
   socket.on('disconnect', () => {
@@ -56,5 +84,14 @@ export function reconnectSocket() {
 
   socket.on('connect_error', (error) => {
     console.log('[Socket] Connection error:', error);
+  });
+
+  socket.on('forceLogout', ({ reason }) => {
+    console.log('[Socket] Force logout received:', reason);
+    try { localStorage.removeItem('accessToken'); } catch (_) {}
+    document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
+    document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
+    document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
+    window.location.href = '/sign-in?error=forced_logout';
   });
 } 

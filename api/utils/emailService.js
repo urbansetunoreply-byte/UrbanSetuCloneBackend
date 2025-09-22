@@ -335,7 +335,7 @@ export const sendNewLoginEmail = async (email, device, ip, location, loginTime) 
             <div style="background-color: #f8fafc; padding: 15px; border-radius: 6px; margin: 15px 0;">
               <p style="margin: 5px 0; color: #374151;"><strong>Device:</strong> ${device}</p>
               <p style="margin: 5px 0; color: #374151;"><strong>IP Address:</strong> ${ip}</p>
-              <p style="margin: 5px 0; color: #374151;"><strong>Location:</strong> ${location}</p>
+              <p style="margin: 5px 0; color: #374151;"><strong>Location:</strong> ${location || 'Unknown'}</p>
               <p style="margin: 5px 0; color: #374151;"><strong>Login Time:</strong> ${new Date(loginTime).toLocaleString()}</p>
             </div>
             
@@ -387,7 +387,7 @@ export const sendSuspiciousLoginEmail = async (email, currentDevice, currentIp, 
               <h3 style="color: #dc2626; margin: 0 0 10px 0; font-size: 16px;">Current Login:</h3>
               <p style="margin: 5px 0; color: #374151;"><strong>Device:</strong> ${currentDevice}</p>
               <p style="margin: 5px 0; color: #374151;"><strong>IP Address:</strong> ${currentIp}</p>
-              <p style="margin: 5px 0; color: #374151;"><strong>Location:</strong> ${currentLocation}</p>
+              <p style="margin: 5px 0; color: #374151;"><strong>Location:</strong> ${currentLocation || 'Unknown'}</p>
             </div>
             
             <div style="background-color: #f3f4f6; padding: 15px; border-radius: 6px; margin: 15px 0;">
