@@ -694,7 +694,9 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
           const label = isVideo ? '🎬 Video' : '📄 Document';
           const rawLink = isVideo ? message.videoUrl : message.documentUrl;
           const name = message.documentName || (isVideo ? 'Video' : 'Document');
-          const link = buildCloudinaryDownloadLink(rawLink, name);
+          // For videos: keep original URL to allow preview on Cloudinary
+          // For documents: transform to force download with correct filename/type
+          const link = isVideo ? rawLink : buildCloudinaryDownloadLink(rawLink, name);
 
           const bubbleWidth = Math.min(120, pageWidth - (margin * 2) - 20);
 
