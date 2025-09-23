@@ -1151,7 +1151,8 @@ export default function Listing() {
                     </div>
                   </div>
                 </SwiperSlide>
-              )})();
+              )
+              })()}
             </Swiper>
           </div>
 
