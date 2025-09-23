@@ -687,7 +687,15 @@ export default function AdminEditListing() {
                     <p className="text-red-500 text-sm">{videoErrors[index]}</p>
                   )}
                   {url && (
-                    <video src={url} className="w-full h-24 object-cover rounded-lg" controls />
+                    <div className="w-full rounded-lg overflow-hidden bg-black">
+                      <div className="relative w-full" style={{ paddingTop: '56.25%' }}>
+                        <video
+                          src={url}
+                          className="absolute inset-0 w-full h-full object-contain bg-black"
+                          controls
+                        />
+                      </div>
+                    </div>
                   )}
                 </div>
               ))}

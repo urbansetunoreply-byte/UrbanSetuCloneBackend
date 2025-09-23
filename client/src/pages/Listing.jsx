@@ -1105,6 +1105,12 @@ export default function Listing() {
                           playsInline
                         />
                       )}
+                      {/* Media type badge */}
+                      <div className="absolute top-2 right-2">
+                        <span className="bg-black bg-opacity-60 text-white text-[10px] sm:text-xs px-2 py-1 rounded-md tracking-wide">
+                          {item.type === 'image' ? 'Image' : 'Video'}
+                        </span>
+                      </div>
                       {/* Expand Button Overlay */}
                       <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
                         <div className="bg-white bg-opacity-90 rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
