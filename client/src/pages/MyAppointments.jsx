@@ -1700,6 +1700,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const [videoCaption, setVideoCaption] = useState('');
   const [documentCaption, setDocumentCaption] = useState('');
   const [videoObjectURL, setVideoObjectURL] = useState(null);
+  const [selectedAudio, setSelectedAudio] = useState(null);
+  const [showAudioPreviewModal, setShowAudioPreviewModal] = useState(false);
+  const [audioCaption, setAudioCaption] = useState('');
+  const [audioObjectURL, setAudioObjectURL] = useState(null);
+  const audioCaptionRef = useRef(null);
 
   // Sound effects
   const { playMessageSent, playMessageReceived, playNotification, toggleMute, setVolume, isMuted } = useSoundEffects();
@@ -1717,6 +1722,20 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       setVideoObjectURL(null);
     }
   }, [selectedVideo]);
+
+  // Manage audio object URL
+  useEffect(() => {
+    if (selectedAudio) {
+      const url = URL.createObjectURL(selectedAudio);
+      setAudioObjectURL(url);
+      return () => {
+        URL.revokeObjectURL(url);
+        setAudioObjectURL(null);
+      };
+    } else {
+      setAudioObjectURL(null);
+    }
+  }, [selectedAudio]);
 
   // Close attachment panel on outside click
   useEffect(() => {
@@ -2015,6 +2034,63 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       setUploadProgress(0);
     } catch (e) {
       toast.error(e.response?.data?.message || 'Video upload failed');
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
+  // Audio upload + send
+  const sendAudioMessage = async (audioUrl, file, caption = '') => {
+    const tempId = `temp-${Date.now()}`;
+    const tempMessage = {
+      _id: tempId,
+      sender: currentUser._id,
+      senderEmail: currentUser.email,
+      message: caption || '',
+      audioUrl,
+      audioName: file.name,
+      audioMimeType: file.type || null,
+      type: 'audio',
+      status: 'sending',
+      timestamp: new Date().toISOString(),
+    };
+    setComments(prev => [...prev, tempMessage]);
+    try {
+      const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, {
+        message: caption || '',
+        audioUrl,
+        audioName: file.name,
+        audioMimeType: file.type || null,
+        type: 'audio'
+      }, { withCredentials: true });
+      setComments(data.comments || data.updated?.comments || data?.appointment?.comments || []);
+    } catch (err) {
+      toast.error('Failed to send audio');
+      setComments(prev => prev.filter(m => m._id !== tempId));
+    }
+  };
+
+  const handleSendSelectedAudio = async () => {
+    if (!selectedAudio) return;
+    try {
+      setUploadingFile(true);
+      const form = new FormData();
+      form.append('audio', selectedAudio);
+      const { data } = await axios.post(`${API_BASE_URL}/api/upload/audio`, form, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (evt) => {
+          const pct = Math.round((evt.loaded * 100) / Math.max(1, evt.total || selectedAudio.size));
+          setUploadProgress(pct);
+        }
+      });
+      await sendAudioMessage(data.audioUrl, selectedAudio, audioCaption);
+      setSelectedAudio(null);
+      setShowAudioPreviewModal(false);
+      setAudioCaption('');
+      setUploadProgress(0);
+    } catch (e) {
+      toast.error(e.response?.data?.message || 'Audio upload failed');
     } finally {
       setUploadingFile(false);
     }
@@ -5395,6 +5471,40 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                         Download Video
                                       </button>
                                     )}
+                                    {/* Download option for audio messages */}
+                                    {selectedMessageForHeaderOptions.audioUrl && (
+                                      <button
+                                        className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+                                        onClick={async () => { 
+                                          try {
+                                            const response = await fetch(selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
+                                            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                            const blob = await response.blob();
+                                            const blobUrl = window.URL.createObjectURL(blob);
+                                            const a = document.createElement('a');
+                                            a.href = blobUrl;
+                                            a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions._id || Date.now()}`;
+                                            document.body.appendChild(a);
+                                            a.click();
+                                            a.remove();
+                                            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                          } catch (error) {
+                                            const a = document.createElement('a');
+                                            a.href = selectedMessageForHeaderOptions.audioUrl;
+                                            a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions._id || Date.now()}`;
+                                            a.target = '_blank';
+                                            document.body.appendChild(a);
+                                            a.click();
+                                            a.remove();
+                                          }
+                                          setShowHeaderMoreMenu(false); 
+                                          setHeaderOptionsMessageId(null); 
+                                        }}
+                                      >
+                                        <FaDownload className="text-sm" />
+                                        Download Audio
+                                      </button>
+                                    )}
                                     <button
                                       className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                                       onClick={() => { showMessageInfo(selectedMessageForHeaderOptions); setShowHeaderMoreMenu(false); setHeaderOptionsMessageId(null); }}
@@ -6276,6 +6386,40 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                           </div>
                                         </div>
                                       )}
+                                      {/* Audio Message */}
+                                      {c.audioUrl && (
+                                        <div className="mb-2">
+                                          <div className="relative">
+                                            <audio
+                                              src={c.audioUrl}
+                                              className="w-full"
+                                              controls
+                                              onClick={(e) => e.stopPropagation()}
+                                            />
+                                            <div className="absolute top-2 right-2 flex gap-2">
+                                              <button
+                                                className="p-2 bg-white rounded-full shadow hover:bg-gray-100"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  const a = document.createElement('a');
+                                                  a.href = c.audioUrl;
+                                                  a.download = c.audioName || `audio-${c._id || Date.now()}`;
+                                                  a.target = '_blank';
+                                                  document.body.appendChild(a);
+                                                  a.click();
+                                                  document.body.removeChild(a);
+                                                }}
+                                                title="Download audio"
+                                              >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" /></svg>
+                                              </button>
+                                            </div>
+                                          </div>
+                                          {c.message && (
+                                            <div className="mt-2 text-sm text-gray-700 whitespace-pre-wrap break-words">{c.message}</div>
+                                          )}
+                                        </div>
+                                      )}
                                       {/* Document Message */}
                                       {c.documentUrl && (
                                         <div className="mb-2">
@@ -7125,6 +7269,41 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                               }}
                             />
                           </label>
+                          {/* Camera */}
+                          <button
+                            type="button"
+                            className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                            onClick={async () => {
+                              try {
+                                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                                // Create a hidden video element to capture a frame
+                                const videoEl = document.createElement('video');
+                                videoEl.autoplay = true;
+                                videoEl.srcObject = stream;
+                                await new Promise(r => setTimeout(r, 300));
+                                const canvas = document.createElement('canvas');
+                                canvas.width = 1280;
+                                canvas.height = 720;
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+                                stream.getTracks().forEach(t => t.stop());
+                                canvas.toBlob((blob) => {
+                                  if (!blob) return;
+                                  const file = new File([blob], `camera-${Date.now()}.jpg`, { type: 'image/jpeg' });
+                                  handleFileUpload([file]);
+                                }, 'image/jpeg', 0.92);
+                              } catch (err) {
+                                toast.error('Camera permission denied or not available');
+                              } finally {
+                                setShowAttachmentPanel(false);
+                              }
+                            }}
+                          >
+                            <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7a2 2 0 012-2h2l1-2h6l1 2h2a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
+                            </svg>
+                            Camera
+                          </button>
                           <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
                             <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -7167,6 +7346,32 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                   } else {
                                     setSelectedDocument(file);
                                     setShowDocumentPreviewModal(true);
+                                  }
+                                }
+                                e.target.value = '';
+                                setShowAttachmentPanel(false);
+                              }}
+                            />
+                          </label>
+                          {/* Audio */}
+                          <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                            <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 1a3 3 0 00-3 3v8a3 3 0 106 0V4a3 3 0 00-3-3z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 10v2a7 7 0 11-14 0v-2" />
+                            </svg>
+                            Audio
+                            <input
+                              type="file"
+                              accept="audio/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files && e.target.files[0];
+                                if (file) {
+                                  if (file.size > 5 * 1024 * 1024) {
+                                    toast.error('Maximum audio size is 5MB');
+                                  } else {
+                                    setSelectedAudio(file);
+                                    setShowAudioPreviewModal(true);
                                   }
                                 }
                                 e.target.value = '';
@@ -7549,6 +7754,84 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           )}
                         </div>
                       </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Audio Preview Modal */}
+                {showAudioPreviewModal && selectedAudio && (
+                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-lg font-medium text-gray-700">Audio Preview</span>
+                        <button
+                          onClick={() => { setSelectedAudio(null); setShowAudioPreviewModal(false); }}
+                          className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+                        >
+                          <FaTimes className="w-5 h-5" />
+                        </button>
+                      </div>
+                      <div className="mb-4">
+                        <audio controls className="w-full" src={audioObjectURL} />
+                      </div>
+                      <div className="relative mb-4">
+                        <div className="relative">
+                          <textarea
+                            ref={audioCaptionRef}
+                            placeholder={`Add a caption for ${selectedAudio.name}...`}
+                            value={audioCaption}
+                            onChange={(e) => setAudioCaption(e.target.value)}
+                            className="w-full p-3 pr-12 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            rows={2}
+                            maxLength={500}
+                          />
+                          <div className="absolute right-2 top-2">
+                            <EmojiButton
+                              onEmojiClick={(emoji) => {
+                                const textarea = audioCaptionRef.current;
+                                if (textarea) {
+                                  const start = textarea.selectionStart;
+                                  const end = textarea.selectionEnd;
+                                  const newValue = audioCaption.slice(0, start) + emoji + audioCaption.slice(end);
+                                  setAudioCaption(newValue);
+                                  setTimeout(() => {
+                                    textarea.focus();
+                                    textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+                                  }, 0);
+                                }
+                              }}
+                              inputRef={audioCaptionRef}
+                            />
+                          </div>
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1 text-right">
+                          {audioCaption.length}/500
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-gray-600 truncate flex-1 mr-4">{selectedAudio.name}</div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => { setSelectedAudio(null); setShowAudioPreviewModal(false); }}
+                            className="py-2 px-4 rounded-lg text-sm font-medium border hover:bg-gray-50"
+                          >Cancel</button>
+                          <button
+                            onClick={handleSendSelectedAudio}
+                            disabled={isChatSendBlocked}
+                            className={`py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+                              isChatSendBlocked ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'
+                            }`}
+                          >Send Audio</button>
+                        </div>
+                      </div>
+                      {uploadingFile && (
+                        <div className="mt-3">
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${uploadProgress}%` }} />
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1 text-right">{uploadProgress}%</div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

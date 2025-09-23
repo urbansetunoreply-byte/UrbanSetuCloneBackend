@@ -391,11 +391,13 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
     pdf.setFont('helvetica', 'normal');
     
     const imageCount = comments.filter(msg => msg.imageUrl && !msg.deleted).length;
+    const audioCount = comments.filter(msg => msg.audioUrl && !msg.deleted).length;
     const infoLines = [
       `Property: ${appointment.propertyName || 'N/A'}`,
       `Date & Time: ${new Date(appointment.date).toLocaleDateString()} at ${appointment.time || 'N/A'}`,
       `Participants: ${appointment.buyerId?.username || 'Unknown'} & ${appointment.sellerId?.username || 'Unknown'}`,
       `Export Type: ${includeMedia ? `With Media (${imageCount} images)` : 'Text Only'}`,
+      `Audio Clips: ${audioCount}`,
       `Generated: ${new Date().toLocaleString()}`
     ];
 
@@ -701,16 +703,18 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
 
           yPosition += 8;
         } 
-        // Handle video/doc placeholders with links
-        else if (message.videoUrl || message.documentUrl) {
+        // Handle video/doc/audio placeholders with links
+        else if (message.videoUrl || message.documentUrl || message.audioUrl) {
           checkPageBreak(28);
           const isVideo = !!message.videoUrl;
-          const label = isVideo ? '🎬 Video' : '📄 Document';
-          const rawLink = isVideo ? message.videoUrl : message.documentUrl;
-          const name = message.documentName || (isVideo ? 'Video' : 'Document');
-          // For videos: keep original URL to allow preview on Cloudinary
+          const isDocument = !!message.documentUrl && !isVideo;
+          const isAudio = !!message.audioUrl && !isVideo && !isDocument;
+          const label = isVideo ? '🎬 Video' : isDocument ? '📄 Document' : '🎧 Audio';
+          const rawLink = isVideo ? message.videoUrl : isDocument ? message.documentUrl : message.audioUrl;
+          const name = message.documentName || (isVideo ? 'Video' : isDocument ? 'Document' : 'Audio');
+          // For videos/audio: keep original URL to allow preview on Cloudinary
           // For documents: transform to force download with correct filename/type
-          const link = isVideo ? rawLink : buildCloudinaryDownloadLink(rawLink, name);
+          const link = (isVideo || isAudio) ? rawLink : buildCloudinaryDownloadLink(rawLink, name);
 
           const bubbleWidth = Math.min(120, pageWidth - (margin * 2) - 20);
 
