@@ -9,6 +9,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export default function AdminEditListing() {
   const [formData, setFormData] = useState({
     imageUrls: [],
+    videoUrls: [],
     name: "",
     description: "",
     propertyNumber: "",
@@ -34,6 +35,8 @@ export default function AdminEditListing() {
   const [loading, setLoading] = useState(false);
   const [imageErrors, setImageErrors] = useState({});
   const [uploadingImages, setUploadingImages] = useState({});
+  const [videoErrors, setVideoErrors] = useState({});
+  const [uploadingVideos, setUploadingVideos] = useState({});
   const { currentUser } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const params = useParams();
@@ -94,6 +97,15 @@ export default function AdminEditListing() {
     return hasImageExtension || url.includes('images') || url.includes('img') || isCloudinaryUrl;
   };
 
+  const validateVideoUrl = (url) => {
+    if (!url) return true;
+    try { new URL(url); } catch { return false; }
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.mkv'];
+    const hasVideoExtension = videoExtensions.some(ext => url.toLowerCase().includes(ext));
+    const isCloudinaryUrl = url.includes('cloudinary.com');
+    return hasVideoExtension || url.includes('video') || isCloudinaryUrl;
+  };
+
   const handleImageChange = (index, url) => {
     const newImageUrls = [...formData.imageUrls];
     newImageUrls[index] = url;
@@ -120,6 +132,19 @@ export default function AdminEditListing() {
     const newUploadingImages = { ...uploadingImages };
     delete newUploadingImages[index];
     setUploadingImages(newUploadingImages);
+  };
+
+  const onHandleRemoveVideo = (index) => {
+    setFormData({
+      ...formData,
+      videoUrls: formData.videoUrls.filter((_, i) => i !== index),
+    });
+    const newVideoErrors = { ...videoErrors };
+    delete newVideoErrors[index];
+    setVideoErrors(newVideoErrors);
+    const newUploadingVideos = { ...uploadingVideos };
+    delete newUploadingVideos[index];
+    setUploadingVideos(newUploadingVideos);
   };
 
   const handleFileUpload = async (index, file) => {
@@ -172,6 +197,60 @@ export default function AdminEditListing() {
       setImageErrors(prev => ({ ...prev, [index]: 'Upload failed. Please try again.' }));
     } finally {
       setUploadingImages(prev => ({ ...prev, [index]: false }));
+    }
+  };
+
+  const handleVideoUrlChange = (index, url) => {
+    const newVideoUrls = [...formData.videoUrls];
+    newVideoUrls[index] = url;
+    setFormData({ ...formData, videoUrls: newVideoUrls });
+    const newVideoErrors = { ...videoErrors };
+    if (url && !validateVideoUrl(url)) {
+      newVideoErrors[index] = 'Please enter a valid video URL';
+    } else {
+      delete newVideoErrors[index];
+    }
+    setVideoErrors(newVideoErrors);
+  };
+
+  const handleVideoUpload = async (index, file) => {
+    if (!file) return;
+    if (!file.type.startsWith('video/')) {
+      setVideoErrors(prev => ({ ...prev, [index]: 'Please select a video file' }));
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setVideoErrors(prev => ({ ...prev, [index]: 'File size must be less than 5MB' }));
+      return;
+    }
+    setUploadingVideos(prev => ({ ...prev, [index]: true }));
+    setVideoErrors(prev => ({ ...prev, [index]: '' }));
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append('video', file);
+      const res = await fetch(`${API_BASE_URL}/api/upload/video`, {
+        method: 'POST',
+        credentials: 'include',
+        body: uploadFormData,
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const newVideoUrls = [...formData.videoUrls];
+        newVideoUrls[index] = data.videoUrl;
+        setFormData(prev => ({ ...prev, videoUrls: newVideoUrls }));
+        setVideoErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[index];
+          return newErrors;
+        });
+      } else {
+        setVideoErrors(prev => ({ ...prev, [index]: data.message || 'Upload failed' }));
+      }
+    } catch (error) {
+      console.error('Video upload error:', error);
+      setVideoErrors(prev => ({ ...prev, [index]: 'Upload failed. Please try again.' }));
+    } finally {
+      setUploadingVideos(prev => ({ ...prev, [index]: false }));
     }
   };
 
@@ -552,6 +631,74 @@ export default function AdminEditListing() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Property Videos */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h4 className="font-semibold text-gray-800 mb-3">Property Videos</h4>
+            <p className="text-gray-600 text-sm mb-3">
+              Upload videos directly or add video URLs. Supported formats: MP4, WebM, OGG, MOV, MKV (max 5MB per video)
+            </p>
+            <div className="space-y-3">
+              {formData.videoUrls.map((url, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      placeholder={`Video URL ${index + 1} (e.g., https://example.com/video.mp4)`}
+                      value={url || ""}
+                      onChange={(e) => handleVideoUrlChange(index, e.target.value)}
+                      className={`flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        videoErrors[index] ? 'border-red-500' : ''
+                      }`}
+                    />
+                    <label className={`p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all flex items-center gap-2 ${uploadingVideos[index] ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      <input
+                        type="file"
+                        accept="video/*"
+                        className="hidden"
+                        onChange={(e) => handleVideoUpload(index, e.target.files[0])}
+                        disabled={uploadingVideos[index]}
+                      />
+                      {uploadingVideos[index] ? (
+                        <>
+                          <div className="animate-spin w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+                          <span className="text-sm text-gray-600">Uploading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                          <span className="text-sm text-gray-600">Upload</span>
+                        </>
+                      )}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => onHandleRemoveVideo(index)}
+                      className="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition"
+                      title="Remove this video"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  {videoErrors[index] && (
+                    <p className="text-red-500 text-sm">{videoErrors[index]}</p>
+                  )}
+                  {url && (
+                    <video src={url} className="w-full h-24 object-cover rounded-lg" controls />
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, videoUrls: [...formData.videoUrls, ""] })}
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition mt-2"
+              >
+                Add Video
+              </button>
+            </div>
           </div>
 
           {/* Action Buttons */}

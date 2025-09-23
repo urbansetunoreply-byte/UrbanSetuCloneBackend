@@ -10,6 +10,7 @@ import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import ReviewForm from "../components/ReviewForm.jsx";
 import ReviewList from "../components/ReviewList.jsx";
 import ImagePreview from "../components/ImagePreview.jsx";
+import VideoPreview from "../components/VideoPreview.jsx";
 import EMICalculator from "../components/EMICalculator.jsx";
 import SocialSharePanel from "../components/SocialSharePanel.jsx";
 import SmartPriceInsights from "../components/SmartPriceInsights.jsx";
@@ -40,6 +41,8 @@ export default function Listing() {
   const [showReviews, setShowReviews] = useState(false);
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [showVideoPreview, setShowVideoPreview] = useState(false);
+  const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
   const [showAssignOwnerModal, setShowAssignOwnerModal] = useState(false);
   const [availableUsers, setAvailableUsers] = useState([]);
   const [assignUserSearch, setAssignUserSearch] = useState("");
@@ -1071,19 +1074,37 @@ export default function Listing() {
                 setSelectedImageIndex(swiper.activeIndex);
               }}
             >
-              {listing.imageUrls && listing.imageUrls.length > 0 ? (
-                listing.imageUrls.map((url, index) => (
+              {(() => {
+                const images = listing.imageUrls || [];
+                const videos = listing.videoUrls || [];
+                const mediaItems = [
+                  ...images.map((u) => ({ type: 'image', url: u })),
+                  ...videos.map((u, vi) => ({ type: 'video', url: u, vIndex: vi })),
+                ];
+                return mediaItems.length > 0 ? mediaItems.map((item, index) => (
                   <SwiperSlide key={index}>
                     <div className="relative group">
-                      <img
-                        src={url}
-                        alt={`${listing.name} - Image ${index + 1}`}
-                        className="w-full h-40 sm:h-64 md:h-96 object-cover transition-transform duration-200 group-hover:scale-105"
-                        onError={(e) => {
-                          e.target.src = "https://via.placeholder.com/800x600?text=Image+Not+Available";
-                          e.target.className = "w-full h-40 sm:h-64 md:h-96 object-cover opacity-50";
-                        }}
-                      />
+                      {item.type === 'image' ? (
+                        <img
+                          src={item.url}
+                          alt={`${listing.name} - Image ${index + 1}`}
+                          className="w-full h-40 sm:h-64 md:h-96 object-cover transition-transform duration-200 group-hover:scale-105"
+                          onError={(e) => {
+                            e.target.src = "https://via.placeholder.com/800x600?text=Image+Not+Available";
+                            e.target.className = "w-full h-40 sm:h-64 md:h-96 object-cover opacity-50";
+                          }}
+                        />
+                      ) : (
+                        <video
+                          src={item.url}
+                          className="w-full h-40 sm:h-64 md:h-96 object-cover bg-black"
+                          onError={(e) => {
+                            e.target.poster = "https://via.placeholder.com/800x600?text=Video+Not+Available";
+                          }}
+                          muted
+                          playsInline
+                        />
+                      )}
                       {/* Expand Button Overlay */}
                       <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
                         <div className="bg-white bg-opacity-90 rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -1100,19 +1121,28 @@ export default function Listing() {
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          handleImageClick(index);
+                          if (item.type === 'image') {
+                            handleImageClick(index);
+                          } else {
+                            setSelectedVideoIndex(item.vIndex || 0);
+                            setShowVideoPreview(true);
+                          }
                         }}
                         onTouchEnd={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          handleImageClick(index);
+                          if (item.type === 'image') {
+                            handleImageClick(index);
+                          } else {
+                            setSelectedVideoIndex(item.vIndex || 0);
+                            setShowVideoPreview(true);
+                          }
                         }}
                         aria-label={`Expand image ${index + 1}`}
                       />
                     </div>
                   </SwiperSlide>
-                ))
-              ) : (
+                )) : (
                 <SwiperSlide>
                   <div className="w-full h-64 md:h-96 bg-gray-200 flex items-center justify-center">
                     <div className="text-center text-gray-500">
@@ -1121,7 +1151,7 @@ export default function Listing() {
                     </div>
                   </div>
                 </SwiperSlide>
-              )}
+              )})();
             </Swiper>
           </div>
 
@@ -2052,6 +2082,16 @@ export default function Listing() {
             listingName: listing.name,
             listingType: listing.type
           }}
+        />
+      )}
+
+      {/* Video Preview Modal */}
+      {listing && listing.videoUrls && listing.videoUrls.length > 0 && (
+        <VideoPreview
+          isOpen={showVideoPreview}
+          onClose={() => setShowVideoPreview(false)}
+          videos={listing.videoUrls}
+          initialIndex={selectedVideoIndex}
         />
       )}
 
