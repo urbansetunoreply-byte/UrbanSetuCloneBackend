@@ -162,6 +162,20 @@ const DeviceManagement = () => {
     }
   };
 
+  const getSessionLimit = () => {
+    if (!currentUser) return 5; // Default fallback
+    
+    switch (currentUser.role) {
+      case 'rootadmin':
+        return 1;
+      case 'admin':
+        return 2;
+      case 'user':
+      default:
+        return 5;
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -229,7 +243,7 @@ const DeviceManagement = () => {
             </div>
             <div className="ml-3">
               <p className="text-sm text-blue-700">
-                You can have up to <strong>5 active sessions</strong> at a time. 
+                You can have up to <strong>{getSessionLimit()} active session{getSessionLimit() !== 1 ? 's' : ''}</strong> at a time. 
                 If you exceed this limit, the oldest sessions will be automatically logged out.
               </p>
             </div>
