@@ -240,6 +240,14 @@ export default function Listing() {
     setShowReasonModal(true);
   };
 
+  // Owner delete: open password confirm directly (same as MyListings behavior)
+  const handleOwnerDeleteClick = () => {
+    setDeleteReason("");
+    setDeleteError("");
+    setDeletePassword("");
+    setShowPasswordModal(true);
+  };
+
   const handleReasonSubmit = (e) => {
     e.preventDefault();
     if (!deleteReason.trim()) {
@@ -903,6 +911,12 @@ export default function Listing() {
                   >
                     <FaEdit /> Edit Property
                   </Link>
+                  <button
+                    onClick={handleOwnerDeleteClick}
+                    className="bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-2 text-sm rounded-lg hover:from-red-600 hover:to-red-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2"
+                  >
+                    <FaTrash /> Delete Property
+                  </button>
                 </div>
               )}
               {isAdmin && isAdminContext && (
@@ -959,7 +973,17 @@ export default function Listing() {
                 ) : (
                   <div className="hidden lg:block" />
                 )}
-                <div className="hidden lg:block" />
+                {currentUser && (listing.sellerId === currentUser._id || listing.userRef === currentUser._id) ? (
+                  <button
+                    onClick={handleOwnerDeleteClick}
+                    className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-3 rounded-lg hover:from-red-600 hover:to-red-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
+                  >
+                    <FaTrash className="text-sm" />
+                    <span className="hidden sm:inline">Delete Property</span>
+                  </button>
+                ) : (
+                  <div className="hidden lg:block" />
+                )}
               </div>
             )}
 
