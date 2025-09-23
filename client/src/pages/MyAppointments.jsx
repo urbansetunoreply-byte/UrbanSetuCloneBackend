@@ -1688,6 +1688,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const videoInputRef = useRef(null);
   const documentInputRef = useRef(null);
   const attachmentButtonRef = useRef(null);
+  const videoCaptionRef = useRef(null);
+  const documentCaptionRef = useRef(null);
   // Attachment panel and new media states
   const [showAttachmentPanel, setShowAttachmentPanel] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
@@ -1696,9 +1698,24 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const [showDocumentPreviewModal, setShowDocumentPreviewModal] = useState(false);
   const [videoCaption, setVideoCaption] = useState('');
   const [documentCaption, setDocumentCaption] = useState('');
+  const [videoObjectURL, setVideoObjectURL] = useState(null);
 
   // Sound effects
   const { playMessageSent, playMessageReceived, playNotification, toggleMute, setVolume, isMuted } = useSoundEffects();
+
+  // Manage video object URL to prevent reloading on each keystroke
+  useEffect(() => {
+    if (selectedVideo) {
+      const url = URL.createObjectURL(selectedVideo);
+      setVideoObjectURL(url);
+      return () => {
+        URL.revokeObjectURL(url);
+        setVideoObjectURL(null);
+      };
+    } else {
+      setVideoObjectURL(null);
+    }
+  }, [selectedVideo]);
 
   // File upload handler
   const handleFileUpload = async (files) => {
@@ -6175,8 +6192,19 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                           <div className="relative">
                                             <video
                                               src={c.videoUrl}
-                                              className="max-w-full max-h-64 rounded-lg border"
+                                              className="max-w-full max-h-64 rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
                                               controls
+                                              onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                if (e.target.requestFullscreen) {
+                                                  e.target.requestFullscreen();
+                                                } else if (e.target.webkitRequestFullscreen) {
+                                                  e.target.webkitRequestFullscreen();
+                                                } else if (e.target.msRequestFullscreen) {
+                                                  e.target.msRequestFullscreen();
+                                                }
+                                              }}
                                             />
                                           </div>
                                           <div className="mt-1 text-xs text-gray-500 flex gap-3">
@@ -7025,8 +7053,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         )}
                       </button>
                       {showAttachmentPanel && !isChatSendBlocked && (
-                        <div className="absolute bottom-10 right-0 bg-white border border-gray-200 shadow-xl rounded-lg w-40 py-2 z-20"> 
-                          <label className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                        <div className="absolute bottom-10 right-0 bg-white border border-gray-200 shadow-xl rounded-lg w-48 py-2 z-20"> 
+                          <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                            <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
                             Photos
                             <input
                               type="file"
@@ -7043,7 +7074,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                               }}
                             />
                           </label>
-                          <label className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                          <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                            <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
                             Videos
                             <input
                               ref={videoInputRef}
@@ -7065,7 +7099,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                               }}
                             />
                           </label>
-                          <label className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                          <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                            <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
                             Documents
                             <input
                               ref={documentInputRef}
@@ -7396,19 +7433,40 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         </button>
                       </div>
                       <div className="flex-1 mb-4 min-h-0">
-                        <video controls className="w-full h-full max-h-[60vh] rounded-lg border" src={URL.createObjectURL(selectedVideo)} />
+                        <video controls className="w-full h-full max-h-[60vh] rounded-lg border" src={videoObjectURL} />
                       </div>
                       
                       {/* Caption for Video */}
                       <div className="relative mb-4">
-                        <textarea
-                          placeholder={`Add a caption for ${selectedVideo.name}...`}
-                          value={videoCaption}
-                          onChange={(e) => setVideoCaption(e.target.value)}
-                          className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          rows={2}
-                          maxLength={500}
-                        />
+                        <div className="relative">
+                          <textarea
+                            ref={videoCaptionRef}
+                            placeholder={`Add a caption for ${selectedVideo.name}...`}
+                            value={videoCaption}
+                            onChange={(e) => setVideoCaption(e.target.value)}
+                            className="w-full p-3 pr-12 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            rows={2}
+                            maxLength={500}
+                          />
+                          <div className="absolute right-2 top-2">
+                            <EmojiButton
+                              onEmojiClick={(emoji) => {
+                                const textarea = videoCaptionRef.current;
+                                if (textarea) {
+                                  const start = textarea.selectionStart;
+                                  const end = textarea.selectionEnd;
+                                  const newValue = videoCaption.slice(0, start) + emoji + videoCaption.slice(end);
+                                  setVideoCaption(newValue);
+                                  setTimeout(() => {
+                                    textarea.focus();
+                                    textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+                                  }, 0);
+                                }
+                              }}
+                              inputRef={videoCaptionRef}
+                            />
+                          </div>
+                        </div>
                         <div className="text-xs text-gray-500 mt-1 text-right">
                           {videoCaption.length}/500
                         </div>
@@ -7417,8 +7475,27 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                       <div className="flex items-center justify-between">
                         <div className="text-sm text-gray-600 truncate flex-1 mr-4">{selectedVideo.name}</div>
                         <div className="flex gap-2 flex-shrink-0">
-                          <button onClick={() => { setSelectedVideo(null); setShowVideoPreviewModal(false); setVideoCaption(''); }} className="px-4 py-2 rounded-lg border">Cancel</button>
-                          <button onClick={handleSendSelectedVideo} className="px-4 py-2 rounded-lg bg-blue-600 text-white">Send</button>
+                          {uploadingFile ? (
+                            <>
+                              <button 
+                                onClick={handleCancelInFlightUpload}
+                                className="px-4 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50"
+                              >
+                                Cancel
+                              </button>
+                              <div className="flex items-center gap-2">
+                                <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                  <div className="h-2 bg-blue-600 rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
+                                </div>
+                                <span className="text-sm text-gray-700 w-10 text-right">{uploadProgress}%</span>
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <button onClick={() => { setSelectedVideo(null); setShowVideoPreviewModal(false); setVideoCaption(''); }} className="px-4 py-2 rounded-lg border">Cancel</button>
+                              <button onClick={handleSendSelectedVideo} className="px-4 py-2 rounded-lg bg-blue-600 text-white">Send</button>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -7448,22 +7525,62 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                       
                       {/* Caption for Document */}
                       <div className="relative mb-4">
-                        <textarea
-                          placeholder={`Add a caption for ${selectedDocument.name}...`}
-                          value={documentCaption}
-                          onChange={(e) => setDocumentCaption(e.target.value)}
-                          className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          rows={2}
-                          maxLength={500}
-                        />
+                        <div className="relative">
+                          <textarea
+                            ref={documentCaptionRef}
+                            placeholder={`Add a caption for ${selectedDocument.name}...`}
+                            value={documentCaption}
+                            onChange={(e) => setDocumentCaption(e.target.value)}
+                            className="w-full p-3 pr-12 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            rows={2}
+                            maxLength={500}
+                          />
+                          <div className="absolute right-2 top-2">
+                            <EmojiButton
+                              onEmojiClick={(emoji) => {
+                                const textarea = documentCaptionRef.current;
+                                if (textarea) {
+                                  const start = textarea.selectionStart;
+                                  const end = textarea.selectionEnd;
+                                  const newValue = documentCaption.slice(0, start) + emoji + documentCaption.slice(end);
+                                  setDocumentCaption(newValue);
+                                  setTimeout(() => {
+                                    textarea.focus();
+                                    textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+                                  }, 0);
+                                }
+                              }}
+                              inputRef={documentCaptionRef}
+                            />
+                          </div>
+                        </div>
                         <div className="text-xs text-gray-500 mt-1 text-right">
                           {documentCaption.length}/500
                         </div>
                       </div>
                       
                       <div className="flex items-center justify-between">
-                        <button onClick={() => { setSelectedDocument(null); setShowDocumentPreviewModal(false); setDocumentCaption(''); }} className="px-4 py-2 rounded-lg border">Cancel</button>
-                        <button onClick={handleSendSelectedDocument} className="px-4 py-2 rounded-lg bg-blue-600 text-white">Send</button>
+                        {uploadingFile ? (
+                          <>
+                            <button 
+                              onClick={handleCancelInFlightUpload}
+                              className="px-4 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50"
+                            >
+                              Cancel
+                            </button>
+                            <div className="flex items-center gap-2">
+                              <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div className="h-2 bg-blue-600 rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
+                              </div>
+                              <span className="text-sm text-gray-700 w-10 text-right">{uploadProgress}%</span>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <button onClick={() => { setSelectedDocument(null); setShowDocumentPreviewModal(false); setDocumentCaption(''); }} className="px-4 py-2 rounded-lg border">Cancel</button>
+                            <button onClick={handleSendSelectedDocument} className="px-4 py-2 rounded-lg bg-blue-600 text-white">Send</button>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>

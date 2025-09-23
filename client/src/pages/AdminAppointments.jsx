@@ -1692,13 +1692,30 @@ function AdminAppointmentRow({
   const [failedFiles, setFailedFiles] = useLocalState([]);
   const [isCancellingUpload, setIsCancellingUpload] = useLocalState(false);
   const currentUploadControllerRef = React.useRef(null);
+  const videoCaptionRef = React.useRef(null);
+  const documentCaptionRef = React.useRef(null);
   // New media states
   const [selectedVideo, setSelectedVideo] = useLocalState(null);
   const [showVideoPreviewModal, setShowVideoPreviewModal] = useLocalState(false);
   const [selectedDocument, setSelectedDocument] = useLocalState(null);
   const [showDocumentPreviewModal, setShowDocumentPreviewModal] = useLocalState(false);
+  const [videoCaption, setVideoCaption] = useLocalState('');
+  const [documentCaption, setDocumentCaption] = useLocalState('');
+  const [videoObjectURL, setVideoObjectURL] = useLocalState(null);
 
-
+  // Manage video object URL to prevent reloading on each keystroke
+  React.useEffect(() => {
+    if (selectedVideo) {
+      const url = URL.createObjectURL(selectedVideo);
+      setVideoObjectURL(url);
+      return () => {
+        URL.revokeObjectURL(url);
+        setVideoObjectURL(null);
+      };
+    } else {
+      setVideoObjectURL(null);
+    }
+  }, [selectedVideo]);
 
   const selectedMessageForHeaderOptions = headerOptionsMessageId ? localComments.find(msg => msg._id === headerOptionsMessageId) : null;
 
@@ -2812,6 +2829,116 @@ function AdminAppointmentRow({
     setSelectedFiles(failedFiles);
     setFailedFiles([]);
     await handleSendImagesWithCaptions();
+  };
+
+  // Video upload + send
+  const sendVideoMessage = async (videoUrl, fileName, caption = '') => {
+    const tempId = `temp-${Date.now()}`;
+    const tempMessage = {
+      _id: tempId,
+      sender: currentUser._id,
+      senderEmail: currentUser.email,
+      message: caption || `🎬 ${fileName}`,
+      videoUrl,
+      type: 'video',
+      status: 'sending',
+      timestamp: new Date().toISOString(),
+    };
+    setLocalComments(prev => [...prev, tempMessage]);
+    try {
+      const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, {
+        message: caption || `🎬 ${fileName}`,
+        videoUrl,
+        type: 'video'
+      }, { withCredentials: true });
+      setLocalComments(data.comments || data.updated?.comments || data?.appointment?.comments || []);
+    } catch (err) {
+      toast.error('Failed to send video');
+      setLocalComments(prev => prev.filter(m => m._id !== tempId));
+    }
+  };
+
+  const handleSendSelectedVideo = async () => {
+    if (!selectedVideo) return;
+    try {
+      setUploadingFile(true);
+      const form = new FormData();
+      form.append('video', selectedVideo);
+      const { data } = await axios.post(`${API_BASE_URL}/api/upload/video`, form, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (evt) => {
+          const pct = Math.round((evt.loaded * 100) / Math.max(1, evt.total || selectedVideo.size));
+          setUploadProgress(pct);
+        }
+      });
+      await sendVideoMessage(data.videoUrl, selectedVideo.name, videoCaption);
+      setSelectedVideo(null);
+      setShowVideoPreviewModal(false);
+      setVideoCaption('');
+      setUploadProgress(0);
+    } catch (e) {
+      toast.error(e.response?.data?.message || 'Video upload failed');
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
+  // Document upload + send
+  const sendDocumentMessage = async (documentUrl, document, caption = '') => {
+    const tempId = `temp-${Date.now()}`;
+    const tempMessage = {
+      _id: tempId,
+      sender: currentUser._id,
+      senderEmail: currentUser.email,
+      message: caption || `📄 ${document.name}`,
+      documentUrl,
+      documentName: document.name,
+      documentType: document.type,
+      type: 'document',
+      status: 'sending',
+      timestamp: new Date().toISOString(),
+    };
+    setLocalComments(prev => [...prev, tempMessage]);
+    try {
+      const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, {
+        message: caption || `📄 ${document.name}`,
+        documentUrl,
+        documentName: document.name,
+        documentType: document.type,
+        type: 'document'
+      }, { withCredentials: true });
+      setLocalComments(data.comments || data.updated?.comments || data?.appointment?.comments || []);
+    } catch (err) {
+      toast.error('Failed to send document');
+      setLocalComments(prev => prev.filter(m => m._id !== tempId));
+    }
+  };
+
+  const handleSendSelectedDocument = async () => {
+    if (!selectedDocument) return;
+    try {
+      setUploadingFile(true);
+      const form = new FormData();
+      form.append('document', selectedDocument);
+      const { data } = await axios.post(`${API_BASE_URL}/api/upload/document`, form, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (evt) => {
+          const pct = Math.round((evt.loaded * 100) / Math.max(1, evt.total || selectedDocument.size));
+          setUploadProgress(pct);
+        }
+      });
+      await sendDocumentMessage(data.documentUrl, selectedDocument, documentCaption);
+      setSelectedDocument(null);
+      setShowDocumentPreviewModal(false);
+      setDocumentCaption('');
+      setUploadProgress(0);
+    } catch (e) {
+      toast.error(e.response?.data?.message || 'Document upload failed');
+    } finally {
+      setUploadingFile(false);
+    }
   };
 
   const handleCommentSend = async () => {
@@ -4940,7 +5067,22 @@ function AdminAppointmentRow({
                                       {/* Video Message */}
                                       {c.videoUrl && (
                                         <div className="mb-2">
-                                          <video src={c.videoUrl} className="max-w-full max-h-64 rounded-lg border" controls />
+                                          <video 
+                                            src={c.videoUrl} 
+                                            className="max-w-full max-h-64 rounded-lg border cursor-pointer hover:opacity-90 transition-opacity" 
+                                            controls 
+                                            onClick={(e) => {
+                                              e.preventDefault();
+                                              e.stopPropagation();
+                                              if (e.target.requestFullscreen) {
+                                                e.target.requestFullscreen();
+                                              } else if (e.target.webkitRequestFullscreen) {
+                                                e.target.webkitRequestFullscreen();
+                                              } else if (e.target.msRequestFullscreen) {
+                                                e.target.msRequestFullscreen();
+                                              }
+                                            }}
+                                          />
                                           <div className="mt-1 text-xs text-gray-500">
                                             <button
                                               className="text-blue-600 hover:underline"
@@ -6705,7 +6847,22 @@ function AdminAppointmentRow({
                                 {/* Video Message */}
                                 {message.videoUrl && (
                                   <div className="mb-2">
-                                    <video src={message.videoUrl} className="max-w-full max-h-64 rounded-lg border" controls />
+                                    <video 
+                                      src={message.videoUrl} 
+                                      className="max-w-full max-h-64 rounded-lg border cursor-pointer hover:opacity-90 transition-opacity" 
+                                      controls 
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        if (e.target.requestFullscreen) {
+                                          e.target.requestFullscreen();
+                                        } else if (e.target.webkitRequestFullscreen) {
+                                          e.target.webkitRequestFullscreen();
+                                        } else if (e.target.msRequestFullscreen) {
+                                          e.target.msRequestFullscreen();
+                                        }
+                                      }}
+                                    />
                                   </div>
                                 )}
                                 {/* Document Message */}
@@ -6955,6 +7112,173 @@ function AdminAppointmentRow({
           chatType: 'appointment'
         }}
       />
+
+      {/* Video Preview Modal */}
+      {showVideoPreviewModal && selectedVideo && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-lg font-medium text-gray-700">Video Preview</span>
+              <button
+                onClick={() => { setSelectedVideo(null); setShowVideoPreviewModal(false); }}
+                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+              >
+                <FaTimes className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 mb-4 min-h-0">
+              <video controls className="w-full h-full max-h-[60vh] rounded-lg border" src={videoObjectURL} />
+            </div>
+            
+            {/* Caption for Video */}
+            <div className="relative mb-4">
+              <div className="relative">
+                <textarea
+                  ref={videoCaptionRef}
+                  placeholder={`Add a caption for ${selectedVideo.name}...`}
+                  value={videoCaption}
+                  onChange={(e) => setVideoCaption(e.target.value)}
+                  className="w-full p-3 pr-12 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  rows={2}
+                  maxLength={500}
+                />
+                <div className="absolute right-2 top-2">
+                  <EmojiButton
+                    onEmojiClick={(emoji) => {
+                      const textarea = videoCaptionRef.current;
+                      if (textarea) {
+                        const start = textarea.selectionStart;
+                        const end = textarea.selectionEnd;
+                        const newValue = videoCaption.slice(0, start) + emoji + videoCaption.slice(end);
+                        setVideoCaption(newValue);
+                        setTimeout(() => {
+                          textarea.focus();
+                          textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+                        }, 0);
+                      }
+                    }}
+                    inputRef={videoCaptionRef}
+                  />
+                </div>
+              </div>
+              <div className="text-xs text-gray-500 mt-1 text-right">
+                {videoCaption.length}/500
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-600 truncate flex-1 mr-4">{selectedVideo.name}</div>
+              <div className="flex gap-2 flex-shrink-0">
+                {uploadingFile ? (
+                  <>
+                    <button 
+                      onClick={handleCancelInFlightUpload}
+                      className="px-4 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50"
+                    >
+                      Cancel
+                    </button>
+                    <div className="flex items-center gap-2">
+                      <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="h-2 bg-blue-600 rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
+                      </div>
+                      <span className="text-sm text-gray-700 w-10 text-right">{uploadProgress}%</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <button onClick={() => { setSelectedVideo(null); setShowVideoPreviewModal(false); setVideoCaption(''); }} className="px-4 py-2 rounded-lg border">Cancel</button>
+                    <button onClick={handleSendSelectedVideo} className="px-4 py-2 rounded-lg bg-blue-600 text-white">Send</button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Document Preview Modal */}
+      {showDocumentPreviewModal && selectedDocument && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-md w-full">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-lg font-medium text-gray-700">Document Preview</span>
+              <button
+                onClick={() => { setSelectedDocument(null); setShowDocumentPreviewModal(false); }}
+                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+              >
+                <FaTimes className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="mb-4 flex items-center gap-3">
+              <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center text-gray-600">📄</div>
+              <div className="min-w-0">
+                <div className="text-sm font-medium truncate">{selectedDocument.name}</div>
+                <div className="text-xs text-gray-500 truncate">{selectedDocument.type || 'Document'}</div>
+              </div>
+            </div>
+            
+            {/* Caption for Document */}
+            <div className="relative mb-4">
+              <div className="relative">
+                <textarea
+                  ref={documentCaptionRef}
+                  placeholder={`Add a caption for ${selectedDocument.name}...`}
+                  value={documentCaption}
+                  onChange={(e) => setDocumentCaption(e.target.value)}
+                  className="w-full p-3 pr-12 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  rows={2}
+                  maxLength={500}
+                />
+                <div className="absolute right-2 top-2">
+                  <EmojiButton
+                    onEmojiClick={(emoji) => {
+                      const textarea = documentCaptionRef.current;
+                      if (textarea) {
+                        const start = textarea.selectionStart;
+                        const end = textarea.selectionEnd;
+                        const newValue = documentCaption.slice(0, start) + emoji + documentCaption.slice(end);
+                        setDocumentCaption(newValue);
+                        setTimeout(() => {
+                          textarea.focus();
+                          textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+                        }, 0);
+                      }
+                    }}
+                    inputRef={documentCaptionRef}
+                  />
+                </div>
+              </div>
+              <div className="text-xs text-gray-500 mt-1 text-right">
+                {documentCaption.length}/500
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              {uploadingFile ? (
+                <>
+                  <button 
+                    onClick={handleCancelInFlightUpload}
+                    className="px-4 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50"
+                  >
+                    Cancel
+                  </button>
+                  <div className="flex items-center gap-2">
+                    <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div className="h-2 bg-blue-600 rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
+                    </div>
+                    <span className="text-sm text-gray-700 w-10 text-right">{uploadProgress}%</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <button onClick={() => { setSelectedDocument(null); setShowDocumentPreviewModal(false); setDocumentCaption(''); }} className="px-4 py-2 rounded-lg border">Cancel</button>
+                  <button onClick={handleSendSelectedDocument} className="px-4 py-2 rounded-lg bg-blue-600 text-white">Send</button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       </td>
     </tr>
