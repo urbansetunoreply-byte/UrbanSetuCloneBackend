@@ -305,9 +305,7 @@ const SessionAuditLogs = () => {
                         <div>
                           <div className="font-medium">{log.device}</div>
                           <div className="text-gray-500">{log.ip}</div>
-                          {log.location && (
-                            <div className="text-gray-500">{log.location}</div>
-                          )}
+                          <div className="text-gray-500">{log.location || 'Unknown'}</div>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900">

@@ -289,11 +289,7 @@ const DeviceManagement = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-2">
                           <p className="text-sm font-medium text-gray-900 truncate">
-                            {session.device} {session.isCurrent && (
-                              <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                This Device
-                              </span>
-                            )}
+                            {session.isCurrent ? `${session.device} (This Device)` : session.device}
                           </p>
                         </div>
                         <div className="mt-1 text-sm text-gray-500">

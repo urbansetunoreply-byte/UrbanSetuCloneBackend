@@ -343,7 +343,7 @@ const SessionManagement = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <span className="text-lg mr-2">{getDeviceIcon(session.device)}</span>
-                          <span className="text-sm text-gray-900">{session.device}</span>
+                          <span className="text-sm text-gray-900">{session.isCurrent ? `${session.device} (This Device)` : session.device}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
