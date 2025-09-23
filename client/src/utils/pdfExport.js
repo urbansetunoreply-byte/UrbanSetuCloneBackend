@@ -17,7 +17,7 @@ const buildCloudinaryDownloadLink = (originalUrl, preferredFilename) => {
     if (/fl_attachment/.test(originalUrl)) return originalUrl;
 
     const before = originalUrl.slice(0, idx + uploadMarker.length);
-    const after = originalUrl.slice(idx + uploadMarker.length);
+    let after = originalUrl.slice(idx + uploadMarker.length);
 
     // Sanitize filename (Cloudinary expects colon syntax, keep simple ascii)
     const safeName = (preferredFilename || 'download')
@@ -26,7 +26,21 @@ const buildCloudinaryDownloadLink = (originalUrl, preferredFilename) => {
       .slice(0, 120);
 
     // Insert fl_attachment:<filename>/ right after /upload/
-    return `${before}fl_attachment:${safeName}/${after}`;
+    let transformed = `${before}fl_attachment:${safeName}/${after}`;
+
+    // If originalUrl likely points to a raw asset without extension at the end,
+    // try to append the extension from preferredFilename to ensure proper type
+    const extMatch = /\.([a-zA-Z0-9]+)$/.exec(preferredFilename || '');
+    if (extMatch) {
+      const ext = extMatch[1];
+      // If URL already ends with an extension after the last '/', skip
+      const lastSegment = transformed.substring(transformed.lastIndexOf('/') + 1);
+      if (!/\.[a-zA-Z0-9]+$/.test(lastSegment)) {
+        transformed = `${transformed}.${ext}`;
+      }
+    }
+
+    return transformed;
   } catch (_) {
     return originalUrl;
   }
