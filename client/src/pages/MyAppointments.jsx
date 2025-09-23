@@ -1785,7 +1785,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       sender: currentUser._id,
       senderEmail: currentUser.email,
       senderName: currentUser.username,
-      message: caption || `📷 ${fileName}`,
+      message: caption || '',
       imageUrl: imageUrl,
       status: "sending",
       timestamp: new Date().toISOString(),
@@ -1805,7 +1805,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     try {
       const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, 
         { 
-          message: caption || `📷 ${fileName}`,
+          message: caption || '',
           imageUrl: imageUrl,
           type: "image"
         },
@@ -1974,7 +1974,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       _id: tempId,
       sender: currentUser._id,
       senderEmail: currentUser.email,
-      message: caption || `🎬 ${fileName}`,
+      message: caption || '',
       videoUrl,
       type: 'video',
       status: 'sending',
@@ -1983,7 +1983,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     setComments(prev => [...prev, tempMessage]);
     try {
       const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, {
-        message: caption || `🎬 ${fileName}`,
+        message: caption || '',
         videoUrl,
         type: 'video'
       }, { withCredentials: true });
@@ -2027,7 +2027,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       _id: tempId,
       sender: currentUser._id,
       senderEmail: currentUser.email,
-      message: caption || `📄 ${file.name}`,
+      message: caption || '',
       documentUrl,
       documentName: file.name,
       documentMimeType: file.type || null,
@@ -2038,7 +2038,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     setComments(prev => [...prev, tempMessage]);
     try {
       const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, {
-        message: caption || `📄 ${file.name}`,
+        message: caption || '',
         documentUrl,
         documentName: file.name,
         documentMimeType: file.type || null,
@@ -5463,6 +5463,42 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                       >
                                         <FaDownload className="text-sm" />
                                         Download Image
+                                      </button>
+                                    )}
+                                    {/* Download option for video messages (for received messages) */}
+                                    {selectedMessageForHeaderOptions.videoUrl && (
+                                      <button
+                                        className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+                                        onClick={async () => { 
+                                          try {
+                                            const response = await fetch(selectedMessageForHeaderOptions.videoUrl, { mode: 'cors' });
+                                            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                            const blob = await response.blob();
+                                            const blobUrl = window.URL.createObjectURL(blob);
+                                            const a = document.createElement('a');
+                                            a.href = blobUrl;
+                                            a.download = `video-${selectedMessageForHeaderOptions._id || Date.now()}.mp4`;
+                                            document.body.appendChild(a);
+                                            a.click();
+                                            a.remove();
+                                            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                          } catch (error) {
+                                            console.error('Video download failed:', error);
+                                            // Fallback to direct link
+                                            const a = document.createElement('a');
+                                            a.href = selectedMessageForHeaderOptions.videoUrl;
+                                            a.download = `video-${selectedMessageForHeaderOptions._id || Date.now()}.mp4`;
+                                            a.target = '_blank';
+                                            document.body.appendChild(a);
+                                            a.click();
+                                            a.remove();
+                                          }
+                                          setShowHeaderMoreMenu(false); 
+                                          setHeaderOptionsMessageId(null); 
+                                        }}
+                                      >
+                                        <FaDownload className="text-sm" />
+                                        Download Video
                                       </button>
                                     )}
                                     <button

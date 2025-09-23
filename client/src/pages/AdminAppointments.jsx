@@ -2529,7 +2529,7 @@ function AdminAppointmentRow({
       sender: currentUser._id,
       senderEmail: currentUser.email,
       senderName: currentUser.username,
-      message: caption || `📷 ${fileName}`,
+      message: caption || '',
       imageUrl: imageUrl,
       status: "sending",
       timestamp: new Date().toISOString(),
@@ -2549,7 +2549,7 @@ function AdminAppointmentRow({
     try {
       const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, 
         { 
-          message: caption || `📷 ${fileName}`,
+          message: caption || '',
           imageUrl: imageUrl,
           type: "image"
         },
@@ -2857,7 +2857,7 @@ function AdminAppointmentRow({
       _id: tempId,
       sender: currentUser._id,
       senderEmail: currentUser.email,
-      message: caption || `🎬 ${fileName}`,
+      message: caption || '',
       videoUrl,
       type: 'video',
       status: 'sending',
@@ -2866,7 +2866,7 @@ function AdminAppointmentRow({
     setLocalComments(prev => [...prev, tempMessage]);
     try {
       const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, {
-        message: caption || `🎬 ${fileName}`,
+        message: caption || '',
         videoUrl,
         type: 'video'
       }, { withCredentials: true });
@@ -2910,7 +2910,7 @@ function AdminAppointmentRow({
       _id: tempId,
       sender: currentUser._id,
       senderEmail: currentUser.email,
-      message: caption || `📄 ${document.name}`,
+      message: caption || '',
       documentUrl,
       documentName: document.name,
       documentType: document.type,
@@ -2921,7 +2921,7 @@ function AdminAppointmentRow({
     setLocalComments(prev => [...prev, tempMessage]);
     try {
       const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, {
-        message: caption || `📄 ${document.name}`,
+        message: caption || '',
         documentUrl,
         documentName: document.name,
         documentType: document.type,
