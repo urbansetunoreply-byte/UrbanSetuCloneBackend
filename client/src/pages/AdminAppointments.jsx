@@ -4407,6 +4407,7 @@ function AdminAppointmentRow({
                                           a.click();
                                           a.remove();
                                           setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                          toast.success('Video downloaded successfully');
                                         } catch (error) {
                                           console.error('Video download failed:', error);
                                           // Fallback to direct link
@@ -4417,6 +4418,7 @@ function AdminAppointmentRow({
                                           document.body.appendChild(a);
                                           a.click();
                                           a.remove();
+                                          toast.success('Video download started');
                                         }
                                         setShowHeaderMoreMenu(false); 
                                         setHeaderOptionsMessageId(null); 
@@ -4482,6 +4484,7 @@ function AdminAppointmentRow({
                                           a.click();
                                           a.remove();
                                           setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                          toast.success('Video downloaded successfully');
                                         } catch (error) {
                                           console.error('Video download failed:', error);
                                           // Fallback to direct link
@@ -4492,6 +4495,7 @@ function AdminAppointmentRow({
                                           document.body.appendChild(a);
                                           a.click();
                                           a.remove();
+                                          toast.success('Video download started');
                                         }
                                         setShowHeaderMoreMenu(false); 
                                         setHeaderOptionsMessageId(null); 
@@ -5099,6 +5103,7 @@ function AdminAppointmentRow({
                                             a.click();
                                             a.remove();
                                             setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                          toast.success('Audio downloaded successfully');
                                           } catch (error) {
                                             const a = document.createElement('a');
                                             a.href = selectedMessageForHeaderOptions.audioUrl;
@@ -5107,6 +5112,7 @@ function AdminAppointmentRow({
                                             document.body.appendChild(a);
                                             a.click();
                                             a.remove();
+                                          toast.success('Audio download started');
                                           }
                                           setShowHeaderMoreMenu(false); 
                                           setHeaderOptionsMessageId(null); 
@@ -5224,6 +5230,7 @@ function AdminAppointmentRow({
                                                 document.body.appendChild(a);
                                                 a.click();
                                                 a.remove();
+                                                toast.success('Video download started');
                                               }}
                                             >Download</button>
                                           </div>
@@ -5248,6 +5255,7 @@ function AdminAppointmentRow({
                                                 a.click();
                                                 a.remove();
                                                 setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                                toast.success('Document downloaded successfully');
                                               } catch (error) {
                                                 console.error('Download failed:', error);
                                                 // Fallback to direct link
@@ -5258,6 +5266,7 @@ function AdminAppointmentRow({
                                                 document.body.appendChild(a);
                                                 a.click();
                                                 a.remove();
+                                                toast.success('Document download started');
                                               }
                                             }}
                                           >

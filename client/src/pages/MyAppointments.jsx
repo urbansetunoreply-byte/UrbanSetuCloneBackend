@@ -1705,6 +1705,14 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const [audioCaption, setAudioCaption] = useState('');
   const [audioObjectURL, setAudioObjectURL] = useState(null);
   const audioCaptionRef = useRef(null);
+  // Audio Recording states
+  const [showRecordAudioModal, setShowRecordAudioModal] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingElapsedMs, setRecordingElapsedMs] = useState(0);
+  const [recordingStream, setRecordingStream] = useState(null);
+  const mediaRecorderRef = useRef(null);
+  const recordingChunksRef = useRef([]);
+  const recordingTimerRef = useRef(null);
 
   // Sound effects
   const { playMessageSent, playMessageReceived, playNotification, toggleMute, setVolume, isMuted } = useSoundEffects();
@@ -1736,6 +1744,75 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       setAudioObjectURL(null);
     }
   }, [selectedAudio]);
+
+  // Recording timer cleanup
+  useEffect(() => {
+    return () => {
+      if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+      if (recordingStream) recordingStream.getTracks().forEach(t => t.stop());
+    };
+  }, [recordingStream]);
+
+  const startAudioRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setRecordingStream(stream);
+      recordingChunksRef.current = [];
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      mediaRecorderRef.current = mediaRecorder;
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) recordingChunksRef.current.push(e.data);
+      };
+      mediaRecorder.onstop = () => {
+        try {
+          const blob = new Blob(recordingChunksRef.current, { type: 'audio/webm' });
+          const fileName = `recording-${Date.now()}.webm`;
+          const file = new File([blob], fileName, { type: 'audio/webm' });
+          setSelectedAudio(file);
+          setShowRecordAudioModal(false);
+          setShowAudioPreviewModal(true);
+        } catch (err) {
+          toast.error('Failed to prepare audio preview');
+        } finally {
+          if (recordingStream) recordingStream.getTracks().forEach(t => t.stop());
+          setRecordingStream(null);
+          setIsRecording(false);
+          setRecordingElapsedMs(0);
+          if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+        }
+      };
+      mediaRecorder.start(100);
+      setIsRecording(true);
+      setRecordingElapsedMs(0);
+      recordingTimerRef.current = setInterval(() => {
+        setRecordingElapsedMs(prev => prev + 1000);
+      }, 1000);
+    } catch (err) {
+      console.error('Recording error:', err);
+      toast.error('Microphone permission denied or unavailable');
+    }
+  };
+
+  const stopAudioRecording = () => {
+    if (!mediaRecorderRef.current) return;
+    try {
+      mediaRecorderRef.current.stop();
+    } catch {}
+  };
+
+  const cancelAudioRecording = () => {
+    try {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
+    } catch {}
+    if (recordingStream) recordingStream.getTracks().forEach(t => t.stop());
+    setRecordingStream(null);
+    setIsRecording(false);
+    setRecordingElapsedMs(0);
+    if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+    setShowRecordAudioModal(false);
+  };
 
   // Close attachment panel on outside click
   useEffect(() => {
@@ -5452,6 +5529,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                             a.click();
                                             a.remove();
                                             setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                            toast.success('Video downloaded successfully');
                                           } catch (error) {
                                             console.error('Video download failed:', error);
                                             // Fallback to direct link
@@ -5462,6 +5540,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                             document.body.appendChild(a);
                                             a.click();
                                             a.remove();
+                                            toast.success('Video download started');
                                           }
                                           setShowHeaderMoreMenu(false); 
                                           setHeaderOptionsMessageId(null); 
@@ -5488,6 +5567,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                             a.click();
                                             a.remove();
                                             setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                            toast.success('Audio downloaded successfully');
                                           } catch (error) {
                                             const a = document.createElement('a');
                                             a.href = selectedMessageForHeaderOptions.audioUrl;
@@ -5496,6 +5576,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                             document.body.appendChild(a);
                                             a.click();
                                             a.remove();
+                                            toast.success('Audio download started');
                                           }
                                           setShowHeaderMoreMenu(false); 
                                           setHeaderOptionsMessageId(null); 
@@ -6381,6 +6462,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                 document.body.appendChild(a);
                                                 a.click();
                                                 a.remove();
+                                                toast.success('Video download started');
                                               }}
                                             >Download</button>
                                           </div>
@@ -6408,6 +6490,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                   document.body.appendChild(a);
                                                   a.click();
                                                   document.body.removeChild(a);
+                                                  toast.success('Audio download started');
                                                 }}
                                                 title="Download audio"
                                               >
@@ -6439,6 +6522,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                 a.click();
                                                 a.remove();
                                                 setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                                toast.success('Document downloaded successfully');
                                               } catch (error) {
                                                 console.error('Download failed:', error);
                                                 // Fallback to direct link
@@ -6449,6 +6533,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                 document.body.appendChild(a);
                                                 a.click();
                                                 a.remove();
+                                                toast.success('Document download started');
                                               }
                                             }}
                                           >
@@ -7379,6 +7464,22 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                               }}
                             />
                           </label>
+                          {/* Record Audio */}
+                          <button
+                            type="button"
+                            className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                            onClick={() => {
+                              setShowRecordAudioModal(true);
+                              setShowAttachmentPanel(false);
+                            }}
+                          >
+                            <svg className="w-4 h-4 text-rose-500" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12 14a3 3 0 003-3V7a3 3 0 10-6 0v4a3 3 0 003 3z" />
+                              <path d="M19 11a7 7 0 11-14 0h2a5 5 0 0010 0h2z" />
+                              <path d="M13 19h-2v2h2v-2z" />
+                            </svg>
+                            Record Audio
+                          </button>
                         </div>
                       )}
                     </div>
@@ -7832,6 +7933,43 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           <div className="text-xs text-gray-500 mt-1 text-right">{uploadProgress}%</div>
                         </div>
                       )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Record Audio Modal */}
+                {showRecordAudioModal && (
+                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-md w-full">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-lg font-medium text-gray-700">Record Audio</span>
+                        <button
+                          onClick={cancelAudioRecording}
+                          className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+                        >
+                          <FaTimes className="w-5 h-5" />
+                        </button>
+                      </div>
+                      <div className="flex flex-col items-center gap-4 py-4">
+                        <div className={`w-24 h-24 rounded-full flex items-center justify-center ${isRecording ? 'bg-red-100' : 'bg-gray-100'}`}>
+                          <svg className={`w-10 h-10 ${isRecording ? 'text-red-600 animate-pulse' : 'text-gray-600'}`} viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 14a3 3 0 003-3V7a3 3 0 10-6 0v4a3 3 0 003 3z" />
+                            <path d="M19 11a7 7 0 11-14 0h2a5 5 0 0010 0h2z" />
+                          </svg>
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {isRecording ? new Date(recordingElapsedMs).toISOString().substr(14, 5) : 'Ready'}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          {!isRecording ? (
+                            <button onClick={startAudioRecording} className="px-4 py-2 rounded-lg bg-rose-600 text-white hover:bg-rose-700">Start</button>
+                          ) : (
+                            <button onClick={stopAudioRecording} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Stop & Preview</button>
+                          )}
+                          <button onClick={cancelAudioRecording} className="px-4 py-2 rounded-lg border">Cancel</button>
+                        </div>
+                        <div className="text-xs text-gray-500">Your mic input stays on device until you choose to send.</div>
+                      </div>
                     </div>
                   </div>
                 )}
