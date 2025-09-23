@@ -46,6 +46,17 @@ const documentStorage = new CloudinaryStorage({
   },
 });
 
+// Configure multer storage for Cloudinary - AUDIO (resource_type video per Cloudinary spec for audio)
+const audioStorage = new CloudinaryStorage({
+  cloudinary: cloudinary.v2,
+  params: {
+    folder: 'urbansetu-chat/audio',
+    // Cloudinary treats audio as resource_type 'video'
+    allowed_formats: ['mp3', 'wav', 'm4a', 'aac', 'ogg', 'oga', 'opus'],
+    resource_type: 'video',
+  },
+});
+
 // Configure multer per type (5MB limit)
 const uploadImage = multer({
   storage: imageStorage,
@@ -76,6 +87,15 @@ const uploadDocument = multer({
       (!file.mimetype.startsWith('image/') && !file.mimetype.startsWith('video/'))
     ) return cb(null, true);
     return cb(new Error('Invalid document type'));
+  },
+});
+
+const uploadAudio = multer({
+  storage: audioStorage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('audio/')) return cb(null, true);
+    return cb(new Error('Only audio files are allowed!'));
   },
 });
 
@@ -193,6 +213,25 @@ router.post('/document', uploadDocument.single('document'), async (req, res) => 
   } catch (error) {
     console.error('Document upload error:', error);
     res.status(500).json({ message: 'Error uploading document', error: error.message });
+  }
+});
+
+// Upload single audio
+router.post('/audio', uploadAudio.single('audio'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No audio file provided' });
+    }
+    res.status(200).json({
+      message: 'Audio uploaded successfully',
+      audioUrl: req.file.path,
+      publicId: req.file.filename,
+      originalName: req.file.originalname,
+      mimeType: req.file.mimetype,
+    });
+  } catch (error) {
+    console.error('Audio upload error:', error);
+    res.status(500).json({ message: 'Error uploading audio', error: error.message });
   }
 });
 
