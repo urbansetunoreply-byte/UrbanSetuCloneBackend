@@ -1694,7 +1694,10 @@ function AdminAppointmentRow({
   const currentUploadControllerRef = React.useRef(null);
   const videoCaptionRef = React.useRef(null);
   const documentCaptionRef = React.useRef(null);
+  const videoInputRef = React.useRef(null);
+  const documentInputRef = React.useRef(null);
   // New media states
+  const [showAttachmentPanel, setShowAttachmentPanel] = useLocalState(false);
   const [selectedVideo, setSelectedVideo] = useLocalState(null);
   const [showVideoPreviewModal, setShowVideoPreviewModal] = useLocalState(false);
   const [selectedDocument, setSelectedDocument] = useLocalState(null);
@@ -5916,22 +5919,100 @@ function AdminAppointmentRow({
                     />
                   </div>
                   {/* Attachment Button with panel */}
-                  <AdminChatAttachments
-                    uploadingFile={uploadingFile}
-                    onSelectPhotos={(files)=>handleFileUpload(files)}
-                    onSelectVideo={(file)=>{
-                      if (!file) return;
-                      if (file.size > 5 * 1024 * 1024) { toast.error('Maximum video size is 5MB'); return; }
-                      setSelectedVideo(file);
-                      setShowVideoPreviewModal(true);
-                    }}
-                    onSelectDocument={(file)=>{
-                      if (!file) return;
-                      if (file.size > 5 * 1024 * 1024) { toast.error('Maximum document size is 5MB'); return; }
-                      setSelectedDocument(file);
-                      setShowDocumentPreviewModal(true);
-                    }}
-                  />
+                  <div className="absolute right-3 bottom-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowAttachmentPanel(prev => !prev)}
+                      disabled={uploadingFile}
+                      className={`flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300 ${
+                        uploadingFile
+                          ? 'bg-gray-400 cursor-not-allowed'
+                          : 'bg-gray-100 hover:bg-gray-200 hover:shadow-md active:scale-95'
+                      }`}
+                      title="Attach"
+                    >
+                      {uploadingFile ? (
+                        <div className="animate-spin w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full"></div>
+                      ) : (
+                        <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                        </svg>
+                      )}
+                    </button>
+                    {showAttachmentPanel && !uploadingFile && (
+                      <div className="absolute bottom-10 right-0 bg-white border border-gray-200 shadow-xl rounded-lg w-48 py-2 z-20">
+                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                          <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          Photos
+                          <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            onChange={(e) => {
+                              const files = e.target.files;
+                              if (files && files.length > 0) {
+                                handleFileUpload(files);
+                              }
+                              e.target.value = '';
+                              setShowAttachmentPanel(false);
+                            }}
+                          />
+                        </label>
+                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                          <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                          Videos
+                          <input
+                            ref={videoInputRef}
+                            type="file"
+                            accept="video/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files && e.target.files[0];
+                              if (file) {
+                                if (file.size > 5 * 1024 * 1024) {
+                                  toast.error('Maximum video size is 5MB');
+                                } else {
+                                  setSelectedVideo(file);
+                                  setShowVideoPreviewModal(true);
+                                }
+                              }
+                              e.target.value = '';
+                              setShowAttachmentPanel(false);
+                            }}
+                          />
+                        </label>
+                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                          <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          Documents
+                          <input
+                            ref={documentInputRef}
+                            type="file"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files && e.target.files[0];
+                              if (file) {
+                                if (file.size > 5 * 1024 * 1024) {
+                                  toast.error('Maximum document size is 5MB');
+                                } else {
+                                  setSelectedDocument(file);
+                                  setShowDocumentPreviewModal(true);
+                                }
+                              }
+                              e.target.value = '';
+                              setShowAttachmentPanel(false);
+                            }}
+                          />
+                        </label>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
                 <button
