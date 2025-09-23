@@ -1685,6 +1685,15 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const [detectedUrl, setDetectedUrl] = useState(null);
   const [previewDismissed, setPreviewDismissed] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+  const videoInputRef = useRef(null);
+  const documentInputRef = useRef(null);
+  const attachmentButtonRef = useRef(null);
+  // Attachment panel and new media states
+  const [showAttachmentPanel, setShowAttachmentPanel] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [showVideoPreviewModal, setShowVideoPreviewModal] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [showDocumentPreviewModal, setShowDocumentPreviewModal] = useState(false);
 
   // Sound effects
   const { playMessageSent, playMessageReceived, playNotification, toggleMute, setVolume, isMuted } = useSoundEffects();
@@ -1921,6 +1930,114 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
           toast.error(`All download methods failed: ${openError.message}. Please right-click the image and select "Save image as..." or check your internet connection.`);
         }
       }
+    }
+  };
+
+  // Video upload + send
+  const sendVideoMessage = async (videoUrl, fileName) => {
+    const tempId = `temp-${Date.now()}`;
+    const tempMessage = {
+      _id: tempId,
+      sender: currentUser._id,
+      senderEmail: currentUser.email,
+      message: `🎬 ${fileName}`,
+      videoUrl,
+      type: 'video',
+      status: 'sending',
+      timestamp: new Date().toISOString(),
+    };
+    setComments(prev => [...prev, tempMessage]);
+    try {
+      const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, {
+        message: `🎬 ${fileName}`,
+        videoUrl,
+        type: 'video'
+      }, { withCredentials: true });
+      setComments(data.comments || data.updated?.comments || data?.appointment?.comments || []);
+    } catch (err) {
+      toast.error('Failed to send video');
+      setComments(prev => prev.filter(m => m._id !== tempId));
+    }
+  };
+
+  const handleSendSelectedVideo = async () => {
+    if (!selectedVideo) return;
+    try {
+      setUploadingFile(true);
+      const form = new FormData();
+      form.append('video', selectedVideo);
+      const { data } = await axios.post(`${API_BASE_URL}/api/upload/video`, form, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (evt) => {
+          const pct = Math.round((evt.loaded * 100) / Math.max(1, evt.total || selectedVideo.size));
+          setUploadProgress(pct);
+        }
+      });
+      await sendVideoMessage(data.videoUrl, selectedVideo.name);
+      setSelectedVideo(null);
+      setShowVideoPreviewModal(false);
+      setUploadProgress(0);
+    } catch (e) {
+      toast.error(e.response?.data?.message || 'Video upload failed');
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
+  // Document upload + send
+  const sendDocumentMessage = async (documentUrl, file) => {
+    const tempId = `temp-${Date.now()}`;
+    const tempMessage = {
+      _id: tempId,
+      sender: currentUser._id,
+      senderEmail: currentUser.email,
+      message: `📄 ${file.name}`,
+      documentUrl,
+      documentName: file.name,
+      documentMimeType: file.type || null,
+      type: 'document',
+      status: 'sending',
+      timestamp: new Date().toISOString(),
+    };
+    setComments(prev => [...prev, tempMessage]);
+    try {
+      const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, {
+        message: `📄 ${file.name}`,
+        documentUrl,
+        documentName: file.name,
+        documentMimeType: file.type || null,
+        type: 'document'
+      }, { withCredentials: true });
+      setComments(data.comments || data.updated?.comments || data?.appointment?.comments || []);
+    } catch (err) {
+      toast.error('Failed to send document');
+      setComments(prev => prev.filter(m => m._id !== tempId));
+    }
+  };
+
+  const handleSendSelectedDocument = async () => {
+    if (!selectedDocument) return;
+    try {
+      setUploadingFile(true);
+      const form = new FormData();
+      form.append('document', selectedDocument);
+      const { data } = await axios.post(`${API_BASE_URL}/api/upload/document`, form, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (evt) => {
+          const pct = Math.round((evt.loaded * 100) / Math.max(1, evt.total || selectedDocument.size));
+          setUploadProgress(pct);
+        }
+      });
+      await sendDocumentMessage(data.documentUrl, selectedDocument);
+      setSelectedDocument(null);
+      setShowDocumentPreviewModal(false);
+      setUploadProgress(0);
+    } catch (e) {
+      toast.error(e.response?.data?.message || 'Document upload failed');
+    } finally {
+      setUploadingFile(false);
     }
   };
 
@@ -5614,10 +5731,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           <div className="absolute top-full right-0 mt-2 bg-gray-800 text-white text-xs rounded-lg px-3 py-2 shadow-lg z-20 max-w-xs animate-fadeIn">
                             <div className="font-semibold mb-2">⌨️ Keyboard Shortcuts:</div>
                             <div className="mb-2">• Press Ctrl + F to quickly focus and type your message</div>
-                            <div className="border-t border-gray-600 pt-2 mt-2">
-                              <div className="font-semibold mb-2">📎 File Upload Guidelines:</div>
-                              <div>• Images only (JPG, PNG, GIF, WebP)</div>
-                              <div>• Maximum size: 5MB per file</div>
+                          <div className="border-t border-gray-600 pt-2 mt-2">
+                            <div className="font-semibold mb-2">📎 File Upload Guidelines:</div>
+                            <div>• Photos: JPG, PNG, GIF, WebP (≤ 5MB)</div>
+                            <div>• Videos: MP4, WebM, MOV, MKV, OGG (≤ 5MB)</div>
+                            <div>• Documents: PDF, DOCX, XLSX, TXT and more (≤ 5MB)</div>
                               <div>• Add captions to images</div>
                               <div>• Other file types coming soon</div>
                             </div>
@@ -6009,6 +6127,55 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                               e.target.className = "max-w-full max-h-64 rounded-lg opacity-50";
                                             }}
                                           />
+                                        </div>
+                                      )}
+                                      {/* Video Message */}
+                                      {c.videoUrl && (
+                                        <div className="mb-2">
+                                          <div className="relative">
+                                            <video
+                                              src={c.videoUrl}
+                                              className="max-w-full max-h-64 rounded-lg border"
+                                              controls
+                                            />
+                                          </div>
+                                          <div className="mt-1 text-xs text-gray-500 flex gap-3">
+                                            <button
+                                              className="text-blue-600 hover:underline"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                // download video
+                                                const a = document.createElement('a');
+                                                a.href = c.videoUrl;
+                                                a.download = `video-${c._id || Date.now()}`;
+                                                a.target = '_blank';
+                                                document.body.appendChild(a);
+                                                a.click();
+                                                a.remove();
+                                              }}
+                                            >Download</button>
+                                          </div>
+                                        </div>
+                                      )}
+                                      {/* Document Message */}
+                                      {c.documentUrl && (
+                                        <div className="mb-2">
+                                          <button
+                                            className="flex items-center gap-2 px-3 py-2 rounded-lg border hover:bg-gray-50"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              const a = document.createElement('a');
+                                              a.href = c.documentUrl;
+                                              a.download = c.documentName || `document-${c._id || Date.now()}`;
+                                              a.target = '_blank';
+                                              document.body.appendChild(a);
+                                              a.click();
+                                              a.remove();
+                                            }}
+                                          >
+                                            <span className="text-2xl">📄</span>
+                                            <span className="text-sm text-blue-700 truncate max-w-[200px]">{c.documentName || 'Document'}</span>
+                                          </button>
                                         </div>
                                       )}
                                       {/* Link Preview in Message */}
@@ -6777,39 +6944,95 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         disabled={isChatSendBlocked}
                       />
                     </div>
-                    {/* File Upload Button - Inside textarea on the right (WhatsApp style) */}
-                    <label className={`absolute right-3 bottom-3 flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300 ${
-                      uploadingFile || isChatSendBlocked
-                        ? 'bg-gray-400 cursor-not-allowed' 
-                        : 'bg-gray-100 hover:bg-gray-200 hover:shadow-md active:scale-95 cursor-pointer'
-                    }`}>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        className="hidden"
-                        disabled={isChatSendBlocked || uploadingFile}
-                        onChange={(e) => {
-                          if (isChatSendBlocked) {
-                            e.target.value = '';
-                            return;
-                          }
-                          const files = e.target.files;
-                          if (files && files.length > 0) {
-                            handleFileUpload(files);
-                          }
-                          // Reset the input
-                          e.target.value = '';
-                        }}
-                      />
-                      {uploadingFile ? (
-                        <div className="animate-spin w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full"></div>
-                      ) : (
-                        <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                        </svg>
+                    {/* Attachment Button with panel */}
+                    <div className="absolute right-3 bottom-3">
+                      <button
+                        ref={attachmentButtonRef}
+                        type="button"
+                        onClick={() => setShowAttachmentPanel(prev => !prev)}
+                        disabled={uploadingFile || isChatSendBlocked}
+                        className={`flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300 ${
+                          uploadingFile || isChatSendBlocked
+                            ? 'bg-gray-400 cursor-not-allowed'
+                            : 'bg-gray-100 hover:bg-gray-200 hover:shadow-md active:scale-95'
+                        }`}
+                        aria-haspopup="true"
+                        aria-expanded={showAttachmentPanel}
+                        aria-label="Attachments"
+                      >
+                        {uploadingFile ? (
+                          <div className="animate-spin w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full"></div>
+                        ) : (
+                          <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                          </svg>
+                        )}
+                      </button>
+                      {showAttachmentPanel && !isChatSendBlocked && (
+                        <div className="absolute bottom-10 right-0 bg-white border border-gray-200 shadow-xl rounded-lg w-40 py-2 z-20"> 
+                          <label className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                            Photos
+                            <input
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              className="hidden"
+                              onChange={(e) => {
+                                const files = e.target.files;
+                                if (files && files.length > 0) {
+                                  handleFileUpload(files);
+                                }
+                                e.target.value = '';
+                                setShowAttachmentPanel(false);
+                              }}
+                            />
+                          </label>
+                          <label className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                            Videos
+                            <input
+                              ref={videoInputRef}
+                              type="file"
+                              accept="video/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files && e.target.files[0];
+                                if (file) {
+                                  if (file.size > 5 * 1024 * 1024) {
+                                    toast.error('Maximum video size is 5MB');
+                                  } else {
+                                    setSelectedVideo(file);
+                                    setShowVideoPreviewModal(true);
+                                  }
+                                }
+                                e.target.value = '';
+                                setShowAttachmentPanel(false);
+                              }}
+                            />
+                          </label>
+                          <label className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                            Documents
+                            <input
+                              ref={documentInputRef}
+                              type="file"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files && e.target.files[0];
+                                if (file) {
+                                  if (file.size > 5 * 1024 * 1024) {
+                                    toast.error('Maximum document size is 5MB');
+                                  } else {
+                                    setSelectedDocument(file);
+                                    setShowDocumentPreviewModal(true);
+                                  }
+                                }
+                                e.target.value = '';
+                                setShowAttachmentPanel(false);
+                              }}
+                            />
+                          </label>
+                        </div>
                       )}
-                    </label>
+                    </div>
                   </div>
                   
                   <button
@@ -7098,6 +7321,61 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                             </>
                           )}
                         </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Video Preview Modal */}
+                {showVideoPreviewModal && selectedVideo && (
+                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-3xl w-full">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-lg font-medium text-gray-700">Video Preview</span>
+                        <button
+                          onClick={() => { setSelectedVideo(null); setShowVideoPreviewModal(false); }}
+                          className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+                        >
+                          <FaTimes className="w-5 h-5" />
+                        </button>
+                      </div>
+                      <div className="mb-4">
+                        <video controls className="w-full rounded-lg border" src={URL.createObjectURL(selectedVideo)} />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-gray-600 truncate">{selectedVideo.name}</div>
+                        <div className="flex gap-2">
+                          <button onClick={() => { setSelectedVideo(null); setShowVideoPreviewModal(false); }} className="px-4 py-2 rounded-lg border">Cancel</button>
+                          <button onClick={handleSendSelectedVideo} className="px-4 py-2 rounded-lg bg-blue-600 text-white">Send</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Document Preview Modal */}
+                {showDocumentPreviewModal && selectedDocument && (
+                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-md w-full">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-lg font-medium text-gray-700">Document Preview</span>
+                        <button
+                          onClick={() => { setSelectedDocument(null); setShowDocumentPreviewModal(false); }}
+                          className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+                        >
+                          <FaTimes className="w-5 h-5" />
+                        </button>
+                      </div>
+                      <div className="mb-4 flex items-center gap-3">
+                        <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center text-gray-600">📄</div>
+                        <div className="min-w-0">
+                          <div className="text-sm font-medium truncate">{selectedDocument.name}</div>
+                          <div className="text-xs text-gray-500 truncate">{selectedDocument.type || 'Document'}</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <button onClick={() => { setSelectedDocument(null); setShowDocumentPreviewModal(false); }} className="px-4 py-2 rounded-lg border">Cancel</button>
+                        <button onClick={handleSendSelectedDocument} className="px-4 py-2 rounded-lg bg-blue-600 text-white">Send</button>
                       </div>
                     </div>
                   </div>

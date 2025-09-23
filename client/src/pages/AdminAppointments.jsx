@@ -1692,6 +1692,11 @@ function AdminAppointmentRow({
   const [failedFiles, setFailedFiles] = useLocalState([]);
   const [isCancellingUpload, setIsCancellingUpload] = useLocalState(false);
   const currentUploadControllerRef = React.useRef(null);
+  // New media states
+  const [selectedVideo, setSelectedVideo] = useLocalState(null);
+  const [showVideoPreviewModal, setShowVideoPreviewModal] = useLocalState(false);
+  const [selectedDocument, setSelectedDocument] = useLocalState(null);
+  const [showDocumentPreviewModal, setShowDocumentPreviewModal] = useLocalState(false);
 
 
 
@@ -4405,10 +4410,10 @@ function AdminAppointmentRow({
                           <div className="mb-2">• Press Ctrl + F to quickly focus and type your message</div>
                           <div className="border-t border-gray-600 pt-2 mt-2">
                             <div className="font-semibold mb-2">📎 File Upload Guidelines:</div>
-                            <div>• Images only (JPG, PNG, GIF, WebP)</div>
-                            <div>• Maximum size: 5MB per file</div>
+                            <div>• Photos: JPG, PNG, GIF, WebP (≤ 5MB)</div>
+                            <div>• Videos: MP4, WebM, MOV, MKV, OGG (≤ 5MB)</div>
+                            <div>• Documents: PDF, DOCX, XLSX, TXT and more (≤ 5MB)</div>
                             <div>• Add captions to images</div>
-                            <div>• Other file types coming soon</div>
                           </div>
                           <div className="border-t border-gray-600 pt-2 mt-2">
                             <div className="font-semibold mb-2">💬 Chat Features:</div>
@@ -4858,6 +4863,48 @@ function AdminAppointmentRow({
                                               e.target.className = "max-w-full max-h-64 rounded-lg opacity-50";
                                             }}
                                           />
+                                        </div>
+                                      )}
+                                      {/* Video Message */}
+                                      {c.videoUrl && (
+                                        <div className="mb-2">
+                                          <video src={c.videoUrl} className="max-w-full max-h-64 rounded-lg border" controls />
+                                          <div className="mt-1 text-xs text-gray-500">
+                                            <button
+                                              className="text-blue-600 hover:underline"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                const a = document.createElement('a');
+                                                a.href = c.videoUrl;
+                                                a.download = `video-${c._id || Date.now()}`;
+                                                a.target = '_blank';
+                                                document.body.appendChild(a);
+                                                a.click();
+                                                a.remove();
+                                              }}
+                                            >Download</button>
+                                          </div>
+                                        </div>
+                                      )}
+                                      {/* Document Message */}
+                                      {c.documentUrl && (
+                                        <div className="mb-2">
+                                          <button
+                                            className="flex items-center gap-2 px-3 py-2 rounded-lg border hover:bg-gray-50"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              const a = document.createElement('a');
+                                              a.href = c.documentUrl;
+                                              a.download = c.documentName || `document-${c._id || Date.now()}`;
+                                              a.target = '_blank';
+                                              document.body.appendChild(a);
+                                              a.click();
+                                              a.remove();
+                                            }}
+                                          >
+                                            <span className="text-2xl">📄</span>
+                                            <span className="text-sm text-blue-700 truncate max-w-[200px]">{c.documentName || 'Document'}</span>
+                                          </button>
                                         </div>
                                       )}
                                       {/* Link Preview in Message */}
@@ -5654,35 +5701,23 @@ function AdminAppointmentRow({
                         inputRef={inputRef}
                     />
                   </div>
-                  {/* File Upload Button - Inside textarea on the right (WhatsApp style) */}
-                  <label className={`absolute right-3 bottom-3 flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300 cursor-pointer ${
-                    uploadingFile 
-                      ? 'bg-gray-400 cursor-not-allowed' 
-                      : 'bg-gray-100 hover:bg-gray-200 hover:shadow-md active:scale-95'
-                  }`}>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      className="hidden"
-                      onChange={(e) => {
-                        const files = e.target.files;
-                        if (files && files.length > 0) {
-                          handleFileUpload(files);
-                        }
-                        // Reset the input
-                        e.target.value = '';
-                      }}
-                      disabled={uploadingFile}
-                    />
-                    {uploadingFile ? (
-                      <div className="animate-spin w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full"></div>
-                    ) : (
-                      <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                      </svg>
-                    )}
-                  </label>
+                  {/* Attachment Button with panel */}
+                  <AdminChatAttachments
+                    uploadingFile={uploadingFile}
+                    onSelectPhotos={(files)=>handleFileUpload(files)}
+                    onSelectVideo={(file)=>{
+                      if (!file) return;
+                      if (file.size > 5 * 1024 * 1024) { toast.error('Maximum video size is 5MB'); return; }
+                      setSelectedVideo(file);
+                      setShowVideoPreviewModal(true);
+                    }}
+                    onSelectDocument={(file)=>{
+                      if (!file) return;
+                      if (file.size > 5 * 1024 * 1024) { toast.error('Maximum document size is 5MB'); return; }
+                      setSelectedDocument(file);
+                      setShowDocumentPreviewModal(true);
+                    }}
+                  />
                 </div>
                 
                 <button
@@ -6593,6 +6628,33 @@ function AdminAppointmentRow({
                                         e.target.className = "max-w-full max-h-64 rounded-lg opacity-50";
                                       }}
                                     />
+                                  </div>
+                                )}
+                                {/* Video Message */}
+                                {message.videoUrl && (
+                                  <div className="mb-2">
+                                    <video src={message.videoUrl} className="max-w-full max-h-64 rounded-lg border" controls />
+                                  </div>
+                                )}
+                                {/* Document Message */}
+                                {message.documentUrl && (
+                                  <div className="mb-2">
+                                    <button
+                                      className="flex items-center gap-2 px-3 py-2 rounded-lg border hover:bg-gray-50"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const a = document.createElement('a');
+                                        a.href = message.documentUrl;
+                                        a.download = message.documentName || `document-${message._id || Date.now()}`;
+                                        a.target = '_blank';
+                                        document.body.appendChild(a);
+                                        a.click();
+                                        a.remove();
+                                      }}
+                                    >
+                                      <span className="text-2xl">📄</span>
+                                      <span className="text-sm text-blue-700 truncate max-w-[200px]">{message.documentName || 'Document'}</span>
+                                    </button>
                                   </div>
                                 )}
                                 
