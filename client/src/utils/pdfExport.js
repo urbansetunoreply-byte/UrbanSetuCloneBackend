@@ -2,6 +2,37 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
 /**
+ * Try to convert a Cloudinary asset URL into a download link that preserves filename/type
+ * by injecting the `fl_attachment:<filename>` transformation.
+ */
+const buildCloudinaryDownloadLink = (originalUrl, preferredFilename) => {
+  if (!originalUrl || typeof originalUrl !== 'string') return originalUrl;
+  try {
+    // Only transform if looks like a Cloudinary upload URL
+    const uploadMarker = '/upload/';
+    const idx = originalUrl.indexOf(uploadMarker);
+    if (idx === -1) return originalUrl;
+
+    // If already contains fl_attachment, leave as-is
+    if (/fl_attachment/.test(originalUrl)) return originalUrl;
+
+    const before = originalUrl.slice(0, idx + uploadMarker.length);
+    const after = originalUrl.slice(idx + uploadMarker.length);
+
+    // Sanitize filename (Cloudinary expects colon syntax, keep simple ascii)
+    const safeName = (preferredFilename || 'download')
+      .replace(/\s+/g, '_')
+      .replace(/[^a-zA-Z0-9._-]/g, '')
+      .slice(0, 120);
+
+    // Insert fl_attachment:<filename>/ right after /upload/
+    return `${before}fl_attachment:${safeName}/${after}`;
+  } catch (_) {
+    return originalUrl;
+  }
+};
+
+/**
  * Load image from URL and convert to base64
  */
 const loadImageAsBase64 = (url) => {
@@ -661,8 +692,9 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
           checkPageBreak(28);
           const isVideo = !!message.videoUrl;
           const label = isVideo ? '🎬 Video' : '📄 Document';
-          const link = isVideo ? message.videoUrl : message.documentUrl;
+          const rawLink = isVideo ? message.videoUrl : message.documentUrl;
           const name = message.documentName || (isVideo ? 'Video' : 'Document');
+          const link = buildCloudinaryDownloadLink(rawLink, name);
 
           const bubbleWidth = Math.min(120, pageWidth - (margin * 2) - 20);
 
