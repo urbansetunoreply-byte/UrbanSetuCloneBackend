@@ -8,6 +8,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export default function CreateListing() {
   const [formData, setFormData] = useState({
     imageUrls: [],
+    videoUrls: [],
     name: "",
     description: "",
     // Structured address fields
@@ -36,6 +37,8 @@ export default function CreateListing() {
   const [loading, setLoading] = useState(false);
   const [imageErrors, setImageErrors] = useState({});
   const [uploadingImages, setUploadingImages] = useState({});
+  const [videoErrors, setVideoErrors] = useState({});
+  const [uploadingVideos, setUploadingVideos] = useState({});
   const { currentUser } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const location = useLocation();
@@ -85,6 +88,19 @@ export default function CreateListing() {
     const isCloudinaryUrl = url.includes('cloudinary.com');
     
     return hasImageExtension || url.includes('images') || url.includes('img') || isCloudinaryUrl;
+  };
+
+  const validateVideoUrl = (url) => {
+    if (!url) return true;
+    try {
+      new URL(url);
+    } catch {
+      return false;
+    }
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.mkv'];
+    const hasVideoExtension = videoExtensions.some(ext => url.toLowerCase().includes(ext));
+    const isCloudinaryUrl = url.includes('cloudinary.com');
+    return hasVideoExtension || url.includes('video') || isCloudinaryUrl;
   };
 
   const handleImageChange = (index, url) => {
@@ -155,6 +171,60 @@ export default function CreateListing() {
     }
   };
 
+  const handleVideoUrlChange = (index, url) => {
+    const newVideoUrls = [...formData.videoUrls];
+    newVideoUrls[index] = url;
+    setFormData({ ...formData, videoUrls: newVideoUrls });
+    const newVideoErrors = { ...videoErrors };
+    if (url && !validateVideoUrl(url)) {
+      newVideoErrors[index] = 'Please enter a valid video URL';
+    } else {
+      delete newVideoErrors[index];
+    }
+    setVideoErrors(newVideoErrors);
+  };
+
+  const handleVideoUpload = async (index, file) => {
+    if (!file) return;
+    if (!file.type.startsWith('video/')) {
+      setVideoErrors(prev => ({ ...prev, [index]: 'Please select a video file' }));
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setVideoErrors(prev => ({ ...prev, [index]: 'File size must be less than 5MB' }));
+      return;
+    }
+    setUploadingVideos(prev => ({ ...prev, [index]: true }));
+    setVideoErrors(prev => ({ ...prev, [index]: '' }));
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append('video', file);
+      const res = await fetch(`${API_BASE_URL}/api/upload/video`, {
+        method: 'POST',
+        credentials: 'include',
+        body: uploadFormData,
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const newVideoUrls = [...formData.videoUrls];
+        newVideoUrls[index] = data.videoUrl;
+        setFormData(prev => ({ ...prev, videoUrls: newVideoUrls }));
+        setVideoErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[index];
+          return newErrors;
+        });
+      } else {
+        setVideoErrors(prev => ({ ...prev, [index]: data.message || 'Upload failed' }));
+      }
+    } catch (error) {
+      console.error('Video upload error:', error);
+      setVideoErrors(prev => ({ ...prev, [index]: 'Upload failed. Please try again.' }));
+    } finally {
+      setUploadingVideos(prev => ({ ...prev, [index]: false }));
+    }
+  };
+
   const onHandleRemoveImage = (index) => {
     setFormData({
       ...formData,
@@ -170,6 +240,19 @@ export default function CreateListing() {
     const newUploadingImages = { ...uploadingImages };
     delete newUploadingImages[index];
     setUploadingImages(newUploadingImages);
+  };
+
+  const onHandleRemoveVideo = (index) => {
+    setFormData({
+      ...formData,
+      videoUrls: formData.videoUrls.filter((_, i) => i !== index),
+    });
+    const newVideoErrors = { ...videoErrors };
+    delete newVideoErrors[index];
+    setVideoErrors(newVideoErrors);
+    const newUploadingVideos = { ...uploadingVideos };
+    delete newUploadingVideos[index];
+    setUploadingVideos(newUploadingVideos);
   };
 
   const onHandleChanges = (e) => {
@@ -203,6 +286,10 @@ export default function CreateListing() {
     // Check for image errors
     if (Object.keys(imageErrors).length > 0) {
       return setError("Please fix the image URL errors before submitting");
+    }
+    // Check for video errors
+    if (Object.keys(videoErrors).length > 0) {
+      return setError("Please fix the video URL errors before submitting");
     }
 
     // Only require consent for non-admin users
@@ -556,6 +643,65 @@ export default function CreateListing() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Property Videos */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h4 className="font-semibold text-gray-800 mb-3">Property Videos</h4>
+            <p className="text-gray-600 text-sm mb-3">
+              Upload videos directly or add video URLs. Supported formats: MP4, WebM, OGG, MOV, MKV (max 5MB each)
+            </p>
+            <div className="space-y-3">
+              {formData.videoUrls.map((url, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      placeholder={`Video URL ${index + 1} (e.g., https://example.com/video.mp4)`}
+                      value={url || ""}
+                      onChange={(e) => handleVideoUrlChange(index, e.target.value)}
+                      className={`flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        videoErrors[index] ? 'border-red-500' : ''
+                      }`}
+                    />
+                    <label className="bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition cursor-pointer">
+                      {uploadingVideos[index] ? 'Uploading...' : 'Upload File'}
+                      <input
+                        type="file"
+                        accept="video/*"
+                        onChange={(e) => handleVideoUpload(index, e.target.files[0])}
+                        className="hidden"
+                        disabled={uploadingVideos[index]}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => onHandleRemoveVideo(index)}
+                      className="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition"
+                      title="Remove this video"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  {videoErrors[index] && (
+                    <p className="text-red-500 text-sm">{videoErrors[index]}</p>
+                  )}
+                  {uploadingVideos[index] && (
+                    <p className="text-blue-500 text-sm">⏳ Uploading video...</p>
+                  )}
+                  {url && (
+                    <video src={url} className="w-full h-24 object-cover rounded-lg" controls />
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, videoUrls: [...formData.videoUrls, ""] })}
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition mt-2"
+              >
+                Add Video
+              </button>
+            </div>
           </div>
 
           {/* Consent Checkbox for Users */}

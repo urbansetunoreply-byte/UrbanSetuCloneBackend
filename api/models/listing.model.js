@@ -73,6 +73,12 @@ const listingSchema = new mongoose.Schema({
         type: Array,
         required: true
     },
+    // Optional property videos (Cloudinary URLs or external links)
+    videoUrls: {
+        type: Array,
+        required: false,
+        default: []
+    },
     locationLink: {
         type: String,
         required: false
