@@ -1217,8 +1217,8 @@ export default function MyAppointments() {
                   <input type="time" className="border rounded px-2 py-1 w-full" value={reinitiateData.time} onChange={e => setReinitiateData(d => ({ ...d, time: e.target.value }))} required />
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">Message</label>
-                  <textarea className="border rounded px-2 py-1 w-full" value={reinitiateData.message} onChange={e => setReinitiateData(d => ({ ...d, message: e.target.value }))} required />
+                  <label className="block font-semibold mb-1">Message (optional)</label>
+                  <textarea className="border rounded px-2 py-1 w-full" value={reinitiateData.message} onChange={e => setReinitiateData(d => ({ ...d, message: e.target.value }))} />
                 </div>
                 <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full">Submit</button>
                 <button type="button" className="mt-2 w-full bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400" onClick={() => setShowReinitiateModal(false)}>Cancel</button>
@@ -6273,7 +6273,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                             }}
                                           >
                                             <span className="text-2xl">📄</span>
-                                            <span className="text-sm text-blue-700 truncate max-w-[200px]">{c.documentName || 'Document'}</span>
+                                            <span className={`text-sm truncate max-w-[200px] ${isMe ? 'text-white' : 'text-blue-700'}`}>{c.documentName || 'Document'}</span>
                                           </button>
                                         </div>
                                       )}

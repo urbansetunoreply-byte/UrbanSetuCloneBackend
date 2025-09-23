@@ -195,7 +195,7 @@ export default function EditListing() {
   const onSubmitForm = async (e) => {
     e.preventDefault();
     if (!formData.type) return setError("Please select a listing type (Sale or Rent)");
-    if (formData.imageUrls.length < 1) return setError("At least one image must be uploaded");
+    // Images are optional when editing as well
     if (formData.regularPrice < formData.discountPrice)
       return setError("Discount price should be less than regular price");
     if (!formData.propertyNumber) return setError("Property number is required");

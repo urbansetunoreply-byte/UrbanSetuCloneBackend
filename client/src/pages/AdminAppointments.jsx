@@ -5152,7 +5152,7 @@ function AdminAppointmentRow({
                                             }}
                                           >
                                             <span className="text-2xl">📄</span>
-                                            <span className="text-sm text-blue-700 truncate max-w-[200px]">{c.documentName || 'Document'}</span>
+                                            <span className={`text-sm truncate max-w-[200px] ${isMe ? 'text-white' : 'text-blue-700'}`}>{c.documentName || 'Document'}</span>
                                           </button>
                                         </div>
                                       )}
