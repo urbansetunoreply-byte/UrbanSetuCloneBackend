@@ -5109,13 +5109,16 @@ function AdminAppointmentRow({
                                             onClick={(e) => {
                                               e.preventDefault();
                                               e.stopPropagation();
-                                              if (e.target.requestFullscreen) {
-                                                e.target.requestFullscreen();
-                                              } else if (e.target.webkitRequestFullscreen) {
-                                                e.target.webkitRequestFullscreen();
-                                              } else if (e.target.msRequestFullscreen) {
-                                                e.target.msRequestFullscreen();
-                                              }
+                                              const media = (localComments || [])
+                                                .filter(msg => (msg.originalImageUrl || msg.imageUrl || msg.videoUrl))
+                                                .map(msg => {
+                                                  if (msg.originalImageUrl || msg.imageUrl) return { type: 'image', url: msg.originalImageUrl || msg.imageUrl };
+                                                  return { type: 'video', url: msg.videoUrl };
+                                                });
+                                              const startIndex = Math.max(0, media.findIndex(m => m.url === c.videoUrl));
+                                              setChatMediaItems(media);
+                                              setChatMediaStartIndex(startIndex);
+                                              setShowChatMediaPreview(true);
                                             }}
                                           />
                                           <div className={`mt-1 text-xs ${isMe ? 'text-blue-100' : 'text-gray-500'}`}>
