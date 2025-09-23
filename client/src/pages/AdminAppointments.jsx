@@ -15,6 +15,7 @@ import { useSoundEffects } from "../components/SoundEffects";
 import { exportEnhancedChatToPDF } from '../utils/pdfExport';
 import ExportChatModal from '../components/ExportChatModal';
 import axios from 'axios';
+import ChatVideo from '../components/ChatVideo';
 // Note: Do not import server-only libs here
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -5086,21 +5087,9 @@ function AdminAppointmentRow({
                                       {/* Video Message */}
                                       {c.videoUrl && (
                                         <div className="mb-2">
-                                          <video 
+                                          <ChatVideo 
                                             src={c.videoUrl} 
                                             className="max-w-full max-h-64 rounded-lg border cursor-pointer hover:opacity-90 transition-opacity" 
-                                            controls 
-                                            onClick={(e) => {
-                                              e.preventDefault();
-                                              e.stopPropagation();
-                                              if (e.target.requestFullscreen) {
-                                                e.target.requestFullscreen();
-                                              } else if (e.target.webkitRequestFullscreen) {
-                                                e.target.webkitRequestFullscreen();
-                                              } else if (e.target.msRequestFullscreen) {
-                                                e.target.msRequestFullscreen();
-                                              }
-                                            }}
                                           />
                                           <div className={`mt-1 text-xs ${isMe ? 'text-blue-100' : 'text-gray-500'}`}>
                                             <button
@@ -6961,21 +6950,9 @@ function AdminAppointmentRow({
                                 {/* Video Message */}
                                 {message.videoUrl && (
                                   <div className="mb-2">
-                                    <video 
+                                    <ChatVideo 
                                       src={message.videoUrl} 
                                       className="max-w-full max-h-64 rounded-lg border cursor-pointer hover:opacity-90 transition-opacity" 
-                                      controls 
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        if (e.target.requestFullscreen) {
-                                          e.target.requestFullscreen();
-                                        } else if (e.target.webkitRequestFullscreen) {
-                                          e.target.webkitRequestFullscreen();
-                                        } else if (e.target.msRequestFullscreen) {
-                                          e.target.msRequestFullscreen();
-                                        }
-                                      }}
                                     />
                                   </div>
                                 )}
@@ -7241,7 +7218,7 @@ function AdminAppointmentRow({
               </button>
             </div>
             <div className="flex-1 mb-4 min-h-0">
-              <video controls className="w-full h-full max-h-[60vh] rounded-lg border" src={videoObjectURL} />
+              <ChatVideo src={videoObjectURL} className="w-full h-full max-h-[60vh] rounded-lg border" />
             </div>
             
             {/* Caption for Video */}

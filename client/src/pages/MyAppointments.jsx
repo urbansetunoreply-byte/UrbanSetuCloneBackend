@@ -8,6 +8,7 @@ import LinkPreview from '../components/LinkPreview';
 import { EmojiButton } from '../components/EmojiPicker';
 import CustomEmojiPicker from '../components/EmojiPicker';
 import { useSoundEffects, SoundControl } from '../components/SoundEffects';
+import ChatVideo from '../components/ChatVideo';
 import { useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Appointment from "../components/Appointment";
@@ -6241,21 +6242,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                       {c.videoUrl && (
                                         <div className="mb-2">
                                           <div className="relative">
-                                            <video
+                                            <ChatVideo
                                               src={c.videoUrl}
                                               className="max-w-full max-h-64 rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
-                                              controls
-                                              onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                if (e.target.requestFullscreen) {
-                                                  e.target.requestFullscreen();
-                                                } else if (e.target.webkitRequestFullscreen) {
-                                                  e.target.webkitRequestFullscreen();
-                                                } else if (e.target.msRequestFullscreen) {
-                                                  e.target.msRequestFullscreen();
-                                                }
-                                              }}
                                             />
                                           </div>
                                           <div className={`mt-1 text-xs flex gap-3 ${isMe ? 'text-blue-100' : 'text-gray-500'}`}>
@@ -7484,7 +7473,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         </button>
                       </div>
                       <div className="flex-1 mb-4 min-h-0">
-                        <video controls className="w-full h-full max-h-[60vh] rounded-lg border" src={videoObjectURL} />
+                        <ChatVideo src={videoObjectURL} className="w-full h-full max-h-[60vh] rounded-lg border" />
                       </div>
                       
                       {/* Caption for Video */}
