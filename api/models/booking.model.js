@@ -89,7 +89,13 @@ const bookingSchema = new mongoose.Schema({
       starredBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
       // Image message support
       imageUrl: { type: String, default: null },
-      type: { type: String, enum: ['text', 'image'], default: 'text' },
+      // Video message support
+      videoUrl: { type: String, default: null },
+      // Document message support
+      documentUrl: { type: String, default: null },
+      documentName: { type: String, default: null },
+      documentMimeType: { type: String, default: null },
+      type: { type: String, enum: ['text', 'image', 'video', 'document'], default: 'text' },
       // Message pinning functionality
       pinned: { type: Boolean, default: false },
       pinnedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

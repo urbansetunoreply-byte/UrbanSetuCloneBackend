@@ -294,7 +294,7 @@ router.patch('/:id/status', verifyToken, async (req, res) => {
 // POST: Add a comment to an appointment
 router.post('/:id/comment', verifyToken, async (req, res) => {
   try {
-    const { message, replyTo, imageUrl, type } = req.body;
+    const { message, replyTo, imageUrl, videoUrl, documentUrl, documentName, documentMimeType, type } = req.body;
     const { id } = req.params;
     const userId = req.user.id;
     
@@ -328,6 +328,8 @@ router.post('/:id/comment', verifyToken, async (req, res) => {
       readBy: [userId],
       ...(replyTo ? { replyTo } : {}),
       ...(imageUrl ? { imageUrl } : {}),
+      ...(videoUrl ? { videoUrl } : {}),
+      ...(documentUrl ? { documentUrl, documentName: documentName || null, documentMimeType: documentMimeType || null } : {}),
       ...(type ? { type } : {}),
     };
     
