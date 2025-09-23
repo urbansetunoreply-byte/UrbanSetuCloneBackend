@@ -384,7 +384,7 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
       // Pre-load all images if including media
       const imageCache = {};
       if (includeMedia) {
-        const imageMessages = validMessages.filter(msg => msg.imageUrl);
+      const imageMessages = validMessages.filter(msg => msg.imageUrl);
         for (const message of imageMessages) {
           try {
             const imageData = await loadImageAsBase64(message.imageUrl);
@@ -655,7 +655,90 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
           }
 
           yPosition += 8;
-        } else if (message.message && message.message.trim()) {
+        } 
+        // Handle video/doc placeholders with links
+        else if (message.videoUrl || message.documentUrl) {
+          checkPageBreak(28);
+          const isVideo = !!message.videoUrl;
+          const label = isVideo ? '🎬 Video' : '📄 Document';
+          const link = isVideo ? message.videoUrl : message.documentUrl;
+          const name = message.documentName || (isVideo ? 'Video' : 'Document');
+
+          const bubbleWidth = Math.min(120, pageWidth - (margin * 2) - 20);
+
+          // Draw placeholder bubble
+          if (isCurrentUser) {
+            pdf.setFillColor(...primaryColor);
+            pdf.roundedRect(pageWidth - margin - bubbleWidth, yPosition, bubbleWidth, 20, 2, 2, 'F');
+            pdf.setTextColor(255, 255, 255);
+            pdf.setFontSize(9);
+            pdf.text(`${label}: ${name}`, pageWidth - margin - bubbleWidth + 5, yPosition + 12);
+          } else {
+            pdf.setFillColor(250, 250, 250);
+            pdf.roundedRect(margin + 20, yPosition, bubbleWidth, 20, 2, 2, 'F');
+            pdf.setTextColor(51, 51, 51);
+            pdf.setFontSize(9);
+            pdf.text(`${label}: ${name}`, margin + 25, yPosition + 12);
+          }
+
+          yPosition += 24;
+
+          // Add clickable Cloudinary link below
+          if (link) {
+            checkPageBreak();
+            const linkColor = [59, 130, 246];
+            pdf.setTextColor(...linkColor);
+            pdf.setFontSize(7);
+            pdf.setFont('helvetica', 'normal');
+
+            let displayUrl = link;
+            const maxUrlLength = 60;
+            if (displayUrl.length > maxUrlLength) {
+              displayUrl = displayUrl.substring(0, maxUrlLength - 3) + '...';
+            }
+
+            const urlX = isCurrentUser ? pageWidth - margin - bubbleWidth + 5 : margin + 25;
+            const textWidth = pdf.getTextWidth(displayUrl);
+            const underlineY = yPosition + 1;
+
+            pdf.setDrawColor(...linkColor);
+            pdf.line(urlX, underlineY, urlX + textWidth, underlineY);
+            pdf.link(urlX, yPosition - 3, textWidth, 4, { url: link });
+            pdf.text(displayUrl, urlX, yPosition);
+            yPosition += 6;
+          }
+
+          // Add caption if present
+          if (message.message && message.message.trim()) {
+            const processedCaption = processMessageWithMarkdownAndLinks(message.message.trim(), pdf, bubbleWidth - 10);
+            processedCaption.lines.forEach(line => {
+              checkPageBreak();
+              const startX = isCurrentUser ? pageWidth - margin - bubbleWidth + 5 : margin + 25;
+              if (line.type === 'url') {
+                const linkColor2 = isCurrentUser ? [255, 255, 255] : [59, 130, 246];
+                pdf.setTextColor(...linkColor2);
+                pdf.setFontSize(8);
+                pdf.setFont('helvetica', 'normal');
+                const textWidth2 = pdf.getTextWidth(line.content);
+                const underlineY2 = yPosition + 1;
+                pdf.setDrawColor(...linkColor2);
+                pdf.line(startX, underlineY2, startX + textWidth2, underlineY2);
+                pdf.link(startX, yPosition - 3, textWidth2, 4, { url: line.url });
+                pdf.text(line.content, startX, yPosition);
+              } else {
+                const textColor2 = isCurrentUser ? [255, 255, 255] : [51, 51, 51];
+                pdf.setTextColor(...textColor2);
+                pdf.setFontSize(8);
+                pdf.setFont('helvetica', 'normal');
+                pdf.text(line.content, startX, yPosition);
+              }
+              yPosition += 4;
+            });
+          }
+
+          yPosition += 4;
+        }
+        else if (message.message && message.message.trim()) {
           // Regular text message with markdown and link handling
           checkPageBreak(20);
 

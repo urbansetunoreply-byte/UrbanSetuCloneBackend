@@ -1696,6 +1696,8 @@ function AdminAppointmentRow({
   const documentCaptionRef = React.useRef(null);
   const videoInputRef = React.useRef(null);
   const documentInputRef = React.useRef(null);
+  const attachmentButtonRef = React.useRef(null);
+  const attachmentPanelRef = React.useRef(null);
   // New media states
   const [showAttachmentPanel, setShowAttachmentPanel] = useLocalState(false);
   const [selectedVideo, setSelectedVideo] = useLocalState(null);
@@ -1719,6 +1721,20 @@ function AdminAppointmentRow({
       setVideoObjectURL(null);
     }
   }, [selectedVideo]);
+
+  // Close attachment panel on outside click
+  React.useEffect(() => {
+    if (!showAttachmentPanel) return;
+    const handleClickOutside = (e) => {
+      const btn = attachmentButtonRef.current;
+      const panel = attachmentPanelRef.current;
+      if (panel && panel.contains(e.target)) return;
+      if (btn && btn.contains(e.target)) return;
+      setShowAttachmentPanel(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside, true);
+    return () => document.removeEventListener('mousedown', handleClickOutside, true);
+  }, [showAttachmentPanel]);
 
   const selectedMessageForHeaderOptions = headerOptionsMessageId ? localComments.find(msg => msg._id === headerOptionsMessageId) : null;
 
@@ -5937,6 +5953,7 @@ function AdminAppointmentRow({
                   {/* Attachment Button with panel */}
                   <div className="absolute right-3 bottom-3">
                     <button
+                      ref={attachmentButtonRef}
                       type="button"
                       onClick={() => setShowAttachmentPanel(prev => !prev)}
                       disabled={uploadingFile}
@@ -5956,7 +5973,7 @@ function AdminAppointmentRow({
                       )}
                     </button>
                     {showAttachmentPanel && !uploadingFile && (
-                      <div className="absolute bottom-10 right-0 bg-white border border-gray-200 shadow-xl rounded-lg w-48 py-2 z-20">
+                      <div ref={attachmentPanelRef} className="absolute bottom-10 right-0 bg-white border border-gray-200 shadow-xl rounded-lg w-48 py-2 z-20">
                         <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
                           <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
