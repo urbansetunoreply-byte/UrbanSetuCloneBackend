@@ -4168,6 +4168,42 @@ function AdminAppointmentRow({
                                       Download Image
                                     </button>
                                   )}
+                                  {/* Download option for video messages */}
+                                  {selectedMessageForHeaderOptions.videoUrl && (
+                                    <button
+                                      className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+                                      onClick={async () => { 
+                                        try {
+                                          const response = await fetch(selectedMessageForHeaderOptions.videoUrl, { mode: 'cors' });
+                                          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                          const blob = await response.blob();
+                                          const blobUrl = window.URL.createObjectURL(blob);
+                                          const a = document.createElement('a');
+                                          a.href = blobUrl;
+                                          a.download = `video-${selectedMessageForHeaderOptions._id || Date.now()}.mp4`;
+                                          document.body.appendChild(a);
+                                          a.click();
+                                          a.remove();
+                                          setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                        } catch (error) {
+                                          console.error('Video download failed:', error);
+                                          // Fallback to direct link
+                                          const a = document.createElement('a');
+                                          a.href = selectedMessageForHeaderOptions.videoUrl;
+                                          a.download = `video-${selectedMessageForHeaderOptions._id || Date.now()}.mp4`;
+                                          a.target = '_blank';
+                                          document.body.appendChild(a);
+                                          a.click();
+                                          a.remove();
+                                        }
+                                        setShowHeaderMoreMenu(false); 
+                                        setHeaderOptionsMessageId(null); 
+                                      }}
+                                    >
+                                      <FaDownload className="text-sm" />
+                                      Download Video
+                                    </button>
+                                  )}
                                   <button
                                     className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                                     onClick={() => { showMessageInfo(selectedMessageForHeaderOptions); setShowHeaderMoreMenu(false); setHeaderOptionsMessageId(null); }}
@@ -4205,6 +4241,42 @@ function AdminAppointmentRow({
                                     >
                                       <FaDownload className="text-sm" />
                                       Download Image
+                                    </button>
+                                  )}
+                                  {/* Download option for video messages (for received messages) */}
+                                  {selectedMessageForHeaderOptions.videoUrl && (
+                                    <button
+                                      className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+                                      onClick={async () => { 
+                                        try {
+                                          const response = await fetch(selectedMessageForHeaderOptions.videoUrl, { mode: 'cors' });
+                                          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                          const blob = await response.blob();
+                                          const blobUrl = window.URL.createObjectURL(blob);
+                                          const a = document.createElement('a');
+                                          a.href = blobUrl;
+                                          a.download = `video-${selectedMessageForHeaderOptions._id || Date.now()}.mp4`;
+                                          document.body.appendChild(a);
+                                          a.click();
+                                          a.remove();
+                                          setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                        } catch (error) {
+                                          console.error('Video download failed:', error);
+                                          // Fallback to direct link
+                                          const a = document.createElement('a');
+                                          a.href = selectedMessageForHeaderOptions.videoUrl;
+                                          a.download = `video-${selectedMessageForHeaderOptions._id || Date.now()}.mp4`;
+                                          a.target = '_blank';
+                                          document.body.appendChild(a);
+                                          a.click();
+                                          a.remove();
+                                        }
+                                        setShowHeaderMoreMenu(false); 
+                                        setHeaderOptionsMessageId(null); 
+                                      }}
+                                    >
+                                      <FaDownload className="text-sm" />
+                                      Download Video
                                     </button>
                                   )}
                                   <button

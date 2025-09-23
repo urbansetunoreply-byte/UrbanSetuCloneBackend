@@ -1694,6 +1694,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const [showVideoPreviewModal, setShowVideoPreviewModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [showDocumentPreviewModal, setShowDocumentPreviewModal] = useState(false);
+  const [videoCaption, setVideoCaption] = useState('');
+  const [documentCaption, setDocumentCaption] = useState('');
 
   // Sound effects
   const { playMessageSent, playMessageReceived, playNotification, toggleMute, setVolume, isMuted } = useSoundEffects();
@@ -1934,13 +1936,13 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   };
 
   // Video upload + send
-  const sendVideoMessage = async (videoUrl, fileName) => {
+  const sendVideoMessage = async (videoUrl, fileName, caption = '') => {
     const tempId = `temp-${Date.now()}`;
     const tempMessage = {
       _id: tempId,
       sender: currentUser._id,
       senderEmail: currentUser.email,
-      message: `🎬 ${fileName}`,
+      message: caption || `🎬 ${fileName}`,
       videoUrl,
       type: 'video',
       status: 'sending',
@@ -1949,7 +1951,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     setComments(prev => [...prev, tempMessage]);
     try {
       const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, {
-        message: `🎬 ${fileName}`,
+        message: caption || `🎬 ${fileName}`,
         videoUrl,
         type: 'video'
       }, { withCredentials: true });
@@ -1974,9 +1976,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
           setUploadProgress(pct);
         }
       });
-      await sendVideoMessage(data.videoUrl, selectedVideo.name);
+      await sendVideoMessage(data.videoUrl, selectedVideo.name, videoCaption);
       setSelectedVideo(null);
       setShowVideoPreviewModal(false);
+      setVideoCaption('');
       setUploadProgress(0);
     } catch (e) {
       toast.error(e.response?.data?.message || 'Video upload failed');
@@ -1986,13 +1989,13 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   };
 
   // Document upload + send
-  const sendDocumentMessage = async (documentUrl, file) => {
+  const sendDocumentMessage = async (documentUrl, file, caption = '') => {
     const tempId = `temp-${Date.now()}`;
     const tempMessage = {
       _id: tempId,
       sender: currentUser._id,
       senderEmail: currentUser.email,
-      message: `📄 ${file.name}`,
+      message: caption || `📄 ${file.name}`,
       documentUrl,
       documentName: file.name,
       documentMimeType: file.type || null,
@@ -2003,7 +2006,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     setComments(prev => [...prev, tempMessage]);
     try {
       const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, {
-        message: `📄 ${file.name}`,
+        message: caption || `📄 ${file.name}`,
         documentUrl,
         documentName: file.name,
         documentMimeType: file.type || null,
@@ -2030,9 +2033,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
           setUploadProgress(pct);
         }
       });
-      await sendDocumentMessage(data.documentUrl, selectedDocument);
+      await sendDocumentMessage(data.documentUrl, selectedDocument, documentCaption);
       setSelectedDocument(null);
       setShowDocumentPreviewModal(false);
+      setDocumentCaption('');
       setUploadProgress(0);
     } catch (e) {
       toast.error(e.response?.data?.message || 'Document upload failed');
@@ -5323,6 +5327,42 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                         Download Image
                                       </button>
                                     )}
+                                    {/* Download option for video messages */}
+                                    {selectedMessageForHeaderOptions.videoUrl && (
+                                      <button
+                                        className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+                                        onClick={async () => { 
+                                          try {
+                                            const response = await fetch(selectedMessageForHeaderOptions.videoUrl, { mode: 'cors' });
+                                            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                            const blob = await response.blob();
+                                            const blobUrl = window.URL.createObjectURL(blob);
+                                            const a = document.createElement('a');
+                                            a.href = blobUrl;
+                                            a.download = `video-${selectedMessageForHeaderOptions._id || Date.now()}.mp4`;
+                                            document.body.appendChild(a);
+                                            a.click();
+                                            a.remove();
+                                            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                          } catch (error) {
+                                            console.error('Video download failed:', error);
+                                            // Fallback to direct link
+                                            const a = document.createElement('a');
+                                            a.href = selectedMessageForHeaderOptions.videoUrl;
+                                            a.download = `video-${selectedMessageForHeaderOptions._id || Date.now()}.mp4`;
+                                            a.target = '_blank';
+                                            document.body.appendChild(a);
+                                            a.click();
+                                            a.remove();
+                                          }
+                                          setShowHeaderMoreMenu(false); 
+                                          setHeaderOptionsMessageId(null); 
+                                        }}
+                                      >
+                                        <FaDownload className="text-sm" />
+                                        Download Video
+                                      </button>
+                                    )}
                                     <button
                                       className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                                       onClick={() => { showMessageInfo(selectedMessageForHeaderOptions); setShowHeaderMoreMenu(false); setHeaderOptionsMessageId(null); }}
@@ -6162,15 +6202,31 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                         <div className="mb-2">
                                           <button
                                             className="flex items-center gap-2 px-3 py-2 rounded-lg border hover:bg-gray-50"
-                                            onClick={(e) => {
+                                            onClick={async (e) => {
                                               e.stopPropagation();
-                                              const a = document.createElement('a');
-                                              a.href = c.documentUrl;
-                                              a.download = c.documentName || `document-${c._id || Date.now()}`;
-                                              a.target = '_blank';
-                                              document.body.appendChild(a);
-                                              a.click();
-                                              a.remove();
+                                              try {
+                                                const response = await fetch(c.documentUrl, { mode: 'cors' });
+                                                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                                const blob = await response.blob();
+                                                const blobUrl = window.URL.createObjectURL(blob);
+                                                const a = document.createElement('a');
+                                                a.href = blobUrl;
+                                                a.download = c.documentName || `document-${c._id || Date.now()}`;
+                                                document.body.appendChild(a);
+                                                a.click();
+                                                a.remove();
+                                                setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                              } catch (error) {
+                                                console.error('Download failed:', error);
+                                                // Fallback to direct link
+                                                const a = document.createElement('a');
+                                                a.href = c.documentUrl;
+                                                a.download = c.documentName || `document-${c._id || Date.now()}`;
+                                                a.target = '_blank';
+                                                document.body.appendChild(a);
+                                                a.click();
+                                                a.remove();
+                                              }
                                             }}
                                           >
                                             <span className="text-2xl">📄</span>
@@ -7328,8 +7384,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
 
                 {/* Video Preview Modal */}
                 {showVideoPreviewModal && selectedVideo && (
-                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-3xl w-full">
+                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
                       <div className="flex items-center justify-between mb-3">
                         <span className="text-lg font-medium text-gray-700">Video Preview</span>
                         <button
@@ -7339,13 +7395,29 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           <FaTimes className="w-5 h-5" />
                         </button>
                       </div>
-                      <div className="mb-4">
-                        <video controls className="w-full rounded-lg border" src={URL.createObjectURL(selectedVideo)} />
+                      <div className="flex-1 mb-4 min-h-0">
+                        <video controls className="w-full h-full max-h-[60vh] rounded-lg border" src={URL.createObjectURL(selectedVideo)} />
                       </div>
+                      
+                      {/* Caption for Video */}
+                      <div className="relative mb-4">
+                        <textarea
+                          placeholder={`Add a caption for ${selectedVideo.name}...`}
+                          value={videoCaption}
+                          onChange={(e) => setVideoCaption(e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          rows={2}
+                          maxLength={500}
+                        />
+                        <div className="text-xs text-gray-500 mt-1 text-right">
+                          {videoCaption.length}/500
+                        </div>
+                      </div>
+                      
                       <div className="flex items-center justify-between">
-                        <div className="text-sm text-gray-600 truncate">{selectedVideo.name}</div>
-                        <div className="flex gap-2">
-                          <button onClick={() => { setSelectedVideo(null); setShowVideoPreviewModal(false); }} className="px-4 py-2 rounded-lg border">Cancel</button>
+                        <div className="text-sm text-gray-600 truncate flex-1 mr-4">{selectedVideo.name}</div>
+                        <div className="flex gap-2 flex-shrink-0">
+                          <button onClick={() => { setSelectedVideo(null); setShowVideoPreviewModal(false); setVideoCaption(''); }} className="px-4 py-2 rounded-lg border">Cancel</button>
                           <button onClick={handleSendSelectedVideo} className="px-4 py-2 rounded-lg bg-blue-600 text-white">Send</button>
                         </div>
                       </div>
@@ -7355,7 +7427,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
 
                 {/* Document Preview Modal */}
                 {showDocumentPreviewModal && selectedDocument && (
-                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-md w-full">
                       <div className="flex items-center justify-between mb-3">
                         <span className="text-lg font-medium text-gray-700">Document Preview</span>
@@ -7373,8 +7445,24 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           <div className="text-xs text-gray-500 truncate">{selectedDocument.type || 'Document'}</div>
                         </div>
                       </div>
+                      
+                      {/* Caption for Document */}
+                      <div className="relative mb-4">
+                        <textarea
+                          placeholder={`Add a caption for ${selectedDocument.name}...`}
+                          value={documentCaption}
+                          onChange={(e) => setDocumentCaption(e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          rows={2}
+                          maxLength={500}
+                        />
+                        <div className="text-xs text-gray-500 mt-1 text-right">
+                          {documentCaption.length}/500
+                        </div>
+                      </div>
+                      
                       <div className="flex items-center justify-between">
-                        <button onClick={() => { setSelectedDocument(null); setShowDocumentPreviewModal(false); }} className="px-4 py-2 rounded-lg border">Cancel</button>
+                        <button onClick={() => { setSelectedDocument(null); setShowDocumentPreviewModal(false); setDocumentCaption(''); }} className="px-4 py-2 rounded-lg border">Cancel</button>
                         <button onClick={handleSendSelectedDocument} className="px-4 py-2 rounded-lg bg-blue-600 text-white">Send</button>
                       </div>
                     </div>
