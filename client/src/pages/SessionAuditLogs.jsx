@@ -126,44 +126,46 @@ const SessionAuditLogs = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Session Audit Logs</h1>
-              <p className="text-gray-600 mt-1">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+            <div className="flex-1">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Session Audit Logs</h1>
+              <p className="text-gray-600 mt-1 text-sm sm:text-base">
                 Monitor all session-related activities and security events
               </p>
             </div>
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => { setLoading(true); fetchLogs(); }}
-                className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                title="Refresh logs"
-              >
-                <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v6h6M20 20v-6h-6M20 8a8 8 0 10-3.879 6.804" />
-                </svg>
-                Refresh
-              </button>
-              <button
-                onClick={toggleAutoRefresh}
-                className={`inline-flex items-center px-3 py-2 border ${autoRefresh ? 'border-green-300 text-green-700' : 'border-gray-300 text-gray-700'} shadow-sm text-sm leading-4 font-medium rounded-md bg-white hover:bg-gray-50`}
-                title="Auto refresh every 30s"
-              >
-                <svg className={`h-4 w-4 mr-2 ${autoRefresh ? 'text-green-600' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {autoRefresh ? 'Auto: On' : 'Auto: Off'}
-              </button>
-              <div className="text-right">
+            <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => { setLoading(true); fetchLogs(); }}
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  title="Refresh logs"
+                >
+                  <svg className="h-4 w-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v6h6M20 20v-6h-6M20 8a8 8 0 10-3.879 6.804" />
+                  </svg>
+                  <span className="hidden sm:inline">Refresh</span>
+                </button>
+                <button
+                  onClick={toggleAutoRefresh}
+                  className={`flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border ${autoRefresh ? 'border-green-300 text-green-700' : 'border-gray-300 text-gray-700'} shadow-sm text-sm leading-4 font-medium rounded-md bg-white hover:bg-gray-50`}
+                  title="Auto refresh every 30s"
+                >
+                  <svg className={`h-4 w-4 sm:mr-2 ${autoRefresh ? 'text-green-600' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="hidden sm:inline">{autoRefresh ? 'Auto: On' : 'Auto: Off'}</span>
+                </button>
+              </div>
+              <div className="text-center sm:text-right">
                 <p className="text-sm text-gray-500">Total Logs</p>
-                <p className="text-2xl font-bold text-blue-600">{totalLogs}</p>
+                <p className="text-xl sm:text-2xl font-bold text-blue-600">{totalLogs}</p>
                 {lastUpdated && (
                   <p className="text-xs text-gray-400 mt-1">Updated {lastUpdated.toLocaleTimeString()}</p>
                 )}
+              </div>
             </div>
           </div>
-        </div>
         </div>
 
         {/* Filters */}
