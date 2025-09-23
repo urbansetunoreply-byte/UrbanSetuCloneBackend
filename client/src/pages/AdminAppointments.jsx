@@ -5086,9 +5086,9 @@ function AdminAppointmentRow({
                                               }
                                             }}
                                           />
-                                          <div className="mt-1 text-xs text-gray-500">
+                                          <div className={`mt-1 text-xs ${isMe ? 'text-blue-100' : 'text-gray-500'}`}>
                                             <button
-                                              className="text-blue-600 hover:underline"
+                                              className={`${isMe ? 'text-white hover:text-blue-100' : 'text-blue-600 hover:underline'}`}
                                               onClick={(e) => {
                                                 e.stopPropagation();
                                                 const a = document.createElement('a');
@@ -5108,15 +5108,31 @@ function AdminAppointmentRow({
                                         <div className="mb-2">
                                           <button
                                             className="flex items-center gap-2 px-3 py-2 rounded-lg border hover:bg-gray-50"
-                                            onClick={(e) => {
+                                            onClick={async (e) => {
                                               e.stopPropagation();
-                                              const a = document.createElement('a');
-                                              a.href = c.documentUrl;
-                                              a.download = c.documentName || `document-${c._id || Date.now()}`;
-                                              a.target = '_blank';
-                                              document.body.appendChild(a);
-                                              a.click();
-                                              a.remove();
+                                              try {
+                                                const response = await fetch(c.documentUrl, { mode: 'cors' });
+                                                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                                const blob = await response.blob();
+                                                const blobUrl = window.URL.createObjectURL(blob);
+                                                const a = document.createElement('a');
+                                                a.href = blobUrl;
+                                                a.download = c.documentName || `document-${c._id || Date.now()}`;
+                                                document.body.appendChild(a);
+                                                a.click();
+                                                a.remove();
+                                                setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                              } catch (error) {
+                                                console.error('Download failed:', error);
+                                                // Fallback to direct link
+                                                const a = document.createElement('a');
+                                                a.href = c.documentUrl;
+                                                a.download = c.documentName || `document-${c._id || Date.now()}`;
+                                                a.target = '_blank';
+                                                document.body.appendChild(a);
+                                                a.click();
+                                                a.remove();
+                                              }
                                             }}
                                           >
                                             <span className="text-2xl">📄</span>

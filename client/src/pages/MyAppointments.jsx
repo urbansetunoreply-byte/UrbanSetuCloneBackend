@@ -6207,9 +6207,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                               }}
                                             />
                                           </div>
-                                          <div className="mt-1 text-xs text-gray-500 flex gap-3">
+                                          <div className={`mt-1 text-xs flex gap-3 ${isMe ? 'text-blue-100' : 'text-gray-500'}`}>
                                             <button
-                                              className="text-blue-600 hover:underline"
+                                              className={`${isMe ? 'text-white hover:text-blue-100' : 'text-blue-600 hover:underline'}`}
                                               onClick={(e) => {
                                                 e.stopPropagation();
                                                 // download video
