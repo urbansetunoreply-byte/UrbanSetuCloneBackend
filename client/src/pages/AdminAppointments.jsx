@@ -1713,6 +1713,15 @@ function AdminAppointmentRow({
   const [audioObjectURL, setAudioObjectURL] = useLocalState(null);
   const audioCaptionRef = React.useRef(null);
 
+  // Audio Recording states (parity with MyAppointments)
+  const [showRecordAudioModal, setShowRecordAudioModal] = useLocalState(false);
+  const [isRecording, setIsRecording] = useLocalState(false);
+  const [recordingElapsedMs, setRecordingElapsedMs] = useLocalState(0);
+  const [recordingStream, setRecordingStream] = useLocalState(null);
+  const mediaRecorderRef = React.useRef(null);
+  const recordingChunksRef = React.useRef([]);
+  const recordingTimerRef = React.useRef(null);
+
   // Manage video object URL to prevent reloading on each keystroke
   React.useEffect(() => {
     if (selectedVideo) {
@@ -1740,6 +1749,75 @@ function AdminAppointmentRow({
       setAudioObjectURL(null);
     }
   }, [selectedAudio]);
+
+  // Recording timer cleanup
+  React.useEffect(() => {
+    return () => {
+      if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+      if (recordingStream) recordingStream.getTracks().forEach(t => t.stop());
+    };
+  }, [recordingStream]);
+
+  const startAudioRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setRecordingStream(stream);
+      recordingChunksRef.current = [];
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      mediaRecorderRef.current = mediaRecorder;
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) recordingChunksRef.current.push(e.data);
+      };
+      mediaRecorder.onstop = () => {
+        try {
+          const blob = new Blob(recordingChunksRef.current, { type: 'audio/webm' });
+          const fileName = `recording-${Date.now()}.webm`;
+          const file = new File([blob], fileName, { type: 'audio/webm' });
+          setSelectedAudio(file);
+          setShowRecordAudioModal(false);
+          setShowAudioPreviewModal(true);
+        } catch (err) {
+          toast.error('Failed to prepare audio preview');
+        } finally {
+          if (recordingStream) recordingStream.getTracks().forEach(t => t.stop());
+          setRecordingStream(null);
+          setIsRecording(false);
+          setRecordingElapsedMs(0);
+          if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+        }
+      };
+      mediaRecorder.start(100);
+      setIsRecording(true);
+      setRecordingElapsedMs(0);
+      recordingTimerRef.current = setInterval(() => {
+        setRecordingElapsedMs(prev => prev + 1000);
+      }, 1000);
+    } catch (err) {
+      console.error('Recording error:', err);
+      toast.error('Microphone permission denied or unavailable');
+    }
+  };
+
+  const stopAudioRecording = () => {
+    if (!mediaRecorderRef.current) return;
+    try {
+      mediaRecorderRef.current.stop();
+    } catch {}
+  };
+
+  const cancelAudioRecording = () => {
+    try {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
+    } catch {}
+    if (recordingStream) recordingStream.getTracks().forEach(t => t.stop());
+    setRecordingStream(null);
+    setIsRecording(false);
+    setRecordingElapsedMs(0);
+    if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+    setShowRecordAudioModal(false);
+  };
 
   // Close attachment panel on outside click
   React.useEffect(() => {
@@ -5236,6 +5314,41 @@ function AdminAppointmentRow({
                                           </div>
                                         </div>
                                       )}
+                                      {/* Audio Message */}
+                                      {c.audioUrl && (
+                                        <div className="mb-2">
+                                          <div className="relative">
+                                            <audio
+                                              src={c.audioUrl}
+                                              className="w-full"
+                                              controls
+                                              onClick={(e) => e.stopPropagation()}
+                                            />
+                                            <div className="absolute top-2 right-2 flex gap-2">
+                                              <button
+                                                className="p-2 bg-white rounded-full shadow hover:bg-gray-100"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  const a = document.createElement('a');
+                                                  a.href = c.audioUrl;
+                                                  a.download = c.audioName || `audio-${c._id || Date.now()}`;
+                                                  a.target = '_blank';
+                                                  document.body.appendChild(a);
+                                                  a.click();
+                                                  document.body.removeChild(a);
+                                                  toast.success('Audio download started');
+                                                }}
+                                                title="Download audio"
+                                              >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" /></svg>
+                                              </button>
+                                            </div>
+                                          </div>
+                                          {c.message && (
+                                            <div className="mt-2 text-sm text-gray-700 whitespace-pre-wrap break-words">{c.message}</div>
+                                          )}
+                                        </div>
+                                      )}
                                       {/* Document Message */}
                                       {c.documentUrl && (
                                         <div className="mb-2">
@@ -6222,6 +6335,21 @@ function AdminAppointmentRow({
                             }}
                           />
                         </label>
+                        {/* Record Audio */}
+                        <button
+                          type="button"
+                          className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer w-full text-left"
+                          onClick={() => {
+                            setShowAttachmentPanel(false);
+                            setShowRecordAudioModal(true);
+                          }}
+                        >
+                          <svg className="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 1a3 3 0 00-3 3v8a3 3 0 106 0V4a3 3 0 00-3-3z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 10v2a7 7 0 11-14 0v-2" />
+                          </svg>
+                          Record Audio
+                        </button>
                       </div>
                     )}
                   </div>
@@ -7645,6 +7773,50 @@ function AdminAppointmentRow({
                   <button onClick={handleSendSelectedDocument} className="px-4 py-2 rounded-lg bg-blue-600 text-white">Send</button>
                 </>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Record Audio Modal */}
+      {showRecordAudioModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-md w-full">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-lg font-medium text-gray-700">Record Audio</span>
+              <button
+                onClick={() => {
+                  if (isRecording) {
+                    cancelAudioRecording();
+                  } else {
+                    setShowRecordAudioModal(false);
+                  }
+                }}
+                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+              >
+                <FaTimes className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex flex-col items-center justify-center py-6">
+              <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-4 ${isRecording ? 'bg-rose-100 animate-pulse' : 'bg-gray-100'}`}>
+                <svg className={`w-10 h-10 ${isRecording ? 'text-rose-600' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 1a3 3 0 00-3 3v8a3 3 0 106 0V4a3 3 0 00-3-3z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 10v2a7 7 0 11-14 0v-2" />
+                </svg>
+              </div>
+              <div className="text-sm text-gray-600 mb-4">
+                {isRecording ? `Recording... ${Math.floor(recordingElapsedMs / 1000)}s` : 'Click Start to begin recording'}
+              </div>
+              <div className="flex items-center gap-3">
+                {!isRecording ? (
+                  <button onClick={startAudioRecording} className="px-4 py-2 rounded-lg bg-rose-600 text-white hover:bg-rose-700">Start</button>
+                ) : (
+                  <>
+                    <button onClick={stopAudioRecording} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Stop</button>
+                    <button onClick={cancelAudioRecording} className="px-4 py-2 rounded-lg border">Cancel</button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>
