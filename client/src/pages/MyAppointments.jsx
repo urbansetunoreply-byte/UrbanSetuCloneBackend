@@ -6509,9 +6509,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                 onClick={(e) => e.stopPropagation()}
                                               />
                                             </div>
-                                            <div className="absolute top-2 right-2 flex gap-2 bg-white/90 rounded-full p-1 border border-gray-200 shadow-sm">
+                                            <div className="mt-2 flex justify-end">
                                               <button
-                                                className={`p-2 rounded-full shadow-sm border transition-colors ${isMe ? 'bg-white text-blue-600 hover:bg-blue-50 border-blue-200' : 'bg-blue-600 text-white hover:bg-blue-700 border-transparent'}`}
+                                                className={`px-3 py-1.5 text-xs rounded-full shadow-sm border transition-colors ${isMe ? 'bg-white text-blue-600 hover:bg-blue-50 border-blue-200' : 'bg-blue-600 text-white hover:bg-blue-700 border-transparent'}`}
                                                 onClick={(e) => {
                                                   e.stopPropagation();
                                                   const a = document.createElement('a');
@@ -6525,7 +6525,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                 }}
                                                 title="Download audio"
                                               >
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" /></svg>
+                                                <span className="inline-flex items-center gap-1">
+                                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" /></svg>
+                                                  Download
+                                                </span>
                                               </button>
                                             </div>
                                           </div>
