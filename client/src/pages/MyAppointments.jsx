@@ -6503,7 +6503,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                             <div className="w-full">
                                               <audio
                                                 src={c.audioUrl}
-                                                className="w-full"
+                                                className="w-full h-10"
                                                 controls
                                                 preload="metadata"
                                                 onClick={(e) => e.stopPropagation()}
