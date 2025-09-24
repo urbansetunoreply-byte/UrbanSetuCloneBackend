@@ -52,7 +52,7 @@ const audioStorage = new CloudinaryStorage({
   params: {
     folder: 'urbansetu-chat/audio',
     // Cloudinary treats audio as resource_type 'video'
-    allowed_formats: ['mp3', 'wav', 'm4a', 'aac', 'ogg', 'oga', 'opus', 'webm'],
+    allowed_formats: ['mp3', 'wav', 'm4a', 'aac', 'ogg', 'oga', 'opus', 'webm', 'mp4'],
     resource_type: 'video',
   },
 });
@@ -94,7 +94,12 @@ const uploadAudio = multer({
   storage: audioStorage,
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('audio/') || file.mimetype === 'video/webm') return cb(null, true);
+    // Accept typical audio types and common containers used for audio-only recordings
+    if (
+      file.mimetype.startsWith('audio/') ||
+      file.mimetype === 'video/webm' ||
+      file.mimetype === 'video/mp4'
+    ) return cb(null, true);
     return cb(new Error('Only audio files are allowed!'));
   },
 });
