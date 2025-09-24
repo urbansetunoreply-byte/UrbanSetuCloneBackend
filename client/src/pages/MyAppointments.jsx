@@ -746,7 +746,7 @@ export default function MyAppointments() {
             <div className="flex items-center justify-between mb-3">
               <span className="text-lg font-medium text-gray-700">Camera</span>
               <button
-                onClick={() => { setShowCameraModal(false); setCameraError(null); if (cameraStreamRef.current) cameraStreamRef.current.getTracks().forEach(t => t.stop()); }}
+                onClick={() => { setShowCameraModal(false); setCameraError(null); if (cameraStreamRef.current) cameraStreamRef.current.getTracks().forEach(t => t.stop()); if (capturedPhotoUrl) { URL.revokeObjectURL(capturedPhotoUrl); } setCapturedPhotoUrl(null); setCapturedPhotoBlob(null); }}
                 className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
               >
                 <FaTimes className="w-5 h-5" />
@@ -754,16 +754,31 @@ export default function MyAppointments() {
             </div>
             <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="col-span-2 bg-black rounded-lg overflow-hidden flex items-center justify-center">
-                <video ref={cameraVideoRef} className="w-full h-full object-contain bg-black" autoPlay playsInline muted />
+                {!capturedPhotoUrl ? (
+                  <video ref={cameraVideoRef} className="w-full h-full object-contain bg-black" autoPlay playsInline muted />
+                ) : (
+                  <img src={capturedPhotoUrl} alt="Captured" className="w-full h-full object-contain bg-black" />
+                )}
               </div>
               <div className="col-span-1 flex flex-col gap-3">
-                <button onClick={capturePhoto} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Capture</button>
-                <button onClick={switchCamera} className="px-4 py-2 rounded-lg border hover:bg-gray-50">Switch Camera</button>
-                <button onClick={() => { setShowCameraModal(false); setCameraError(null); if (cameraStreamRef.current) cameraStreamRef.current.getTracks().forEach(t => t.stop()); }} className="px-4 py-2 rounded-lg border hover:bg-gray-50">Cancel</button>
-                {cameraError && (
-                  <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded p-2">{cameraError}</div>
+                {!capturedPhotoUrl ? (
+                  <>
+                    <button onClick={capturePhoto} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Capture</button>
+                    <button onClick={switchCamera} className="px-4 py-2 rounded-lg border hover:bg-gray-50">Switch Camera</button>
+                    <button onClick={() => { setShowCameraModal(false); setCameraError(null); if (cameraStreamRef.current) cameraStreamRef.current.getTracks().forEach(t => t.stop()); }} className="px-4 py-2 rounded-lg border hover:bg-gray-50">Cancel</button>
+                    {cameraError && (
+                      <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded p-2">{cameraError}</div>
+                    )}
+                    <div className="text-xs text-gray-500">Preview will open after capture where you can add captions and send.</div>
+                  </>
+                ) : (
+                  <>
+                    <button onClick={confirmCapturedPhoto} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">OK</button>
+                    <button onClick={retryCapturedPhoto} className="px-4 py-2 rounded-lg border hover:bg-gray-50">Retry</button>
+                    <button onClick={() => { setShowCameraModal(false); setCameraError(null); if (cameraStreamRef.current) cameraStreamRef.current.getTracks().forEach(t => t.stop()); if (capturedPhotoUrl) { URL.revokeObjectURL(capturedPhotoUrl); } setCapturedPhotoUrl(null); setCapturedPhotoBlob(null); }} className="px-4 py-2 rounded-lg border hover:bg-gray-50">Cancel</button>
+                    <div className="text-xs text-gray-500">Tap OK to open preview and add caption.</div>
+                  </>
                 )}
-                <div className="text-xs text-gray-500">Preview will open after capture where you can add captions and send.</div>
               </div>
             </div>
           </div>
@@ -1752,6 +1767,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const cameraStreamRef = useRef(null);
   const cameraVideoRef = useRef(null);
   const [cameraError, setCameraError] = useState(null);
+  const [capturedPhotoBlob, setCapturedPhotoBlob] = useState(null);
+  const [capturedPhotoUrl, setCapturedPhotoUrl] = useState(null);
 
   // Ensure timer ticks reliably while recording (redundant guard)
   useEffect(() => {
@@ -1792,7 +1809,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   useEffect(() => {
     if (showCameraModal) {
       setCameraError(null);
-      startCamera();
+      // Start camera only if we are not in captured state
+      if (!capturedPhotoBlob) {
+        startCamera();
+      }
     }
     return () => {
       if (!showCameraModal && cameraStreamRef.current) {
@@ -1800,7 +1820,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         cameraStreamRef.current = null;
       }
     };
-  }, [showCameraModal, startCamera]);
+  }, [showCameraModal, startCamera, capturedPhotoBlob]);
 
   const switchCamera = () => {
     setCameraFacingMode(prev => (prev === 'user' ? 'environment' : 'user'));
@@ -1821,14 +1841,47 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       ctx.drawImage(video, 0, 0, width, height);
       const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92));
       if (!blob) return;
-      const file = new File([blob], `camera-${Date.now()}.jpg`, { type: 'image/jpeg' });
-      setSelectedFiles([file]);
-      setPreviewIndex(0);
-      setShowImagePreviewModal(true);
-      setShowCameraModal(false);
+      // Pause the video stream preview and show captured state
+      try { video.pause(); } catch (_) {}
+      if (cameraStreamRef.current) {
+        cameraStreamRef.current.getTracks().forEach(t => t.stop());
+        cameraStreamRef.current = null;
+      }
+      setCapturedPhotoBlob(blob);
+      const url = URL.createObjectURL(blob);
+      setCapturedPhotoUrl(url);
     } catch (err) {
       toast.error('Failed to capture photo');
     }
+  };
+
+  // Cleanup captured object URL
+  useEffect(() => {
+    return () => {
+      if (capturedPhotoUrl) URL.revokeObjectURL(capturedPhotoUrl);
+    };
+  }, [capturedPhotoUrl]);
+
+  const retryCapturedPhoto = () => {
+    if (capturedPhotoUrl) URL.revokeObjectURL(capturedPhotoUrl);
+    setCapturedPhotoUrl(null);
+    setCapturedPhotoBlob(null);
+    setCameraError(null);
+    // Restart camera for a new capture
+    setTimeout(() => startCamera(), 50);
+  };
+
+  const confirmCapturedPhoto = () => {
+    if (!capturedPhotoBlob) return;
+    const file = new File([capturedPhotoBlob], `camera-${Date.now()}.jpg`, { type: 'image/jpeg' });
+    setSelectedFiles([file]);
+    setPreviewIndex(0);
+    setShowImagePreviewModal(true);
+    // Close camera modal and clear captured state
+    setShowCameraModal(false);
+    if (capturedPhotoUrl) URL.revokeObjectURL(capturedPhotoUrl);
+    setCapturedPhotoUrl(null);
+    setCapturedPhotoBlob(null);
   };
 
   // Sound effects
