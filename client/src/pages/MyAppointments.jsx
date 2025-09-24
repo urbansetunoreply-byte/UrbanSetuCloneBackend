@@ -7958,7 +7958,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           </svg>
                         </div>
                         <div className="text-sm text-gray-600">
-                          {isRecording ? new Date(recordingElapsedMs).toISOString().substr(14, 5) : 'Ready'}
+                          {isRecording ? `${Math.floor(recordingElapsedMs / 60000).toString().padStart(2, '0')}:${Math.floor((recordingElapsedMs % 60000) / 1000).toString().padStart(2, '0')}` : 'Ready'}
                         </div>
                         <div className="flex items-center gap-3">
                           {!isRecording ? (
