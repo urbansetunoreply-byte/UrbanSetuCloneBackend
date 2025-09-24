@@ -740,7 +740,7 @@ export default function MyAppointments() {
       )}
 
       {/* Camera Modal */}
-      {showCameraModal && (
+      {(typeof showCameraModal !== 'undefined') && showCameraModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
             <div className="flex items-center justify-between mb-3">
