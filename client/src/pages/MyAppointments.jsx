@@ -739,6 +739,33 @@ export default function MyAppointments() {
         </div>
       )}
 
+      {/* Camera Modal */}
+      {showCameraModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-lg font-medium text-gray-700">Camera</span>
+              <button
+                onClick={() => { setShowCameraModal(false); if (cameraStreamRef.current) cameraStreamRef.current.getTracks().forEach(t => t.stop()); }}
+                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+              >
+                <FaTimes className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="col-span-2 bg-black rounded-lg overflow-hidden flex items-center justify-center">
+                <video ref={cameraVideoRef} className="w-full h-full object-contain bg-black" autoPlay playsInline muted />
+              </div>
+              <div className="col-span-1 flex flex-col gap-3">
+                <button onClick={capturePhoto} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Capture</button>
+                <button onClick={switchCamera} className="px-4 py-2 rounded-lg border hover:bg-gray-50">Switch Camera</button>
+                <button onClick={() => { setShowCameraModal(false); if (cameraStreamRef.current) cameraStreamRef.current.getTracks().forEach(t => t.stop()); }} className="px-4 py-2 rounded-lg border hover:bg-gray-50">Cancel</button>
+                <div className="text-xs text-gray-500">Preview will open after capture where you can add captions and send.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-lg p-6">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
           <div>
@@ -1716,6 +1743,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const recordingStartTimeRef = useRef(0);
   const recordingCancelledRef = useRef(false);
 
+  // Camera modal state
+  const [showCameraModal, setShowCameraModal] = useState(false);
+  const [cameraFacingMode, setCameraFacingMode] = useState('user'); // 'user' or 'environment'
+  const cameraStreamRef = useRef(null);
+  const cameraVideoRef = useRef(null);
+
   // Ensure timer ticks reliably while recording (redundant guard)
   useEffect(() => {
     if (isRecording) {
@@ -1730,6 +1763,65 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       return () => clearInterval(id);
     }
   }, [isRecording]);
+
+  // Camera modal handlers
+  const startCamera = useCallback(async () => {
+    try {
+      if (cameraStreamRef.current) {
+        cameraStreamRef.current.getTracks().forEach(t => t.stop());
+      }
+      const constraints = { video: { facingMode: cameraFacingMode } };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      cameraStreamRef.current = stream;
+      if (cameraVideoRef.current) {
+        cameraVideoRef.current.srcObject = stream;
+        await new Promise(r => setTimeout(r, 100));
+        await cameraVideoRef.current.play().catch(() => {});
+      }
+    } catch (err) {
+      toast.error('Camera permission denied or not available');
+      setShowCameraModal(false);
+    }
+  }, [cameraFacingMode]);
+
+  useEffect(() => {
+    if (showCameraModal) startCamera();
+    return () => {
+      if (!showCameraModal && cameraStreamRef.current) {
+        cameraStreamRef.current.getTracks().forEach(t => t.stop());
+        cameraStreamRef.current = null;
+      }
+    };
+  }, [showCameraModal, startCamera]);
+
+  const switchCamera = () => {
+    setCameraFacingMode(prev => (prev === 'user' ? 'environment' : 'user'));
+    // restart camera with new facing mode
+    setTimeout(() => startCamera(), 50);
+  };
+
+  const capturePhoto = async () => {
+    try {
+      const video = cameraVideoRef.current;
+      if (!video) return;
+      const width = video.videoWidth || 1280;
+      const height = video.videoHeight || 720;
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, width, height);
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+      if (!blob) return;
+      const file = new File([blob], `camera-${Date.now()}.jpg`, { type: 'image/jpeg' });
+      setSelectedFiles([file]);
+      setPreviewIndex(0);
+      setShowImagePreviewModal(true);
+      setShowCameraModal(false);
+    } catch (err) {
+      toast.error('Failed to capture photo');
+    }
+  };
 
   // Sound effects
   const { playMessageSent, playMessageReceived, playNotification, toggleMute, setVolume, isMuted } = useSoundEffects();
@@ -7370,30 +7462,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           <button
                             type="button"
                             className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-                            onClick={async () => {
-                              try {
-                                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                                // Create a hidden video element to capture a frame
-                                const videoEl = document.createElement('video');
-                                videoEl.autoplay = true;
-                                videoEl.srcObject = stream;
-                                await new Promise(r => setTimeout(r, 300));
-                                const canvas = document.createElement('canvas');
-                                canvas.width = 1280;
-                                canvas.height = 720;
-                                const ctx = canvas.getContext('2d');
-                                ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
-                                stream.getTracks().forEach(t => t.stop());
-                                canvas.toBlob((blob) => {
-                                  if (!blob) return;
-                                  const file = new File([blob], `camera-${Date.now()}.jpg`, { type: 'image/jpeg' });
-                                  handleFileUpload([file]);
-                                }, 'image/jpeg', 0.92);
-                              } catch (err) {
-                                toast.error('Camera permission denied or not available');
-                              } finally {
-                                setShowAttachmentPanel(false);
-                              }
+                            onClick={() => {
+                              setShowCameraModal(true);
+                              setShowAttachmentPanel(false);
                             }}
                           >
                             <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
