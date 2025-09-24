@@ -6609,6 +6609,43 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                 onClick={(e) => e.stopPropagation()}
                                               />
                                             </div>
+                                            <div className="mt-2 flex justify-end">
+                                              <button
+                                                className={`px-3 py-1.5 text-xs rounded-full shadow-sm border transition-colors ${isMe ? 'bg-white text-blue-600 hover:bg-blue-50 border-blue-200' : 'bg-blue-600 text-white hover:bg-blue-700 border-transparent'}`}
+                                                onClick={async (e) => {
+                                                  e.stopPropagation();
+                                                  try {
+                                                    const response = await fetch(c.audioUrl, { mode: 'cors' });
+                                                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                                    const blob = await response.blob();
+                                                    const blobUrl = window.URL.createObjectURL(blob);
+                                                    const a = document.createElement('a');
+                                                    a.href = blobUrl;
+                                                    a.download = c.audioName || `audio-${c._id || Date.now()}`;
+                                                    document.body.appendChild(a);
+                                                    a.click();
+                                                    a.remove();
+                                                    setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                                    toast.success('Audio downloaded successfully');
+                                                  } catch (error) {
+                                                    const a = document.createElement('a');
+                                                    a.href = c.audioUrl;
+                                                    a.download = c.audioName || `audio-${c._id || Date.now()}`;
+                                                    a.target = '_blank';
+                                                    document.body.appendChild(a);
+                                                    a.click();
+                                                    a.remove();
+                                                    toast.success('Audio download started');
+                                                  }
+                                                }}
+                                                title="Download audio"
+                                              >
+                                                <span className="inline-flex items-center gap-1">
+                                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" /></svg>
+                                                  Download
+                                                </span>
+                                              </button>
+                                            </div>
                                           </div>
                                           {c.message && (
                                             <div className="mt-2 text-sm text-gray-700 whitespace-pre-wrap break-words">{c.message}</div>
