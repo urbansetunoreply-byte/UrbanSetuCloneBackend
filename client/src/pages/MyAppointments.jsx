@@ -746,7 +746,7 @@ export default function MyAppointments() {
             <div className="flex items-center justify-between mb-3">
               <span className="text-lg font-medium text-gray-700">Camera</span>
               <button
-                onClick={() => { setShowCameraModal(false); if (cameraStreamRef.current) cameraStreamRef.current.getTracks().forEach(t => t.stop()); }}
+                onClick={() => { setShowCameraModal(false); setCameraError(null); if (cameraStreamRef.current) cameraStreamRef.current.getTracks().forEach(t => t.stop()); }}
                 className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
               >
                 <FaTimes className="w-5 h-5" />
@@ -759,7 +759,10 @@ export default function MyAppointments() {
               <div className="col-span-1 flex flex-col gap-3">
                 <button onClick={capturePhoto} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Capture</button>
                 <button onClick={switchCamera} className="px-4 py-2 rounded-lg border hover:bg-gray-50">Switch Camera</button>
-                <button onClick={() => { setShowCameraModal(false); if (cameraStreamRef.current) cameraStreamRef.current.getTracks().forEach(t => t.stop()); }} className="px-4 py-2 rounded-lg border hover:bg-gray-50">Cancel</button>
+                <button onClick={() => { setShowCameraModal(false); setCameraError(null); if (cameraStreamRef.current) cameraStreamRef.current.getTracks().forEach(t => t.stop()); }} className="px-4 py-2 rounded-lg border hover:bg-gray-50">Cancel</button>
+                {cameraError && (
+                  <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded p-2">{cameraError}</div>
+                )}
                 <div className="text-xs text-gray-500">Preview will open after capture where you can add captions and send.</div>
               </div>
             </div>
@@ -1748,6 +1751,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const [cameraFacingMode, setCameraFacingMode] = useState('user'); // 'user' or 'environment'
   const cameraStreamRef = useRef(null);
   const cameraVideoRef = useRef(null);
+  const [cameraError, setCameraError] = useState(null);
 
   // Ensure timer ticks reliably while recording (redundant guard)
   useEffect(() => {
@@ -1778,14 +1782,18 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         await new Promise(r => setTimeout(r, 100));
         await cameraVideoRef.current.play().catch(() => {});
       }
+      setCameraError(null);
     } catch (err) {
-      toast.error('Camera permission denied or not available');
-      setShowCameraModal(false);
+      setCameraError('Camera not available or permission denied. Try switching camera or attach from gallery.');
+      toast.error('Camera not available or permission denied');
     }
   }, [cameraFacingMode]);
 
   useEffect(() => {
-    if (showCameraModal) startCamera();
+    if (showCameraModal) {
+      setCameraError(null);
+      startCamera();
+    }
     return () => {
       if (!showCameraModal && cameraStreamRef.current) {
         cameraStreamRef.current.getTracks().forEach(t => t.stop());
