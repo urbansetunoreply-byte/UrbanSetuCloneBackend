@@ -1716,6 +1716,21 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const recordingStartTimeRef = useRef(0);
   const recordingCancelledRef = useRef(false);
 
+  // Ensure timer ticks reliably while recording (redundant guard)
+  useEffect(() => {
+    if (isRecording) {
+      // Initialize start time if not set
+      if (!recordingStartTimeRef.current) {
+        recordingStartTimeRef.current = Date.now();
+      }
+      const id = setInterval(() => {
+        const elapsed = Date.now() - recordingStartTimeRef.current;
+        setRecordingElapsedMs(elapsed);
+      }, 500);
+      return () => clearInterval(id);
+    }
+  }, [isRecording]);
+
   // Sound effects
   const { playMessageSent, playMessageReceived, playNotification, toggleMute, setVolume, isMuted } = useSoundEffects();
 
@@ -6485,13 +6500,15 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                       {c.audioUrl && (
                                         <div className="mb-2">
                                           <div className="relative">
-                                            <audio
-                                              src={c.audioUrl}
-                                              className="w-full"
-                                              controls
-                                              preload="metadata"
-                                              onClick={(e) => e.stopPropagation()}
-                                            />
+                                            <div className="w-full">
+                                              <audio
+                                                src={c.audioUrl}
+                                                className="w-full h-10"
+                                                controls
+                                                preload="metadata"
+                                                onClick={(e) => e.stopPropagation()}
+                                              />
+                                            </div>
                                             <div className="absolute top-2 right-2 flex gap-2">
                                               <button
                                                 className="p-2 bg-white rounded-full shadow hover:bg-gray-100"
