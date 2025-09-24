@@ -6503,33 +6503,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                             <div className="w-full">
                                               <audio
                                                 src={c.audioUrl}
-                                                className="w-full h-10"
+                                                className="w-full"
                                                 controls
                                                 preload="metadata"
                                                 onClick={(e) => e.stopPropagation()}
                                               />
-                                            </div>
-                                            <div className="mt-2 flex justify-end">
-                                              <button
-                                                className={`px-3 py-1.5 text-xs rounded-full shadow-sm border transition-colors ${isMe ? 'bg-white text-blue-600 hover:bg-blue-50 border-blue-200' : 'bg-blue-600 text-white hover:bg-blue-700 border-transparent'}`}
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  const a = document.createElement('a');
-                                                  a.href = c.audioUrl;
-                                                  a.download = c.audioName || `audio-${c._id || Date.now()}`;
-                                                  a.target = '_blank';
-                                                  document.body.appendChild(a);
-                                                  a.click();
-                                                  document.body.removeChild(a);
-                                                  toast.success('Audio download started');
-                                                }}
-                                                title="Download audio"
-                                              >
-                                                <span className="inline-flex items-center gap-1">
-                                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" /></svg>
-                                                  Download
-                                                </span>
-                                              </button>
                                             </div>
                                           </div>
                                           {c.message && (
