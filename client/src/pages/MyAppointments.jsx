@@ -6509,9 +6509,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                 onClick={(e) => e.stopPropagation()}
                                               />
                                             </div>
-                                            <div className="absolute top-2 right-2 flex gap-2">
+                                            <div className="absolute top-2 right-2 flex gap-2 bg-white/90 rounded-full p-1 border border-gray-200 shadow-sm">
                                               <button
-                                                className="p-2 bg-white rounded-full shadow hover:bg-gray-100"
+                                                className={`p-2 rounded-full shadow-sm border transition-colors ${isMe ? 'bg-white text-blue-600 hover:bg-blue-50 border-blue-200' : 'bg-blue-600 text-white hover:bg-blue-700 border-transparent'}`}
                                                 onClick={(e) => {
                                                   e.stopPropagation();
                                                   const a = document.createElement('a');
