@@ -95,7 +95,11 @@ const bookingSchema = new mongoose.Schema({
       documentUrl: { type: String, default: null },
       documentName: { type: String, default: null },
       documentMimeType: { type: String, default: null },
-      type: { type: String, enum: ['text', 'image', 'video', 'document'], default: 'text' },
+      // Audio message support
+      audioUrl: { type: String, default: null },
+      audioName: { type: String, default: null },
+      audioMimeType: { type: String, default: null },
+      type: { type: String, enum: ['text', 'image', 'video', 'document', 'audio'], default: 'text' },
       // Message pinning functionality
       pinned: { type: Boolean, default: false },
       pinnedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
