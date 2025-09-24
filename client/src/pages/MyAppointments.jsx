@@ -1713,6 +1713,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const mediaRecorderRef = useRef(null);
   const recordingChunksRef = useRef([]);
   const recordingTimerRef = useRef(null);
+  const recordingStartTimeRef = useRef(0);
+  const recordingCancelledRef = useRef(false);
 
   // Sound effects
   const { playMessageSent, playMessageReceived, playNotification, toggleMute, setVolume, isMuted } = useSoundEffects();
@@ -1765,6 +1767,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       };
       mediaRecorder.onstop = () => {
         try {
+          if (recordingCancelledRef.current) {
+            // Do not create file or open preview when cancelled
+            return;
+          }
           const blob = new Blob(recordingChunksRef.current, { type: 'audio/webm' });
           const fileName = `recording-${Date.now()}.webm`;
           const file = new File([blob], fileName, { type: 'audio/webm' });
@@ -1779,14 +1785,18 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
           setIsRecording(false);
           setRecordingElapsedMs(0);
           if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+          recordingStartTimeRef.current = 0;
+          recordingCancelledRef.current = false;
         }
       };
       mediaRecorder.start(100);
       setIsRecording(true);
+      recordingStartTimeRef.current = Date.now();
       setRecordingElapsedMs(0);
       recordingTimerRef.current = setInterval(() => {
-        setRecordingElapsedMs(prev => prev + 1000);
-      }, 1000);
+        const elapsed = Date.now() - recordingStartTimeRef.current;
+        setRecordingElapsedMs(elapsed);
+      }, 500);
     } catch (err) {
       console.error('Recording error:', err);
       toast.error('Microphone permission denied or unavailable');
@@ -1802,6 +1812,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
 
   const cancelAudioRecording = () => {
     try {
+      recordingCancelledRef.current = true;
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
         mediaRecorderRef.current.stop();
       }
@@ -1812,6 +1823,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     setRecordingElapsedMs(0);
     if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
     setShowRecordAudioModal(false);
+    // Ensure preview is not shown and any selection cleared
+    setSelectedAudio(null);
   };
 
   // Close attachment panel on outside click
@@ -6476,6 +6489,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                               src={c.audioUrl}
                                               className="w-full"
                                               controls
+                                              preload="metadata"
                                               onClick={(e) => e.stopPropagation()}
                                             />
                                             <div className="absolute top-2 right-2 flex gap-2">
