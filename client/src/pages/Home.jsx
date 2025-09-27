@@ -41,9 +41,10 @@ export default function Home() {
       try {
         const res = await fetch(`${API_BASE_URL}/api/listing/get?offer=true`); // removed &limit=6
         const data = await res.json();
-        setOfferListings(data);
+        setOfferListings(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Error fetching offer listings", error);
+        setOfferListings([]);
       }
     };
 
@@ -51,9 +52,10 @@ export default function Home() {
       try {
         const res = await fetch(`${API_BASE_URL}/api/listing/get?type=rent`); // removed &limit=6
         const data = await res.json();
-        setRentListings(data);
+        setRentListings(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Error fetching rent listings", error);
+        setRentListings([]);
       }
     };
 
@@ -61,9 +63,10 @@ export default function Home() {
       try {
         const res = await fetch(`${API_BASE_URL}/api/listing/get?type=sale`); // removed &limit=6
         const data = await res.json();
-        setSaleListings(data);
+        setSaleListings(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Error fetching sale listings", error);
+        setSaleListings([]);
       }
     };
 
@@ -86,6 +89,7 @@ export default function Home() {
         setRecommendedListings(Array.isArray(data) ? data : (data?.listings || []));
       } catch (error) {
         console.error("Error fetching recommended listings", error);
+        setRecommendedListings([]);
       }
     };
     fetchRecommended();
@@ -238,7 +242,7 @@ export default function Home() {
   };
 
   // Get all images from offer listings for the slider
-  const allSliderImages = offerListings.flatMap(listing =>
+  const allSliderImages = Array.isArray(offerListings) ? offerListings.flatMap(listing =>
     (listing.imageUrls || []).map((img, idx) => ({
       url: img,
       listingId: listing._id,
@@ -246,7 +250,7 @@ export default function Home() {
       price: listing.offer && listing.discountPrice ? listing.discountPrice : listing.regularPrice,
       type: listing.type
     }))
-  );
+  ) : [];
 
   return (
     <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen">
