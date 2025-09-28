@@ -1,16 +1,11 @@
 // Use Brevo API for better reliability
 import nodemailer from 'nodemailer';
-import { ApiClient, TransactionalEmailsApi, SendSmtpEmail } from 'sib-api-v3-sdk';
-
-// Initialize Brevo API client
-let brevoApiClient = null;
-let brevoTransactionalEmailsApi = null;
 
 // Initialize Brevo SMTP transporter (fallback)
 let brevoTransporter = null;
 let currentConfigIndex = 0;
 
-// Initialize Brevo API service
+// Initialize Brevo API service (HTTP-based)
 export const initializeBrevoApiService = () => {
   try {
     // Check if API key is available
@@ -19,16 +14,7 @@ export const initializeBrevoApiService = () => {
       return { success: false, error: 'BREVO_API_KEY not found' };
     }
 
-    console.log('🔧 Initializing Brevo API service...');
-    
-    // Initialize API client
-    brevoApiClient = new ApiClient();
-    brevoApiClient.authentications['api-key'].apiKey = process.env.BREVO_API_KEY;
-    
-    // Initialize transactional emails API
-    brevoTransactionalEmailsApi = new TransactionalEmailsApi();
-    brevoTransactionalEmailsApi.setApiKey(brevoApiClient.authentications['api-key']);
-
+    console.log('🔧 Initializing Brevo API service (HTTP-based)...');
     console.log('✅ Brevo API service initialized successfully');
     return { success: true, message: 'Brevo API service initialized' };
   } catch (error) {
@@ -37,41 +23,53 @@ export const initializeBrevoApiService = () => {
   }
 };
 
-// Send email using Brevo API
+// Send email using Brevo API (HTTP-based)
 export const sendBrevoApiEmail = async (emailData) => {
   try {
-    if (!brevoTransactionalEmailsApi) {
-      const initResult = initializeBrevoApiService();
-      if (!initResult.success) {
-        return {
-          success: false,
-          error: 'Brevo API service not initialized: ' + initResult.error
-        };
-      }
+    if (!process.env.BREVO_API_KEY) {
+      return {
+        success: false,
+        error: 'Brevo API key not configured'
+      };
     }
 
-    console.log('📧 Sending email via Brevo API...');
+    console.log('📧 Sending email via Brevo API (HTTP)...');
 
-    const sendSmtpEmail = new SendSmtpEmail();
-    sendSmtpEmail.subject = emailData.subject;
-    sendSmtpEmail.htmlContent = emailData.html;
-    sendSmtpEmail.sender = {
-      name: process.env.BREVO_SENDER_NAME || 'UrbanSetu',
-      email: process.env.BREVO_SENDER_EMAIL || 'auth.urbansetu@gmail.com'
+    const emailPayload = {
+      sender: {
+        name: process.env.BREVO_SENDER_NAME || 'UrbanSetu',
+        email: process.env.BREVO_SENDER_EMAIL || 'auth.urbansetu@gmail.com'
+      },
+      to: [{
+        email: emailData.to,
+        name: emailData.toName || emailData.to
+      }],
+      subject: emailData.subject,
+      htmlContent: emailData.html
     };
-    sendSmtpEmail.to = [{
-      email: emailData.to,
-      name: emailData.toName || emailData.to
-    }];
 
     if (emailData.replyTo) {
-      sendSmtpEmail.replyTo = {
+      emailPayload.replyTo = {
         email: emailData.replyTo,
         name: emailData.replyTo
       };
     }
 
-    const result = await brevoTransactionalEmailsApi.sendTransacEmail(sendSmtpEmail);
+    const response = await fetch('https://api.brevo.com/v3/sendEmail', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'api-key': process.env.BREVO_API_KEY
+      },
+      body: JSON.stringify(emailPayload)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Brevo API error: ${response.status} - ${errorData.message || 'Unknown error'}`);
+    }
+
+    const result = await response.json();
     
     console.log('✅ Brevo API email sent successfully:', result.messageId);
     return {
