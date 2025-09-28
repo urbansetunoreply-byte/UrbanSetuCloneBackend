@@ -1,4 +1,8 @@
-import * as brevo from 'sib-api-v3-sdk';
+// Import Brevo SDK
+import * as brevoSDK from 'sib-api-v3-sdk';
+
+// Extract classes from SDK
+const { ApiClient, TransactionalEmailsApi, SendSmtpEmail } = brevoSDK;
 
 // Initialize Brevo API client
 let brevoApiInstance = null;
@@ -12,18 +16,37 @@ export const initializeBrevoService = () => {
       return { success: false, error: 'BREVO_API_KEY not found' };
     }
 
+    // Check if SDK classes are available
+    if (!ApiClient || !TransactionalEmailsApi || !SendSmtpEmail) {
+      console.error('❌ Brevo SDK classes not available:', {
+        ApiClient: !!ApiClient,
+        TransactionalEmailsApi: !!TransactionalEmailsApi,
+        SendSmtpEmail: !!SendSmtpEmail
+      });
+      return { success: false, error: 'Brevo SDK classes not available' };
+    }
+
+    console.log('🔧 Initializing Brevo service with API key...');
+    
     // Configure API key
-    const defaultClient = brevo.ApiClient.instance;
+    const defaultClient = ApiClient.instance;
     const apiKey = defaultClient.authentications['api-key'];
     apiKey.apiKey = process.env.BREVO_API_KEY;
 
+    console.log('🔧 API key configured, creating TransactionalEmailsApi instance...');
+
     // Initialize the API instance
-    brevoApiInstance = new brevo.TransactionalEmailsApi();
+    brevoApiInstance = new TransactionalEmailsApi();
 
     console.log('✅ Brevo service initialized successfully');
     return { success: true, message: 'Brevo service initialized' };
   } catch (error) {
     console.error('❌ Brevo service initialization failed:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     return { success: false, error: error.message };
   }
 };
@@ -49,7 +72,7 @@ export const sendBrevoEmail = async (emailData) => {
       }
     }
 
-    const sendSmtpEmail = new brevo.SendSmtpEmail();
+    const sendSmtpEmail = new SendSmtpEmail();
     
     // Set email properties
     sendSmtpEmail.subject = emailData.subject;
