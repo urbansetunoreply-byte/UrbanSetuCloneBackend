@@ -121,7 +121,7 @@ export default function Oauth({ pageType }) {
                 {isLoading ? (
                     <>
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600"></div>
-                        {error ? 'Retrying...' : 'Redirecting...'}
+                        {error ? 'Retrying...' : 'Signing In...'}
                     </>
                 ) : (
                     <>
