@@ -204,3 +204,83 @@ export const getEmailConfig = async (req, res, next) => {
     next(error);
   }
 };
+
+// Test email connection and configuration
+export const testEmailConnection = async (req, res, next) => {
+  try {
+    // Import transporter here to avoid circular dependency
+    const transporter = (await import('../utils/emailService.js')).default;
+    
+    const testResults = {
+      timestamp: new Date().toISOString(),
+      tests: []
+    };
+
+    // Test 1: Check environment variables
+    const hasEmailUser = !!process.env.EMAIL_USER;
+    const hasEmailPass = !!process.env.EMAIL_PASS;
+    
+    testResults.tests.push({
+      name: 'Environment Variables',
+      status: hasEmailUser && hasEmailPass ? 'PASS' : 'FAIL',
+      details: {
+        hasEmailUser,
+        hasEmailPass,
+        emailUser: process.env.EMAIL_USER ? 
+          process.env.EMAIL_USER.replace(/(.{2}).*(@.*)/, '$1***$2') : null
+      }
+    });
+
+    // Test 2: Verify SMTP connection
+    try {
+      await transporter.verify();
+      testResults.tests.push({
+        name: 'SMTP Connection',
+        status: 'PASS',
+        details: { message: 'Connection verified successfully' }
+      });
+    } catch (error) {
+      testResults.tests.push({
+        name: 'SMTP Connection',
+        status: 'FAIL',
+        details: { 
+          error: error.message,
+          code: error.code,
+          command: error.command
+        }
+      });
+    }
+
+    // Test 3: Send test email (if requested)
+    const { sendTestEmail } = req.query;
+    if (sendTestEmail === 'true' && req.body.testEmail) {
+      try {
+        const { sendSignupOTPEmail } = await import('../utils/emailService.js');
+        const result = await sendSignupOTPEmail(req.body.testEmail, '123456');
+        
+        testResults.tests.push({
+          name: 'Test Email Send',
+          status: result.success ? 'PASS' : 'FAIL',
+          details: result
+        });
+      } catch (error) {
+        testResults.tests.push({
+          name: 'Test Email Send',
+          status: 'FAIL',
+          details: { error: error.message }
+        });
+      }
+    }
+
+    // Overall status
+    const allPassed = testResults.tests.every(test => test.status === 'PASS');
+    testResults.overallStatus = allPassed ? 'HEALTHY' : 'UNHEALTHY';
+
+    res.status(200).json({
+      success: true,
+      data: testResults
+    });
+  } catch (error) {
+    next(error);
+  }
+};

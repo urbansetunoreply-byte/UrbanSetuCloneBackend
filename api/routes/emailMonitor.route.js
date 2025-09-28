@@ -6,7 +6,8 @@ import {
   clearFailedEmailsFromQueue, 
   testEmailSending, 
   toggleEmailMonitoring,
-  getEmailConfig 
+  getEmailConfig,
+  testEmailConnection
 } from '../controllers/emailMonitor.controller.js';
 import { verifyToken } from '../utils/verify.js';
 
@@ -40,6 +41,9 @@ router.get('/queue', getQueueStatus);
 
 // Get email configuration
 router.get('/config', getEmailConfig);
+
+// Test email connection and configuration
+router.post('/test-connection', testEmailConnection);
 
 // Clear failed emails from queue
 router.post('/queue/clear-failed', clearFailedEmailsFromQueue);

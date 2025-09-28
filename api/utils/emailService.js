@@ -7,14 +7,21 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
   },
-  // Add connection pooling for better performance
-  pool: true,
-  maxConnections: 5,
-  maxMessages: 100,
-  // Add timeout settings
-  connectionTimeout: 60000, // 60 seconds
-  greetingTimeout: 30000,   // 30 seconds
-  socketTimeout: 60000,     // 60 seconds
+  // Disable connection pooling for Render environment
+  pool: false,
+  // More conservative timeout settings for Render
+  connectionTimeout: 30000, // 30 seconds
+  greetingTimeout: 15000,   // 15 seconds
+  socketTimeout: 30000,     // 30 seconds
+  // Additional Gmail-specific settings
+  secure: true,
+  port: 587,
+  tls: {
+    rejectUnauthorized: false
+  },
+  // Retry configuration
+  retryDelay: 2000,
+  maxRetries: 3
 });
 
 // Email delivery tracking
@@ -26,8 +33,29 @@ const emailDeliveryStats = {
   lastError: null
 };
 
-// Enhanced retry logic with exponential backoff
+// Verify transporter connection before sending
+const verifyTransporter = async () => {
+  try {
+    await transporter.verify();
+    console.log('Email transporter verified successfully');
+    return true;
+  } catch (error) {
+    console.error('Email transporter verification failed:', error.message);
+    return false;
+  }
+};
+
+// Enhanced retry logic with exponential backoff and connection verification
 const sendEmailWithRetry = async (mailOptions, maxRetries = 3, baseDelay = 1000) => {
+  // Verify connection before first attempt
+  if (!await verifyTransporter()) {
+    return {
+      success: false,
+      error: 'Email service connection failed',
+      attempts: 0
+    };
+  }
+
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const result = await transporter.sendMail(mailOptions);
@@ -45,19 +73,28 @@ const sendEmailWithRetry = async (mailOptions, maxRetries = 3, baseDelay = 1000)
     } catch (error) {
       console.error(`Email send attempt ${attempt} failed:`, error.message);
       
+      // Check for specific error types
+      if (error.code === 'ECONNECTION' || error.code === 'ETIMEDOUT') {
+        console.error('Connection error detected, attempting to reconnect...');
+        // Try to verify connection again
+        await verifyTransporter();
+      }
+      
       // Track failed attempts
       if (attempt === maxRetries) {
         emailDeliveryStats.failed++;
         emailDeliveryStats.lastError = {
           message: error.message,
           timestamp: new Date(),
-          recipient: mailOptions.to
+          recipient: mailOptions.to,
+          errorCode: error.code
         };
         
         return { 
           success: false, 
           error: error.message,
-          attempts: attempt
+          attempts: attempt,
+          errorCode: error.code
         };
       }
       
@@ -580,5 +617,33 @@ export const sendOTPEmail = async (email, otp) => {
   console.warn('sendOTPEmail is deprecated. Use sendSignupOTPEmail or sendForgotPasswordOTPEmail instead.');
   return await sendSignupOTPEmail(email, otp);
 };
+
+// Initialize email service and verify connection on startup
+const initializeEmailService = async () => {
+  console.log('Initializing email service...');
+  
+  // Check if required environment variables are set
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.error('❌ Email service initialization failed: Missing EMAIL_USER or EMAIL_PASS environment variables');
+    return false;
+  }
+  
+  console.log(`📧 Email service configured for: ${process.env.EMAIL_USER}`);
+  
+  // Verify connection
+  const isConnected = await verifyTransporter();
+  if (isConnected) {
+    console.log('✅ Email service initialized successfully');
+  } else {
+    console.error('❌ Email service initialization failed: Connection verification failed');
+  }
+  
+  return isConnected;
+};
+
+// Auto-initialize email service
+initializeEmailService().catch(error => {
+  console.error('Email service auto-initialization failed:', error);
+});
 
 export default transporter;
