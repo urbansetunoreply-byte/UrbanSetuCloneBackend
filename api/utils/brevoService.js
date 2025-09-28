@@ -34,6 +34,7 @@ export const sendBrevoApiEmail = async (emailData) => {
     }
 
     console.log('📧 Sending email via Brevo API (HTTP)...');
+    console.log('🔑 Using API key:', process.env.BREVO_API_KEY ? `${process.env.BREVO_API_KEY.substring(0, 10)}...` : 'NOT FOUND');
 
     const emailPayload = {
       sender: {
@@ -48,6 +49,12 @@ export const sendBrevoApiEmail = async (emailData) => {
       htmlContent: emailData.html
     };
 
+    console.log('📤 Email payload:', {
+      sender: emailPayload.sender,
+      to: emailPayload.to,
+      subject: emailPayload.subject
+    });
+
     if (emailData.replyTo) {
       emailPayload.replyTo = {
         email: emailData.replyTo,
@@ -55,7 +62,7 @@ export const sendBrevoApiEmail = async (emailData) => {
       };
     }
 
-    const response = await fetch('https://api.brevo.com/v3/sendEmail', {
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -65,8 +72,17 @@ export const sendBrevoApiEmail = async (emailData) => {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`Brevo API error: ${response.status} - ${errorData.message || 'Unknown error'}`);
+      let errorMessage = `Brevo API error: ${response.status}`;
+      try {
+        const errorData = await response.json();
+        errorMessage += ` - ${errorData.message || errorData.detail || 'Unknown error'}`;
+        console.error('❌ Brevo API error details:', errorData);
+      } catch (parseError) {
+        const errorText = await response.text();
+        errorMessage += ` - ${errorText || 'Unknown error'}`;
+        console.error('❌ Brevo API error text:', errorText);
+      }
+      throw new Error(errorMessage);
     }
 
     const result = await response.json();
