@@ -942,7 +942,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                             </div>
                         </div>
                         
-                        <Oauth pageType="signIn" disabled={authInProgress !== null} onAuthStart={setAuthInProgress} />
+                        <Oauth pageType="signIn" disabled={authInProgress !== null || otpSent} onAuthStart={setAuthInProgress} />
                         
                         {(error || urlError) && (
                             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -955,7 +955,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 Don't have an account?{" "}
                                 <Link 
                                     to="/sign-up" 
-                                    className={`text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors duration-200 ${(authInProgress !== null || loading || otpVerifyingLoading) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                                    className={`text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors duration-200 ${(authInProgress !== null || loading || otpVerifyingLoading || otpSent) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
                                 >
                                     Sign Up
                                 </Link>
