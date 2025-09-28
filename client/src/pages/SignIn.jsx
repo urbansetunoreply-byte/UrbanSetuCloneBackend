@@ -50,6 +50,9 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
     const [otpRecaptchaKey, setOtpRecaptchaKey] = useState(0); // force remount for OTP
     const recaptchaRef = useRef(null);
     const otpRecaptchaRef = useRef(null);
+    
+    // State to track which authentication method is in progress
+    const [authInProgress, setAuthInProgress] = useState(null); // null, 'password', 'otp', 'google'
 
     const { loading, error, currentUser } = useSelector((state) => state.user);
     const navigate = useNavigate();
@@ -278,6 +281,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
 
         setOtpLoading(true);
         setOtpRecaptchaError("");
+        setAuthInProgress('otp');
         
         try {
             const requestBody = { 
@@ -353,6 +357,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             dispatch(signInFailure(error.message));
         } finally {
             setOtpLoading(false);
+            setAuthInProgress(null);
         }
     };
 
@@ -364,6 +369,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         }
 
         dispatch(signInStart());
+        setAuthInProgress('otp');
         
         // Check if cookies are enabled for better UX
         const cookiesEnabled = areCookiesEnabled();
@@ -429,6 +435,8 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
 
         } catch (error) {
             dispatch(signInFailure(error.message));
+        } finally {
+            setAuthInProgress(null);
         }
     };
 
@@ -445,6 +453,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         }
         
         dispatch(signInStart());
+        setAuthInProgress('password');
         
         // Check if cookies are enabled for better UX
         const cookiesEnabled = areCookiesEnabled();
@@ -534,6 +543,8 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
 
         } catch (error) {
             dispatch(signInFailure(error.message));
+        } finally {
+            setAuthInProgress(null);
         }
     };
 
@@ -595,6 +606,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                     <div className="flex bg-gray-100 rounded-lg p-1 mb-6">
                         <button
                             type="button"
+                            disabled={authInProgress !== null}
                             onClick={() => {
                                 setLoginMethod("password");
                                 setOtpSent(false);
@@ -609,12 +621,13 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 loginMethod === "password"
                                     ? "bg-white text-blue-600 shadow-sm"
                                     : "text-gray-600 hover:text-gray-800"
-                            }`}
+                            } ${authInProgress !== null ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                             Password Sign In
                         </button>
                         <button
                             type="button"
+                            disabled={authInProgress !== null}
                             onClick={() => {
                                 setLoginMethod("otp");
                                 setFormData({ email: "", password: "" });
@@ -627,7 +640,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 loginMethod === "otp"
                                     ? "bg-white text-blue-600 shadow-sm"
                                     : "text-gray-600 hover:text-gray-800"
-                            }`}
+                            } ${authInProgress !== null ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                             OTP Sign In
                         </button>
@@ -912,7 +925,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                             </div>
                         </div>
                         
-                        <Oauth pageType="signIn" />
+                        <Oauth pageType="signIn" disabled={authInProgress !== null} onAuthStart={setAuthInProgress} />
                         
                         {(error || urlError) && (
                             <div className="bg-red-50 border border-red-200 rounded-lg p-4">

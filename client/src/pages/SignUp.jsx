@@ -57,6 +57,9 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
   // Timer states for resend OTP
   const [resendTimer, setResendTimer] = useState(0);
   const [canResend, setCanResend] = useState(true);
+  
+  // State to track which authentication method is in progress
+  const [authInProgress, setAuthInProgress] = useState(null); // null, 'form', 'google'
 
   const checkPasswordStrength = (password) => {
     const strength = calculatePasswordStrength(password);
@@ -263,6 +266,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
     }
 
     setLoading(true);
+    setAuthInProgress('form');
     setError("");
     setSuccess("");
     setFieldErrors({ email: "", mobileNumber: "" });
@@ -327,6 +331,8 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
     } catch (error) {
       setError(error.message);
       setLoading(false);
+    } finally {
+      setAuthInProgress(null);
     }
   };
 
@@ -407,7 +413,8 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                   placeholder="Enter your full name"
                   id="username"
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  disabled={authInProgress === 'google'}
+                  className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   required
                 />
               </div>
@@ -433,7 +440,8 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                       (emailVerified || otpSent) && !emailEditMode
                         ? "bg-gray-100 cursor-not-allowed border-green-500"
                         : fieldErrors.email ? "border-red-500" : emailVerified ? "border-green-500" : "border-gray-300"
-                    }`}
+                    } ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                    disabled={authInProgress === 'google' || ((emailVerified || otpSent) && !emailEditMode)}
                     required
                   />
                   {fieldErrors.email && (
@@ -606,7 +614,8 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                   maxLength="10"
                   className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
                     fieldErrors.mobileNumber ? "border-red-500" : "border-gray-300"
-                  }`}
+                  } ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  disabled={authInProgress === 'google'}
                   required
                 />
                 {fieldErrors.mobileNumber && (
@@ -623,7 +632,8 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                 <select
                   id="role"
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  disabled={authInProgress === 'google'}
+                  className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   required
                 >
                   <option value="">Select your role</option>
@@ -643,7 +653,8 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                     placeholder="Create a strong password"
                     id="password"
                     onChange={handleChange}
-                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    disabled={authInProgress === 'google'}
+                    className={`w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                     required
                   />
                   <div
@@ -716,7 +727,8 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                     placeholder="Confirm your password"
                     id="confirmPassword"
                     onChange={handleChange}
-                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    disabled={authInProgress === 'google'}
+                    className={`w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                     required
                   />
                   <div
@@ -738,7 +750,8 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                   id="consent"
                   checked={consent}
                   onChange={e => setConsent(e.target.checked)}
-                  className="mt-1 mr-2"
+                  disabled={authInProgress === 'google'}
+                  className={`mt-1 mr-2 ${authInProgress === 'google' ? 'opacity-50 cursor-not-allowed' : ''}`}
                   required
                 />
                 <label htmlFor="consent" className="text-sm text-gray-700 select-none">
@@ -773,7 +786,8 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                   loading ||
                   !meetsMinimumRequirements(formData.password) ||
                   !emailVerified ||
-                  !recaptchaToken
+                  !recaptchaToken ||
+                  authInProgress === 'google'
                 }
                 className="w-full py-3 px-4 bg-gradient-to-r from-green-600 to-blue-600 text-white font-semibold rounded-lg hover:from-green-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
               >
@@ -802,7 +816,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                 </div>
               </div>
 
-              <Oauth pageType="signUp" />
+              <Oauth pageType="signUp" disabled={authInProgress !== null} onAuthStart={setAuthInProgress} />
 
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4">

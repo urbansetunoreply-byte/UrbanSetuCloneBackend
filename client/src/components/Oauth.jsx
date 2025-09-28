@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 
 import { API_BASE_URL } from '../config/api.js';
 
-export default function Oauth({ pageType }) {
+export default function Oauth({ pageType, disabled = false, onAuthStart = null }) {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
@@ -74,6 +74,10 @@ export default function Oauth({ pageType }) {
             setError('Authentication failed. Please try again.');
         } finally {
             setIsLoading(false);
+            // Notify parent component that Google auth completed
+            if (onAuthStart) {
+                onAuthStart(null);
+            }
         }
     };
 
@@ -81,6 +85,11 @@ export default function Oauth({ pageType }) {
         try {
             setIsLoading(true);
             setError(null);
+            
+            // Notify parent component that Google auth is starting
+            if (onAuthStart) {
+                onAuthStart('google');
+            }
             
             // Try popup first, fallback to redirect if it fails
             try {
@@ -106,18 +115,23 @@ export default function Oauth({ pageType }) {
             console.error(`Error initiating Google ${pageType}:`, error);
             setError('Failed to initiate Google authentication. Please try again.');
             setIsLoading(false);
+            
+            // Notify parent component that Google auth failed
+            if (onAuthStart) {
+                onAuthStart(null);
+            }
         }
     };
 
     return (
         <div className="w-full">
-            <button
-                type="button"
-                onClick={handleGoogleClick}
-                disabled={isLoading}
-                className="flex items-center justify-center w-full gap-2 px-4 py-2 mt-4 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label={`${pageType === "signIn" ? "Sign In" : "Sign Up"} with Google`}
-            >
+        <button
+            type="button"
+            onClick={handleGoogleClick}
+            disabled={isLoading || disabled}
+            className="flex items-center justify-center w-full gap-2 px-4 py-2 mt-4 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label={`${pageType === "signIn" ? "Sign In" : "Sign Up"} with Google`}
+        >
                 {isLoading ? (
                     <>
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600"></div>
