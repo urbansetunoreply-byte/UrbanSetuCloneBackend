@@ -771,6 +771,204 @@ export const sendForcedLogoutEmail = async (email, reason, performedBy) => {
   }
 };
 
+// Payment Success Email
+export const sendPaymentSuccessEmail = async (email, paymentDetails) => {
+  try {
+    const { 
+      paymentId, 
+      amount, 
+      currency, 
+      propertyName, 
+      appointmentDate, 
+      receiptUrl, 
+      paymentType,
+      gateway 
+    } = paymentDetails;
+
+    const subject = `Payment Successful - ${propertyName}`;
+    
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <div style="background-color: #10b981; width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+              <span style="color: white; font-size: 24px;">✓</span>
+            </div>
+            <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Payment Successful!</h1>
+            <p style="color: #6b7280; margin: 10px 0 0; font-size: 16px;">Your payment has been processed successfully</p>
+          </div>
+          
+          <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+            <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 20px;">Payment Details</h2>
+            <div style="display: grid; gap: 10px;">
+              <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                <span style="color: #6b7280; font-weight: 500;">Property:</span>
+                <span style="color: #1f2937; font-weight: 600;">${propertyName}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                <span style="color: #6b7280; font-weight: 500;">Appointment Date:</span>
+                <span style="color: #1f2937; font-weight: 600;">${appointmentDate}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                <span style="color: #6b7280; font-weight: 500;">Payment Type:</span>
+                <span style="color: #1f2937; font-weight: 600;">${paymentType.replace('_', ' ').toUpperCase()}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                <span style="color: #6b7280; font-weight: 500;">Amount:</span>
+                <span style="color: #1f2937; font-weight: 600;">${currency} ${amount}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                <span style="color: #6b7280; font-weight: 500;">Payment ID:</span>
+                <span style="color: #1f2937; font-weight: 600;">${paymentId}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                <span style="color: #6b7280; font-weight: 500;">Payment Gateway:</span>
+                <span style="color: #1f2937; font-weight: 600;">${gateway.toUpperCase()}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${receiptUrl}" style="background-color: #3b82f6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block; margin-right: 15px;">
+              📄 Download Receipt
+            </a>
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.com'}/user/my-appointments" style="background-color: #10b981; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
+              📅 View Appointments
+            </a>
+          </div>
+          
+          <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+            <h3 style="color: #1e40af; margin: 0 0 10px; font-size: 16px;">What's Next?</h3>
+            <p style="color: #1e40af; margin: 0; font-size: 14px; line-height: 1.5;">
+              Your payment has been confirmed and your appointment is now secured. You can view all your appointments and download receipts from your appointments page.
+            </p>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #6b7280; font-size: 14px; margin: 0;">
+              If you have any questions, please contact our support team.
+            </p>
+            <p style="color: #6b7280; font-size: 12px; margin: 10px 0 0;">
+              This is an automated message. Please do not reply to this email.
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending payment success email:', error);
+    return createErrorResponse(error, 'payment_success_notification');
+  }
+};
+
+// Payment Failed Email
+export const sendPaymentFailedEmail = async (email, paymentDetails) => {
+  try {
+    const { 
+      paymentId, 
+      amount, 
+      currency, 
+      propertyName, 
+      appointmentDate, 
+      paymentType,
+      gateway,
+      reason 
+    } = paymentDetails;
+
+    const subject = `Payment Failed - ${propertyName}`;
+    
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <div style="background-color: #ef4444; width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+              <span style="color: white; font-size: 24px;">✗</span>
+            </div>
+            <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Payment Failed</h1>
+            <p style="color: #6b7280; margin: 10px 0 0; font-size: 16px;">We were unable to process your payment</p>
+          </div>
+          
+          <div style="background-color: #fef2f2; padding: 20px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #ef4444;">
+            <h2 style="color: #dc2626; margin: 0 0 15px; font-size: 20px;">Payment Details</h2>
+            <div style="display: grid; gap: 10px;">
+              <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #fecaca;">
+                <span style="color: #6b7280; font-weight: 500;">Property:</span>
+                <span style="color: #1f2937; font-weight: 600;">${propertyName}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #fecaca;">
+                <span style="color: #6b7280; font-weight: 500;">Appointment Date:</span>
+                <span style="color: #1f2937; font-weight: 600;">${appointmentDate}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #fecaca;">
+                <span style="color: #6b7280; font-weight: 500;">Payment Type:</span>
+                <span style="color: #1f2937; font-weight: 600;">${paymentType.replace('_', ' ').toUpperCase()}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #fecaca;">
+                <span style="color: #6b7280; font-weight: 500;">Amount:</span>
+                <span style="color: #1f2937; font-weight: 600;">${currency} ${amount}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #fecaca;">
+                <span style="color: #6b7280; font-weight: 500;">Payment ID:</span>
+                <span style="color: #1f2937; font-weight: 600;">${paymentId}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                <span style="color: #6b7280; font-weight: 500;">Payment Gateway:</span>
+                <span style="color: #1f2937; font-weight: 600;">${gateway.toUpperCase()}</span>
+              </div>
+            </div>
+            ${reason ? `
+              <div style="margin-top: 15px; padding: 10px; background-color: #fef2f2; border-radius: 4px;">
+                <strong style="color: #dc2626;">Reason:</strong>
+                <span style="color: #7f1d1d; margin-left: 5px;">${reason}</span>
+              </div>
+            ` : ''}
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.com'}/user/my-appointments" style="background-color: #3b82f6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
+              🔄 Retry Payment
+            </a>
+          </div>
+          
+          <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+            <h3 style="color: #92400e; margin: 0 0 10px; font-size: 16px;">What to do next?</h3>
+            <ul style="color: #92400e; margin: 0; font-size: 14px; line-height: 1.6; padding-left: 20px;">
+              <li>Check your payment method and try again</li>
+              <li>Ensure you have sufficient funds</li>
+              <li>Contact your bank if the issue persists</li>
+              <li>Try using a different payment method</li>
+            </ul>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #6b7280; font-size: 14px; margin: 0;">
+              If you continue to experience issues, please contact our support team.
+            </p>
+            <p style="color: #6b7280; font-size: 12px; margin: 10px 0 0;">
+              This is an automated message. Please do not reply to this email.
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending payment failed email:', error);
+    return createErrorResponse(error, 'payment_failed_notification');
+  }
+};
+
 // Legacy function for backward compatibility (deprecated)
 export const sendOTPEmail = async (email, otp) => {
   console.warn('sendOTPEmail is deprecated. Use sendSignupOTPEmail or sendForgotPasswordOTPEmail instead.');

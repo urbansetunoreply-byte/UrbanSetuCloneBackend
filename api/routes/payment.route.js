@@ -9,6 +9,7 @@ import Notification from "../models/notification.model.js";
 import { verifyToken } from '../utils/verify.js';
 import crypto from 'crypto';
 import { createPayPalOrder, capturePayPalOrder, getPayPalAccessToken } from '../controllers/paypalController.js';
+import { sendPaymentSuccessEmail, sendPaymentFailedEmail } from '../utils/emailService.js';
 import fetch from 'node-fetch';
 import PDFDocument from 'pdfkit';
 
@@ -258,6 +259,14 @@ router.post("/verify", verifyToken, async (req, res) => {
       return res.status(404).json({ message: "Payment not found" });
     }
 
+    // Get appointment and user details for email
+    const appointment = await Booking.findById(payment.appointmentId)
+      .populate('buyerId', 'email username')
+      .populate('listingId', 'name');
+    
+    const user = appointment.buyerId;
+    const listing = appointment.listingId;
+
     // Check if payment was successful or failed
     if (paymentStatus === 'failed' || !paypalOrderId) {
       payment.status = 'failed';
@@ -265,6 +274,22 @@ router.post("/verify", verifyToken, async (req, res) => {
       payment.clientIp = clientIp || req.ip;
       payment.userAgent = userAgent || req.headers['user-agent'];
       await payment.save();
+
+      // Send payment failed email
+      try {
+        await sendPaymentFailedEmail(user.email, {
+          paymentId: payment.paymentId,
+          amount: payment.amount,
+          currency: payment.currency,
+          propertyName: listing.name,
+          appointmentDate: appointment.date ? new Date(appointment.date).toLocaleDateString() : 'N/A',
+          paymentType: payment.paymentType,
+          gateway: payment.gateway,
+          reason: 'Payment was declined or failed during processing'
+        });
+      } catch (emailError) {
+        console.error('Error sending payment failed email:', emailError);
+      }
 
       return res.status(400).json({
         message: "Payment failed",
@@ -293,6 +318,22 @@ router.post("/verify", verifyToken, async (req, res) => {
     payment.receiptUrl = receiptUrl;
     await payment.save();
 
+    // Send payment success email
+    try {
+      await sendPaymentSuccessEmail(user.email, {
+        paymentId: payment.paymentId,
+        amount: payment.amount,
+        currency: payment.currency,
+        propertyName: listing.name,
+        appointmentDate: appointment.date ? new Date(appointment.date).toLocaleDateString() : 'N/A',
+        receiptUrl: receiptUrl,
+        paymentType: payment.paymentType,
+        gateway: payment.gateway
+      });
+    } catch (emailError) {
+      console.error('Error sending payment success email:', emailError);
+    }
+
     res.status(200).json({
       message: "Payment verified successfully",
       payment: payment,
@@ -316,6 +357,14 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
       return res.status(400).json({ message: 'Invalid gateway for this payment' });
     }
 
+    // Get appointment and user details for email
+    const appointment = await Booking.findById(payment.appointmentId)
+      .populate('buyerId', 'email username')
+      .populate('listingId', 'name');
+    
+    const user = appointment.buyerId;
+    const listing = appointment.listingId;
+
     // Check if payment was successful or failed
     if (paymentStatus === 'failed' || !razorpay_payment_id) {
       payment.status = 'failed';
@@ -323,6 +372,22 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
       payment.clientIp = clientIp || req.ip;
       payment.userAgent = userAgent || req.headers['user-agent'];
       await payment.save();
+
+      // Send payment failed email
+      try {
+        await sendPaymentFailedEmail(user.email, {
+          paymentId: payment.paymentId,
+          amount: payment.amount,
+          currency: payment.currency,
+          propertyName: listing.name,
+          appointmentDate: appointment.date ? new Date(appointment.date).toLocaleDateString() : 'N/A',
+          paymentType: payment.paymentType,
+          gateway: payment.gateway,
+          reason: 'Payment was declined or failed during processing'
+        });
+      } catch (emailError) {
+        console.error('Error sending payment failed email:', emailError);
+      }
 
       return res.status(400).json({
         message: "Payment failed",
@@ -345,6 +410,22 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
       payment.userAgent = userAgent || req.headers['user-agent'];
       await payment.save();
 
+      // Send payment failed email for signature verification failure
+      try {
+        await sendPaymentFailedEmail(user.email, {
+          paymentId: payment.paymentId,
+          amount: payment.amount,
+          currency: payment.currency,
+          propertyName: listing.name,
+          appointmentDate: appointment.date ? new Date(appointment.date).toLocaleDateString() : 'N/A',
+          paymentType: payment.paymentType,
+          gateway: payment.gateway,
+          reason: 'Payment signature verification failed'
+        });
+      } catch (emailError) {
+        console.error('Error sending payment failed email:', emailError);
+      }
+
       return res.status(400).json({ 
         message: 'Signature verification failed',
         payment: payment
@@ -366,6 +447,30 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
     const receiptUrl = `${base}/api/payments/${payment.paymentId}/receipt`;
     payment.receiptUrl = receiptUrl;
     await payment.save();
+
+    // Get appointment and user details for email
+    const appointment = await Booking.findById(payment.appointmentId)
+      .populate('buyerId', 'email username')
+      .populate('listingId', 'name');
+    
+    const user = appointment.buyerId;
+    const listing = appointment.listingId;
+
+    // Send payment success email
+    try {
+      await sendPaymentSuccessEmail(user.email, {
+        paymentId: payment.paymentId,
+        amount: payment.amount,
+        currency: payment.currency,
+        propertyName: listing.name,
+        appointmentDate: appointment.date ? new Date(appointment.date).toLocaleDateString() : 'N/A',
+        receiptUrl: receiptUrl,
+        paymentType: payment.paymentType,
+        gateway: payment.gateway
+      });
+    } catch (emailError) {
+      console.error('Error sending payment success email:', emailError);
+    }
 
     return res.json({ message: 'Payment verified successfully', payment, receiptUrl });
   } catch (err) {
@@ -1198,6 +1303,30 @@ router.post('/admin/mark-paid', verifyToken, async (req, res) => {
 
     // Mark appointment flag
     await Booking.findByIdAndUpdate(appointmentId, { paymentConfirmed: true });
+
+    // Get appointment and user details for email
+    const appointment = await Booking.findById(appointmentId)
+      .populate('buyerId', 'email username')
+      .populate('listingId', 'name');
+    
+    const user = appointment.buyerId;
+    const listing = appointment.listingId;
+
+    // Send payment success email (admin marked as paid)
+    try {
+      await sendPaymentSuccessEmail(user.email, {
+        paymentId: payment.paymentId,
+        amount: payment.amount,
+        currency: payment.currency,
+        propertyName: listing.name,
+        appointmentDate: appointment.date ? new Date(appointment.date).toLocaleDateString() : 'N/A',
+        receiptUrl: receiptUrl,
+        paymentType: payment.paymentType,
+        gateway: payment.gateway
+      });
+    } catch (emailError) {
+      console.error('Error sending payment success email:', emailError);
+    }
 
     // Emit socket event for real-time payment status update
     const io = req.app.get('io');
