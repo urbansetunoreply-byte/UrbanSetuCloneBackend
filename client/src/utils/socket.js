@@ -5,7 +5,10 @@ const SOCKET_URL = "https://urbansetu.onrender.com"; // backend URL
 
 function getToken() {
   const token = getAuthToken();
-  console.log('[Socket] getToken:', token ? 'found' : 'not found');
+  // Only log when token is not found to reduce console noise
+  if (!token) {
+    console.log('[Socket] getToken: not found');
+  }
   return token;
 }
 
@@ -63,10 +66,14 @@ export function reconnectSocket() {
   if (socket && socket.connected) {
     socket.disconnect();
   }
-  console.log('[Socket] reconnecting with token');
+  // Only log reconnection if there's a token (login) to reduce noise
+  const token = getToken();
+  if (token) {
+    console.log('[Socket] reconnecting with token');
+  }
   socket = io(SOCKET_URL, {
     auth: {
-      token: getToken(),
+      token: token,
     },
     withCredentials: true,
     transports: ['websocket'],
@@ -74,7 +81,10 @@ export function reconnectSocket() {
   
   // Add socket event listeners for debugging
   socket.on('connect', () => {
-    console.log('[Socket] Reconnected to server');
+    // Only log reconnection if there's a token (login) to reduce noise
+    if (token) {
+      console.log('[Socket] Reconnected to server');
+    }
     registerSessionRoom();
   });
 

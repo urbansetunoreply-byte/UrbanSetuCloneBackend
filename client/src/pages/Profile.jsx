@@ -1249,20 +1249,51 @@ export default function Profile() {
         dispatch(signoutUserFailure(data.message));
       } else {
         dispatch(signoutUserSuccess(data));
+        
         // Clear persisted state
         await persistor.purge();
-        // Disconnect and reconnect socket to clear auth
-        reconnectSocket();
-        // Extra: Clear localStorage token if used
+        
+        // Clear all tokens and cookies
         localStorage.removeItem('accessToken');
-        // Extra: Expire the access_token cookie on client side
-        document.cookie = 'access_token=; Max-Age=0; path=/; domain=' + window.location.hostname + '; secure; samesite=None';
+        document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
+        document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
+        document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
+        
+        // Disconnect socket completely before reconnecting
+        if (socket && socket.connected) {
+          socket.disconnect();
+        }
+        
+        // Reconnect socket with cleared auth
+        reconnectSocket();
+        
         toast.info("You have been signed out.");
         await new Promise(resolve => setTimeout(resolve, 50));
         navigate("/sign-in", { replace: true });
       }
     } catch (error) {
       dispatch(signoutUserFailure(error.message));
+      
+      // Clear all authentication state even on error
+      dispatch(signoutUserSuccess());
+      await persistor.purge();
+      
+      // Clear all tokens and cookies
+      localStorage.removeItem('accessToken');
+      document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
+      document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
+      document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
+      
+      // Disconnect socket completely before reconnecting
+      if (socket && socket.connected) {
+        socket.disconnect();
+      }
+      
+      // Reconnect socket with cleared auth
+      reconnectSocket();
+      
+      toast.info("You have been signed out.");
+      navigate("/sign-in", { replace: true });
     }
   };
 

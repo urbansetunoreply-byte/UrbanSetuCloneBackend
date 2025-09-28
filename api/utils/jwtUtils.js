@@ -88,4 +88,5 @@ export const clearAuthCookies = (res) => {
 
     res.clearCookie('access_token', cookieOptions);
     res.clearCookie('refresh_token', cookieOptions);
+    res.clearCookie('session_id', cookieOptions);
 };

@@ -192,22 +192,50 @@ export default function Header() {
         console.log(data.message);
         return;
       }
+      
+      // Clear all authentication state
       dispatch(signoutUserSuccess());
       await persistor.purge();
-      reconnectSocket();
+      
+      // Clear all tokens and cookies
       localStorage.removeItem('accessToken');
-      document.cookie = 'access_token=; Max-Age=0; path=/; domain=' + window.location.hostname + '; secure; samesite=None';
+      document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
+      document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
+      document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
+      
+      // Disconnect socket completely before reconnecting
+      if (socket && socket.connected) {
+        socket.disconnect();
+      }
+      
+      // Reconnect socket with cleared auth
+      reconnectSocket();
+      
       toast.info("You have been signed out.");
-      navigate("/sign-in");
+      navigate("/sign-in", { replace: true });
     } catch (error) {
       console.log(error.message);
+      
+      // Clear all authentication state even on error
       dispatch(signoutUserSuccess());
       await persistor.purge();
-      reconnectSocket();
+      
+      // Clear all tokens and cookies
       localStorage.removeItem('accessToken');
-      document.cookie = 'access_token=; Max-Age=0; path=/; domain=' + window.location.hostname + '; secure; samesite=None';
+      document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
+      document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
+      document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
+      
+      // Disconnect socket completely before reconnecting
+      if (socket && socket.connected) {
+        socket.disconnect();
+      }
+      
+      // Reconnect socket with cleared auth
+      reconnectSocket();
+      
       toast.info("You have been signed out.");
-      navigate("/sign-in");
+      navigate("/sign-in", { replace: true });
     }
   };
 
@@ -399,22 +427,50 @@ function UserNavLinks({ mobile = false, onNavigate }) {
         console.log(data.message);
         return;
       }
+      
+      // Clear all authentication state
       dispatch(signoutUserSuccess());
       await persistor.purge();
-      reconnectSocket();
+      
+      // Clear all tokens and cookies
       localStorage.removeItem('accessToken');
-      document.cookie = 'access_token=; Max-Age=0; path=/; domain=' + window.location.hostname + '; secure; samesite=None';
+      document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
+      document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
+      document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
+      
+      // Disconnect socket completely before reconnecting
+      if (socket && socket.connected) {
+        socket.disconnect();
+      }
+      
+      // Reconnect socket with cleared auth
+      reconnectSocket();
+      
       toast.info("You have been signed out.");
-      navigate("/sign-in");
+      navigate("/sign-in", { replace: true });
     } catch (error) {
       console.log(error.message);
+      
+      // Clear all authentication state even on error
       dispatch(signoutUserSuccess());
       await persistor.purge();
-      reconnectSocket();
+      
+      // Clear all tokens and cookies
       localStorage.removeItem('accessToken');
-      document.cookie = 'access_token=; Max-Age=0; path=/; domain=' + window.location.hostname + '; secure; samesite=None';
+      document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
+      document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
+      document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
+      
+      // Disconnect socket completely before reconnecting
+      if (socket && socket.connected) {
+        socket.disconnect();
+      }
+      
+      // Reconnect socket with cleared auth
+      reconnectSocket();
+      
       toast.info("You have been signed out.");
-      navigate("/sign-in");
+      navigate("/sign-in", { replace: true });
     }
   };
 
