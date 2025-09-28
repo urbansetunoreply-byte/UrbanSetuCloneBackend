@@ -2,6 +2,7 @@ import { getEmailStats } from '../utils/emailService.js';
 import { getQueueStats, clearFailedEmails } from '../utils/emailQueue.js';
 import { emailMonitor } from '../utils/emailMonitor.js';
 import { errorHandler } from '../utils/error.js';
+import { testBrevoConnection, getBrevoStatus } from '../utils/brevoService.js';
 
 // Get email system health status
 export const getEmailHealth = async (req, res, next) => {
@@ -276,6 +277,40 @@ export const testEmailConnection = async (req, res, next) => {
     const allPassed = testResults.tests.every(test => test.status === 'PASS');
     testResults.overallStatus = allPassed ? 'HEALTHY' : 'UNHEALTHY';
 
+    res.status(200).json({
+      success: true,
+      data: testResults
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Test Brevo connection
+export const testBrevoConnectionEndpoint = async (req, res, next) => {
+  try {
+    const { sendTestEmail } = req.query;
+    
+    // Get Brevo status
+    const brevoStatus = getBrevoStatus();
+    
+    const testResults = {
+      brevoStatus,
+      timestamp: new Date().toISOString()
+    };
+    
+    // Test connection
+    if (sendTestEmail === 'true') {
+      console.log('Testing Brevo connection with test email...');
+      const connectionTest = await testBrevoConnection();
+      testResults.connectionTest = connectionTest;
+    } else {
+      testResults.connectionTest = {
+        success: true,
+        message: 'Brevo status checked (no test email sent)'
+      };
+    }
+    
     res.status(200).json({
       success: true,
       data: testResults

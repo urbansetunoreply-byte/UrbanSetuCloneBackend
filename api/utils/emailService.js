@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { sendBrevoEmail, initializeBrevoService, testBrevoConnection, getBrevoStatus } from './brevoService.js';
 
 // Enhanced transporter configuration with multiple fallback options
 const createTransporter = () => {
@@ -151,33 +152,69 @@ const verifyTransporter = async () => {
 };
 
 // Enhanced retry logic with exponential backoff and connection verification
+// Unified email sending function with Brevo primary and Gmail fallback
 const sendEmailWithRetry = async (mailOptions, maxRetries = 3, baseDelay = 1000) => {
-  // Verify connection before first attempt
+  // Try Brevo first
+  try {
+    console.log('Attempting to send email via Brevo...');
+    
+    const brevoEmailData = {
+      to: mailOptions.to,
+      subject: mailOptions.subject,
+      html: mailOptions.html,
+      toName: mailOptions.toName || mailOptions.to
+    };
+
+    const brevoResult = await sendBrevoEmail(brevoEmailData);
+    
+    if (brevoResult.success) {
+      emailDeliveryStats.sent++;
+      emailDeliveryStats.lastSent = new Date();
+      console.log('✅ Email sent successfully via Brevo:', brevoResult.messageId);
+      return { 
+        success: true, 
+        messageId: brevoResult.messageId,
+        attempts: 1,
+        provider: 'brevo'
+      };
+    } else {
+      console.log('❌ Brevo failed, falling back to Gmail:', brevoResult.error);
+    }
+  } catch (error) {
+    console.log('❌ Brevo error, falling back to Gmail:', error.message);
+  }
+
+  // Fallback to Gmail if Brevo fails
+  console.log('Falling back to Gmail SMTP...');
+  
+  // Verify Gmail connection before first attempt
   if (!await verifyTransporter()) {
     return {
       success: false,
-      error: 'Email service connection failed - all configurations failed',
-      attempts: 0
+      error: 'Both Brevo and Gmail email services failed - all configurations failed',
+      attempts: 0,
+      provider: 'none'
     };
   }
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const result = await currentTransporter.sendMail(mailOptions);
+      console.log(`Gmail send attempt ${attempt}...`);
       
-      // Track successful delivery
+      const result = await currentTransporter.sendMail(mailOptions);
       emailDeliveryStats.sent++;
       emailDeliveryStats.lastSent = new Date();
       
-      console.log(`Email sent successfully to ${mailOptions.to} (attempt ${attempt}, config ${transporterIndex + 1})`);
+      console.log(`✅ Email sent successfully via Gmail (attempt ${attempt}):`, result.messageId);
       return { 
         success: true, 
         messageId: result.messageId,
-        attempt: attempt,
+        attempts: attempt,
+        provider: 'gmail',
         configUsed: transporterIndex + 1
       };
     } catch (error) {
-      console.error(`Email send attempt ${attempt} failed:`, error.message);
+      console.log(`Gmail send attempt ${attempt} failed:`, error.message);
       
       // Check for specific error types and try to reinitialize
       if (error.code === 'ECONNECTION' || error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET') {
@@ -204,6 +241,7 @@ const sendEmailWithRetry = async (mailOptions, maxRetries = 3, baseDelay = 1000)
           error: error.message,
           attempts: attempt,
           errorCode: error.code,
+          provider: 'gmail',
           configUsed: transporterIndex + 1
         };
       }
@@ -212,7 +250,7 @@ const sendEmailWithRetry = async (mailOptions, maxRetries = 3, baseDelay = 1000)
       const delay = baseDelay * Math.pow(2, attempt - 1);
       emailDeliveryStats.retries++;
       
-      console.log(`Retrying email send in ${delay}ms...`);
+      console.log(`Retrying Gmail send in ${delay}ms...`);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
@@ -743,28 +781,45 @@ export const sendOTPEmail = async (email, otp) => {
 const initializeEmailService = async () => {
   console.log('🚀 Initializing email service...');
   
-  // Check if required environment variables are set
+  // Initialize Brevo service first
+  console.log('📧 Initializing Brevo service...');
+  const brevoResult = initializeBrevoService();
+  if (brevoResult.success) {
+    console.log('✅ Brevo service initialized successfully');
+  } else {
+    console.log('⚠️ Brevo service initialization failed:', brevoResult.error);
+  }
+  
+  // Check Gmail fallback environment variables
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    console.error('❌ Email service initialization failed: Missing EMAIL_USER or EMAIL_PASS environment variables');
+    console.warn('⚠️ Gmail fallback not configured: Missing EMAIL_USER or EMAIL_PASS environment variables');
+    console.log('📧 Email service will use Brevo only');
+  } else {
+    console.log(`📧 Gmail fallback configured for: ${process.env.EMAIL_USER}`);
+    
+    // Try to initialize Gmail transporter as fallback
+    const isGmailConnected = await initializeTransporter();
+    if (isGmailConnected) {
+      console.log(`✅ Gmail fallback initialized successfully with configuration ${transporterIndex + 1}`);
+    } else {
+      console.warn('⚠️ Gmail fallback initialization failed: All SMTP configurations failed');
+    }
+  }
+  
+  // Check if at least one service is available
+  const brevoStatus = getBrevoStatus();
+  const hasGmailFallback = process.env.EMAIL_USER && process.env.EMAIL_PASS;
+  
+  if (brevoStatus.isInitialized || hasGmailFallback) {
+    console.log('✅ Email service ready with at least one provider');
+    return true;
+  } else {
+    console.error('❌ Email service initialization failed: No email providers available');
+    console.error('💡 Please configure either:');
+    console.error('   1. Brevo: BREVO_API_KEY environment variable');
+    console.error('   2. Gmail: EMAIL_USER and EMAIL_PASS environment variables');
     return false;
   }
-  
-  console.log(`📧 Email service configured for: ${process.env.EMAIL_USER}`);
-  
-  // Try to initialize transporter with fallback configurations
-  const isConnected = await initializeTransporter();
-  if (isConnected) {
-    console.log(`✅ Email service initialized successfully with configuration ${transporterIndex + 1}`);
-  } else {
-    console.error('❌ Email service initialization failed: All SMTP configurations failed');
-    console.error('💡 Please check:');
-    console.error('   1. EMAIL_USER and EMAIL_PASS environment variables');
-    console.error('   2. Gmail App Password (not regular password)');
-    console.error('   3. 2-Factor Authentication enabled on Gmail');
-    console.error('   4. "Less secure app access" or App Passwords enabled');
-  }
-  
-  return isConnected;
 };
 
 // Auto-initialize email service

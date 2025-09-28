@@ -7,7 +7,8 @@ import {
   testEmailSending, 
   toggleEmailMonitoring,
   getEmailConfig,
-  testEmailConnection
+  testEmailConnection,
+  testBrevoConnectionEndpoint
 } from '../controllers/emailMonitor.controller.js';
 import { verifyToken } from '../utils/verify.js';
 
@@ -53,5 +54,8 @@ router.post('/test', testEmailSending);
 
 // Toggle email monitoring
 router.post('/monitoring/toggle', toggleEmailMonitoring);
+
+// Test Brevo connection
+router.get('/brevo/test', testBrevoConnectionEndpoint);
 
 export default router;
