@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import { API_BASE_URL } from '../config/api.js';
 
 // Cache for CSRF token to avoid multiple requests
 let csrfTokenCache = {
@@ -31,6 +31,14 @@ export const fetchCSRFToken = async () => {
       const errorText = await response.text();
       console.error('CSRF token fetch failed:', response.status, errorText);
       throw new Error(`Failed to fetch CSRF token: ${response.status}`);
+    }
+
+    // Check if response is JSON
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const text = await response.text();
+      console.error('CSRF token response is not JSON:', text);
+      throw new Error('Server returned non-JSON response');
     }
 
     const data = await response.json();
@@ -125,22 +133,29 @@ export const authenticatedFetch = async (url, options = {}) => {
     
     const response = await fetch(url, authenticatedOptions);
     
-    if (!response.ok && response.status === 403) {
+    if (!response.ok) {
       // Clone before consuming so downstream can still read the body
       const cloned = response.clone();
       let errorData = null;
       try {
-        errorData = await cloned.json();
+        // Check if response is JSON
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          errorData = await cloned.json();
+        } else {
+          const text = await cloned.text();
+          errorData = { message: text };
+        }
       } catch (_) {
-        // Fallback if body is not JSON
+        // Fallback if body parsing fails
         try {
           const text = await cloned.text();
           errorData = { message: text };
         } catch (_) {
-          errorData = { message: 'Forbidden' };
+          errorData = { message: `HTTP ${response.status}` };
         }
       }
-      console.error('403 response:', errorData);
+      console.error(`${response.status} response:`, errorData);
     }
     
     return response;
