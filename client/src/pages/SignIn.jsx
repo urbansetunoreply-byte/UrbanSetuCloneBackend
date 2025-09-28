@@ -53,6 +53,9 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
     
     // State to track which authentication method is in progress
     const [authInProgress, setAuthInProgress] = useState(null); // null, 'password', 'otp', 'google'
+    
+    // State to track OTP verification loading
+    const [otpVerifyingLoading, setOtpVerifyingLoading] = useState(false);
 
     const { loading, error, currentUser } = useSelector((state) => state.user);
     const navigate = useNavigate();
@@ -373,6 +376,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             return;
         }
 
+        setOtpVerifyingLoading(true);
         dispatch(signInStart());
         setAuthInProgress('otp');
         
@@ -441,6 +445,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         } catch (error) {
             dispatch(signInFailure(error.message));
         } finally {
+            setOtpVerifyingLoading(false);
             setAuthInProgress(null);
         }
     };
@@ -843,6 +848,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                             id="otp" 
                                             value={otpData.otp}
                                             ref={otpInputRef}
+                                            disabled={otpVerifyingLoading}
                                             onChange={(e) => {
                                                 // Only allow numbers
                                                 const value = e.target.value.replace(/[^0-9]/g, '');
@@ -856,14 +862,14 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                                 handleOtpChange(syntheticEvent);
                                             }} 
                                             onKeyDown={(e) => {
-                                                if (e.key === 'Enter' && otpSent) {
+                                                if (e.key === 'Enter' && otpSent && !otpVerifyingLoading) {
                                                     e.preventDefault();
                                                     if (otpData.otp && otpData.otp.length === 6) {
                                                         handleOtpLogin(e);
                                                     }
                                                 }
                                             }}
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-center text-lg tracking-widest"
+                                            className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-center text-lg tracking-widest ${otpVerifyingLoading ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''}`}
                                             maxLength="6"
                                             required
                                         />
@@ -883,7 +889,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                             <button
                                                 type="button"
                                                 onClick={handleSendOTP}
-                                                disabled={otpLoading || !canResend}
+                                                disabled={otpLoading || !canResend || otpVerifyingLoading}
                                                 className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
                                                 {otpLoading ? "Sending..." : "Resend OTP"}
@@ -912,13 +918,13 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 )}
                                 
                                 <button 
-                                    disabled={loading || (!otpSent && (otpLoading || !canResend)) || (otpRequiresCaptcha && !otpRecaptchaToken) || (otpSent && otpData.otp.length !== 6)} 
+                                    disabled={loading || (!otpSent && (otpLoading || !canResend)) || (otpRequiresCaptcha && !otpRecaptchaToken) || (otpSent && otpData.otp.length !== 6) || otpVerifyingLoading} 
                                     className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
                                 >
-                                    {loading || (!otpSent && otpLoading) ? (
+                                    {loading || (!otpSent && otpLoading) || otpVerifyingLoading ? (
                                         <div className="flex items-center justify-center">
                                             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                                            {otpSent ? "Signing In..." : "Sending OTP..."}
+                                            {otpVerifyingLoading ? "Verifying OTP..." : (otpSent ? "Signing In..." : "Sending OTP...")}
                                         </div>
                                     ) : (
                                         otpSent ? "Sign In" : "Send OTP"
