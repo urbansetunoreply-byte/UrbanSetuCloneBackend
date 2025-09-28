@@ -15,7 +15,7 @@ export const initializeBrevoService = () => {
 
     console.log('🔧 Initializing Brevo SMTP service...');
     
-    // Create Brevo SMTP transporter
+    // Create Brevo SMTP transporter with enhanced configuration
     brevoTransporter = nodemailer.createTransport({
       host: 'smtp-relay.brevo.com',
       port: 587,
@@ -25,8 +25,21 @@ export const initializeBrevoService = () => {
         pass: process.env.BREVO_SMTP_PASSWORD
       },
       tls: {
-        rejectUnauthorized: false
-      }
+        rejectUnauthorized: false,
+        ciphers: 'SSLv3'
+      },
+      // Enhanced timeout and connection settings
+      connectionTimeout: 30000, // 30 seconds
+      greetingTimeout: 15000,   // 15 seconds
+      socketTimeout: 30000,     // 30 seconds
+      // Disable connection pooling for better reliability
+      pool: false,
+      // Retry configuration
+      retryDelay: 2000,
+      maxRetries: 3,
+      // Additional SMTP options
+      debug: process.env.NODE_ENV === 'development',
+      logger: process.env.NODE_ENV === 'development'
     });
 
     console.log('✅ Brevo SMTP service initialized successfully');
@@ -42,8 +55,8 @@ export const initializeBrevoService = () => {
   }
 };
 
-// Send email using Brevo SMTP
-export const sendBrevoEmail = async (emailData) => {
+// Send email using Brevo SMTP with enhanced retry logic
+export const sendBrevoEmail = async (emailData, maxRetries = 3) => {
   try {
     // Check if Brevo is available
     if (!process.env.BREVO_SMTP_LOGIN || !process.env.BREVO_SMTP_PASSWORD) {
@@ -79,15 +92,56 @@ export const sendBrevoEmail = async (emailData) => {
       mailOptions.replyTo = emailData.replyTo;
     }
 
-    // Send the email
-    const result = await brevoTransporter.sendMail(mailOptions);
-    
-    console.log('✅ Brevo email sent successfully:', result.messageId);
-    return {
-      success: true,
-      messageId: result.messageId,
-      message: 'Email sent successfully via Brevo SMTP'
-    };
+    // Retry logic for Brevo
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`📧 Brevo send attempt ${attempt}/${maxRetries}...`);
+        
+        // Verify connection before each attempt
+        if (attempt > 1) {
+          console.log('🔄 Re-verifying Brevo connection...');
+          await brevoTransporter.verify();
+        }
+        
+        const result = await brevoTransporter.sendMail(mailOptions);
+        
+        console.log('✅ Brevo email sent successfully:', result.messageId);
+        return {
+          success: true,
+          messageId: result.messageId,
+          message: 'Email sent successfully via Brevo SMTP',
+          attempts: attempt
+        };
+      } catch (error) {
+        console.error(`❌ Brevo send attempt ${attempt} failed:`, error.message);
+        
+        // Check for specific error types
+        if (error.code === 'ETIMEDOUT' || error.code === 'ECONNECTION' || error.code === 'ECONNRESET') {
+          console.log('🔄 Connection error detected, reinitializing Brevo transporter...');
+          
+          // Reinitialize transporter
+          const reinitResult = initializeBrevoService();
+          if (!reinitResult.success) {
+            console.error('❌ Failed to reinitialize Brevo transporter:', reinitResult.error);
+          }
+        }
+        
+        // If this is the last attempt, return error
+        if (attempt === maxRetries) {
+          return {
+            success: false,
+            error: error.message || 'Failed to send email via Brevo SMTP',
+            attempts: attempt,
+            errorCode: error.code
+          };
+        }
+        
+        // Wait before retry with exponential backoff
+        const delay = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s
+        console.log(`⏳ Waiting ${delay}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
   } catch (error) {
     console.error('❌ Brevo email sending failed:', error);
     return {
@@ -97,7 +151,7 @@ export const sendBrevoEmail = async (emailData) => {
   }
 };
 
-// Test Brevo connection
+// Test Brevo connection with verification
 export const testBrevoConnection = async () => {
   try {
     // Check if SMTP credentials are available
@@ -118,6 +172,11 @@ export const testBrevoConnection = async () => {
         };
       }
     }
+
+    // Test connection first
+    console.log('🔍 Testing Brevo SMTP connection...');
+    await brevoTransporter.verify();
+    console.log('✅ Brevo SMTP connection verified successfully');
 
     // Test with a simple email
     const testEmail = {
@@ -142,7 +201,9 @@ export const getBrevoStatus = () => {
     hasSmtpPassword: !!process.env.BREVO_SMTP_PASSWORD,
     senderEmail: process.env.BREVO_SENDER_EMAIL || process.env.BREVO_SMTP_LOGIN,
     senderName: process.env.BREVO_SENDER_NAME || 'UrbanSetu',
-    method: 'SMTP'
+    method: 'SMTP',
+    host: 'smtp-relay.brevo.com',
+    port: 587
   };
 };
 
