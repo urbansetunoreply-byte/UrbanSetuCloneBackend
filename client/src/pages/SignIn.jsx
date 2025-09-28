@@ -242,8 +242,8 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
     };
 
     const handleOtpChange = (e) => {
-        // Prevent changes to email when OTP is sent
-        if (otpSent && e.target.id === 'email') {
+        // Prevent changes to email when OTP is sent or loading
+        if ((otpSent || otpLoading) && e.target.id === 'email') {
             return;
         }
         
@@ -780,9 +780,9 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                             value={otpData.email}
                                             onChange={handleOtpChange} 
                                             ref={otpEmailInputRef}
-                                            readOnly={otpSent}
-                                            disabled={otpSent}
-                                            className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${otpSent ? 'pr-12 bg-gray-50 cursor-not-allowed' : ''}`}
+                                            readOnly={otpSent || otpLoading}
+                                            disabled={otpSent || otpLoading}
+                                            className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${otpSent || otpLoading ? 'pr-12 bg-gray-50 cursor-not-allowed' : ''}`}
                                             required
                                         />
                                         {otpSent && (
