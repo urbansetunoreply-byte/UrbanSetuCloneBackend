@@ -448,15 +448,7 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
     payment.receiptUrl = receiptUrl;
     await payment.save();
 
-    // Get appointment and user details for email
-    const appointment = await Booking.findById(payment.appointmentId)
-      .populate('buyerId', 'email username')
-      .populate('listingId', 'name');
-    
-    const user = appointment.buyerId;
-    const listing = appointment.listingId;
-
-    // Send payment success email
+    // Send payment success email (reusing existing appointment, user, listing variables)
     try {
       await sendPaymentSuccessEmail(user.email, {
         paymentId: payment.paymentId,
@@ -1304,17 +1296,14 @@ router.post('/admin/mark-paid', verifyToken, async (req, res) => {
     // Mark appointment flag
     await Booking.findByIdAndUpdate(appointmentId, { paymentConfirmed: true });
 
-    // Get appointment and user details for email
-    const appointment = await Booking.findById(appointmentId)
-      .populate('buyerId', 'email username')
-      .populate('listingId', 'name');
-    
-    const user = appointment.buyerId;
+    // Get user details for email (appointment already populated with listingId)
+    await appointment.populate('buyerId', 'email username');
+    const buyer = appointment.buyerId;
     const listing = appointment.listingId;
 
     // Send payment success email (admin marked as paid)
     try {
-      await sendPaymentSuccessEmail(user.email, {
+      await sendPaymentSuccessEmail(buyer.email, {
         paymentId: payment.paymentId,
         amount: payment.amount,
         currency: payment.currency,
