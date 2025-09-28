@@ -1,4 +1,4 @@
-import { transporter } from './emailService.js';
+import transporter from './emailService.js';
 
 // Email queue system for better rate management
 class EmailQueue {
