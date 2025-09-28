@@ -82,18 +82,26 @@ export const getTopWatchedListings = async (req, res, next) => {
       { $limit: limit },
     ]);
     const listingIds = agg.map(a => a._id);
-    const listings = await Listing.find({ _id: { $in: listingIds } });
+    
+    // Get complete listing details
+    const listings = await Listing.find({ _id: { $in: listingIds } })
+      .select('-__v -createdAt -updatedAt -userRef');
+    
     const listingsById = new Map(listings.map(l => [l._id.toString(), l]));
-    const result = agg.map(a => ({ 
-      _id: a._id,
-      name: listingsById.get(a._id.toString())?.name || 'Unknown',
-      city: listingsById.get(a._id.toString())?.city || 'Unknown',
-      state: listingsById.get(a._id.toString())?.state || 'Unknown',
-      type: listingsById.get(a._id.toString())?.type || 'Unknown',
-      bedrooms: listingsById.get(a._id.toString())?.bedrooms || 0,
-      watchCount: a.count 
-    }))
-      .filter(x => x.name !== 'Unknown');
+    
+    // Return complete listing objects with watch count
+    const result = agg
+      .map(a => {
+        const listing = listingsById.get(a._id.toString());
+        if (!listing) return null;
+        
+        return {
+          ...listing.toObject(),
+          watchCount: a.count
+        };
+      })
+      .filter(x => x !== null);
+    
     res.status(200).json(result);
   } catch (error) {
     next(error);

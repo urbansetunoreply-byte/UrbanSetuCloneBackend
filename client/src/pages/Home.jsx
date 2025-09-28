@@ -113,12 +113,8 @@ export default function Home() {
         setTrendingListings(Array.isArray(data) ? data : (data?.listings || []));
       } catch (error) {
         console.error("Error fetching trending listings", error);
-        // Set some mock trending data for testing
-        setTrendingListings([
-          { _id: 'mock1', name: 'Trending Property 1', type: 'sale', regularPrice: 500000 },
-          { _id: 'mock2', name: 'Trending Property 2', type: 'rent', regularPrice: 25000 },
-          { _id: 'mock3', name: 'Trending Property 3', type: 'sale', regularPrice: 750000 }
-        ]);
+        // Don't set mock data - let it remain empty to show real data only
+        setTrendingListings([]);
       }
     };
     fetchTrending();
@@ -622,12 +618,12 @@ export default function Home() {
         )}
 
         {/* Trending Listings (Popular/Highly Watchlisted) */}
-        {(trendingListings.length > 0 || (offerListings.length > 0 && trendingListings.length === 0)) && (
+        {(trendingListings.length > 0 || offerListings.length > 0) && (
           <div className="mb-8 bg-white rounded-xl shadow-lg p-6 animate-fade-in-up">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold text-purple-700 flex items-center gap-2">
                 <span className="text-3xl">🔥</span>
-                Popular/Trending Properties
+                {trendingListings.length > 0 ? 'Popular/Trending Properties' : 'Featured Properties'}
               </h2>
               <Link to={isUser ? "/user/search" : "/search"} className="text-purple-600 hover:underline">See More</Link>
             </div>
@@ -639,7 +635,7 @@ export default function Home() {
                   </div>
                 ))
               ) : (
-                // Fallback to show offer listings as trending if no trending data
+                // Fallback to show offer listings as featured if no trending data
                 offerListings.slice(0, 6).map((listing) => (
                   <div className="transition-transform duration-300 hover:scale-105 hover:shadow-xl" key={listing._id}>
                     <ListingItem listing={listing} />
