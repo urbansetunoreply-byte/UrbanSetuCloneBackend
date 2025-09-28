@@ -23,6 +23,7 @@ import paymentRouter from "./routes/payment.route.js";
 import sessionRouter from "./routes/session.route.js";
 import sessionManagementRouter from "./routes/sessionManagement.route.js";
 import fraudRouter from "./routes/fraud.route.js";
+import emailMonitorRouter from "./routes/emailMonitor.route.js";
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import http from 'http';
@@ -441,6 +442,7 @@ app.use("/api/payments", paymentRouter);
 app.use("/api/sessions", sessionRouter);
 app.use("/api/session-management", sessionManagementRouter);
 app.use("/api/fraud", fraudRouter);
+app.use("/api/email-monitor", emailMonitorRouter);
 console.log('All API routes registered successfully');
 
 // Catch-all route for 404s - must be after all other routes

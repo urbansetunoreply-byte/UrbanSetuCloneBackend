@@ -1,17 +1,110 @@
 import nodemailer from 'nodemailer';
 
-// Create transporter
-const transporter = nodemailer.createTransport({
+// Enhanced transporter configuration with better error handling
+const transporter = nodemailer.createTransporter({
   service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
-  }
+  },
+  // Add connection pooling for better performance
+  pool: true,
+  maxConnections: 5,
+  maxMessages: 100,
+  // Add timeout settings
+  connectionTimeout: 60000, // 60 seconds
+  greetingTimeout: 30000,   // 30 seconds
+  socketTimeout: 60000,     // 60 seconds
 });
+
+// Email delivery tracking
+const emailDeliveryStats = {
+  sent: 0,
+  failed: 0,
+  retries: 0,
+  lastSent: null,
+  lastError: null
+};
+
+// Enhanced retry logic with exponential backoff
+const sendEmailWithRetry = async (mailOptions, maxRetries = 3, baseDelay = 1000) => {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const result = await transporter.sendMail(mailOptions);
+      
+      // Track successful delivery
+      emailDeliveryStats.sent++;
+      emailDeliveryStats.lastSent = new Date();
+      
+      console.log(`Email sent successfully to ${mailOptions.to} (attempt ${attempt})`);
+      return { 
+        success: true, 
+        messageId: result.messageId,
+        attempt: attempt
+      };
+    } catch (error) {
+      console.error(`Email send attempt ${attempt} failed:`, error.message);
+      
+      // Track failed attempts
+      if (attempt === maxRetries) {
+        emailDeliveryStats.failed++;
+        emailDeliveryStats.lastError = {
+          message: error.message,
+          timestamp: new Date(),
+          recipient: mailOptions.to
+        };
+        
+        return { 
+          success: false, 
+          error: error.message,
+          attempts: attempt
+        };
+      }
+      
+      // Calculate delay with exponential backoff
+      const delay = baseDelay * Math.pow(2, attempt - 1);
+      emailDeliveryStats.retries++;
+      
+      console.log(`Retrying email send in ${delay}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+};
+
+// Standardized error response format
+const createErrorResponse = (error, context = '') => {
+  const errorMessage = error.message || 'Unknown error occurred';
+  console.error(`Email sending error${context ? ` (${context})` : ''}:`, error);
+  
+  return { 
+    success: false, 
+    error: errorMessage,
+    context: context,
+    timestamp: new Date().toISOString()
+  };
+};
+
+// Standardized success response format
+const createSuccessResponse = (messageId = null, context = '') => {
+  return { 
+    success: true, 
+    messageId: messageId,
+    context: context,
+    timestamp: new Date().toISOString()
+  };
+};
 
 // Generate OTP
 export const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
+// Get email delivery statistics
+export const getEmailStats = () => {
+  return {
+    ...emailDeliveryStats,
+    successRate: emailDeliveryStats.sent / (emailDeliveryStats.sent + emailDeliveryStats.failed) * 100
+  };
 };
 
 // Send OTP email for signup
@@ -54,11 +147,12 @@ export const sendSignupOTPEmail = async (email, otp) => {
   };
 
   try {
-    await transporter.sendMail(mailOptions);
-    return { success: true };
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ? 
+      createSuccessResponse(result.messageId, 'signup_otp') : 
+      createErrorResponse(new Error(result.error), 'signup_otp');
   } catch (error) {
-    console.error('Email sending error:', error);
-    return { success: false, error: error.message };
+    return createErrorResponse(error, 'signup_otp');
   }
 };
 
@@ -106,11 +200,12 @@ export const sendForgotPasswordOTPEmail = async (email, otp) => {
   };
 
   try {
-    await transporter.sendMail(mailOptions);
-    return { success: true };
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ? 
+      createSuccessResponse(result.messageId, 'forgot_password_otp') : 
+      createErrorResponse(new Error(result.error), 'forgot_password_otp');
   } catch (error) {
-    console.error('Email sending error:', error);
-    return { success: false, error: error.message };
+    return createErrorResponse(error, 'forgot_password_otp');
   }
 };
 
@@ -158,11 +253,12 @@ export const sendProfileEmailOTPEmail = async (email, otp) => {
   };
 
   try {
-    await transporter.sendMail(mailOptions);
-    return { success: true };
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ? 
+      createSuccessResponse(result.messageId, 'profile_email_otp') : 
+      createErrorResponse(new Error(result.error), 'profile_email_otp');
   } catch (error) {
-    console.error('Email sending error:', error);
-    return { success: false, error: error.message };
+    return createErrorResponse(error, 'profile_email_otp');
   }
 };
 
@@ -210,11 +306,12 @@ export const sendLoginOTPEmail = async (email, otp) => {
   };
 
   try {
-    await transporter.sendMail(mailOptions);
-    return { success: true };
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ? 
+      createSuccessResponse(result.messageId, 'login_otp') : 
+      createErrorResponse(new Error(result.error), 'login_otp');
   } catch (error) {
-    console.error('Email sending error:', error);
-    return { success: false, error: error.message };
+    return createErrorResponse(error, 'login_otp');
   }
 };
 
@@ -257,11 +354,12 @@ export const sendAccountDeletionOTPEmail = async (email, otp) => {
   };
 
   try {
-    await transporter.sendMail(mailOptions);
-    return { success: true };
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ? 
+      createSuccessResponse(result.messageId, 'account_deletion_otp') : 
+      createErrorResponse(new Error(result.error), 'account_deletion_otp');
   } catch (error) {
-    console.error('Email sending error:', error);
-    return { success: false, error: error.message };
+    return createErrorResponse(error, 'account_deletion_otp');
   }
 };
 
@@ -304,11 +402,12 @@ export const sendTransferRightsOTPEmail = async (email, otp) => {
   };
 
   try {
-    await transporter.sendMail(mailOptions);
-    return { success: true };
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ? 
+      createSuccessResponse(result.messageId, 'transfer_rights_otp') : 
+      createErrorResponse(new Error(result.error), 'transfer_rights_otp');
   } catch (error) {
-    console.error('Email sending error:', error);
-    return { success: false, error: error.message };
+    return createErrorResponse(error, 'transfer_rights_otp');
   }
 };
 
@@ -355,11 +454,12 @@ export const sendNewLoginEmail = async (email, device, ip, location, loginTime) 
   };
 
   try {
-    await transporter.sendMail(mailOptions);
-    return { success: true };
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ? 
+      createSuccessResponse(result.messageId, 'new_login_notification') : 
+      createErrorResponse(new Error(result.error), 'new_login_notification');
   } catch (error) {
-    console.error('Email sending error:', error);
-    return { success: false, error: error.message };
+    return createErrorResponse(error, 'new_login_notification');
   }
 };
 
@@ -415,11 +515,12 @@ export const sendSuspiciousLoginEmail = async (email, currentDevice, currentIp, 
   };
 
   try {
-    await transporter.sendMail(mailOptions);
-    return { success: true };
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ? 
+      createSuccessResponse(result.messageId, 'suspicious_login_alert') : 
+      createErrorResponse(new Error(result.error), 'suspicious_login_alert');
   } catch (error) {
-    console.error('Email sending error:', error);
-    return { success: false, error: error.message };
+    return createErrorResponse(error, 'suspicious_login_alert');
   }
 };
 
@@ -465,11 +566,12 @@ export const sendForcedLogoutEmail = async (email, reason, performedBy) => {
   };
 
   try {
-    await transporter.sendMail(mailOptions);
-    return { success: true };
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ? 
+      createSuccessResponse(result.messageId, 'forced_logout_notification') : 
+      createErrorResponse(new Error(result.error), 'forced_logout_notification');
   } catch (error) {
-    console.error('Email sending error:', error);
-    return { success: false, error: error.message };
+    return createErrorResponse(error, 'forced_logout_notification');
   }
 };
 
