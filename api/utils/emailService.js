@@ -1,28 +1,63 @@
 import nodemailer from 'nodemailer';
 
-// Enhanced transporter configuration with better error handling
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
-  // Disable connection pooling for Render environment
-  pool: false,
-  // More conservative timeout settings for Render
-  connectionTimeout: 30000, // 30 seconds
-  greetingTimeout: 15000,   // 15 seconds
-  socketTimeout: 30000,     // 30 seconds
-  // Additional Gmail-specific settings
-  secure: true,
-  port: 587,
-  tls: {
-    rejectUnauthorized: false
-  },
-  // Retry configuration
-  retryDelay: 2000,
-  maxRetries: 3
-});
+// Enhanced transporter configuration with multiple fallback options
+const createTransporter = () => {
+  const baseConfig = {
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    },
+    // Very conservative timeout settings for Render
+    connectionTimeout: 15000, // 15 seconds
+    greetingTimeout: 10000,   // 10 seconds
+    socketTimeout: 15000,     // 15 seconds
+    // Disable connection pooling
+    pool: false,
+    // Retry configuration
+    retryDelay: 1000,
+    maxRetries: 2
+  };
+
+  // Try different Gmail configurations
+  const configs = [
+    // Configuration 1: Gmail with port 587 (STARTTLS)
+    {
+      ...baseConfig,
+      service: 'gmail',
+      port: 587,
+      secure: false,
+      tls: {
+        rejectUnauthorized: false,
+        ciphers: 'SSLv3'
+      }
+    },
+    // Configuration 2: Gmail with port 465 (SSL)
+    {
+      ...baseConfig,
+      service: 'gmail',
+      port: 465,
+      secure: true,
+      tls: {
+        rejectUnauthorized: false
+      }
+    },
+    // Configuration 3: Direct SMTP configuration
+    {
+      ...baseConfig,
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
+      tls: {
+        rejectUnauthorized: false,
+        ciphers: 'SSLv3'
+      }
+    }
+  ];
+
+  return configs[0]; // Start with the first configuration
+};
+
+const transporter = nodemailer.createTransport(createTransporter());
 
 // Email delivery tracking
 const emailDeliveryStats = {
@@ -33,15 +68,85 @@ const emailDeliveryStats = {
   lastError: null
 };
 
-// Verify transporter connection before sending
+// Create multiple transporter configurations for fallback
+const createTransporterConfigs = () => {
+  const baseConfig = {
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    },
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 5000,    // 5 seconds
+    socketTimeout: 10000,     // 10 seconds
+    pool: false
+  };
+
+  return [
+    // Config 1: Gmail with port 587 (STARTTLS)
+    {
+      ...baseConfig,
+      service: 'gmail',
+      port: 587,
+      secure: false,
+      tls: { rejectUnauthorized: false }
+    },
+    // Config 2: Gmail with port 465 (SSL)
+    {
+      ...baseConfig,
+      service: 'gmail',
+      port: 465,
+      secure: true,
+      tls: { rejectUnauthorized: false }
+    },
+    // Config 3: Direct SMTP
+    {
+      ...baseConfig,
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
+      tls: { rejectUnauthorized: false }
+    }
+  ];
+};
+
+let currentTransporter = null;
+let transporterIndex = 0;
+
+// Initialize transporter with fallback
+const initializeTransporter = async () => {
+  const configs = createTransporterConfigs();
+  
+  for (let i = 0; i < configs.length; i++) {
+    try {
+      const testTransporter = nodemailer.createTransport(configs[i]);
+      await testTransporter.verify();
+      currentTransporter = testTransporter;
+      transporterIndex = i;
+      console.log(`✅ Email transporter initialized successfully with config ${i + 1}`);
+      return true;
+    } catch (error) {
+      console.log(`❌ Email config ${i + 1} failed: ${error.message}`);
+      if (i === configs.length - 1) {
+        console.error('All email configurations failed');
+        return false;
+      }
+    }
+  }
+  return false;
+};
+
+// Verify current transporter
 const verifyTransporter = async () => {
+  if (!currentTransporter) {
+    return await initializeTransporter();
+  }
+  
   try {
-    await transporter.verify();
-    console.log('Email transporter verified successfully');
+    await currentTransporter.verify();
     return true;
   } catch (error) {
-    console.error('Email transporter verification failed:', error.message);
-    return false;
+    console.error('Current transporter failed, trying to reinitialize...');
+    return await initializeTransporter();
   }
 };
 
@@ -51,33 +156,36 @@ const sendEmailWithRetry = async (mailOptions, maxRetries = 3, baseDelay = 1000)
   if (!await verifyTransporter()) {
     return {
       success: false,
-      error: 'Email service connection failed',
+      error: 'Email service connection failed - all configurations failed',
       attempts: 0
     };
   }
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const result = await transporter.sendMail(mailOptions);
+      const result = await currentTransporter.sendMail(mailOptions);
       
       // Track successful delivery
       emailDeliveryStats.sent++;
       emailDeliveryStats.lastSent = new Date();
       
-      console.log(`Email sent successfully to ${mailOptions.to} (attempt ${attempt})`);
+      console.log(`Email sent successfully to ${mailOptions.to} (attempt ${attempt}, config ${transporterIndex + 1})`);
       return { 
         success: true, 
         messageId: result.messageId,
-        attempt: attempt
+        attempt: attempt,
+        configUsed: transporterIndex + 1
       };
     } catch (error) {
       console.error(`Email send attempt ${attempt} failed:`, error.message);
       
-      // Check for specific error types
-      if (error.code === 'ECONNECTION' || error.code === 'ETIMEDOUT') {
-        console.error('Connection error detected, attempting to reconnect...');
-        // Try to verify connection again
-        await verifyTransporter();
+      // Check for specific error types and try to reinitialize
+      if (error.code === 'ECONNECTION' || error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET') {
+        console.error('Connection error detected, attempting to reinitialize transporter...');
+        const reinitialized = await initializeTransporter();
+        if (!reinitialized) {
+          console.error('Failed to reinitialize transporter');
+        }
       }
       
       // Track failed attempts
@@ -87,14 +195,16 @@ const sendEmailWithRetry = async (mailOptions, maxRetries = 3, baseDelay = 1000)
           message: error.message,
           timestamp: new Date(),
           recipient: mailOptions.to,
-          errorCode: error.code
+          errorCode: error.code,
+          configUsed: transporterIndex + 1
         };
         
         return { 
           success: false, 
           error: error.message,
           attempts: attempt,
-          errorCode: error.code
+          errorCode: error.code,
+          configUsed: transporterIndex + 1
         };
       }
       
@@ -141,6 +251,17 @@ export const getEmailStats = () => {
   return {
     ...emailDeliveryStats,
     successRate: emailDeliveryStats.sent / (emailDeliveryStats.sent + emailDeliveryStats.failed) * 100
+  };
+};
+
+// Get current transporter status
+export const getTransporterStatus = () => {
+  return {
+    isInitialized: !!currentTransporter,
+    configIndex: transporterIndex,
+    configName: currentTransporter ? `Config ${transporterIndex + 1}` : 'Not initialized',
+    hasEmailUser: !!process.env.EMAIL_USER,
+    hasEmailPass: !!process.env.EMAIL_PASS
   };
 };
 
@@ -620,7 +741,7 @@ export const sendOTPEmail = async (email, otp) => {
 
 // Initialize email service and verify connection on startup
 const initializeEmailService = async () => {
-  console.log('Initializing email service...');
+  console.log('🚀 Initializing email service...');
   
   // Check if required environment variables are set
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
@@ -630,12 +751,17 @@ const initializeEmailService = async () => {
   
   console.log(`📧 Email service configured for: ${process.env.EMAIL_USER}`);
   
-  // Verify connection
-  const isConnected = await verifyTransporter();
+  // Try to initialize transporter with fallback configurations
+  const isConnected = await initializeTransporter();
   if (isConnected) {
-    console.log('✅ Email service initialized successfully');
+    console.log(`✅ Email service initialized successfully with configuration ${transporterIndex + 1}`);
   } else {
-    console.error('❌ Email service initialization failed: Connection verification failed');
+    console.error('❌ Email service initialization failed: All SMTP configurations failed');
+    console.error('💡 Please check:');
+    console.error('   1. EMAIL_USER and EMAIL_PASS environment variables');
+    console.error('   2. Gmail App Password (not regular password)');
+    console.error('   3. 2-Factor Authentication enabled on Gmail');
+    console.error('   4. "Less secure app access" or App Passwords enabled');
   }
   
   return isConnected;
@@ -646,4 +772,5 @@ initializeEmailService().catch(error => {
   console.error('Email service auto-initialization failed:', error);
 });
 
-export default transporter;
+// Export the current transporter (will be set during initialization)
+export default currentTransporter;
