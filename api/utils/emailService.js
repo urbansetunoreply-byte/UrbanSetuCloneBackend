@@ -783,7 +783,7 @@ const initializeEmailService = async () => {
   
   // Initialize Brevo service first
   console.log('📧 Initializing Brevo service...');
-  const brevoResult = initializeBrevoService();
+  const brevoResult = await initializeBrevoService();
   if (brevoResult.success) {
     console.log('✅ Brevo service initialized successfully');
   } else {

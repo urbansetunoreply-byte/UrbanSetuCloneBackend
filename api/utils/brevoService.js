@@ -3,9 +3,120 @@ import nodemailer from 'nodemailer';
 
 // Initialize Brevo SMTP transporter
 let brevoTransporter = null;
+let currentConfigIndex = 0;
 
-// Initialize Brevo service using SMTP
-export const initializeBrevoService = () => {
+// Get all available SMTP configurations
+const getSmtpConfigs = () => [
+  // Config 1: Port 587 (STARTTLS) - Primary
+  {
+    host: 'smtp-relay.brevo.com',
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.BREVO_SMTP_LOGIN,
+      pass: process.env.BREVO_SMTP_PASSWORD
+    },
+    tls: {
+      rejectUnauthorized: false,
+      ciphers: 'SSLv3'
+    },
+    connectionTimeout: 30000,
+    greetingTimeout: 15000,
+    socketTimeout: 30000,
+    pool: false,
+    retryDelay: 2000,
+    maxRetries: 3,
+    debug: process.env.NODE_ENV === 'development',
+    logger: process.env.NODE_ENV === 'development'
+  },
+  // Config 2: Port 465 (SSL) - Fallback
+  {
+    host: 'smtp-relay.brevo.com',
+    port: 465,
+    secure: true,
+    auth: {
+      user: process.env.BREVO_SMTP_LOGIN,
+      pass: process.env.BREVO_SMTP_PASSWORD
+    },
+    tls: {
+      rejectUnauthorized: false
+    },
+    connectionTimeout: 30000,
+    greetingTimeout: 15000,
+    socketTimeout: 30000,
+    pool: false,
+    retryDelay: 2000,
+    maxRetries: 3,
+    debug: process.env.NODE_ENV === 'development',
+    logger: process.env.NODE_ENV === 'development'
+  },
+  // Config 3: Port 25 (Non-encrypted) - Last resort
+  {
+    host: 'smtp-relay.brevo.com',
+    port: 25,
+    secure: false,
+    auth: {
+      user: process.env.BREVO_SMTP_LOGIN,
+      pass: process.env.BREVO_SMTP_PASSWORD
+    },
+    connectionTimeout: 30000,
+    greetingTimeout: 15000,
+    socketTimeout: 30000,
+    pool: false,
+    retryDelay: 2000,
+    maxRetries: 3,
+    debug: process.env.NODE_ENV === 'development',
+    logger: process.env.NODE_ENV === 'development'
+  }
+];
+
+// Test different SMTP configurations
+export const testSmtpConfigurations = async () => {
+  const configs = getSmtpConfigs();
+  const results = [];
+
+  for (let i = 0; i < configs.length; i++) {
+    const config = configs[i];
+    console.log(`🧪 Testing Brevo SMTP config ${i + 1}: ${config.host}:${config.port} (${config.secure ? 'SSL' : 'STARTTLS'})`);
+    
+    try {
+      const testTransporter = nodemailer.createTransport(config);
+      await testTransporter.verify();
+      
+      console.log(`✅ Config ${i + 1} successful: ${config.host}:${config.port}`);
+      results.push({
+        index: i,
+        config: config,
+        success: true,
+        message: `Port ${config.port} (${config.secure ? 'SSL' : 'STARTTLS'}) working`
+      });
+      
+      // Use the first working configuration
+      if (!brevoTransporter) {
+        brevoTransporter = testTransporter;
+        currentConfigIndex = i;
+        console.log(`🎯 Using working config ${i + 1}: ${config.host}:${config.port}`);
+      }
+    } catch (error) {
+      console.log(`❌ Config ${i + 1} failed: ${config.host}:${config.port} - ${error.message}`);
+      results.push({
+        index: i,
+        config: config,
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  return {
+    results: results,
+    workingConfig: brevoTransporter ? currentConfigIndex : -1,
+    hasWorkingConfig: !!brevoTransporter
+  };
+};
+
+// Initialize Brevo service using SMTP with multiple port fallbacks
+export const initializeBrevoService = async () => {
   try {
     // Check if SMTP credentials are available
     if (!process.env.BREVO_SMTP_LOGIN || !process.env.BREVO_SMTP_PASSWORD) {
@@ -15,35 +126,25 @@ export const initializeBrevoService = () => {
 
     console.log('🔧 Initializing Brevo SMTP service...');
     
-    // Create Brevo SMTP transporter with enhanced configuration
-    brevoTransporter = nodemailer.createTransport({
-      host: 'smtp-relay.brevo.com',
-      port: 587,
-      secure: false, // true for 465, false for other ports
-      auth: {
-        user: process.env.BREVO_SMTP_LOGIN,
-        pass: process.env.BREVO_SMTP_PASSWORD
-      },
-      tls: {
-        rejectUnauthorized: false,
-        ciphers: 'SSLv3'
-      },
-      // Enhanced timeout and connection settings
-      connectionTimeout: 30000, // 30 seconds
-      greetingTimeout: 15000,   // 15 seconds
-      socketTimeout: 30000,     // 30 seconds
-      // Disable connection pooling for better reliability
-      pool: false,
-      // Retry configuration
-      retryDelay: 2000,
-      maxRetries: 3,
-      // Additional SMTP options
-      debug: process.env.NODE_ENV === 'development',
-      logger: process.env.NODE_ENV === 'development'
-    });
-
-    console.log('✅ Brevo SMTP service initialized successfully');
-    return { success: true, message: 'Brevo SMTP service initialized' };
+    // Test all SMTP configurations to find a working one
+    const testResults = await testSmtpConfigurations();
+    
+    if (testResults.hasWorkingConfig) {
+      console.log(`✅ Brevo SMTP service initialized successfully with config ${currentConfigIndex + 1}`);
+      return { 
+        success: true, 
+        message: `Brevo SMTP service initialized with port ${getSmtpConfigs()[currentConfigIndex].port}`,
+        configIndex: currentConfigIndex,
+        workingConfig: testResults.workingConfig
+      };
+    } else {
+      console.error('❌ All Brevo SMTP configurations failed');
+      return { 
+        success: false, 
+        error: 'All Brevo SMTP configurations failed',
+        testResults: testResults
+      };
+    }
   } catch (error) {
     console.error('❌ Brevo SMTP service initialization failed:', error);
     console.error('Error details:', {

@@ -2,7 +2,7 @@ import { getEmailStats } from '../utils/emailService.js';
 import { getQueueStats, clearFailedEmails } from '../utils/emailQueue.js';
 import { emailMonitor } from '../utils/emailMonitor.js';
 import { errorHandler } from '../utils/error.js';
-import { testBrevoConnection, getBrevoStatus } from '../utils/brevoService.js';
+import { testBrevoConnection, getBrevoStatus, testSmtpConfigurations } from '../utils/brevoService.js';
 
 // Get email system health status
 export const getEmailHealth = async (req, res, next) => {

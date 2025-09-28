@@ -10,6 +10,7 @@ import {
   testEmailConnection,
   testBrevoConnectionEndpoint
 } from '../controllers/emailMonitor.controller.js';
+import { testSmtpConfigurations } from '../utils/brevoService.js';
 import { verifyToken } from '../utils/verify.js';
 
 const router = express.Router();
@@ -57,5 +58,27 @@ router.post('/monitoring/toggle', toggleEmailMonitoring);
 
 // Test Brevo connection
 router.get('/brevo/test', testBrevoConnectionEndpoint);
+
+// Test all SMTP configurations
+router.get('/brevo/test-configs', async (req, res, next) => {
+  try {
+    console.log('🧪 Testing all Brevo SMTP configurations...');
+    
+    const testResults = await testSmtpConfigurations();
+    
+    res.status(200).json({
+      success: true,
+      data: {
+        testResults,
+        timestamp: new Date().toISOString(),
+        message: testResults.hasWorkingConfig 
+          ? `Found working configuration: Port ${testResults.workingConfig + 1}`
+          : 'No working SMTP configurations found'
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 
 export default router;
