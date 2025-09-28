@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import { sendBrevoEmail, initializeBrevoService, testBrevoConnection, getBrevoStatus } from './brevoService.js';
+import { sendBrevoEmail, initializeBrevoService, initializeBrevoApiService, testBrevoConnection, getBrevoStatus } from './brevoService.js';
 
 // Enhanced transporter configuration with multiple fallback options
 const createTransporter = () => {
@@ -781,13 +781,22 @@ export const sendOTPEmail = async (email, otp) => {
 const initializeEmailService = async () => {
   console.log('🚀 Initializing email service...');
   
-  // Initialize Brevo service first
-  console.log('📧 Initializing Brevo service...');
-  const brevoResult = await initializeBrevoService();
-  if (brevoResult.success) {
-    console.log('✅ Brevo service initialized successfully');
+  // Initialize Brevo API service first (more reliable)
+  console.log('📧 Initializing Brevo API service...');
+  const brevoApiResult = initializeBrevoApiService();
+  if (brevoApiResult.success) {
+    console.log('✅ Brevo API service initialized successfully');
   } else {
-    console.log('⚠️ Brevo service initialization failed:', brevoResult.error);
+    console.log('⚠️ Brevo API service initialization failed:', brevoApiResult.error);
+  }
+
+  // Initialize Brevo SMTP service as fallback
+  console.log('📧 Initializing Brevo SMTP service...');
+  const brevoSmtpResult = await initializeBrevoService();
+  if (brevoSmtpResult.success) {
+    console.log('✅ Brevo SMTP service initialized successfully');
+  } else {
+    console.log('⚠️ Brevo SMTP service initialization failed:', brevoSmtpResult.error);
   }
   
   // Check Gmail fallback environment variables

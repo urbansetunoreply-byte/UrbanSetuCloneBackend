@@ -1,9 +1,92 @@
-// Use Brevo SMTP instead of API to avoid SDK import issues
+// Use Brevo API for better reliability
 import nodemailer from 'nodemailer';
+import { ApiClient, TransactionalEmailsApi, SendSmtpEmail } from 'sib-api-v3-sdk';
 
-// Initialize Brevo SMTP transporter
+// Initialize Brevo API client
+let brevoApiClient = null;
+let brevoTransactionalEmailsApi = null;
+
+// Initialize Brevo SMTP transporter (fallback)
 let brevoTransporter = null;
 let currentConfigIndex = 0;
+
+// Initialize Brevo API service
+export const initializeBrevoApiService = () => {
+  try {
+    // Check if API key is available
+    if (!process.env.BREVO_API_KEY) {
+      console.warn('⚠️ Brevo API key not found, API service will be disabled');
+      return { success: false, error: 'BREVO_API_KEY not found' };
+    }
+
+    console.log('🔧 Initializing Brevo API service...');
+    
+    // Initialize API client
+    brevoApiClient = new ApiClient();
+    brevoApiClient.authentications['api-key'].apiKey = process.env.BREVO_API_KEY;
+    
+    // Initialize transactional emails API
+    brevoTransactionalEmailsApi = new TransactionalEmailsApi();
+    brevoTransactionalEmailsApi.setApiKey(brevoApiClient.authentications['api-key']);
+
+    console.log('✅ Brevo API service initialized successfully');
+    return { success: true, message: 'Brevo API service initialized' };
+  } catch (error) {
+    console.error('❌ Brevo API service initialization failed:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Send email using Brevo API
+export const sendBrevoApiEmail = async (emailData) => {
+  try {
+    if (!brevoTransactionalEmailsApi) {
+      const initResult = initializeBrevoApiService();
+      if (!initResult.success) {
+        return {
+          success: false,
+          error: 'Brevo API service not initialized: ' + initResult.error
+        };
+      }
+    }
+
+    console.log('📧 Sending email via Brevo API...');
+
+    const sendSmtpEmail = new SendSmtpEmail();
+    sendSmtpEmail.subject = emailData.subject;
+    sendSmtpEmail.htmlContent = emailData.html;
+    sendSmtpEmail.sender = {
+      name: process.env.BREVO_SENDER_NAME || 'UrbanSetu',
+      email: process.env.BREVO_SENDER_EMAIL || 'auth.urbansetu@gmail.com'
+    };
+    sendSmtpEmail.to = [{
+      email: emailData.to,
+      name: emailData.toName || emailData.to
+    }];
+
+    if (emailData.replyTo) {
+      sendSmtpEmail.replyTo = {
+        email: emailData.replyTo,
+        name: emailData.replyTo
+      };
+    }
+
+    const result = await brevoTransactionalEmailsApi.sendTransacEmail(sendSmtpEmail);
+    
+    console.log('✅ Brevo API email sent successfully:', result.messageId);
+    return {
+      success: true,
+      messageId: result.messageId,
+      message: 'Email sent successfully via Brevo API'
+    };
+  } catch (error) {
+    console.error('❌ Brevo API email sending failed:', error);
+    return {
+      success: false,
+      error: error.message || 'Failed to send email via Brevo API'
+    };
+  }
+};
 
 // Get all available SMTP configurations
 const getSmtpConfigs = () => [
@@ -156,23 +239,44 @@ export const initializeBrevoService = async () => {
   }
 };
 
-// Send email using Brevo SMTP with enhanced retry logic
+// Send email using Brevo (API first, then SMTP fallback)
 export const sendBrevoEmail = async (emailData, maxRetries = 3) => {
   try {
-    // Check if Brevo is available
+    // Try Brevo API first (more reliable)
+    if (process.env.BREVO_API_KEY) {
+      console.log('📧 Attempting to send email via Brevo API...');
+      const apiResult = await sendBrevoApiEmail(emailData);
+      
+      if (apiResult.success) {
+        console.log('✅ Email sent successfully via Brevo API');
+        return {
+          success: true,
+          messageId: apiResult.messageId,
+          message: 'Email sent successfully via Brevo API',
+          method: 'API'
+        };
+      } else {
+        console.log('❌ Brevo API failed, falling back to SMTP:', apiResult.error);
+      }
+    }
+
+    // Fallback to SMTP if API fails or not available
+    console.log('📧 Falling back to Brevo SMTP...');
+    
+    // Check if SMTP credentials are available
     if (!process.env.BREVO_SMTP_LOGIN || !process.env.BREVO_SMTP_PASSWORD) {
       return {
         success: false,
-        error: 'Brevo SMTP credentials not configured'
+        error: 'Both Brevo API and SMTP credentials not configured'
       };
     }
 
     if (!brevoTransporter) {
-      const initResult = initializeBrevoService();
+      const initResult = await initializeBrevoService();
       if (!initResult.success) {
         return {
           success: false,
-          error: 'Brevo service not initialized: ' + initResult.error
+          error: 'Brevo SMTP service not initialized: ' + initResult.error
         };
       }
     }
@@ -193,37 +297,38 @@ export const sendBrevoEmail = async (emailData, maxRetries = 3) => {
       mailOptions.replyTo = emailData.replyTo;
     }
 
-    // Retry logic for Brevo
+    // Retry logic for Brevo SMTP
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        console.log(`📧 Brevo send attempt ${attempt}/${maxRetries}...`);
+        console.log(`📧 Brevo SMTP send attempt ${attempt}/${maxRetries}...`);
         
         // Verify connection before each attempt
         if (attempt > 1) {
-          console.log('🔄 Re-verifying Brevo connection...');
+          console.log('🔄 Re-verifying Brevo SMTP connection...');
           await brevoTransporter.verify();
         }
         
         const result = await brevoTransporter.sendMail(mailOptions);
         
-        console.log('✅ Brevo email sent successfully:', result.messageId);
+        console.log('✅ Brevo SMTP email sent successfully:', result.messageId);
         return {
           success: true,
           messageId: result.messageId,
           message: 'Email sent successfully via Brevo SMTP',
-          attempts: attempt
+          attempts: attempt,
+          method: 'SMTP'
         };
       } catch (error) {
-        console.error(`❌ Brevo send attempt ${attempt} failed:`, error.message);
+        console.error(`❌ Brevo SMTP send attempt ${attempt} failed:`, error.message);
         
         // Check for specific error types
         if (error.code === 'ETIMEDOUT' || error.code === 'ECONNECTION' || error.code === 'ECONNRESET') {
-          console.log('🔄 Connection error detected, reinitializing Brevo transporter...');
+          console.log('🔄 Connection error detected, reinitializing Brevo SMTP transporter...');
           
           // Reinitialize transporter
-          const reinitResult = initializeBrevoService();
+          const reinitResult = await initializeBrevoService();
           if (!reinitResult.success) {
-            console.error('❌ Failed to reinitialize Brevo transporter:', reinitResult.error);
+            console.error('❌ Failed to reinitialize Brevo SMTP transporter:', reinitResult.error);
           }
         }
         
@@ -233,7 +338,8 @@ export const sendBrevoEmail = async (emailData, maxRetries = 3) => {
             success: false,
             error: error.message || 'Failed to send email via Brevo SMTP',
             attempts: attempt,
-            errorCode: error.code
+            errorCode: error.code,
+            method: 'SMTP'
           };
         }
         
@@ -247,7 +353,7 @@ export const sendBrevoEmail = async (emailData, maxRetries = 3) => {
     console.error('❌ Brevo email sending failed:', error);
     return {
       success: false,
-      error: error.message || 'Failed to send email via Brevo SMTP'
+      error: error.message || 'Failed to send email via Brevo'
     };
   }
 };
