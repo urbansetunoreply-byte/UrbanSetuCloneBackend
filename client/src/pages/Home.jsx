@@ -479,91 +479,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* How It Works Section */}
-      <div className="max-w-6xl mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">How It Works</h2>
-          <p className="text-gray-600 text-lg">Simple steps to find your perfect property</p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FaSearch className="text-2xl text-blue-600" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">1. Search</h3>
-            <p className="text-gray-600">Use our AI-powered search to find properties that match your criteria</p>
-          </div>
-          
-          <div className="text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FaCheckCircle className="text-2xl text-green-600" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">2. Verify</h3>
-            <p className="text-gray-600">All properties are verified and quality-checked by our experts</p>
-          </div>
-          
-          <div className="text-center">
-            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FaHandshake className="text-2xl text-purple-600" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">3. Connect</h3>
-            <p className="text-gray-600">Connect with property owners and schedule viewings</p>
-          </div>
-          
-          <div className="text-center">
-            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FaHome className="text-2xl text-orange-600" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">4. Secure</h3>
-            <p className="text-gray-600">Complete secure transactions with our protected payment system</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Platform Features Section */}
-      <div className="max-w-6xl mx-auto px-4 py-16 bg-gradient-to-r from-gray-50 to-blue-50">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Multi-Platform Access</h2>
-          <p className="text-gray-600 text-lg">Access UrbanSetu from any device, anywhere</p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="text-center bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-            <FaDesktop className="text-5xl text-blue-600 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">Desktop</h3>
-            <p className="text-gray-600">Full-featured experience with advanced analytics and management tools</p>
-          </div>
-          
-          <div className="text-center bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-            <FaMobile className="text-5xl text-green-600 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">Mobile</h3>
-            <p className="text-gray-600">On-the-go access with push notifications and location-based search</p>
-          </div>
-          
-          <div className="text-center bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-            <FaTablet className="text-5xl text-purple-600 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">Tablet</h3>
-            <p className="text-gray-600">Perfect balance of portability and functionality for property viewing</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Call to Action Section */}
-      <div className="max-w-6xl mx-auto px-4 py-16">
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-12 text-center text-white">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Find Your Dream Property?</h2>
-          <p className="text-xl mb-8 text-blue-100">Join thousands of satisfied users and discover your perfect home today</p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/search" className="bg-white text-blue-600 font-semibold px-8 py-4 rounded-lg shadow-lg hover:bg-gray-100 hover:scale-105 transition-all">
-              Start Searching
-            </Link>
-            <Link to="/about" className="bg-transparent border-2 border-white text-white font-semibold px-8 py-4 rounded-lg hover:bg-white hover:text-blue-600 transition-all">
-              Learn More
-            </Link>
-          </div>
-        </div>
-      </div>
 
       {/* Enhanced Photo Slider Gallery */}
       {allSliderImages.length > 0 && (
@@ -786,6 +701,109 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      {/* How It Works Section */}
+      <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16" data-section="how-it-works">
+        <div className={`text-center mb-8 sm:mb-12 transition-all duration-1000 ${isHowItWorksVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-3 sm:mb-4 animate-pulse">How It Works</h2>
+          <p className="text-gray-600 text-base sm:text-lg animate-pulse px-2" style={{ animationDelay: '0.2s' }}>Simple steps to find your perfect property</p>
+        </div>
+        
+        <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 transition-all duration-1000 ${isHowItWorksVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <div className="text-center animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+              <FaSearch className="text-2xl sm:text-3xl text-blue-600" />
+            </div>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">1. Search</h3>
+            <p className="text-gray-600 text-sm sm:text-base">Use our smart filters to find properties that match your criteria</p>
+          </div>
+          
+          <div className="text-center animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+              <FaHeart className="text-2xl sm:text-3xl text-green-600" />
+            </div>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">2. Save</h3>
+            <p className="text-gray-600 text-sm sm:text-base">Save your favorite properties and get notifications about price changes</p>
+          </div>
+          
+          <div className="text-center animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+              <FaHandshake className="text-2xl sm:text-3xl text-purple-600" />
+            </div>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">3. Connect</h3>
+            <p className="text-gray-600 text-sm sm:text-base">Connect with property owners and schedule viewings</p>
+          </div>
+          
+          <div className="text-center animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+              <FaHome className="text-2xl sm:text-3xl text-orange-600" />
+            </div>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">4. Secure</h3>
+            <p className="text-gray-600 text-sm sm:text-base">Complete secure transactions with our protected payment system</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Platform Features Section */}
+      <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16 bg-gradient-to-r from-gray-50 to-blue-50" data-section="platform">
+        <div className={`text-center mb-8 sm:mb-12 transition-all duration-1000 ${isPlatformVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-3 sm:mb-4 animate-pulse">Multi-Platform Access</h2>
+          <p className="text-gray-600 text-base sm:text-lg animate-pulse px-2" style={{ animationDelay: '0.2s' }}>Access UrbanSetu from any device, anywhere</p>
+        </div>
+        
+        <div className={`grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 transition-all duration-1000 ${isPlatformVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <div className="text-center bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+            <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4 animate-bounce">
+              <FaDesktop className="text-3xl text-blue-600" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">Desktop</h3>
+            <p className="text-gray-600">Full-featured experience on your computer</p>
+          </div>
+          
+          <div className="text-center bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <div className="w-16 h-16 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-4 animate-pulse">
+              <FaMobile className="text-3xl text-green-600" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">Mobile</h3>
+            <p className="text-gray-600">On-the-go access with push notifications</p>
+          </div>
+          
+          <div className="text-center bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+            <div className="w-16 h-16 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-4 animate-bounce">
+              <FaTablet className="text-3xl text-purple-600" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">Tablet</h3>
+            <p className="text-gray-600">Perfect balance of portability and functionality</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Call to Action Section */}
+      <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16" data-section="cta">
+        <div className={`bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 sm:p-12 text-center text-white transition-all duration-1000 ${isCTAVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 animate-pulse">Ready to Find Your Dream Property?</h2>
+          <p className="text-lg sm:text-xl mb-8 animate-pulse" style={{ animationDelay: '0.2s' }}>Join thousands of satisfied customers who found their perfect property with UrbanSetu</p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Link 
+              to="/search" 
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-blue-600 font-bold px-8 py-4 rounded-xl shadow-2xl hover:bg-gray-100 hover:scale-105 transition-all duration-300 animate-bounce"
+              style={{ animationDelay: '0.4s' }}
+            >
+              <FaRocket className="text-xl" />
+              <span>Start Searching Now</span>
+            </Link>
+            <Link 
+              to="/about" 
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-transparent border-2 border-white text-white font-bold px-8 py-4 rounded-xl hover:bg-white hover:text-blue-600 transition-all duration-300 animate-bounce"
+              style={{ animationDelay: '0.6s' }}
+            >
+              <FaUsers className="text-xl" />
+              <span>Learn More</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+
       <GeminiAIWrapper />
       <ContactSupportWrapper />
     </div>
