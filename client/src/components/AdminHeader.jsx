@@ -199,7 +199,7 @@ export default function AdminHeader() {
         localStorage.removeItem('accessToken');
         document.cookie = 'access_token=; Max-Age=0; path=/; domain=' + window.location.hostname + '; secure; samesite=None';
         toast.info("You have been signed out.");
-        navigate("/sign-in");
+        navigate("/");
       }
     } catch (error) {
       dispatch(signoutUserFailure(error.message));

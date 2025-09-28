@@ -1269,7 +1269,7 @@ export default function Profile() {
         
         toast.info("You have been signed out.");
         await new Promise(resolve => setTimeout(resolve, 50));
-        navigate("/sign-in", { replace: true });
+        navigate("/", { replace: true });
       }
     } catch (error) {
       dispatch(signoutUserFailure(error.message));
@@ -1293,7 +1293,7 @@ export default function Profile() {
       reconnectSocket();
       
       toast.info("You have been signed out.");
-      navigate("/sign-in", { replace: true });
+      navigate("/", { replace: true });
     }
   };
 
