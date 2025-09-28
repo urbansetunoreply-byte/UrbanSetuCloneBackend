@@ -1,9 +1,9 @@
 import express from 'express';
 import { 
   getEmailHealth, 
-  getEmailStats, 
+  getEmailStatistics, 
   getQueueStatus, 
-  clearFailedEmails, 
+  clearFailedEmailsFromQueue, 
   testEmailSending, 
   toggleEmailMonitoring,
   getEmailConfig 
@@ -33,7 +33,7 @@ router.use(requireAdmin);
 router.get('/health', getEmailHealth);
 
 // Get email statistics
-router.get('/stats', getEmailStats);
+router.get('/stats', getEmailStatistics);
 
 // Get queue status
 router.get('/queue', getQueueStatus);
@@ -42,7 +42,7 @@ router.get('/queue', getQueueStatus);
 router.get('/config', getEmailConfig);
 
 // Clear failed emails from queue
-router.post('/queue/clear-failed', clearFailedEmails);
+router.post('/queue/clear-failed', clearFailedEmailsFromQueue);
 
 // Test email sending
 router.post('/test', testEmailSending);

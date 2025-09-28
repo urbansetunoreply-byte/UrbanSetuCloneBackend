@@ -28,7 +28,7 @@ export const getEmailHealth = async (req, res, next) => {
 };
 
 // Get detailed email statistics
-export const getEmailStats = async (req, res, next) => {
+export const getEmailStatistics = async (req, res, next) => {
   try {
     const stats = getEmailStats();
     
@@ -62,7 +62,7 @@ export const getQueueStatus = async (req, res, next) => {
 };
 
 // Clear failed emails from queue
-export const clearFailedEmails = async (req, res, next) => {
+export const clearFailedEmailsFromQueue = async (req, res, next) => {
   try {
     const beforeCount = getQueueStats().failed;
     clearFailedEmails();
