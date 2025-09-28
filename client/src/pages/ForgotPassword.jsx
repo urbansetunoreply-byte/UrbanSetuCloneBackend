@@ -504,9 +504,10 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                       ref={emailInputRef}
                       value={formData.email}
                       onChange={handleChange}
-                      readOnly={((emailLocked || emailVerified || otpSent) && !emailEditMode)}
+                      readOnly={((emailLocked || emailVerified || otpSent) && !emailEditMode) || otpLoading}
+                      disabled={otpLoading}
                       className={`w-full px-4 py-3 pr-24 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 ${
-                        emailVerified && !emailEditMode
+                        (emailVerified && !emailEditMode) || otpLoading
                           ? "bg-gray-100 cursor-not-allowed border-green-500"
                           : emailVerified ? "border-green-500" : "border-gray-300"
                       }`}

@@ -1921,9 +1921,10 @@ export default function Profile() {
                       placeholder="Enter email address"
                       value={formData.email || ''}
                       onChange={handleChangeWithValidation}
-                      readOnly={!emailEditMode || (emailEditMode && otpSent)}
+                      readOnly={!emailEditMode || (emailEditMode && otpSent) || otpLoading}
+                      disabled={otpLoading}
                       className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all ${
-                        !emailEditMode || (emailEditMode && otpSent)
+                        !emailEditMode || (emailEditMode && otpSent) || otpLoading
                           ? 'bg-gray-100 cursor-not-allowed border-green-500 pr-20'
                           : emailValidation.available === false 
                           ? 'border-red-500 focus:ring-red-500 pr-12'

@@ -435,13 +435,13 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                     id="email"
                     value={formData.email}
                     onChange={handleChange}
-                    readOnly={(emailVerified || otpSent) && !emailEditMode}
+                    readOnly={(emailVerified || otpSent) && !emailEditMode || otpLoading}
                     className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
-                      (emailVerified || otpSent) && !emailEditMode
+                      ((emailVerified || otpSent) && !emailEditMode) || otpLoading
                         ? "bg-gray-100 cursor-not-allowed border-green-500"
                         : fieldErrors.email ? "border-red-500" : emailVerified ? "border-green-500" : "border-gray-300"
                     } ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                    disabled={authInProgress === 'google' || ((emailVerified || otpSent) && !emailEditMode)}
+                    disabled={authInProgress === 'google' || ((emailVerified || otpSent) && !emailEditMode) || otpLoading}
                     required
                   />
                   {fieldErrors.email && (
