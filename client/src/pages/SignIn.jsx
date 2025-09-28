@@ -726,7 +726,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                         <div className="text-right mt-2">
                                             <Link 
                                                 to={`/forgot-password?email=${encodeURIComponent(formData.email)}`}
-                                                className={`text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 ${authInProgress === 'google' ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                                                className={`text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 ${(authInProgress === 'google' || authInProgress === 'password' || loading) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
                                             >
                                                 Forgot Password?
                                             </Link>
@@ -953,7 +953,10 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                         <div className="mt-6 text-center">
                             <p className="text-gray-600">
                                 Don't have an account?{" "}
-                                <Link to="/sign-up" className="text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors duration-200">
+                                <Link 
+                                    to="/sign-up" 
+                                    className={`text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors duration-200 ${(authInProgress !== null || loading || otpVerifyingLoading) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                                >
                                     Sign Up
                                 </Link>
                             </p>
