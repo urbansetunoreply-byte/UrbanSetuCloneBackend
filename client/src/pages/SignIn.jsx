@@ -662,8 +662,9 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                             value={formData.email}
                                             onChange={handleChange} 
                                             ref={emailInputRef}
-                                            readOnly={emailStep}
-                                            className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${emailStep ? 'pr-12 bg-gray-50' : ''}`}
+                                            readOnly={emailStep || authInProgress === 'google'}
+                                            disabled={authInProgress === 'google'}
+                                            className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${emailStep ? 'pr-12 bg-gray-50' : ''} ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                                             required
                                         />
                                         {emailStep && (
@@ -694,12 +695,14 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                                 value={formData.password}
                                                 onChange={handleChange} 
                                                 ref={passwordInputRef}
-                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pr-12"
+                                                disabled={authInProgress === 'google'}
+                                                className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pr-12 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                                                 required
                                             />
                                             <button
                                                 type="button"
-                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 focus:outline-none"
+                                                disabled={authInProgress === 'google'}
+                                                className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 focus:outline-none ${authInProgress === 'google' ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                 tabIndex={-1}
                                                 onClick={() => setShowPassword((prev) => !prev)}
                                                 aria-label={showPassword ? "Hide password" : "Show password"}
@@ -712,7 +715,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                         <div className="text-right mt-2">
                                             <Link 
                                                 to={`/forgot-password?email=${encodeURIComponent(formData.email)}`}
-                                                className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200"
+                                                className={`text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 ${authInProgress === 'google' ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
                                             >
                                                 Forgot Password?
                                             </Link>
@@ -729,7 +732,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                             onVerify={handleRecaptchaVerify}
                                             onExpire={handleRecaptchaExpire}
                                             onError={handleRecaptchaError}
-                                            disabled={loading}
+                                            disabled={loading || authInProgress === 'google'}
                                             className="transform scale-90"
                                         />
                                     </div>
@@ -743,7 +746,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 )}
                                 
                                 <button 
-                                    disabled={loading || (showRecaptcha && !recaptchaToken)} 
+                                    disabled={loading || (showRecaptcha && !recaptchaToken) || authInProgress !== null} 
                                     className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
                                 >
                                     {loading ? (
