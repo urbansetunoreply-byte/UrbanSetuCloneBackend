@@ -6,6 +6,7 @@ import authRouter from './routes/auth.route.js'
 import listingRouter from './routes/listing.route.js'
 import bookingRouter from "./routes/booking.route.js";
 import { registerUserAppointmentsSocket } from './routes/booking.route.js';
+import Booking from './models/booking.model.js';
 import aboutRouter from "./routes/about.route.js";
 import adminRouter from "./routes/admin.route.js";
 import contactRouter from "./routes/contact.route.js";
@@ -242,8 +243,7 @@ io.on('connection', (socket) => {
     if (wasOffline) {
       try {
         // Find all bookings where this user is buyer or seller
-        const booking = require('./models/booking.model.js');
-        const bookings = await booking.find({
+        const bookings = await Booking.find({
           $or: [ { buyerId: userId }, { sellerId: userId } ]
         });
         
@@ -288,8 +288,7 @@ io.on('connection', (socket) => {
     
     // Join admin to all appointment rooms to receive real-time updates
     try {
-      const booking = require('./models/booking.model.js');
-      const allBookings = await booking.find({});
+      const allBookings = await Booking.find({});
       
       for (const appt of allBookings) {
         // Join admin to each appointment room
@@ -333,8 +332,7 @@ io.on('connection', (socket) => {
     if (socket.adminId) {
       console.log(`Admin ${socket.adminId} disconnected, cleaning up room memberships`);
       // Leave all appointment rooms
-      const booking = require('./models/booking.model.js');
-      booking.find({}).then(bookings => {
+      Booking.find({}).then(bookings => {
         for (const appt of bookings) {
           socket.leave(`appointment_${appt._id}`);
         }
