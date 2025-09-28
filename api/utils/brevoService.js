@@ -16,7 +16,7 @@ export const initializeBrevoService = () => {
     console.log('🔧 Initializing Brevo SMTP service...');
     
     // Create Brevo SMTP transporter
-    brevoTransporter = nodemailer.createTransporter({
+    brevoTransporter = nodemailer.createTransport({
       host: 'smtp-relay.brevo.com',
       port: 587,
       secure: false, // true for 465, false for other ports
