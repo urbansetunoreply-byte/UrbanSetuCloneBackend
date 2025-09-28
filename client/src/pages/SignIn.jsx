@@ -671,7 +671,8 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                             <button
                                                 type="button"
                                                 onClick={handleEmailEdit}
-                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-800 focus:outline-none"
+                                                disabled={loading || authInProgress !== null}
+                                                className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-800 focus:outline-none ${loading || authInProgress !== null ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                 title="Edit email"
                                             >
                                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -786,7 +787,8 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                                     setOtpData({ email: otpData.email, otp: "" });
                                                     setOtpSuccessMessage("");
                                                 }}
-                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-800 focus:outline-none"
+                                                disabled={loading || authInProgress !== null}
+                                                className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-800 focus:outline-none ${loading || authInProgress !== null ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                 title="Edit email"
                                             >
                                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
