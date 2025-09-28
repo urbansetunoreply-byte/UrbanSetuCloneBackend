@@ -1,47 +1,38 @@
-// Import Brevo SDK
-import * as brevoSDK from 'sib-api-v3-sdk';
+// Use Brevo SMTP instead of API to avoid SDK import issues
+import nodemailer from 'nodemailer';
 
-// Extract classes from SDK
-const { ApiClient, TransactionalEmailsApi, SendSmtpEmail } = brevoSDK;
+// Initialize Brevo SMTP transporter
+let brevoTransporter = null;
 
-// Initialize Brevo API client
-let brevoApiInstance = null;
-
-// Initialize Brevo service
+// Initialize Brevo service using SMTP
 export const initializeBrevoService = () => {
   try {
-    // Check if API key is available
-    if (!process.env.BREVO_API_KEY) {
-      console.warn('⚠️ Brevo API key not found, Brevo service will be disabled');
-      return { success: false, error: 'BREVO_API_KEY not found' };
+    // Check if SMTP credentials are available
+    if (!process.env.BREVO_SMTP_LOGIN || !process.env.BREVO_SMTP_PASSWORD) {
+      console.warn('⚠️ Brevo SMTP credentials not found, Brevo service will be disabled');
+      return { success: false, error: 'BREVO_SMTP_LOGIN or BREVO_SMTP_PASSWORD not found' };
     }
 
-    // Check if SDK classes are available
-    if (!ApiClient || !TransactionalEmailsApi || !SendSmtpEmail) {
-      console.error('❌ Brevo SDK classes not available:', {
-        ApiClient: !!ApiClient,
-        TransactionalEmailsApi: !!TransactionalEmailsApi,
-        SendSmtpEmail: !!SendSmtpEmail
-      });
-      return { success: false, error: 'Brevo SDK classes not available' };
-    }
-
-    console.log('🔧 Initializing Brevo service with API key...');
+    console.log('🔧 Initializing Brevo SMTP service...');
     
-    // Configure API key
-    const defaultClient = ApiClient.instance;
-    const apiKey = defaultClient.authentications['api-key'];
-    apiKey.apiKey = process.env.BREVO_API_KEY;
+    // Create Brevo SMTP transporter
+    brevoTransporter = nodemailer.createTransporter({
+      host: 'smtp-relay.brevo.com',
+      port: 587,
+      secure: false, // true for 465, false for other ports
+      auth: {
+        user: process.env.BREVO_SMTP_LOGIN,
+        pass: process.env.BREVO_SMTP_PASSWORD
+      },
+      tls: {
+        rejectUnauthorized: false
+      }
+    });
 
-    console.log('🔧 API key configured, creating TransactionalEmailsApi instance...');
-
-    // Initialize the API instance
-    brevoApiInstance = new TransactionalEmailsApi();
-
-    console.log('✅ Brevo service initialized successfully');
-    return { success: true, message: 'Brevo service initialized' };
+    console.log('✅ Brevo SMTP service initialized successfully');
+    return { success: true, message: 'Brevo SMTP service initialized' };
   } catch (error) {
-    console.error('❌ Brevo service initialization failed:', error);
+    console.error('❌ Brevo SMTP service initialization failed:', error);
     console.error('Error details:', {
       message: error.message,
       stack: error.stack,
@@ -51,18 +42,18 @@ export const initializeBrevoService = () => {
   }
 };
 
-// Send email using Brevo
+// Send email using Brevo SMTP
 export const sendBrevoEmail = async (emailData) => {
   try {
     // Check if Brevo is available
-    if (!process.env.BREVO_API_KEY) {
+    if (!process.env.BREVO_SMTP_LOGIN || !process.env.BREVO_SMTP_PASSWORD) {
       return {
         success: false,
-        error: 'Brevo API key not configured'
+        error: 'Brevo SMTP credentials not configured'
       };
     }
 
-    if (!brevoApiInstance) {
+    if (!brevoTransporter) {
       const initResult = initializeBrevoService();
       if (!initResult.success) {
         return {
@@ -72,39 +63,36 @@ export const sendBrevoEmail = async (emailData) => {
       }
     }
 
-    const sendSmtpEmail = new SendSmtpEmail();
-    
-    // Set email properties
-    sendSmtpEmail.subject = emailData.subject;
-    sendSmtpEmail.htmlContent = emailData.html;
-    sendSmtpEmail.sender = {
-      name: process.env.BREVO_SENDER_NAME || 'UrbanSetu',
-      email: process.env.BREVO_SENDER_EMAIL || process.env.BREVO_SMTP_LOGIN || 'noreply@urbansetu.com'
+    // Prepare email options for nodemailer
+    const mailOptions = {
+      from: {
+        name: process.env.BREVO_SENDER_NAME || 'UrbanSetu',
+        address: process.env.BREVO_SENDER_EMAIL || process.env.BREVO_SMTP_LOGIN
+      },
+      to: emailData.to,
+      subject: emailData.subject,
+      html: emailData.html
     };
-    sendSmtpEmail.to = [{ email: emailData.to, name: emailData.toName || emailData.to }];
-    
+
     // Add reply-to if specified
     if (emailData.replyTo) {
-      sendSmtpEmail.replyTo = {
-        email: emailData.replyTo,
-        name: emailData.replyToName || emailData.replyTo
-      };
+      mailOptions.replyTo = emailData.replyTo;
     }
 
     // Send the email
-    const result = await brevoApiInstance.sendTransacEmail(sendSmtpEmail);
+    const result = await brevoTransporter.sendMail(mailOptions);
     
     console.log('✅ Brevo email sent successfully:', result.messageId);
     return {
       success: true,
       messageId: result.messageId,
-      message: 'Email sent successfully via Brevo'
+      message: 'Email sent successfully via Brevo SMTP'
     };
   } catch (error) {
     console.error('❌ Brevo email sending failed:', error);
     return {
       success: false,
-      error: error.message || 'Failed to send email via Brevo'
+      error: error.message || 'Failed to send email via Brevo SMTP'
     };
   }
 };
@@ -112,16 +100,16 @@ export const sendBrevoEmail = async (emailData) => {
 // Test Brevo connection
 export const testBrevoConnection = async () => {
   try {
-    // Check if API key is available
-    if (!process.env.BREVO_API_KEY) {
+    // Check if SMTP credentials are available
+    if (!process.env.BREVO_SMTP_LOGIN || !process.env.BREVO_SMTP_PASSWORD) {
       return { 
         success: false, 
-        error: 'Brevo API key not configured',
-        message: 'Please set BREVO_API_KEY environment variable'
+        error: 'Brevo SMTP credentials not configured',
+        message: 'Please set BREVO_SMTP_LOGIN and BREVO_SMTP_PASSWORD environment variables'
       };
     }
 
-    if (!brevoApiInstance) {
+    if (!brevoTransporter) {
       const initResult = initializeBrevoService();
       if (!initResult.success) {
         return { 
@@ -135,8 +123,7 @@ export const testBrevoConnection = async () => {
     const testEmail = {
       to: process.env.BREVO_SENDER_EMAIL || process.env.BREVO_SMTP_LOGIN || 'test@example.com',
       subject: 'Brevo Connection Test - UrbanSetu',
-      html: '<p>This is a test email to verify Brevo connection.</p>',
-      toName: 'Test User'
+      html: '<p>This is a test email to verify Brevo SMTP connection.</p>'
     };
 
     const result = await sendBrevoEmail(testEmail);
@@ -150,13 +137,13 @@ export const testBrevoConnection = async () => {
 // Get Brevo service status
 export const getBrevoStatus = () => {
   return {
-    isInitialized: !!brevoApiInstance,
-    hasApiKey: !!process.env.BREVO_API_KEY,
+    isInitialized: !!brevoTransporter,
     hasSmtpLogin: !!process.env.BREVO_SMTP_LOGIN,
     hasSmtpPassword: !!process.env.BREVO_SMTP_PASSWORD,
     senderEmail: process.env.BREVO_SENDER_EMAIL || process.env.BREVO_SMTP_LOGIN,
-    senderName: process.env.BREVO_SENDER_NAME || 'UrbanSetu'
+    senderName: process.env.BREVO_SENDER_NAME || 'UrbanSetu',
+    method: 'SMTP'
   };
 };
 
-export default brevoApiInstance;
+export default brevoTransporter;
