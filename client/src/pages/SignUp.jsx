@@ -828,7 +828,14 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
             <div className="mt-6 text-center">
               <p className="text-gray-600">
                 Already have an account?{" "}
-                <Link to="/sign-in" className="text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors duration-200">
+                <Link 
+                  to="/sign-in" 
+                  className={`text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors duration-200 ${
+                    (authInProgress !== null || loading || otpLoading || verifyLoading) 
+                      ? 'opacity-50 cursor-not-allowed pointer-events-none' 
+                      : ''
+                  }`}
+                >
                   Sign In
                 </Link>
               </p>

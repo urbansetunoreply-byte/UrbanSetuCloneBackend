@@ -953,7 +953,16 @@ export default function MyAppointments() {
           )
         ) : (
           appointments.length === 0 ? (
-            <div className="text-center text-gray-500 text-lg">No appointments found.</div>
+            <div className="text-center py-12">
+              <div className="text-gray-500 text-lg mb-6">No appointments found.</div>
+              <Link 
+                to="/search" 
+                className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
+              >
+                <FaCalendarAlt className="mr-2" />
+                Book Appointment
+              </Link>
+            </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full border-collapse rounded-lg overflow-hidden">
