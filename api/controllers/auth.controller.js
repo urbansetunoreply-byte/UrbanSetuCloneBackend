@@ -682,12 +682,17 @@ export const resetPassword = async (req, res, next) => {
         
         const totalAttempts = recentResetAttempts.length > 0 ? recentResetAttempts[0].totalAttempts : 0;
         
-        console.log(`Reset password attempts for user ${user.email}: ${totalAttempts}, hasRecaptchaToken: ${!!recaptchaToken}`);
+        console.log(`Reset password attempts for user ${user.email}: totalAttempts=${totalAttempts}, hasRecaptchaToken=${!!recaptchaToken}, recentResetAttempts=${JSON.stringify(recentResetAttempts)}`);
         
-        // Require reCAPTCHA after 3 failed reset password attempts
+        // Require reCAPTCHA after 3 failed reset password attempts (so on 4th attempt)
         if (totalAttempts >= 3 && !recaptchaToken) {
-            console.log('Requiring reCAPTCHA for reset password');
+            console.log(`Requiring reCAPTCHA for reset password - totalAttempts: ${totalAttempts}`);
             return next(errorHandler(400, "reCAPTCHA verification is required due to multiple failed attempts."));
+        }
+        
+        // Debug: Log when reCAPTCHA is NOT required
+        if (totalAttempts < 3) {
+            console.log(`No reCAPTCHA required - totalAttempts: ${totalAttempts} < 3`);
         }
         
         // Verify reCAPTCHA if provided
