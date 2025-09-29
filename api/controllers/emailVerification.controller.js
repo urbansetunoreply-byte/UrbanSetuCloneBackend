@@ -517,6 +517,24 @@ export const verifyOTP = async (req, res, next) => {
         message: "Email verified successfully",
         type: 'profile_email'
       });
+    } else if (storedData.type === 'account_deletion') {
+      // For account deletion, return success with user ID
+      const { userId } = storedData;
+      otpStore.delete(emailLower);
+      
+      // Log successful account deletion OTP verification
+      logSecurityEvent('account_deletion_otp_verification_successful', {
+        email: emailLower,
+        userId: userId,
+        ip: req.ip
+      });
+      
+      res.status(200).json({
+        success: true,
+        message: "Email verified successfully",
+        userId: userId,
+        type: 'account_deletion'
+      });
     } else {
       // For signup, just return success
       otpStore.delete(emailLower);

@@ -1084,7 +1084,7 @@ export default function Profile() {
       setDeleteDeleting(true);
       const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email, otp: deleteOtp }) });
       const vData = await vRes.json();
-      if (!vRes.ok || vData.success === false || vData.type !== 'forgotPassword') {
+      if (!vRes.ok || vData.success === false || vData.type !== 'account_deletion') {
         const att = deleteOtpAttempts + 1; setDeleteOtpAttempts(att);
         setDeleteOtpError(vData.message || 'Invalid OTP');
         if (att >= 5) {
