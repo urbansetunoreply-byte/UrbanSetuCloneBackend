@@ -832,7 +832,7 @@ export const sendPaymentSuccessEmail = async (email, paymentDetails) => {
             <a href="${receiptUrl}" style="background-color: #3b82f6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block; margin-right: 15px;">
               📄 Download Receipt
             </a>
-            <a href="${process.env.CLIENT_URL || 'https://urbansetu.com'}/user/my-appointments" style="background-color: #10b981; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" style="background-color: #10b981; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
               📅 View Appointments
             </a>
           </div>
@@ -931,7 +931,7 @@ export const sendPaymentFailedEmail = async (email, paymentDetails) => {
           </div>
           
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.CLIENT_URL || 'https://urbansetu.com'}/user/my-appointments" style="background-color: #3b82f6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" style="background-color: #3b82f6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
               🔄 Retry Payment
             </a>
           </div>
@@ -1099,7 +1099,7 @@ export const sendPasswordResetSuccessEmail = async (userEmail, userName, resetMe
             </div>
             
             <div style="text-align: center;">
-              <a href="${process.env.CLIENT_URL || 'https://urbansetu.onrender.com'}/signin" 
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/signin" 
                  style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px; transition: all 0.3s ease;">
                 Sign In to Your Account
               </a>
@@ -1199,7 +1199,7 @@ export const sendPasswordChangeSuccessEmail = async (userEmail, userName, change
             </div>
             
             <div style="text-align: center;">
-              <a href="${process.env.CLIENT_URL || 'https://urbansetu.onrender.com'}/signin" 
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/signin" 
                  style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px; transition: all 0.3s ease;">
                 Sign In to Your Account
               </a>
