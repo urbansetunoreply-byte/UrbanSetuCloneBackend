@@ -366,7 +366,7 @@ export default function UserChangePassword() {
 
             <div className="mt-6 text-center">
               <p className="text-gray-600">
-                "Changed your mind?{" "}
+                Changed your mind?{" "}
                 <button 
                   onClick={() => navigate("/user")} 
                   disabled={loading}
@@ -376,7 +376,6 @@ export default function UserChangePassword() {
                 >
                   Back to Profile
                 </button>
-                "
               </p>
             </div>
           </div>

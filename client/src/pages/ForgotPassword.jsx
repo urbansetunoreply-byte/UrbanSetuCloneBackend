@@ -1034,7 +1034,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
 
             <div className="mt-6 text-center">
               <p className="text-gray-600">
-                "Remembered your password?{" "}
+                Remembered your password?{" "}
                 <Link 
                   to="/sign-in" 
                   className={`text-green-600 hover:text-green-800 font-semibold hover:underline transition-colors duration-200 ${
@@ -1043,7 +1043,6 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                 >
                   Back to Sign In
                 </Link>
-                "
               </p>
             </div>
           </div>

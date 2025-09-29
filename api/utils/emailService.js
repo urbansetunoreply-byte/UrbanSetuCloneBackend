@@ -631,7 +631,7 @@ export const sendNewLoginEmail = async (email, device, ip, location, loginTime) 
               <p style="margin: 5px 0; color: #374151;"><strong>Device:</strong> ${device}</p>
               <p style="margin: 5px 0; color: #374151;"><strong>IP Address:</strong> ${ip}</p>
               <p style="margin: 5px 0; color: #374151;"><strong>Location:</strong> ${location || 'Unknown'}</p>
-              <p style="margin: 5px 0; color: #374151;"><strong>Login Time:</strong> ${new Date(loginTime).toLocaleString()}</p>
+              <p style="margin: 5px 0; color: #374151;"><strong>Login Time:</strong> ${new Date(loginTime).toLocaleString('en-GB')}</p>
             </div>
             
             <p style="color: #6b7280; margin: 15px 0 0 0; font-size: 14px;">
@@ -743,7 +743,7 @@ export const sendForcedLogoutEmail = async (email, reason, performedBy) => {
             <div style="background-color: #f8fafc; padding: 15px; border-radius: 6px; margin: 15px 0;">
               <p style="margin: 5px 0; color: #374151;"><strong>Reason:</strong> ${reason}</p>
               <p style="margin: 5px 0; color: #374151;"><strong>Performed by:</strong> ${performedBy}</p>
-              <p style="margin: 5px 0; color: #374151;"><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+              <p style="margin: 5px 0; color: #374151;"><strong>Time:</strong> ${new Date().toLocaleString('en-GB')}</p>
             </div>
             
             <p style="color: #6b7280; margin: 15px 0 0 0; font-size: 14px;">
@@ -1093,7 +1093,7 @@ export const sendPasswordResetSuccessEmail = async (userEmail, userName, resetMe
                 </div>
                 <div style="display: flex; justify-content: space-between; padding: 8px 0;">
                   <span style="color: #6b7280; font-weight: 500;">Reset Time:</span>
-                  <span style="color: #1f2937; font-weight: 600;">${new Date().toLocaleString('en-US', { 
+                  <span style="color: #1f2937; font-weight: 600;">${new Date().toLocaleString('en-GB', { 
                     weekday: 'long', 
                     year: 'numeric', 
                     month: 'long', 
@@ -1196,7 +1196,7 @@ export const sendPasswordChangeSuccessEmail = async (userEmail, userName, change
                 </div>
                 <div style="display: flex; justify-content: space-between; padding: 8px 0;">
                   <span style="color: #6b7280; font-weight: 500;">Change Time:</span>
-                  <span style="color: #1f2937; font-weight: 600;">${new Date().toLocaleString('en-US', { 
+                  <span style="color: #1f2937; font-weight: 600;">${new Date().toLocaleString('en-GB', { 
                     weekday: 'long', 
                     year: 'numeric', 
                     month: 'long', 

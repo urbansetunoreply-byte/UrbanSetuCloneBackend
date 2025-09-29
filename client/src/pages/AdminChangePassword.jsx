@@ -364,7 +364,7 @@ export default function AdminChangePassword() {
 
             <div className="mt-6 text-center">
               <p className="text-gray-600">
-                "Changed your mind?{" "}
+                Changed your mind?{" "}
                 <button 
                   onClick={() => navigate("/admin/profile")} 
                   disabled={loading}
@@ -374,7 +374,6 @@ export default function AdminChangePassword() {
                 >
                   Back to Profile
                 </button>
-                "
               </p>
             </div>
           </div>
