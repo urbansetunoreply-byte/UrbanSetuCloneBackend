@@ -16,15 +16,13 @@ const userSchema = new mongoose.Schema({
   },
   mobileNumber: {
     type: String,
-    required: function() {
-      // Only require mobile number if it's not a Google user (isGeneratedMobile is not true)
-      return !this.isGeneratedMobile;
-    },
+    required: false, // Not required for any account type
     unique: true,
+    sparse: true, // Allows multiple null values for unique constraint
     validate: {
       validator: function(v) {
         // If mobile number is provided, validate 10-digit format
-        if (!v) return true; // Allow empty for Google users
+        if (!v) return true; // Allow empty
         return /^[0-9]{10}$/.test(v);
       },
       message: props => `${props.value} is not a valid 10-digit mobile number!`
