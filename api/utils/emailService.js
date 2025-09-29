@@ -1029,6 +1029,207 @@ const initializeEmailService = async () => {
   }
 };
 
+// Password Change Email Functions
+export const sendPasswordResetSuccessEmail = async (userEmail, userName, resetMethod = 'forgot_password') => {
+  const emailData = {
+    to: userEmail,
+    subject: "🔒 Password Successfully Reset - UrbanSetu",
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Password Reset Successful</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">🔒 Password Reset Successful</h1>
+            <p style="color: #e2e8f0; margin: 10px 0 0; font-size: 16px;">Your account security has been updated</p>
+          </div>
+          
+          <!-- Content -->
+          <div style="padding: 40px 30px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+                <span style="color: #ffffff; font-size: 36px;">✓</span>
+              </div>
+              <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 24px; font-weight: 600;">Password Successfully Reset</h2>
+              <p style="color: #6b7280; margin: 0; font-size: 16px; line-height: 1.6;">Hello ${userName}, your password has been successfully reset and your account is now secure.</p>
+            </div>
+            
+            <div style="background-color: #f3f4f6; padding: 25px; border-radius: 8px; margin-bottom: 30px;">
+              <h3 style="color: #1f2937; margin: 0 0 15px; font-size: 18px; font-weight: 600;">Reset Details</h3>
+              <div style="display: grid; gap: 12px;">
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                  <span style="color: #6b7280; font-weight: 500;">Account:</span>
+                  <span style="color: #1f2937; font-weight: 600;">${userEmail}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                  <span style="color: #6b7280; font-weight: 500;">Reset Method:</span>
+                  <span style="color: #1f2937; font-weight: 600;">${resetMethod === 'forgot_password' ? 'Forgot Password' : 'Manual Reset'}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                  <span style="color: #6b7280; font-weight: 500;">Reset Time:</span>
+                  <span style="color: #1f2937; font-weight: 600;">${new Date().toLocaleString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    timeZoneName: 'short'
+                  })}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div style="background-color: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+              <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                <span style="color: #f59e0b; font-size: 20px; margin-right: 10px;">⚠️</span>
+                <h4 style="color: #92400e; margin: 0; font-size: 16px; font-weight: 600;">Security Notice</h4>
+              </div>
+              <p style="color: #92400e; margin: 0; font-size: 14px; line-height: 1.5;">
+                If you did not request this password reset, please contact our support team immediately. 
+                Your account security is our top priority.
+              </p>
+            </div>
+            
+            <div style="text-align: center;">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.onrender.com'}/signin" 
+                 style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px; transition: all 0.3s ease;">
+                Sign In to Your Account
+              </a>
+            </div>
+          </div>
+          
+          <!-- Footer -->
+          <div style="background-color: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+            <p style="color: #6b7280; margin: 0 0 15px; font-size: 14px;">
+              This email was sent to ${userEmail} because a password reset was requested for your UrbanSetu account.
+            </p>
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  };
+
+  try {
+    await sendEmailWithRetry(emailData);
+    console.log(`✅ Password reset success email sent to: ${userEmail}`);
+  } catch (error) {
+    console.error(`❌ Failed to send password reset success email to ${userEmail}:`, error);
+    throw error;
+  }
+};
+
+export const sendPasswordChangeSuccessEmail = async (userEmail, userName, changeMethod = 'manual_change') => {
+  const emailData = {
+    to: userEmail,
+    subject: "🔒 Password Successfully Changed - UrbanSetu",
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Password Change Successful</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">🔒 Password Changed Successfully</h1>
+            <p style="color: #e2e8f0; margin: 10px 0 0; font-size: 16px;">Your account security has been updated</p>
+          </div>
+          
+          <!-- Content -->
+          <div style="padding: 40px 30px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+                <span style="color: #ffffff; font-size: 36px;">✓</span>
+              </div>
+              <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 24px; font-weight: 600;">Password Successfully Changed</h2>
+              <p style="color: #6b7280; margin: 0; font-size: 16px; line-height: 1.6;">Hello ${userName}, your password has been successfully changed and your account remains secure.</p>
+            </div>
+            
+            <div style="background-color: #f3f4f6; padding: 25px; border-radius: 8px; margin-bottom: 30px;">
+              <h3 style="color: #1f2937; margin: 0 0 15px; font-size: 18px; font-weight: 600;">Change Details</h3>
+              <div style="display: grid; gap: 12px;">
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                  <span style="color: #6b7280; font-weight: 500;">Account:</span>
+                  <span style="color: #1f2937; font-weight: 600;">${userEmail}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                  <span style="color: #6b7280; font-weight: 500;">Change Method:</span>
+                  <span style="color: #1f2937; font-weight: 600;">${changeMethod === 'manual_change' ? 'Manual Change' : 'Profile Update'}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                  <span style="color: #6b7280; font-weight: 500;">Change Time:</span>
+                  <span style="color: #1f2937; font-weight: 600;">${new Date().toLocaleString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    timeZoneName: 'short'
+                  })}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div style="background-color: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+              <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                <span style="color: #f59e0b; font-size: 20px; margin-right: 10px;">⚠️</span>
+                <h4 style="color: #92400e; margin: 0; font-size: 16px; font-weight: 600;">Security Notice</h4>
+              </div>
+              <p style="color: #92400e; margin: 0; font-size: 14px; line-height: 1.5;">
+                If you did not make this password change, please contact our support team immediately. 
+                Your account security is our top priority.
+              </p>
+            </div>
+            
+            <div style="text-align: center;">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.onrender.com'}/signin" 
+                 style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px; transition: all 0.3s ease;">
+                Sign In to Your Account
+              </a>
+            </div>
+          </div>
+          
+          <!-- Footer -->
+          <div style="background-color: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+            <p style="color: #6b7280; margin: 0 0 15px; font-size: 14px;">
+              This email was sent to ${userEmail} because a password change was made to your UrbanSetu account.
+            </p>
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  };
+
+  try {
+    await sendEmailWithRetry(emailData);
+    console.log(`✅ Password change success email sent to: ${userEmail}`);
+  } catch (error) {
+    console.error(`❌ Failed to send password change success email to ${userEmail}:`, error);
+    throw error;
+  }
+};
+
 // Auto-initialize email service
 initializeEmailService().catch(error => {
   console.error('Email service auto-initialization failed:', error);

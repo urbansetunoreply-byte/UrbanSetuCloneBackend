@@ -372,6 +372,16 @@ export const changePassword = async (req, res, next) => {
         }
         user.password = bcryptjs.hashSync(newPassword, 10);
         await user.save();
+        
+        // Send password change success email
+        try {
+            const { sendPasswordChangeSuccessEmail } = await import("../utils/emailService.js");
+            await sendPasswordChangeSuccessEmail(user.email, user.username, 'manual_change');
+        } catch (emailError) {
+            console.error('Failed to send password change success email:', emailError);
+            // Don't fail the request if email fails
+        }
+        
         res.status(200).json({ success: true, message: "Password changed successfully" });
     } catch (error) {
         next(error);

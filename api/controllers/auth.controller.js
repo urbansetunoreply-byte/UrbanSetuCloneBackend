@@ -3,7 +3,7 @@ import PasswordLockout from "../models/passwordLockout.model.js";
 import bcryptjs from "bcryptjs";
 import { errorHandler } from "../utils/error.js";
 import jwt from 'jsonwebtoken'
-import { generateOTP, sendSignupOTPEmail,sendLoginOTPEmail } from "../utils/emailService.js";
+import { generateOTP, sendSignupOTPEmail,sendLoginOTPEmail, sendPasswordResetSuccessEmail, sendPasswordChangeSuccessEmail } from "../utils/emailService.js";
 import { generateTokenPair, setSecureCookies, clearAuthCookies } from "../utils/jwtUtils.js";
 import { trackFailedAttempt, clearFailedAttempts, logSecurityEvent, sendAdminAlert, isAccountLocked, checkSuspiciousSignup, getAccountLockRemainingMs } from "../middleware/security.js";
 import { 
@@ -753,6 +753,14 @@ export const resetPassword = async (req, res, next) => {
                 identifier: { $regex: /reset_password/ }
             });
         } catch (_) {}
+        
+        // Send password reset success email
+        try {
+            await sendPasswordResetSuccessEmail(user.email, user.username, 'forgot_password');
+        } catch (emailError) {
+            console.error('Failed to send password reset success email:', emailError);
+            // Don't fail the request if email fails
+        }
         
         res.status(200).json({ 
             message: "Password reset successful. You can now log in.",
