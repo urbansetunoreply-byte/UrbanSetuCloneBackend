@@ -269,6 +269,8 @@ export default function Profile() {
   const [deleteVerifying, setDeleteVerifying] = useState(false);
   const [deleteProcessing, setDeleteProcessing] = useState(false);
   const [deleteDeleting, setDeleteDeleting] = useState(false);
+  const [deleteResending, setDeleteResending] = useState(false);
+  const [deletePasswordVerified, setDeletePasswordVerified] = useState(false);
   // (Removed duplicate delete OTP state block)
   const [showTransferPasswordModal, setShowTransferPasswordModal] = useState(false);
   const [transferDeletePassword, setTransferDeletePassword] = useState("");
@@ -1044,6 +1046,7 @@ export default function Profile() {
       return;
     }
     // Step 2: open reason dropdown step
+    setDeletePasswordVerified(true);
     setDeleteReasonOpen(true);
     setDeleteVerifying(false);
   };
@@ -1071,10 +1074,14 @@ export default function Profile() {
 
   const resendDeleteOtp = async () => {
     try {
+      setDeleteResending(true);
       const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-account-deletion-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email }) });
       const data = await res.json();
       return res.ok && data.success !== false;
     } catch (_) { return false; }
+    finally {
+      setDeleteResending(false);
+    }
   };
 
   const handleFinalDeleteWithOtp = async () => {
@@ -2678,10 +2685,11 @@ export default function Profile() {
               <form onSubmit={async e => { e.preventDefault(); if (!deleteOtpSent && !deleteReasonOpen) { await handleConfirmDelete(); } else if (!deleteOtpSent && deleteReasonOpen) { await handleContinueAfterReason(); } else { await handleFinalDeleteWithOtp(); } }}>
                 <input
                   type="password"
-                  className="w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className={`w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500 ${deletePasswordVerified ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   placeholder="Enter your password"
                   value={deletePassword}
                   onChange={e => setDeletePassword(e.target.value)}
+                  disabled={deletePasswordVerified}
                 />
                 {deleteError && <div className="text-red-600 text-sm mb-2">{deleteError}</div>}
 
@@ -2689,9 +2697,10 @@ export default function Profile() {
                   <div className="mt-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Reason for leaving</label>
                     <select
-                      className="w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500"
+                      className={`w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500 ${deleteProcessing ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                       value={deleteReason}
                       onChange={e => setDeleteReason(e.target.value)}
+                      disabled={deleteProcessing}
                     >
                       <option value="">Select a reason</option>
                       <option value="Better platform">Found a better platform</option>
@@ -2704,10 +2713,11 @@ export default function Profile() {
                     {deleteReason === 'other' && (
                       <input
                         type="text"
-                        className="w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500"
+                        className={`w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500 ${deleteProcessing ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                         placeholder="Please describe your reason (optional)"
                         value={deleteOtherReason}
                         onChange={e => setDeleteOtherReason(e.target.value)}
+                        disabled={deleteProcessing}
                       />
                     )}
                   </div>
@@ -2722,10 +2732,11 @@ export default function Profile() {
                         maxLength="6"
                         value={deleteOtp}
                         onChange={e=> setDeleteOtp(e.target.value.replace(/[^0-9]/g,''))}
-                        className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                        className={`flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${deleteResending || deleteDeleting ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                         placeholder="6-digit OTP"
+                        disabled={deleteResending || deleteDeleting}
                       />
-                      <button type="button" disabled={deleteOtpLoading || !deleteCanResend || deleteResendTimer>0} onClick={async()=>{ if(deleteResendTimer>0) return; setDeleteOtpError(""); const ok = await resendDeleteOtp(); if(ok){ setDeleteCanResend(false); setDeleteResendTimer(30);} }} className="px-4 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50 sm:self-auto self-start">{deleteResendTimer>0?`Resend in ${deleteResendTimer}s`:'Resend OTP'}</button>
+                      <button type="button" disabled={deleteOtpLoading || !deleteCanResend || deleteResendTimer>0 || deleteResending} onClick={async()=>{ if(deleteResendTimer>0) return; setDeleteOtpError(""); const ok = await resendDeleteOtp(); if(ok){ setDeleteCanResend(false); setDeleteResendTimer(30);} }} className="px-4 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50 sm:self-auto self-start">{deleteResending ? 'Sending...' : (deleteResendTimer>0?`Resend in ${deleteResendTimer}s`:'Resend OTP')}</button>
                     </div>
                     {deleteOtpError && <div className="text-red-600 text-sm mt-1">{deleteOtpError}</div>}
                   </div>
@@ -2733,12 +2744,28 @@ export default function Profile() {
                 <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6">
                   <button
                     type="button"
-                    onClick={() => { setShowPasswordModal(false); setDeletePassword(""); setDeleteError(""); setDeleteReasonOpen(false); setDeleteReason(""); setDeleteOtherReason(""); }}
+                    onClick={() => { 
+                      setShowPasswordModal(false); 
+                      setDeletePassword(""); 
+                      setDeleteError(""); 
+                      setDeleteReasonOpen(false); 
+                      setDeleteReason(""); 
+                      setDeleteOtherReason(""); 
+                      setDeleteOtpSent(false);
+                      setDeleteOtp("");
+                      setDeleteOtpError("");
+                      setDeletePasswordVerified(false);
+                      setDeleteVerifying(false);
+                      setDeleteProcessing(false);
+                      setDeleteDeleting(false);
+                      setDeleteResending(false);
+                    }}
                     className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
                   >Cancel</button>
                   <button
                     type="submit"
-                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={deleteVerifying || deleteProcessing || deleteDeleting || deleteResending}
                   >{deleteOtpSent ? (deleteDeleting ? 'Deleting...' : 'Delete') : (deleteReasonOpen ? (deleteProcessing ? 'Processing...' : 'Continue') : (deleteVerifying ? 'Verifying...' : 'Verify'))}</button>
                 </div>
               </form>
