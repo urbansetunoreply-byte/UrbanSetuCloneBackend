@@ -2075,6 +2075,7 @@ export default function Profile() {
                           placeholder="Enter 6-digit OTP"
                           id="otp"
                           value={otp}
+                          disabled={verifyLoading}
                           onChange={(e) => {
                             const value = e.target.value.replace(/[^0-9]/g, '');
                             setOtp(value);
@@ -2087,8 +2088,10 @@ export default function Profile() {
                               }
                             }
                           }}
+                          className={`flex-1 px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base ${
+                            verifyLoading ? 'bg-gray-100 cursor-not-allowed' : ''
+                          }`}
                           maxLength="6"
-                          className="flex-1 px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
                         />
                         <button
                           type="button"

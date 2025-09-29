@@ -597,6 +597,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                         id="otp"
                         ref={otpInputRef}
                         value={otp}
+                        disabled={verifyLoading}
                         onChange={(e) => {
                           // Only allow numbers
                           const value = e.target.value.replace(/[^0-9]/g, '');
@@ -610,8 +611,10 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                             }
                           }
                         }}
+                        className={`flex-1 px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base ${
+                          verifyLoading ? 'bg-gray-100 cursor-not-allowed' : ''
+                        }`}
                         maxLength="6"
-                        className="flex-1 px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
                       />
                       <button
                         type="button"
