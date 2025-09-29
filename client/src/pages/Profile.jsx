@@ -2739,6 +2739,12 @@ export default function Profile() {
                       <button type="button" disabled={deleteOtpLoading || !deleteCanResend || deleteResendTimer>0 || deleteResending || deleteDeleting} onClick={async()=>{ if(deleteResendTimer>0) return; setDeleteOtpError(""); const ok = await resendDeleteOtp(); if(ok){ setDeleteCanResend(false); setDeleteResendTimer(30);} }} className="px-4 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50 sm:self-auto self-start">{deleteResending ? 'Sending...' : (deleteResendTimer>0?`Resend in ${deleteResendTimer}s`:'Resend OTP')}</button>
                     </div>
                     {deleteOtpError && <div className="text-red-600 text-sm mt-1">{deleteOtpError}</div>}
+                    <div className="text-green-600 text-sm mt-2 flex items-center">
+                      <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      OTP has been sent to your email address
+                    </div>
                   </div>
                 )}
                 <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6">
