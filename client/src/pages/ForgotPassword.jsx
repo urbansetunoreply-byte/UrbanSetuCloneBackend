@@ -778,8 +778,8 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">Reset Password</h2>
-            <p className="text-gray-600">Create a new strong password for your account.</p>
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">🔑 Reset Password</h2>
+            <p className="text-gray-600">Create a new strong password to secure your account.</p>
           </div>
           
           <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
@@ -789,6 +789,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                 <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-2">
                   New Password
                 </label>
+                <p className="text-xs text-gray-500 mb-2">(Enter your new strong password)</p>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -863,6 +864,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
                   Confirm New Password
                 </label>
+                <p className="text-xs text-gray-500 mb-2">(Re-enter your new password)</p>
                 <div className="relative">
                   <input
                     type={showCPassword ? "text" : "password"}
@@ -899,7 +901,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                     Resetting...
                   </div>
                 ) : (
-                  "Reset Password"
+                  "➡️ Reset Password"
                 )}
               </button>
 
@@ -918,15 +920,16 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
 
             <div className="mt-6 text-center">
               <p className="text-gray-600">
-                Back to {" "}
+                "Remembered your password?{" "}
                 <Link 
                   to="/sign-in" 
                   className={`text-green-600 hover:text-green-800 font-semibold hover:underline transition-colors duration-200 ${
                     verifyLoading ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
                   }`}
                 >
-                  Sign In
+                  Back to Sign In
                 </Link>
+                "
               </p>
             </div>
           </div>
