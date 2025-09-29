@@ -406,7 +406,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               <div>
                 <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name
+                  Full Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -421,7 +421,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
 
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address
+                  Email Address <span className="text-red-500">*</span>
                   {emailVerified && (
                     <span className="ml-2 text-green-600">
                       <FaCheck className="inline" />
@@ -648,7 +648,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
               {/* Password Field */}
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                  Password
+                  Password <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <input
@@ -722,7 +722,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
               {/* Confirm Password */}
               <div>
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                  Confirm Password
+                  Confirm Password <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <input
