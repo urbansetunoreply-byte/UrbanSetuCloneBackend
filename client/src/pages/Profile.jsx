@@ -250,6 +250,12 @@ export default function Profile() {
   });
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [admins, setAdmins] = useState([]);
+  
+  // Refs for OTP input fields auto-focus
+  const deleteOtpRef = useRef(null);
+  const transferOtpRef = useRef(null);
+  const transferDeleteOtpRef = useRef(null);
+  const transferRightsOtpRef = useRef(null);
   const [selectedAdmin, setSelectedAdmin] = useState("");
   const [loadingAdmins, setLoadingAdmins] = useState(false);
   const [transferLoading, setTransferLoading] = useState(false);
@@ -330,6 +336,25 @@ export default function Profile() {
   useEffect(() => {
     if (transferResendTimer <= 0) setTransferCanResend(true);
   }, [transferResendTimer]);
+
+  // Auto-focus OTP input fields when they become visible
+  useEffect(() => {
+    if (deleteOtpSent && deleteOtpRef.current) {
+      deleteOtpRef.current.focus();
+    }
+  }, [deleteOtpSent]);
+
+  useEffect(() => {
+    if (transferOtpSent && transferRightsOtpRef.current) {
+      transferRightsOtpRef.current.focus();
+    }
+  }, [transferOtpSent]);
+
+  useEffect(() => {
+    if (transferOtpSent && transferDeleteOtpRef.current) {
+      transferDeleteOtpRef.current.focus();
+    }
+  }, [transferOtpSent]);
   
   // Real-time validation states
   const [emailValidation, setEmailValidation] = useState({ loading: false, message: "", available: null });
@@ -2771,6 +2796,7 @@ export default function Profile() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">Enter OTP</label>
                     <div className="flex flex-col sm:flex-row gap-3">
                       <input
+                        ref={deleteOtpRef}
                         type="text"
                         maxLength="6"
                         value={deleteOtp}
@@ -2844,7 +2870,7 @@ export default function Profile() {
                   <div className="mt-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Enter OTP</label>
                     <div className="flex gap-2">
-                      <input type="text" maxLength="6" value={transferOtp} onChange={e=> setTransferOtp(e.target.value.replace(/[^0-9]/g,''))} className={`flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${transferDeleteResending || transferDeleteDeleting ? 'bg-gray-100 cursor-not-allowed' : ''}`} placeholder="6-digit OTP" disabled={transferDeleteResending || transferDeleteDeleting} />
+                      <input ref={transferDeleteOtpRef} type="text" maxLength="6" value={transferOtp} onChange={e=> setTransferOtp(e.target.value.replace(/[^0-9]/g,''))} className={`flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${transferDeleteResending || transferDeleteDeleting ? 'bg-gray-100 cursor-not-allowed' : ''}`} placeholder="6-digit OTP" disabled={transferDeleteResending || transferDeleteDeleting} />
                       <button type="button" disabled={!transferCanResend || transferResendTimer>0 || transferDeleteResending || transferDeleteDeleting} onClick={async()=>{ if(transferResendTimer>0) return; const ok = await resendTransferOtp(); if(ok){ setTransferCanResend(false); setTransferResendTimer(30);} }} className="px-3 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50">{transferDeleteResending ? 'Sending...' : (transferResendTimer>0?`Resend in ${transferResendTimer}s`:'Resend OTP')}</button>
                     </div>
                     {transferOtpError && <div className="text-red-600 text-sm mt-1">{transferOtpError}</div>}
@@ -2999,7 +3025,7 @@ export default function Profile() {
                     <div className="mt-4">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Enter OTP</label>
                       <div className="flex gap-2">
-                        <input type="text" maxLength="6" value={transferOtp} onChange={e=> setTransferOtp(e.target.value.replace(/[^0-9]/g,''))} className={`flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 ${transferResending || transferTransferring ? 'bg-gray-100 cursor-not-allowed' : ''}`} placeholder="6-digit OTP" disabled={transferResending || transferTransferring} />
+                        <input ref={transferRightsOtpRef} type="text" maxLength="6" value={transferOtp} onChange={e=> setTransferOtp(e.target.value.replace(/[^0-9]/g,''))} className={`flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 ${transferResending || transferTransferring ? 'bg-gray-100 cursor-not-allowed' : ''}`} placeholder="6-digit OTP" disabled={transferResending || transferTransferring} />
                         <button type="button" disabled={!transferCanResend || transferResendTimer>0 || transferResending || transferTransferring} onClick={async()=>{ if(transferResendTimer>0) return; const ok = await resendTransferOtp(); if(ok){ setTransferCanResend(false); setTransferResendTimer(30);} }} className="px-3 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50">{transferResending ? 'Sending...' : (transferResendTimer>0?`Resend in ${transferResendTimer}s`:'Resend OTP')}</button>
                       </div>
                       {transferError && <div className="text-red-600 text-sm mt-2">{transferError}</div>}
