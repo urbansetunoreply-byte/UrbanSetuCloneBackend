@@ -275,6 +275,9 @@ export default function Profile() {
   const [showTransferPasswordModal, setShowTransferPasswordModal] = useState(false);
   const [transferDeletePassword, setTransferDeletePassword] = useState("");
   const [transferDeleteError, setTransferDeleteError] = useState("");
+  const [transferDeletePasswordVerified, setTransferDeletePasswordVerified] = useState(false);
+  const [transferDeleteResending, setTransferDeleteResending] = useState(false);
+  const [transferDeleteDeleting, setTransferDeleteDeleting] = useState(false);
   const [transferOtp, setTransferOtp] = useState("");
   const [transferOtpSent, setTransferOtpSent] = useState(false);
   const [transferOtpError, setTransferOtpError] = useState("");
@@ -1154,6 +1157,17 @@ export default function Profile() {
       return;
     }
     setShowTransferPasswordModal(true);
+    setTransferDeletePassword("");
+    setTransferDeleteError("");
+    setTransferOtpSent(false);
+    setTransferOtp("");
+    setTransferOtpError("");
+    setTransferDeletePasswordVerified(false);
+    setTransferLoading(false);
+    setTransferDeleteResending(false);
+    setTransferDeleteDeleting(false);
+    setTransferCanResend(true);
+    setTransferResendTimer(0);
   };
 
   const handleConfirmTransferAndDelete = async () => {
@@ -1186,6 +1200,7 @@ export default function Profile() {
         setTransferDeleteError(sendData.message || 'Failed to send OTP');
         return;
       }
+      setTransferDeletePasswordVerified(true);
       setTransferOtp("");
       setTransferOtpSent(true);
       setTransferCanResend(false);
@@ -1200,12 +1215,14 @@ export default function Profile() {
   const resendTransferOtp = async () => {
     try {
       setTransferResending(true);
+      setTransferDeleteResending(true);
       const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-transfer-rights-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email }) });
       const data = await res.json();
       return res.ok && data.success !== false;
     } catch (_) { return false; }
     finally {
       setTransferResending(false);
+      setTransferDeleteResending(false);
     }
   };
 
@@ -1213,6 +1230,7 @@ export default function Profile() {
     setTransferOtpError("");
     if (!transferOtp || transferOtp.length !== 6) { setTransferOtpError('Enter 6-digit OTP'); return; }
     try {
+      setTransferDeleteDeleting(true);
       const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email, otp: transferOtp }) });
       const vData = await vRes.json();
       if (!vRes.ok || vData.success === false || vData.type !== 'forgotPassword') {
@@ -1224,6 +1242,7 @@ export default function Profile() {
           await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials:'include' });
           navigate('/sign-in', { replace: true });
         }
+        setTransferDeleteDeleting(false);
         return;
       }
       // OTP verified -> transfer rights then delete
@@ -1250,6 +1269,8 @@ export default function Profile() {
       navigate('/');
     } catch (_) {
       setTransferOtpError('Verification failed');
+    } finally {
+      setTransferDeleteDeleting(false);
     }
   };
 
@@ -2810,18 +2831,19 @@ export default function Profile() {
               <form onSubmit={async e => { e.preventDefault(); if (!transferOtpSent) { await handleConfirmTransferAndDelete(); } else { await handleFinalTransferDeleteWithOtp(); } }}>
                 <input
                   type="password"
-                  className="w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className={`w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500 ${transferDeletePasswordVerified || transferLoading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   placeholder="Enter your password"
                   value={transferDeletePassword}
                   onChange={e => setTransferDeletePassword(e.target.value)}
+                  disabled={transferDeletePasswordVerified || transferLoading}
                 />
                 {transferDeleteError && <div className="text-red-600 text-sm mb-2">{transferDeleteError}</div>}
                 {transferOtpSent && (
                   <div className="mt-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Enter OTP</label>
                     <div className="flex gap-2">
-                      <input type="text" maxLength="6" value={transferOtp} onChange={e=> setTransferOtp(e.target.value.replace(/[^0-9]/g,''))} className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="6-digit OTP" />
-                      <button type="button" disabled={!transferCanResend || transferResendTimer>0} onClick={async()=>{ if(transferResendTimer>0) return; const ok = await resendTransferOtp(); if(ok){ setTransferCanResend(false); setTransferResendTimer(30);} }} className="px-3 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50">{transferResendTimer>0?`Resend in ${transferResendTimer}s`:'Resend OTP'}</button>
+                      <input type="text" maxLength="6" value={transferOtp} onChange={e=> setTransferOtp(e.target.value.replace(/[^0-9]/g,''))} className={`flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${transferDeleteResending || transferDeleteDeleting ? 'bg-gray-100 cursor-not-allowed' : ''}`} placeholder="6-digit OTP" disabled={transferDeleteResending || transferDeleteDeleting} />
+                      <button type="button" disabled={!transferCanResend || transferResendTimer>0 || transferDeleteResending || transferDeleteDeleting} onClick={async()=>{ if(transferResendTimer>0) return; const ok = await resendTransferOtp(); if(ok){ setTransferCanResend(false); setTransferResendTimer(30);} }} className="px-3 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50">{transferDeleteResending ? 'Sending...' : (transferResendTimer>0?`Resend in ${transferResendTimer}s`:'Resend OTP')}</button>
                     </div>
                     {transferOtpError && <div className="text-red-600 text-sm mt-1">{transferOtpError}</div>}
                   </div>
@@ -2829,14 +2851,34 @@ export default function Profile() {
                 <div className="flex justify-end space-x-3">
                   <button
                     type="button"
-                    onClick={() => { setShowTransferPasswordModal(false); setTransferDeletePassword(""); setTransferDeleteError(""); }}
+                    onClick={() => { 
+                      setShowTransferPasswordModal(false); 
+                      setTransferDeletePassword(""); 
+                      setTransferDeleteError(""); 
+                      setTransferOtpSent(false);
+                      setTransferOtp("");
+                      setTransferOtpError("");
+                      setTransferDeletePasswordVerified(false);
+                      setTransferLoading(false);
+                      setTransferDeleteResending(false);
+                      setTransferDeleteDeleting(false);
+                      setTransferCanResend(true);
+                      setTransferResendTimer(0);
+                    }}
                     className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
                   >Cancel</button>
                   <button
                     type="submit"
-                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
-                    disabled={transferLoading}
-                  >{transferOtpSent ? 'Transfer & Delete' : (transferLoading ? 'Processing...' : 'Verify & Send OTP')}</button>
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={transferLoading || transferDeleteResending || transferDeleteDeleting}
+                  >
+                    {transferDeleteDeleting ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2 inline-block"></div>
+                        Deleting...
+                      </>
+                    ) : transferOtpSent ? 'Transfer & Delete' : (transferLoading ? 'Processing...' : 'Verify & Send OTP')}
+                  </button>
                 </div>
               </form>
             </div>
