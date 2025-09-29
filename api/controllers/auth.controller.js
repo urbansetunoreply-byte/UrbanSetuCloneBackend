@@ -664,6 +664,7 @@ export const resetPassword = async (req, res, next) => {
         // Check for existing reset password attempts
         const existingLock = await PasswordLockout.findOne({ 
             $or: [{ userId: user._id }, { email: user.email }],
+            identifier: { $regex: /reset_password_lockout/ },
             unlockAt: { $gt: new Date() }
         });
         
@@ -677,7 +678,7 @@ export const resetPassword = async (req, res, next) => {
         // Count recent failed RESET PASSWORD attempts for this user (not login attempts)
         const recentResetAttempts = await PasswordLockout.countDocuments({
             $or: [{ userId: user._id }, { email: user.email }],
-            identifier: { $regex: /reset_password/ }, // Only reset password attempts
+            identifier: { $regex: /reset_password_tracking/ }, // Only reset password tracking attempts
             lockedAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } // Last 24 hours
         });
         
@@ -710,15 +711,39 @@ export const resetPassword = async (req, res, next) => {
         // Check if new password is different from current password
         const isSamePassword = await bcryptjs.compare(newPassword, user.password);
         if (isSamePassword) {
-            // Track failed attempt
-            await PasswordLockout.lockUser({
-                userId: user._id,
-                email: user.email,
-                identifier: `reset_password_${user._id}`,
-                durationMs: Math.min(15 * 60 * 1000, (recentResetAttempts + 1) * 5 * 60 * 1000), // 5 min per attempt, max 15 min
-                attempts: recentResetAttempts + 1,
-                ipAddress
-            });
+            // Track failed attempt - only create lockout after 5+ attempts
+            if (recentResetAttempts >= 4) { // 5th attempt (0-indexed, so 4+ means 5th+)
+                // Create lockout for 5+ attempts
+                await PasswordLockout.lockUser({
+                    userId: user._id,
+                    email: user.email,
+                    identifier: `reset_password_lockout_${user._id}`,
+                    durationMs: Math.min(15 * 60 * 1000, (recentResetAttempts + 1) * 5 * 60 * 1000), // 5 min per attempt, max 15 min
+                    attempts: recentResetAttempts + 1,
+                    ipAddress
+                });
+                
+                return next(errorHandler(423, `Multiple failed reset attempts. Please try again in about ${Math.min(15, (recentResetAttempts + 1) * 5)} minute${Math.min(15, (recentResetAttempts + 1) * 5) > 1 ? 's' : ''}.`));
+            } else {
+                // Just track the attempt without creating lockout (for attempts 1-4)
+                // Use a different identifier for tracking vs lockout
+                await PasswordLockout.findOneAndUpdate(
+                    { 
+                        $or: [{ userId: user._id }, { email: user.email }],
+                        identifier: `reset_password_tracking_${user._id}`
+                    },
+                    {
+                        userId: user._id,
+                        email: user.email,
+                        identifier: `reset_password_tracking_${user._id}`,
+                        attempts: recentResetAttempts + 1,
+                        ipAddress,
+                        lockedAt: new Date(),
+                        unlockAt: null // No lockout, just tracking
+                    },
+                    { upsert: true, new: true, setDefaultsOnInsert: true }
+                );
+            }
             
             return next(errorHandler(400, "Your new password cannot be the same as your previous password."));
         }
@@ -733,8 +758,11 @@ export const resetPassword = async (req, res, next) => {
 
         // Clear any active password lockouts for this user/email after successful reset
         try {
-            await PasswordLockout.clearUserLock({ userId: user._id });
-            await PasswordLockout.clearUserLock({ email: user.email });
+            // Clear both tracking and lockout records
+            await PasswordLockout.deleteMany({
+                $or: [{ userId: user._id }, { email: user.email }],
+                identifier: { $regex: /reset_password/ }
+            });
         } catch (_) {}
         
         res.status(200).json({ 
