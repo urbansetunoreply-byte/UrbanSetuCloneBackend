@@ -661,31 +661,31 @@ export const resetPassword = async (req, res, next) => {
             return next(errorHandler(404, "User not found"));
         }
         
-        // Check for existing reset password attempts
-        const existingLock = await PasswordLockout.findOne({ 
-            $or: [{ userId: user._id }, { email: user.email }],
-            identifier: { $regex: /reset_password_lockout/ },
-            unlockAt: { $gt: new Date() }
-        });
-        
-        // Check if user is locked due to too many failed attempts
-        if (existingLock) {
-            const remainingMs = existingLock.unlockAt.getTime() - new Date().getTime();
-            const remainingMinutes = Math.ceil(remainingMs / (1000 * 60));
-            return next(errorHandler(423, `Multiple failed reset attempts. Please try again in about ${remainingMinutes} minute${remainingMinutes > 1 ? 's' : ''}.`));
-        }
+        // No lockout check - removed as requested
         
         // Count recent failed RESET PASSWORD attempts for this user (not login attempts)
-        const recentResetAttempts = await PasswordLockout.countDocuments({
-            $or: [{ userId: user._id }, { email: user.email }],
-            identifier: { $regex: /reset_password_tracking/ }, // Only reset password tracking attempts
-            lockedAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } // Last 24 hours
-        });
+        const recentResetAttempts = await PasswordLockout.aggregate([
+            {
+                $match: {
+                    $or: [{ userId: user._id }, { email: user.email }],
+                    identifier: { $regex: /reset_password_tracking/ }, // Only reset password tracking attempts
+                    lockedAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } // Last 24 hours
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalAttempts: { $sum: "$attempts" }
+                }
+            }
+        ]);
         
-        console.log(`Reset password attempts for user ${user.email}: ${recentResetAttempts}, hasRecaptchaToken: ${!!recaptchaToken}`);
+        const totalAttempts = recentResetAttempts.length > 0 ? recentResetAttempts[0].totalAttempts : 0;
+        
+        console.log(`Reset password attempts for user ${user.email}: ${totalAttempts}, hasRecaptchaToken: ${!!recaptchaToken}`);
         
         // Require reCAPTCHA after 3 failed reset password attempts
-        if (recentResetAttempts >= 3 && !recaptchaToken) {
+        if (totalAttempts >= 3 && !recaptchaToken) {
             console.log('Requiring reCAPTCHA for reset password');
             return next(errorHandler(400, "reCAPTCHA verification is required due to multiple failed attempts."));
         }
@@ -711,39 +711,23 @@ export const resetPassword = async (req, res, next) => {
         // Check if new password is different from current password
         const isSamePassword = await bcryptjs.compare(newPassword, user.password);
         if (isSamePassword) {
-            // Track failed attempt - only create lockout after 5+ attempts
-            if (recentResetAttempts >= 4) { // 5th attempt (0-indexed, so 4+ means 5th+)
-                // Create lockout for 5+ attempts
-                await PasswordLockout.lockUser({
+            // Track failed attempt - no lockout, just tracking for reCAPTCHA
+            await PasswordLockout.findOneAndUpdate(
+                { 
+                    $or: [{ userId: user._id }, { email: user.email }],
+                    identifier: `reset_password_tracking_${user._id}`
+                },
+                {
                     userId: user._id,
                     email: user.email,
-                    identifier: `reset_password_lockout_${user._id}`,
-                    durationMs: Math.min(15 * 60 * 1000, (recentResetAttempts + 1) * 5 * 60 * 1000), // 5 min per attempt, max 15 min
-                    attempts: recentResetAttempts + 1,
-                    ipAddress
-                });
-                
-                return next(errorHandler(423, `Multiple failed reset attempts. Please try again in about ${Math.min(15, (recentResetAttempts + 1) * 5)} minute${Math.min(15, (recentResetAttempts + 1) * 5) > 1 ? 's' : ''}.`));
-            } else {
-                // Just track the attempt without creating lockout (for attempts 1-4)
-                // Use a different identifier for tracking vs lockout
-                await PasswordLockout.findOneAndUpdate(
-                    { 
-                        $or: [{ userId: user._id }, { email: user.email }],
-                        identifier: `reset_password_tracking_${user._id}`
-                    },
-                    {
-                        userId: user._id,
-                        email: user.email,
-                        identifier: `reset_password_tracking_${user._id}`,
-                        attempts: recentResetAttempts + 1,
-                        ipAddress,
-                        lockedAt: new Date(),
-                        unlockAt: null // No lockout, just tracking
-                    },
-                    { upsert: true, new: true, setDefaultsOnInsert: true }
-                );
-            }
+                    identifier: `reset_password_tracking_${user._id}`,
+                    attempts: totalAttempts + 1,
+                    ipAddress,
+                    lockedAt: new Date(),
+                    unlockAt: null // No lockout, just tracking
+                },
+                { upsert: true, new: true, setDefaultsOnInsert: true }
+            );
             
             return next(errorHandler(400, "Your new password cannot be the same as your previous password."));
         }
