@@ -570,7 +570,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                         <button
                           type="button"
                           onClick={handleSendOTP}
-                          disabled={otpLoading}
+                          disabled={otpLoading || verifyLoading}
                           className="text-xs text-blue-600 hover:text-blue-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {otpLoading ? "Sending..." : "Resend OTP"}
@@ -601,7 +601,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
 
               <div>
                 <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700 mb-2">
-                  Mobile Number
+                  Mobile Number <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="tel"
@@ -630,7 +630,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
 
               <div>
                 <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
-                  I want to
+                  I want to <span className="text-red-500">*</span>
                 </label>
                 <select
                   id="role"

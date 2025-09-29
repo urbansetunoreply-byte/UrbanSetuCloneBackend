@@ -2115,7 +2115,7 @@ export default function Profile() {
                             <button
                               type="button"
                               onClick={handleSendOTP}
-                              disabled={otpLoading || (profileRequiresCaptcha && !profileRecaptchaToken)}
+                              disabled={otpLoading || verifyLoading || (profileRequiresCaptcha && !profileRecaptchaToken)}
                               className="text-xs text-blue-600 hover:text-blue-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {otpLoading ? "Sending..." : "Resend OTP"}

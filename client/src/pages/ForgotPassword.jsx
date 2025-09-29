@@ -797,7 +797,10 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                     id="newPassword"
                     value={formData.newPassword}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                    disabled={loading}
+                    className={`w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 ${
+                      loading ? 'bg-gray-100 cursor-not-allowed' : ''
+                    }`}
                     required
                   />
                   <div
@@ -872,7 +875,10 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                     id="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                    disabled={loading}
+                    className={`w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 ${
+                      loading ? 'bg-gray-100 cursor-not-allowed' : ''
+                    }`}
                     required
                   />
                   <div
@@ -924,7 +930,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                 <Link 
                   to="/sign-in" 
                   className={`text-green-600 hover:text-green-800 font-semibold hover:underline transition-colors duration-200 ${
-                    verifyLoading ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+                    (verifyLoading || loading) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
                   }`}
                 >
                   Back to Sign In
