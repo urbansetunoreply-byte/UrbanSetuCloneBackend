@@ -1247,6 +1247,134 @@ export const sendPasswordChangeSuccessEmail = async (userEmail, userName, change
   }
 };
 
+// Welcome Email for New Account
+export const sendWelcomeEmail = async (email, userDetails) => {
+  try {
+    const { 
+      username, 
+      role, 
+      mobileNumber, 
+      address,
+      adminApprovalStatus 
+    } = userDetails;
+
+    const subject = `Welcome to UrbanSetu, ${username}!`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Welcome to UrbanSetu</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9f9f9;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 30px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Welcome to UrbanSetu!</h1>
+            <p style="color: #e2e8f0; margin: 10px 0 0; font-size: 16px;">Your account has been successfully created</p>
+          </div>
+          
+          <!-- Content -->
+          <div style="padding: 40px 30px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3); position: relative;">
+                <div style="position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; opacity: 0.2;"></div>
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">✓</span>
+              </div>
+              <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 24px; font-weight: 600;">Account Created Successfully!</h2>
+              <p style="color: #6b7280; margin: 0; font-size: 16px; line-height: 1.6;">Hello ${username}, welcome to UrbanSetu! Your account has been successfully created and you're ready to start your real estate journey.</p>
+            </div>
+            
+            <div style="background-color: #f3f4f6; padding: 25px; border-radius: 8px; margin-bottom: 30px;">
+              <h3 style="color: #1f2937; margin: 0 0 15px; font-size: 18px; font-weight: 600;">Account Details</h3>
+              <div style="display: grid; gap: 10px;">
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                  <span style="color: #6b7280; font-weight: 500;">Full Name:</span>
+                  <span style="color: #1f2937; font-weight: 600;">${username}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                  <span style="color: #6b7280; font-weight: 500;">Email:</span>
+                  <span style="color: #1f2937; font-weight: 600;">${email}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                  <span style="color: #6b7280; font-weight: 500;">Mobile Number:</span>
+                  <span style="color: #1f2937; font-weight: 600;">${mobileNumber}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                  <span style="color: #6b7280; font-weight: 500;">Role:</span>
+                  <span style="color: #1f2937; font-weight: 600;">${role === 'admin' ? 'Administrator' : 'User'}</span>
+                </div>
+                ${address ? `
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                    <span style="color: #6b7280; font-weight: 500;">Address:</span>
+                    <span style="color: #1f2937; font-weight: 600;">${address}</span>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+            
+            ${role === 'admin' ? `
+              <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b; margin-bottom: 25px;">
+                <h3 style="color: #92400e; margin: 0 0 10px; font-size: 16px;">Admin Account Status</h3>
+                <p style="color: #92400e; margin: 0; font-size: 14px; line-height: 1.5;">
+                  Your admin account has been created and is currently pending approval. An existing administrator will review and approve your account. You'll receive a notification email once your account is approved.
+                </p>
+              </div>
+            ` : ''}
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; align-items: center;">
+                <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/sign-in" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); transition: all 0.3s ease; margin: 5px;">
+                  🔑 Sign In to Your Account
+                </a>
+                <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/search" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3); transition: all 0.3s ease; margin: 5px;">
+                  🏠 Browse Properties
+                </a>
+              </div>
+            </div>
+            
+            <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+              <h3 style="color: #1e40af; margin: 0 0 10px; font-size: 16px;">What's Next?</h3>
+              <ul style="color: #1e40af; margin: 0; font-size: 14px; line-height: 1.6; padding-left: 20px;">
+                <li>Sign in to your account to access all features</li>
+                <li>Complete your profile with additional information</li>
+                <li>Browse and search for properties that match your needs</li>
+                <li>${role === 'admin' ? 'Wait for admin approval to access administrative features' : 'Start your real estate journey with us'}</li>
+              </ul>
+            </div>
+            
+            <!-- Footer -->
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #6b7280; font-size: 14px; margin: 0;">
+                If you have any questions, please contact our support team.
+              </p>
+              <p style="color: #6b7280; font-size: 12px; margin: 10px 0 0;">
+                This is an automated message. Please do not reply to this email.
+              </p>
+              <p style="color: #9ca3af; margin: 15px 0 0; font-size: 12px;">
+                © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+              </p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending welcome email:', error);
+    return createErrorResponse(error, 'welcome_email');
+  }
+};
+
 // Auto-initialize email service
 initializeEmailService().catch(error => {
   console.error('Email service auto-initialization failed:', error);

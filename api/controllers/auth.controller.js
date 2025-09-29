@@ -3,7 +3,7 @@ import PasswordLockout from "../models/passwordLockout.model.js";
 import bcryptjs from "bcryptjs";
 import { errorHandler } from "../utils/error.js";
 import jwt from 'jsonwebtoken'
-import { generateOTP, sendSignupOTPEmail,sendLoginOTPEmail, sendPasswordResetSuccessEmail, sendPasswordChangeSuccessEmail } from "../utils/emailService.js";
+import { generateOTP, sendSignupOTPEmail,sendLoginOTPEmail, sendPasswordResetSuccessEmail, sendPasswordChangeSuccessEmail, sendWelcomeEmail } from "../utils/emailService.js";
 import { generateTokenPair, setSecureCookies, clearAuthCookies } from "../utils/jwtUtils.js";
 import { trackFailedAttempt, clearFailedAttempts, logSecurityEvent, sendAdminAlert, isAccountLocked, checkSuspiciousSignup, getAccountLockRemainingMs } from "../middleware/security.js";
 import { 
@@ -154,6 +154,21 @@ export const SignUp=async (req,res,next)=>{
             role: newUser.role,
             ip
         });
+        
+        // Send welcome email
+        try {
+            await sendWelcomeEmail(emailLower, {
+                username: newUser.username,
+                role: newUser.role,
+                mobileNumber: newUser.mobileNumber,
+                address: newUser.address,
+                adminApprovalStatus: newUser.adminApprovalStatus
+            });
+            console.log(`✅ Welcome email sent to: ${emailLower}`);
+        } catch (emailError) {
+            console.error(`❌ Failed to send welcome email to ${emailLower}:`, emailError);
+            // Don't fail the signup if email fails, just log the error
+        }
         
         if (role === "admin") {
             res.status(201).json({
