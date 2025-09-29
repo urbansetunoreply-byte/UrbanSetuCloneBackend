@@ -674,14 +674,18 @@ export const resetPassword = async (req, res, next) => {
             return next(errorHandler(423, `Multiple failed reset attempts. Please try again in about ${remainingMinutes} minute${remainingMinutes > 1 ? 's' : ''}.`));
         }
         
-        // Count recent failed attempts for this user
-        const recentAttempts = await PasswordLockout.countDocuments({
+        // Count recent failed RESET PASSWORD attempts for this user (not login attempts)
+        const recentResetAttempts = await PasswordLockout.countDocuments({
             $or: [{ userId: user._id }, { email: user.email }],
+            identifier: { $regex: /reset_password/ }, // Only reset password attempts
             lockedAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } // Last 24 hours
         });
         
-        // Require reCAPTCHA after 3 failed attempts
-        if (recentAttempts >= 3 && !recaptchaToken) {
+        console.log(`Reset password attempts for user ${user.email}: ${recentResetAttempts}, hasRecaptchaToken: ${!!recaptchaToken}`);
+        
+        // Require reCAPTCHA after 3 failed reset password attempts
+        if (recentResetAttempts >= 3 && !recaptchaToken) {
+            console.log('Requiring reCAPTCHA for reset password');
             return next(errorHandler(400, "reCAPTCHA verification is required due to multiple failed attempts."));
         }
         
@@ -711,8 +715,8 @@ export const resetPassword = async (req, res, next) => {
                 userId: user._id,
                 email: user.email,
                 identifier: `reset_password_${user._id}`,
-                durationMs: Math.min(15 * 60 * 1000, (recentAttempts + 1) * 5 * 60 * 1000), // 5 min per attempt, max 15 min
-                attempts: recentAttempts + 1,
+                durationMs: Math.min(15 * 60 * 1000, (recentResetAttempts + 1) * 5 * 60 * 1000), // 5 min per attempt, max 15 min
+                attempts: recentResetAttempts + 1,
                 ipAddress
             });
             

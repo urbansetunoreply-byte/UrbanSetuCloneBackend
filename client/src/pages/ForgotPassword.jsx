@@ -71,6 +71,12 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
     const urlStep = searchParams.get('step');
     if (urlStep === '2') {
       setStep(2);
+      // Reset reCAPTCHA state when entering reset password step
+      setRecaptchaToken(null);
+      setRecaptchaError("");
+      setShowRecaptcha(false);
+      setFailedAttempts(0);
+      setIsLocked(false);
     }
     const emailFromQuery = searchParams.get('email');
     if (emailFromQuery && !formData.email) {
@@ -410,7 +416,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
         userId: formData.userId,
         newPassword: formData.newPassword,
         confirmPassword: formData.confirmPassword,
-        ...(recaptchaToken && { recaptchaToken })
+        ...(showRecaptcha && recaptchaToken && { recaptchaToken })
       };
       
       console.log('Reset password request:', { 
