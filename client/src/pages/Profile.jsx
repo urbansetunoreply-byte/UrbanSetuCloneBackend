@@ -2725,6 +2725,7 @@ export default function Profile() {
               <h3 className="text-xl font-bold text-gray-800 mb-4">Confirm Account Deletion</h3>
               <p className="mb-4 text-gray-600">Enter your password. After verification, we will email you an OTP to complete deletion.</p>
               <form onSubmit={async e => { e.preventDefault(); if (!deleteOtpSent && !deleteReasonOpen) { await handleConfirmDelete(); } else if (!deleteOtpSent && deleteReasonOpen) { await handleContinueAfterReason(); } else { await handleFinalDeleteWithOtp(); } }}>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Password:</label>
                 <input
                   type="password"
                   className={`w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500 ${deletePasswordVerified || deleteVerifying ? 'bg-gray-100 cursor-not-allowed' : ''}`}
@@ -2829,6 +2830,7 @@ export default function Profile() {
               <h3 className="text-xl font-bold text-gray-800 mb-4">Confirm Account Deletion</h3>
               <p className="mb-4 text-gray-600">Please enter your password to confirm account deletion after transferring default admin rights. This action cannot be undone.</p>
               <form onSubmit={async e => { e.preventDefault(); if (!transferOtpSent) { await handleConfirmTransferAndDelete(); } else { await handleFinalTransferDeleteWithOtp(); } }}>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Password:</label>
                 <input
                   type="password"
                   className={`w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500 ${transferDeletePasswordVerified || transferLoading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
@@ -2846,6 +2848,12 @@ export default function Profile() {
                       <button type="button" disabled={!transferCanResend || transferResendTimer>0 || transferDeleteResending || transferDeleteDeleting} onClick={async()=>{ if(transferResendTimer>0) return; const ok = await resendTransferOtp(); if(ok){ setTransferCanResend(false); setTransferResendTimer(30);} }} className="px-3 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50">{transferDeleteResending ? 'Sending...' : (transferResendTimer>0?`Resend in ${transferResendTimer}s`:'Resend OTP')}</button>
                     </div>
                     {transferOtpError && <div className="text-red-600 text-sm mt-1">{transferOtpError}</div>}
+                    <div className="text-green-600 text-sm mt-2 flex items-center">
+                      <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      OTP has been sent to your email address
+                    </div>
                   </div>
                 )}
                 <div className="flex justify-end space-x-3">
