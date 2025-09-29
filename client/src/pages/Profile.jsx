@@ -1359,6 +1359,15 @@ export default function Profile() {
     setTransferError("");
     setTransferPassword("");
     setSelectedTransferAdmin("");
+    setTransferOtpSent(false);
+    setTransferOtp("");
+    setTransferOtpError("");
+    setTransferPasswordVerified(false);
+    setTransferSubmitting(false);
+    setTransferResending(false);
+    setTransferTransferring(false);
+    setTransferCanResend(true);
+    setTransferResendTimer(0);
     fetchTransferAdmins();
   };
 
@@ -2956,10 +2965,13 @@ export default function Profile() {
                         setTransferError("");
                         setTransferOtpSent(false);
                         setTransferOtp("");
+                        setTransferOtpError("");
                         setTransferPasswordVerified(false);
                         setTransferSubmitting(false);
                         setTransferResending(false);
                         setTransferTransferring(false);
+                        setTransferCanResend(true);
+                        setTransferResendTimer(0);
                       }}
                       className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
                     >Cancel</button>
