@@ -142,6 +142,7 @@ router.post("/create-intent", verifyToken, async (req, res) => {
 router.get('/:paymentId/receipt', async (req, res) => {
   try {
     const { paymentId } = req.params;
+    const { admin } = req.query; // Check if admin parameter is present
     const payment = await Payment.findOne({ paymentId })
       .populate('appointmentId', 'propertyName date time status buyerId sellerId')
       .populate('listingId', 'name address')
@@ -168,7 +169,7 @@ router.get('/:paymentId/receipt', async (req, res) => {
     const headerY = doc.y;
     doc.save();
     doc.circle(doc.page.width / 2, headerY + 15, 20).fill('#10b981');
-    doc.fillColor('#ffffff').fontSize(24).text('✓', doc.page.width / 2 - 6, headerY + 5);
+    doc.fillColor('#ffffff').fontSize(24).text('✓', doc.page.width / 2 - 8, headerY + 3);
     doc.restore();
     doc.moveDown(1.2);
     
@@ -275,6 +276,16 @@ router.get('/:paymentId/receipt', async (req, res) => {
     
     doc.fillColor('#6b7280').text('Buyer:', leftX, doc.y);
     doc.fillColor('#1f2937').text(payment.userId?.username || payment.userId?.email || 'N/A', leftX + 60, doc.y);
+    doc.y += lineHeight;
+    
+    // Show different "Generated For" text based on admin access
+    if (admin === 'true') {
+      doc.fillColor('#6b7280').text('Generated For:', leftX, doc.y);
+      doc.fillColor('#ef4444').text('Admin (Administrative Access)', leftX + 60, doc.y);
+    } else {
+      doc.fillColor('#6b7280').text('Generated For:', leftX, doc.y);
+      doc.fillColor('#10b981').text('User (Trusted Access)', leftX + 60, doc.y);
+    }
     
     doc.moveDown(1.5);
 

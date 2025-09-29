@@ -793,7 +793,7 @@ export const sendPaymentSuccessEmail = async (email, paymentDetails) => {
           <div style="text-align: center; margin-bottom: 30px;">
             <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3); position: relative;">
               <div style="position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; opacity: 0.2;"></div>
-              <span style="color: #ffffff; font-size: 36px; font-weight: bold; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">✓</span>
+              <span style="color: #ffffff; font-size: 36px; font-weight: bold; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">✓</span>
             </div>
             <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Payment Successful!</h1>
             <p style="color: #6b7280; margin: 10px 0 0; font-size: 16px;">Your payment has been processed successfully</p>
@@ -1070,7 +1070,7 @@ export const sendPasswordResetSuccessEmail = async (userEmail, userName, resetMe
             <div style="text-align: center; margin-bottom: 30px;">
               <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3); position: relative;">
                 <div style="position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; opacity: 0.2;"></div>
-                <span style="color: #ffffff; font-size: 36px; font-weight: bold; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">✓</span>
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">✓</span>
               </div>
               <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 24px; font-weight: 600;">Password Successfully Reset</h2>
               <p style="color: #6b7280; margin: 0; font-size: 16px; line-height: 1.6;">Hello ${userName}, your password has been successfully reset and your account is now secure.</p>
@@ -1171,7 +1171,7 @@ export const sendPasswordChangeSuccessEmail = async (userEmail, userName, change
             <div style="text-align: center; margin-bottom: 30px;">
               <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3); position: relative;">
                 <div style="position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; opacity: 0.2;"></div>
-                <span style="color: #ffffff; font-size: 36px; font-weight: bold; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">✓</span>
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">✓</span>
               </div>
               <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 24px; font-weight: 600;">Password Successfully Changed</h2>
               <p style="color: #6b7280; margin: 0; font-size: 16px; line-height: 1.6;">Hello ${userName}, your password has been successfully changed and your account remains secure.</p>

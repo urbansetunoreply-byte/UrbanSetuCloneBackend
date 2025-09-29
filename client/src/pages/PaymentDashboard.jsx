@@ -393,7 +393,11 @@ const PaymentDashboard = () => {
                             <button
                               onClick={async () => {
                                 try {
-                                  const res = await fetch(p.receiptUrl, { credentials: 'include' });
+                                  // Add admin parameter to receipt URL
+                                  const receiptUrl = p.receiptUrl.includes('?') 
+                                    ? `${p.receiptUrl}&admin=true` 
+                                    : `${p.receiptUrl}?admin=true`;
+                                  const res = await fetch(receiptUrl, { credentials: 'include' });
                                   if (!res.ok) return;
                                   const blob = await res.blob();
                                   const url = window.URL.createObjectURL(blob);
@@ -480,7 +484,11 @@ const PaymentDashboard = () => {
                             <button
                               onClick={async () => {
                                 try {
-                                  const res = await fetch(p.receiptUrl, { credentials: 'include' });
+                                  // Add admin parameter to receipt URL
+                                  const receiptUrl = p.receiptUrl.includes('?') 
+                                    ? `${p.receiptUrl}&admin=true` 
+                                    : `${p.receiptUrl}?admin=true`;
+                                  const res = await fetch(receiptUrl, { credentials: 'include' });
                                   if (!res.ok) return;
                                   const blob = await res.blob();
                                   const url = window.URL.createObjectURL(blob);
