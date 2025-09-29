@@ -54,9 +54,14 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
   // reCAPTCHA states
   const [recaptchaToken, setRecaptchaToken] = useState(null);
   const [recaptchaError, setRecaptchaError] = useState("");
+  const [showRecaptcha, setShowRecaptcha] = useState(false);
   const [recaptchaKey, setRecaptchaKey] = useState(0);
   const [recaptchaJustVerified, setRecaptchaJustVerified] = useState(false);
   const recaptchaRef = useRef(null);
+  
+  // Failed attempts tracking
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [isLocked, setIsLocked] = useState(false);
   const [otpCaptchaRequired, setOtpCaptchaRequired] = useState(false);
   const [otpCaptchaMessage, setOtpCaptchaMessage] = useState("");
 
@@ -172,46 +177,6 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
     setPasswordStrength(strength);
   };
 
-  // reCAPTCHA handlers
-  const handleRecaptchaVerify = (token) => {
-    setRecaptchaToken(token);
-    setRecaptchaError("");
-    // Show tick for ~1s before hiding
-    setRecaptchaJustVerified(true);
-    setTimeout(() => setRecaptchaJustVerified(false), 1000);
-    // If OTP-specific captcha was required (either under email or OTP), hide that widget + message after 1s
-    if (otpCaptchaRequired) {
-      setTimeout(() => {
-        // Hide UI and clear flag so widget disappears
-        setOtpCaptchaRequired(false);
-        setOtpCaptchaMessage("");
-        setOtpError("");
-      }, 1000);
-    }
-  };
-
-  const handleRecaptchaExpire = () => {
-    setRecaptchaToken(null);
-    setRecaptchaError("reCAPTCHA expired. Please verify again.");
-    setRecaptchaKey((k) => k + 1);
-    // Will become visible again due to !recaptchaToken in render
-  };
-
-  const handleRecaptchaError = (error) => {
-    setRecaptchaToken(null);
-    setRecaptchaError("reCAPTCHA verification failed. Please try again.");
-    setRecaptchaKey((k) => k + 1);
-    // Will become visible again due to !recaptchaToken in render
-  };
-
-  const resetRecaptcha = () => {
-    if (recaptchaRef.current) {
-      recaptchaRef.current.reset();
-    }
-    setRecaptchaToken(null);
-    setRecaptchaError("");
-    setRecaptchaKey((k) => k + 1);
-  };
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -386,13 +351,63 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
     navigate('/forgot-password?step=2', { replace: true });
   };
 
+  // reCAPTCHA handlers
+  const handleRecaptchaVerify = (token) => {
+    setRecaptchaToken(token);
+    setRecaptchaError("");
+    setRecaptchaJustVerified(true);
+    setTimeout(() => setRecaptchaJustVerified(false), 1000);
+    setTimeout(() => setShowRecaptcha(false), 1000);
+    // If OTP-specific captcha was required (either under email or OTP), hide that widget + message after 1s
+    if (otpCaptchaRequired) {
+      setTimeout(() => {
+        // Hide UI and clear flag so widget disappears
+        setOtpCaptchaRequired(false);
+        setOtpCaptchaMessage("");
+        setOtpError("");
+      }, 1000);
+    }
+  };
+
+  const handleRecaptchaExpire = () => {
+    setRecaptchaToken(null);
+    setRecaptchaError("reCAPTCHA expired. Please verify again.");
+    setRecaptchaKey((k) => k + 1);
+    setShowRecaptcha(true);
+  };
+
+  const handleRecaptchaError = (error) => {
+    setRecaptchaToken(null);
+    setRecaptchaError("reCAPTCHA verification failed. Please try again.");
+    setRecaptchaKey((k) => k + 1);
+    setShowRecaptcha(true);
+  };
+
+  const resetRecaptcha = () => {
+    if (recaptchaRef.current) {
+      recaptchaRef.current.reset();
+    }
+    setRecaptchaToken(null);
+    setRecaptchaError("");
+    setRecaptchaKey((k) => k + 1);
+  };
+
   const handleResetPassword = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setRecaptchaError("");
 
     if (formData.newPassword !== formData.confirmPassword) {
       setError("Passwords do not match");
+      setLoading(false);
+      return;
+    }
+
+    // Check if reCAPTCHA is required but not provided
+    if (failedAttempts >= 3 && !recaptchaToken) {
+      setError("reCAPTCHA verification is required due to multiple failed attempts.");
+      setShowRecaptcha(true);
       setLoading(false);
       return;
     }
@@ -404,13 +419,34 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
           userId: formData.userId,
           newPassword: formData.newPassword,
           confirmPassword: formData.confirmPassword,
+          ...(recaptchaToken && { recaptchaToken })
         }),
       });
 
       const data = await res.json();
 
       if (data.success === false) {
-        setError(data.message);
+        // Handle reCAPTCHA requirements
+        if (data.message.includes("reCAPTCHA")) {
+          setRecaptchaError(data.message);
+          setShowRecaptcha(true);
+          setRecaptchaKey((k) => k + 1);
+        } else if (data.message.includes("Multiple failed reset attempts")) {
+          setIsLocked(true);
+          setError(data.message);
+          setShowRecaptcha(false);
+        } else {
+          // Track failed attempt
+          setFailedAttempts(prev => prev + 1);
+          setError(data.message);
+          
+          // Show reCAPTCHA after 3 failed attempts
+          if (failedAttempts + 1 >= 3) {
+            setShowRecaptcha(true);
+            setRecaptchaError("reCAPTCHA verification is now required due to multiple failed attempts.");
+            setRecaptchaKey((k) => k + 1);
+          }
+        }
         setLoading(false);
       } else {
         setSuccess("Password reset successful. You can now log in.");
@@ -894,10 +930,42 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                 </div>
               </div>
 
+              {/* reCAPTCHA Widget - Show only when required (3+ failed attempts) */}
+              {showRecaptcha && failedAttempts >= 3 && (
+                <div className="flex justify-center">
+                  <RecaptchaWidget
+                    key={recaptchaKey}
+                    ref={recaptchaRef}
+                    onVerify={handleRecaptchaVerify}
+                    onExpire={handleRecaptchaExpire}
+                    onError={handleRecaptchaError}
+                    className="mb-4"
+                  />
+                </div>
+              )}
+
+              {/* reCAPTCHA Error */}
+              {recaptchaError && (
+                <div className="mb-4">
+                  <p className="text-red-600 text-sm text-center">{recaptchaError}</p>
+                </div>
+              )}
+
+              {/* Locked message for too many attempts */}
+              {isLocked && (
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-600 text-sm text-center font-medium">
+                    Multiple failed reset attempts. Please try again later.
+                  </p>
+                </div>
+              )}
+
               <button
                 disabled={
                   loading ||
-                  !meetsMinimumRequirements(formData.newPassword)
+                  !meetsMinimumRequirements(formData.newPassword) ||
+                  (failedAttempts >= 3 && !recaptchaToken) ||
+                  isLocked
                 }
                 className="w-full py-3 px-4 bg-gradient-to-r from-green-600 to-teal-600 text-white font-semibold rounded-lg hover:from-green-700 hover:to-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
               >

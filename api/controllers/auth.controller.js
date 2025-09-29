@@ -637,7 +637,8 @@ export const forgotPassword = async (req, res, next) => {
 // Reset Password
 export const resetPassword = async (req, res, next) => {
     try {
-        const { userId, newPassword, confirmPassword } = req.body;
+        const { userId, newPassword, confirmPassword, recaptchaToken } = req.body;
+        const ipAddress = req.ip || req.connection.remoteAddress;
         
         if (!userId || !newPassword || !confirmPassword) {
             return next(errorHandler(400, "All fields are required"));
@@ -660,9 +661,61 @@ export const resetPassword = async (req, res, next) => {
             return next(errorHandler(404, "User not found"));
         }
         
+        // Check for existing reset password attempts
+        const existingLock = await PasswordLockout.findOne({ 
+            $or: [{ userId: user._id }, { email: user.email }],
+            unlockAt: { $gt: new Date() }
+        });
+        
+        // Check if user is locked due to too many failed attempts
+        if (existingLock) {
+            const remainingMs = existingLock.unlockAt.getTime() - new Date().getTime();
+            const remainingMinutes = Math.ceil(remainingMs / (1000 * 60));
+            return next(errorHandler(423, `Multiple failed reset attempts. Please try again in about ${remainingMinutes} minute${remainingMinutes > 1 ? 's' : ''}.`));
+        }
+        
+        // Count recent failed attempts for this user
+        const recentAttempts = await PasswordLockout.countDocuments({
+            $or: [{ userId: user._id }, { email: user.email }],
+            lockedAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } // Last 24 hours
+        });
+        
+        // Require reCAPTCHA after 3 failed attempts
+        if (recentAttempts >= 3 && !recaptchaToken) {
+            return next(errorHandler(400, "reCAPTCHA verification is required due to multiple failed attempts."));
+        }
+        
+        // Verify reCAPTCHA if provided
+        if (recaptchaToken) {
+            try {
+                const recaptchaResponse = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${recaptchaToken}&remoteip=${ipAddress}`
+                });
+                const recaptchaData = await recaptchaResponse.json();
+                
+                if (!recaptchaData.success) {
+                    return next(errorHandler(400, "reCAPTCHA verification failed. Please try again."));
+                }
+            } catch (error) {
+                return next(errorHandler(400, "reCAPTCHA verification failed. Please try again."));
+            }
+        }
+        
         // Check if new password is different from current password
         const isSamePassword = await bcryptjs.compare(newPassword, user.password);
         if (isSamePassword) {
+            // Track failed attempt
+            await PasswordLockout.lockUser({
+                userId: user._id,
+                email: user.email,
+                identifier: `reset_password_${user._id}`,
+                durationMs: Math.min(15 * 60 * 1000, (recentAttempts + 1) * 5 * 60 * 1000), // 5 min per attempt, max 15 min
+                attempts: recentAttempts + 1,
+                ipAddress
+            });
+            
             return next(errorHandler(400, "Your new password cannot be the same as your previous password."));
         }
         
