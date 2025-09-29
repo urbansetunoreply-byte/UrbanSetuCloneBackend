@@ -179,8 +179,8 @@ export default function AdminChangePassword() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">Change Password</h2>
-            <p className="text-gray-600">Update your password to keep your account secure.</p>
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">🔒 Change Password</h2>
+            <p className="text-gray-600">Keep your account secure by updating your password regularly.</p>
           </div>
           
           <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
@@ -190,6 +190,7 @@ export default function AdminChangePassword() {
                 <label htmlFor="previousPassword" className="block text-sm font-medium text-gray-700 mb-2">
                   Current Password
                 </label>
+                <p className="text-xs text-gray-500 mb-2">(Enter your existing password)</p>
                 <div className="relative">
                   <input
                     type={showPrev ? "text" : "password"}
@@ -223,6 +224,7 @@ export default function AdminChangePassword() {
                 <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-2">
                   New Password
                 </label>
+                <p className="text-xs text-gray-500 mb-2">(Create a strong new password)</p>
                 <div className="relative">
                   <input
                     type={showNew ? "text" : "password"}
@@ -301,6 +303,7 @@ export default function AdminChangePassword() {
                 <label htmlFor="confirmNewPassword" className="block text-sm font-medium text-gray-700 mb-2">
                   Confirm New Password
                 </label>
+                <p className="text-xs text-gray-500 mb-2">(Re-enter your new password)</p>
                 <div className="relative">
                   <input
                     type={showConfirm ? "text" : "password"}
@@ -339,10 +342,10 @@ export default function AdminChangePassword() {
                 {loading ? (
                   <div className="flex items-center justify-center">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Changing...
+                    Updating...
                   </div>
                 ) : (
-                  "Change Password"
+                  "➡️ Update Password"
                 )}
               </button>
 
@@ -361,7 +364,7 @@ export default function AdminChangePassword() {
 
             <div className="mt-6 text-center">
               <p className="text-gray-600">
-                  Changed your mind?{" "}
+                "Changed your mind?{" "}
                 <button 
                   onClick={() => navigate("/admin/profile")} 
                   disabled={loading}
@@ -371,6 +374,7 @@ export default function AdminChangePassword() {
                 >
                   Back to Profile
                 </button>
+                "
               </p>
             </div>
           </div>
