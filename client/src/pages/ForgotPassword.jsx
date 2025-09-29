@@ -638,7 +638,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                           <button
                             type="button"
                             onClick={handleSendOTP}
-                            disabled={otpLoading}
+                            disabled={otpLoading || verifyLoading}
                             className="text-xs text-orange-600 hover:text-orange-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {otpLoading ? "Sending..." : "Resend OTP"}
@@ -712,7 +712,12 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
               <div className="mt-6 text-center">
                 <p className="text-gray-600">
                   Remember your password?{" "}
-                  <Link to="/sign-in" className="text-orange-600 hover:text-orange-800 font-semibold hover:underline transition-colors duration-200">
+                  <Link 
+                    to="/sign-in" 
+                    className={`text-orange-600 hover:text-orange-800 font-semibold hover:underline transition-colors duration-200 ${
+                      verifyLoading ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+                    }`}
+                  >
                     Sign In
                   </Link>
                 </p>
@@ -914,7 +919,12 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
             <div className="mt-6 text-center">
               <p className="text-gray-600">
                 Back to {" "}
-                <Link to="/sign-in" className="text-green-600 hover:text-green-800 font-semibold hover:underline transition-colors duration-200">
+                <Link 
+                  to="/sign-in" 
+                  className={`text-green-600 hover:text-green-800 font-semibold hover:underline transition-colors duration-200 ${
+                    verifyLoading ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+                  }`}
+                >
                   Sign In
                 </Link>
               </p>
