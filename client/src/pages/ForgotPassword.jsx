@@ -353,6 +353,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
 
   // reCAPTCHA handlers
   const handleRecaptchaVerify = (token) => {
+    console.log('reCAPTCHA verified:', token);
     setRecaptchaToken(token);
     setRecaptchaError("");
     setRecaptchaJustVerified(true);
@@ -404,48 +405,51 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
       return;
     }
 
-    // Check if reCAPTCHA is required but not provided
-    if (failedAttempts >= 3 && !recaptchaToken) {
-      setError("reCAPTCHA verification is required due to multiple failed attempts.");
-      setShowRecaptcha(true);
-      setLoading(false);
-      return;
-    }
-
     try {
+      const requestBody = {
+        userId: formData.userId,
+        newPassword: formData.newPassword,
+        confirmPassword: formData.confirmPassword,
+        ...(recaptchaToken && { recaptchaToken })
+      };
+      
+      console.log('Reset password request:', { 
+        hasRecaptchaToken: !!recaptchaToken, 
+        showRecaptcha, 
+        failedAttempts 
+      });
+      
       const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/reset-password`, {
         method: "POST",
-        body: JSON.stringify({
-          userId: formData.userId,
-          newPassword: formData.newPassword,
-          confirmPassword: formData.confirmPassword,
-          ...(recaptchaToken && { recaptchaToken })
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await res.json();
 
       if (data.success === false) {
+        console.log('Reset password failed:', data.message);
         // Handle reCAPTCHA requirements
-        if (data.message.includes("reCAPTCHA")) {
+        if (data.message.includes("reCAPTCHA verification is required")) {
+          console.log('Showing reCAPTCHA widget');
           setRecaptchaError(data.message);
           setShowRecaptcha(true);
           setRecaptchaKey((k) => k + 1);
+          setFailedAttempts(3); // Set to 3 to show reCAPTCHA
         } else if (data.message.includes("Multiple failed reset attempts")) {
+          console.log('Account locked');
           setIsLocked(true);
           setError(data.message);
           setShowRecaptcha(false);
+        } else if (data.message.includes("reCAPTCHA verification failed")) {
+          console.log('reCAPTCHA verification failed');
+          setRecaptchaError(data.message);
+          setShowRecaptcha(true);
+          setRecaptchaKey((k) => k + 1);
         } else {
-          // Track failed attempt
+          // Regular error - track failed attempt
+          console.log('Regular error, tracking attempt');
           setFailedAttempts(prev => prev + 1);
           setError(data.message);
-          
-          // Show reCAPTCHA after 3 failed attempts
-          if (failedAttempts + 1 >= 3) {
-            setShowRecaptcha(true);
-            setRecaptchaError("reCAPTCHA verification is now required due to multiple failed attempts.");
-            setRecaptchaKey((k) => k + 1);
-          }
         }
         setLoading(false);
       } else {
@@ -960,8 +964,8 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                 </div>
               </div>
 
-              {/* reCAPTCHA Widget - Show only when required (3+ failed attempts) */}
-              {showRecaptcha && failedAttempts >= 3 && (
+              {/* reCAPTCHA Widget - Show only when required */}
+              {showRecaptcha && (
                 <div className="flex justify-center">
                   <RecaptchaWidget
                     key={recaptchaKey}
@@ -994,7 +998,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                 disabled={
                   loading ||
                   !meetsMinimumRequirements(formData.newPassword) ||
-                  (failedAttempts >= 3 && !recaptchaToken) ||
+                  (showRecaptcha && !recaptchaToken) ||
                   isLocked
                 }
                 className="w-full py-3 px-4 bg-gradient-to-r from-green-600 to-teal-600 text-white font-semibold rounded-lg hover:from-green-700 hover:to-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
