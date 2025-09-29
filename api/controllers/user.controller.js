@@ -4,7 +4,10 @@ import { errorHandler } from "../utils/error.js"
 import mongoose from "mongoose"
 import DeletedAccount from '../models/deletedAccount.model.js';
 import AuditLog from '../models/auditLog.model.js';
+import AccountRevocation from '../models/accountRevocation.model.js';
 import bcryptjs from "bcryptjs"
+import crypto from 'crypto';
+import { sendAccountDeletionEmail } from '../utils/emailService.js';
 import Review from "../models/review.model.js";
 import ReviewReply from "../models/reviewReply.model.js";
 import { validateEmail } from "../utils/emailValidation.js";
@@ -174,11 +177,53 @@ export const deleteUser=async(req,res,next)=>{
             originalData: {
                 username: user.username,
                 email: user.email,
+                password: user.password,
+                mobileNumber: user.mobileNumber,
+                address: user.address,
+                gender: user.gender,
+                avatar: user.avatar,
                 role: user.role,
-                createdAt: user.createdAt,
-                status: user.status
+                isDefaultAdmin: user.isDefaultAdmin,
+                adminApprovalStatus: user.adminApprovalStatus,
+                adminApprovalDate: user.adminApprovalDate,
+                approvedBy: user.approvedBy,
+                adminRequestDate: user.adminRequestDate,
+                status: user.status,
+                createdAt: user.createdAt
             }
         });
+
+        // Create revocation token for account restoration
+        const revocationToken = crypto.randomBytes(32).toString('hex');
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 30); // 30 days
+
+        await AccountRevocation.create({
+            accountId: user._id,
+            email: user.email,
+            username: user.username,
+            role: user.role,
+            revocationToken,
+            expiresAt,
+            originalData: deletedRecord.originalData,
+            reason: resolvedReason
+        });
+
+        // Generate revocation link
+        const revocationLink = `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/restore-account/${revocationToken}`;
+
+        // Send account deletion email with revocation link
+        try {
+            await sendAccountDeletionEmail(user.email, {
+                username: user.username,
+                role: user.role
+            }, revocationLink);
+            console.log(`✅ Account deletion email sent to: ${user.email}`);
+        } catch (emailError) {
+            console.error(`❌ Failed to send deletion email to ${user.email}:`, emailError);
+            // Don't fail the deletion if email fails
+        }
+
         await User.findByIdAndDelete(req.params.id);
         await AuditLog.create({ action: 'soft_delete', performedBy: user._id, targetAccount: deletedRecord._id, targetEmail: user.email, details: { type: 'self_delete', role: user.role } });
         res.status(200).json({ success: true, message: "User moved to DeletedAccounts" })

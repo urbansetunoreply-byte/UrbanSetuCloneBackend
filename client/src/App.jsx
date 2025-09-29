@@ -13,6 +13,7 @@ import ContactSupportWrapper from "./components/ContactSupportWrapper";
 import NetworkStatus from "./components/NetworkStatus";
 import UserChangePassword from './pages/UserChangePassword';
 import AdminChangePassword from './pages/AdminChangePassword';
+import AccountRevocation from './pages/AccountRevocation';
 import NotFound from './pages/NotFound';
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
@@ -625,6 +626,7 @@ function AppRoutes({ bootstrapped }) {
           <Route path="/oauth" element={<Oauth bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
           <Route path="/terms" element={currentUser ? <NotFound /> : <Terms bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
           <Route path="/privacy" element={currentUser ? <NotFound /> : <Privacy bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+          <Route path="/restore-account/:token" element={<AccountRevocation />} />
 
           {/* User Routes (Protected) */}
           <Route element={<Private bootstrapped={bootstrapped} />}>

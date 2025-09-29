@@ -1,0 +1,69 @@
+import mongoose from 'mongoose';
+
+const accountRevocationSchema = new mongoose.Schema({
+  accountId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User', 
+    required: true, 
+    index: true 
+  },
+  email: { 
+    type: String, 
+    required: true, 
+    lowercase: true, 
+    index: true 
+  },
+  username: { 
+    type: String, 
+    required: true 
+  },
+  role: { 
+    type: String, 
+    enum: ['user', 'admin'], 
+    required: true 
+  },
+  revocationToken: { 
+    type: String, 
+    required: true, 
+    unique: true, 
+    index: true 
+  },
+  deletedAt: { 
+    type: Date, 
+    default: Date.now, 
+    index: true 
+  },
+  expiresAt: { 
+    type: Date, 
+    required: true, 
+    index: true 
+  },
+  isUsed: { 
+    type: Boolean, 
+    default: false 
+  },
+  usedAt: { 
+    type: Date, 
+    default: null 
+  },
+  restoredAt: { 
+    type: Date, 
+    default: null 
+  },
+  originalData: { 
+    type: mongoose.Schema.Types.Mixed, 
+    required: true 
+  },
+  reason: { 
+    type: String, 
+    default: '' 
+  }
+}, { 
+  timestamps: true 
+});
+
+// Index for cleanup of expired tokens
+accountRevocationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+
+const AccountRevocation = mongoose.model('AccountRevocation', accountRevocationSchema);
+export default AccountRevocation;

@@ -2,6 +2,9 @@ import User from '../models/user.model.js';
 import { errorHandler } from '../utils/error.js';
 import DeletedAccount from '../models/deletedAccount.model.js';
 import AuditLog from '../models/auditLog.model.js';
+import AccountRevocation from '../models/accountRevocation.model.js';
+import crypto from 'crypto';
+import { sendAccountDeletionEmail } from '../utils/emailService.js';
 
 // Fetch all users (for admin/rootadmin)
 export const getManagementUsers = async (req, res, next) => {
@@ -154,8 +157,41 @@ export const deleteUserOrAdmin = async (req, res, next) => {
           approvedBy: user.approvedBy,
           adminRequestDate: user.adminRequestDate,
           status: user.status,
+          createdAt: user.createdAt
         }
       });
+
+      // Create revocation token for account restoration
+      const revocationToken = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 30); // 30 days
+
+      await AccountRevocation.create({
+        accountId: user._id,
+        email: user.email,
+        username: user.username,
+        role: user.role,
+        revocationToken,
+        expiresAt,
+        originalData: delRecUser.originalData,
+        reason: req.body?.reason || 'admin_deleted'
+      });
+
+      // Generate revocation link
+      const revocationLink = `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/restore-account/${revocationToken}`;
+
+      // Send account deletion email with revocation link
+      try {
+        await sendAccountDeletionEmail(user.email, {
+          username: user.username,
+          role: user.role
+        }, revocationLink);
+        console.log(`✅ Account deletion email sent to: ${user.email}`);
+      } catch (emailError) {
+        console.error(`❌ Failed to send deletion email to ${user.email}:`, emailError);
+        // Don't fail the deletion if email fails
+      }
+
       await User.findByIdAndDelete(id);
       await AuditLog.create({ action: 'soft_delete', performedBy: currentUser._id, targetAccount: delRecUser._id, targetEmail: delRecUser.email, details: { type: 'admin_delete', role: 'user' } });
       return res.status(200).json({ message: 'User moved to DeletedAccounts' });
