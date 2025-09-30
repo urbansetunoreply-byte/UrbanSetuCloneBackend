@@ -82,8 +82,8 @@ export const sendAccountDeletionReminders = async () => {
           }
         }
         
-        // Send final warning (1-2 days before purge)
-        if (daysLeft === 1 || daysLeft === 2) {
+        // Send final warning (1 day before purge)
+        if (daysLeft === 1) {
           console.log(`🚨 Sending final warning to ${account.email} (${daysLeft} day${daysLeft === 1 ? '' : 's'} left)`);
           
           try {
@@ -155,9 +155,6 @@ export const getReminderStatistics = async () => {
     const fifteenDaysAgo = new Date();
     fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
     
-    const twoDaysFromNow = new Date();
-    twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
-    
     const oneDayFromNow = new Date();
     oneDayFromNow.setDate(oneDayFromNow.getDate() + 1);
     
@@ -167,9 +164,9 @@ export const getReminderStatistics = async () => {
       purgedAt: null
     });
     
-    // Find accounts eligible for final warnings
+    // Find accounts eligible for final warnings (1 day before purge)
     const finalWarningEligible = await DeletedAccount.find({
-      deletedAt: { $gte: oneDayFromNow, $lte: twoDaysFromNow },
+      deletedAt: { $lte: oneDayFromNow },
       purgedAt: null
     });
     
