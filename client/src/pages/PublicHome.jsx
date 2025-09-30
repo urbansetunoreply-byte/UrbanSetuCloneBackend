@@ -411,7 +411,7 @@ export default function PublicHome() {
             <p className="text-gray-700 italic text-sm sm:text-base">"UrbanSetu made finding my dream home so easy! The AI recommendations were spot-on and saved me weeks of searching."</p>
             <div className="flex items-center mt-3 sm:mt-4">
               {[...Array(5)].map((_, i) => (
-                <FaStar key={i} className="text-yellow-400 text-xs sm:text-sm" />
+                <FaStar key={i} className="text-yellow-400 text-xs sm:text-sm animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />
               ))}
             </div>
           </div>
@@ -429,7 +429,7 @@ export default function PublicHome() {
             <p className="text-gray-700 italic text-sm sm:text-base">"The platform's analytics and tools have revolutionized how I manage my listings. My sales have increased by 40%!"</p>
             <div className="flex items-center mt-3 sm:mt-4">
               {[...Array(5)].map((_, i) => (
-                <FaStar key={i} className="text-yellow-400 text-xs sm:text-sm" />
+                <FaStar key={i} className="text-yellow-400 text-xs sm:text-sm animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />
               ))}
             </div>
           </div>
@@ -447,7 +447,7 @@ export default function PublicHome() {
             <p className="text-gray-700 italic text-sm sm:text-base">"The secure transaction system and verified properties give me complete confidence in every investment decision."</p>
             <div className="flex items-center mt-3 sm:mt-4">
               {[...Array(5)].map((_, i) => (
-                <FaStar key={i} className="text-yellow-400 text-xs sm:text-sm" />
+                <FaStar key={i} className="text-yellow-400 text-xs sm:text-sm animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />
               ))}
             </div>
           </div>
