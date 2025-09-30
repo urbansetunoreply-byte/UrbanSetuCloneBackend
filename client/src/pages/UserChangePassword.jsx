@@ -368,7 +368,7 @@ export default function UserChangePassword() {
               <p className="text-gray-600">
                 Changed your mind?{" "}
                 <button 
-                  onClick={() => navigate("/user")} 
+                  onClick={() => navigate("/user/profile")} 
                   disabled={loading}
                   className={`text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors duration-200 ${
                     loading ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
