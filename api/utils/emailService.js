@@ -1411,8 +1411,8 @@ export const sendAccountDeletionEmail = async (email, userDetails, revocationLin
                 <div style="position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px; background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 50%; opacity: 0.2;"></div>
                 <span style="color: #ffffff; font-size: 36px; font-weight: bold; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">✓</span>
               </div>
-              <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 24px; font-weight: 600;">Goodbye, ${username}!</h2>
-              <p style="color: #6b7280; margin: 0; font-size: 16px; line-height: 1.6;">Your account has been successfully deleted from UrbanSetu. We're sorry to see you go!</p>
+              <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 24px; font-weight: 600;">Account Successfully Deleted</h2>
+              <p style="color: #6b7280; margin: 0; font-size: 16px; line-height: 1.6;">Your account has been successfully deleted from UrbanSetu. We appreciate the time you spent with us and hope to serve you again in the future.</p>
             </div>
             
             <div style="background-color: #f3f4f6; padding: 25px; border-radius: 8px; margin-bottom: 30px;">
@@ -1461,7 +1461,7 @@ export const sendAccountDeletionEmail = async (email, userDetails, revocationLin
             <!-- Footer -->
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #6b7280; font-size: 14px; margin: 0;">
-                Thank you for being part of the UrbanSetu community. We hope to serve you again in the future!
+                Thank you for being part of the UrbanSetu community. We value your time with us and look forward to the opportunity to serve you again.
               </p>
               <p style="color: #6b7280; font-size: 12px; margin: 10px 0 0;">
                 This is an automated message. Please do not reply to this email.
