@@ -12,6 +12,8 @@ export default function AccountRevocation() {
   const [success, setSuccess] = useState(false);
   const [accountData, setAccountData] = useState(null);
   const [restoring, setRestoring] = useState(false);
+  const [isPurged, setIsPurged] = useState(false);
+  const [purgedDetails, setPurgedDetails] = useState(null);
 
   useEffect(() => {
     if (token) {
@@ -35,6 +37,11 @@ export default function AccountRevocation() {
 
       if (response.ok && data.success) {
         setAccountData(data.accountData);
+        setLoading(false);
+      } else if (response.status === 410 && data.error === 'PURGED_ACCOUNT') {
+        // Account has been permanently deleted (purged)
+        setIsPurged(true);
+        setPurgedDetails(data.details);
         setLoading(false);
       } else {
         setError(data.message || 'Invalid or expired token');
@@ -128,6 +135,100 @@ export default function AccountRevocation() {
             Your account has been successfully restored. You will be redirected to the sign-in page shortly.
           </p>
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isPurged) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="max-w-lg w-full bg-white rounded-xl shadow-lg overflow-hidden">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-red-600 to-red-700 px-8 py-6 text-white text-center">
+            <h1 className="text-2xl font-bold mb-2">Account Permanently Deleted</h1>
+            <p className="text-red-100">This account can no longer be restored</p>
+          </div>
+
+          {/* Content */}
+          <div className="p-8">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FaTimesCircle className="w-8 h-8 text-red-600" />
+              </div>
+              <h2 className="text-xl font-semibold text-gray-800 mb-2">Account No Longer Available</h2>
+              <p className="text-gray-600">
+                This account has been permanently deleted and cannot be restored. However, you can create a new account to continue using our services.
+              </p>
+            </div>
+
+            {/* Account Details */}
+            {purgedDetails && (
+              <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
+                  <FaUser className="w-4 h-4 mr-2" />
+                  Previous Account Information
+                </h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Username:</span>
+                    <span className="font-medium">{purgedDetails.username}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Email:</span>
+                    <span className="font-medium">{purgedDetails.email}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Permanently Deleted:</span>
+                    <span className="font-medium">
+                      {new Date(purgedDetails.purgedAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Warning Message */}
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <div className="flex items-center mb-2">
+                <FaTimesCircle className="w-4 h-4 text-red-600 mr-2" />
+                <span className="font-semibold text-red-800">Important Notice</span>
+              </div>
+              <p className="text-red-700 text-sm">
+                This account has been permanently deleted and cannot be restored. All data associated with this account has been permanently removed from our systems.
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-3">
+              <button
+                onClick={() => navigate('/sign-up')}
+                className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
+              >
+                <FaUser className="w-4 h-4 mr-2" />
+                Create New Account
+              </button>
+              <button
+                onClick={() => navigate('/sign-in')}
+                className="w-full bg-gray-600 text-white py-3 px-4 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center"
+              >
+                Sign In to Existing Account
+              </button>
+              <button
+                onClick={() => navigate('/')}
+                className="w-full bg-gray-200 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                Go to Home
+              </button>
+            </div>
+
+            {/* Additional Info */}
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-500">
+                By creating a new account, you agree to our Terms of Service and Privacy Policy.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     );

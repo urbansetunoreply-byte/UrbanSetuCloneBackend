@@ -59,6 +59,26 @@ export const verifyRevocationToken = async (req, res, next) => {
       return next(errorHandler(404, 'Invalid or expired token'));
     }
 
+    // Check if the account has been purged (permanently deleted)
+    const deletedAccount = await DeletedAccount.findOne({
+      email: revocationRecord.email,
+      purgedAt: { $exists: true, $ne: null }
+    });
+
+    if (deletedAccount) {
+      return res.status(410).json({
+        success: false,
+        message: 'Account permanently deleted',
+        error: 'PURGED_ACCOUNT',
+        details: {
+          username: revocationRecord.username,
+          email: revocationRecord.email,
+          purgedAt: deletedAccount.purgedAt,
+          message: 'This account has been permanently deleted and cannot be restored. You can create a new account if you wish to continue using our services.'
+        }
+      });
+    }
+
     res.status(200).json({
       success: true,
       message: 'Token is valid',
@@ -89,6 +109,26 @@ export const restoreAccount = async (req, res, next) => {
 
     if (!revocationRecord) {
       return next(errorHandler(404, 'Invalid or expired token'));
+    }
+
+    // Check if the account has been purged (permanently deleted)
+    const deletedAccount = await DeletedAccount.findOne({
+      email: revocationRecord.email,
+      purgedAt: { $exists: true, $ne: null }
+    });
+
+    if (deletedAccount) {
+      return res.status(410).json({
+        success: false,
+        message: 'Account permanently deleted',
+        error: 'PURGED_ACCOUNT',
+        details: {
+          username: revocationRecord.username,
+          email: revocationRecord.email,
+          purgedAt: deletedAccount.purgedAt,
+          message: 'This account has been permanently deleted and cannot be restored. You can create a new account if you wish to continue using our services.'
+        }
+      });
     }
 
     // Check if account already exists
