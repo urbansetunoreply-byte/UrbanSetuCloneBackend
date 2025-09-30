@@ -1068,7 +1068,7 @@ export default function Profile() {
     const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-password`, { method:'POST', body: JSON.stringify({ password: deletePassword }) });
     if (!res.ok) {
       setShowPasswordModal(false);
-      toast.error("For your security, you've been signed out automatically.");
+      toast.error("For security reasons, you've been signed out automatically.");
       dispatch(signoutUserStart());
       const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials:'include' });
       const signoutData = await signoutRes.json();
@@ -1128,7 +1128,7 @@ export default function Profile() {
         setDeleteOtpError(vData.message || 'Invalid OTP');
         if (att >= 5) {
           setShowPasswordModal(false);
-          toast.error("For your security, you've been signed out automatically.");
+          toast.error("For security reasons, you've been signed out automatically.");
           dispatch(signoutUserStart());
           const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials:'include' });
           const signoutData = await signoutRes.json();
@@ -1211,7 +1211,7 @@ export default function Profile() {
       });
       if (!verifyRes.ok) {
         setShowTransferPasswordModal(false);
-        toast.error("For your security, you've been signed out automatically.");
+        toast.error("For security reasons, you've been signed out automatically.");
         await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
         navigate('/sign-in', { replace: true });
         return;
@@ -1264,7 +1264,7 @@ export default function Profile() {
         setTransferOtpError(vData.message || 'Invalid OTP');
         if (att >= 5) {
           setShowTransferPasswordModal(false);
-          toast.error("For your security, you've been signed out automatically.");
+          toast.error("For security reasons, you've been signed out automatically.");
           await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials:'include' });
           navigate('/sign-in', { replace: true });
         }
@@ -1438,7 +1438,7 @@ export default function Profile() {
       });
       if (!verifyRes.ok) {
         setShowTransferModal(false);
-        toast.error("For your security, you've been signed out automatically.");
+        toast.error("For security reasons, you've been signed out automatically.");
         await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
         navigate('/sign-in', { replace: true });
         return;
@@ -1481,7 +1481,7 @@ export default function Profile() {
         setTransferError(vData.message || 'Invalid OTP');
         if (att >= 5) {
           setShowTransferModal(false);
-          toast.error("For your security, you've been signed out automatically.");
+          toast.error("For security reasons, you've been signed out automatically.");
           await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials:'include' });
           navigate('/sign-in', { replace: true });
         }
