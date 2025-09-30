@@ -7,7 +7,24 @@ import {
     transferRootAdminRights
 } from '../controllers/admin.controller.js';
 import User from '../models/user.model.js';
-import { getManagementUsers, getManagementAdmins, suspendUserOrAdmin, deleteUserOrAdmin, demoteAdminToUser, promoteUserToAdmin, reapproveRejectedAdmin, getDeletedAccounts, restoreDeletedAccount, purgeDeletedAccount, triggerAutoPurge, getPurgeStats, triggerAccountReminders, getReminderStats, triggerEmailMonitoring, getEmailMonitoringStats } from '../controllers/management.controller.js';
+import { 
+  getManagementUsers, 
+  getManagementAdmins, 
+  suspendUserOrAdmin, 
+  deleteUserOrAdmin, 
+  demoteAdminToUser, 
+  promoteUserToAdmin, 
+  reapproveRejectedAdmin, 
+  getDeletedAccounts, 
+  restoreDeletedAccount, 
+  purgeDeletedAccount, 
+  triggerAutoPurge, 
+  getPurgeStats, 
+  triggerAccountReminders, 
+  getReminderStats, 
+  triggerEmailMonitoring, 
+  getEmailMonitoringStats 
+} from '../controllers/management.controller.js';
 
 const router = express.Router();
 
@@ -77,7 +94,15 @@ router.get('/email-monitoring/stats', verifyToken, getEmailMonitoringStats);
 
 // Test endpoint to verify route is working
 router.get('/email-monitoring/test', (req, res) => {
-  res.json({ message: 'Email monitoring routes are working!', timestamp: new Date() });
+  console.log('📧 Email monitoring test endpoint hit!');
+  res.json({ 
+    message: 'Email monitoring routes are working!', 
+    timestamp: new Date(),
+    functionsAvailable: {
+      triggerEmailMonitoring: typeof triggerEmailMonitoring,
+      getEmailMonitoringStats: typeof getEmailMonitoringStats
+    }
+  });
 });
 
 // Verify admin password for management access
