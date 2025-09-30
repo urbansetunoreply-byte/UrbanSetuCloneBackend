@@ -84,7 +84,7 @@ export const suspendUserOrAdmin = async (req, res, next) => {
         const suspensionDetails = {
           username: user.username,
           role: user.role,
-          reason: user.suspensionReason || 'Policy violation',
+          reason: togglingToSuspended ? (user.suspensionReason || 'Policy violation') : 'Account reactivated',
           suspendedBy: currentUser.username || currentUser.email,
           suspendedAt: user.suspendedAt || new Date(),
           isSuspension: togglingToSuspended
@@ -92,6 +92,7 @@ export const suspendUserOrAdmin = async (req, res, next) => {
         
         await sendAccountSuspensionEmail(user.email, suspensionDetails);
         console.log(`✅ ${togglingToSuspended ? 'Suspension' : 'Reactivation'} email sent to: ${user.email}`);
+        console.log(`📧 Email details:`, suspensionDetails);
       } catch (emailError) {
         console.error(`❌ Failed to send ${togglingToSuspended ? 'suspension' : 'reactivation'} email to ${user.email}:`, emailError);
         // Don't fail the suspension if email fails, just log the error
@@ -135,7 +136,7 @@ export const suspendUserOrAdmin = async (req, res, next) => {
         const suspensionDetails = {
           username: admin.username,
           role: admin.role,
-          reason: admin.suspensionReason || 'Policy violation',
+          reason: togglingAdminToSuspended ? (admin.suspensionReason || 'Policy violation') : 'Account reactivated',
           suspendedBy: currentUser.username || currentUser.email,
           suspendedAt: admin.suspendedAt || new Date(),
           isSuspension: togglingAdminToSuspended
@@ -143,6 +144,7 @@ export const suspendUserOrAdmin = async (req, res, next) => {
         
         await sendAccountSuspensionEmail(admin.email, suspensionDetails);
         console.log(`✅ ${togglingAdminToSuspended ? 'Suspension' : 'Reactivation'} email sent to: ${admin.email}`);
+        console.log(`📧 Email details:`, suspensionDetails);
       } catch (emailError) {
         console.error(`❌ Failed to send ${togglingAdminToSuspended ? 'suspension' : 'reactivation'} email to ${admin.email}:`, emailError);
         // Don't fail the suspension if email fails, just log the error

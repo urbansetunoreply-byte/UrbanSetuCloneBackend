@@ -220,7 +220,9 @@ export default function AdminManagement() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ reason: suspensionReason || 'Policy violation' })
+          body: JSON.stringify({ 
+            reason: isSuspending ? (suspensionReason || 'Policy violation') : null 
+          })
         });
         const data = await res.json();
         if (res.ok) {
