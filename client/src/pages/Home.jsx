@@ -362,7 +362,7 @@ export default function Home() {
         
         <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 transition-all duration-1000 ${isFeaturesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4 animate-spin" style={{ animationDuration: '3s' }}>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
               <FaSearch className="text-lg sm:text-2xl text-blue-600" />
             </div>
             <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Smart Search</h3>
@@ -370,7 +370,7 @@ export default function Home() {
           </div>
           
           <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4 animate-bounce">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
               <FaShieldAlt className="text-lg sm:text-2xl text-green-600" />
             </div>
             <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Secure Transactions</h3>
@@ -378,7 +378,7 @@ export default function Home() {
           </div>
           
           <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4 animate-pulse">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
               <FaAward className="text-lg sm:text-2xl text-purple-600" />
             </div>
             <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Verified Properties</h3>
@@ -386,7 +386,7 @@ export default function Home() {
           </div>
           
           <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4 animate-ping">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
               <FaRocket className="text-lg sm:text-2xl text-orange-600" />
             </div>
             <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Fast Processing</h3>
@@ -394,7 +394,7 @@ export default function Home() {
           </div>
           
           <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-teal-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4 animate-pulse">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-teal-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
               <FaHeart className="text-lg sm:text-2xl text-teal-600" />
             </div>
             <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">24/7 Support</h3>
@@ -402,7 +402,7 @@ export default function Home() {
           </div>
           
           <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-pink-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4 animate-spin" style={{ animationDuration: '4s' }}>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-pink-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
               <FaGem className="text-lg sm:text-2xl text-pink-600" />
             </div>
             <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Premium Experience</h3>
@@ -421,7 +421,7 @@ export default function Home() {
         <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 transition-all duration-1000 ${isTestimonialsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
             <div className="flex items-center mb-3 sm:mb-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-full flex items-center justify-center mr-3 sm:mr-4 animate-spin" style={{ animationDuration: '3s' }}>
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-full flex items-center justify-center mr-3 sm:mr-4">
                 <FaQuoteLeft className="text-blue-600 text-sm sm:text-base" />
               </div>
               <div>
@@ -432,14 +432,14 @@ export default function Home() {
             <p className="text-gray-700 italic text-sm sm:text-base">"UrbanSetu made finding my dream home so easy! The AI recommendations were spot-on and saved me weeks of searching."</p>
             <div className="flex items-center mt-3 sm:mt-4">
               {[...Array(5)].map((_, i) => (
-                <FaStar key={i} className="text-yellow-400 text-xs sm:text-sm animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />
+                <FaStar key={i} className="text-yellow-400 text-xs sm:text-sm" />
               ))}
             </div>
           </div>
           
           <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
             <div className="flex items-center mb-3 sm:mb-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center mr-3 sm:mr-4 animate-bounce">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center mr-3 sm:mr-4">
                 <FaQuoteLeft className="text-green-600 text-sm sm:text-base" />
               </div>
               <div>
@@ -450,14 +450,14 @@ export default function Home() {
             <p className="text-gray-700 italic text-sm sm:text-base">"The platform's analytics and tools have revolutionized how I manage my listings. My sales have increased by 40%!"</p>
             <div className="flex items-center mt-3 sm:mt-4">
               {[...Array(5)].map((_, i) => (
-                <FaStar key={i} className="text-yellow-400 text-xs sm:text-sm animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />
+                <FaStar key={i} className="text-yellow-400 text-xs sm:text-sm" />
               ))}
             </div>
           </div>
           
           <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
             <div className="flex items-center mb-3 sm:mb-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-full flex items-center justify-center mr-3 sm:mr-4 animate-ping">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-full flex items-center justify-center mr-3 sm:mr-4">
                 <FaQuoteLeft className="text-purple-600 text-sm sm:text-base" />
               </div>
               <div>
@@ -468,7 +468,7 @@ export default function Home() {
             <p className="text-gray-700 italic text-sm sm:text-base">"The secure transaction system and verified properties give me complete confidence in every investment decision."</p>
             <div className="flex items-center mt-3 sm:mt-4">
               {[...Array(5)].map((_, i) => (
-                <FaStar key={i} className="text-yellow-400 text-xs sm:text-sm animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />
+                <FaStar key={i} className="text-yellow-400 text-xs sm:text-sm" />
               ))}
             </div>
           </div>
