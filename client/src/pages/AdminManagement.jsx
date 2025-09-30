@@ -693,7 +693,7 @@ export default function AdminManagement() {
     if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
     // Show warning at 4 minutes
     warningTimerRef.current = setTimeout(() => {
-      toast.info("For your security, you will be asked to re-enter your password in 1 minute.");
+      toast.info("For security reasons, you will be asked to re-enter your password in 1 minute.");
     }, 4 * 60 * 1000);
     // Lock at 5 minutes
     lockoutTimerRef.current = setTimeout(() => {
