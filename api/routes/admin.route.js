@@ -7,7 +7,7 @@ import {
     transferRootAdminRights
 } from '../controllers/admin.controller.js';
 import User from '../models/user.model.js';
-import { getManagementUsers, getManagementAdmins, suspendUserOrAdmin, deleteUserOrAdmin, demoteAdminToUser, promoteUserToAdmin, reapproveRejectedAdmin, getDeletedAccounts, restoreDeletedAccount, purgeDeletedAccount, triggerAutoPurge, getPurgeStats } from '../controllers/management.controller.js';
+import { getManagementUsers, getManagementAdmins, suspendUserOrAdmin, deleteUserOrAdmin, demoteAdminToUser, promoteUserToAdmin, reapproveRejectedAdmin, getDeletedAccounts, restoreDeletedAccount, purgeDeletedAccount, triggerAutoPurge, getPurgeStats, triggerAccountReminders, getReminderStats } from '../controllers/management.controller.js';
 
 const router = express.Router();
 
@@ -66,6 +66,10 @@ router.delete('/deleted-accounts/purge/:id', verifyToken, purgeDeletedAccount);
 // Auto-purge endpoints (rootadmin only)
 router.post('/auto-purge/trigger', verifyToken, triggerAutoPurge);
 router.get('/auto-purge/stats', verifyToken, getPurgeStats);
+
+// Account reminder endpoints (rootadmin only)
+router.post('/account-reminders/trigger', verifyToken, triggerAccountReminders);
+router.get('/account-reminders/stats', verifyToken, getReminderStats);
 
 // Verify admin password for management access
 router.post('/management/verify-password', verifyToken, async (req, res, next) => {

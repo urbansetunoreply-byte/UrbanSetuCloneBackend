@@ -1901,5 +1901,198 @@ export const sendPriceDropAlertEmail = async (email, priceDropDetails) => {
   }
 };
 
+// 15-Day Account Deletion Reminder Email
+export const sendAccountDeletionReminderEmail = async (email, userDetails, revocationLink, daysLeft) => {
+  try {
+    const { username, role } = userDetails;
+
+    const subject = `Reminder: Restore Your UrbanSetu Account (${daysLeft} days left)`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Account Restoration Reminder - UrbanSetu</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9f9f9;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 40px 30px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Account Restoration Reminder</h1>
+            <p style="color: #fef3c7; margin: 10px 0 0; font-size: 16px;">You still have ${daysLeft} days to restore your account</p>
+          </div>
+          
+          <!-- Content -->
+          <div style="padding: 40px 30px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(245, 158, 11, 0.3); position: relative;">
+                <div style="position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; opacity: 0.2;"></div>
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">⏰</span>
+              </div>
+              <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 24px; font-weight: 600;">Don't Lose Your Account!</h2>
+              <p style="color: #6b7280; margin: 0; font-size: 16px; line-height: 1.6;">Hello ${username}, you still have <strong style="color: #f59e0b;">${daysLeft} days</strong> to restore your UrbanSetu account before it's permanently deleted.</p>
+            </div>
+            
+            <div style="background-color: #fef3c7; padding: 25px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #f59e0b;">
+              <h3 style="color: #92400e; margin: 0 0 15px; font-size: 18px; font-weight: 600;">⚠️ Important Notice</h3>
+              <p style="color: #92400e; margin: 0 0 10px; font-size: 14px; line-height: 1.6;">
+                After ${daysLeft} days, your account and all associated data will be permanently removed, including:
+              </p>
+              <ul style="color: #92400e; margin: 10px 0; padding-left: 20px; font-size: 14px;">
+                <li>Your property wishlist and watchlist</li>
+                <li>All your reviews and ratings</li>
+                <li>Appointment history and messages</li>
+                <li>Account preferences and settings</li>
+              </ul>
+            </div>
+            
+            <div style="text-align: center; margin-bottom: 30px;">
+              <a href="${revocationLink}" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); transition: all 0.3s ease;">
+                Restore My Account Now
+              </a>
+            </div>
+            
+            <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <h3 style="color: #1f2937; margin: 0 0 10px; font-size: 16px; font-weight: 600;">Account Details</h3>
+              <div style="display: grid; gap: 8px;">
+                <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #e5e7eb;">
+                  <span style="color: #6b7280; font-weight: 500; font-size: 14px;">Username:</span>
+                  <span style="color: #1f2937; font-weight: 600; font-size: 14px;">${username}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 5px 0;">
+                  <span style="color: #6b7280; font-weight: 500; font-size: 14px;">Email:</span>
+                  <span style="color: #1f2937; font-weight: 600; font-size: 14px;">${email}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div style="text-align: center; color: #6b7280; font-size: 14px; line-height: 1.6;">
+              <p style="margin: 0 0 10px;">If you don't want to restore your account, you can ignore this email.</p>
+              <p style="margin: 0;">This is an automated reminder. Please do not reply to this email.</p>
+            </div>
+          </div>
+          
+          <!-- Footer -->
+          <div style="background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending account deletion reminder email:', error);
+    return createErrorResponse(error, 'account_deletion_reminder_email');
+  }
+};
+
+// Final Account Deletion Warning Email (1-2 days before purge)
+export const sendAccountDeletionFinalWarningEmail = async (email, userDetails, revocationLink, daysLeft) => {
+  try {
+    const { username, role } = userDetails;
+
+    const subject = `FINAL WARNING: Your UrbanSetu Account Will Be Deleted in ${daysLeft} Day${daysLeft === 1 ? '' : 's'}!`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Final Warning - Account Deletion - UrbanSetu</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9f9f9;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); padding: 40px 30px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">FINAL WARNING</h1>
+            <p style="color: #fecaca; margin: 10px 0 0; font-size: 16px;">Your account will be permanently deleted in ${daysLeft} day${daysLeft === 1 ? '' : 's'}!</p>
+          </div>
+          
+          <!-- Content -->
+          <div style="padding: 40px 30px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #dc2626, #b91c1c); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(220, 38, 38, 0.3); position: relative;">
+                <div style="position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px; background: linear-gradient(135deg, #dc2626, #b91c1c); border-radius: 50%; opacity: 0.2;"></div>
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">🚨</span>
+              </div>
+              <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 24px; font-weight: 600;">Last Chance to Restore Your Account!</h2>
+              <p style="color: #6b7280; margin: 0; font-size: 16px; line-height: 1.6;">Hello ${username}, this is your <strong style="color: #dc2626;">FINAL WARNING</strong>. Your UrbanSetu account will be permanently deleted in <strong style="color: #dc2626;">${daysLeft} day${daysLeft === 1 ? '' : 's'}</strong>!</p>
+            </div>
+            
+            <div style="background-color: #fef2f2; padding: 25px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #dc2626;">
+              <h3 style="color: #991b1b; margin: 0 0 15px; font-size: 18px; font-weight: 600;">⚠️ URGENT: Data Will Be Lost Forever</h3>
+              <p style="color: #991b1b; margin: 0 0 10px; font-size: 14px; line-height: 1.6;">
+                After ${daysLeft} day${daysLeft === 1 ? '' : 's'}, the following data will be permanently deleted and cannot be recovered:
+              </p>
+              <ul style="color: #991b1b; margin: 10px 0; padding-left: 20px; font-size: 14px;">
+                <li><strong>Property Wishlist & Watchlist</strong> - All your saved properties</li>
+                <li><strong>Reviews & Ratings</strong> - All your property reviews</li>
+                <li><strong>Appointment History</strong> - All your booking records</li>
+                <li><strong>Messages & Conversations</strong> - All chat history</li>
+                <li><strong>Account Settings</strong> - All preferences and configurations</li>
+              </ul>
+            </div>
+            
+            <div style="text-align: center; margin-bottom: 30px;">
+              <a href="${revocationLink}" style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #ffffff; text-decoration: none; padding: 18px 35px; border-radius: 8px; font-weight: 700; font-size: 18px; box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4); transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 0.5px;">
+                RESTORE ACCOUNT NOW
+              </a>
+            </div>
+            
+            <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <h3 style="color: #1f2937; margin: 0 0 10px; font-size: 16px; font-weight: 600;">Account Details</h3>
+              <div style="display: grid; gap: 8px;">
+                <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #e5e7eb;">
+                  <span style="color: #6b7280; font-weight: 500; font-size: 14px;">Username:</span>
+                  <span style="color: #1f2937; font-weight: 600; font-size: 14px;">${username}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 5px 0;">
+                  <span style="color: #6b7280; font-weight: 500; font-size: 14px;">Email:</span>
+                  <span style="color: #1f2937; font-weight: 600; font-size: 14px;">${email}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div style="text-align: center; color: #6b7280; font-size: 14px; line-height: 1.6;">
+              <p style="margin: 0 0 10px; font-weight: 600; color: #dc2626;">This is your last chance to restore your account!</p>
+              <p style="margin: 0;">If you don't restore your account now, it will be permanently deleted and cannot be recovered.</p>
+            </div>
+          </div>
+          
+          <!-- Footer -->
+          <div style="background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending account deletion final warning email:', error);
+    return createErrorResponse(error, 'account_deletion_final_warning_email');
+  }
+};
+
 // Export the current transporter (will be set during initialization)
 export default currentTransporter;

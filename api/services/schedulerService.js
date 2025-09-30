@@ -1,6 +1,7 @@
 import cron from 'node-cron';
 import { checkAndSendAppointmentReminders } from './appointmentReminderService.js';
 import { autoPurgeSoftbannedAccounts } from './autoPurgeService.js';
+import { sendAccountDeletionReminders } from './accountReminderService.js';
 
 // Schedule appointment reminders to run every day at 9:00 AM
 const scheduleAppointmentReminders = () => {
@@ -46,11 +47,34 @@ const scheduleAutoPurge = () => {
   console.log('📋 Schedule: Every day at 2:00 AM (Asia/Kolkata timezone)');
 };
 
+// Schedule account deletion reminders to run every day at 10:00 AM
+const scheduleAccountReminders = () => {
+  console.log('📧 Setting up account deletion reminder scheduler...');
+  
+  // Run every day at 10:00 AM
+  cron.schedule('0 10 * * *', async () => {
+    console.log('⏰ Running scheduled account deletion reminder check...');
+    try {
+      const result = await sendAccountDeletionReminders();
+      console.log('✅ Scheduled account deletion reminder check completed:', result);
+    } catch (error) {
+      console.error('❌ Error in scheduled account deletion reminder check:', error);
+    }
+  }, {
+    scheduled: true,
+    timezone: "Asia/Kolkata" // Adjust timezone as needed
+  });
+  
+  console.log('✅ Account deletion reminder scheduler set up successfully');
+  console.log('📋 Schedule: Every day at 10:00 AM (Asia/Kolkata timezone)');
+};
+
 // Start the scheduler
 export const startScheduler = () => {
   console.log('🚀 Starting scheduler service...');
   scheduleAppointmentReminders();
   scheduleAutoPurge();
+  scheduleAccountReminders();
   console.log('✅ Scheduler service started successfully');
 };
 

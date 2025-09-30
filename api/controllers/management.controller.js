@@ -6,6 +6,7 @@ import AccountRevocation from '../models/accountRevocation.model.js';
 import crypto from 'crypto';
 import { sendAccountDeletionEmail } from '../utils/emailService.js';
 import { autoPurgeSoftbannedAccounts, getPurgeStatistics } from '../services/autoPurgeService.js';
+import { sendAccountDeletionReminders, getReminderStatistics } from '../services/accountReminderService.js';
 
 // Fetch all users (for admin/rootadmin)
 export const getManagementUsers = async (req, res, next) => {
@@ -443,6 +444,42 @@ export const getPurgeStats = async (req, res, next) => {
     res.status(200).json(stats);
   } catch (err) {
     console.error('Error getting purge statistics:', err);
+    next(err);
+  }
+};
+
+// Manually trigger account deletion reminders (rootadmin only)
+export const triggerAccountReminders = async (req, res, next) => {
+  try {
+    const currentUser = await User.findById(req.user.id);
+    const isRoot = currentUser && (currentUser.role === 'rootadmin' || currentUser.isDefaultAdmin);
+    if (!isRoot) return next(errorHandler(403, 'Access denied. Only root admin can trigger account reminders.'));
+
+    console.log('📧 Manual account reminders triggered by admin:', currentUser.email);
+    const result = await sendAccountDeletionReminders();
+    
+    res.status(200).json({
+      success: true,
+      message: 'Account reminder process completed successfully',
+      result
+    });
+  } catch (err) {
+    console.error('Error in manual account reminders:', err);
+    next(err);
+  }
+};
+
+// Get reminder statistics (rootadmin only)
+export const getReminderStats = async (req, res, next) => {
+  try {
+    const currentUser = await User.findById(req.user.id);
+    const isRoot = currentUser && (currentUser.role === 'rootadmin' || currentUser.isDefaultAdmin);
+    if (!isRoot) return next(errorHandler(403, 'Access denied. Only root admin can view reminder statistics.'));
+
+    const stats = await getReminderStatistics();
+    res.status(200).json(stats);
+  } catch (err) {
+    console.error('Error getting reminder statistics:', err);
     next(err);
   }
 }; 
