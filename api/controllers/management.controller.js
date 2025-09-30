@@ -5,6 +5,7 @@ import AuditLog from '../models/auditLog.model.js';
 import AccountRevocation from '../models/accountRevocation.model.js';
 import crypto from 'crypto';
 import { sendAccountDeletionEmail } from '../utils/emailService.js';
+import { autoPurgeSoftbannedAccounts, getPurgeStatistics } from '../services/autoPurgeService.js';
 
 // Fetch all users (for admin/rootadmin)
 export const getManagementUsers = async (req, res, next) => {
@@ -406,6 +407,42 @@ export const reapproveRejectedAdmin = async (req, res, next) => {
     await admin.save();
     res.status(200).json(admin);
   } catch (err) {
+    next(err);
+  }
+};
+
+// Manually trigger automatic purging of softbanned accounts (rootadmin only)
+export const triggerAutoPurge = async (req, res, next) => {
+  try {
+    const currentUser = await User.findById(req.user.id);
+    const isRoot = currentUser && (currentUser.role === 'rootadmin' || currentUser.isDefaultAdmin);
+    if (!isRoot) return next(errorHandler(403, 'Access denied. Only root admin can trigger auto purge.'));
+
+    console.log('🔄 Manual auto-purge triggered by admin:', currentUser.email);
+    const result = await autoPurgeSoftbannedAccounts();
+    
+    res.status(200).json({
+      success: true,
+      message: 'Auto-purge completed successfully',
+      result
+    });
+  } catch (err) {
+    console.error('Error in manual auto-purge:', err);
+    next(err);
+  }
+};
+
+// Get purge statistics (rootadmin only)
+export const getPurgeStats = async (req, res, next) => {
+  try {
+    const currentUser = await User.findById(req.user.id);
+    const isRoot = currentUser && (currentUser.role === 'rootadmin' || currentUser.isDefaultAdmin);
+    if (!isRoot) return next(errorHandler(403, 'Access denied. Only root admin can view purge statistics.'));
+
+    const stats = await getPurgeStatistics();
+    res.status(200).json(stats);
+  } catch (err) {
+    console.error('Error getting purge statistics:', err);
     next(err);
   }
 }; 
