@@ -17,6 +17,28 @@ export const getPendingAdminRequests = async (req, res, next) => {
     }
 };
 
+// Get all admin requests (pending, approved, rejected)
+export const getAllAdminRequests = async (req, res, next) => {
+    try {
+        const currentUser = await User.findById(req.user.id);
+        if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'rootadmin' && !currentUser.isDefaultAdmin)) {
+            return next(errorHandler(403, 'Access denied. Only admins can view admin requests.'));
+        }
+
+        const allRequests = await User.find({
+            $or: [
+                { role: "admin", adminApprovalStatus: "pending" },
+                { role: "admin", adminApprovalStatus: "approved" },
+                { role: "user", adminApprovalStatus: "rejected" } // Include rejected admins who are now users
+            ]
+        }).select('-password').sort({ adminRequestDate: -1 });
+        
+        res.status(200).json(allRequests);
+    } catch (error) {
+        next(error);
+    }
+};
+
 // Approve admin request
 export const approveAdminRequest = async (req, res, next) => {
     try {
@@ -110,6 +132,7 @@ export const rejectAdminRequest = async (req, res, next) => {
         user.adminApprovalStatus = "rejected";
         user.adminApprovalDate = new Date();
         user.approvedBy = currentUserId;
+        user.role = "user"; // Change role to user when rejected
         
         await user.save();
         
@@ -131,6 +154,70 @@ export const rejectAdminRequest = async (req, res, next) => {
         
         res.status(200).json({
             message: "Admin request rejected successfully",
+            user: {
+                _id: user._id,
+                username: user.username,
+                email: user.email,
+                adminApprovalStatus: user.adminApprovalStatus
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Re-approve rejected admin request
+export const reapproveAdminRequest = async (req, res, next) => {
+    try {
+        const { userId } = req.params;
+        const { currentUserId } = req.body;
+        
+        // Find the current user (should be an approved admin)
+        const currentUser = await User.findById(currentUserId);
+        if (!currentUser) {
+            return next(errorHandler(404, "User not found"));
+        }
+        
+        // Allow rootadmin or default admin to reapprove
+        if (!((currentUser.role === 'admin' && currentUser.adminApprovalStatus === 'approved') || currentUser.role === 'rootadmin' || currentUser.isDefaultAdmin)) {
+            return next(errorHandler(403, "Only approved admins or root admin can reapprove requests"));
+        }
+        
+        // Find the user to reapprove
+        const user = await User.findById(userId);
+        if (!user) {
+            return next(errorHandler(404, "User not found"));
+        }
+        
+        if (user.role !== "user" || user.adminApprovalStatus !== "rejected") {
+            return next(errorHandler(400, "Invalid reapproval request - user must be a rejected admin"));
+        }
+        
+        user.role = "admin";
+        user.adminApprovalStatus = "approved";
+        user.adminApprovalDate = new Date();
+        user.approvedBy = currentUserId;
+        
+        await user.save();
+        
+        // Send approval email to the reapproved admin
+        try {
+            const adminDetails = {
+                username: user.username,
+                role: user.role,
+                approvedBy: currentUser.username || currentUser.email,
+                approvedAt: user.adminApprovalDate
+            };
+            
+            await sendAdminApprovalEmail(user.email, adminDetails);
+            console.log(`✅ Admin reapproval email sent to: ${user.email}`);
+        } catch (emailError) {
+            console.error(`❌ Failed to send admin reapproval email to ${user.email}:`, emailError);
+            // Don't fail the reapproval if email fails, just log the error
+        }
+        
+        res.status(200).json({
+            message: "Admin request reapproved successfully",
             user: {
                 _id: user._id,
                 username: user.username,

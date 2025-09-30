@@ -34,7 +34,12 @@ export const getManagementAdmins = async (req, res, next) => {
     }
     // Regular admins: only see other admins (not rootadmin/default admin)
     // Rootadmin: see all admins (not rootadmin/default admin)
-    const query = { role: 'admin', _id: { $ne: currentUser._id } };
+    // Exclude rejected admins - they should be treated as regular users
+    const query = { 
+      role: 'admin', 
+      _id: { $ne: currentUser._id },
+      adminApprovalStatus: { $ne: 'rejected' } // Exclude rejected admins
+    };
     if (currentUser.role === 'admin') {
       // Regular admins cannot see rootadmin or default admin
       query.isDefaultAdmin = { $ne: true };

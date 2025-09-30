@@ -2,8 +2,10 @@ import express from 'express';
 import { verifyToken } from '../utils/verify.js';
 import { 
     getPendingAdminRequests, 
+    getAllAdminRequests,
     approveAdminRequest, 
     rejectAdminRequest,
+    reapproveAdminRequest,
     transferRootAdminRights
 } from '../controllers/admin.controller.js';
 import User from '../models/user.model.js';
@@ -57,11 +59,17 @@ const requireApprovedAdmin = async (req, res, next) => {
 // Get pending admin requests (approved admins only)
 router.get('/pending-requests', verifyToken, requireApprovedAdmin, getPendingAdminRequests);
 
+// Get all admin requests (pending, approved, rejected) (approved admins only)
+router.get('/all-requests', verifyToken, requireApprovedAdmin, getAllAdminRequests);
+
 // Approve admin request (approved admins only)
 router.put('/approve/:userId', verifyToken, requireApprovedAdmin, approveAdminRequest);
 
 // Reject admin request (approved admins only)
 router.put('/reject/:userId', verifyToken, requireApprovedAdmin, rejectAdminRequest);
+
+// Re-approve rejected admin request (approved admins only)
+router.put('/reapprove/:userId', verifyToken, requireApprovedAdmin, reapproveAdminRequest);
 
 // Transfer Root Admin Rights (rootadmin only)
 router.post('/transfer-rights', verifyToken, transferRootAdminRights);
