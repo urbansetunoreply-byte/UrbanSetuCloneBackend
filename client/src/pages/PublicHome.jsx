@@ -286,16 +286,14 @@ export default function PublicHome() {
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-4">
             <Link 
               to="/search" 
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-blue-600 font-bold px-6 py-3 sm:px-8 sm:py-4 rounded-xl shadow-2xl hover:bg-gray-100 hover:scale-105 transition-all duration-300 animate-bounce"
-              style={{ animationDelay: '0.4s' }}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-blue-600 font-bold px-6 py-3 sm:px-8 sm:py-4 rounded-xl shadow-2xl hover:bg-gray-100 hover:scale-105 transition-all duration-300"
             >
               <FaRocket className="text-lg sm:text-xl" />
               <span className="text-sm sm:text-base">Start Exploring</span>
             </Link>
             <Link 
               to="/about" 
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-transparent border-2 border-white text-white font-bold px-6 py-3 sm:px-8 sm:py-4 rounded-xl hover:bg-white hover:text-blue-600 transition-all duration-300 animate-bounce"
-              style={{ animationDelay: '0.6s' }}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-transparent border-2 border-white text-white font-bold px-6 py-3 sm:px-8 sm:py-4 rounded-xl hover:bg-white hover:text-blue-600 transition-all duration-300"
             >
               <FaInfoCircle className="text-lg sm:text-xl" />
               <span className="text-sm sm:text-base">Learn More</span>
@@ -683,7 +681,7 @@ export default function PublicHome() {
         
         <div className={`grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 transition-all duration-1000 ${isPlatformVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <div className="text-center bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-            <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4 animate-bounce">
+            <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4">
               <FaDesktop className="text-3xl text-blue-600" />
             </div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2">Desktop</h3>
@@ -691,7 +689,7 @@ export default function PublicHome() {
           </div>
           
           <div className="text-center bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            <div className="w-16 h-16 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-4 animate-pulse">
+            <div className="w-16 h-16 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-4">
               <FaMobile className="text-3xl text-green-600" />
             </div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2">Mobile</h3>
@@ -699,7 +697,7 @@ export default function PublicHome() {
           </div>
           
           <div className="text-center bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-            <div className="w-16 h-16 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-4 animate-ping">
+            <div className="w-16 h-16 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-4">
               <FaTablet className="text-3xl text-purple-600" />
             </div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2">Tablet</h3>
@@ -716,16 +714,14 @@ export default function PublicHome() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link 
               to="/search" 
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-blue-600 font-bold px-8 py-4 rounded-xl shadow-2xl hover:bg-gray-100 hover:scale-105 transition-all duration-300 animate-bounce"
-              style={{ animationDelay: '0.4s' }}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-blue-600 font-bold px-8 py-4 rounded-xl shadow-2xl hover:bg-gray-100 hover:scale-105 transition-all duration-300"
             >
               <FaRocket className="text-xl" />
               <span>Start Searching Now</span>
             </Link>
             <Link 
               to="/sign-up" 
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-transparent border-2 border-white text-white font-bold px-8 py-4 rounded-xl hover:bg-white hover:text-blue-600 transition-all duration-300 animate-bounce"
-              style={{ animationDelay: '0.6s' }}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-transparent border-2 border-white text-white font-bold px-8 py-4 rounded-xl hover:bg-white hover:text-blue-600 transition-all duration-300"
             >
               <FaUsers className="text-xl" />
               <span>Create Account</span>
