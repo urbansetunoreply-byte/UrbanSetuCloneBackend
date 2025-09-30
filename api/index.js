@@ -26,6 +26,8 @@ import sessionManagementRouter from "./routes/sessionManagement.route.js";
 import fraudRouter from "./routes/fraud.route.js";
 import emailMonitorRouter from "./routes/emailMonitor.route.js";
 import accountRevocationRouter from "./routes/accountRevocation.route.js";
+import appointmentReminderRouter from "./routes/appointmentReminder.route.js";
+import { startScheduler } from "./services/schedulerService.js";
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import http from 'http';
@@ -443,6 +445,7 @@ app.use("/api/session-management", sessionManagementRouter);
 app.use("/api/fraud", fraudRouter);
 app.use("/api/email-monitor", emailMonitorRouter);
 app.use("/api/auth", accountRevocationRouter);
+app.use("/api/appointment-reminders", appointmentReminderRouter);
 console.log('All API routes registered successfully');
 
 // Catch-all route for 404s - must be after all other routes
@@ -458,6 +461,9 @@ app.use('*', (req, res) => {
 const startServer = () => {
   server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}!!!`);
+    
+    // Start the appointment reminder scheduler
+    startScheduler();
   }).on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
       console.log(`Port ${PORT} is busy, trying ${PORT + 1}...`);

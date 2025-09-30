@@ -1590,5 +1590,163 @@ export const sendAccountActivationEmail = async (email, userDetails) => {
   }
 };
 
+// Appointment Reminder Email
+export const sendAppointmentReminderEmail = async (email, appointmentDetails, userRole) => {
+  try {
+    const { 
+      propertyName, 
+      propertyDescription, 
+      date, 
+      time, 
+      buyerName, 
+      buyerEmail, 
+      sellerName, 
+      sellerEmail, 
+      purpose,
+      listingId
+    } = appointmentDetails;
+
+    const appointmentDate = new Date(date);
+    const formattedDate = appointmentDate.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    
+    const isBuyer = userRole === 'buyer';
+    const otherPartyName = isBuyer ? sellerName : buyerName;
+    const otherPartyEmail = isBuyer ? sellerEmail : buyerEmail;
+    
+    const subject = `Appointment Reminder - ${propertyName} - Tomorrow at ${time}`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Appointment Reminder - UrbanSetu</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9f9f9;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 40px 30px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">⏰ Appointment Reminder</h1>
+            <p style="color: #fef3c7; margin: 10px 0 0; font-size: 16px;">Your appointment is tomorrow!</p>
+          </div>
+          
+          <!-- Content -->
+          <div style="padding: 40px 30px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(245, 158, 11, 0.3); position: relative;">
+                <div style="position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; opacity: 0.2;"></div>
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">⏰</span>
+              </div>
+              <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 24px; font-weight: 600;">Appointment Tomorrow!</h2>
+              <p style="color: #6b7280; margin: 0; font-size: 16px; line-height: 1.6;">
+                This is a friendly reminder about your upcoming property ${isBuyer ? 'viewing' : 'showing'} appointment.
+              </p>
+            </div>
+            
+            <!-- Appointment Details -->
+            <div style="background-color: #f3f4f6; padding: 25px; border-radius: 8px; margin-bottom: 30px;">
+              <h3 style="color: #1f2937; margin: 0 0 15px; font-size: 18px; font-weight: 600;">Appointment Details</h3>
+              <div style="display: grid; gap: 12px;">
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e5e7eb;">
+                  <span style="color: #6b7280; font-weight: 500;">Property:</span>
+                  <span style="color: #1f2937; font-weight: 600;">${propertyName}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e5e7eb;">
+                  <span style="color: #6b7280; font-weight: 500;">Date:</span>
+                  <span style="color: #1f2937; font-weight: 600;">${formattedDate}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e5e7eb;">
+                  <span style="color: #6b7280; font-weight: 500;">Time:</span>
+                  <span style="color: #1f2937; font-weight: 600;">${time}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e5e7eb;">
+                  <span style="color: #6b7280; font-weight: 500;">Purpose:</span>
+                  <span style="color: #1f2937; font-weight: 600;">${purpose === 'buy' ? 'Purchase' : 'Rental'}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0;">
+                  <span style="color: #6b7280; font-weight: 500;">Your Role:</span>
+                  <span style="color: #1f2937; font-weight: 600;">${isBuyer ? 'Buyer' : 'Seller'}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Property Description -->
+            <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6; margin-bottom: 25px;">
+              <h3 style="color: #1e40af; margin: 0 0 10px; font-size: 16px;">Property Description</h3>
+              <p style="color: #1e40af; margin: 0; font-size: 14px; line-height: 1.6;">${propertyDescription}</p>
+            </div>
+
+            <!-- Contact Information -->
+            <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 25px;">
+              <h3 style="color: #065f46; margin: 0 0 10px; font-size: 16px;">Contact Information</h3>
+              <div style="display: grid; gap: 8px;">
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: #047857; font-weight: 500;">${isBuyer ? 'Seller' : 'Buyer'}:</span>
+                  <span style="color: #065f46; font-weight: 600;">${otherPartyName}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: #047857; font-weight: 500;">Email:</span>
+                  <span style="color: #065f46; font-weight: 600;">${otherPartyEmail}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Important Notes -->
+            <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b; margin-bottom: 25px;">
+              <h3 style="color: #92400e; margin: 0 0 10px; font-size: 16px;">Important Reminders</h3>
+              <ul style="color: #92400e; margin: 0; font-size: 14px; line-height: 1.6; padding-left: 20px;">
+                <li>Please arrive on time for your appointment</li>
+                <li>Bring a valid ID for verification</li>
+                <li>If you need to reschedule, contact the ${isBuyer ? 'seller' : 'buyer'} as soon as possible</li>
+                <li>Check the property listing for any specific requirements or instructions</li>
+                <li>If you have any questions, use the chat feature in your appointment</li>
+              </ul>
+            </div>
+            
+            <!-- CTA Buttons -->
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/myappointments" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); margin: 5px;">
+                View Appointment Details
+              </a>
+              ${listingId ? `
+                <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/listing/${listingId}" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3); margin: 5px;">
+                  View Property Listing
+                </a>
+              ` : ''}
+            </div>
+            
+            <!-- Footer -->
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #6b7280; font-size: 14px; margin: 0;">
+                This is an automated reminder. Please do not reply to this email.
+              </p>
+              <p style="color: #9ca3af; margin: 15px 0 0; font-size: 12px;">
+                © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+              </p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+`;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending appointment reminder email:', error);
+    return createErrorResponse(error, 'appointment_reminder_email');
+  }
+};
+
 // Export the current transporter (will be set during initialization)
 export default currentTransporter;
