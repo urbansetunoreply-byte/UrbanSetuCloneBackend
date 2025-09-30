@@ -142,6 +142,7 @@ export const notifyWatchersOnChange = async (app, { listing, changeType, oldPric
     if (!watchers.length) return;
     const io = app.get('io');
     const notifications = [];
+    
     for (const w of watchers) {
       const data = {
         userId: w.userId,
@@ -157,6 +158,27 @@ export const notifyWatchersOnChange = async (app, { listing, changeType, oldPric
       const n = await Notification.create(data);
       notifications.push(n);
       if (io) io.to(w.userId.toString()).emit('notificationCreated', n);
+      
+      // Send email alert for price drops
+      if (changeType === 'price_drop' && oldPrice && newPrice) {
+        try {
+          const { sendPriceDropAlert } = await import('../services/priceDropAlertService.js');
+          const dropAmount = oldPrice - newPrice;
+          const dropPercentage = Math.round((dropAmount / oldPrice) * 100);
+          
+          const priceDropDetails = {
+            originalPrice: oldPrice,
+            currentPrice: newPrice,
+            dropAmount: dropAmount,
+            dropPercentage: dropPercentage
+          };
+          
+          console.log(`📧 Sending price drop email alert for listing ${listing._id} to user ${w.userId}`);
+          await sendPriceDropAlert(w.userId, listing._id, priceDropDetails);
+        } catch (emailError) {
+          console.error('❌ Failed to send price drop email alert:', emailError);
+        }
+      }
     }
     return notifications;
   } catch (e) {

@@ -54,10 +54,8 @@ export default function Watchlist() {
         });
         setBaselineMap(map);
         
-        // Check for price changes and send notifications
-        setTimeout(() => {
-          checkForPriceChanges(listings, map);
-        }, 1000); // Small delay to ensure state is updated
+        // Note: Price drop detection and email alerts are now handled automatically
+        // when sellers update prices via the backend notification system
       }
     } catch (e) {
       // noop
@@ -66,41 +64,8 @@ export default function Watchlist() {
     }
   };
 
-  // Send price drop email alert
-  const sendPriceDropEmailAlert = async (listing, originalPrice, currentPrice, dropAmount, dropPercentage) => {
-    if (!currentUser?._id) return;
-    
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/price-drop-alerts/send`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          userId: currentUser._id,
-          listingId: listing._id,
-          priceDropDetails: {
-            originalPrice,
-            currentPrice,
-            dropAmount,
-            dropPercentage
-          }
-        }),
-      });
-
-      if (response.ok) {
-        console.log('✅ Price drop email alert sent successfully');
-        toast.success('Price drop alert sent to your email!');
-      } else {
-        console.error('❌ Failed to send price drop email alert');
-        toast.error('Failed to send price drop alert');
-      }
-    } catch (error) {
-      console.error('❌ Error sending price drop email alert:', error);
-      toast.error('Failed to send price drop alert');
-    }
-  };
+  // Price drop email alerts are now handled automatically by the backend
+  // when sellers update property prices
 
   // Helper used by multiple computations - must be defined before usage
   const getEffectivePrice = (l) => {
@@ -109,34 +74,8 @@ export default function Watchlist() {
     return effective ?? null;
   };
 
-  // Check for price changes and send email alerts
-  const checkForPriceChanges = (listings, baselineMap) => {
-    if (!currentUser?._id) return;
-    
-    listings.forEach(listing => {
-      const baseline = baselineMap.get(listing._id);
-      const current = getEffectivePrice(listing);
-      
-      if (baseline != null && current != null) {
-        if (current < baseline) {
-          // Price dropped - send email alert
-          const dropAmount = baseline - current;
-          const dropPercentage = Math.round((dropAmount / baseline) * 100);
-          
-          console.log(`💰 Price drop detected for ${listing.name}: ₹${baseline.toLocaleString()} → ₹${current.toLocaleString()} (${dropPercentage}% drop)`);
-          
-          sendPriceDropEmailAlert(
-            listing,
-            baseline,
-            current,
-            dropAmount,
-            dropPercentage
-          );
-        }
-        // Note: We only send alerts for price drops, not increases
-      }
-    });
-  };
+  // Price change detection is now handled automatically by the backend
+  // when sellers update property prices via the listing update endpoint
 
   // Calculate watchlist statistics
   const calculateWatchlistStats = () => {

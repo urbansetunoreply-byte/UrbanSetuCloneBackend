@@ -3,10 +3,51 @@ import User from '../models/user.model.js';
 import Listing from '../models/listing.model.js';
 import { sendPriceDropAlertEmail } from '../utils/emailService.js';
 
+// Track sent emails to prevent duplicates (in-memory cache)
+const sentEmailCache = new Map();
+const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+
+// Generate cache key for email tracking
+const getEmailCacheKey = (userId, listingId, priceHash) => {
+  return `${userId}_${listingId}_${priceHash}`;
+};
+
+// Check if email was already sent
+const wasEmailSent = (userId, listingId, priceHash) => {
+  const key = getEmailCacheKey(userId, listingId, priceHash);
+  const cached = sentEmailCache.get(key);
+  
+  if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
+    return true;
+  }
+  
+  // Clean up expired entries
+  if (cached) {
+    sentEmailCache.delete(key);
+  }
+  
+  return false;
+};
+
+// Mark email as sent
+const markEmailSent = (userId, listingId, priceHash) => {
+  const key = getEmailCacheKey(userId, listingId, priceHash);
+  sentEmailCache.set(key, { timestamp: Date.now() });
+};
+
 // Send price drop alert email to user
 export const sendPriceDropAlert = async (userId, listingId, priceDropDetails) => {
   try {
     console.log(`🔍 Sending price drop alert for user ${userId}, listing ${listingId}`);
+    
+    // Create a hash of the price details to prevent duplicate sends
+    const priceHash = `${priceDropDetails.originalPrice}_${priceDropDetails.currentPrice}`;
+    
+    // Check if email was already sent for this price change
+    if (wasEmailSent(userId, listingId, priceHash)) {
+      console.log(`⚠️ Price drop email already sent for user ${userId}, listing ${listingId} with this price change`);
+      return { success: true, message: 'Email already sent for this price change' };
+    }
     
     // Get user details
     const user = await User.findById(userId).select('email username firstName lastName').lean();
@@ -54,6 +95,8 @@ export const sendPriceDropAlert = async (userId, listingId, priceDropDetails) =>
     const result = await sendPriceDropAlertEmail(user.email, emailData);
     
     if (result.success) {
+      // Mark email as sent to prevent duplicates
+      markEmailSent(userId, listingId, priceHash);
       console.log(`✅ Price drop alert sent successfully to ${user.email}`);
       return { success: true, message: 'Price drop alert sent successfully' };
     } else {
