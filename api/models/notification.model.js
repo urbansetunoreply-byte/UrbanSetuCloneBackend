@@ -30,7 +30,11 @@ const notificationSchema = new mongoose.Schema(
         'appointment_accepted_by_seller',
         'appointment_rejected_by_seller',
         'appointment_reinitiated_by_user',
-        'refund_appeal_submitted'
+        'refund_appeal_submitted',
+        'watchlist_price_drop',
+        'watchlist_price_update',
+        'watchlist_property_sold',
+        'watchlist_property_removed'
       ],
     },
     title: {
