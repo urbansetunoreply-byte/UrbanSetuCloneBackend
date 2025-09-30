@@ -7,6 +7,7 @@ import crypto from 'crypto';
 import { sendAccountDeletionEmail } from '../utils/emailService.js';
 import { autoPurgeSoftbannedAccounts, getPurgeStatistics } from '../services/autoPurgeService.js';
 import { sendAccountDeletionReminders, getReminderStatistics } from '../services/accountReminderService.js';
+import { checkEmailServiceStatus, getEmailServiceMonitoringStats } from '../services/emailMonitoringService.js';
 
 // Fetch all users (for admin/rootadmin)
 export const getManagementUsers = async (req, res, next) => {
@@ -480,6 +481,42 @@ export const getReminderStats = async (req, res, next) => {
     res.status(200).json(stats);
   } catch (err) {
     console.error('Error getting reminder statistics:', err);
+    next(err);
+  }
+};
+
+// Manually trigger email service monitoring check (rootadmin only)
+export const triggerEmailMonitoring = async (req, res, next) => {
+  try {
+    const currentUser = await User.findById(req.user.id);
+    const isRoot = currentUser && (currentUser.role === 'rootadmin' || currentUser.isDefaultAdmin);
+    if (!isRoot) return next(errorHandler(403, 'Access denied. Only root admin can trigger email monitoring.'));
+
+    console.log('🔍 Manual email monitoring triggered by admin:', currentUser.email);
+    const result = await checkEmailServiceStatus(req.app);
+    
+    res.status(200).json({
+      success: true,
+      message: 'Email service monitoring check completed successfully',
+      result
+    });
+  } catch (err) {
+    console.error('Error in manual email monitoring:', err);
+    next(err);
+  }
+};
+
+// Get email service monitoring statistics (rootadmin only)
+export const getEmailMonitoringStats = async (req, res, next) => {
+  try {
+    const currentUser = await User.findById(req.user.id);
+    const isRoot = currentUser && (currentUser.role === 'rootadmin' || currentUser.isDefaultAdmin);
+    if (!isRoot) return next(errorHandler(403, 'Access denied. Only root admin can view email monitoring statistics.'));
+
+    const stats = await getEmailServiceMonitoringStats();
+    res.status(200).json(stats);
+  } catch (err) {
+    console.error('Error getting email monitoring statistics:', err);
     next(err);
   }
 }; 

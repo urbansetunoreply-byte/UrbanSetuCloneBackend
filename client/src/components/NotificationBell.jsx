@@ -400,6 +400,8 @@ export default function NotificationBell({ mobile = false }) {
         return <FaEdit className="w-4 h-4 text-purple-500" />;
       case 'watchlist_update':
         return <FaEye className="w-4 h-4 text-indigo-500" />;
+      case 'email_service_failure':
+        return <FaEnvelope className="w-4 h-4 text-red-500" />;
       default:
         return <FaBell className="w-4 h-4 text-gray-500" />;
     }

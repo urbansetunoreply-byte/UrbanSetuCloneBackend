@@ -2,6 +2,7 @@ import cron from 'node-cron';
 import { checkAndSendAppointmentReminders } from './appointmentReminderService.js';
 import { autoPurgeSoftbannedAccounts } from './autoPurgeService.js';
 import { sendAccountDeletionReminders } from './accountReminderService.js';
+import { checkEmailServiceStatus } from './emailMonitoringService.js';
 
 // Schedule appointment reminders to run every day at 9:00 AM
 const scheduleAppointmentReminders = () => {
@@ -69,12 +70,35 @@ const scheduleAccountReminders = () => {
   console.log('📋 Schedule: Every day at 10:00 AM (Asia/Kolkata timezone)');
 };
 
+// Schedule email service monitoring to run every 24 hours at 11:00 PM
+const scheduleEmailMonitoring = (app) => {
+  console.log('📧 Setting up email service monitoring scheduler...');
+  
+  // Run every 24 hours at 11:00 PM
+  cron.schedule('0 23 * * *', async () => {
+    console.log('⏰ Running scheduled email service monitoring check...');
+    try {
+      const result = await checkEmailServiceStatus(app);
+      console.log('✅ Scheduled email service monitoring check completed:', result);
+    } catch (error) {
+      console.error('❌ Error in scheduled email service monitoring check:', error);
+    }
+  }, {
+    scheduled: true,
+    timezone: "Asia/Kolkata" // Adjust timezone as needed
+  });
+  
+  console.log('✅ Email service monitoring scheduler set up successfully');
+  console.log('📋 Schedule: Every 24 hours at 11:00 PM (Asia/Kolkata timezone)');
+};
+
 // Start the scheduler
-export const startScheduler = () => {
+export const startScheduler = (app) => {
   console.log('🚀 Starting scheduler service...');
   scheduleAppointmentReminders();
   scheduleAutoPurge();
   scheduleAccountReminders();
+  scheduleEmailMonitoring(app);
   console.log('✅ Scheduler service started successfully');
 };
 
