@@ -30,6 +30,9 @@ export default function AdminManagement() {
   const [deleteOtherReason, setDeleteOtherReason] = useState("");
   const [deletePolicy, setDeletePolicy] = useState({ category: '', banType: 'allow', allowResignupAfterDays: 0, notes: '' });
   const [showAccountModal, setShowAccountModal] = useState(false);
+  const [showSuspensionReasonModal, setShowSuspensionReasonModal] = useState(false);
+  const [suspensionReason, setSuspensionReason] = useState("");
+  const [suspensionAccount, setSuspensionAccount] = useState(null);
   const [accountLoading, setAccountLoading] = useState(false);
   const [accountStats, setAccountStats] = useState({ listings: 0, appointments: 0 });
   const [searchTerm, setSearchTerm] = useState("");
@@ -194,6 +197,15 @@ export default function AdminManagement() {
     const actionText = isSuspending ? 'suspend' : 'activate';
     const actionTextCapitalized = isSuspending ? 'Suspend' : 'Activate';
 
+    // If suspending, show reason modal first
+    if (isSuspending) {
+      setSuspensionAccount({ id, type });
+      setSuspensionReason("");
+      setShowSuspensionReasonModal(true);
+      return;
+    }
+
+    // If activating, proceed directly
     const performSuspend = async () => {
       // Optimistically update UI
       if (type === 'user') {
@@ -205,6 +217,10 @@ export default function AdminManagement() {
         const res = await fetch(`${API_BASE_URL}/api/admin/management/suspend/${type}/${id}`, {
           method: "PATCH",
           credentials: "include",
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ reason: suspensionReason || 'Policy violation' })
         });
         const data = await res.json();
         if (res.ok) {
@@ -242,6 +258,58 @@ export default function AdminManagement() {
         confirmButtonClass: isSuspending ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600'
       }
     );
+  };
+
+  // Handle suspension with reason
+  const performSuspensionWithReason = async () => {
+    if (!suspensionAccount) return;
+    
+    const { id, type } = suspensionAccount;
+    
+    // Optimistically update UI
+    if (type === 'user') {
+      setUsers(prev => prev.map(u => u._id === id ? { ...u, status: 'suspended' } : u));
+    } else {
+      setAdmins(prev => prev.map(a => a._id === id ? { ...a, status: 'suspended' } : a));
+    }
+    
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/admin/management/suspend/${type}/${id}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ reason: suspensionReason || 'Policy violation' })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(`${type === "user" ? "User" : "Admin"} suspended successfully`);
+        setSuspendError((prev) => ({ ...prev, [id]: undefined }));
+        // Emit socket event
+        socket.emit(type === 'user' ? 'user_update' : 'admin_update', { type: 'update', [type]: data, userId: id });
+        // Emit global signout event for the affected user
+        socket.emit('force_signout', { 
+          userId: id, 
+          action: 'suspend', 
+          message: `Your account has been suspended. You have been signed out.` 
+        });
+        setShowSuspensionReasonModal(false);
+        setSuspensionAccount(null);
+        setSuspensionReason("");
+      } else {
+        // Rollback
+        fetchData();
+        toast.error(data.message || "Failed to suspend account");
+        setSuspendError((prev) => ({ ...prev, [id]: "Can't able to suspend account, may be softbanned or moved" }));
+        setTimeout(() => setSuspendError((prev) => ({ ...prev, [id]: undefined })), 4000);
+      }
+    } catch (err) {
+      fetchData();
+      toast.error("Failed to suspend account");
+      setSuspendError((prev) => ({ ...prev, [id]: "Can't able to suspend account, may be deleted or moved" }));
+      setTimeout(() => setSuspendError((prev) => ({ ...prev, [id]: undefined })), 4000);
+    }
   };
 
   // Optimistic UI for delete
@@ -1638,6 +1706,78 @@ export default function AdminManagement() {
                 }}
               >
                 Confirm Softban
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Suspension Reason Modal */}
+      {showSuspensionReasonModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">Reason for Suspension</h3>
+            <p className="text-gray-600 mb-3">Please provide a reason for suspending this account. This will be included in the notification email.</p>
+            
+            {/* Reason Input */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Suspension Reason</label>
+              <select
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 mb-3"
+                value={suspensionReason}
+                onChange={e => setSuspensionReason(e.target.value)}
+              >
+                <option value="">Select a reason</option>
+                {suspensionAccount?.type === 'user' ? (
+                  <>
+                    <option value="inappropriate_content">Inappropriate content or behavior</option>
+                    <option value="policy_violation">Violation of terms & policies</option>
+                    <option value="spam_activity">Spam or suspicious activity</option>
+                    <option value="fraudulent_activity">Fraudulent activity</option>
+                    <option value="harassment">Harassment or abuse</option>
+                    <option value="fake_account">Fake or duplicate account</option>
+                    <option value="other">Other (specify below)</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="misuse_privileges">Misuse of admin privileges</option>
+                    <option value="policy_violation">Violation of admin policies</option>
+                    <option value="inappropriate_behavior">Inappropriate behavior</option>
+                    <option value="security_concern">Security concern</option>
+                    <option value="inactive_admin">Inactive admin account</option>
+                    <option value="other">Other (specify below)</option>
+                  </>
+                )}
+              </select>
+              
+              {suspensionReason === 'other' && (
+                <input
+                  type="text"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  placeholder="Please specify the reason..."
+                  value={suspensionReason}
+                  onChange={e => setSuspensionReason(e.target.value)}
+                />
+              )}
+            </div>
+            
+            <div className="flex justify-end gap-3 mt-6">
+              <button 
+                className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600" 
+                onClick={() => { 
+                  setShowSuspensionReasonModal(false); 
+                  setSuspensionAccount(null); 
+                  setSuspensionReason("");
+                }}
+              >
+                Cancel
+              </button>
+              <button 
+                className="px-4 py-2 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600" 
+                onClick={performSuspensionWithReason}
+                disabled={!suspensionReason}
+              >
+                Suspend Account
               </button>
             </div>
           </div>

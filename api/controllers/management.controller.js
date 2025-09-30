@@ -4,7 +4,7 @@ import DeletedAccount from '../models/deletedAccount.model.js';
 import AuditLog from '../models/auditLog.model.js';
 import AccountRevocation from '../models/accountRevocation.model.js';
 import crypto from 'crypto';
-import { sendAccountDeletionEmail } from '../utils/emailService.js';
+import { sendAccountDeletionEmail, sendAccountSuspensionEmail, sendUserPromotionEmail, sendAdminDemotionEmail } from '../utils/emailService.js';
 import { autoPurgeSoftbannedAccounts, getPurgeStatistics } from '../services/autoPurgeService.js';
 import { sendAccountDeletionReminders, getReminderStatistics } from '../services/accountReminderService.js';
 import { checkEmailServiceStatus, getEmailServiceMonitoringStats } from '../services/emailMonitoringService.js';
@@ -55,8 +55,10 @@ export const getManagementAdmins = async (req, res, next) => {
 export const suspendUserOrAdmin = async (req, res, next) => {
   try {
     const { type, id } = req.params;
+    const { reason } = req.body; // Get suspension reason from request body
     const currentUser = await User.findById(req.user.id);
     if (!currentUser) return next(errorHandler(403, 'Access denied'));
+    
     if (type === 'user') {
       // Only admin/rootadmin can suspend users
       if (currentUser.role !== 'admin' && currentUser.role !== 'rootadmin') {
@@ -69,11 +71,31 @@ export const suspendUserOrAdmin = async (req, res, next) => {
       if (togglingToSuspended) {
         user.suspendedAt = new Date();
         user.suspendedBy = currentUser._id;
+        user.suspensionReason = reason || 'Policy violation'; // Store suspension reason
       } else {
         user.suspendedAt = null;
         user.suspendedBy = null;
+        user.suspensionReason = null;
       }
       await user.save();
+      
+      // Send suspension/reactivation email
+      try {
+        const suspensionDetails = {
+          username: user.username,
+          role: user.role,
+          reason: user.suspensionReason || 'Policy violation',
+          suspendedBy: currentUser.username || currentUser.email,
+          suspendedAt: user.suspendedAt || new Date(),
+          isSuspension: togglingToSuspended
+        };
+        
+        await sendAccountSuspensionEmail(user.email, suspensionDetails);
+        console.log(`✅ ${togglingToSuspended ? 'Suspension' : 'Reactivation'} email sent to: ${user.email}`);
+      } catch (emailError) {
+        console.error(`❌ Failed to send ${togglingToSuspended ? 'suspension' : 'reactivation'} email to ${user.email}:`, emailError);
+        // Don't fail the suspension if email fails, just log the error
+      }
       
       // Emit socket event for account suspension
       const io = req.app.get('io');
@@ -100,11 +122,31 @@ export const suspendUserOrAdmin = async (req, res, next) => {
       if (togglingAdminToSuspended) {
         admin.suspendedAt = new Date();
         admin.suspendedBy = currentUser._id;
+        admin.suspensionReason = reason || 'Policy violation'; // Store suspension reason
       } else {
         admin.suspendedAt = null;
         admin.suspendedBy = null;
+        admin.suspensionReason = null;
       }
       await admin.save();
+      
+      // Send suspension/reactivation email
+      try {
+        const suspensionDetails = {
+          username: admin.username,
+          role: admin.role,
+          reason: admin.suspensionReason || 'Policy violation',
+          suspendedBy: currentUser.username || currentUser.email,
+          suspendedAt: admin.suspendedAt || new Date(),
+          isSuspension: togglingAdminToSuspended
+        };
+        
+        await sendAccountSuspensionEmail(admin.email, suspensionDetails);
+        console.log(`✅ ${togglingAdminToSuspended ? 'Suspension' : 'Reactivation'} email sent to: ${admin.email}`);
+      } catch (emailError) {
+        console.error(`❌ Failed to send ${togglingAdminToSuspended ? 'suspension' : 'reactivation'} email to ${admin.email}:`, emailError);
+        // Don't fail the suspension if email fails, just log the error
+      }
       
       // Emit socket event for account suspension
       const io = req.app.get('io');
@@ -362,6 +404,8 @@ export const demoteAdminToUser = async (req, res, next) => {
     if (admin._id.equals(currentUser._id)) {
       return next(errorHandler(400, 'You cannot demote yourself.'));
     }
+    
+    const demotedAt = new Date();
     admin.role = 'user';
     admin.adminApprovalStatus = undefined;
     admin.adminApprovalDate = undefined;
@@ -369,6 +413,22 @@ export const demoteAdminToUser = async (req, res, next) => {
     admin.adminRequestDate = undefined;
     admin.isDefaultAdmin = false;
     await admin.save();
+    
+    // Send demotion email
+    try {
+      const demotionDetails = {
+        username: admin.username,
+        demotedBy: currentUser.username || currentUser.email,
+        demotedAt: demotedAt
+      };
+      
+      await sendAdminDemotionEmail(admin.email, demotionDetails);
+      console.log(`✅ Admin demotion email sent to: ${admin.email}`);
+    } catch (emailError) {
+      console.error(`❌ Failed to send demotion email to ${admin.email}:`, emailError);
+      // Don't fail the demotion if email fails, just log the error
+    }
+    
     return res.status(200).json({ message: 'Admin demoted to user successfully.' });
   } catch (err) {
     next(err);
@@ -390,6 +450,22 @@ export const promoteUserToAdmin = async (req, res, next) => {
     user.adminApprovalDate = new Date();
     user.approvedBy = currentUser._id;
     await user.save();
+    
+    // Send promotion email
+    try {
+      const promotionDetails = {
+        username: user.username,
+        promotedBy: currentUser.username || currentUser.email,
+        promotedAt: user.adminApprovalDate
+      };
+      
+      await sendUserPromotionEmail(user.email, promotionDetails);
+      console.log(`✅ User promotion email sent to: ${user.email}`);
+    } catch (emailError) {
+      console.error(`❌ Failed to send promotion email to ${user.email}:`, emailError);
+      // Don't fail the promotion if email fails, just log the error
+    }
+    
     return res.status(200).json({ message: 'User promoted to admin successfully.' });
   } catch (err) {
     next(err);
