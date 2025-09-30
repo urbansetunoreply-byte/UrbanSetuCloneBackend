@@ -33,6 +33,14 @@ export default function AdminManagement() {
   const [showSuspensionReasonModal, setShowSuspensionReasonModal] = useState(false);
   const [suspensionReason, setSuspensionReason] = useState("");
   const [suspensionAccount, setSuspensionAccount] = useState(null);
+  const [showDemoteReasonModal, setShowDemoteReasonModal] = useState(false);
+  const [demoteReason, setDemoteReason] = useState("");
+  const [demoteAccount, setDemoteAccount] = useState(null);
+  const [actionLoading, setActionLoading] = useState({
+    suspend: {},
+    promote: {},
+    demote: {}
+  });
   const [accountLoading, setAccountLoading] = useState(false);
   const [accountStats, setAccountStats] = useState({ listings: 0, appointments: 0 });
   const [searchTerm, setSearchTerm] = useState("");
@@ -207,6 +215,12 @@ export default function AdminManagement() {
 
     // If activating, proceed directly
     const performSuspend = async () => {
+      // Set loading state
+      setActionLoading(prev => ({
+        ...prev,
+        suspend: { ...prev.suspend, [id]: true }
+      }));
+
       // Optimistically update UI
       if (type === 'user') {
         setUsers(prev => prev.map(u => u._id === id ? { ...u, status: u.status === 'active' ? 'suspended' : 'active' } : u));
@@ -248,6 +262,12 @@ export default function AdminManagement() {
         toast.error("Failed to update status");
         setSuspendError((prev) => ({ ...prev, [id]: "Can't able to suspend account, may be deleted or moved" }));
         setTimeout(() => setSuspendError((prev) => ({ ...prev, [id]: undefined })), 4000);
+      } finally {
+        // Clear loading state
+        setActionLoading(prev => ({
+          ...prev,
+          suspend: { ...prev.suspend, [id]: false }
+        }));
       }
     };
 
@@ -267,6 +287,12 @@ export default function AdminManagement() {
     if (!suspensionAccount) return;
     
     const { id, type } = suspensionAccount;
+    
+    // Set loading state
+    setActionLoading(prev => ({
+      ...prev,
+      suspend: { ...prev.suspend, [id]: true }
+    }));
     
     // Optimistically update UI
     if (type === 'user') {
@@ -311,6 +337,12 @@ export default function AdminManagement() {
       toast.error("Failed to suspend account");
       setSuspendError((prev) => ({ ...prev, [id]: "Can't able to suspend account, may be deleted or moved" }));
       setTimeout(() => setSuspendError((prev) => ({ ...prev, [id]: undefined })), 4000);
+    } finally {
+      // Clear loading state
+      setActionLoading(prev => ({
+        ...prev,
+        suspend: { ...prev.suspend, [id]: false }
+      }));
     }
   };
 
@@ -472,6 +504,12 @@ export default function AdminManagement() {
     }
 
     const performPromote = async () => {
+      // Set loading state
+      setActionLoading(prev => ({
+        ...prev,
+        promote: { ...prev.promote, [id]: true }
+      }));
+
       // Store original state for rollback
       const originalUsers = [...users];
       const originalAdmins = [...admins];
@@ -512,6 +550,12 @@ export default function AdminManagement() {
         setUsers(originalUsers);
         setAdmins(originalAdmins);
         toast.error("Failed to promote user");
+      } finally {
+        // Clear loading state
+        setActionLoading(prev => ({
+          ...prev,
+          promote: { ...prev.promote, [id]: false }
+        }));
       }
     };
     
@@ -535,59 +579,79 @@ export default function AdminManagement() {
       return;
     }
 
-    const performDemote = async () => {
-      // Store original state for rollback
-      const originalUsers = [...users];
-      const originalAdmins = [...admins];
-      
-      // Optimistically move admin to users
-      if (admin) {
-        setAdmins(prev => prev.filter(a => a._id !== id));
-        setUsers(prev => [
-          { ...admin, role: 'user', adminApprovalStatus: undefined },
-          ...prev
-        ]);
-      }
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/admin/management/demote/${id}`, {
-          method: "PATCH",
-          credentials: "include",
+    // Show reason modal for demotion
+    setDemoteAccount({ id });
+    setDemoteReason("");
+    setShowDemoteReasonModal(true);
+  };
+
+  // Handle demotion with reason
+  const performDemotionWithReason = async () => {
+    if (!demoteAccount) return;
+    
+    const { id } = demoteAccount;
+    const admin = admins.find(a => a._id === id);
+    
+    // Set loading state
+    setActionLoading(prev => ({
+      ...prev,
+      demote: { ...prev.demote, [id]: true }
+    }));
+
+    // Store original state for rollback
+    const originalUsers = [...users];
+    const originalAdmins = [...admins];
+    
+    // Optimistically move admin to users
+    if (admin) {
+      setAdmins(prev => prev.filter(a => a._id !== id));
+      setUsers(prev => [
+        { ...admin, role: 'user', adminApprovalStatus: undefined },
+        ...prev
+      ]);
+    }
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/admin/management/demote/${id}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ reason: demoteReason || 'Administrative decision' })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success("Admin demoted to user successfully");
+        // Emit socket event
+        socket.emit('user_update', { type: 'add', user: { ...admin, ...data }, userId: id });
+        socket.emit('admin_update', { type: 'delete', admin: { _id: id }, userId: id });
+        // Emit global signout event for the demoted admin
+        socket.emit('force_signout', { 
+          userId: id, 
+          action: 'demote', 
+          message: 'Your admin privileges have been revoked. You have been signed out. Please sign in again as a regular user.' 
         });
-        const data = await res.json();
-        if (res.ok) {
-          toast.success("Admin demoted to user successfully");
-          // Emit socket event
-          socket.emit('user_update', { type: 'add', user: { ...admin, ...data }, userId: id });
-          socket.emit('admin_update', { type: 'delete', admin: { _id: id }, userId: id });
-          // Emit global signout event for the demoted admin
-          socket.emit('force_signout', { 
-            userId: id, 
-            action: 'demote', 
-            message: 'Your admin privileges have been revoked. You have been signed out. Please sign in again as a regular user.' 
-          });
-        } else {
-          // Rollback on failure
-          setUsers(originalUsers);
-          setAdmins(originalAdmins);
-          toast.error(data.message || "Failed to demote admin");
-        }
-      } catch (err) {
-        // Rollback on error
+        setShowDemoteReasonModal(false);
+        setDemoteAccount(null);
+        setDemoteReason("");
+      } else {
+        // Rollback on failure
         setUsers(originalUsers);
         setAdmins(originalAdmins);
-        toast.error("Failed to demote admin");
+        toast.error(data.message || "Failed to demote admin");
       }
-    };
-    
-    showConfirmation(
-      'Demote Admin to User',
-      'Are you sure you want to demote this admin to a user? They will lose their administrative privileges.',
-      performDemote,
-      {
-        confirmText: 'Demote',
-        confirmButtonClass: 'bg-blue-500 hover:bg-blue-600'
-      }
-    );
+    } catch (err) {
+      // Rollback on error
+      setUsers(originalUsers);
+      setAdmins(originalAdmins);
+      toast.error("Failed to demote admin");
+    } finally {
+      // Clear loading state
+      setActionLoading(prev => ({
+        ...prev,
+        demote: { ...prev.demote, [id]: false }
+      }));
+    }
   };
 
   // Add this handler at the top-level of the component
@@ -1160,8 +1224,17 @@ export default function AdminManagement() {
                             className={`flex-1 px-2 py-1 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 ${user.status === "active" ? "bg-yellow-400 text-white hover:bg-yellow-500" : "bg-green-500 text-white hover:bg-green-600"}`}
                             onClick={e => { e.stopPropagation(); handleSuspend(user._id, "user"); }}
                           >
-                            {user.status === "active" ? <FaBan /> : <FaCheckCircle />}
-                            {user.status === "active" ? "Suspend" : "Activate"}
+                            {actionLoading.suspend[user._id] ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                {user.status === "active" ? "Suspending..." : "Activating..."}
+                              </>
+                            ) : (
+                              <>
+                                {user.status === "active" ? <FaBan /> : <FaCheckCircle />}
+                                {user.status === "active" ? "Suspend" : "Activate"}
+                              </>
+                            )}
                           </button>
                           <button
                             className="flex-1 px-2 py-1 rounded-lg font-semibold text-sm bg-red-500 text-white hover:bg-red-600 transition-all duration-200 flex items-center justify-center gap-2"
@@ -1174,7 +1247,16 @@ export default function AdminManagement() {
                               className="flex-1 px-2 py-1 rounded-lg font-semibold text-sm bg-purple-500 text-white hover:bg-purple-600 transition-all duration-200 flex items-center justify-center gap-2"
                               onClick={e => { e.stopPropagation(); handlePromote(user._id); }}
                             >
-                              <FaUserShield /> Promote to Admin
+                              {actionLoading.promote[user._id] ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                  Promoting...
+                                </>
+                              ) : (
+                                <>
+                                  <FaUserShield /> Promote to Admin
+                                </>
+                              )}
                             </button>
                           )}
                         </div>
@@ -1268,8 +1350,17 @@ export default function AdminManagement() {
                             className={`flex-1 px-2 py-1 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 ${admin.status === "active" ? "bg-yellow-400 text-white hover:bg-yellow-500" : "bg-green-500 text-white hover:bg-green-600"}`}
                             onClick={e => { e.stopPropagation(); handleSuspend(admin._id, "admin"); }}
                           >
-                            {admin.status === "active" ? <FaBan /> : <FaCheckCircle />}
-                            {admin.status === "active" ? "Suspend" : "Activate"}
+                            {actionLoading.suspend[admin._id] ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                {admin.status === "active" ? "Suspending..." : "Activating..."}
+                              </>
+                            ) : (
+                              <>
+                                {admin.status === "active" ? <FaBan /> : <FaCheckCircle />}
+                                {admin.status === "active" ? "Suspend" : "Activate"}
+                              </>
+                            )}
                           </button>
                           <button
                             className="flex-1 px-2 py-1 rounded-lg font-semibold text-sm bg-red-500 text-white hover:bg-red-600 transition-all duration-200 flex items-center justify-center gap-2"
@@ -1281,7 +1372,16 @@ export default function AdminManagement() {
                             className="flex-1 px-2 py-1 rounded-lg font-semibold text-sm bg-blue-500 text-white hover:bg-blue-600 transition-all duration-200 flex items-center justify-center gap-2"
                             onClick={e => { e.stopPropagation(); handleDemote(admin._id); }}
                           >
-                            <FaArrowDown /> Demote to User
+                            {actionLoading.demote[admin._id] ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                Demoting...
+                              </>
+                            ) : (
+                              <>
+                                <FaArrowDown /> Demote to User
+                              </>
+                            )}
                           </button>
                           {currentUser.isDefaultAdmin && admin.adminApprovalStatus === 'rejected' && (
                             <button
@@ -1780,6 +1880,66 @@ export default function AdminManagement() {
                 disabled={!suspensionReason}
               >
                 Suspend Account
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Demote Reason Modal */}
+      {showDemoteReasonModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">Reason for Demotion</h3>
+            <p className="text-gray-600 mb-3">Please provide a reason for demoting this admin to user. This will be included in the notification email.</p>
+            
+            {/* Reason Input */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Demotion Reason</label>
+              <select
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3"
+                value={demoteReason}
+                onChange={e => setDemoteReason(e.target.value)}
+              >
+                <option value="">Select a reason</option>
+                <option value="misuse_privileges">Misuse of admin privileges</option>
+                <option value="policy_violation">Violation of admin policies</option>
+                <option value="inappropriate_behavior">Inappropriate behavior</option>
+                <option value="security_concern">Security concern</option>
+                <option value="inactive_admin">Inactive admin account</option>
+                <option value="performance_issues">Performance issues</option>
+                <option value="organizational_changes">Organizational changes</option>
+                <option value="other">Other (specify below)</option>
+              </select>
+              
+              {demoteReason === 'other' && (
+                <input
+                  type="text"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Please specify the reason..."
+                  value={demoteReason}
+                  onChange={e => setDemoteReason(e.target.value)}
+                />
+              )}
+            </div>
+            
+            <div className="flex justify-end gap-3 mt-6">
+              <button 
+                className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600" 
+                onClick={() => { 
+                  setShowDemoteReasonModal(false); 
+                  setDemoteAccount(null); 
+                  setDemoteReason("");
+                }}
+              >
+                Cancel
+              </button>
+              <button 
+                className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600" 
+                onClick={performDemotionWithReason}
+                disabled={!demoteReason}
+              >
+                Demote Admin
               </button>
             </div>
           </div>

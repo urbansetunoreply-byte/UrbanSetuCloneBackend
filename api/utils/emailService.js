@@ -2540,7 +2540,7 @@ export const sendUserPromotionEmail = async (email, promotionDetails) => {
  */
 export const sendAdminDemotionEmail = async (email, demotionDetails) => {
   try {
-    const { username, demotedBy, demotedAt } = demotionDetails;
+    const { username, demotedBy, demotedAt, reason } = demotionDetails;
 
     const subject = `📋 Admin Access Revoked - UrbanSetu`;
     
@@ -2582,6 +2582,15 @@ export const sendAdminDemotionEmail = async (email, demotionDetails) => {
                 <li>Your account data and preferences are preserved</li>
               </ul>
             </div>
+
+            ${reason ? `
+            <div style="background-color: #fef2f2; padding: 25px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #ef4444;">
+              <h3 style="color: #991b1b; margin: 0 0 15px; font-size: 18px; font-weight: 600;">📝 Reason for Demotion</h3>
+              <div style="color: #991b1b; font-size: 14px; line-height: 1.6;">
+                <p style="margin: 0;"><strong>Reason:</strong> ${reason}</p>
+              </div>
+            </div>
+            ` : ''}
             
             <div style="text-align: center; margin-bottom: 30px;">
               <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/sign-in" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); transition: all 0.3s ease;">

@@ -396,6 +396,7 @@ export const purgeDeletedAccount = async (req, res, next) => {
 export const demoteAdminToUser = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const { reason } = req.body; // Get demotion reason from request body
     const currentUser = await User.findById(req.user.id);
     if (!currentUser || !currentUser.isDefaultAdmin) {
       return next(errorHandler(403, 'Access denied. Only the current default admin can demote admins.'));
@@ -421,11 +422,13 @@ export const demoteAdminToUser = async (req, res, next) => {
       const demotionDetails = {
         username: admin.username,
         demotedBy: currentUser.username || currentUser.email,
-        demotedAt: demotedAt
+        demotedAt: demotedAt,
+        reason: reason || 'Administrative decision'
       };
       
       await sendAdminDemotionEmail(admin.email, demotionDetails);
       console.log(`✅ Admin demotion email sent to: ${admin.email}`);
+      console.log(`📧 Demotion details:`, demotionDetails);
     } catch (emailError) {
       console.error(`❌ Failed to send demotion email to ${admin.email}:`, emailError);
       // Don't fail the demotion if email fails, just log the error
