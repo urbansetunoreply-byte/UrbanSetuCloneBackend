@@ -66,16 +66,12 @@ export default function Watchlist() {
     }
   };
 
-  // Feature flag: optionally enable backend notifications to avoid 404s if route is absent
-  const ENABLE_WATCHLIST_NOTIFICATIONS = import.meta.env.VITE_ENABLE_WATCHLIST_NOTIFICATIONS === 'true';
-
-  // Send watchlist notification
-  const sendWatchlistNotification = async (listing, type, message) => {
+  // Send price drop email alert
+  const sendPriceDropEmailAlert = async (listing, originalPrice, currentPrice, dropAmount, dropPercentage) => {
     if (!currentUser?._id) return;
-    if (!ENABLE_WATCHLIST_NOTIFICATIONS) return;
     
     try {
-      const response = await fetch(`${API_BASE_URL}/api/notifications/watchlist`, {
+      const response = await fetch(`${API_BASE_URL}/api/price-drop-alerts/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -84,23 +80,25 @@ export default function Watchlist() {
         body: JSON.stringify({
           userId: currentUser._id,
           listingId: listing._id,
-          type: type,
-          title: `Watchlist Alert: ${listing.name}`,
-          message: message,
-          link: `/user/listing/${listing._id}`
+          priceDropDetails: {
+            originalPrice,
+            currentPrice,
+            dropAmount,
+            dropPercentage
+          }
         }),
       });
 
       if (response.ok) {
-        const data = await response.json();
-        // Emit socket event for real-time notification
-        socket.emit('watchlistNotification', {
-          userId: currentUser._id,
-          notification: data.notification
-        });
+        console.log('✅ Price drop email alert sent successfully');
+        toast.success('Price drop alert sent to your email!');
+      } else {
+        console.error('❌ Failed to send price drop email alert');
+        toast.error('Failed to send price drop alert');
       }
-    } catch (_) {
-      // Silently ignore notification errors
+    } catch (error) {
+      console.error('❌ Error sending price drop email alert:', error);
+      toast.error('Failed to send price drop alert');
     }
   };
 
@@ -111,7 +109,7 @@ export default function Watchlist() {
     return effective ?? null;
   };
 
-  // Check for price changes and send notifications
+  // Check for price changes and send email alerts
   const checkForPriceChanges = (listings, baselineMap) => {
     if (!currentUser?._id) return;
     
@@ -121,43 +119,21 @@ export default function Watchlist() {
       
       if (baseline != null && current != null) {
         if (current < baseline) {
-          // Price dropped
+          // Price dropped - send email alert
           const dropAmount = baseline - current;
           const dropPercentage = Math.round((dropAmount / baseline) * 100);
           
-          sendWatchlistNotification(
-            listing,
-            'watchlist_price_drop',
-            `Price dropped by ₹${dropAmount.toLocaleString()} (${dropPercentage}%)! Check it out now.`
-          );
-        } else if (current > baseline) {
-          // Price increased
-          const increaseAmount = current - baseline;
-          const increasePercentage = Math.round((increaseAmount / baseline) * 100);
+          console.log(`💰 Price drop detected for ${listing.name}: ₹${baseline.toLocaleString()} → ₹${current.toLocaleString()} (${dropPercentage}% drop)`);
           
-          sendWatchlistNotification(
+          sendPriceDropEmailAlert(
             listing,
-            'watchlist_price_update',
-            `Price increased by ₹${increaseAmount.toLocaleString()} (${increasePercentage}%).`
+            baseline,
+            current,
+            dropAmount,
+            dropPercentage
           );
         }
-      }
-      
-      // Check for other status changes
-      if (listing.status === 'sold' || listing.status === 'unavailable') {
-        sendWatchlistNotification(
-          listing,
-          'watchlist_property_sold',
-          `This property is no longer available. Status: ${listing.status}`
-        );
-      }
-      
-      if (listing.status === 'removed') {
-        sendWatchlistNotification(
-          listing,
-          'watchlist_property_removed',
-          `This property has been removed from listings.`
-        );
+        // Note: We only send alerts for price drops, not increases
       }
     });
   };

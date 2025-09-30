@@ -27,6 +27,7 @@ import fraudRouter from "./routes/fraud.route.js";
 import emailMonitorRouter from "./routes/emailMonitor.route.js";
 import accountRevocationRouter from "./routes/accountRevocation.route.js";
 import appointmentReminderRouter from "./routes/appointmentReminder.route.js";
+import priceDropAlertRouter from "./routes/priceDropAlert.route.js";
 import { startScheduler } from "./services/schedulerService.js";
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -446,6 +447,7 @@ app.use("/api/fraud", fraudRouter);
 app.use("/api/email-monitor", emailMonitorRouter);
 app.use("/api/auth", accountRevocationRouter);
 app.use("/api/appointment-reminders", appointmentReminderRouter);
+app.use("/api/price-drop-alerts", priceDropAlertRouter);
 console.log('All API routes registered successfully');
 
 // Catch-all route for 404s - must be after all other routes
