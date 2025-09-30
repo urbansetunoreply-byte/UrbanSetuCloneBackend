@@ -495,6 +495,24 @@ export const Google=async (req,res,next)=>{
                 // Don't fail the signup if email fails, just log the error
             }
             
+            // Send new login email (first login) for Google sign-in users
+            try {
+                const userAgent = req.get('User-Agent');
+                const device = getDeviceInfo(userAgent);
+                const location = getLocationFromIP(req.ip || req.connection.remoteAddress);
+                await sendNewLoginEmail(
+                    newUser.email,
+                    device,
+                    req.ip,
+                    location,
+                    new Date()
+                );
+                console.log(`✅ New login email sent to Google user: ${newUser.email}`);
+            } catch (emailError) {
+                console.error(`❌ Failed to send new login email to Google user ${newUser.email}:`, emailError);
+                // Don't fail the signup if email fails, just log the error
+            }
+            
             res.status(200).json({
                 _id: newUser._id,
                 username: newUser.username,
