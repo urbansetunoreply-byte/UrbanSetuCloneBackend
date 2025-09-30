@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import { errorHandler } from "../utils/error.js";
 import bcryptjs from "bcryptjs";
+import { sendAdminApprovalEmail, sendAdminRejectionEmail } from "../utils/emailService.js";
 
 // Get all pending admin requests
 export const getPendingAdminRequests = async (req, res, next) => {
@@ -49,6 +50,22 @@ export const approveAdminRequest = async (req, res, next) => {
         
         await user.save();
         
+        // Send approval email to the newly approved admin
+        try {
+            const adminDetails = {
+                username: user.username,
+                role: user.role,
+                approvedBy: currentUser.username || currentUser.email,
+                approvedAt: user.adminApprovalDate
+            };
+            
+            await sendAdminApprovalEmail(user.email, adminDetails);
+            console.log(`✅ Admin approval email sent to: ${user.email}`);
+        } catch (emailError) {
+            console.error(`❌ Failed to send admin approval email to ${user.email}:`, emailError);
+            // Don't fail the approval if email fails, just log the error
+        }
+        
         res.status(200).json({
             message: "Admin request approved successfully",
             user: {
@@ -95,6 +112,22 @@ export const rejectAdminRequest = async (req, res, next) => {
         user.approvedBy = currentUserId;
         
         await user.save();
+        
+        // Send rejection email to the rejected admin
+        try {
+            const adminDetails = {
+                username: user.username,
+                role: user.role,
+                rejectedBy: currentUser.username || currentUser.email,
+                rejectedAt: user.adminApprovalDate
+            };
+            
+            await sendAdminRejectionEmail(user.email, adminDetails);
+            console.log(`✅ Admin rejection email sent to: ${user.email}`);
+        } catch (emailError) {
+            console.error(`❌ Failed to send admin rejection email to ${user.email}:`, emailError);
+            // Don't fail the rejection if email fails, just log the error
+        }
         
         res.status(200).json({
             message: "Admin request rejected successfully",

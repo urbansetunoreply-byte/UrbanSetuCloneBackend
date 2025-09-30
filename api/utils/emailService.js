@@ -2094,5 +2094,211 @@ export const sendAccountDeletionFinalWarningEmail = async (email, userDetails, r
   }
 };
 
+/**
+ * Send admin approval email to newly approved admin
+ */
+export const sendAdminApprovalEmail = async (email, adminDetails) => {
+  try {
+    const { username, role, approvedBy, approvedAt } = adminDetails;
+
+    const subject = `🎉 Welcome! Your Admin Account Has Been Approved - UrbanSetu`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Admin Account Approved - UrbanSetu</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9f9f9;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 30px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">🎉 Congratulations!</h1>
+            <p style="color: #d1fae5; margin: 10px 0 0; font-size: 16px;">Your admin account has been approved</p>
+          </div>
+          
+          <!-- Content -->
+          <div style="padding: 40px 30px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);">
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold;">✓</span>
+              </div>
+              <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 24px; font-weight: 600;">Welcome to the Admin Team!</h2>
+              <p style="color: #6b7280; margin: 0; font-size: 16px; line-height: 1.6;">Hello ${username}, your admin account has been successfully approved. You can now access all admin features and manage the platform.</p>
+            </div>
+            
+            <div style="background-color: #f0fdf4; padding: 25px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #10b981;">
+              <h3 style="color: #166534; margin: 0 0 15px; font-size: 18px; font-weight: 600;">🚀 What's Next?</h3>
+              <ul style="color: #166534; margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.6;">
+                <li>Sign in to your account using your existing credentials</li>
+                <li>Access the admin dashboard to manage users and content</li>
+                <li>Review and approve pending admin requests</li>
+                <li>Monitor platform activity and user management</li>
+                <li>Access advanced reporting and analytics tools</li>
+              </ul>
+            </div>
+            
+            <div style="text-align: center; margin-bottom: 30px;">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/sign-in" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); transition: all 0.3s ease;">
+                Sign In to Admin Dashboard
+              </a>
+            </div>
+            
+            <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <h3 style="color: #1f2937; margin: 0 0 10px; font-size: 16px; font-weight: 600;">Account Details</h3>
+              <div style="display: grid; gap: 8px;">
+                <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #e5e7eb;">
+                  <span style="color: #6b7280; font-weight: 500; font-size: 14px;">Username:</span>
+                  <span style="color: #1f2937; font-weight: 600; font-size: 14px;">${username}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #e5e7eb;">
+                  <span style="color: #6b7280; font-weight: 500; font-size: 14px;">Email:</span>
+                  <span style="color: #1f2937; font-weight: 600; font-size: 14px;">${email}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #e5e7eb;">
+                  <span style="color: #6b7280; font-weight: 500; font-size: 14px;">Role:</span>
+                  <span style="color: #1f2937; font-weight: 600; font-size: 14px;">${role}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 5px 0;">
+                  <span style="color: #6b7280; font-weight: 500; font-size: 14px;">Approved On:</span>
+                  <span style="color: #1f2937; font-weight: 600; font-size: 14px;">${new Date(approvedAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div style="text-align: center; color: #6b7280; font-size: 14px; line-height: 1.6;">
+              <p style="margin: 0 0 10px;">If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+              <p style="margin: 0;">Welcome to the UrbanSetu admin team!</p>
+            </div>
+          </div>
+          
+          <!-- Footer -->
+          <div style="background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending admin approval email:', error);
+    return createErrorResponse(error, 'admin_approval_email');
+  }
+};
+
+/**
+ * Send admin rejection email to rejected admin
+ */
+export const sendAdminRejectionEmail = async (email, adminDetails) => {
+  try {
+    const { username, role, rejectedBy, rejectedAt } = adminDetails;
+
+    const subject = `❌ Admin Account Request Update - UrbanSetu`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Admin Account Request Update - UrbanSetu</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9f9f9;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 40px 30px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Account Request Update</h1>
+            <p style="color: #fecaca; margin: 10px 0 0; font-size: 16px;">Your admin account request has been reviewed</p>
+          </div>
+          
+          <!-- Content -->
+          <div style="padding: 40px 30px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(239, 68, 68, 0.3);">
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold;">✕</span>
+              </div>
+              <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 24px; font-weight: 600;">Request Not Approved</h2>
+              <p style="color: #6b7280; margin: 0; font-size: 16px; line-height: 1.6;">Hello ${username}, we regret to inform you that your admin account request has not been approved at this time.</p>
+            </div>
+            
+            <div style="background-color: #fef2f2; padding: 25px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #ef4444;">
+              <h3 style="color: #991b1b; margin: 0 0 15px; font-size: 18px; font-weight: 600;">📋 What This Means</h3>
+              <ul style="color: #991b1b; margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.6;">
+                <li>Your account remains as a regular user account</li>
+                <li>You can still use all standard platform features</li>
+                <li>You can browse, buy, and sell properties normally</li>
+                <li>You can reapply for admin privileges in the future</li>
+                <li>Your account data and preferences are preserved</li>
+              </ul>
+            </div>
+            
+            <div style="text-align: center; margin-bottom: 30px;">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/sign-in" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); transition: all 0.3s ease;">
+                Continue Using UrbanSetu
+              </a>
+            </div>
+            
+            <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <h3 style="color: #1f2937; margin: 0 0 10px; font-size: 16px; font-weight: 600;">Account Details</h3>
+              <div style="display: grid; gap: 8px;">
+                <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #e5e7eb;">
+                  <span style="color: #6b7280; font-weight: 500; font-size: 14px;">Username:</span>
+                  <span style="color: #1f2937; font-weight: 600; font-size: 14px;">${username}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #e5e7eb;">
+                  <span style="color: #6b7280; font-weight: 500; font-size: 14px;">Email:</span>
+                  <span style="color: #1f2937; font-weight: 600; font-size: 14px;">${email}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #e5e7eb;">
+                  <span style="color: #6b7280; font-weight: 500; font-size: 14px;">Current Role:</span>
+                  <span style="color: #1f2937; font-weight: 600; font-size: 14px;">User</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 5px 0;">
+                  <span style="color: #6b7280; font-weight: 500; font-size: 14px;">Reviewed On:</span>
+                  <span style="color: #1f2937; font-weight: 600; font-size: 14px;">${new Date(rejectedAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div style="text-align: center; color: #6b7280; font-size: 14px; line-height: 1.6;">
+              <p style="margin: 0 0 10px;">If you have any questions about this decision or would like to discuss your application further, please contact our support team.</p>
+              <p style="margin: 0;">Thank you for your interest in contributing to UrbanSetu!</p>
+            </div>
+          </div>
+          
+          <!-- Footer -->
+          <div style="background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending admin rejection email:', error);
+    return createErrorResponse(error, 'admin_rejection_email');
+  }
+};
+
 // Export the current transporter (will be set during initialization)
 export default currentTransporter;
