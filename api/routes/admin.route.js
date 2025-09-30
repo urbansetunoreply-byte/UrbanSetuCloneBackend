@@ -75,6 +75,11 @@ router.get('/account-reminders/stats', verifyToken, getReminderStats);
 router.post('/email-monitoring/trigger', verifyToken, triggerEmailMonitoring);
 router.get('/email-monitoring/stats', verifyToken, getEmailMonitoringStats);
 
+// Test endpoint to verify route is working
+router.get('/email-monitoring/test', (req, res) => {
+  res.json({ message: 'Email monitoring routes are working!', timestamp: new Date() });
+});
+
 // Verify admin password for management access
 router.post('/management/verify-password', verifyToken, async (req, res, next) => {
     try {
