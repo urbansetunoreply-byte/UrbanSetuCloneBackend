@@ -169,7 +169,7 @@ export default function AccountRevocation() {
                   <FaUser className="w-4 h-4 mr-2" />
                   Previous Account Information
                 </h3>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Username:</span>
                     <span className="font-medium">{purgedDetails.username}</span>
@@ -180,8 +180,20 @@ export default function AccountRevocation() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Permanently Deleted:</span>
-                    <span className="font-medium">
-                      {new Date(purgedDetails.purgedAt).toLocaleDateString()}
+                    <span className="font-medium text-red-600">
+                      {new Date(purgedDetails.purgedAt).toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Days Since Purge:</span>
+                    <span className="font-medium text-red-600">
+                      {Math.ceil((new Date() - new Date(purgedDetails.purgedAt)) / (1000 * 60 * 60 * 24))} days
                     </span>
                   </div>
                 </div>
@@ -262,7 +274,7 @@ export default function AccountRevocation() {
                 <FaUser className="w-4 h-4 mr-2" />
                 Account Information
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Username:</span>
                   <span className="font-medium">{accountData.username}</span>
@@ -285,12 +297,91 @@ export default function AccountRevocation() {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Deleted:</span>
+                  <span className="text-gray-600">Account Deleted:</span>
                   <span className="font-medium">
-                    {new Date(accountData.deletedAt).toLocaleDateString()}
+                    {new Date(accountData.deletedAt).toLocaleString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Days Since Deletion:</span>
+                  <span className="font-medium">
+                    {Math.ceil((new Date() - new Date(accountData.deletedAt)) / (1000 * 60 * 60 * 24))} days
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Link Valid Until:</span>
+                  <span className="font-medium text-green-600">
+                    {new Date(accountData.expiresAt).toLocaleString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Days Remaining:</span>
+                  <span className="font-medium text-green-600">
+                    {Math.max(0, Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)))} days
                   </span>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Status Indicator */}
+          {accountData && (
+            <div className={`rounded-lg p-4 mb-6 ${
+              Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) <= 3 
+                ? 'bg-red-50 border border-red-200' 
+                : Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) <= 7 
+                ? 'bg-orange-50 border border-orange-200' 
+                : 'bg-green-50 border border-green-200'
+            }`}>
+              <div className="flex items-center mb-2">
+                <div className={`w-3 h-3 rounded-full mr-2 ${
+                  Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) <= 3 
+                    ? 'bg-red-500' 
+                    : Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) <= 7 
+                    ? 'bg-orange-500' 
+                    : 'bg-green-500'
+                }`}></div>
+                <span className={`font-semibold ${
+                  Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) <= 3 
+                    ? 'text-red-800' 
+                    : Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) <= 7 
+                    ? 'text-orange-800' 
+                    : 'text-green-800'
+                }`}>
+                  {Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) <= 3 
+                    ? 'URGENT: Link expires soon!' 
+                    : Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) <= 7 
+                    ? 'WARNING: Link expires in less than a week' 
+                    : 'Status: Link is valid'
+                  }
+                </span>
+              </div>
+              <p className={`text-sm ${
+                Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) <= 3 
+                  ? 'text-red-700' 
+                  : Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) <= 7 
+                  ? 'text-orange-700' 
+                  : 'text-green-700'
+              }`}>
+                {Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) <= 3 
+                  ? 'Please restore your account immediately to avoid permanent data loss.'
+                  : Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) <= 7 
+                  ? 'Consider restoring your account soon to avoid missing the deadline.'
+                  : 'You have plenty of time to restore your account when convenient.'
+                }
+              </p>
             </div>
           )}
 
@@ -300,10 +391,23 @@ export default function AccountRevocation() {
               <FaClock className="w-4 h-4 text-yellow-600 mr-2" />
               <span className="font-semibold text-yellow-800">Important Notice</span>
             </div>
-            <p className="text-yellow-700 text-sm">
-              This restoration link will expire in 30 days from when your account was deleted. 
-              After that, your account will be permanently removed.
-            </p>
+            <div className="space-y-2">
+              <p className="text-yellow-700 text-sm">
+                This restoration link will expire on <strong>{accountData && new Date(accountData.expiresAt).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}</strong> (30 days from deletion).
+              </p>
+              <p className="text-yellow-700 text-sm">
+                You have <strong className="text-yellow-800">
+                  {accountData && Math.max(0, Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)))} days
+                </strong> remaining to restore your account.
+              </p>
+              <p className="text-yellow-700 text-sm">
+                After expiration, your account will be permanently removed and cannot be restored.
+              </p>
+            </div>
           </div>
 
           {/* Restore Button */}
