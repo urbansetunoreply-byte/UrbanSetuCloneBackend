@@ -1259,7 +1259,7 @@ export default function AdminManagement() {
                             <td className="px-4 py-2 font-medium text-gray-800 whitespace-nowrap">{acc.name}</td>
                             <td className="px-4 py-2 text-gray-700 whitespace-nowrap">{acc.email}</td>
                             <td className="px-4 py-2 whitespace-nowrap"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${acc.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>{acc.role}</span></td>
-                            <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{acc.deletedAt ? new Date(acc.deletedAt).toLocaleString() : '-'}</td>
+                            <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{acc.deletedAt ? new Date(acc.deletedAt).toLocaleString('en-GB') : '-'}</td>
                             <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{typeof acc.deletedBy === 'string' ? acc.deletedBy : (acc.deletedBy?._id || acc.deletedBy) }</td>
                             <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{acc.reason || '-'}</td>
                             <td className="px-4 py-2 text-gray-600">
@@ -1325,8 +1325,8 @@ export default function AdminManagement() {
                             <td className="px-4 py-2 font-medium text-gray-800 whitespace-nowrap">{acc.name}</td>
                             <td className="px-4 py-2 text-gray-700 whitespace-nowrap">{acc.email}</td>
                             <td className="px-4 py-2 whitespace-nowrap"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${acc.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>{acc.role}</span></td>
-                            <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{acc.deletedAt ? new Date(acc.deletedAt).toLocaleString() : '-'}</td>
-                            <td className="px-4 py-2 text-red-600 font-semibold whitespace-nowrap">{acc.purgedAt ? new Date(acc.purgedAt).toLocaleString() : '-'}</td>
+                            <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{acc.deletedAt ? new Date(acc.deletedAt).toLocaleString('en-GB') : '-'}</td>
+                            <td className="px-4 py-2 text-red-600 font-semibold whitespace-nowrap">{acc.purgedAt ? new Date(acc.purgedAt).toLocaleString('en-GB') : '-'}</td>
                             <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{acc.purgedBy ? (typeof acc.purgedBy === 'string' ? acc.purgedBy : acc.purgedBy._id) : '-'}</td>
                             <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{acc.reason || '-'}</td>
                             <td className="px-4 py-2 text-gray-600">
