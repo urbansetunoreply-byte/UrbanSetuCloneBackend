@@ -301,13 +301,23 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                 method: "POST",
                 body: JSON.stringify(requestBody)
             });
-            // Handle suspended account (403) with friendly message
+            // Handle 403 errors with specific messages
             if (res.status === 403) {
                 let friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
                 try {
                     const errData = await res.clone().json();
-                    if (errData && errData.message && errData.message.toLowerCase().includes('suspended')) {
-                        friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
+                    if (errData && errData.message) {
+                        const message = errData.message.toLowerCase();
+                        if (message.includes('pending approval')) {
+                            friendlyMessage = "Your admin account is pending approval. Please wait for an existing admin to approve your request.";
+                        } else if (message.includes('rejected')) {
+                            friendlyMessage = "Your admin account request has been rejected. Please contact support for more information.";
+                        } else if (message.includes('suspended')) {
+                            friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
+                        } else {
+                            // Use the original message if it's a specific 403 error
+                            friendlyMessage = errData.message;
+                        }
                     }
                 } catch (_) {}
                 dispatch(signInFailure(friendlyMessage));
@@ -477,13 +487,23 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                     ...(recaptchaToken && { recaptchaToken })
                 })
             });
-            // Handle suspended account (403) with friendly message
+            // Handle 403 errors with specific messages
             if (res.status === 403) {
                 let friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
                 try {
                     const errData = await res.clone().json();
-                    if (errData && errData.message && errData.message.toLowerCase().includes('suspended')) {
-                        friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
+                    if (errData && errData.message) {
+                        const message = errData.message.toLowerCase();
+                        if (message.includes('pending approval')) {
+                            friendlyMessage = "Your admin account is pending approval. Please wait for an existing admin to approve your request.";
+                        } else if (message.includes('rejected')) {
+                            friendlyMessage = "Your admin account request has been rejected. Please contact support for more information.";
+                        } else if (message.includes('suspended')) {
+                            friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
+                        } else {
+                            // Use the original message if it's a specific 403 error
+                            friendlyMessage = errData.message;
+                        }
                     }
                 } catch (_) {}
                 // Increment failed attempts to keep captcha logic consistent with other errors
