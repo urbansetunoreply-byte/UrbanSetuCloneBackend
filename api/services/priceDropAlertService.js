@@ -101,6 +101,31 @@ export const sendPriceDropAlert = async (userId, listingId, priceDropDetails) =>
       return { success: true, message: 'Price drop alert sent successfully' };
     } else {
       console.error(`❌ Failed to send price drop alert to ${user.email}:`, result.error);
+      
+      // If Brevo fails due to sender verification, try Gmail fallback
+      if (result.error && result.error.includes('sender')) {
+        console.log(`🔄 Attempting Gmail fallback for ${user.email}`);
+        try {
+          const { sendEmailWithRetry } = await import('../utils/emailService.js');
+          
+          const mailOptions = {
+            to: user.email,
+            subject: `💰 Price Drop Alert - ${emailData.propertyName} - Save ₹${emailData.dropAmount.toLocaleString()}!`,
+            html: emailData.html || 'Price drop alert - please check your watchlist for details.',
+            toName: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username
+          };
+          
+          const gmailResult = await sendEmailWithRetry(mailOptions);
+          if (gmailResult.success) {
+            markEmailSent(userId, listingId, priceHash);
+            console.log(`✅ Price drop alert sent via Gmail fallback to ${user.email}`);
+            return { success: true, message: 'Price drop alert sent successfully via Gmail fallback' };
+          }
+        } catch (gmailError) {
+          console.error(`❌ Gmail fallback also failed for ${user.email}:`, gmailError);
+        }
+      }
+      
       return { success: false, error: result.error };
     }
     

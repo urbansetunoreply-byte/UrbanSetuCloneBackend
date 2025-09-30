@@ -36,10 +36,20 @@ export const sendBrevoApiEmail = async (emailData) => {
     console.log('📧 Sending email via Brevo API (HTTP)...');
     console.log('🔑 Using API key:', process.env.BREVO_API_KEY ? `${process.env.BREVO_API_KEY.substring(0, 10)}...` : 'NOT FOUND');
 
+    // Use verified sender email from Brevo SMTP login
+    const senderEmail = process.env.BREVO_SENDER_EMAIL || process.env.BREVO_SMTP_LOGIN;
+    
+    if (!senderEmail) {
+      return {
+        success: false,
+        error: 'No verified sender email configured. Please set BREVO_SENDER_EMAIL or BREVO_SMTP_LOGIN'
+      };
+    }
+    
     const emailPayload = {
       sender: {
         name: process.env.BREVO_SENDER_NAME || 'UrbanSetu',
-        email: process.env.BREVO_SENDER_EMAIL || 'auth.urbansetu@gmail.com'
+        email: senderEmail
       },
       to: [{
         email: emailData.to,
@@ -88,10 +98,22 @@ export const sendBrevoApiEmail = async (emailData) => {
     const result = await response.json();
     
     console.log('✅ Brevo API email sent successfully:', result.messageId);
+    console.log('📧 Email delivery details:', {
+      messageId: result.messageId,
+      sender: emailPayload.sender.email,
+      recipient: emailData.to,
+      subject: emailData.subject
+    });
+    
     return {
       success: true,
       messageId: result.messageId,
-      message: 'Email sent successfully via Brevo API'
+      message: 'Email sent successfully via Brevo API',
+      deliveryDetails: {
+        sender: emailPayload.sender.email,
+        recipient: emailData.to,
+        subject: emailData.subject
+      }
     };
   } catch (error) {
     console.error('❌ Brevo API email sending failed:', error);
