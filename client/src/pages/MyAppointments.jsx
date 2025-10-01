@@ -1745,113 +1745,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     }
   }, [isRecording]);
 
-  // Camera modal handlers
-  const startCamera = useCallback(async () => {
-    console.log('Starting camera with facing mode:', cameraFacingMode);
-    try {
-      if (cameraStreamRef.current) {
-        cameraStreamRef.current.getTracks().forEach(t => t.stop());
-      }
-      const constraints = { video: { facingMode: cameraFacingMode } };
-      console.log('Requesting camera access with constraints:', constraints);
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      console.log('Camera stream obtained:', stream);
-      cameraStreamRef.current = stream;
-      if (cameraVideoRef.current) {
-        cameraVideoRef.current.srcObject = stream;
-        await new Promise(r => setTimeout(r, 100));
-        await cameraVideoRef.current.play().catch(() => {});
-        console.log('Camera video element updated');
-      }
-      setCameraError(null);
-    } catch (err) {
-      console.error('Camera error:', err);
-      setCameraError('Camera not available or permission denied. Try switching camera or attach from gallery.');
-      toast.error('Camera not available or permission denied');
-    }
-  }, [cameraFacingMode]);
+  // Camera modal handlers - temporarily disabled
 
   // Camera useEffect - temporarily disabled
-  // useEffect(() => {
-  //   console.log('Camera modal useEffect triggered:', { cameraModalVisible, capturedPhotoBlob });
-  //   if (cameraModalVisible) {
-  //     setCameraError(null);
-  //     // Start camera only if we are not in captured state
-  //     if (!capturedPhotoBlob) {
-  //       console.log('Starting camera from useEffect');
-  //       startCamera();
-  //     }
-  //   }
-  //   return () => {
-  //     if (!cameraModalVisible && cameraStreamRef.current) {
-  //       console.log('Cleaning up camera stream');
-  //       cameraStreamRef.current.getTracks().forEach(t => t.stop());
-  //       cameraStreamRef.current = null;
-  //     }
-  //   };
-  // }, [cameraModalVisible, startCamera, capturedPhotoBlob]);
 
-  const switchCamera = () => {
-    setCameraFacingMode(prev => (prev === 'user' ? 'environment' : 'user'));
-    // restart camera with new facing mode
-    setTimeout(() => startCamera(), 50);
-  };
-
-  const capturePhoto = async () => {
-    try {
-      const video = cameraVideoRef.current;
-      if (!video) return;
-      const width = video.videoWidth || 1280;
-      const height = video.videoHeight || 720;
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0, width, height);
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92));
-      if (!blob) return;
-      // Pause the video stream preview and show captured state
-      try { video.pause(); } catch (_) {}
-      if (cameraStreamRef.current) {
-        cameraStreamRef.current.getTracks().forEach(t => t.stop());
-        cameraStreamRef.current = null;
-      }
-      setCapturedPhotoBlob(blob);
-      const url = URL.createObjectURL(blob);
-      setCapturedPhotoUrl(url);
-    } catch (err) {
-      toast.error('Failed to capture photo');
-    }
-  };
-
-  // Cleanup captured object URL
-  useEffect(() => {
-    return () => {
-      if (capturedPhotoUrl) URL.revokeObjectURL(capturedPhotoUrl);
-    };
-  }, [capturedPhotoUrl]);
-
-  const retryCapturedPhoto = () => {
-    if (capturedPhotoUrl) URL.revokeObjectURL(capturedPhotoUrl);
-    setCapturedPhotoUrl(null);
-    setCapturedPhotoBlob(null);
-    setCameraError(null);
-    // Restart camera for a new capture
-    setTimeout(() => startCamera(), 50);
-  };
-
-  const confirmCapturedPhoto = () => {
-    if (!capturedPhotoBlob) return;
-    const file = new File([capturedPhotoBlob], `camera-${Date.now()}.jpg`, { type: 'image/jpeg' });
-    setSelectedFiles([file]);
-    setPreviewIndex(0);
-    setShowImagePreviewModal(true);
-    // Close camera modal and clear captured state
-    setCameraModalVisible(false);
-    if (capturedPhotoUrl) URL.revokeObjectURL(capturedPhotoUrl);
-    setCapturedPhotoUrl(null);
-    setCapturedPhotoBlob(null);
-  };
+  // Camera functions - temporarily disabled
 
   // Sound effects
   const { playMessageSent, playMessageReceived, playNotification, toggleMute, setVolume, isMuted } = useSoundEffects();
