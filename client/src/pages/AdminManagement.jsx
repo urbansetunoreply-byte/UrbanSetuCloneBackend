@@ -39,7 +39,10 @@ export default function AdminManagement() {
   const [actionLoading, setActionLoading] = useState({
     suspend: {},
     promote: {},
-    demote: {}
+    demote: {},
+    softban: false,
+    restore: false,
+    purge: false
   });
   const [accountLoading, setAccountLoading] = useState(false);
   const [accountStats, setAccountStats] = useState({ listings: 0, appointments: 0 });
@@ -288,7 +291,7 @@ export default function AdminManagement() {
     
     const { id, type } = suspensionAccount;
     
-    // Set loading state
+    // Set loading state for modal
     setActionLoading(prev => ({
       ...prev,
       suspend: { ...prev.suspend, [id]: true }
@@ -322,6 +325,7 @@ export default function AdminManagement() {
           action: 'suspend', 
           message: `Your account has been suspended. You have been signed out.` 
         });
+        // Close modal only after success
         setShowSuspensionReasonModal(false);
         setSuspensionAccount(null);
         setSuspensionReason("");
@@ -369,6 +373,9 @@ export default function AdminManagement() {
     };
 
     const performDelete = async () => {
+      // Set loading state
+      setActionLoading(prev => ({ ...prev, softban: true }));
+      
       // Store original state for rollback
       const originalUsers = [...users];
       const originalAdmins = [...admins];
@@ -402,6 +409,11 @@ export default function AdminManagement() {
           });
           // Refresh softbanned accounts list if on tab
           if (tab === 'softbanned') fetchSoftbannedAccounts();
+          // Close modal only after success
+          setShowDeleteReasonModal(false);
+          setSelectedAccount(null);
+          setDeleteReason("");
+          setDeleteOtherReason("");
         } else {
           // Rollback on failure
           if (type === 'user') {
@@ -429,6 +441,9 @@ export default function AdminManagement() {
         } else {
           toast.error("Failed to softban account. Please try again.");
         }
+      } finally {
+        // Clear loading state
+        setActionLoading(prev => ({ ...prev, softban: false }));
       }
     };
 
@@ -539,6 +554,8 @@ export default function AdminManagement() {
             action: 'promote', 
             message: 'Your account has been promoted to admin. You have been signed out. Please sign in again to access admin features.' 
           });
+          // Close modal only after success
+          setShowConfirmModal(false);
         } else {
           // Rollback on failure
           setUsers(originalUsers);
@@ -565,7 +582,8 @@ export default function AdminManagement() {
       performPromote,
       {
         confirmText: 'Promote',
-        confirmButtonClass: 'bg-purple-500 hover:bg-purple-600'
+        confirmButtonClass: 'bg-purple-500 hover:bg-purple-600',
+        userId: id
       }
     );
   };
@@ -755,12 +773,15 @@ export default function AdminManagement() {
     if (confirmModalData.onConfirm) {
       confirmModalData.onConfirm();
     }
-    handleConfirmModalClose();
+    // Don't close modal immediately - let the action function handle it
   };
 
   // Helper functions for restore and purge
   const handleRestore = async (accountId) => {
     const performRestore = async () => {
+      // Set loading state
+      setActionLoading(prev => ({ ...prev, restore: true }));
+      
       try {
         const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts/restore/${accountId}`, { 
           method: 'POST', 
@@ -770,11 +791,16 @@ export default function AdminManagement() {
         if (res.ok) {
           toast.success('Account restored');
           fetchSoftbannedAccounts();
+          // Close modal only after success
+          setShowConfirmModal(false);
         } else {
           toast.error(data.message || 'Restore failed');
         }
       } catch (err) {
         toast.error('Failed to restore account');
+      } finally {
+        // Clear loading state
+        setActionLoading(prev => ({ ...prev, restore: false }));
       }
     };
 
@@ -784,13 +810,17 @@ export default function AdminManagement() {
       performRestore,
       {
         confirmText: 'Restore',
-        confirmButtonClass: 'bg-green-500 hover:bg-green-600'
+        confirmButtonClass: 'bg-green-500 hover:bg-green-600',
+        accountId: accountId
       }
     );
   };
 
   const handlePurge = async (accountId) => {
     const performPurge = async () => {
+      // Set loading state
+      setActionLoading(prev => ({ ...prev, purge: true }));
+      
       try {
         const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts/purge/${accountId}`, { 
           method: 'DELETE', 
@@ -801,11 +831,16 @@ export default function AdminManagement() {
           toast.success('Account purged');
           fetchSoftbannedAccounts();
           fetchPurgedAccounts();
+          // Close modal only after success
+          setShowConfirmModal(false);
         } else {
           toast.error(data.message || 'Purge failed');
         }
       } catch (err) {
         toast.error('Failed to purge account');
+      } finally {
+        // Clear loading state
+        setActionLoading(prev => ({ ...prev, purge: false }));
       }
     };
 
@@ -815,7 +850,8 @@ export default function AdminManagement() {
       performPurge,
       {
         confirmText: 'Purge',
-        confirmButtonClass: 'bg-red-500 hover:bg-red-600'
+        confirmButtonClass: 'bg-red-500 hover:bg-red-600',
+        accountId: accountId
       }
     );
   };
@@ -1689,9 +1725,19 @@ export default function AdminManagement() {
                 </button>
                 <button
                   onClick={handleConfirmModalConfirm}
-                  className={`px-4 py-2 rounded-lg text-white font-semibold transition-colors ${confirmModalData.confirmButtonClass}`}
+                  className={`px-4 py-2 rounded-lg text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${confirmModalData.confirmButtonClass}`}
+                  disabled={actionLoading.promote[confirmModalData.userId] || actionLoading.demote[confirmModalData.userId] || actionLoading.restore || actionLoading.purge}
                 >
-                  {confirmModalData.confirmText}
+                  {(actionLoading.promote[confirmModalData.userId] || actionLoading.demote[confirmModalData.userId] || actionLoading.restore || actionLoading.purge) ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      {actionLoading.promote[confirmModalData.userId] ? 'Promoting...' : 
+                       actionLoading.demote[confirmModalData.userId] ? 'Demoting...' :
+                       actionLoading.restore ? 'Restoring...' : 'Purging...'}
+                    </>
+                  ) : (
+                    confirmModalData.confirmText
+                  )}
                 </button>
               </div>
             </div>
@@ -1801,13 +1847,20 @@ export default function AdminManagement() {
                 Cancel
               </button>
               <button 
-                className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700" 
+                className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2" 
                 onClick={async () => { 
-                  setShowDeleteReasonModal(false); 
                   await performDeleteWithReason(); 
                 }}
+                disabled={actionLoading.softban}
               >
-                Confirm Softban
+                {actionLoading.softban ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Processing...
+                  </>
+                ) : (
+                  'Confirm Softban'
+                )}
               </button>
             </div>
           </div>
@@ -1875,11 +1928,18 @@ export default function AdminManagement() {
                 Cancel
               </button>
               <button 
-                className="px-4 py-2 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600" 
+                className="px-4 py-2 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2" 
                 onClick={performSuspensionWithReason}
-                disabled={!suspensionReason}
+                disabled={!suspensionReason || actionLoading.suspend[suspensionAccount?.id]}
               >
-                Suspend Account
+                {actionLoading.suspend[suspensionAccount?.id] ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Suspending...
+                  </>
+                ) : (
+                  'Suspend Account'
+                )}
               </button>
             </div>
           </div>
@@ -1935,11 +1995,18 @@ export default function AdminManagement() {
                 Cancel
               </button>
               <button 
-                className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600" 
+                className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2" 
                 onClick={performDemotionWithReason}
-                disabled={!demoteReason}
+                disabled={!demoteReason || actionLoading.demote[demoteAccount?.id]}
               >
-                Demote Admin
+                {actionLoading.demote[demoteAccount?.id] ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Demoting...
+                  </>
+                ) : (
+                  'Demote Admin'
+                )}
               </button>
             </div>
           </div>
