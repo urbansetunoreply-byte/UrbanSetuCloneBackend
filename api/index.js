@@ -297,12 +297,10 @@ io.on('connection', (socket) => {
       for (const appt of allBookings) {
         // Join admin to each appointment room
         socket.join(`appointment_${appt._id}`);
-        console.log(`Admin ${adminId} joined appointment room: appointment_${appt._id}`);
       }
       
       // Also join admin to a general admin room
       socket.join(`admin_${adminId}`);
-      console.log(`Admin ${adminId} joined admin room: admin_${adminId}`);
       
       // Store admin socket reference for future use
       socket.adminId = adminId;
