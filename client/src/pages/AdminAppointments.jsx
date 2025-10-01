@@ -5043,14 +5043,14 @@ function AdminAppointmentRow({
                   (localComments.slice(Math.max(0, localComments.length - visibleCount)).filter(c => c != null)).map((c, mapIndex, arr) => {
                   
                   const index = localComments.length - arr.length + mapIndex;
-                  const isMe = c.senderEmail === currentUser.email;
+                  const isMe = c && c.senderEmail === currentUser.email;
                   const isEditing = editingComment === c._id;
-                  const currentDate = new Date(c.timestamp);
-                  const previousDate = index > 0 ? new Date(localComments[index - 1].timestamp) : null;
+                  const currentDate = c && c.timestamp ? new Date(c.timestamp) : new Date();
+                  const previousDate = index > 0 && localComments[index - 1] ? new Date(localComments[index - 1].timestamp) : null;
                   const isNewDay = previousDate ? currentDate.toDateString() !== previousDate.toDateString() : true;
 
                   return (
-                    <React.Fragment key={c._id || index}>
+                    <React.Fragment key={(c && c._id) || index}>
                       {isNewDay && (
                         <div className="w-full flex justify-center my-2">
                           <span className="bg-blue-600 text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white">{getDateLabel(currentDate)}</span>
@@ -5116,25 +5116,25 @@ function AdminAppointmentRow({
                           }`}>
                             {isMe ? "You" : (() => {
                               // Check if sender is buyer or seller to get their name
-                              const isSenderBuyer = c.senderEmail === appt.buyerId?.email;
-                              const isSenderSeller = c.senderEmail === appt.sellerId?.email;
+                              const isSenderBuyer = c && c.senderEmail === appt.buyerId?.email;
+                              const isSenderSeller = c && c.senderEmail === appt.sellerId?.email;
                               
                               if (isSenderBuyer) {
-                                return appt.buyerId?.username || c.senderName || c.senderEmail;
+                                return appt.buyerId?.username || (c && c.senderName) || (c && c.senderEmail);
                               } else if (isSenderSeller) {
-                                return appt.sellerId?.username || c.senderName || c.senderEmail;
+                                return appt.sellerId?.username || (c && c.senderName) || (c && c.senderEmail);
                               } else {
                                 // Sender is neither buyer nor seller (could be another admin)
-                                return c.senderName || c.senderEmail;
+                                return (c && c.senderName) || (c && c.senderEmail);
                               }
                             })()}
                           </span>
                         </div>
                         <div className={`text-left ${isMe ? 'text-base font-medium' : 'text-sm'}`}>
-                          {c.deleted ? (
+                          {c && c.deleted ? (
                             (() => {
                               // Check if admin has hidden this deleted message locally using state
-                              const locallyHidden = hiddenMessageIds.includes(c._id);
+                              const locallyHidden = c && hiddenMessageIds.includes(c._id);
                               if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
                                 if (locallyHidden) {
                                   // Show collapsed placeholder for hidden deleted message
@@ -5169,12 +5169,12 @@ function AdminAppointmentRow({
                                     {(c.originalImageUrl || c.imageUrl) && (
                                       <div className="mb-2">
                                         <img
-                                          src={c.originalImageUrl || c.imageUrl}
+                                          src={(c && c.originalImageUrl) || (c && c.imageUrl)}
                                           alt="Preserved image from deleted message"
                                           className="max-w-full max-h-64 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
                                           onClick={() => {
                                             const chatImages = (localComments || []).filter(msg => !!(msg.originalImageUrl || msg.imageUrl)).map(msg => msg.originalImageUrl || msg.imageUrl);
-                                            const currentUrl = c.originalImageUrl || c.imageUrl;
+                                            const currentUrl = (c && c.originalImageUrl) || (c && c.imageUrl);
                                             const startIndex = Math.max(0, chatImages.indexOf(currentUrl));
                                             setPreviewImages(chatImages);
                                             setPreviewIndex(startIndex);
@@ -5226,7 +5226,7 @@ function AdminAppointmentRow({
                                     
                                     <div className="text-gray-800 bg-white p-2 rounded border-l-4 border-red-400 relative group">
                                       {(() => {
-                                        const messageContent = c.originalMessage || c.message;
+                                        const messageContent = (c && c.originalMessage) || (c && c.message);
                                         if (messageContent) {
                                           return (
                                             <>
@@ -5282,7 +5282,7 @@ function AdminAppointmentRow({
                                       {(c.originalImageUrl || c.imageUrl) && (
                                         <div className="mb-2">
                                           <img
-                                            src={c.originalImageUrl || c.imageUrl}
+                                            src={(c && c.originalImageUrl) || (c && c.imageUrl)}
                                             alt="Shared image"
                                             className="max-w-full max-h-64 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
                                             onClick={() => {
@@ -5351,6 +5351,17 @@ function AdminAppointmentRow({
                                                 ref={(audioEl) => {
                                                   if (audioEl && !audioEl.dataset.audioId) {
                                                     audioEl.dataset.audioId = c._id;
+                                                    
+                                                    // Add play event listener to pause other audios
+                                                    audioEl.addEventListener('play', () => {
+                                                      // Pause all other audio elements
+                                                      document.querySelectorAll('audio[data-audio-id]').forEach(otherAudio => {
+                                                        if (otherAudio !== audioEl && !otherAudio.paused) {
+                                                          otherAudio.pause();
+                                                        }
+                                                      });
+                                                    });
+                                                    
                                                     // Add playback rate change listener
                                                     audioEl.addEventListener('ratechange', () => {
                                                       const rate = audioEl.playbackRate;

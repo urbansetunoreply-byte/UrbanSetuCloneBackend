@@ -6558,6 +6558,17 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                 ref={(audioEl) => {
                                                   if (audioEl && !audioEl.dataset.audioId) {
                                                     audioEl.dataset.audioId = c._id;
+                                                    
+                                                    // Add play event listener to pause other audios
+                                                    audioEl.addEventListener('play', () => {
+                                                      // Pause all other audio elements
+                                                      document.querySelectorAll('audio[data-audio-id]').forEach(otherAudio => {
+                                                        if (otherAudio !== audioEl && !otherAudio.paused) {
+                                                          otherAudio.pause();
+                                                        }
+                                                      });
+                                                    });
+                                                    
                                                     // Add playback rate change listener
                                                     audioEl.addEventListener('ratechange', () => {
                                                       const rate = audioEl.playbackRate;
