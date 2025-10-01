@@ -83,8 +83,17 @@ export default function MyAppointments() {
   // Close audio menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (!event.target.closest('[data-audio-menu]') && !event.target.closest('button[title="Audio options"]')) {
+      if (!event.target.closest('[data-audio-menu]') && 
+          !event.target.closest('[data-audio-speed-menu]') && 
+          !event.target.closest('[data-audio-controls-menu]') && 
+          !event.target.closest('button[title="Audio options"]')) {
         document.querySelectorAll('[data-audio-menu]').forEach(menu => {
+          menu.classList.add('hidden');
+        });
+        document.querySelectorAll('[data-audio-speed-menu]').forEach(menu => {
+          menu.classList.add('hidden');
+        });
+        document.querySelectorAll('[data-audio-controls-menu]').forEach(menu => {
           menu.classList.add('hidden');
         });
       }
@@ -6644,13 +6653,81 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                   </svg>
                                                 </button>
                                                 
-                                                {/* Audio options dropdown */}
+                                                {/* Audio options dropdown - Main Menu */}
                                                 <div 
                                                   data-audio-menu={c._id}
                                                   className="hidden absolute right-0 bottom-full mb-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
                                                 >
                                                   <div className="py-1">
-                                                    <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">Playback Speed</div>
+                                                    <button
+                                                      className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        const mainMenu = document.querySelector(`[data-audio-menu="${c._id}"]`);
+                                                        const speedMenu = document.querySelector(`[data-audio-speed-menu="${c._id}"]`);
+                                                        if (mainMenu && speedMenu) {
+                                                          mainMenu.classList.add('hidden');
+                                                          speedMenu.classList.remove('hidden');
+                                                        }
+                                                      }}
+                                                    >
+                                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                                      </svg>
+                                                      Playback Speed
+                                                      <svg className="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                      </svg>
+                                                    </button>
+                                                    
+                                                    <button
+                                                      className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        const mainMenu = document.querySelector(`[data-audio-menu="${c._id}"]`);
+                                                        const controlsMenu = document.querySelector(`[data-audio-controls-menu="${c._id}"]`);
+                                                        if (mainMenu && controlsMenu) {
+                                                          mainMenu.classList.add('hidden');
+                                                          controlsMenu.classList.remove('hidden');
+                                                        }
+                                                      }}
+                                                    >
+                                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h1m4 0h1m-6-8h8a2 2 0 012 2v8a2 2 0 01-2 2H8a2 2 0 01-2-2V6a2 2 0 012-2z" />
+                                                      </svg>
+                                                      Audio Controls
+                                                      <svg className="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                      </svg>
+                                                    </button>
+                                                  </div>
+                                                </div>
+
+                                                {/* Audio Speed Menu */}
+                                                <div 
+                                                  data-audio-speed-menu={c._id}
+                                                  className="hidden absolute right-0 bottom-full mb-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
+                                                >
+                                                  <div className="py-1">
+                                                    <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide flex items-center gap-2">
+                                                      <button
+                                                        className="p-1 hover:bg-gray-100 rounded"
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          const mainMenu = document.querySelector(`[data-audio-menu="${c._id}"]`);
+                                                          const speedMenu = document.querySelector(`[data-audio-speed-menu="${c._id}"]`);
+                                                          if (mainMenu && speedMenu) {
+                                                            speedMenu.classList.add('hidden');
+                                                            mainMenu.classList.remove('hidden');
+                                                          }
+                                                        }}
+                                                      >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                                        </svg>
+                                                      </button>
+                                                      Playback Speed
+                                                    </div>
                                                     {[0.5, 0.75, 1, 1.25, 1.5, 2].map(speed => (
                                                       <button
                                                         key={speed}
@@ -6664,7 +6741,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                           if (audioEl) {
                                                             audioEl.playbackRate = speed;
                                                           }
-                                                          const menu = document.querySelector(`[data-audio-menu="${c._id}"]`);
+                                                          const menu = document.querySelector(`[data-audio-speed-menu="${c._id}"]`);
                                                           if (menu) {
                                                             menu.classList.add('hidden');
                                                           }
@@ -6674,10 +6751,34 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                         {speed === 1 && <span className="text-xs text-gray-400">Normal</span>}
                                                       </button>
                                                     ))}
-                                                    
-                                                    <div className="border-t border-gray-100 my-1"></div>
-                                                    
-                                                    <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">Audio Controls</div>
+                                                  </div>
+                                                </div>
+
+                                                {/* Audio Controls Menu */}
+                                                <div 
+                                                  data-audio-controls-menu={c._id}
+                                                  className="hidden absolute right-0 bottom-full mb-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
+                                                >
+                                                  <div className="py-1">
+                                                    <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide flex items-center gap-2">
+                                                      <button
+                                                        className="p-1 hover:bg-gray-100 rounded"
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          const mainMenu = document.querySelector(`[data-audio-menu="${c._id}"]`);
+                                                          const controlsMenu = document.querySelector(`[data-audio-controls-menu="${c._id}"]`);
+                                                          if (mainMenu && controlsMenu) {
+                                                            controlsMenu.classList.add('hidden');
+                                                            mainMenu.classList.remove('hidden');
+                                                          }
+                                                        }}
+                                                      >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                                        </svg>
+                                                      </button>
+                                                      Audio Controls
+                                                    </div>
                                                     
                                                     <button
                                                       className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
@@ -6691,7 +6792,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                             audioEl.pause();
                                                           }
                                                         }
-                                                        const menu = document.querySelector(`[data-audio-menu="${c._id}"]`);
+                                                        const menu = document.querySelector(`[data-audio-controls-menu="${c._id}"]`);
                                                         if (menu) {
                                                           menu.classList.add('hidden');
                                                         }
@@ -6711,7 +6812,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                         if (audioEl) {
                                                           audioEl.currentTime = 0;
                                                         }
-                                                        const menu = document.querySelector(`[data-audio-menu="${c._id}"]`);
+                                                        const menu = document.querySelector(`[data-audio-controls-menu="${c._id}"]`);
                                                         if (menu) {
                                                           menu.classList.add('hidden');
                                                         }
@@ -6731,7 +6832,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                         if (audioEl) {
                                                           audioEl.muted = !audioEl.muted;
                                                         }
-                                                        const menu = document.querySelector(`[data-audio-menu="${c._id}"]`);
+                                                        const menu = document.querySelector(`[data-audio-controls-menu="${c._id}"]`);
                                                         if (menu) {
                                                           menu.classList.add('hidden');
                                                         }
