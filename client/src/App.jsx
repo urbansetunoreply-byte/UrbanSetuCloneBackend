@@ -73,6 +73,9 @@ const MyPayments = lazy(() => import('./pages/MyPayments'));
 const DeviceManagement = lazy(() => import('./pages/DeviceManagement'));
 const SessionManagement = lazy(() => import('./pages/SessionManagement'));
 const SessionAuditLogs = lazy(() => import('./pages/SessionAuditLogs'));
+const Contact = lazy(() => import('./pages/Contact'));
+const UserContact = lazy(() => import('./pages/UserContact'));
+const AdminSupport = lazy(() => import('./pages/AdminSupport'));
 
 // Loading component
 const LoadingSpinner = () => (
@@ -626,6 +629,7 @@ function AppRoutes({ bootstrapped }) {
           <Route path="/oauth" element={<Oauth bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
           <Route path="/terms" element={currentUser ? <NotFound /> : <Terms bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
           <Route path="/privacy" element={currentUser ? <NotFound /> : <Privacy bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="/restore-account/:token" element={<AccountRevocation />} />
 
           {/* User Routes (Protected) */}
@@ -651,6 +655,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/user/privacy" element={<UserPrivacy />} />
             <Route path="/user/reviews" element={<UserReviews />} />
             <Route path="/user/device-management" element={<DeviceManagement />} />
+            <Route path="/user/contact" element={<UserContact />} />
           </Route>
 
           {/* Admin Routes */}
@@ -681,6 +686,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/admin/device-management" element={<DeviceManagement />} />
             <Route path="/admin/session-management" element={<SessionManagement />} />
             <Route path="/admin/session-audit-logs" element={<SessionAuditLogs />} />
+            <Route path="/admin/support" element={<AdminSupport />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSelector } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { FaHeadset, FaTimes, FaCheck, FaReply, FaEnvelope, FaClock, FaUser, FaEye, FaTrash, FaPaperPlane } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import ConfirmationModal from './ConfirmationModal';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export default function AdminContactSupport() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+export default function AdminContactSupport({ forceModalOpen = false, onModalClose = null }) {
+  const [isModalOpen, setIsModalOpen] = useState(forceModalOpen);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -18,6 +18,7 @@ export default function AdminContactSupport() {
   const [replyLoading, setReplyLoading] = useState(false);
   const { currentUser } = useSelector((state) => state.user);
   const location = useLocation();
+  const navigate = useNavigate();
   const [error, setError] = useState("");
   const [isAtBottom, setIsAtBottom] = useState(true);
   const messagesContainerRef = useRef(null);
@@ -27,6 +28,13 @@ export default function AdminContactSupport() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [messageToDelete, setMessageToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Handle force modal opening
+  useEffect(() => {
+    if (forceModalOpen) {
+      setIsModalOpen(true);
+    }
+  }, [forceModalOpen]);
 
   // Check if user is admin
   const isAdmin = currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin');
@@ -265,6 +273,13 @@ export default function AdminContactSupport() {
     );
   };
 
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    if (onModalClose) {
+      onModalClose();
+    }
+  };
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -302,7 +317,7 @@ export default function AdminContactSupport() {
       {/* Enhanced Floating Contact Button */}
       <div className="fixed bottom-6 right-6 z-[9999]">
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => navigate('/admin/support', { state: { from: location.pathname } })}
           className="relative group w-12 h-12 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 hover:rotate-12 flex items-center justify-center"
           style={{ 
             background: `linear-gradient(135deg, ${getIconColor()}, ${getIconColor()}dd)`,
@@ -363,7 +378,7 @@ export default function AdminContactSupport() {
                 </div>
               </div>
               <button
-                onClick={() => setIsModalOpen(false)}
+                onClick={handleModalClose}
                 className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full"
               >
                 <FaTimes className="w-5 h-5" />

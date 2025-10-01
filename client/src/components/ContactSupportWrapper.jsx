@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate, useLocation } from 'react-router-dom';
 import ContactSupport from './ContactSupport';
 import AdminContactSupport from './AdminContactSupport';
 
 export default function ContactSupportWrapper() {
   const { currentUser } = useSelector((state) => state.user);
   const [isGeminiOpen, setIsGeminiOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Listen for Gemini chatbox toggle events
   useEffect(() => {

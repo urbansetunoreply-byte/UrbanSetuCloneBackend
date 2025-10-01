@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { FaHeadset, FaTimes, FaPaperPlane, FaEnvelope, FaUser, FaFileAlt, FaClock, FaTrash } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -7,9 +7,11 @@ import ConfirmationModal from './ConfirmationModal';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export default function ContactSupport() {
+export default function ContactSupport({ forceModalOpen = false, onModalClose = null }) {
   const { currentUser } = useSelector((state) => state.user);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(forceModalOpen);
+  const navigate = useNavigate();
+  const location = useLocation();
   const [userMessages, setUserMessages] = useState([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [unreadReplies, setUnreadReplies] = useState(0);
@@ -31,6 +33,13 @@ export default function ContactSupport() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [messageToDelete, setMessageToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Handle force modal opening
+  useEffect(() => {
+    if (forceModalOpen) {
+      setIsModalOpen(true);
+    }
+  }, [forceModalOpen]);
 
   // Autofill name and email when modal opens and user is logged in
   useEffect(() => {
@@ -218,6 +227,13 @@ export default function ContactSupport() {
     }
   };
 
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    if (onModalClose) {
+      onModalClose();
+    }
+  };
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -247,7 +263,7 @@ export default function ContactSupport() {
         setFormData({ subject: '', message: '', email: '', name: '' });
         toast.success('Message sent successfully!');
         setTimeout(() => {
-          setIsModalOpen(false);
+          handleModalClose();
           setSubmitStatus('');
         }, 3000);
       } else {
@@ -267,7 +283,13 @@ export default function ContactSupport() {
       {/* Enhanced Floating Contact Button */}
       <div className="fixed bottom-6 right-6 z-50">
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            if (currentUser) {
+              navigate('/user/contact', { state: { from: location.pathname } });
+            } else {
+              navigate('/contact', { state: { from: location.pathname } });
+            }
+          }}
           className="relative group w-12 h-12 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 hover:rotate-12 flex items-center justify-center"
           style={{ 
             background: `linear-gradient(135deg, ${getIconColor()}, ${getIconColor()}dd)`,
@@ -328,7 +350,7 @@ export default function ContactSupport() {
                 </div>
               </div>
               <button
-                onClick={() => setIsModalOpen(false)}
+                onClick={handleModalClose}
                 className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full"
               >
                 <FaTimes className="w-5 h-5" />
@@ -472,7 +494,7 @@ export default function ContactSupport() {
                 <div className="flex gap-3 pt-4">
                   <button
                     type="button"
-                    onClick={() => setIsModalOpen(false)}
+                    onClick={handleModalClose}
                     className="flex-1 px-6 py-3 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium contact-support-action-btn"
                   >
                     Cancel
