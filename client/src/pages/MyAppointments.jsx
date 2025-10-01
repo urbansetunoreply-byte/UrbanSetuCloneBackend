@@ -67,6 +67,15 @@ export default function MyAppointments() {
   
   // Camera state
   const [showCamera, setShowCamera] = useState(false);
+  
+  // Camera handler functions
+  const handleOpenCamera = useCallback(() => {
+    setShowCamera(true);
+  }, []);
+  
+  const handleCloseCamera = useCallback(() => {
+    setShowCamera(false);
+  }, []);
 
 
 
@@ -905,8 +914,7 @@ export default function MyAppointments() {
                         setExportComments(comments);
                         setShowExportModal(true);
                       }}
-                      showCamera={showCamera}
-                      setShowCamera={setShowCamera}
+                      onOpenCamera={handleOpenCamera}
                     />
                   ))}
                 </tbody>
@@ -973,8 +981,7 @@ export default function MyAppointments() {
                         setExportComments(comments);
                         setShowExportModal(true);
                       }}
-                      showCamera={showCamera}
-                      setShowCamera={setShowCamera}
+                      onOpenCamera={handleOpenCamera}
                   />
                 ))}
               </tbody>
@@ -1369,7 +1376,7 @@ function getDateLabel(date) {
   if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
   return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
-function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDelete, actionLoading, onShowOtherParty, onOpenReinitiate, handleArchiveAppointment, handleUnarchiveAppointment, isArchived, onCancelRefresh, copyMessageToClipboard, activeChatAppointmentId, shouldOpenChatFromNotification, onChatOpened, onExportChat, preferUnreadForAppointmentId, onConsumePreferUnread, showCamera, setShowCamera }) {
+function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDelete, actionLoading, onShowOtherParty, onOpenReinitiate, handleArchiveAppointment, handleUnarchiveAppointment, isArchived, onCancelRefresh, copyMessageToClipboard, activeChatAppointmentId, shouldOpenChatFromNotification, onChatOpened, onExportChat, preferUnreadForAppointmentId, onConsumePreferUnread, onOpenCamera }) {
   // Camera modal state - moved to main MyAppointments component
   
   const [replyTo, setReplyTo] = useState(null);
@@ -7438,7 +7445,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                             type="button"
                             className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
                             onClick={() => {
-                              setShowCamera(true);
+                              onOpenCamera();
                               setShowAttachmentPanel(false);
                             }}
                           >
@@ -10473,7 +10480,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       {/* Simple Camera Component */}
       <SimpleCamera
         isOpen={showCamera}
-        onClose={() => setShowCamera(false)}
+        onClose={handleCloseCamera}
         onCapture={(file) => {
           // Handle captured photo file
           console.log('Photo captured:', file);
