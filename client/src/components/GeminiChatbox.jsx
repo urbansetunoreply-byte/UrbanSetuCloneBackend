@@ -548,6 +548,12 @@ const GeminiChatbox = () => {
 
     const retryMessage = async (originalMessage, messageIndex) => {
         if (!originalMessage || isLoading) return;
+
+        // Check prompt limit for non-logged-in users
+        if (!currentUser && promptCount >= 5) {
+            setShowSignInModal(true);
+            return;
+        }
         
         setIsLoading(true);
         
@@ -596,6 +602,13 @@ const GeminiChatbox = () => {
                 if (data.sessionId && data.sessionId !== sessionId) {
                     setSessionId(data.sessionId);
                     localStorage.setItem('gemini_session_id', data.sessionId);
+                }
+
+                // Increment prompt count for non-logged-in users
+                if (!currentUser) {
+                    const newCount = promptCount + 1;
+                    setPromptCount(newCount);
+                    localStorage.setItem('gemini_prompt_count', newCount.toString());
                 }
             } else {
                 throw new Error('Invalid response structure from server');
@@ -1294,7 +1307,7 @@ const GeminiChatbox = () => {
                                                                     })();
                                                                     if (previousUserMessage) retryMessage(previousUserMessage, index);
                                                                 }}
-                                                                disabled={isLoading}
+                                                                disabled={isLoading || (!currentUser && promptCount >= 5)}
                                                                 className="p-1 text-blue-600 hover:text-blue-700 hover:bg-blue-100 rounded transition-all duration-200 disabled:opacity-50"
                                                                 title="Try Again"
                                                                 aria-label="Try Again"
