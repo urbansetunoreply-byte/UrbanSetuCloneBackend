@@ -692,8 +692,6 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/contact" element={<Navigate to="/admin/support" />} />
             <Route path="/support" element={<Navigate to="/admin/support" />} />
             <Route path="/user/contact" element={<Navigate to="/admin/support" />} />
-            <Route path="/support" element={<Navigate to="/admin/support" />} />
-            <Route path="/user/contact" element={<Navigate to="/admin/support" />} />
             <Route path="/user/support" element={<Navigate to="/admin/support" />} />
           </Route>
 
