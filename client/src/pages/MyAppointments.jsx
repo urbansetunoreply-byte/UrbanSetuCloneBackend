@@ -6568,6 +6568,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                         });
                                                       }
                                                     });
+                                                    
+                                                    // Set initial speed display
+                                                    const rateDisplay = document.querySelector(`[data-audio-id="${c._id}"] .playback-rate-display`);
+                                                      if (rateDisplay) {
+                                                        rateDisplay.textContent = `${audioEl.playbackRate}x`;
+                                                      }
                                                   }
                                                 }}
                                               />
@@ -6609,7 +6615,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                     Download
                                                   </span>
                                                 </button>
-                                                <span className="text-xs text-gray-500 playback-rate-display">1x</span>
+                                                <span className={`text-xs playback-rate-display ${isMe ? 'text-blue-100' : 'text-gray-500'}`}>1x</span>
                                               </div>
                                               
                                               {/* Three dots menu for audio options */}
@@ -6641,7 +6647,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                 {/* Audio options dropdown */}
                                                 <div 
                                                   data-audio-menu={c._id}
-                                                  className="hidden absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
+                                                  className="hidden absolute right-0 bottom-full mb-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
                                                 >
                                                   <div className="py-1">
                                                     <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">Playback Speed</div>

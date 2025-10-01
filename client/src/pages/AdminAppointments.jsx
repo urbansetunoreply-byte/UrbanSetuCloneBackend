@@ -5360,6 +5360,12 @@ function AdminAppointmentRow({
                                                         });
                                                       }
                                                     });
+                                                    
+                                                    // Set initial speed display
+                                                    const rateDisplay = document.querySelector(`[data-audio-id="${c._id}"] .playback-rate-display`);
+                                                      if (rateDisplay) {
+                                                        rateDisplay.textContent = `${audioEl.playbackRate}x`;
+                                                      }
                                                   }
                                                 }}
                                               />
@@ -5399,7 +5405,7 @@ function AdminAppointmentRow({
                                                   <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" /></svg>
                                                   Download
                                                 </button>
-                                                <span className="text-xs text-gray-500 playback-rate-display">1x</span>
+                                                <span className={`text-xs playback-rate-display ${isMe ? 'text-blue-100' : 'text-gray-500'}`}>1x</span>
                                               </div>
                                               
                                               {/* Three dots menu for audio options */}
@@ -5431,7 +5437,7 @@ function AdminAppointmentRow({
                                                 {/* Audio options dropdown */}
                                                 <div 
                                                   data-audio-menu={c._id}
-                                                  className="hidden absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
+                                                  className="hidden absolute right-0 bottom-full mb-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
                                                 >
                                                   <div className="py-1">
                                                     <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">Playback Speed</div>
