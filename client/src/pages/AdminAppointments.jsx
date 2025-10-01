@@ -138,7 +138,6 @@ export default function AdminAppointments() {
       const { data } = await axios.get(`${API_BASE_URL}/api/bookings`, { 
         withCredentials: true 
       });
-      console.log('All admin appointments fetched:', data);
       const allAppts = data.appointments || data;
       setAllAppointments(allAppts);
       setLoading(false);
@@ -440,7 +439,6 @@ export default function AdminAppointments() {
     const endIndex = startIndex + itemsPerPage;
     const currentPageAppts = filteredAppts.slice(startIndex, endIndex);
     
-    console.log(`Admin Page ${currentPage} of ${totalPages}, showing ${currentPageAppts.length} appointments`);
     setAppointments(currentPageAppts);
   }, [allAppointments, currentPage, search, statusFilter, startDate, endDate]);
 
@@ -478,7 +476,6 @@ export default function AdminAppointments() {
     const endIndex = startIndex + itemsPerPage;
     const currentPageArchivedAppts = filteredArchivedAppts.slice(startIndex, endIndex);
     
-    console.log(`Admin Archived Page ${archivedCurrentPage} of ${totalPages}, showing ${currentPageArchivedAppts.length} archived appointments`);
     setFilteredArchivedAppointments(currentPageArchivedAppts);
   }, [archivedAppointments, archivedCurrentPage, search, statusFilter, startDate, endDate]);
 
