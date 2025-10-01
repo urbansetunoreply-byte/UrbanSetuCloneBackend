@@ -36,6 +36,7 @@ export default function AdminAI() {
       <GeminiChatbox 
         forceModalOpen={isModalOpen}
         onModalClose={handleModalClose}
+        previousUrl={previousUrl}
       />
     </div>
   );
