@@ -664,7 +664,6 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/contact" element={<Navigate to="/user/contact" />} />
             <Route path="/admin/contact" element={<Navigate to="/user/contact" />} />
             <Route path="/ai" element={<Navigate to="/user/ai" />} />
-            <Route path="/admin/ai" element={<Navigate to="/user/ai" />} />
           </Route>
 
           {/* Admin Routes */}
