@@ -3470,6 +3470,9 @@ function AdminAppointmentRow({
 
   // Add function to check if appointment is upcoming
   const isUpcoming = new Date(appt.date) > new Date() || (new Date(appt.date).toDateString() === new Date().toDateString() && (!appt.time || appt.time > new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })));
+  
+  // Chat availability: keep chat open for all but block sending for certain statuses
+  const isChatSendBlocked = !isUpcoming || appt.status === 'rejected' || appt.status === 'cancelledByAdmin' || appt.status === 'cancelledByBuyer' || appt.status === 'cancelledBySeller' || appt.status === 'deletedByAdmin';
 
   // Function to highlight searched text within message content
   const highlightSearchedText = (text, searchQuery) => {
@@ -7228,6 +7231,84 @@ function AdminAppointmentRow({
           </div>
         )}
 
+        {/* Audio Preview Modal */}
+        {showAudioPreviewModal && selectedAudio && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-lg font-medium text-gray-700">Audio Preview</span>
+                <button
+                  onClick={() => { setSelectedAudio(null); setShowAudioPreviewModal(false); }}
+                  className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+                >
+                  <FaTimes className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="mb-4">
+                <audio controls className="w-full" src={audioObjectURL} />
+              </div>
+              <div className="relative mb-4">
+                <div className="relative">
+                  <textarea
+                    ref={audioCaptionRef}
+                    placeholder={`Add a caption for ${selectedAudio.name}...`}
+                    value={audioCaption}
+                    onChange={(e) => setAudioCaption(e.target.value)}
+                    className="w-full p-3 pr-12 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    rows={2}
+                    maxLength={500}
+                  />
+                  <div className="absolute right-2 top-2">
+                    <EmojiButton
+                      onEmojiClick={(emoji) => {
+                        const textarea = audioCaptionRef.current;
+                        if (textarea) {
+                          const start = textarea.selectionStart;
+                          const end = textarea.selectionEnd;
+                          const newValue = audioCaption.slice(0, start) + emoji + audioCaption.slice(end);
+                          setAudioCaption(newValue);
+                          setTimeout(() => {
+                            textarea.focus();
+                            textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+                          }, 0);
+                        }
+                      }}
+                      inputRef={audioCaptionRef}
+                    />
+                  </div>
+                </div>
+                <div className="text-xs text-gray-500 mt-1 text-right">
+                  {audioCaption.length}/500
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-gray-600 truncate flex-1 mr-4">{selectedAudio.name}</div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => { setSelectedAudio(null); setShowAudioPreviewModal(false); }}
+                    className="py-2 px-4 rounded-lg text-sm font-medium border hover:bg-gray-50"
+                  >Cancel</button>
+                  <button
+                    onClick={handleSendSelectedAudio}
+                    disabled={isChatSendBlocked}
+                    className={`py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+                      isChatSendBlocked || uploadingFile ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'
+                    }`}
+                  >Send Audio</button>
+                </div>
+              </div>
+              {uploadingFile && (
+                <div className="mt-3">
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${uploadProgress}%` }} />
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1 text-right">{uploadProgress}%</div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Delete Message Confirmation Modal */}
         {showDeleteModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
@@ -7959,82 +8040,6 @@ function AdminAppointmentRow({
                   </>
                 )}
 
-                {/* Audio Preview Modal */}
-                {showAudioPreviewModal && selectedAudio && (
-                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-lg font-medium text-gray-700">Audio Preview</span>
-                        <button
-                          onClick={() => { setSelectedAudio(null); setShowAudioPreviewModal(false); }}
-                          className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
-                        >
-                          <FaTimes className="w-5 h-5" />
-                        </button>
-                      </div>
-                      <div className="mb-4">
-                        <audio controls className="w-full" src={audioObjectURL} />
-                      </div>
-                      <div className="relative mb-4">
-                        <div className="relative">
-                          <textarea
-                            ref={audioCaptionRef}
-                            placeholder={`Add a caption for ${selectedAudio.name}...`}
-                            value={audioCaption}
-                            onChange={(e) => setAudioCaption(e.target.value)}
-                            className="w-full p-3 pr-12 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            rows={2}
-                            maxLength={500}
-                          />
-                          <div className="absolute right-2 top-2">
-                            <EmojiButton
-                              onEmojiClick={(emoji) => {
-                                const textarea = audioCaptionRef.current;
-                                if (textarea) {
-                                  const start = textarea.selectionStart;
-                                  const end = textarea.selectionEnd;
-                                  const newValue = audioCaption.slice(0, start) + emoji + audioCaption.slice(end);
-                                  setAudioCaption(newValue);
-                                  setTimeout(() => {
-                                    textarea.focus();
-                                    textarea.setSelectionRange(start + emoji.length, start + emoji.length);
-                                  }, 0);
-                                }
-                              }}
-                              inputRef={audioCaptionRef}
-                            />
-                          </div>
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1 text-right">
-                          {audioCaption.length}/500
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm text-gray-600 truncate flex-1 mr-4">{selectedAudio.name}</div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => { setSelectedAudio(null); setShowAudioPreviewModal(false); }}
-                            className="py-2 px-4 rounded-lg text-sm font-medium border hover:bg-gray-50"
-                          >Cancel</button>
-                          <button
-                            onClick={handleSendSelectedAudio}
-                            className={`py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
-                              uploadingFile ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'
-                            }`}
-                          >Send Audio</button>
-                        </div>
-                      </div>
-                      {uploadingFile && (
-                        <div className="mt-3">
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${uploadProgress}%` }} />
-                          </div>
-                          <div className="text-xs text-gray-500 mt-1 text-right">{uploadProgress}%</div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
