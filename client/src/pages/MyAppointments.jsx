@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { FaTrash, FaSearch, FaPen, FaCheck, FaTimes, FaUserShield, FaUser, FaEnvelope, FaPhone, FaArchive, FaUndo, FaCommentDots, FaCheckDouble, FaBan, FaPaperPlane, FaCalendar, FaLightbulb, FaCopy, FaEllipsisV, FaFlag, FaCircle, FaInfoCircle, FaSync, FaStar, FaRegStar, FaThumbtack, FaCalendarAlt, FaCheckSquare, FaDownload, FaDollarSign, FaCreditCard, FaSpinner, FaExclamationTriangle, FaMoneyBill } from "react-icons/fa";
-// import CameraModal from '../components/CameraModal';
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
 import UserAvatar from '../components/UserAvatar';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
@@ -906,6 +905,8 @@ export default function MyAppointments() {
                         setExportComments(comments);
                         setShowExportModal(true);
                       }}
+                      showCamera={showCamera}
+                      setShowCamera={setShowCamera}
                     />
                   ))}
                 </tbody>
@@ -972,6 +973,8 @@ export default function MyAppointments() {
                         setExportComments(comments);
                         setShowExportModal(true);
                       }}
+                      showCamera={showCamera}
+                      setShowCamera={setShowCamera}
                   />
                 ))}
               </tbody>
@@ -1366,7 +1369,7 @@ function getDateLabel(date) {
   if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
   return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
-function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDelete, actionLoading, onShowOtherParty, onOpenReinitiate, handleArchiveAppointment, handleUnarchiveAppointment, isArchived, onCancelRefresh, copyMessageToClipboard, activeChatAppointmentId, shouldOpenChatFromNotification, onChatOpened, onExportChat, preferUnreadForAppointmentId, onConsumePreferUnread }) {
+function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDelete, actionLoading, onShowOtherParty, onOpenReinitiate, handleArchiveAppointment, handleUnarchiveAppointment, isArchived, onCancelRefresh, copyMessageToClipboard, activeChatAppointmentId, shouldOpenChatFromNotification, onChatOpened, onExportChat, preferUnreadForAppointmentId, onConsumePreferUnread, showCamera, setShowCamera }) {
   // Camera modal state - moved to main MyAppointments component
   
   const [replyTo, setReplyTo] = useState(null);
