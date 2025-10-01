@@ -110,7 +110,7 @@ function normalizeRoute(path, role) {
   if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1);
 
   // List of shared base routes (add more as needed)
-  const sharedBases = ["about", "search", "terms", "privacy", "listing", "home", "reviews", "wishlist", "profile", "appointment", "explore"];
+  const sharedBases = ["about", "search", "terms", "privacy", "listing", "home", "reviews", "wishlist", "profile", "appointment", "explore", "contact"];
 
   // Helper to extract base and subpath
   function extractBaseAndRest(p) {
@@ -629,7 +629,7 @@ function AppRoutes({ bootstrapped }) {
           <Route path="/oauth" element={<Oauth bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
           <Route path="/terms" element={currentUser ? <NotFound /> : <Terms bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
           <Route path="/privacy" element={currentUser ? <NotFound /> : <Privacy bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
-          <Route path="/contact" element={<Contact />} />
+          <Route path="/contact" element={currentUser ? <Navigate to="/user/contact" /> : <Contact />} />
           <Route path="/restore-account/:token" element={<AccountRevocation />} />
 
           {/* User Routes (Protected) */}
@@ -656,6 +656,8 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/user/reviews" element={<UserReviews />} />
             <Route path="/user/device-management" element={<DeviceManagement />} />
             <Route path="/user/contact" element={<UserContact />} />
+            <Route path="/contact" element={<Navigate to="/user/contact" />} />
+            <Route path="/admin/contact" element={<Navigate to="/user/contact" />} />
           </Route>
 
           {/* Admin Routes */}
@@ -687,6 +689,8 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/admin/session-management" element={<SessionManagement />} />
             <Route path="/admin/session-audit-logs" element={<SessionAuditLogs />} />
             <Route path="/admin/support" element={<AdminSupport />} />
+            <Route path="/contact" element={<Navigate to="/admin/support" />} />
+            <Route path="/user/contact" element={<Navigate to="/admin/support" />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
