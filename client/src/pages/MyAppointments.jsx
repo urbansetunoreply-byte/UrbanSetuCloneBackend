@@ -1485,6 +1485,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const [removeLockPassword, setRemoveLockPassword] = useState('');
   const [showLockPassword, setShowLockPassword] = useState(false);
   const [showUnlockPassword, setShowUnlockPassword] = useState(false);
+  
+  // Camera modal state
+  const [showCameraModal, setShowCameraModal] = useState(false);
   const [showRemoveLockPassword, setShowRemoveLockPassword] = useState(false);
   const [lockingChat, setLockingChat] = useState(false);
   const [unlockingChat, setUnlockingChat] = useState(false);
@@ -1705,8 +1708,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   // Attachment panel and new media states
   const [showAttachmentPanel, setShowAttachmentPanel] = useState(false);
   
-  // Camera modal state
-  const [showCameraModal, setShowCameraModal] = useState(false);
+  // Camera modal state - moved to AppointmentRow component
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [showVideoPreviewModal, setShowVideoPreviewModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
