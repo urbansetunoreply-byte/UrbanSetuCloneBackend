@@ -2654,6 +2654,117 @@ export const sendManualSoftbanEmail = async (email, softbanDetails) => {
 };
 
 /**
+ * Send manual account restoration email (admin-initiated)
+ */
+export const sendManualAccountRestorationEmail = async (email, restorationDetails) => {
+  try {
+    const { username, role, restoredBy, restoredAt } = restorationDetails;
+
+    const subject = `✅ Account Restored by Administrator - UrbanSetu`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Account Restored by Administrator - UrbanSetu</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9f9f9;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 30px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">✅ Account Restored</h1>
+            <p style="color: #d1fae5; margin: 10px 0 0; font-size: 16px;">Your UrbanSetu account has been restored by an administrator</p>
+          </div>
+          
+          <!-- Content -->
+          <div style="padding: 40px 30px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);">
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold;">✓</span>
+              </div>
+              <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 24px; font-weight: 600;">Account Successfully Restored</h2>
+              <p style="color: #6b7280; margin: 0; font-size: 16px; line-height: 1.6;">Hello ${username}, your UrbanSetu account has been restored by an administrator and you can now access all features again.</p>
+            </div>
+            
+            <div style="background-color: #f0fdf4; padding: 25px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #10b981;">
+              <h3 style="color: #166534; margin: 0 0 15px; font-size: 18px; font-weight: 600;">🎉 Account Restored by Administrator</h3>
+              <div style="color: #166534; font-size: 14px; line-height: 1.6;">
+                <p style="margin: 0 0 10px;"><strong>Restored On:</strong> ${new Date(restoredAt).toLocaleDateString()}</p>
+                <p style="margin: 0;"><strong>Restored By:</strong> ${restoredBy || 'Administrator'}</p>
+              </div>
+            </div>
+
+            <div style="background-color: #f0f9ff; padding: 25px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #3b82f6;">
+              <h3 style="color: #1e40af; margin: 0 0 15px; font-size: 18px; font-weight: 600;">🔄 What This Means</h3>
+              <ul style="color: #1e40af; margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.6;">
+                <li>You can now sign in to your account</li>
+                <li>All UrbanSetu features are available</li>
+                <li>Your account data is fully restored</li>
+                <li>You can continue using the platform normally</li>
+                <li>Your previous settings and preferences are preserved</li>
+              </ul>
+            </div>
+            
+            <div style="text-align: center; margin-bottom: 30px;">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/sign-in" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); transition: all 0.3s ease;">
+                Sign In to Your Account
+              </a>
+            </div>
+            
+            <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <h3 style="color: #1f2937; margin: 0 0 10px; font-size: 16px; font-weight: 600;">Account Details</h3>
+              <div style="display: grid; gap: 8px;">
+                <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #e5e7eb;">
+                  <span style="color: #6b7280; font-weight: 500; font-size: 14px;">Username:</span>
+                  <span style="color: #1f2937; font-weight: 600; font-size: 14px;">${username}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #e5e7eb;">
+                  <span style="color: #6b7280; font-weight: 500; font-size: 14px;">Email:</span>
+                  <span style="color: #1f2937; font-weight: 600; font-size: 14px;">${email}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #e5e7eb;">
+                  <span style="color: #6b7280; font-weight: 500; font-size: 14px;">Role:</span>
+                  <span style="color: #1f2937; font-weight: 600; font-size: 14px;">${role === 'admin' ? 'Administrator' : 'User'}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 5px 0;">
+                  <span style="color: #6b7280; font-weight: 500; font-size: 14px;">Restored On:</span>
+                  <span style="color: #1f2937; font-weight: 600; font-size: 14px;">${new Date(restoredAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div style="text-align: center; color: #6b7280; font-size: 14px; line-height: 1.6;">
+              <p style="margin: 0 0 10px;">Thank you for your patience. We look forward to serving you again.</p>
+              <p style="margin: 0;">This is an automated notification. Please do not reply to this email.</p>
+            </div>
+          </div>
+          
+          <!-- Footer -->
+          <div style="background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending manual account restoration email:', error);
+    return createErrorResponse(error, 'manual_account_restoration_email');
+  }
+};
+
+/**
  * Send admin demotion email to demoted user
  */
 export const sendAdminDemotionEmail = async (email, demotionDetails) => {

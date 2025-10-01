@@ -4,7 +4,7 @@ import DeletedAccount from '../models/deletedAccount.model.js';
 import AuditLog from '../models/auditLog.model.js';
 import AccountRevocation from '../models/accountRevocation.model.js';
 import crypto from 'crypto';
-import { sendAccountDeletionEmail, sendAccountSuspensionEmail, sendUserPromotionEmail, sendAdminDemotionEmail, sendManualSoftbanEmail, sendAccountActivationEmail } from '../utils/emailService.js';
+import { sendAccountDeletionEmail, sendAccountSuspensionEmail, sendUserPromotionEmail, sendAdminDemotionEmail, sendManualSoftbanEmail, sendAccountActivationEmail, sendManualAccountRestorationEmail } from '../utils/emailService.js';
 import { autoPurgeSoftbannedAccounts, getPurgeStatistics } from '../services/autoPurgeService.js';
 import { sendAccountDeletionReminders, getReminderStatistics } from '../services/accountReminderService.js';
 import { checkEmailServiceStatus, getEmailServiceMonitoringStats } from '../services/emailMonitoringService.js';
@@ -368,13 +368,15 @@ export const restoreDeletedAccount = async (req, res, next) => {
     await restored.save();
     await AuditLog.create({ action: 'restore', performedBy: currentUser._id, targetAccount: record._id, targetEmail: record.email });
     
-    // Send account restoration email
+    // Send manual account restoration email
     try {
-      await sendAccountActivationEmail(record.email, {
+      await sendManualAccountRestorationEmail(record.email, {
         username: restored.username,
-        role: restored.role
+        role: restored.role,
+        restoredBy: currentUser.username || currentUser.email,
+        restoredAt: new Date()
       });
-      console.log(`✅ Account restoration email sent to: ${record.email}`);
+      console.log(`✅ Manual account restoration email sent to: ${record.email}`);
     } catch (emailError) {
       console.error(`❌ Failed to send restoration email to ${record.email}:`, emailError);
       // Don't fail the restoration if email fails
