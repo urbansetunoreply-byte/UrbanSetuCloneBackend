@@ -4,7 +4,7 @@ import DeletedAccount from '../models/deletedAccount.model.js';
 import AuditLog from '../models/auditLog.model.js';
 import AccountRevocation from '../models/accountRevocation.model.js';
 import crypto from 'crypto';
-import { sendAccountDeletionEmail, sendAccountSuspensionEmail, sendUserPromotionEmail, sendAdminDemotionEmail } from '../utils/emailService.js';
+import { sendAccountDeletionEmail, sendAccountSuspensionEmail, sendUserPromotionEmail, sendAdminDemotionEmail, sendManualSoftbanEmail, sendAccountActivationEmail } from '../utils/emailService.js';
 import { autoPurgeSoftbannedAccounts, getPurgeStatistics } from '../services/autoPurgeService.js';
 import { sendAccountDeletionReminders, getReminderStatistics } from '../services/accountReminderService.js';
 import { checkEmailServiceStatus, getEmailServiceMonitoringStats } from '../services/emailMonitoringService.js';
@@ -232,15 +232,19 @@ export const deleteUserOrAdmin = async (req, res, next) => {
       // Generate revocation link
       const revocationLink = `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/restore-account/${revocationToken}`;
 
-      // Send account deletion email with revocation link
+      // Send manual softban email with revocation link
       try {
-        await sendAccountDeletionEmail(user.email, {
+        await sendManualSoftbanEmail(user.email, {
           username: user.username,
-          role: user.role
-        }, revocationLink);
-        console.log(`✅ Account deletion email sent to: ${user.email}`);
+          role: user.role,
+          reason: req.body?.reason || 'Policy violation',
+          softbannedBy: currentUser.username || currentUser.email,
+          softbannedAt: new Date(),
+          revocationLink: revocationLink
+        });
+        console.log(`✅ Manual softban email sent to: ${user.email}`);
       } catch (emailError) {
-        console.error(`❌ Failed to send deletion email to ${user.email}:`, emailError);
+        console.error(`❌ Failed to send softban email to ${user.email}:`, emailError);
         // Don't fail the deletion if email fails
       }
 
@@ -279,6 +283,42 @@ export const deleteUserOrAdmin = async (req, res, next) => {
           status: admin.status,
         }
       });
+
+      // Create revocation token for admin restoration
+      const adminRevocationToken = crypto.randomBytes(32).toString('hex');
+      const adminExpiresAt = new Date();
+      adminExpiresAt.setDate(adminExpiresAt.getDate() + 30); // 30 days
+
+      await AccountRevocation.create({
+        accountId: admin._id,
+        email: admin.email,
+        username: admin.username,
+        role: admin.role,
+        revocationToken: adminRevocationToken,
+        expiresAt: adminExpiresAt,
+        originalData: delRecAdmin.originalData,
+        reason: req.body?.reason || 'admin_deleted'
+      });
+
+      // Generate revocation link for admin
+      const adminRevocationLink = `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/restore-account/${adminRevocationToken}`;
+
+      // Send manual softban email for admin
+      try {
+        await sendManualSoftbanEmail(admin.email, {
+          username: admin.username,
+          role: admin.role,
+          reason: req.body?.reason || 'Policy violation',
+          softbannedBy: currentUser.username || currentUser.email,
+          softbannedAt: new Date(),
+          revocationLink: adminRevocationLink
+        });
+        console.log(`✅ Manual softban email sent to admin: ${admin.email}`);
+      } catch (emailError) {
+        console.error(`❌ Failed to send softban email to admin ${admin.email}:`, emailError);
+        // Don't fail the deletion if email fails
+      }
+
       await User.findByIdAndDelete(id);
       await AuditLog.create({ action: 'soft_delete', performedBy: currentUser._id, targetAccount: delRecAdmin._id, targetEmail: delRecAdmin.email, details: { type: 'admin_delete', role: 'admin' } });
       return res.status(200).json({ message: 'Admin moved to DeletedAccounts' });
@@ -365,6 +405,19 @@ export const restoreDeletedAccount = async (req, res, next) => {
     });
     await restored.save();
     await AuditLog.create({ action: 'restore', performedBy: currentUser._id, targetAccount: record._id, targetEmail: record.email });
+    
+    // Send account restoration email
+    try {
+      await sendAccountActivationEmail(record.email, {
+        username: restored.username,
+        role: restored.role
+      });
+      console.log(`✅ Account restoration email sent to: ${record.email}`);
+    } catch (emailError) {
+      console.error(`❌ Failed to send restoration email to ${record.email}:`, emailError);
+      // Don't fail the restoration if email fails
+    }
+    
     await DeletedAccount.findByIdAndDelete(id);
     res.json({ success: true, message: 'Account restored', userId: restored._id });
   } catch (err) {

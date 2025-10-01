@@ -2536,6 +2536,128 @@ export const sendUserPromotionEmail = async (email, promotionDetails) => {
 };
 
 /**
+ * Send manual softban email to user/admin
+ */
+export const sendManualSoftbanEmail = async (email, softbanDetails) => {
+  try {
+    const { username, role, reason, softbannedBy, softbannedAt, revocationLink } = softbanDetails;
+
+    const subject = `⚠️ Account Softbanned - UrbanSetu`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Account Softbanned - UrbanSetu</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9f9f9;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 40px 30px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">⚠️ Account Softbanned</h1>
+            <p style="color: #fef3c7; margin: 10px 0 0; font-size: 16px;">Your UrbanSetu account has been temporarily suspended</p>
+          </div>
+          
+          <!-- Content -->
+          <div style="padding: 40px 30px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(245, 158, 11, 0.3);">
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold;">⚠️</span>
+              </div>
+              <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 24px; font-weight: 600;">Account Temporarily Suspended</h2>
+              <p style="color: #6b7280; margin: 0; font-size: 16px; line-height: 1.6;">Hello ${username}, your UrbanSetu account has been softbanned by an administrator. This is a temporary suspension that can be restored within 30 days.</p>
+            </div>
+            
+            <div style="background-color: #fef2f2; padding: 25px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #ef4444;">
+              <h3 style="color: #991b1b; margin: 0 0 15px; font-size: 18px; font-weight: 600;">📋 Softban Details</h3>
+              <div style="color: #991b1b; font-size: 14px; line-height: 1.6;">
+                <p style="margin: 0 0 10px;"><strong>Reason:</strong> ${reason || 'Policy violation'}</p>
+                <p style="margin: 0 0 10px;"><strong>Softbanned On:</strong> ${new Date(softbannedAt).toLocaleDateString()}</p>
+                <p style="margin: 0;"><strong>Softbanned By:</strong> ${softbannedBy || 'Administrator'}</p>
+              </div>
+            </div>
+
+            <div style="background-color: #fef3c7; padding: 25px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #f59e0b;">
+              <h3 style="color: #92400e; margin: 0 0 15px; font-size: 18px; font-weight: 600;">🔄 What This Means</h3>
+              <ul style="color: #92400e; margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.6;">
+                <li>You cannot sign in to your account</li>
+                <li>You cannot access any UrbanSetu features</li>
+                <li>Your account data is preserved</li>
+                <li>You have 30 days to restore your account</li>
+                <li>After 30 days, your account will be permanently deleted</li>
+              </ul>
+            </div>
+
+            <div style="background-color: #f0f9ff; padding: 25px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #3b82f6;">
+              <h3 style="color: #1e40af; margin: 0 0 15px; font-size: 18px; font-weight: 600;">🔗 Restore Your Account</h3>
+              <p style="color: #1e40af; margin: 0 0 15px; font-size: 14px; line-height: 1.6;">You can restore your account using the link below. This link is valid for 30 days from the date of softban.</p>
+              <div style="text-align: center;">
+                <a href="${revocationLink}" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); transition: all 0.3s ease;">
+                  Restore My Account
+                </a>
+              </div>
+            </div>
+            
+            <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <h3 style="color: #1f2937; margin: 0 0 10px; font-size: 16px; font-weight: 600;">Account Details</h3>
+              <div style="display: grid; gap: 8px;">
+                <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #e5e7eb;">
+                  <span style="color: #6b7280; font-weight: 500; font-size: 14px;">Username:</span>
+                  <span style="color: #1f2937; font-weight: 600; font-size: 14px;">${username}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #e5e7eb;">
+                  <span style="color: #6b7280; font-weight: 500; font-size: 14px;">Email:</span>
+                  <span style="color: #1f2937; font-weight: 600; font-size: 14px;">${email}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #e5e7eb;">
+                  <span style="color: #6b7280; font-weight: 500; font-size: 14px;">Role:</span>
+                  <span style="color: #1f2937; font-weight: 600; font-size: 14px;">${role === 'admin' ? 'Administrator' : 'User'}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 5px 0;">
+                  <span style="color: #6b7280; font-weight: 500; font-size: 14px;">Softbanned On:</span>
+                  <span style="color: #1f2937; font-weight: 600; font-size: 14px;">${new Date(softbannedAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 30px;">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/contact" style="display: inline-block; background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3); transition: all 0.3s ease;">
+                Contact Support
+              </a>
+            </div>
+            
+            <div style="text-align: center; color: #6b7280; font-size: 14px; line-height: 1.6;">
+              <p style="margin: 0 0 10px;">If you believe this softban is a mistake, please contact our support team immediately.</p>
+              <p style="margin: 0;">This is an automated notification. Please do not reply to this email.</p>
+            </div>
+          </div>
+          
+          <!-- Footer -->
+          <div style="background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending manual softban email:', error);
+    return createErrorResponse(error, 'manual_softban_email');
+  }
+};
+
+/**
  * Send admin demotion email to demoted user
  */
 export const sendAdminDemotionEmail = async (email, demotionDetails) => {
