@@ -6566,12 +6566,14 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                         rateDisplay.textContent = `${rate}x`;
                                                       }
                                                       // Update active speed in dropdown
-                                                      const menu = document.querySelector(`[data-audio-menu="${c._id}"]`);
-                                                      if (menu) {
-                                                        const speedButtons = menu.querySelectorAll('[data-speed-option]');
+                                                      const speedMenu = document.querySelector(`[data-audio-speed-menu="${c._id}"]`);
+                                                      if (speedMenu) {
+                                                        const speedButtons = speedMenu.querySelectorAll('[data-speed-option]');
                                                         speedButtons.forEach(btn => {
                                                           btn.classList.remove('bg-blue-100', 'text-blue-700');
+                                                          btn.classList.add('text-gray-700', 'hover:bg-gray-100');
                                                           if (parseFloat(btn.dataset.speedOption) === rate) {
+                                                            btn.classList.remove('text-gray-700', 'hover:bg-gray-100');
                                                             btn.classList.add('bg-blue-100', 'text-blue-700');
                                                           }
                                                         });
@@ -6746,9 +6748,28 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                               rateDisplay.textContent = `${speed}x`;
                                                             }
                                                           }
+                                                          
+                                                          // Update highlighting in the speed menu
                                                           const menu = document.querySelector(`[data-audio-speed-menu="${c._id}"]`);
                                                           if (menu) {
-                                                            menu.classList.add('hidden');
+                                                            // Remove highlighting from all speed buttons
+                                                            const speedButtons = menu.querySelectorAll('[data-speed-option]');
+                                                            speedButtons.forEach(btn => {
+                                                              btn.classList.remove('bg-blue-100', 'text-blue-700');
+                                                              btn.classList.add('text-gray-700', 'hover:bg-gray-100');
+                                                            });
+                                                            
+                                                            // Add highlighting to the selected speed button
+                                                            const selectedButton = menu.querySelector(`[data-speed-option="${speed}"]`);
+                                                            if (selectedButton) {
+                                                              selectedButton.classList.remove('text-gray-700', 'hover:bg-gray-100');
+                                                              selectedButton.classList.add('bg-blue-100', 'text-blue-700');
+                                                            }
+                                                          }
+                                                          
+                                                          const speedMenu = document.querySelector(`[data-audio-speed-menu="${c._id}"]`);
+                                                          if (speedMenu) {
+                                                            speedMenu.classList.add('hidden');
                                                           }
                                                         }}
                                                       >
