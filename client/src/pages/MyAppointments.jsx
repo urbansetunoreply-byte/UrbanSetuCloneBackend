@@ -80,6 +80,22 @@ export default function MyAppointments() {
     };
   }, [showArchiveModal, showUnarchiveModal]);
 
+  // Close audio menus when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('[data-audio-menu]') && !event.target.closest('button[title="Audio options"]')) {
+        document.querySelectorAll('[data-audio-menu]').forEach(menu => {
+          menu.classList.add('hidden');
+        });
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
+
   useEffect(() => {
     const fetchAppointments = async () => {
       if (!currentUser) {
@@ -6540,6 +6556,17 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                       if (rateDisplay) {
                                                         rateDisplay.textContent = `${rate}x`;
                                                       }
+                                                      // Update active speed in dropdown
+                                                      const menu = document.querySelector(`[data-audio-menu="${c._id}"]`);
+                                                      if (menu) {
+                                                        const speedButtons = menu.querySelectorAll('[data-speed-option]');
+                                                        speedButtons.forEach(btn => {
+                                                          btn.classList.remove('bg-blue-100', 'text-blue-700');
+                                                          if (parseFloat(btn.dataset.speedOption) === rate) {
+                                                            btn.classList.add('bg-blue-100', 'text-blue-700');
+                                                          }
+                                                        });
+                                                      }
                                                     });
                                                   }
                                                 }}
@@ -6594,6 +6621,14 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                     const menu = document.querySelector(`[data-audio-menu="${c._id}"]`);
                                                     if (menu) {
                                                       menu.classList.toggle('hidden');
+                                                      // Close other audio menus when opening this one
+                                                      if (!menu.classList.contains('hidden')) {
+                                                        document.querySelectorAll('[data-audio-menu]').forEach(otherMenu => {
+                                                          if (otherMenu !== menu) {
+                                                            otherMenu.classList.add('hidden');
+                                                          }
+                                                        });
+                                                      }
                                                     }
                                                   }}
                                                   title="Audio options"
@@ -6606,14 +6641,17 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                 {/* Audio options dropdown */}
                                                 <div 
                                                   data-audio-menu={c._id}
-                                                  className="hidden absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
+                                                  className="hidden absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
                                                 >
                                                   <div className="py-1">
                                                     <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">Playback Speed</div>
                                                     {[0.5, 0.75, 1, 1.25, 1.5, 2].map(speed => (
                                                       <button
                                                         key={speed}
-                                                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center justify-between"
+                                                        data-speed-option={speed}
+                                                        className={`w-full px-3 py-2 text-left text-sm flex items-center justify-between transition-colors ${
+                                                          speed === 1 ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
+                                                        }`}
                                                         onClick={(e) => {
                                                           e.stopPropagation();
                                                           const audioEl = document.querySelector(`[data-audio-id="${c._id}"]`);
