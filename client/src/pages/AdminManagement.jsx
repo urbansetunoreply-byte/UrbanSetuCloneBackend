@@ -412,7 +412,8 @@ export default function AdminManagement() {
           });
           // Refresh softbanned accounts list if on tab
           if (tab === 'softbanned') fetchSoftbannedAccounts();
-          // Close modal only after success
+          // Close modals only after success
+          setShowConfirmModal(false);
           setShowDeleteReasonModal(false);
           setSelectedAccount(null);
           setDeleteReason("");
