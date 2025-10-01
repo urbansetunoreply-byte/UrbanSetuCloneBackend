@@ -1743,6 +1743,8 @@ function AdminAppointmentRow({
   const mediaRecorderRef = React.useRef(null);
   const recordingChunksRef = React.useRef([]);
   const recordingTimerRef = React.useRef(null);
+  const recordingStartTimeRef = React.useRef(0);
+  const recordingCancelledRef = React.useRef(false);
 
   // Manage video object URL to prevent reloading on each keystroke
   React.useEffect(() => {
@@ -1772,6 +1774,21 @@ function AdminAppointmentRow({
     }
   }, [selectedAudio]);
 
+  // Ensure timer ticks reliably while recording (redundant guard)
+  React.useEffect(() => {
+    if (isRecording) {
+      // Initialize start time if not set
+      if (!recordingStartTimeRef.current) {
+        recordingStartTimeRef.current = Date.now();
+      }
+      const id = setInterval(() => {
+        const elapsed = Date.now() - recordingStartTimeRef.current;
+        setRecordingElapsedMs(elapsed);
+      }, 500);
+      return () => clearInterval(id);
+    }
+  }, [isRecording]);
+
   // Recording timer cleanup
   React.useEffect(() => {
     return () => {
@@ -1792,6 +1809,10 @@ function AdminAppointmentRow({
       };
       mediaRecorder.onstop = () => {
         try {
+          if (recordingCancelledRef.current) {
+            // Do not create file or open preview when cancelled
+            return;
+          }
           const blob = new Blob(recordingChunksRef.current, { type: 'audio/webm' });
           const fileName = `recording-${Date.now()}.webm`;
           const file = new File([blob], fileName, { type: 'audio/webm' });
@@ -1806,14 +1827,18 @@ function AdminAppointmentRow({
           setIsRecording(false);
           setRecordingElapsedMs(0);
           if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+          recordingStartTimeRef.current = 0;
+          recordingCancelledRef.current = false;
         }
       };
       mediaRecorder.start(100);
       setIsRecording(true);
+      recordingStartTimeRef.current = Date.now();
       setRecordingElapsedMs(0);
       recordingTimerRef.current = setInterval(() => {
-        setRecordingElapsedMs(prev => prev + 1000);
-      }, 1000);
+        const elapsed = Date.now() - recordingStartTimeRef.current;
+        setRecordingElapsedMs(elapsed);
+      }, 500);
     } catch (err) {
       console.error('Recording error:', err);
       toast.error('Microphone permission denied or unavailable');
@@ -1829,6 +1854,7 @@ function AdminAppointmentRow({
 
   const cancelAudioRecording = () => {
     try {
+      recordingCancelledRef.current = true;
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
         mediaRecorderRef.current.stop();
       }
@@ -1839,6 +1865,8 @@ function AdminAppointmentRow({
     setRecordingElapsedMs(0);
     if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
     setShowRecordAudioModal(false);
+    // Ensure preview is not shown and any selection cleared
+    setSelectedAudio(null);
   };
 
   // Close attachment panel on outside click
@@ -8124,18 +8152,19 @@ function AdminAppointmentRow({
                 </svg>
               </div>
               <div className="text-sm text-gray-600 mb-4">
-                {isRecording ? `Recording... ${Math.floor(recordingElapsedMs / 1000)}s` : 'Click Start to begin recording'}
+                {isRecording ? `${Math.floor(recordingElapsedMs / 60000).toString().padStart(2, '0')}:${Math.floor((recordingElapsedMs % 60000) / 1000).toString().padStart(2, '0')}` : 'Ready'}
               </div>
               <div className="flex items-center gap-3">
                 {!isRecording ? (
                   <button onClick={startAudioRecording} className="px-4 py-2 rounded-lg bg-rose-600 text-white hover:bg-rose-700">Start</button>
                 ) : (
                   <>
-                    <button onClick={stopAudioRecording} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Stop</button>
+                    <button onClick={stopAudioRecording} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Stop & Preview</button>
                     <button onClick={cancelAudioRecording} className="px-4 py-2 rounded-lg border">Cancel</button>
                   </>
                 )}
               </div>
+              <div className="text-xs text-gray-500">Your mic input stays on device until you choose to send.</div>
             </div>
           </div>
         </div>
