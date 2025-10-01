@@ -3,10 +3,14 @@ import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaCheck, FaDownload
 import { toast } from 'react-toastify';
 import { formatLinksInText } from '../utils/linkFormatter.jsx';
 import { useSelector } from 'react-redux';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const { currentUser } = useSelector((state) => state.user);
+    const navigate = useNavigate();
+    const location = useLocation();
     const [isOpen, setIsOpen] = useState(forceModalOpen);
+    const [previousUrl, setPreviousUrl] = useState(null);
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
@@ -234,9 +238,46 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
     }, [forceModalOpen]);
 
+    // Handle URL-based opening (when user navigates to /ai, /user/ai, /admin/ai)
+    useEffect(() => {
+        const currentPath = location.pathname;
+        if (currentPath === '/ai' || currentPath === '/user/ai' || currentPath === '/admin/ai') {
+            setIsOpen(true);
+        }
+    }, [location.pathname]);
+
+    // Get appropriate AI URL based on user role
+    const getAIUrl = () => {
+        if (!currentUser) {
+            return '/ai';
+        } else if (currentUser.role === 'admin' || currentUser.role === 'rootadmin') {
+            return '/admin/ai';
+        } else {
+            return '/user/ai';
+        }
+    };
+
+    // Handle modal open with URL change
+    const handleOpen = () => {
+        // Store current URL before opening
+        setPreviousUrl(location.pathname);
+        setIsOpen(true);
+        
+        // Navigate to appropriate AI URL
+        const aiUrl = getAIUrl();
+        navigate(aiUrl, { replace: false });
+    };
+
     // Handle modal close with callback
     const handleClose = () => {
         setIsOpen(false);
+        
+        // Restore previous URL if it exists
+        if (previousUrl) {
+            navigate(previousUrl, { replace: true });
+            setPreviousUrl(null);
+        }
+        
         if (onModalClose) {
             onModalClose();
         }
@@ -979,7 +1020,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             {/* Enhanced Floating AI Chat Button */}
             <div className="fixed bottom-20 right-6 z-50">
                 <button
-                    onClick={() => setIsOpen(!isOpen)}
+                    onClick={isOpen ? handleClose : handleOpen}
                     className="relative group w-12 h-12 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 hover:rotate-12 flex items-center justify-center"
                     style={{ 
                         background: `linear-gradient(135deg, #6366f1, #6366f1dd)`,
