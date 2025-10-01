@@ -1046,7 +1046,7 @@ export default function AdminManagement() {
             Admins
           </button>
           <button
-            className={`px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-bold text-sm sm:text-lg shadow transition-all duration-200 ${tab === "softbanned" ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white scale-105" : "bg-gray-100 text-gray-700 hover:bg-rose-50"}`}
+            className={`px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-bold text-sm sm:text-lg shadow transition-all duration-200 ${tab === "softbanned" ? "bg-gradient-to-r from-red-500 to-red-600 text-white scale-105" : "bg-gray-100 text-gray-700 hover:bg-rose-50"}`}
             onClick={() => {
               setTab("softbanned");
               fetchSoftbannedAccounts();
