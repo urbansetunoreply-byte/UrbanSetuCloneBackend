@@ -4,9 +4,9 @@ import { toast } from 'react-toastify';
 import { formatLinksInText } from '../utils/linkFormatter.jsx';
 import { useSelector } from 'react-redux';
 
-const GeminiChatbox = () => {
+const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const { currentUser } = useSelector((state) => state.user);
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(forceModalOpen);
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
@@ -226,6 +226,21 @@ const GeminiChatbox = () => {
             localStorage.removeItem('gemini_prompt_count');
         }
     }, [currentUser]);
+
+    // Handle force modal opening
+    useEffect(() => {
+        if (forceModalOpen) {
+            setIsOpen(true);
+        }
+    }, [forceModalOpen]);
+
+    // Handle modal close with callback
+    const handleClose = () => {
+        setIsOpen(false);
+        if (onModalClose) {
+            onModalClose();
+        }
+    };
 
     // Listen for clear chat history events from header
     useEffect(() => {
@@ -1048,7 +1063,7 @@ const GeminiChatbox = () => {
                                     ⋯
                                 </button>
                                 <button
-                                    onClick={() => setIsOpen(false)}
+                                    onClick={handleClose}
                                     className="text-white hover:text-gray-200 transition-colors"
                                     aria-label="Close"
                                 >

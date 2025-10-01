@@ -76,6 +76,9 @@ const SessionAuditLogs = lazy(() => import('./pages/SessionAuditLogs'));
 const Contact = lazy(() => import('./pages/Contact'));
 const UserContact = lazy(() => import('./pages/UserContact'));
 const AdminSupport = lazy(() => import('./pages/AdminSupport'));
+const PublicAI = lazy(() => import('./pages/PublicAI'));
+const UserAI = lazy(() => import('./pages/UserAI'));
+const AdminAI = lazy(() => import('./pages/AdminAI'));
 
 // Loading component
 const LoadingSpinner = () => (
@@ -110,7 +113,7 @@ function normalizeRoute(path, role) {
   if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1);
 
   // List of shared base routes (add more as needed)
-  const sharedBases = ["about", "search", "terms", "privacy", "listing", "home", "reviews", "wishlist", "profile", "appointment", "explore", "contact"];
+  const sharedBases = ["about", "search", "terms", "privacy", "listing", "home", "reviews", "wishlist", "profile", "appointment", "explore", "contact", "ai"];
 
   // Helper to extract base and subpath
   function extractBaseAndRest(p) {
@@ -630,6 +633,7 @@ function AppRoutes({ bootstrapped }) {
           <Route path="/terms" element={currentUser ? <NotFound /> : <Terms bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
           <Route path="/privacy" element={currentUser ? <NotFound /> : <Privacy bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
           <Route path="/contact" element={currentUser ? <Navigate to="/user/contact" /> : <Contact />} />
+          <Route path="/ai" element={currentUser ? <Navigate to="/user/ai" /> : <PublicAI />} />
           <Route path="/restore-account/:token" element={<AccountRevocation />} />
 
           {/* User Routes (Protected) */}
@@ -656,8 +660,11 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/user/reviews" element={<UserReviews />} />
             <Route path="/user/device-management" element={<DeviceManagement />} />
             <Route path="/user/contact" element={<UserContact />} />
+            <Route path="/user/ai" element={<UserAI />} />
             <Route path="/contact" element={<Navigate to="/user/contact" />} />
             <Route path="/admin/contact" element={<Navigate to="/user/contact" />} />
+            <Route path="/ai" element={<Navigate to="/user/ai" />} />
+            <Route path="/admin/ai" element={<Navigate to="/user/ai" />} />
           </Route>
 
           {/* Admin Routes */}
@@ -689,10 +696,13 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/admin/session-management" element={<SessionManagement />} />
             <Route path="/admin/session-audit-logs" element={<SessionAuditLogs />} />
             <Route path="/admin/support" element={<AdminSupport />} />
+            <Route path="/admin/ai" element={<AdminAI />} />
             <Route path="/contact" element={<Navigate to="/admin/support" />} />
             <Route path="/support" element={<Navigate to="/admin/support" />} />
             <Route path="/user/contact" element={<Navigate to="/admin/support" />} />
             <Route path="/user/support" element={<Navigate to="/admin/support" />} />
+            <Route path="/ai" element={<Navigate to="/admin/ai" />} />
+            <Route path="/user/ai" element={<Navigate to="/admin/ai" />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
