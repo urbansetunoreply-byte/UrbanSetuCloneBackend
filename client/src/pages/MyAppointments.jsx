@@ -1486,8 +1486,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const [showLockPassword, setShowLockPassword] = useState(false);
   const [showUnlockPassword, setShowUnlockPassword] = useState(false);
   
-  // Camera modal state
-  const [showCameraModal, setShowCameraModal] = useState(false);
+  // Camera modal state - temporarily disabled
+  // const [showCameraModal, setShowCameraModal] = useState(false);
   const [showRemoveLockPassword, setShowRemoveLockPassword] = useState(false);
   const [lockingChat, setLockingChat] = useState(false);
   const [unlockingChat, setUnlockingChat] = useState(false);
@@ -7425,8 +7425,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                               }}
                             />
                           </label>
-                          {/* Camera */}
-                          <button
+                          {/* Camera - temporarily disabled */}
+                          {/* <button
                             type="button"
                             className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
                             onClick={() => {
@@ -7438,7 +7438,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7a2 2 0 012-2h2l1-2h6l1 2h2a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
                             </svg>
                             Camera
-                          </button>
+                          </button> */}
                           <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
                             <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -10462,8 +10462,8 @@ function PaymentStatusCell({ appointment, isBuyer }) {
         </div>
       )}
 
-      {/* Camera Modal */}
-      {showCameraModal && (
+      {/* Camera Modal - temporarily disabled */}
+      {/* {showCameraModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
@@ -10488,7 +10488,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 }
