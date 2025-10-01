@@ -690,7 +690,11 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/admin/session-audit-logs" element={<SessionAuditLogs />} />
             <Route path="/admin/support" element={<AdminSupport />} />
             <Route path="/contact" element={<Navigate to="/admin/support" />} />
+            <Route path="/support" element={<Navigate to="/admin/support" />} />
             <Route path="/user/contact" element={<Navigate to="/admin/support" />} />
+            <Route path="/support" element={<Navigate to="/admin/support" />} />
+            <Route path="/user/contact" element={<Navigate to="/admin/support" />} />
+            <Route path="/user/support" element={<Navigate to="/admin/support" />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
