@@ -2586,17 +2586,18 @@ export const sendManualSoftbanEmail = async (email, softbanDetails) => {
                 <li>You cannot sign in to your account</li>
                 <li>You cannot access any UrbanSetu features</li>
                 <li>Your account data is preserved</li>
-                <li>You have 30 days to restore your account</li>
+                <li>You cannot restore your account yourself</li>
+                <li>You must contact support to appeal this decision</li>
                 <li>After 30 days, your account will be permanently deleted</li>
               </ul>
             </div>
 
-            <div style="background-color: #f0f9ff; padding: 25px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #3b82f6;">
-              <h3 style="color: #1e40af; margin: 0 0 15px; font-size: 18px; font-weight: 600;">🔗 Restore Your Account</h3>
-              <p style="color: #1e40af; margin: 0 0 15px; font-size: 14px; line-height: 1.6;">You can restore your account using the link below. This link is valid for 30 days from the date of softban.</p>
+            <div style="background-color: #fef2f2; padding: 25px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #ef4444;">
+              <h3 style="color: #991b1b; margin: 0 0 15px; font-size: 18px; font-weight: 600;">📞 Contact Support to Appeal</h3>
+              <p style="color: #991b1b; margin: 0 0 15px; font-size: 14px; line-height: 1.6;">Since your account was softbanned by an administrator, you cannot restore it yourself. If you believe this action was taken in error or wish to appeal this decision, please contact our support team immediately.</p>
               <div style="text-align: center;">
-                <a href="${revocationLink}" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); transition: all 0.3s ease;">
-                  Restore My Account
+                <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/contact" style="display: inline-block; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); transition: all 0.3s ease;">
+                  Contact Support for Appeal
                 </a>
               </div>
             </div>
@@ -2623,14 +2624,9 @@ export const sendManualSoftbanEmail = async (email, softbanDetails) => {
               </div>
             </div>
 
-            <div style="text-align: center; margin-bottom: 30px;">
-              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/contact" style="display: inline-block; background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3); transition: all 0.3s ease;">
-                Contact Support
-              </a>
-            </div>
             
             <div style="text-align: center; color: #6b7280; font-size: 14px; line-height: 1.6;">
-              <p style="margin: 0 0 10px;">If you believe this softban is a mistake, please contact our support team immediately.</p>
+              <p style="margin: 0 0 10px;">To appeal this decision or if you have any questions, please contact our support team using the button above.</p>
               <p style="margin: 0;">This is an automated notification. Please do not reply to this email.</p>
             </div>
           </div>

@@ -213,26 +213,7 @@ export const deleteUserOrAdmin = async (req, res, next) => {
         }
       });
 
-      // Create revocation token for account restoration
-      const revocationToken = crypto.randomBytes(32).toString('hex');
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 30); // 30 days
-
-      await AccountRevocation.create({
-        accountId: user._id,
-        email: user.email,
-        username: user.username,
-        role: user.role,
-        revocationToken,
-        expiresAt,
-        originalData: delRecUser.originalData,
-        reason: req.body?.reason || 'admin_deleted'
-      });
-
-      // Generate revocation link
-      const revocationLink = `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/restore-account/${revocationToken}`;
-
-      // Send manual softban email with revocation link
+      // Send manual softban email (no restoration link needed for admin softbans)
       try {
         await sendManualSoftbanEmail(user.email, {
           username: user.username,
@@ -240,7 +221,7 @@ export const deleteUserOrAdmin = async (req, res, next) => {
           reason: req.body?.reason || 'Policy violation',
           softbannedBy: currentUser.username || currentUser.email,
           softbannedAt: new Date(),
-          revocationLink: revocationLink
+          revocationLink: null // No restoration link for admin softbans
         });
         console.log(`✅ Manual softban email sent to: ${user.email}`);
       } catch (emailError) {
@@ -284,26 +265,7 @@ export const deleteUserOrAdmin = async (req, res, next) => {
         }
       });
 
-      // Create revocation token for admin restoration
-      const adminRevocationToken = crypto.randomBytes(32).toString('hex');
-      const adminExpiresAt = new Date();
-      adminExpiresAt.setDate(adminExpiresAt.getDate() + 30); // 30 days
-
-      await AccountRevocation.create({
-        accountId: admin._id,
-        email: admin.email,
-        username: admin.username,
-        role: admin.role,
-        revocationToken: adminRevocationToken,
-        expiresAt: adminExpiresAt,
-        originalData: delRecAdmin.originalData,
-        reason: req.body?.reason || 'admin_deleted'
-      });
-
-      // Generate revocation link for admin
-      const adminRevocationLink = `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/restore-account/${adminRevocationToken}`;
-
-      // Send manual softban email for admin
+      // Send manual softban email for admin (no restoration link needed for admin softbans)
       try {
         await sendManualSoftbanEmail(admin.email, {
           username: admin.username,
@@ -311,7 +273,7 @@ export const deleteUserOrAdmin = async (req, res, next) => {
           reason: req.body?.reason || 'Policy violation',
           softbannedBy: currentUser.username || currentUser.email,
           softbannedAt: new Date(),
-          revocationLink: adminRevocationLink
+          revocationLink: null // No restoration link for admin softbans
         });
         console.log(`✅ Manual softban email sent to admin: ${admin.email}`);
       } catch (emailError) {
