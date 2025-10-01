@@ -253,6 +253,8 @@ export default function AdminManagement() {
             action: 'suspend', 
             message: `Your account has been ${data.status === 'suspended' ? 'suspended' : 'activated'}. You have been signed out.` 
           });
+          // Close modal only after success
+          setShowConfirmModal(false);
         } else {
           // Rollback
           fetchData();
@@ -280,7 +282,8 @@ export default function AdminManagement() {
       performSuspend,
       {
         confirmText: actionTextCapitalized,
-        confirmButtonClass: isSuspending ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600'
+        confirmButtonClass: isSuspending ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600',
+        userId: id
       }
     );
   };
@@ -616,53 +619,53 @@ export default function AdminManagement() {
       demote: { ...prev.demote, [id]: true }
     }));
 
-    // Store original state for rollback
-    const originalUsers = [...users];
-    const originalAdmins = [...admins];
-    
-    // Optimistically move admin to users
-    if (admin) {
-      setAdmins(prev => prev.filter(a => a._id !== id));
-      setUsers(prev => [
-        { ...admin, role: 'user', adminApprovalStatus: undefined },
-        ...prev
-      ]);
-    }
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/admin/management/demote/${id}`, {
-        method: "PATCH",
-        credentials: "include",
+      // Store original state for rollback
+      const originalUsers = [...users];
+      const originalAdmins = [...admins];
+      
+      // Optimistically move admin to users
+      if (admin) {
+        setAdmins(prev => prev.filter(a => a._id !== id));
+        setUsers(prev => [
+          { ...admin, role: 'user', adminApprovalStatus: undefined },
+          ...prev
+        ]);
+      }
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/management/demote/${id}`, {
+          method: "PATCH",
+          credentials: "include",
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ reason: demoteReason || 'Administrative decision' })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        toast.success("Admin demoted to user successfully");
-        // Emit socket event
-        socket.emit('user_update', { type: 'add', user: { ...admin, ...data }, userId: id });
-        socket.emit('admin_update', { type: 'delete', admin: { _id: id }, userId: id });
-        // Emit global signout event for the demoted admin
-        socket.emit('force_signout', { 
-          userId: id, 
-          action: 'demote', 
-          message: 'Your admin privileges have been revoked. You have been signed out. Please sign in again as a regular user.' 
         });
+        const data = await res.json();
+        if (res.ok) {
+          toast.success("Admin demoted to user successfully");
+          // Emit socket event
+          socket.emit('user_update', { type: 'add', user: { ...admin, ...data }, userId: id });
+          socket.emit('admin_update', { type: 'delete', admin: { _id: id }, userId: id });
+          // Emit global signout event for the demoted admin
+          socket.emit('force_signout', { 
+            userId: id, 
+            action: 'demote', 
+            message: 'Your admin privileges have been revoked. You have been signed out. Please sign in again as a regular user.' 
+          });
         setShowDemoteReasonModal(false);
         setDemoteAccount(null);
         setDemoteReason("");
-      } else {
-        // Rollback on failure
+        } else {
+          // Rollback on failure
+          setUsers(originalUsers);
+          setAdmins(originalAdmins);
+          toast.error(data.message || "Failed to demote admin");
+        }
+      } catch (err) {
+        // Rollback on error
         setUsers(originalUsers);
         setAdmins(originalAdmins);
-        toast.error(data.message || "Failed to demote admin");
-      }
-    } catch (err) {
-      // Rollback on error
-      setUsers(originalUsers);
-      setAdmins(originalAdmins);
-      toast.error("Failed to demote admin");
+        toast.error("Failed to demote admin");
     } finally {
       // Clear loading state
       setActionLoading(prev => ({
@@ -1267,8 +1270,8 @@ export default function AdminManagement() {
                               </>
                             ) : (
                               <>
-                                {user.status === "active" ? <FaBan /> : <FaCheckCircle />}
-                                {user.status === "active" ? "Suspend" : "Activate"}
+                            {user.status === "active" ? <FaBan /> : <FaCheckCircle />}
+                            {user.status === "active" ? "Suspend" : "Activate"}
                               </>
                             )}
                           </button>
@@ -1290,7 +1293,7 @@ export default function AdminManagement() {
                                 </>
                               ) : (
                                 <>
-                                  <FaUserShield /> Promote to Admin
+                              <FaUserShield /> Promote to Admin
                                 </>
                               )}
                             </button>
@@ -1393,8 +1396,8 @@ export default function AdminManagement() {
                               </>
                             ) : (
                               <>
-                                {admin.status === "active" ? <FaBan /> : <FaCheckCircle />}
-                                {admin.status === "active" ? "Suspend" : "Activate"}
+                            {admin.status === "active" ? <FaBan /> : <FaCheckCircle />}
+                            {admin.status === "active" ? "Suspend" : "Activate"}
                               </>
                             )}
                           </button>
@@ -1415,7 +1418,7 @@ export default function AdminManagement() {
                               </>
                             ) : (
                               <>
-                                <FaArrowDown /> Demote to User
+                            <FaArrowDown /> Demote to User
                               </>
                             )}
                           </button>
@@ -1726,13 +1729,14 @@ export default function AdminManagement() {
                 <button
                   onClick={handleConfirmModalConfirm}
                   className={`px-4 py-2 rounded-lg text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${confirmModalData.confirmButtonClass}`}
-                  disabled={actionLoading.promote[confirmModalData.userId] || actionLoading.demote[confirmModalData.userId] || actionLoading.restore || actionLoading.purge}
+                  disabled={actionLoading.promote[confirmModalData.userId] || actionLoading.demote[confirmModalData.userId] || actionLoading.restore || actionLoading.purge || actionLoading.suspend[confirmModalData.userId]}
                 >
-                  {(actionLoading.promote[confirmModalData.userId] || actionLoading.demote[confirmModalData.userId] || actionLoading.restore || actionLoading.purge) ? (
+                  {(actionLoading.promote[confirmModalData.userId] || actionLoading.demote[confirmModalData.userId] || actionLoading.restore || actionLoading.purge || actionLoading.suspend[confirmModalData.userId]) ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                       {actionLoading.promote[confirmModalData.userId] ? 'Promoting...' : 
                        actionLoading.demote[confirmModalData.userId] ? 'Demoting...' :
+                       actionLoading.suspend[confirmModalData.userId] ? 'Activating...' :
                        actionLoading.restore ? 'Restoring...' : 'Purging...'}
                     </>
                   ) : (
