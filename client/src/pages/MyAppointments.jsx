@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { FaTrash, FaSearch, FaPen, FaCheck, FaTimes, FaUserShield, FaUser, FaEnvelope, FaPhone, FaArchive, FaUndo, FaCommentDots, FaCheckDouble, FaBan, FaPaperPlane, FaCalendar, FaLightbulb, FaCopy, FaEllipsisV, FaFlag, FaCircle, FaInfoCircle, FaSync, FaStar, FaRegStar, FaThumbtack, FaCalendarAlt, FaCheckSquare, FaDownload, FaDollarSign, FaCreditCard, FaSpinner, FaExclamationTriangle, FaMoneyBill } from "react-icons/fa";
+import CameraModal from '../components/CameraModal';
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
 import UserAvatar from '../components/UserAvatar';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
@@ -740,30 +741,10 @@ export default function MyAppointments() {
       )}
 
       {/* Camera Modal */}
-      {cameraModalVisible && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Camera</h3>
-              <button
-                onClick={() => setCameraModalVisible(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <FaTimes className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="text-center">
-              <p className="text-gray-600 mb-4">Camera functionality will be implemented here</p>
-              <button
-                onClick={() => setCameraModalVisible(false)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <CameraModal 
+        isOpen={showCameraModal} 
+        onClose={() => setShowCameraModal(false)} 
+      />
       <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-lg p-6">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
           <div>
@@ -1729,13 +1710,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const [showAttachmentPanel, setShowAttachmentPanel] = useState(false);
   
   // Camera modal state
-  const [cameraModalVisible, setCameraModalVisible] = useState(false);
-  const [cameraFacingMode, setCameraFacingMode] = useState('user'); // 'user' or 'environment'
-  const cameraStreamRef = useRef(null);
-  const cameraVideoRef = useRef(null);
-  const [cameraError, setCameraError] = useState(null);
-  const [capturedPhotoBlob, setCapturedPhotoBlob] = useState(null);
-  const [capturedPhotoUrl, setCapturedPhotoUrl] = useState(null);
+  const [showCameraModal, setShowCameraModal] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [showVideoPreviewModal, setShowVideoPreviewModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
@@ -7560,7 +7535,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                             className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
                             onClick={() => {
                               console.log('Camera button clicked');
-                              setCameraModalVisible(true);
+                              setShowCameraModal(true);
                               setShowAttachmentPanel(false);
                             }}
                           >
