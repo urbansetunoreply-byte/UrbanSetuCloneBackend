@@ -1142,7 +1142,7 @@ export default function AdminManagement() {
               <input type="date" value={softbannedFilters.to} onChange={e=>setSoftbannedFilters(f=>({...f,to:e.target.value}))} className="px-3 py-3 border rounded-xl" />
               <input value={softbannedFilters.softbannedBy} onChange={e=>setSoftbannedFilters(f=>({...f,softbannedBy:e.target.value}))} placeholder="Softbanned by (id or self)" className="px-3 py-3 border rounded-xl" />
               <div className="flex items-center gap-2">
-                <button onClick={fetchSoftbannedAccounts} className="px-4 py-3 bg-blue-600 text-white rounded-xl">Apply</button>
+                <button onClick={fetchSoftbannedAccounts} className="px-4 py-3 bg-red-600 text-white rounded-xl">Apply</button>
                 <button onClick={()=>{setSoftbannedFilters({ q:'', role:'all', softbannedBy:'', from:'', to:''}); setTimeout(fetchSoftbannedAccounts,0);}} className="px-4 py-3 bg-gray-100 rounded-xl">Clear</button>
               </div>
               <div className="col-span-full text-sm text-gray-600">
