@@ -3118,9 +3118,15 @@ function AdminAppointmentRow({
       setUploadingFile(true);
       const form = new FormData();
       form.append('audio', selectedAudio);
+      
+      // Create abort controller for cancellation
+      const controller = new AbortController();
+      currentUploadControllerRef.current = controller;
+      
       const { data } = await axios.post(`${API_BASE_URL}/api/upload/audio`, form, {
         withCredentials: true,
         headers: { 'Content-Type': 'multipart/form-data' },
+        signal: controller.signal,
         onUploadProgress: (evt) => {
           const pct = Math.round((evt.loaded * 100) / Math.max(1, evt.total || selectedAudio.size));
           setUploadProgress(pct);
@@ -3132,9 +3138,14 @@ function AdminAppointmentRow({
       setAudioCaption('');
       setUploadProgress(0);
     } catch (e) {
+      if (e.name === 'CanceledError' || e.code === 'ERR_CANCELED') {
+        // Upload cancelled by user
+        return;
+      }
       toast.error(e.response?.data?.message || 'Audio upload failed');
     } finally {
       setUploadingFile(false);
+      currentUploadControllerRef.current = null;
     }
   };
 
@@ -7284,27 +7295,38 @@ function AdminAppointmentRow({
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-600 truncate flex-1 mr-4">{selectedAudio.name}</div>
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => { setSelectedAudio(null); setShowAudioPreviewModal(false); }}
-                    className="py-2 px-4 rounded-lg text-sm font-medium border hover:bg-gray-50"
-                  >Cancel</button>
-                  <button
-                    onClick={handleSendSelectedAudio}
-                    disabled={isChatSendBlocked}
-                    className={`py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
-                      isChatSendBlocked || uploadingFile ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'
-                    }`}
-                  >Send Audio</button>
+                  {uploadingFile ? (
+                    <>
+                      <button 
+                        onClick={handleCancelInFlightUpload}
+                        className="px-4 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50"
+                      >
+                        Cancel
+                      </button>
+                      <div className="flex items-center gap-2">
+                        <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                          <div className="h-2 bg-blue-600 rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
+                        </div>
+                        <span className="text-sm text-gray-700 w-10 text-right">{uploadProgress}%</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => { setSelectedAudio(null); setShowAudioPreviewModal(false); }}
+                        className="py-2 px-4 rounded-lg text-sm font-medium border hover:bg-gray-50"
+                      >Cancel</button>
+                      <button
+                        onClick={handleSendSelectedAudio}
+                        disabled={isChatSendBlocked}
+                        className={`py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+                          isChatSendBlocked ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'
+                        }`}
+                      >Send Audio</button>
+                    </>
+                  )}
                 </div>
               </div>
-              {uploadingFile && (
-                <div className="mt-3">
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${uploadProgress}%` }} />
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1 text-right">{uploadProgress}%</div>
-                </div>
-              )}
             </div>
           </div>
         )}
@@ -8179,3 +8201,4 @@ function AdminAppointmentRow({
     </tr>
   );
 }
+
