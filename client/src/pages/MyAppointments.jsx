@@ -741,13 +741,13 @@ export default function MyAppointments() {
       )}
 
       {/* Camera Modal */}
-      {showCameraModal && (
+      {isCameraOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Camera</h3>
               <button
-                onClick={() => setShowCameraModal(false)}
+                onClick={() => setIsCameraOpen(false)}
                 className="text-gray-400 hover:text-gray-600"
               >
                 <FaTimes className="w-5 h-5" />
@@ -756,7 +756,7 @@ export default function MyAppointments() {
             <div className="text-center">
               <p className="text-gray-600 mb-4">Camera functionality is being implemented...</p>
               <button
-                onClick={() => setShowCameraModal(false)}
+                onClick={() => setIsCameraOpen(false)}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
               >
                 Close
@@ -1729,8 +1729,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   // Attachment panel and new media states
   const [showAttachmentPanel, setShowAttachmentPanel] = useState(false);
   
-  // Camera modal state
-  const [showCameraModal, setShowCameraModal] = useState(false);
+  // Camera modal state - using different variable name
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [showVideoPreviewModal, setShowVideoPreviewModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
@@ -7453,7 +7453,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                             className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
                             onClick={() => {
                               console.log('Camera button clicked');
-                              setShowCameraModal(true);
+                              setIsCameraOpen(true);
                               setShowAttachmentPanel(false);
                             }}
                           >
