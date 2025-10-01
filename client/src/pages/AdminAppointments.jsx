@@ -5040,9 +5040,7 @@ function AdminAppointmentRow({
                     <p className="text-gray-400 text-xs mt-1">Start a conversation to communicate with the parties</p>
                   </div>
                 ) : (
-                  (localComments.slice(Math.max(0, localComments.length - visibleCount))).map((c, mapIndex, arr) => {
-                  // Add null check to prevent errors
-                  if (!c) return null;
+                  (localComments.slice(Math.max(0, localComments.length - visibleCount)).filter(c => c != null)).map((c, mapIndex, arr) => {
                   
                   const index = localComments.length - arr.length + mapIndex;
                   const isMe = c.senderEmail === currentUser.email;
@@ -5089,7 +5087,7 @@ function AdminAppointmentRow({
                         <div 
                           ref={el => messageRefs.current[c._id] = el}
                           data-message-id={c._id}
-                          className={`relative rounded-2xl px-4 sm:px-5 py-3 text-sm shadow-xl max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] break-words overflow-visible transition-all duration-300 min-h-[60px] ${c.audioUrl ? 'min-w-[320px]' : ''} ${
+                          className={`relative rounded-2xl px-4 sm:px-5 py-3 text-sm shadow-xl max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] break-words overflow-visible transition-all duration-300 min-h-[60px] ${c && c.audioUrl ? 'min-w-[320px]' : ''} ${
                             isMe 
                               ? 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white shadow-blue-200 hover:shadow-blue-300 hover:shadow-2xl' 
                               : 'bg-white hover:bg-gray-100 text-gray-800 border border-gray-200 shadow-gray-200 hover:shadow-lg hover:border-gray-300 hover:shadow-xl'
@@ -5340,7 +5338,7 @@ function AdminAppointmentRow({
                                         </div>
                                       )}
                                       {/* Audio Message */}
-                                      {c.audioUrl && (
+                                      {c && c.audioUrl && (
                                         <div className="mb-2">
                                           <div className="relative">
                                             <div className="w-full min-w-[320px]">
@@ -5391,7 +5389,7 @@ function AdminAppointmentRow({
                                                   onClick={async (e) => {
                                                     e.stopPropagation();
                                                     try {
-                                                      const response = await fetch(c.audioUrl, { mode: 'cors' });
+                                                      const response = await fetch(c && c.audioUrl ? c.audioUrl : '', { mode: 'cors' });
                                                       if (!response.ok) throw new Error(`HTTP ${response.status}`);
                                                       const blob = await response.blob();
                                                       const blobUrl = window.URL.createObjectURL(blob);
@@ -5405,8 +5403,8 @@ function AdminAppointmentRow({
                                                       toast.success('Audio downloaded successfully');
                                                     } catch (error) {
                                                       const a = document.createElement('a');
-                                                      a.href = c.audioUrl;
-                                                      a.download = c.audioName || `audio-${c._id || Date.now()}`;
+                                                      a.href = c && c.audioUrl ? c.audioUrl : '';
+                                                      a.download = (c && c.audioName) || `audio-${(c && c._id) || Date.now()}`;
                                                       a.target = '_blank';
                                                       document.body.appendChild(a);
                                                       a.click();
