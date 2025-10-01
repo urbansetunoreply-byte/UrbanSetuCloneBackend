@@ -1747,6 +1747,15 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const documentCaptionRef = useRef(null);
   // Attachment panel and new media states
   const [showAttachmentPanel, setShowAttachmentPanel] = useState(false);
+  
+  // Camera modal state
+  const [showCameraModal, setShowCameraModal] = useState(false);
+  const [cameraFacingMode, setCameraFacingMode] = useState('user'); // 'user' or 'environment'
+  const cameraStreamRef = useRef(null);
+  const cameraVideoRef = useRef(null);
+  const [cameraError, setCameraError] = useState(null);
+  const [capturedPhotoBlob, setCapturedPhotoBlob] = useState(null);
+  const [capturedPhotoUrl, setCapturedPhotoUrl] = useState(null);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [showVideoPreviewModal, setShowVideoPreviewModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
@@ -1769,15 +1778,6 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const recordingTimerRef = useRef(null);
   const recordingStartTimeRef = useRef(0);
   const recordingCancelledRef = useRef(false);
-
-  // Camera modal state
-  const [showCameraModal, setShowCameraModal] = useState(false);
-  const [cameraFacingMode, setCameraFacingMode] = useState('user'); // 'user' or 'environment'
-  const cameraStreamRef = useRef(null);
-  const cameraVideoRef = useRef(null);
-  const [cameraError, setCameraError] = useState(null);
-  const [capturedPhotoBlob, setCapturedPhotoBlob] = useState(null);
-  const [capturedPhotoUrl, setCapturedPhotoUrl] = useState(null);
 
   // Ensure timer ticks reliably while recording (redundant guard)
   useEffect(() => {
