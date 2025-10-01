@@ -3113,7 +3113,11 @@ function AdminAppointmentRow({
   };
 
   const handleSendSelectedAudio = async () => {
-    if (!selectedAudio) return;
+    if (!selectedAudio) {
+      console.log('No selected audio file');
+      return;
+    }
+    console.log('Starting audio upload:', selectedAudio.name, selectedAudio.size);
     try {
       setUploadingFile(true);
       const form = new FormData();
@@ -3123,21 +3127,25 @@ function AdminAppointmentRow({
       const controller = new AbortController();
       currentUploadControllerRef.current = controller;
       
+      console.log('Uploading to:', `${API_BASE_URL}/api/upload/audio`);
       const { data } = await axios.post(`${API_BASE_URL}/api/upload/audio`, form, {
         withCredentials: true,
         headers: { 'Content-Type': 'multipart/form-data' },
         signal: controller.signal,
         onUploadProgress: (evt) => {
           const pct = Math.round((evt.loaded * 100) / Math.max(1, evt.total || selectedAudio.size));
+          console.log('Upload progress:', pct + '%');
           setUploadProgress(pct);
         }
       });
+      console.log('Upload successful:', data);
       await sendAudioMessage(data.audioUrl, selectedAudio, audioCaption);
       setSelectedAudio(null);
       setShowAudioPreviewModal(false);
       setAudioCaption('');
       setUploadProgress(0);
     } catch (e) {
+      console.error('Upload error:', e);
       if (e.name === 'CanceledError' || e.code === 'ERR_CANCELED') {
         // Upload cancelled by user
         return;
@@ -3482,8 +3490,11 @@ function AdminAppointmentRow({
   // Add function to check if appointment is upcoming
   const isUpcoming = new Date(appt.date) > new Date() || (new Date(appt.date).toDateString() === new Date().toDateString() && (!appt.time || appt.time > new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })));
   
-  // Chat availability: keep chat open for all but block sending for certain statuses
-  const isChatSendBlocked = !isUpcoming || appt.status === 'rejected' || appt.status === 'cancelledByAdmin' || appt.status === 'cancelledByBuyer' || appt.status === 'cancelledBySeller' || appt.status === 'deletedByAdmin';
+  // Chat availability: for admin context, allow sending for all appointments except certain statuses
+  const isChatSendBlocked = appt.status === 'rejected' || appt.status === 'cancelledByAdmin' || appt.status === 'cancelledByBuyer' || appt.status === 'cancelledBySeller' || appt.status === 'deletedByAdmin';
+  
+  // Debug logging
+  console.log('AdminAppointments - isChatSendBlocked:', isChatSendBlocked, 'appt.status:', appt.status, 'isUpcoming:', isUpcoming);
 
   // Function to highlight searched text within message content
   const highlightSearchedText = (text, searchQuery) => {
