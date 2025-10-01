@@ -27,7 +27,6 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
   const [isAtBottom, setIsAtBottom] = useState(true);
   const messagesContainerRef = useRef(null);
   const messagesEndRef = useRef(null);
-  const location = useLocation();
   
   // Confirmation modal state
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
