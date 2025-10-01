@@ -32,9 +32,11 @@ export default function AdminManagement() {
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [showSuspensionReasonModal, setShowSuspensionReasonModal] = useState(false);
   const [suspensionReason, setSuspensionReason] = useState("");
+  const [suspensionOtherReason, setSuspensionOtherReason] = useState("");
   const [suspensionAccount, setSuspensionAccount] = useState(null);
   const [showDemoteReasonModal, setShowDemoteReasonModal] = useState(false);
   const [demoteReason, setDemoteReason] = useState("");
+  const [demoteOtherReason, setDemoteOtherReason] = useState("");
   const [demoteAccount, setDemoteAccount] = useState(null);
   const [actionLoading, setActionLoading] = useState({
     suspend: {},
@@ -314,7 +316,7 @@ export default function AdminManagement() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ reason: suspensionReason || 'Policy violation' })
+        body: JSON.stringify({ reason: suspensionReason === 'other' ? suspensionOtherReason : suspensionReason || 'Policy violation' })
       });
       const data = await res.json();
       if (res.ok) {
@@ -332,6 +334,7 @@ export default function AdminManagement() {
         setShowSuspensionReasonModal(false);
         setSuspensionAccount(null);
         setSuspensionReason("");
+        setSuspensionOtherReason("");
       } else {
         // Rollback
         fetchData();
@@ -640,7 +643,7 @@ export default function AdminManagement() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ reason: demoteReason || 'Administrative decision' })
+        body: JSON.stringify({ reason: demoteReason === 'other' ? demoteOtherReason : demoteReason || 'Administrative decision' })
         });
         const data = await res.json();
         if (res.ok) {
@@ -657,6 +660,7 @@ export default function AdminManagement() {
         setShowDemoteReasonModal(false);
         setDemoteAccount(null);
         setDemoteReason("");
+        setDemoteOtherReason("");
         } else {
           // Rollback on failure
           setUsers(originalUsers);
@@ -1921,8 +1925,8 @@ export default function AdminManagement() {
                   type="text"
                   className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
                   placeholder="Please specify the reason..."
-                  value={suspensionReason}
-                  onChange={e => setSuspensionReason(e.target.value)}
+                  value={suspensionOtherReason}
+                  onChange={e => setSuspensionOtherReason(e.target.value)}
                 />
               )}
             </div>
@@ -1934,6 +1938,7 @@ export default function AdminManagement() {
                   setShowSuspensionReasonModal(false); 
                   setSuspensionAccount(null); 
                   setSuspensionReason("");
+                  setSuspensionOtherReason("");
                 }}
               >
                 Cancel
@@ -1941,7 +1946,7 @@ export default function AdminManagement() {
               <button 
                 className="px-4 py-2 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2" 
                 onClick={performSuspensionWithReason}
-                disabled={!suspensionReason || actionLoading.suspend[suspensionAccount?.id]}
+                disabled={!suspensionReason || (suspensionReason === 'other' && !suspensionOtherReason.trim()) || actionLoading.suspend[suspensionAccount?.id]}
               >
                 {actionLoading.suspend[suspensionAccount?.id] ? (
                   <>
@@ -1988,8 +1993,8 @@ export default function AdminManagement() {
                   type="text"
                   className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Please specify the reason..."
-                  value={demoteReason}
-                  onChange={e => setDemoteReason(e.target.value)}
+                  value={demoteOtherReason}
+                  onChange={e => setDemoteOtherReason(e.target.value)}
                 />
               )}
             </div>
@@ -2001,6 +2006,7 @@ export default function AdminManagement() {
                   setShowDemoteReasonModal(false); 
                   setDemoteAccount(null); 
                   setDemoteReason("");
+                  setDemoteOtherReason("");
                 }}
               >
                 Cancel
@@ -2008,7 +2014,7 @@ export default function AdminManagement() {
               <button 
                 className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2" 
                 onClick={performDemotionWithReason}
-                disabled={!demoteReason || actionLoading.demote[demoteAccount?.id]}
+                disabled={!demoteReason || (demoteReason === 'other' && !demoteOtherReason.trim()) || actionLoading.demote[demoteAccount?.id]}
               >
                 {actionLoading.demote[demoteAccount?.id] ? (
                   <>
