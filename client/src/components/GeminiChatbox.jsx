@@ -5,12 +5,11 @@ import { formatLinksInText } from '../utils/linkFormatter.jsx';
 import { useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null, previousUrl: propPreviousUrl = null }) => {
+const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const { currentUser } = useSelector((state) => state.user);
     const navigate = useNavigate();
     const location = useLocation();
     const [isOpen, setIsOpen] = useState(forceModalOpen);
-    const [previousUrl, setPreviousUrl] = useState(null);
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
@@ -238,17 +237,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null, previousUr
         }
     }, [forceModalOpen]);
 
-    // Handle URL-based opening (when user navigates to /ai, /user/ai, /admin/ai)
-    useEffect(() => {
-        const currentPath = location.pathname;
-        if (currentPath === '/ai' || currentPath === '/user/ai' || currentPath === '/admin/ai') {
-            setIsOpen(true);
-            // If opened via URL and no previousUrl is set, try to get it from location state
-            if (!previousUrl && location.state?.from) {
-                setPreviousUrl(location.state.from);
-            }
-        }
-    }, [location.pathname, previousUrl, location.state]);
 
     // Get appropriate AI URL based on user role
     const getAIUrl = () => {
@@ -263,34 +251,19 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null, previousUr
 
     // Handle modal open with URL change
     const handleOpen = () => {
-        // Store current URL before opening
-        setPreviousUrl(location.pathname);
         setIsOpen(true);
         
-        // Navigate to appropriate AI URL
+        // Navigate to appropriate AI URL with current page as state
         const aiUrl = getAIUrl();
-        navigate(aiUrl, { replace: false });
-    };
-
-    // Get default fallback URL based on user role
-    const getDefaultUrl = () => {
-        if (!currentUser) {
-            return '/';
-        } else if (currentUser.role === 'admin' || currentUser.role === 'rootadmin') {
-            return '/admin';
-        } else {
-            return '/user';
-        }
+        navigate(aiUrl, { 
+            replace: false,
+            state: { from: location.pathname }
+        });
     };
 
     // Handle modal close with callback
     const handleClose = () => {
         setIsOpen(false);
-        
-        // Use propPreviousUrl if available, otherwise use state previousUrl, otherwise use default
-        const targetUrl = propPreviousUrl || previousUrl || getDefaultUrl();
-        navigate(targetUrl, { replace: true });
-        setPreviousUrl(null);
         
         if (onModalClose) {
             onModalClose();
