@@ -219,7 +219,7 @@ export const deleteUserOrAdmin = async (req, res, next) => {
           username: user.username,
           role: user.role,
           reason: req.body?.reason || 'Policy violation',
-          softbannedBy: currentUser.username || currentUser.email,
+          softbannedBy: 'Administrator', // Use generic title instead of actual admin details
           softbannedAt: new Date(),
           revocationLink: null // No restoration link for admin softbans
         });
@@ -271,7 +271,7 @@ export const deleteUserOrAdmin = async (req, res, next) => {
           username: admin.username,
           role: admin.role,
           reason: req.body?.reason || 'Policy violation',
-          softbannedBy: currentUser.username || currentUser.email,
+          softbannedBy: 'Administrator', // Use generic title instead of actual admin details
           softbannedAt: new Date(),
           revocationLink: null // No restoration link for admin softbans
         });
@@ -373,7 +373,7 @@ export const restoreDeletedAccount = async (req, res, next) => {
       await sendManualAccountRestorationEmail(record.email, {
         username: restored.username,
         role: restored.role,
-        restoredBy: currentUser.username || currentUser.email,
+        restoredBy: 'Administrator', // Use generic title instead of actual admin details
         restoredAt: new Date()
       });
       console.log(`✅ Manual account restoration email sent to: ${record.email}`);

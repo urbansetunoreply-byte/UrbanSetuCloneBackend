@@ -2576,7 +2576,7 @@ export const sendManualSoftbanEmail = async (email, softbanDetails) => {
               <div style="color: #991b1b; font-size: 14px; line-height: 1.6;">
                 <p style="margin: 0 0 10px;"><strong>Reason:</strong> ${reason || 'Policy violation'}</p>
                 <p style="margin: 0 0 10px;"><strong>Softbanned On:</strong> ${new Date(softbannedAt).toLocaleDateString()}</p>
-                <p style="margin: 0;"><strong>Softbanned By:</strong> ${softbannedBy || 'Administrator'}</p>
+                <p style="margin: 0;"><strong>Softbanned By:</strong> Administrator</p>
               </div>
             </div>
 
@@ -2693,7 +2693,7 @@ export const sendManualAccountRestorationEmail = async (email, restorationDetail
               <h3 style="color: #166534; margin: 0 0 15px; font-size: 18px; font-weight: 600;">🎉 Account Restored by Administrator</h3>
               <div style="color: #166534; font-size: 14px; line-height: 1.6;">
                 <p style="margin: 0 0 10px;"><strong>Restored On:</strong> ${new Date(restoredAt).toLocaleDateString()}</p>
-                <p style="margin: 0;"><strong>Restored By:</strong> ${restoredBy || 'Administrator'}</p>
+                <p style="margin: 0;"><strong>Restored By:</strong> Administrator</p>
               </div>
             </div>
 
