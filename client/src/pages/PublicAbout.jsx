@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+import ContactSupportWrapper from '../components/ContactSupportWrapper';
 import { FaBullseye, FaGlobe, FaUsers, FaShieldAlt, FaUserFriends, FaEnvelope, FaStar, FaPhone, FaMobileAlt } from 'react-icons/fa';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -176,6 +176,9 @@ export default function PublicAbout() {
         </div>
         <div className="text-xs text-gray-500 mt-2">&copy; {new Date().getFullYear()} UrbanSetu. All rights reserved.</div>
       </div>
+      
+      {/* Contact Support Wrapper */}
+      <ContactSupportWrapper />
     </div>
   );
 } 
