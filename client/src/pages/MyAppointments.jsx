@@ -6740,6 +6740,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                           const audioEl = document.querySelector(`[data-audio-id="${c._id}"]`);
                                                           if (audioEl) {
                                                             audioEl.playbackRate = speed;
+                                                            // Update speed display immediately
+                                                            const rateDisplay = document.querySelector(`[data-audio-id="${c._id}"] .playback-rate-display`);
+                                                            if (rateDisplay) {
+                                                              rateDisplay.textContent = `${speed}x`;
+                                                            }
                                                           }
                                                           const menu = document.querySelector(`[data-audio-speed-menu="${c._id}"]`);
                                                           if (menu) {
