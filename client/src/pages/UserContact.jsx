@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import ContactSupport from '../components/ContactSupport';
+import Home from './Home';
 
 export default function UserContact() {
   const navigate = useNavigate();
@@ -10,7 +11,7 @@ export default function UserContact() {
 
   useEffect(() => {
     // Get the previous URL from state or default to home
-    const from = location.state?.from || '/';
+    const from = location.state?.from || '/user';
     setPreviousUrl(from);
     
     // Open modal immediately when page loads
@@ -26,11 +27,9 @@ export default function UserContact() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Opening contact support...</p>
-      </div>
+    <div>
+      {/* Render the previous page content behind the modal */}
+      <Home />
       
       {/* Render ContactSupport with custom modal control */}
       <ContactSupport 

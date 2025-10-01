@@ -317,7 +317,7 @@ export default function AdminContactSupport({ forceModalOpen = false, onModalClo
       {/* Enhanced Floating Contact Button */}
       <div className="fixed bottom-6 right-6 z-[9999]">
         <button
-          onClick={() => navigate('/admin/support', { state: { from: location.pathname } })}
+          onClick={() => setIsModalOpen(true)}
           className="relative group w-12 h-12 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 hover:rotate-12 flex items-center justify-center"
           style={{ 
             background: `linear-gradient(135deg, ${getIconColor()}, ${getIconColor()}dd)`,

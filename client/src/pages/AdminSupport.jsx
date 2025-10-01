@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import AdminContactSupport from '../components/AdminContactSupport';
+import AdminDashboard from './AdminDashboard';
 
 export default function AdminSupport() {
   const navigate = useNavigate();
@@ -10,7 +11,7 @@ export default function AdminSupport() {
 
   useEffect(() => {
     // Get the previous URL from state or default to admin dashboard
-    const from = location.state?.from || '/admin/dashboard';
+    const from = location.state?.from || '/admin';
     setPreviousUrl(from);
     
     // Open modal immediately when page loads
@@ -26,11 +27,9 @@ export default function AdminSupport() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Opening support messages...</p>
-      </div>
+    <div>
+      {/* Render the previous page content behind the modal */}
+      <AdminDashboard />
       
       {/* Render AdminContactSupport with custom modal control */}
       <AdminContactSupport 
