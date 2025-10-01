@@ -219,15 +219,10 @@ export default function AdminManagement() {
     // If activating, proceed directly
     const performSuspend = async () => {
       // Set loading state
-      console.log('Setting loading state for userId:', id);
-      setActionLoading(prev => {
-        const newState = {
-          ...prev,
-          suspend: { ...prev.suspend, [id]: true }
-        };
-        console.log('New loading state:', newState);
-        return newState;
-      });
+      setActionLoading(prev => ({
+        ...prev,
+        suspend: { ...prev.suspend, [id]: true }
+      }));
 
       // Optimistically update UI
       if (type === 'user') {
@@ -762,7 +757,9 @@ export default function AdminManagement() {
       onConfirm,
       confirmText: options.confirmText || 'Confirm',
       cancelText: options.cancelText || 'Cancel',
-      confirmButtonClass: options.confirmButtonClass || 'bg-red-500 hover:bg-red-600'
+      confirmButtonClass: options.confirmButtonClass || 'bg-red-500 hover:bg-red-600',
+      userId: options.userId,
+      accountId: options.accountId
     });
     setShowConfirmModal(true);
   };
@@ -781,8 +778,6 @@ export default function AdminManagement() {
 
   const handleConfirmModalConfirm = () => {
     if (confirmModalData.onConfirm) {
-      console.log('Confirming action for userId:', confirmModalData.userId);
-      console.log('Current loading states:', actionLoading);
       confirmModalData.onConfirm();
     }
     // Don't close modal immediately - let the action function handle it
@@ -1864,7 +1859,7 @@ export default function AdminManagement() {
                 className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2" 
                 onClick={async () => { 
                   // Close the reason modal first
-                  setShowDeleteReasonModal(false);
+                  setShowDeleteReasonModal(false); 
                   await performDeleteWithReason(); 
                 }}
                 disabled={actionLoading.softban}
