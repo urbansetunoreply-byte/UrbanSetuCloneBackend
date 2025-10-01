@@ -219,10 +219,15 @@ export default function AdminManagement() {
     // If activating, proceed directly
     const performSuspend = async () => {
       // Set loading state
-      setActionLoading(prev => ({
-        ...prev,
-        suspend: { ...prev.suspend, [id]: true }
-      }));
+      console.log('Setting loading state for userId:', id);
+      setActionLoading(prev => {
+        const newState = {
+          ...prev,
+          suspend: { ...prev.suspend, [id]: true }
+        };
+        console.log('New loading state:', newState);
+        return newState;
+      });
 
       // Optimistically update UI
       if (type === 'user') {
@@ -776,6 +781,8 @@ export default function AdminManagement() {
 
   const handleConfirmModalConfirm = () => {
     if (confirmModalData.onConfirm) {
+      console.log('Confirming action for userId:', confirmModalData.userId);
+      console.log('Current loading states:', actionLoading);
       confirmModalData.onConfirm();
     }
     // Don't close modal immediately - let the action function handle it
