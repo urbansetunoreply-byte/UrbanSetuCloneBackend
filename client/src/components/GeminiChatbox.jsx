@@ -646,6 +646,12 @@ const GeminiChatbox = () => {
 
     // Enhanced features helper functions
     const toggleBookmark = (messageIndex, message) => {
+        // Check if user is logged in
+        if (!currentUser) {
+            toast.error('Please sign in to bookmark messages');
+            return;
+        }
+
         const currentSessionId = getOrCreateSessionId();
         const bookmarkKey = `${currentSessionId}_${messageIndex}_${message.timestamp}`;
         const isBookmarked = bookmarkedMessages.some(bm => bm.key === bookmarkKey);
@@ -1077,16 +1083,18 @@ const GeminiChatbox = () => {
                                                 </button>
                                             </li>
                                             
-                                            {/* Bookmarks */}
-                                            <li>
-                                                <button
-                                                    onClick={() => { setShowBookmarks(true); loadChatSessions(); setIsHeaderMenuOpen(false); }}
-                                                    className="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2"
-                                                >
-                                                    <FaBookmark size={12} className="text-yellow-500" />
-                                                    Bookmarks
-                                                </button>
-                                            </li>
+                                            {/* Bookmarks - Only for logged-in users */}
+                                            {currentUser && (
+                                                <li>
+                                                    <button
+                                                        onClick={() => { setShowBookmarks(true); loadChatSessions(); setIsHeaderMenuOpen(false); }}
+                                                        className="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2"
+                                                    >
+                                                        <FaBookmark size={12} className="text-yellow-500" />
+                                                        Bookmarks
+                                                    </button>
+                                                </li>
+                                            )}
                                             
                                             {/* Chat History */}
                                             <li>
@@ -1236,7 +1244,7 @@ const GeminiChatbox = () => {
                                                         </button>
                                                         
                                                         {/* Bookmark button for assistant messages */}
-                                                        {message.role === 'assistant' && !message.isError && (
+                                                        {message.role === 'assistant' && !message.isError && currentUser && (
                                                             <button
                                                                 onClick={() => toggleBookmark(index, message)}
                                                                 className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-all duration-200"
