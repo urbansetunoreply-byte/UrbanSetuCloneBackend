@@ -5064,7 +5064,7 @@ function AdminAppointmentRow({
                         <div 
                           ref={el => messageRefs.current[c._id] = el}
                           data-message-id={c._id}
-                          className={`relative rounded-2xl px-4 sm:px-5 py-3 text-sm shadow-xl max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] break-words overflow-visible transition-all duration-300 min-h-[60px] ${
+                          className={`relative rounded-2xl px-4 sm:px-5 py-3 text-sm shadow-xl max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] break-words overflow-visible transition-all duration-300 min-h-[60px] ${c.audioUrl ? 'min-w-[320px]' : ''} ${
                             isMe 
                               ? 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white shadow-blue-200 hover:shadow-blue-300 hover:shadow-2xl' 
                               : 'bg-white hover:bg-gray-100 text-gray-800 border border-gray-200 shadow-gray-200 hover:shadow-lg hover:border-gray-300 hover:shadow-xl'
@@ -5318,29 +5318,48 @@ function AdminAppointmentRow({
                                       {c.audioUrl && (
                                         <div className="mb-2">
                                           <div className="relative">
-                                            <audio
-                                              src={c.audioUrl}
-                                              className="w-full"
-                                              controls
-                                              onClick={(e) => e.stopPropagation()}
-                                            />
-                                            <div className="absolute top-2 right-2 flex gap-2">
+                                            <div className="w-full min-w-[280px]">
+                                              <audio
+                                                src={c.audioUrl}
+                                                className="w-full"
+                                                controls
+                                                preload="metadata"
+                                                onClick={(e) => e.stopPropagation()}
+                                              />
+                                            </div>
+                                            <div className="mt-2 flex justify-end">
                                               <button
-                                                className="p-2 bg-white rounded-full shadow hover:bg-gray-100"
-                                                onClick={(e) => {
+                                                className={`px-3 py-1.5 text-xs rounded-full shadow-sm border transition-colors ${isMe ? 'bg-white text-blue-600 hover:bg-blue-50 border-blue-200' : 'bg-blue-600 text-white hover:bg-blue-700 border-transparent'}`}
+                                                onClick={async (e) => {
                                                   e.stopPropagation();
-                                                  const a = document.createElement('a');
-                                                  a.href = c.audioUrl;
-                                                  a.download = c.audioName || `audio-${c._id || Date.now()}`;
-                                                  a.target = '_blank';
-                                                  document.body.appendChild(a);
-                                                  a.click();
-                                                  document.body.removeChild(a);
-                                                  toast.success('Audio download started');
+                                                  try {
+                                                    const response = await fetch(c.audioUrl, { mode: 'cors' });
+                                                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                                    const blob = await response.blob();
+                                                    const blobUrl = window.URL.createObjectURL(blob);
+                                                    const a = document.createElement('a');
+                                                    a.href = blobUrl;
+                                                    a.download = c.audioName || `audio-${c._id || Date.now()}`;
+                                                    document.body.appendChild(a);
+                                                    a.click();
+                                                    a.remove();
+                                                    setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                                    toast.success('Audio downloaded successfully');
+                                                  } catch (error) {
+                                                    const a = document.createElement('a');
+                                                    a.href = c.audioUrl;
+                                                    a.download = c.audioName || `audio-${c._id || Date.now()}`;
+                                                    a.target = '_blank';
+                                                    document.body.appendChild(a);
+                                                    a.click();
+                                                    a.remove();
+                                                    toast.success('Audio download started');
+                                                  }
                                                 }}
                                                 title="Download audio"
                                               >
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" /></svg>
+                                                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" /></svg>
+                                                Download
                                               </button>
                                             </div>
                                           </div>
@@ -6226,40 +6245,26 @@ function AdminAppointmentRow({
                             }}
                           />
                         </label>
-                        {/* Camera */}
-                        <button
-                          type="button"
-                          className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-                          onClick={async () => {
-                            try {
-                              const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                              const videoEl = document.createElement('video');
-                              videoEl.autoplay = true;
-                              videoEl.srcObject = stream;
-                              await new Promise(r => setTimeout(r, 300));
-                              const canvas = document.createElement('canvas');
-                              canvas.width = 1280;
-                              canvas.height = 720;
-                              const ctx = canvas.getContext('2d');
-                              ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
-                              stream.getTracks().forEach(t => t.stop());
-                              canvas.toBlob((blob) => {
-                                if (!blob) return;
-                                const file = new File([blob], `camera-${Date.now()}.jpg`, { type: 'image/jpeg' });
-                                handleFileUpload([file]);
-                              }, 'image/jpeg', 0.92);
-                            } catch (err) {
-                              toast.error('Camera permission denied or not available');
-                            } finally {
-                              setShowAttachmentPanel(false);
-                            }
-                          }}
-                        >
+                        {/* Camera - Simple file input approach */}
+                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
                           <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7a2 2 0 012-2h2l1-2h6l1 2h2a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
                           </svg>
                           Camera
-                        </button>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            className="hidden"
+                            onChange={(e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                handleFileUpload([e.target.files[0]]);
+                              }
+                              e.target.value = '';
+                              setShowAttachmentPanel(false);
+                            }}
+                          />
+                        </label>
                         <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
                           <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
