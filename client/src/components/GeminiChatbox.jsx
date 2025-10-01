@@ -249,16 +249,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
     };
 
-    // Handle modal open with URL change
+    // Handle modal open (floating button - no URL change)
     const handleOpen = () => {
         setIsOpen(true);
-        
-        // Navigate to appropriate AI URL with current page as state
-        const aiUrl = getAIUrl();
-        navigate(aiUrl, { 
-            replace: false,
-            state: { from: location.pathname }
-        });
+        // Don't navigate - just open modal on current page
     };
 
     // Handle modal close with callback

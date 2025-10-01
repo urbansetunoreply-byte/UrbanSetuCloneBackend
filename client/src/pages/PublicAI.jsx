@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import GeminiChatbox from '../components/GeminiChatbox';
+import PublicHome from './PublicHome';
 
 export default function PublicAI() {
   const navigate = useNavigate();
@@ -27,6 +28,9 @@ export default function PublicAI() {
 
   return (
     <div>
+      {/* Render the previous page content behind the modal */}
+      <PublicHome />
+      
       {/* Render GeminiChatbox with custom modal control */}
       <GeminiChatbox 
         forceModalOpen={isModalOpen}
