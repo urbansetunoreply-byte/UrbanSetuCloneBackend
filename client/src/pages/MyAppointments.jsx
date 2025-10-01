@@ -1363,6 +1363,9 @@ function getDateLabel(date) {
   return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDelete, actionLoading, onShowOtherParty, onOpenReinitiate, handleArchiveAppointment, handleUnarchiveAppointment, isArchived, onCancelRefresh, copyMessageToClipboard, activeChatAppointmentId, shouldOpenChatFromNotification, onChatOpened, onExportChat, preferUnreadForAppointmentId, onConsumePreferUnread }) {
+  // Camera modal state - declared first to avoid hoisting issues
+  const [cameraModalOpen, setCameraModalOpen] = useState(false);
+  
   const [replyTo, setReplyTo] = useState(null);
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState(appt.comments || []);
@@ -1486,8 +1489,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const [showLockPassword, setShowLockPassword] = useState(false);
   const [showUnlockPassword, setShowUnlockPassword] = useState(false);
   
-  // Camera modal state
-  const [cameraModalOpen, setCameraModalOpen] = useState(false);
+  // Camera modal state - moved to top of component
   const [showRemoveLockPassword, setShowRemoveLockPassword] = useState(false);
   const [lockingChat, setLockingChat] = useState(false);
   const [unlockingChat, setUnlockingChat] = useState(false);
