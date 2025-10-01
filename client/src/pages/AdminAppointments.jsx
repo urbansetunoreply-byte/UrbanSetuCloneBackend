@@ -5041,6 +5041,9 @@ function AdminAppointmentRow({
                   </div>
                 ) : (
                   (localComments.slice(Math.max(0, localComments.length - visibleCount))).map((c, mapIndex, arr) => {
+                  // Add null check to prevent errors
+                  if (!c) return null;
+                  
                   const index = localComments.length - arr.length + mapIndex;
                   const isMe = c.senderEmail === currentUser.email;
                   const isEditing = editingComment === c._id;
@@ -5353,7 +5356,7 @@ function AdminAppointmentRow({
                                                     // Add playback rate change listener
                                                     audioEl.addEventListener('ratechange', () => {
                                                       const rate = audioEl.playbackRate;
-                                                      const rateDisplay = document.querySelector(`[data-audio-id="${c._id}"] .playback-rate-display`);
+                                                      const rateDisplay = document.querySelector(`[data-audio-id="${c._id}"].playback-rate-display`);
                                                       if (rateDisplay) {
                                                         rateDisplay.textContent = `${rate}x`;
                                                       }
@@ -5373,7 +5376,7 @@ function AdminAppointmentRow({
                                                     });
                                                     
                                                     // Set initial speed display
-                                                    const rateDisplay = document.querySelector(`[data-audio-id="${c._id}"] .playback-rate-display`);
+                                                    const rateDisplay = document.querySelector(`[data-audio-id="${c._id}"].playback-rate-display`);
                                                       if (rateDisplay) {
                                                         rateDisplay.textContent = `${audioEl.playbackRate}x`;
                                                       }
@@ -5416,7 +5419,7 @@ function AdminAppointmentRow({
                                                   <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" /></svg>
                                                   Download
                                                 </button>
-                                                <span className={`text-xs playback-rate-display ${isMe ? 'text-blue-100' : 'text-gray-500'}`}>1x</span>
+                                                <span className={`text-xs playback-rate-display ${isMe ? 'text-blue-100' : 'text-gray-500'}`} data-audio-id={c._id}>1x</span>
                                               </div>
                                               
                                               {/* Three dots menu for audio options */}
@@ -5533,7 +5536,7 @@ function AdminAppointmentRow({
                                                           if (audioEl) {
                                                             audioEl.playbackRate = speed;
                                                             // Update speed display immediately
-                                                            const rateDisplay = document.querySelector(`[data-audio-id="${c._id}"] .playback-rate-display`);
+                                                            const rateDisplay = document.querySelector(`[data-audio-id="${c._id}"].playback-rate-display`);
                                                             if (rateDisplay) {
                                                               rateDisplay.textContent = `${speed}x`;
                                                             }
