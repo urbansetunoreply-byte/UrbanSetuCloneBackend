@@ -6523,51 +6523,185 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                       {c.audioUrl && (
                                         <div className="mb-2">
                                           <div className="relative">
-                                            <div className="w-full min-w-[280px]">
+                                            <div className="w-full min-w-[320px]">
                                               <audio
                                                 src={c.audioUrl}
                                                 className="w-full"
                                                 controls
                                                 preload="metadata"
                                                 onClick={(e) => e.stopPropagation()}
-                                              />
-                                            </div>
-                                            <div className="mt-2 flex justify-end">
-                                              <button
-                                                className={`px-3 py-1.5 text-xs rounded-full shadow-sm border transition-colors ${isMe ? 'bg-white text-blue-600 hover:bg-blue-50 border-blue-200' : 'bg-blue-600 text-white hover:bg-blue-700 border-transparent'}`}
-                                                onClick={async (e) => {
-                                                  e.stopPropagation();
-                                                  try {
-                                                    const response = await fetch(c.audioUrl, { mode: 'cors' });
-                                                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                                                    const blob = await response.blob();
-                                                    const blobUrl = window.URL.createObjectURL(blob);
-                                                    const a = document.createElement('a');
-                                                    a.href = blobUrl;
-                                                    a.download = c.audioName || `audio-${c._id || Date.now()}`;
-                                                    document.body.appendChild(a);
-                                                    a.click();
-                                                    a.remove();
-                                                    setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
-                                                    toast.success('Audio downloaded successfully');
-                                                  } catch (error) {
-                                                    const a = document.createElement('a');
-                                                    a.href = c.audioUrl;
-                                                    a.download = c.audioName || `audio-${c._id || Date.now()}`;
-                                                    a.target = '_blank';
-                                                    document.body.appendChild(a);
-                                                    a.click();
-                                                    a.remove();
-                                                    toast.success('Audio download started');
+                                                ref={(audioEl) => {
+                                                  if (audioEl && !audioEl.dataset.audioId) {
+                                                    audioEl.dataset.audioId = c._id;
+                                                    // Add playback rate change listener
+                                                    audioEl.addEventListener('ratechange', () => {
+                                                      const rate = audioEl.playbackRate;
+                                                      const rateDisplay = document.querySelector(`[data-audio-id="${c._id}"] .playback-rate-display`);
+                                                      if (rateDisplay) {
+                                                        rateDisplay.textContent = `${rate}x`;
+                                                      }
+                                                    });
                                                   }
                                                 }}
-                                                title="Download audio"
-                                              >
-                                                <span className="inline-flex items-center gap-1">
-                                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" /></svg>
-                                                  Download
-                                                </span>
-                                              </button>
+                                              />
+                                            </div>
+                                            <div className="mt-2 flex justify-between items-center">
+                                              <div className="flex items-center gap-2">
+                                                <button
+                                                  className={`px-3 py-1.5 text-xs rounded-full shadow-sm border transition-colors ${isMe ? 'bg-white text-blue-600 hover:bg-blue-50 border-blue-200' : 'bg-blue-600 text-white hover:bg-blue-700 border-transparent'}`}
+                                                  onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    try {
+                                                      const response = await fetch(c.audioUrl, { mode: 'cors' });
+                                                      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                                      const blob = await response.blob();
+                                                      const blobUrl = window.URL.createObjectURL(blob);
+                                                      const a = document.createElement('a');
+                                                      a.href = blobUrl;
+                                                      a.download = c.audioName || `audio-${c._id || Date.now()}`;
+                                                      document.body.appendChild(a);
+                                                      a.click();
+                                                      a.remove();
+                                                      setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                                      toast.success('Audio downloaded successfully');
+                                                    } catch (error) {
+                                                      const a = document.createElement('a');
+                                                      a.href = c.audioUrl;
+                                                      a.download = c.audioName || `audio-${c._id || Date.now()}`;
+                                                      a.target = '_blank';
+                                                      document.body.appendChild(a);
+                                                      a.click();
+                                                      a.remove();
+                                                      toast.success('Audio download started');
+                                                    }
+                                                  }}
+                                                  title="Download audio"
+                                                >
+                                                  <span className="inline-flex items-center gap-1">
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" /></svg>
+                                                    Download
+                                                  </span>
+                                                </button>
+                                                <span className="text-xs text-gray-500 playback-rate-display">1x</span>
+                                              </div>
+                                              
+                                              {/* Three dots menu for audio options */}
+                                              <div className="relative">
+                                                <button
+                                                  className={`p-2 rounded-full hover:bg-gray-100 transition-colors ${isMe ? 'text-white hover:bg-blue-500' : 'text-gray-600 hover:bg-gray-200'}`}
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    const menu = document.querySelector(`[data-audio-menu="${c._id}"]`);
+                                                    if (menu) {
+                                                      menu.classList.toggle('hidden');
+                                                    }
+                                                  }}
+                                                  title="Audio options"
+                                                >
+                                                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                                                  </svg>
+                                                </button>
+                                                
+                                                {/* Audio options dropdown */}
+                                                <div 
+                                                  data-audio-menu={c._id}
+                                                  className="hidden absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
+                                                >
+                                                  <div className="py-1">
+                                                    <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">Playback Speed</div>
+                                                    {[0.5, 0.75, 1, 1.25, 1.5, 2].map(speed => (
+                                                      <button
+                                                        key={speed}
+                                                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center justify-between"
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          const audioEl = document.querySelector(`[data-audio-id="${c._id}"]`);
+                                                          if (audioEl) {
+                                                            audioEl.playbackRate = speed;
+                                                          }
+                                                          const menu = document.querySelector(`[data-audio-menu="${c._id}"]`);
+                                                          if (menu) {
+                                                            menu.classList.add('hidden');
+                                                          }
+                                                        }}
+                                                      >
+                                                        <span>{speed}x</span>
+                                                        {speed === 1 && <span className="text-xs text-gray-400">Normal</span>}
+                                                      </button>
+                                                    ))}
+                                                    
+                                                    <div className="border-t border-gray-100 my-1"></div>
+                                                    
+                                                    <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">Audio Controls</div>
+                                                    
+                                                    <button
+                                                      className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        const audioEl = document.querySelector(`[data-audio-id="${c._id}"]`);
+                                                        if (audioEl) {
+                                                          if (audioEl.paused) {
+                                                            audioEl.play();
+                                                          } else {
+                                                            audioEl.pause();
+                                                          }
+                                                        }
+                                                        const menu = document.querySelector(`[data-audio-menu="${c._id}"]`);
+                                                        if (menu) {
+                                                          menu.classList.add('hidden');
+                                                        }
+                                                      }}
+                                                    >
+                                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h1m4 0h1m-6-8h8a2 2 0 012 2v8a2 2 0 01-2 2H8a2 2 0 01-2-2V6a2 2 0 012-2z" />
+                                                      </svg>
+                                                      Toggle Play/Pause
+                                                    </button>
+                                                    
+                                                    <button
+                                                      className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        const audioEl = document.querySelector(`[data-audio-id="${c._id}"]`);
+                                                        if (audioEl) {
+                                                          audioEl.currentTime = 0;
+                                                        }
+                                                        const menu = document.querySelector(`[data-audio-menu="${c._id}"]`);
+                                                        if (menu) {
+                                                          menu.classList.add('hidden');
+                                                        }
+                                                      }}
+                                                    >
+                                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                      </svg>
+                                                      Restart Audio
+                                                    </button>
+                                                    
+                                                    <button
+                                                      className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        const audioEl = document.querySelector(`[data-audio-id="${c._id}"]`);
+                                                        if (audioEl) {
+                                                          audioEl.muted = !audioEl.muted;
+                                                        }
+                                                        const menu = document.querySelector(`[data-audio-menu="${c._id}"]`);
+                                                        if (menu) {
+                                                          menu.classList.add('hidden');
+                                                        }
+                                                      }}
+                                                    >
+                                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                                                      </svg>
+                                                      Toggle Mute
+                                                    </button>
+                                                  </div>
+                                                </div>
+                                              </div>
                                             </div>
                                           </div>
                                           {c.message && (
