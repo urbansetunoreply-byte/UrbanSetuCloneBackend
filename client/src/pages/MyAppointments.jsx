@@ -740,14 +740,14 @@ export default function MyAppointments() {
       )}
 
       {/* Camera Modal */}
-      {showCameraModal && (
+      {cameraModalVisible && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
             <div className="flex items-center justify-between mb-3">
               <span className="text-lg font-medium text-gray-700">Camera</span>
               <button
                 onClick={() => { 
-                  setShowCameraModal(false); 
+                  setCameraModalVisible(false); 
                   setCameraError(null); 
                   if (cameraStreamRef.current) {
                     cameraStreamRef.current.getTracks().forEach(t => t.stop());
@@ -778,7 +778,7 @@ export default function MyAppointments() {
                     <button onClick={switchCamera} className="px-4 py-2 rounded-lg border hover:bg-gray-50">Switch Camera</button>
                     <button 
                       onClick={() => { 
-                        setShowCameraModal(false); 
+                        setCameraModalVisible(false); 
                         setCameraError(null); 
                         if (cameraStreamRef.current) {
                           cameraStreamRef.current.getTracks().forEach(t => t.stop());
@@ -799,7 +799,7 @@ export default function MyAppointments() {
                     <button onClick={retryCapturedPhoto} className="px-4 py-2 rounded-lg border hover:bg-gray-50">Retry</button>
                     <button 
                       onClick={() => { 
-                        setShowCameraModal(false); 
+                        setCameraModalVisible(false); 
                         setCameraError(null); 
                         if (cameraStreamRef.current) {
                           cameraStreamRef.current.getTracks().forEach(t => t.stop());
@@ -1787,7 +1787,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const [showAttachmentPanel, setShowAttachmentPanel] = useState(false);
   
   // Camera modal state
-  const [showCameraModal, setShowCameraModal] = useState(false);
+  const [cameraModalVisible, setCameraModalVisible] = useState(false);
   const [cameraFacingMode, setCameraFacingMode] = useState('user'); // 'user' or 'environment'
   const cameraStreamRef = useRef(null);
   const cameraVideoRef = useRef(null);
@@ -1859,8 +1859,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   }, [cameraFacingMode]);
 
   useEffect(() => {
-    console.log('Camera modal useEffect triggered:', { showCameraModal, capturedPhotoBlob });
-    if (showCameraModal) {
+    console.log('Camera modal useEffect triggered:', { cameraModalVisible, capturedPhotoBlob });
+    if (cameraModalVisible) {
       setCameraError(null);
       // Start camera only if we are not in captured state
       if (!capturedPhotoBlob) {
@@ -1869,13 +1869,13 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       }
     }
     return () => {
-      if (!showCameraModal && cameraStreamRef.current) {
+      if (!cameraModalVisible && cameraStreamRef.current) {
         console.log('Cleaning up camera stream');
         cameraStreamRef.current.getTracks().forEach(t => t.stop());
         cameraStreamRef.current = null;
       }
     };
-  }, [showCameraModal, startCamera, capturedPhotoBlob]);
+  }, [cameraModalVisible, startCamera, capturedPhotoBlob]);
 
   const switchCamera = () => {
     setCameraFacingMode(prev => (prev === 'user' ? 'environment' : 'user'));
@@ -1933,7 +1933,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     setPreviewIndex(0);
     setShowImagePreviewModal(true);
     // Close camera modal and clear captured state
-    setShowCameraModal(false);
+    setCameraModalVisible(false);
     if (capturedPhotoUrl) URL.revokeObjectURL(capturedPhotoUrl);
     setCapturedPhotoUrl(null);
     setCapturedPhotoBlob(null);
@@ -7617,7 +7617,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                             className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
                             onClick={() => {
                               console.log('Camera button clicked');
-                              setShowCameraModal(true);
+                              setCameraModalVisible(true);
                               setShowAttachmentPanel(false);
                             }}
                           >
