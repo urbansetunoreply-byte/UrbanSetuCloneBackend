@@ -48,6 +48,13 @@ const GeminiChatbox = () => {
     const [highlightedMessage, setHighlightedMessage] = useState(null);
     const [selectedHistoryIds, setSelectedHistoryIds] = useState([]);
     const [openHistoryMenuSessionId, setOpenHistoryMenuSessionId] = useState(null);
+    
+    // Prompt limit for non-logged-in users
+    const [promptCount, setPromptCount] = useState(() => {
+        const saved = localStorage.getItem('gemini_prompt_count');
+        return saved ? parseInt(saved) : 0;
+    });
+    const [showSignInModal, setShowSignInModal] = useState(false);
     const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
     const [showDeleteSelectedModal, setShowDeleteSelectedModal] = useState(false);
     const [deleteTargetSessionId, setDeleteTargetSessionId] = useState(null);
@@ -211,6 +218,14 @@ const GeminiChatbox = () => {
         const draftKey = `gemini_draft_${currentSessionId}`;
         localStorage.setItem(draftKey, inputMessage);
     }, [inputMessage, sessionId]);
+
+    // Reset prompt count when user logs in
+    useEffect(() => {
+        if (currentUser) {
+            setPromptCount(0);
+            localStorage.removeItem('gemini_prompt_count');
+        }
+    }, [currentUser]);
 
     // Listen for clear chat history events from header
     useEffect(() => {
@@ -390,6 +405,12 @@ const GeminiChatbox = () => {
         e.preventDefault();
         if (!inputMessage.trim() || isLoading) return;
 
+        // Check prompt limit for non-logged-in users
+        if (!currentUser && promptCount >= 5) {
+            setShowSignInModal(true);
+            return;
+        }
+
         // Trigger send icon fly animation
         setSendIconAnimating(true);
         setTimeout(() => setSendIconAnimating(false), 800);
@@ -451,6 +472,13 @@ const GeminiChatbox = () => {
                 if (data.sessionId && data.sessionId !== sessionId) {
                     setSessionId(data.sessionId);
                     localStorage.setItem('gemini_session_id', data.sessionId);
+                }
+
+                // Increment prompt count for non-logged-in users
+                if (!currentUser) {
+                    const newCount = promptCount + 1;
+                    setPromptCount(newCount);
+                    localStorage.setItem('gemini_prompt_count', newCount.toString());
                 }
 
                 // Show sent success check briefly
@@ -1404,6 +1432,20 @@ const GeminiChatbox = () => {
 
                         {/* Input */}
                         <div className="p-4 border-t border-gray-200 flex-shrink-0">
+                            {/* Prompt Counter for Non-Logged-In Users */}
+                            {!currentUser && (
+                                <div className="mb-3 text-center">
+                                    <div className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                                        <span className="mr-1">💬</span>
+                                        <span>
+                                            {promptCount < 5 
+                                                ? `${5 - promptCount} free prompts remaining` 
+                                                : 'No free prompts left'
+                                            }
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
                             <form onSubmit={handleSubmit} className="flex space-x-2">
                                 <input
                                     ref={inputRef}
@@ -1411,9 +1453,9 @@ const GeminiChatbox = () => {
                                     value={inputMessage}
                                     onChange={(e) => setInputMessage(e.target.value)}
                                     onKeyPress={handleKeyPress}
-                                    placeholder="Ask me anything about real estate..."
+                                    placeholder={!currentUser && promptCount >= 5 ? "Sign in to continue chatting..." : "Ask me anything about real estate..."}
                                     className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                                    disabled={isLoading}
+                                    disabled={isLoading || (!currentUser && promptCount >= 5)}
                                 />
                                 {isLoading ? (
                                     <button
@@ -1428,7 +1470,7 @@ const GeminiChatbox = () => {
                                 ) : (
                                     <button
                                         type="submit"
-                                        disabled={!inputMessage.trim()}
+                                        disabled={!inputMessage.trim() || (!currentUser && promptCount >= 5)}
                                         className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-full hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-110 flex-shrink-0 flex items-center justify-center w-10 h-10 group hover:shadow-xl active:scale-95"
                                     >
                                         <div className="relative">
@@ -1827,6 +1869,51 @@ const GeminiChatbox = () => {
                                 setOpenHistoryMenuSessionId(null);
                             }
                         }} className="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-700">Save</button>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {/* Sign In Modal for Prompt Limit */}
+        {showSignInModal && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                <div className="bg-white rounded-xl shadow-xl p-6 w-96 max-w-sm mx-4">
+                    <div className="text-center">
+                        <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
+                            <FaRobot className="h-6 w-6 text-blue-600" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                            Prompt Limit Reached
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-6">
+                            You've used all 5 free prompts! Sign in to enjoy unlimited access to our AI assistant and unlock premium features like chat history, message ratings, and more.
+                        </p>
+                        <div className="flex flex-col gap-3">
+                            <button
+                                onClick={() => {
+                                    setShowSignInModal(false);
+                                    window.location.href = '/signin';
+                                }}
+                                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-200"
+                            >
+                                Sign In to Continue
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowSignInModal(false);
+                                    window.location.href = '/signup';
+                                }}
+                                className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-200"
+                            >
+                                Create Free Account
+                            </button>
+                            <button
+                                onClick={() => setShowSignInModal(false)}
+                                className="w-full text-gray-500 hover:text-gray-700 text-sm py-2"
+                            >
+                                Maybe Later
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
