@@ -15,7 +15,6 @@ import { toast, ToastContainer } from 'react-toastify';
 import { socket } from "../utils/socket";
 import { exportEnhancedChatToPDF } from '../utils/pdfExport';
 import ExportChatModal from '../components/ExportChatModal';
-import SimpleCamera from '../components/SimpleCamera';
 import axios from 'axios';
 import PaymentModal from '../components/PaymentModal';
 
@@ -65,17 +64,6 @@ export default function MyAppointments() {
   const [exportAppointment, setExportAppointment] = useState(null);
   const [exportComments, setExportComments] = useState([]);
   
-  // Camera state
-  const [showCamera, setShowCamera] = useState(false);
-  
-  // Camera handler functions
-  const handleOpenCamera = useCallback(() => {
-    setShowCamera(true);
-  }, []);
-  
-  const handleCloseCamera = useCallback(() => {
-    setShowCamera(false);
-  }, []);
 
 
 
@@ -914,7 +902,6 @@ export default function MyAppointments() {
                         setExportComments(comments);
                         setShowExportModal(true);
                       }}
-                      onOpenCamera={handleOpenCamera}
                     />
                   ))}
                 </tbody>
@@ -981,7 +968,6 @@ export default function MyAppointments() {
                         setExportComments(comments);
                         setShowExportModal(true);
                       }}
-                      onOpenCamera={handleOpenCamera}
                   />
                 ))}
               </tbody>
@@ -1376,7 +1362,7 @@ function getDateLabel(date) {
   if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
   return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
-function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDelete, actionLoading, onShowOtherParty, onOpenReinitiate, handleArchiveAppointment, handleUnarchiveAppointment, isArchived, onCancelRefresh, copyMessageToClipboard, activeChatAppointmentId, shouldOpenChatFromNotification, onChatOpened, onExportChat, preferUnreadForAppointmentId, onConsumePreferUnread, onOpenCamera }) {
+function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDelete, actionLoading, onShowOtherParty, onOpenReinitiate, handleArchiveAppointment, handleUnarchiveAppointment, isArchived, onCancelRefresh, copyMessageToClipboard, activeChatAppointmentId, shouldOpenChatFromNotification, onChatOpened, onExportChat, preferUnreadForAppointmentId, onConsumePreferUnread }) {
   // Camera modal state - moved to main MyAppointments component
   
   const [replyTo, setReplyTo] = useState(null);
@@ -10483,17 +10469,6 @@ function PaymentStatusCell({ appointment, isBuyer }) {
         </div>
       )}
 
-      {/* Simple Camera Component - temporarily disabled due to persistent ReferenceError */}
-      {/* <SimpleCamera
-        isOpen={showCamera}
-        onClose={handleCloseCamera}
-        onCapture={(file) => {
-          // Handle captured photo file
-          console.log('Photo captured:', file);
-          toast.success('Photo captured successfully!');
-          // You can add logic here to upload the file or add it to attachments
-        }}
-      /> */}
     </div>
   );
 }
