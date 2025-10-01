@@ -284,7 +284,6 @@ io.on('connection', (socket) => {
 
   // Listen for admin appointments active
   socket.on('adminAppointmentsActive', async ({ adminId, role }) => {
-    console.log('Admin appointments active:', adminId, role);
     thisUserId = adminId;
     
     // IMPORTANT: Join admin to their personal room for direct messaging
@@ -332,7 +331,6 @@ io.on('connection', (socket) => {
     
     // Clean up admin room memberships
     if (socket.adminId) {
-      console.log(`Admin ${socket.adminId} disconnected, cleaning up room memberships`);
       // Leave all appointment rooms
       Booking.find({}).then(bookings => {
         for (const appt of bookings) {
@@ -363,7 +361,6 @@ io.on('connection', (socket) => {
     
     for (const adminSocket of adminSockets) {
       adminSocket.join(`appointment_${data.appointment._id}`);
-      console.log(`Admin ${adminSocket.user._id} joined new appointment room: appointment_${data.appointment._id}`);
     }
   });
 });
