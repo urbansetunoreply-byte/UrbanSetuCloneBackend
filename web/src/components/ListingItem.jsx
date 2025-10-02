@@ -1,0 +1,232 @@
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { MdLocationOn } from 'react-icons/md';
+import { useWishlist } from '../WishlistContext';
+import { FaHeart, FaTrash } from 'react-icons/fa';
+import { useSelector } from 'react-redux';
+import { maskAddress } from '../utils/addressMasking';
+import { toast } from 'react-toastify';
+
+export default function ListingItem({ listing, onDelete, onWishToggle }) {
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const [isInWishlistState, setIsInWishlistState] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { currentUser } = useSelector((state) => state.user);
+
+  // Check if we're in admin context
+  const isAdminContext = location.pathname.includes('/admin');
+
+  // Check if item is in wishlist when component mounts or wishlist changes
+  useEffect(() => {
+    setIsInWishlistState(isInWishlist(listing._id));
+  }, [isInWishlist, listing._id]);
+
+  const handleWishList = async () => {
+    if (!currentUser) {
+      toast.info('Please sign in to add properties to your wishlist.');
+      navigate('/sign-in');
+      return;
+    }
+    
+    if (isInWishlistState) {
+      await removeFromWishlist(listing._id);
+      setIsInWishlistState(false);
+      if (typeof onWishToggle === 'function') onWishToggle(listing._id, false);
+    } else {
+      await addToWishlist(listing);
+      setIsInWishlistState(true);
+      if (typeof onWishToggle === 'function') onWishToggle(listing._id, true);
+    }
+  };
+
+  const onHandleAppointment = () => {
+    if (!currentUser) {
+      toast.info('Please sign in to book appointments.');
+      navigate('/sign-in');
+      return;
+    }
+    
+    const appointmentUrl = isAdminContext 
+      ? `/admin/appointmentlisting?listingId=${listing._id}&listingType=${listing.type}&propertyName=${encodeURIComponent(listing.name)}&propertyDescription=${encodeURIComponent(listing.description)}`
+      : `/user/appointment?listingId=${listing._id}&listingType=${listing.type}&propertyName=${encodeURIComponent(listing.name)}&propertyDescription=${encodeURIComponent(listing.description)}`;
+    navigate(appointmentUrl);
+  };
+
+  const formatINR = (amount) => {
+    return `₹${Number(amount).toLocaleString('en-IN')}`;
+  };
+
+  // Calculate discount percentage
+  const getDiscountPercentage = () => {
+    if (listing.offer && listing.regularPrice && listing.discountPrice) {
+      return Math.round(((listing.regularPrice - listing.discountPrice) / listing.regularPrice) * 100);
+    }
+    return 0;
+  };
+
+  // Determine the correct link based on context
+  let listingLink = `/listing/${listing._id}`;
+  if (isAdminContext) {
+    listingLink = `/admin/listing/${listing._id}`;
+  } else if (location.pathname.startsWith('/user')) {
+    listingLink = `/user/listing/${listing._id}`;
+  }
+
+  return (
+    <div className="relative bg-white shadow-md rounded-lg overflow-hidden p-1 sm:p-2 lg:p-4">
+      {/* Offer Badge */}
+      {listing.offer && getDiscountPercentage() > 0 && (
+        <div className="absolute top-2 sm:top-4 left-2 sm:left-4 z-20">
+          <span
+            className="bg-yellow-400 text-gray-900 text-xs font-semibold px-2 py-1 rounded-full shadow-md animate-pulse"
+            title="Limited-time offer!"
+          >
+            {getDiscountPercentage()}% OFF
+          </span>
+        </div>
+      )}
+
+      {/* Top-right action: admin shows Delete (if available), users show Wishlist */}
+      {isAdminContext ? (
+        onDelete ? (
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(listing._id); }}
+            className="absolute top-2 sm:top-4 right-2 sm:right-4 p-2 rounded-full transition z-20 bg-red-100 text-red-600 hover:bg-red-500 hover:text-white"
+            title="Delete property"
+          >
+            <FaTrash className="text-base sm:text-lg" />
+          </button>
+        ) : null
+      ) : (
+        <button
+          onClick={handleWishList}
+          className={`absolute top-2 sm:top-4 right-2 sm:right-4 p-2 rounded-full transition z-20 ${
+            isInWishlistState ? 'bg-red-500 text-white' : 'bg-gray-200 text-red-500'
+          }`}
+          title={isInWishlistState ? 'Remove from wishlist' : 'Add to wishlist'}
+        >
+          <FaHeart className="text-base sm:text-lg" />
+        </button>
+      )}
+
+
+      <Link to={listingLink}>
+        {listing.imageUrls && listing.imageUrls.length > 0 ? (
+          <img
+            src={listing.imageUrls[0]}
+            alt="home"
+            className="w-full h-28 sm:h-40 lg:h-48 object-cover rounded-md"
+            onError={(e) => {
+              e.target.src = "https://via.placeholder.com/400x300?text=No+Image";
+              e.target.className = "w-full h-28 sm:h-40 lg:h-48 object-cover rounded-md opacity-50";
+            }}
+          />
+        ) : (
+          <div className="w-full h-28 sm:h-40 lg:h-48 bg-gray-200 rounded-md flex items-center justify-center">
+            <div className="text-center text-gray-500">
+              <div className="text-4xl mb-2">🏠</div>
+              <p className="text-sm">No Image</p>
+            </div>
+          </div>
+        )}
+        <div className="p-2 sm:p-3">
+          <div className="flex items-center justify-between">
+            <p className="text-gray-700 font-semibold text-base sm:text-lg truncate flex-1">
+              {listing.name}
+            </p>
+            {/* Remove Button - only show in watchlist context (hide for admins to avoid duplicate) */}
+            {onDelete && !isAdminContext && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onDelete(listing._id);
+                }}
+                className="ml-2 p-1 rounded-full bg-red-100 text-red-600 hover:bg-red-500 hover:text-white transition-all flex items-center gap-1 text-xs"
+                title="Remove from watchlist"
+              >
+                <FaTrash className="text-xs" />
+                <span className="hidden sm:inline">Remove</span>
+              </button>
+            )}
+          </div>
+          <div className="text-sm text-gray-500 flex items-center gap-1 mt-1">
+            <MdLocationOn className="text-red-500" />
+            <p className="truncate">
+              {maskAddress(
+                // Create address object if structured fields exist, otherwise use legacy address
+                listing.propertyNumber || listing.city ? {
+                  propertyNumber: listing.propertyNumber,
+                  landmark: listing.landmark,
+                  city: listing.city,
+                  district: listing.district,
+                  state: listing.state,
+                  pincode: listing.pincode
+                } : listing.address,
+                !!currentUser
+              )}
+            </p>
+          </div>
+          <p className="text-gray-600 text-xs sm:text-sm mt-2 truncate">{listing.description}</p>
+          <div className="mt-2">
+            {listing.offer && getDiscountPercentage() > 0 ? (
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <p className="text-base sm:text-lg font-bold text-blue-500">
+                    {formatINR(listing.discountPrice)}
+                    {listing.type === 'rent' && ' / month'}
+                  </p>
+                  <p className="text-xs sm:text-sm text-gray-500 line-through">
+                    {formatINR(listing.regularPrice)}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs sm:text-sm text-green-600 font-semibold bg-green-50 px-2 py-1 rounded-full">
+                    Save ₹{(listing.regularPrice - listing.discountPrice).toLocaleString('en-IN')}
+                  </span>
+                  <span className="text-xs sm:text-sm text-green-600 font-semibold">
+                    ({getDiscountPercentage()}% off)
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <p className="text-base sm:text-lg font-bold text-blue-500">
+                {formatINR(listing.regularPrice)}
+                {listing.type === 'rent' && ' / month'}
+              </p>
+            )}
+          </div>
+          <div className="flex space-x-2 sm:space-x-4 text-gray-600 text-xs sm:text-sm mt-2">
+            <p>{listing.bedrooms > 1 ? `${listing.bedrooms} beds` : `${listing.bedrooms} bed`}</p>
+            <p>{listing.bathrooms > 1 ? `${listing.bathrooms} bathrooms` : `${listing.bathrooms} bathroom`}</p>
+          </div>
+          
+          {/* Property Features - Special Offer badge */}
+          <div className="mt-2 flex flex-wrap gap-1">
+            {listing.offer && (
+              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
+                Special Offer
+              </span>
+            )}
+          </div>
+        </div>
+      </Link>
+
+      <div className="mt-2 sm:mt-4">
+        {currentUser && currentUser._id === listing.userRef ? (
+          <div className="w-full text-red-500 font-semibold text-center py-2 sm:py-3 rounded-lg bg-red-50 border border-red-200">
+            You cannot book an appointment for your own property.
+          </div>
+        ) : (
+          <button
+            onClick={onHandleAppointment}
+            className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center justify-center gap-2 text-sm sm:text-base"
+          >
+            📅 Book Appointment
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
