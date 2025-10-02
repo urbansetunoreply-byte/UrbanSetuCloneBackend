@@ -2287,8 +2287,8 @@ function AdminAppointmentRow({
   // Starred messages states
   const [showStarredModal, setShowStarredModal] = useLocalState(false);
   const [starredMessages, setStarredMessages] = useLocalState([]);
-  const [starringSaving, setStarringSaving] = useLocalState(false);
   const [loadingStarredMessages, setLoadingStarredMessages] = useLocalState(false);
+  const [starringSaving, setStarringSaving] = useLocalState(false);
   const [unstarringMessageId, setUnstarringMessageId] = useLocalState(null);
   const [removingAllStarred, setRemovingAllStarred] = useLocalState(false);
   const [sendIconAnimating, setSendIconAnimating] = useLocalState(false);
@@ -4909,6 +4909,16 @@ function AdminAppointmentRow({
                                               
                                               return updated;
                                             });
+                                            
+                                            // Update starred messages list
+                                            if (isStarred) {
+                                              // Remove from starred messages
+                                              setStarredMessages(prev => prev.filter(m => m._id !== selectedMsg._id));
+                                            } else {
+                                              // Add to starred messages
+                                              setStarredMessages(prev => [...prev, selectedMsg]);
+                                            }
+                                            
                                             toast.success(isStarred ? 'Message unstarred.' : 'Message starred.');
                                         } catch (err) {
                                           toast.error('Failed to update star status');
@@ -5142,7 +5152,7 @@ function AdminAppointmentRow({
                                   // Update starred messages list
                                   if (isStarred) {
                                     // Remove from starred messages
-                                    setStarredMessages(prev => prev.filter(m => m._id !== selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id));
+                                    setStarredMessages(prev => prev.filter(m => m._id !== (selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id)));
                                   } else {
                                     // Add to starred messages
                                     setStarredMessages(prev => [...prev, selectedMessageForHeaderOptions]);
@@ -5227,7 +5237,7 @@ function AdminAppointmentRow({
                                   // Update starred messages list
                                   if (isStarred) {
                                     // Remove from starred messages
-                                    setStarredMessages(prev => prev.filter(m => m._id !== selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id));
+                                    setStarredMessages(prev => prev.filter(m => m._id !== (selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id)));
                                   } else {
                                     // Add to starred messages
                                     setStarredMessages(prev => [...prev, selectedMessageForHeaderOptions]);
