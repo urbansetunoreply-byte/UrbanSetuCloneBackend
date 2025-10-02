@@ -6035,7 +6035,7 @@ function AdminAppointmentRow({
                                   <div className="border border-red-300 bg-red-50 rounded p-2 mb-2">
                                     <div className="flex items-center gap-2 text-red-600 text-xs font-semibold mb-1">
                                       <FaBan className="inline-block" />
-                                      Message deleted by {c.deletedBy || 'user'} (Admin view - preserved for records)
+                                      Message deleted by {(c && c.deletedBy) || 'user'} (Admin view - preserved for records)
                                     </div>
                                     
                                     {/* Show preserved image if exists */}
@@ -6177,7 +6177,7 @@ function AdminAppointmentRow({
                                       {c && c.videoUrl && (
                                         <div className="mb-2">
                                           <video 
-                                            src={c.videoUrl} 
+                                            src={c && c.videoUrl ? c.videoUrl : ''} 
                                             className="max-w-full max-h-64 rounded-lg border cursor-pointer hover:opacity-90 transition-opacity" 
                                             controls 
                                             onClick={(e) => {
@@ -6198,7 +6198,7 @@ function AdminAppointmentRow({
                                               onClick={(e) => {
                                                 e.stopPropagation();
                                                 const a = document.createElement('a');
-                                                a.href = c.videoUrl;
+                                                a.href = c && c.videoUrl ? c.videoUrl : '';
                                                 a.download = `video-${c._id || Date.now()}`;
                                                 a.target = '_blank';
                                                 document.body.appendChild(a);
@@ -6216,7 +6216,7 @@ function AdminAppointmentRow({
                                           <div className="relative">
                                             <div className="w-full min-w-[280px] sm:min-w-[320px]">
                                             <audio
-                                              src={c.audioUrl}
+                                              src={c && c.audioUrl ? c.audioUrl : ''}
                                               className="w-full"
                                               controls
                                                 preload="metadata"
@@ -6279,7 +6279,7 @@ function AdminAppointmentRow({
                                                       const blobUrl = window.URL.createObjectURL(blob);
                                                   const a = document.createElement('a');
                                                       a.href = blobUrl;
-                                                  a.download = c.audioName || `audio-${c._id || Date.now()}`;
+                                                  a.download = (c && c.audioName) || `audio-${(c && c._id) || Date.now()}`;
                                                       document.body.appendChild(a);
                                                       a.click();
                                                       a.remove();
@@ -6554,7 +6554,7 @@ function AdminAppointmentRow({
                                           </div>
                                           {c && c.message && (
                                             <div className={`mt-2 text-sm whitespace-pre-wrap break-words ${isMe ? 'text-white' : 'text-gray-700'}`}>
-                                              {c.message}
+                                              {c && c.message}
                                               {c && c.edited && (
                                                 <span className={`ml-2 text-[10px] italic whitespace-nowrap ${isMe ? 'text-blue-200' : 'text-gray-400'}`}>(Edited)</span>
                                               )}
@@ -6644,19 +6644,19 @@ function AdminAppointmentRow({
                         </div>
                         <div className="flex items-center gap-1 justify-end mt-2" data-message-actions>
                           {/* Star icon for starred messages */}
-                          {c.starredBy && c.starredBy.includes(currentUser._id) && (
+                          {c && c.starredBy && c.starredBy.includes(currentUser._id) && (
                             <FaStar className={`${isMe ? 'text-yellow-300' : 'text-yellow-500'} text-[10px]`} />
                           )}
                           <span className={`${isMe ? 'text-blue-200' : 'text-gray-500'} text-[10px]`}>
-                            {new Date(c.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                            {new Date(c && c.timestamp ? c.timestamp : Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
                           </span>
                           {/* Options icon - visible for all messages (including deleted) */}
                           <button
-                            className={`${c.senderEmail === currentUser.email ? 'text-blue-200 hover:text-white' : 'text-gray-500 hover:text-gray-700'} transition-all duration-200 hover:scale-110 p-1 rounded-full hover:bg-white hover:bg-opacity-20 ml-1`}
+                            className={`${(c && c.senderEmail) === currentUser.email ? 'text-blue-200 hover:text-white' : 'text-gray-500 hover:text-gray-700'} transition-all duration-200 hover:scale-110 p-1 rounded-full hover:bg-white hover:bg-opacity-20 ml-1`}
                             onClick={(e) => { 
                               e.stopPropagation(); 
-                              setHeaderOptionsMessageId(c._id); 
-                              toggleReactionsBar(c._id);
+                              setHeaderOptionsMessageId(c && c._id); 
+                              toggleReactionsBar(c && c._id);
                             }}
                             title="Message options"
                             aria-label="Message options"
@@ -6665,12 +6665,12 @@ function AdminAppointmentRow({
                           </button>
                           
                           {/* Display reactions */}
-                          {!c.deleted && c.reactions && c.reactions.length > 0 && (
+                          {c && !c.deleted && c.reactions && c.reactions.length > 0 && (
                             <div className="flex items-center gap-1 ml-1">
                               {(() => {
                                 // Group reactions by emoji
                                 const groupedReactions = {};
-                                c.reactions.forEach(reaction => {
+                                (c && c.reactions || []).forEach(reaction => {
                                   if (!groupedReactions[reaction.emoji]) {
                                     groupedReactions[reaction.emoji] = [];
                                   }
@@ -6684,7 +6684,7 @@ function AdminAppointmentRow({
                                   return (
                                     <button
                                       key={emoji}
-                                      onClick={() => handleQuickReaction(c._id, emoji)}
+                                      onClick={() => handleQuickReaction(c && c._id, emoji)}
                                       className={`text-xs rounded-full px-2 py-1 flex items-center gap-1 transition-all duration-200 hover:scale-105 ${
                                         hasUserReaction 
                                           ? 'bg-blue-500 border-2 border-blue-600 hover:bg-blue-600 shadow-md' 
@@ -6705,11 +6705,11 @@ function AdminAppointmentRow({
                           
                           {/* Reactions Bar - positioned inside message container (above only) */}
                           {(() => {
-                            const shouldShow = !c.deleted && showReactionsBar && reactionsMessageId === c._id;
+                            const shouldShow = c && !c.deleted && showReactionsBar && reactionsMessageId === (c && c._id);
                             if (!shouldShow) return false;
                             
                             // Only show inline reaction bar if message should be positioned above
-                            const messageElement = document.querySelector(`[data-message-id="${c._id}"]`);
+                            const messageElement = document.querySelector(`[data-message-id="${c && c._id}"]`);
                             if (messageElement) {
                               const messageRect = messageElement.getBoundingClientRect();
                               const chatContainer = chatContainerRef.current;
@@ -6733,9 +6733,9 @@ function AdminAppointmentRow({
                             <div className={`absolute -top-8 ${isMe ? 'right-0' : 'left-0'} bg-red-500 rounded-full shadow-lg border-2 border-red-600 p-1 flex items-center gap-1 animate-reactions-bar z-[999999] reactions-bar transition-all duration-300`} style={{ minWidth: 'max-content' }}>
                               {/* Quick reaction buttons */}
                               <button
-                                onClick={() => handleQuickReaction(c._id, '👍')}
+                                onClick={() => handleQuickReaction(c && c._id, '👍')}
                                 className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                                  c.reactions?.some(r => r.emoji === '👍' && r.userId === currentUser._id)
+                                  (c && c.reactions)?.some(r => r.emoji === '👍' && r.userId === currentUser._id)
                                     ? 'bg-blue-100 border-2 border-blue-400'
                                     : 'bg-gray-50 hover:bg-gray-100'
                                 }`}
@@ -6744,9 +6744,9 @@ function AdminAppointmentRow({
                                 👍
                               </button>
                               <button
-                                onClick={() => handleQuickReaction(c._id, '❤️')}
+                                onClick={() => handleQuickReaction(c && c._id, '❤️')}
                                 className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                                  c.reactions?.some(r => r.emoji === '❤️' && r.userId === currentUser._id)
+                                  (c && c.reactions)?.some(r => r.emoji === '❤️' && r.userId === currentUser._id)
                                     ? 'bg-blue-100 border-2 border-blue-400'
                                     : 'bg-gray-50 hover:bg-gray-100'
                                 }`}
@@ -6755,9 +6755,9 @@ function AdminAppointmentRow({
                                 ❤️
                               </button>
                               <button
-                                onClick={() => handleQuickReaction(c._id, '😂')}
+                                onClick={() => handleQuickReaction(c && c._id, '😂')}
                                 className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                                  c.reactions?.some(r => r.emoji === '😂' && r.userId === currentUser._id)
+                                  (c && c.reactions)?.some(r => r.emoji === '😂' && r.userId === currentUser._id)
                                     ? 'bg-blue-100 border-2 border-blue-400'
                                     : 'bg-gray-50 hover:bg-gray-100'
                                 }`}
@@ -6766,9 +6766,9 @@ function AdminAppointmentRow({
                                 😂
                               </button>
                               <button
-                                onClick={() => handleQuickReaction(c._id, '😮')}
+                                onClick={() => handleQuickReaction(c && c._id, '😮')}
                                 className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                                  c.reactions?.some(r => r.emoji === '😮' && r.userId === currentUser._id)
+                                  (c && c.reactions)?.some(r => r.emoji === '😮' && r.userId === currentUser._id)
                                     ? 'bg-blue-100 border-2 border-blue-400'
                                     : 'bg-gray-50 hover:bg-gray-100'
                                 }`}
@@ -6777,9 +6777,9 @@ function AdminAppointmentRow({
                                 😮
                               </button>
                               <button
-                                onClick={() => handleQuickReaction(c._id, '😢')}
+                                onClick={() => handleQuickReaction(c && c._id, '😢')}
                                 className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                                  c.reactions?.some(r => r.emoji === '😢' && r.userId === currentUser._id)
+                                  (c && c.reactions)?.some(r => r.emoji === '😢' && r.userId === currentUser._id)
                                     ? 'bg-blue-100 border-2 border-blue-400'
                                     : 'bg-gray-50 hover:bg-gray-100'
                                 }`}
@@ -6788,9 +6788,9 @@ function AdminAppointmentRow({
                                 😢
                               </button>
                               <button
-                                onClick={() => handleQuickReaction(c._id, '😡')}
+                                onClick={() => handleQuickReaction(c && c._id, '😡')}
                                 className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                                  c.reactions?.some(r => r.emoji === '😡' && r.userId === currentUser._id)
+                                  (c && c.reactions)?.some(r => r.emoji === '😡' && r.userId === currentUser._id)
                                     ? 'bg-blue-100 border-2 border-blue-400'
                                     : 'bg-gray-50 hover:bg-gray-100'
                                 }`}
@@ -6810,13 +6810,13 @@ function AdminAppointmentRow({
                           )}
                           
                           {/* Read status indicator - always visible for sent messages */}
-                          {(c.senderEmail === currentUser.email) && !c.deleted && (
+                          {c && (c.senderEmail === currentUser.email) && !c.deleted && (
                             <span className="ml-1 flex items-center gap-1">
-                              {c.readBy?.some(userId => userId !== currentUser._id)
+                              {(c && c.readBy)?.some(userId => userId !== currentUser._id)
                                 ? <FaCheckDouble className="text-green-400 text-xs transition-all duration-300 animate-fadeIn" title="Read" />
-                                : c.status === "delivered"
+                                : (c && c.status) === "delivered"
                                   ? <FaCheckDouble className="text-blue-200 text-xs transition-all duration-300 animate-fadeIn" title="Delivered" />
-                                  : c.status === "sending"
+                                  : (c && c.status) === "sending"
                                     ? <FaCheckDouble className="text-blue-200 text-xs animate-pulse transition-all duration-300" title="Sending..." />
                                     : <FaCheck className="text-blue-200 text-xs transition-all duration-300 animate-fadeIn" title="Sent" />}
                             </span>
