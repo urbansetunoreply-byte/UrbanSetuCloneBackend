@@ -6887,7 +6887,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                             </div>
                                           </div>
                                           {c.message && (
-                                            <div className="mt-2 text-sm text-gray-700 whitespace-pre-wrap break-words">{c.message}</div>
+                                            <div className={`mt-2 text-sm whitespace-pre-wrap break-words ${isMe ? 'text-white' : 'text-gray-700'}`}>{c.message}</div>
                                           )}
                                         </div>
                                       )}
