@@ -8173,7 +8173,19 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                     )}
                     {/* Formatting toolbar - Collapsible */}
                     {showTextStylingPanel && (
-                      <div className="flex flex-wrap items-center gap-2 mb-2 animate-slideDown bg-gradient-to-r from-purple-50 to-blue-50 p-3 rounded-lg border border-purple-200 shadow-sm">
+                      <div className="relative mb-2 animate-slideDown bg-gradient-to-r from-purple-50 to-blue-50 p-3 rounded-lg border border-purple-200 shadow-sm">
+                        {/* Close button */}
+                        <button
+                          className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 hover:bg-white hover:bg-opacity-50 rounded-full p-1 transition-colors z-10"
+                          onClick={() => setShowTextStylingPanel(false)}
+                          title="Close text styling panel"
+                          aria-label="Close text styling panel"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                        <div className="flex flex-wrap items-center gap-2 pr-8">
                       <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
                         if (isChatSendBlocked) {
                           toast.info('Formatting disabled for this appointment status. You can view chat history.');
@@ -8283,6 +8295,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const base = comment || ''; const link = 'Book Movers: /user/movers'; const next = base.slice(0,start)+link+base.slice(start); setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start, start);}catch(_){}} ,0);
                         });
                       }} disabled={isChatSendBlocked}>Service</button>
+                        </div>
                       </div>
                     )}
                     {/* Property mention suggestions */}
