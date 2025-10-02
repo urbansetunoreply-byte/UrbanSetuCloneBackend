@@ -5129,18 +5129,18 @@ function AdminAppointmentRow({
                           </div>
                         )}
                         <div 
-                          ref={el => messageRefs.current[c._id] = el}
-                          data-message-id={c._id}
+                          ref={el => messageRefs.current[c && c._id ? c._id : 'unknown'] = el}
+                          data-message-id={c && c._id ? c._id : 'unknown'}
                           className={`relative rounded-2xl px-4 sm:px-5 py-3 text-sm shadow-xl max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] break-words overflow-visible transition-all duration-300 min-h-[60px] ${c && c.audioUrl ? 'min-w-[320px]' : ''} ${
                             isMe 
                               ? 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white shadow-blue-200 hover:shadow-blue-300 hover:shadow-2xl' 
                               : 'bg-white hover:bg-gray-100 text-gray-800 border border-gray-200 shadow-gray-200 hover:shadow-lg hover:border-gray-300 hover:shadow-xl'
-                          } ${isSelectionMode && selectedMessages.some(msg => msg._id === c._id) ? 'ring-2 ring-blue-400' : ''}`}
+                          } ${isSelectionMode && selectedMessages.some(msg => msg._id === (c && c._id)) ? 'ring-2 ring-blue-400' : ''}`}
                         >
                                                     {/* Reply preview above message if this is a reply */}
-                            {c.replyTo && (
+                            {c && c.replyTo && (
                               <div className="border-l-4 border-purple-400 pl-3 mb-2 text-xs bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 rounded-lg w-full max-w-full break-words cursor-pointer transition-all duration-200 hover:shadow-sm" onClick={() => {
-                                  if (messageRefs.current[c.replyTo]) {
+                                  if (c && c.replyTo && messageRefs.current[c.replyTo]) {
                                     messageRefs.current[c.replyTo].scrollIntoView({ behavior: 'smooth', block: 'center' });
                                     messageRefs.current[c.replyTo].classList.add('reply-highlight');
                                      setTimeout(() => {
@@ -5150,7 +5150,7 @@ function AdminAppointmentRow({
                                 }} role="button" tabIndex={0} aria-label="Go to replied message">
                                 <span className="text-xs text-gray-700 font-medium truncate max-w-[150px] flex items-center gap-1">
                                   <span className="text-purple-500">↩</span>
-                                  {localComments.find(msg => msg._id === c.replyTo)?.message?.substring(0, 30) || 'Original message'}{localComments.find(msg => msg._id === c.replyTo)?.message?.length > 30 ? '...' : ''}
+                                  {localComments.find(msg => msg._id === (c && c.replyTo))?.message?.substring(0, 30) || 'Original message'}{localComments.find(msg => msg._id === (c && c.replyTo))?.message?.length > 30 ? '...' : ''}
                                 </span>
                               </div>
                             )}
