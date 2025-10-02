@@ -1533,8 +1533,8 @@ router.patch('/:id/comments/read', verifyToken, async (req, res) => {
             console.log(`Version conflict, final retry... (${retryCount}/${maxRetries})`);
           }
           
-          // Add exponential backoff delay to reduce contention
-          const delay = Math.min(100 * Math.pow(2, retryCount - 1), 1000); // 100ms, 200ms, 400ms max
+          // Add minimal delay to reduce contention (optimized for speed)
+          const delay = Math.min(20 * Math.pow(2, retryCount - 1), 100); // 20ms, 40ms, 80ms max
           await new Promise(resolve => setTimeout(resolve, delay));
           
           // Refetch the document to get latest version
@@ -2150,8 +2150,8 @@ router.patch('/:id/comment/:commentId/react', verifyToken, async (req, res) => {
             console.log(`Version conflict in reaction, final retry... (${retryCount}/${maxRetries})`);
           }
           
-          // Add exponential backoff delay to reduce contention
-          const delay = Math.min(100 * Math.pow(2, retryCount - 1), 1000); // 100ms, 200ms, 400ms max
+          // Add minimal delay to reduce contention (optimized for speed)
+          const delay = Math.min(20 * Math.pow(2, retryCount - 1), 100); // 20ms, 40ms, 80ms max
           await new Promise(resolve => setTimeout(resolve, delay));
           
           // Refetch the document to get latest version
