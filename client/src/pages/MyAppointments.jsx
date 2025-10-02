@@ -1782,7 +1782,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   // Camera functions - temporarily disabled
 
   // Sound effects
-  const { playMessageSent, playMessageReceived, playNotification, toggleMute, setVolume, isMuted } = useSoundEffects();
+  const { playMessageSent, playMessageReceived, playNotification, toggleMute, setVolume, isMuted, getCurrentVolume } = useSoundEffects();
 
   // Manage video object URL to prevent reloading on each keystroke
   useEffect(() => {
@@ -6599,12 +6599,13 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           <SoundControl 
                             onToggleMute={() => {
                               const muted = toggleMute();
-                              toast.info(muted ? 'Sounds muted' : 'Sounds unmuted');
+                              toast.info(`All sounds ${muted ? 'muted' : 'unmuted'}`);
                             }}
                             isMuted={isMuted()}
+                            currentVolume={getCurrentVolume()}
                             onVolumeChange={(volume) => {
                               setVolume(volume);
-                              toast.info(`Volume: ${Math.round(volume * 100)}%`);
+                              toast.info(`Master volume: ${Math.round(volume * 100)}%`);
                             }}
                           />
                         </div>
@@ -7257,6 +7258,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                 ref={(audioEl) => {
                                                   if (audioEl && !audioEl.dataset.audioId) {
                                                     audioEl.dataset.audioId = c._id;
+                                                    
+                                                    // Sync with header volume control
+                                                    audioEl.volume = getCurrentVolume();
+                                                    audioEl.muted = isMuted();
                                                     
                                                     // Add play event listener to pause other audios
                                                     audioEl.addEventListener('play', () => {

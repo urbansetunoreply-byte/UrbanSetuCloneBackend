@@ -44,6 +44,7 @@ export const useSoundEffects = () => {
   const audioRefs = useRef({});
   const fallbackSounds = useRef(null);
   const isMuted = useRef(false);
+  const currentVolume = useRef(0.6); // Default volume
 
   useEffect(() => {
     // Initialize audio elements
@@ -97,13 +98,32 @@ export const useSoundEffects = () => {
 
   const toggleMute = () => {
     isMuted.current = !isMuted.current;
+    
+    // Mute/unmute all audio message elements in the chat
+    document.querySelectorAll('audio[data-audio-id]').forEach(audioEl => {
+      if (audioEl) {
+        audioEl.muted = isMuted.current;
+      }
+    });
+    
     return isMuted.current;
   };
 
   const setVolume = (volume) => {
+    const normalizedVolume = Math.max(0, Math.min(1, volume));
+    currentVolume.current = normalizedVolume;
+    
+    // Set volume for notification sounds
     Object.values(audioRefs.current).forEach(audio => {
       if (audio) {
-        audio.volume = Math.max(0, Math.min(1, volume));
+        audio.volume = normalizedVolume;
+      }
+    });
+    
+    // Set volume for all audio message elements in the chat
+    document.querySelectorAll('audio[data-audio-id]').forEach(audioEl => {
+      if (audioEl) {
+        audioEl.volume = normalizedVolume;
       }
     });
   };
@@ -115,20 +135,21 @@ export const useSoundEffects = () => {
     playTyping: () => playSound('typing'),
     toggleMute,
     setVolume,
-    isMuted: () => isMuted.current
+    isMuted: () => isMuted.current,
+    getCurrentVolume: () => currentVolume.current
   };
 };
 
 // Sound Control Component
-export const SoundControl = ({ onToggleMute, isMuted, onVolumeChange }) => {
+export const SoundControl = ({ onToggleMute, isMuted, onVolumeChange, currentVolume = 0.6 }) => {
   return (
-    <div className="flex items-center gap-2 p-2 bg-gray-100 rounded-lg">
+    <div className="flex items-center gap-2 p-2 bg-white/10 backdrop-blur-sm rounded-lg">
       <button
         onClick={onToggleMute}
         className={`p-2 rounded-full transition-colors ${
-          isMuted ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
+          isMuted ? 'bg-red-500/20 text-red-300 hover:bg-red-500/30' : 'bg-white/20 text-white hover:bg-white/30'
         }`}
-        title={isMuted ? 'Unmute sounds' : 'Mute sounds'}
+        title={isMuted ? 'Unmute all sounds (notifications & audio messages)' : 'Mute all sounds (notifications & audio messages)'}
       >
         {isMuted ? (
           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -136,21 +157,27 @@ export const SoundControl = ({ onToggleMute, isMuted, onVolumeChange }) => {
           </svg>
         ) : (
           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM12.293 7.293a1 1 0 011.414 0L15 8.586l1.293-1.293a1 1 0 111.414 1.414L16.414 10l1.293 1.293a1 1 0 01-1.414 1.414L15 11.414l-1.293 1.293a1 1 0 01-1.414-1.414L13.586 10l-1.293-1.293a1 1 0 010-1.414z" clipRule="evenodd" />
+            <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 8.929a1 1 0 010 1.414A1.5 1.5 0 0116 12a1 1 0 102 0 3.5 3.5 0 00-1.929-3.071z" clipRule="evenodd" />
           </svg>
         )}
       </button>
       
-      <input
-        type="range"
-        min="0"
-        max="1"
-        step="0.1"
-        defaultValue="0.6"
-        onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
-        className="w-16 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-        disabled={isMuted}
-      />
+      <div className="flex flex-col items-center gap-1">
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.05"
+          value={currentVolume}
+          onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
+          className="w-20 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer slider accent-white"
+          disabled={isMuted}
+          title={`Volume: ${Math.round(currentVolume * 100)}% (affects notifications & audio messages)`}
+        />
+        <span className="text-xs text-white/80 font-medium">
+          {Math.round(currentVolume * 100)}%
+        </span>
+      </div>
     </div>
   );
 };
