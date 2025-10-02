@@ -2924,8 +2924,28 @@ function AdminAppointmentRow({
 
   // Auto-scroll to bottom when chat modal opens
   React.useEffect(() => {
-    if (showChatModal && chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (showChatModal) {
+      // Multiple attempts to ensure complete scroll to bottom
+      const scrollToCompleteBottom = () => {
+        // Method 1: Direct scroll to bottom using scrollTop
+        if (chatContainerRef.current) {
+          chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+        
+        // Method 2: Also use scrollIntoView as backup
+        if (chatEndRef.current) {
+          chatEndRef.current.scrollIntoView({ behavior: 'instant', block: 'end' });
+        }
+      };
+      
+      // Immediate scroll
+      scrollToCompleteBottom();
+      
+      // Delayed scroll to ensure DOM is fully rendered
+      setTimeout(scrollToCompleteBottom, 100);
+      
+      // Final scroll after comments are loaded
+      setTimeout(scrollToCompleteBottom, 300);
     }
   }, [showChatModal]);
 
@@ -2982,6 +3002,18 @@ function AdminAppointmentRow({
       }
     }
   }, [localComments.length, isAtBottom, showChatModal, currentUser.email]);
+
+  // Additional scroll to bottom when comments are initially loaded
+  React.useEffect(() => {
+    if (showChatModal && localComments.length > 0) {
+      // Ensure scroll to bottom after comments are loaded
+      setTimeout(() => {
+        if (chatContainerRef.current && chatEndRef.current) {
+          chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+      }, 200);
+    }
+  }, [showChatModal, localComments.length]);
 
   // Reset unread count when chat modal is opened or closed
   React.useEffect(() => {
@@ -4496,7 +4528,14 @@ function AdminAppointmentRow({
           
           setLocalComments(updatedComments);
           
-          // Don't auto-scroll to bottom - retain current scroll position
+          // Auto-scroll to bottom when chat first opens (after password)
+          setTimeout(() => {
+            if (chatContainerRef.current && chatEndRef.current) {
+              chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+              chatEndRef.current.scrollIntoView({ behavior: 'instant', block: 'end' });
+            }
+          }, 100);
+          
           // No toast notification for initial load
         }
     } catch (err) {
