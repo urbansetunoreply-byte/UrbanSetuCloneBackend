@@ -63,7 +63,7 @@ export default function MyAppointments() {
   const [showExportModal, setShowExportModal] = useState(false);
   const [exportAppointment, setExportAppointment] = useState(null);
   const [exportComments, setExportComments] = useState([]);
-  
+
 
 
 
@@ -4014,6 +4014,648 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
 
   const [emojiPickerMode, setEmojiPickerMode] = useState('react'); // 'react' | 'insert'
   const [emojiSearchTerm, setEmojiSearchTerm] = useState('');
+  const [reactionEmojiSearchTerm, setReactionEmojiSearchTerm] = useState('');
+
+  // Comprehensive emoji data with keywords for search
+  const emojiData = [
+    // Smileys & People
+    { emoji: '😀', keywords: ['grinning', 'happy', 'smile', 'joy'] },
+    { emoji: '😃', keywords: ['grinning', 'happy', 'smile', 'joy', 'smiley'] },
+    { emoji: '😄', keywords: ['grinning', 'happy', 'smile', 'joy', 'laugh'] },
+    { emoji: '😁', keywords: ['grinning', 'happy', 'smile', 'joy', 'beaming'] },
+    { emoji: '😆', keywords: ['grinning', 'happy', 'smile', 'joy', 'laugh', 'squinting'] },
+    { emoji: '😅', keywords: ['grinning', 'happy', 'smile', 'sweat', 'relief'] },
+    { emoji: '😂', keywords: ['joy', 'laugh', 'tears', 'funny', 'lol', 'crying'] },
+    { emoji: '🤣', keywords: ['rolling', 'laugh', 'funny', 'lol', 'rofl'] },
+    { emoji: '😊', keywords: ['smiling', 'happy', 'blush', 'smile'] },
+    { emoji: '😇', keywords: ['innocent', 'angel', 'halo', 'good'] },
+    { emoji: '🙂', keywords: ['slightly', 'smiling', 'happy'] },
+    { emoji: '🙃', keywords: ['upside', 'down', 'silly', 'sarcastic'] },
+    { emoji: '😉', keywords: ['winking', 'flirt', 'wink'] },
+    { emoji: '😌', keywords: ['relieved', 'peaceful', 'calm'] },
+    { emoji: '😍', keywords: ['heart', 'eyes', 'love', 'adore', 'crush'] },
+    { emoji: '🥰', keywords: ['smiling', 'hearts', 'love', 'adore'] },
+    { emoji: '😘', keywords: ['kiss', 'love', 'heart'] },
+    { emoji: '😗', keywords: ['kissing', 'kiss'] },
+    { emoji: '😙', keywords: ['kissing', 'smiling', 'eyes'] },
+    { emoji: '😚', keywords: ['kissing', 'closed', 'eyes'] },
+    { emoji: '😋', keywords: ['yummy', 'delicious', 'tongue'] },
+    { emoji: '😛', keywords: ['tongue', 'out', 'playful'] },
+    { emoji: '😝', keywords: ['tongue', 'winking', 'playful'] },
+    { emoji: '😜', keywords: ['tongue', 'winking', 'crazy'] },
+    { emoji: '🤪', keywords: ['zany', 'crazy', 'wild'] },
+    { emoji: '🤨', keywords: ['raised', 'eyebrow', 'suspicious'] },
+    { emoji: '🧐', keywords: ['monocle', 'thinking', 'pondering'] },
+    { emoji: '🤓', keywords: ['nerd', 'geek', 'glasses'] },
+    { emoji: '😎', keywords: ['cool', 'sunglasses', 'awesome'] },
+    { emoji: '🤩', keywords: ['star', 'struck', 'excited'] },
+    { emoji: '🥳', keywords: ['party', 'celebration', 'hat'] },
+    { emoji: '😏', keywords: ['smirk', 'sly', 'mischievous'] },
+    { emoji: '😒', keywords: ['unamused', 'bored', 'meh'] },
+    { emoji: '😞', keywords: ['disappointed', 'sad'] },
+    { emoji: '😔', keywords: ['pensive', 'sad', 'thoughtful'] },
+    { emoji: '😟', keywords: ['worried', 'concerned'] },
+    { emoji: '😕', keywords: ['confused', 'slightly', 'frowning'] },
+    { emoji: '🙁', keywords: ['slightly', 'frowning', 'sad'] },
+    { emoji: '☹️', keywords: ['frowning', 'sad'] },
+    { emoji: '😣', keywords: ['persevering', 'struggling'] },
+    { emoji: '😖', keywords: ['confounded', 'frustrated'] },
+    { emoji: '😫', keywords: ['tired', 'exhausted'] },
+    { emoji: '😩', keywords: ['weary', 'tired'] },
+    { emoji: '🥺', keywords: ['pleading', 'puppy', 'eyes'] },
+    { emoji: '😢', keywords: ['crying', 'sad', 'tear'] },
+    { emoji: '😭', keywords: ['loudly', 'crying', 'sad', 'bawling'] },
+    { emoji: '😤', keywords: ['huffing', 'angry', 'steam'] },
+    { emoji: '😠', keywords: ['angry', 'mad'] },
+    { emoji: '😡', keywords: ['pouting', 'angry', 'rage'] },
+    { emoji: '🤬', keywords: ['swearing', 'cursing', 'angry'] },
+    { emoji: '🤯', keywords: ['exploding', 'head', 'mind', 'blown'] },
+    { emoji: '😳', keywords: ['flushed', 'embarrassed'] },
+    { emoji: '🥵', keywords: ['hot', 'sweating'] },
+    { emoji: '🥶', keywords: ['cold', 'freezing'] },
+    { emoji: '😱', keywords: ['screaming', 'fear', 'shocked'] },
+    { emoji: '😨', keywords: ['fearful', 'scared'] },
+    { emoji: '😰', keywords: ['anxious', 'sweat', 'worried'] },
+    { emoji: '😥', keywords: ['sad', 'relieved', 'disappointed'] },
+    { emoji: '😓', keywords: ['downcast', 'sweat', 'sad'] },
+    { emoji: '🤗', keywords: ['hugging', 'hug', 'embrace'] },
+    { emoji: '🤔', keywords: ['thinking', 'pondering'] },
+    { emoji: '🤭', keywords: ['hand', 'over', 'mouth', 'giggle'] },
+    { emoji: '🤫', keywords: ['shushing', 'quiet', 'secret'] },
+    { emoji: '🤥', keywords: ['lying', 'pinocchio'] },
+    { emoji: '😶', keywords: ['no', 'mouth', 'speechless'] },
+    { emoji: '😐', keywords: ['neutral', 'expressionless'] },
+    { emoji: '😑', keywords: ['expressionless', 'blank'] },
+    { emoji: '😯', keywords: ['hushed', 'surprised'] },
+    { emoji: '😦', keywords: ['frowning', 'open', 'mouth'] },
+    { emoji: '😧', keywords: ['anguished', 'shocked'] },
+    { emoji: '😮', keywords: ['open', 'mouth', 'surprised', 'wow'] },
+    { emoji: '😲', keywords: ['astonished', 'shocked'] },
+    { emoji: '🥱', keywords: ['yawning', 'tired', 'sleepy'] },
+    { emoji: '😴', keywords: ['sleeping', 'zzz', 'tired'] },
+    { emoji: '🤤', keywords: ['drooling', 'sleepy'] },
+    { emoji: '😪', keywords: ['sleepy', 'tired'] },
+    { emoji: '😵', keywords: ['dizzy', 'confused'] },
+    { emoji: '🤐', keywords: ['zipper', 'mouth', 'quiet'] },
+    { emoji: '🥴', keywords: ['woozy', 'drunk', 'dizzy'] },
+    { emoji: '🤢', keywords: ['nauseated', 'sick'] },
+    { emoji: '🤮', keywords: ['vomiting', 'sick'] },
+    { emoji: '🤧', keywords: ['sneezing', 'sick'] },
+    { emoji: '😷', keywords: ['mask', 'sick', 'medical'] },
+    { emoji: '🤒', keywords: ['thermometer', 'sick', 'fever'] },
+    { emoji: '🤕', keywords: ['bandage', 'hurt', 'injured'] },
+    { emoji: '🤑', keywords: ['money', 'mouth', 'rich'] },
+    { emoji: '🤠', keywords: ['cowboy', 'hat'] },
+    { emoji: '💀', keywords: ['skull', 'death', 'dead'] },
+    { emoji: '👻', keywords: ['ghost', 'spooky'] },
+    { emoji: '👽', keywords: ['alien', 'extraterrestrial'] },
+    { emoji: '👾', keywords: ['alien', 'monster', 'game'] },
+    { emoji: '🤖', keywords: ['robot', 'bot'] },
+    { emoji: '😈', keywords: ['smiling', 'devil', 'evil'] },
+    { emoji: '👿', keywords: ['angry', 'devil', 'evil'] },
+    { emoji: '👹', keywords: ['ogre', 'monster'] },
+    { emoji: '👺', keywords: ['goblin', 'monster'] },
+
+    // Gestures & Body Parts
+    { emoji: '💪', keywords: ['flexed', 'biceps', 'strong', 'muscle'] },
+    { emoji: '🦾', keywords: ['mechanical', 'arm', 'prosthetic'] },
+    { emoji: '🦿', keywords: ['mechanical', 'leg', 'prosthetic'] },
+    { emoji: '🦵', keywords: ['leg'] },
+    { emoji: '🦶', keywords: ['foot'] },
+    { emoji: '👂', keywords: ['ear', 'hearing'] },
+    { emoji: '🦻', keywords: ['ear', 'hearing', 'aid'] },
+    { emoji: '👃', keywords: ['nose', 'smell'] },
+    { emoji: '🧠', keywords: ['brain', 'smart'] },
+    { emoji: '🫀', keywords: ['heart', 'organ'] },
+    { emoji: '🫁', keywords: ['lungs', 'breathing'] },
+    { emoji: '🦷', keywords: ['tooth', 'dental'] },
+    { emoji: '🦴', keywords: ['bone'] },
+    { emoji: '👀', keywords: ['eyes', 'looking', 'watching'] },
+    { emoji: '👁️', keywords: ['eye', 'looking'] },
+    { emoji: '👅', keywords: ['tongue'] },
+    { emoji: '👄', keywords: ['mouth', 'lips'] },
+    { emoji: '💋', keywords: ['kiss', 'lips'] },
+    { emoji: '🩸', keywords: ['blood', 'drop'] },
+    { emoji: '🫂', keywords: ['people', 'hugging', 'hug'] },
+    { emoji: '👶', keywords: ['baby', 'infant'] },
+    { emoji: '👧', keywords: ['girl', 'child'] },
+    { emoji: '🧒', keywords: ['child'] },
+    { emoji: '👦', keywords: ['boy', 'child'] },
+    { emoji: '👩', keywords: ['woman', 'female'] },
+    { emoji: '🧑', keywords: ['person', 'adult'] },
+    { emoji: '👨', keywords: ['man', 'male'] },
+    { emoji: '👵', keywords: ['old', 'woman', 'grandmother'] },
+    { emoji: '🧓', keywords: ['older', 'person'] },
+    { emoji: '👴', keywords: ['old', 'man', 'grandfather'] },
+    { emoji: '👍', keywords: ['thumbs', 'up', 'good', 'yes', 'like', 'approve'] },
+    { emoji: '👎', keywords: ['thumbs', 'down', 'bad', 'no', 'dislike'] },
+    { emoji: '👌', keywords: ['ok', 'okay', 'perfect'] },
+    { emoji: '✌️', keywords: ['victory', 'peace', 'two'] },
+    { emoji: '🤞', keywords: ['crossed', 'fingers', 'luck'] },
+    { emoji: '🤟', keywords: ['love', 'you', 'gesture'] },
+    { emoji: '🤘', keywords: ['rock', 'on', 'horns'] },
+    { emoji: '🤙', keywords: ['call', 'me', 'hang', 'loose'] },
+    { emoji: '👈', keywords: ['pointing', 'left'] },
+    { emoji: '👉', keywords: ['pointing', 'right'] },
+    { emoji: '👆', keywords: ['pointing', 'up'] },
+    { emoji: '🖕', keywords: ['middle', 'finger', 'rude'] },
+    { emoji: '👇', keywords: ['pointing', 'down'] },
+    { emoji: '☝️', keywords: ['index', 'pointing', 'up'] },
+    { emoji: '👋', keywords: ['waving', 'hand', 'hello', 'goodbye'] },
+    { emoji: '🤚', keywords: ['raised', 'back', 'hand'] },
+    { emoji: '🖐️', keywords: ['hand', 'five', 'fingers'] },
+    { emoji: '✋', keywords: ['raised', 'hand', 'stop'] },
+    { emoji: '🖖', keywords: ['vulcan', 'salute', 'spock'] },
+    { emoji: '🤌', keywords: ['pinched', 'fingers'] },
+    { emoji: '🤏', keywords: ['pinching', 'hand'] },
+
+    // Animals & Nature
+    { emoji: '🐶', keywords: ['dog', 'puppy', 'pet'] },
+    { emoji: '🐱', keywords: ['cat', 'kitten', 'pet'] },
+    { emoji: '🐭', keywords: ['mouse', 'rodent'] },
+    { emoji: '🐹', keywords: ['hamster', 'pet'] },
+    { emoji: '🐰', keywords: ['rabbit', 'bunny'] },
+    { emoji: '🦊', keywords: ['fox'] },
+    { emoji: '🐻', keywords: ['bear'] },
+    { emoji: '🐼', keywords: ['panda', 'bear'] },
+    { emoji: '🐻‍❄️', keywords: ['polar', 'bear'] },
+    { emoji: '🐨', keywords: ['koala'] },
+    { emoji: '🐯', keywords: ['tiger'] },
+    { emoji: '🦁', keywords: ['lion'] },
+    { emoji: '🐮', keywords: ['cow'] },
+    { emoji: '🐷', keywords: ['pig'] },
+    { emoji: '🐸', keywords: ['frog'] },
+    { emoji: '🐵', keywords: ['monkey'] },
+    { emoji: '🙈', keywords: ['see', 'no', 'evil', 'monkey'] },
+    { emoji: '🙉', keywords: ['hear', 'no', 'evil', 'monkey'] },
+    { emoji: '🙊', keywords: ['speak', 'no', 'evil', 'monkey'] },
+    { emoji: '🐒', keywords: ['monkey'] },
+    { emoji: '🐔', keywords: ['chicken'] },
+    { emoji: '🐧', keywords: ['penguin'] },
+    { emoji: '🐦', keywords: ['bird'] },
+    { emoji: '🐤', keywords: ['baby', 'chick'] },
+    { emoji: '🐣', keywords: ['hatching', 'chick'] },
+    { emoji: '🦆', keywords: ['duck'] },
+    { emoji: '🦅', keywords: ['eagle'] },
+    { emoji: '🦉', keywords: ['owl'] },
+    { emoji: '🦇', keywords: ['bat'] },
+    { emoji: '🐺', keywords: ['wolf'] },
+    { emoji: '🐗', keywords: ['boar'] },
+    { emoji: '🐴', keywords: ['horse'] },
+    { emoji: '🦄', keywords: ['unicorn', 'magical'] },
+    { emoji: '🐝', keywords: ['bee', 'honeybee'] },
+    { emoji: '🐛', keywords: ['bug', 'insect'] },
+    { emoji: '🦋', keywords: ['butterfly'] },
+    { emoji: '🐌', keywords: ['snail'] },
+    { emoji: '🐞', keywords: ['ladybug', 'beetle'] },
+    { emoji: '🐜', keywords: ['ant'] },
+    { emoji: '🦟', keywords: ['mosquito'] },
+    { emoji: '🦗', keywords: ['cricket'] },
+    { emoji: '🕷️', keywords: ['spider'] },
+    { emoji: '🕸️', keywords: ['spider', 'web'] },
+    { emoji: '🦂', keywords: ['scorpion'] },
+    { emoji: '🐢', keywords: ['turtle'] },
+    { emoji: '🐍', keywords: ['snake'] },
+    { emoji: '🦎', keywords: ['lizard'] },
+    { emoji: '🦖', keywords: ['t-rex', 'dinosaur'] },
+    { emoji: '🦕', keywords: ['sauropod', 'dinosaur'] },
+    { emoji: '🐙', keywords: ['octopus'] },
+    { emoji: '🦑', keywords: ['squid'] },
+    { emoji: '🦐', keywords: ['shrimp'] },
+    { emoji: '🦞', keywords: ['lobster'] },
+    { emoji: '🦀', keywords: ['crab'] },
+    { emoji: '🐡', keywords: ['blowfish'] },
+    { emoji: '🐠', keywords: ['tropical', 'fish'] },
+    { emoji: '🐟', keywords: ['fish'] },
+    { emoji: '🐬', keywords: ['dolphin'] },
+    { emoji: '🐳', keywords: ['spouting', 'whale'] },
+    { emoji: '🐋', keywords: ['whale'] },
+    { emoji: '🦈', keywords: ['shark'] },
+    { emoji: '🐊', keywords: ['crocodile'] },
+
+    // Food & Drink
+    { emoji: '🍎', keywords: ['apple', 'fruit', 'red'] },
+    { emoji: '🍐', keywords: ['pear', 'fruit'] },
+    { emoji: '🍊', keywords: ['orange', 'fruit'] },
+    { emoji: '🍋', keywords: ['lemon', 'fruit', 'sour'] },
+    { emoji: '🍌', keywords: ['banana', 'fruit'] },
+    { emoji: '🍉', keywords: ['watermelon', 'fruit'] },
+    { emoji: '🍇', keywords: ['grapes', 'fruit'] },
+    { emoji: '🍓', keywords: ['strawberry', 'fruit'] },
+    { emoji: '🫐', keywords: ['blueberries', 'fruit'] },
+    { emoji: '🍈', keywords: ['melon', 'fruit'] },
+    { emoji: '🍒', keywords: ['cherries', 'fruit'] },
+    { emoji: '🍑', keywords: ['peach', 'fruit'] },
+    { emoji: '🥭', keywords: ['mango', 'fruit'] },
+    { emoji: '🍍', keywords: ['pineapple', 'fruit'] },
+    { emoji: '🥥', keywords: ['coconut', 'fruit'] },
+    { emoji: '🥝', keywords: ['kiwi', 'fruit'] },
+    { emoji: '🍅', keywords: ['tomato', 'vegetable'] },
+    { emoji: '🍆', keywords: ['eggplant', 'vegetable'] },
+    { emoji: '🥑', keywords: ['avocado', 'fruit'] },
+    { emoji: '🥦', keywords: ['broccoli', 'vegetable'] },
+    { emoji: '🥬', keywords: ['leafy', 'greens', 'vegetable'] },
+    { emoji: '🥒', keywords: ['cucumber', 'vegetable'] },
+    { emoji: '🌶️', keywords: ['hot', 'pepper', 'spicy'] },
+    { emoji: '🫑', keywords: ['bell', 'pepper', 'vegetable'] },
+    { emoji: '🌽', keywords: ['corn', 'vegetable'] },
+    { emoji: '🥕', keywords: ['carrot', 'vegetable'] },
+    { emoji: '🫒', keywords: ['olive'] },
+    { emoji: '🧄', keywords: ['garlic'] },
+    { emoji: '🧅', keywords: ['onion'] },
+    { emoji: '🥔', keywords: ['potato', 'vegetable'] },
+    { emoji: '🍠', keywords: ['roasted', 'sweet', 'potato'] },
+    { emoji: '🥐', keywords: ['croissant', 'bread'] },
+    { emoji: '🥯', keywords: ['bagel', 'bread'] },
+    { emoji: '🍞', keywords: ['bread', 'loaf'] },
+    { emoji: '🥖', keywords: ['baguette', 'bread'] },
+    { emoji: '🥨', keywords: ['pretzel'] },
+    { emoji: '🧀', keywords: ['cheese'] },
+    { emoji: '🥚', keywords: ['egg'] },
+    { emoji: '🍳', keywords: ['cooking', 'egg', 'fried'] },
+    { emoji: '🧈', keywords: ['butter'] },
+    { emoji: '🥞', keywords: ['pancakes'] },
+    { emoji: '🧇', keywords: ['waffle'] },
+    { emoji: '🥓', keywords: ['bacon'] },
+    { emoji: '🥩', keywords: ['cut', 'meat'] },
+    { emoji: '🍗', keywords: ['poultry', 'leg', 'chicken'] },
+    { emoji: '🍖', keywords: ['meat', 'bone'] },
+    { emoji: '🦴', keywords: ['bone'] },
+    { emoji: '🌭', keywords: ['hot', 'dog'] },
+    { emoji: '🍔', keywords: ['hamburger', 'burger'] },
+    { emoji: '🍟', keywords: ['french', 'fries'] },
+    { emoji: '🍕', keywords: ['pizza'] },
+    { emoji: '🥪', keywords: ['sandwich'] },
+    { emoji: '🥙', keywords: ['stuffed', 'flatbread'] },
+    { emoji: '🧆', keywords: ['falafel'] },
+    { emoji: '🌮', keywords: ['taco'] },
+    { emoji: '🌯', keywords: ['burrito'] },
+    { emoji: '🫔', keywords: ['tamale'] },
+    { emoji: '🥗', keywords: ['green', 'salad'] },
+    { emoji: '🥘', keywords: ['shallow', 'pan', 'food'] },
+    { emoji: '🫕', keywords: ['fondue'] },
+    { emoji: '🥫', keywords: ['canned', 'food'] },
+    { emoji: '🍝', keywords: ['spaghetti', 'pasta'] },
+    { emoji: '🍜', keywords: ['steaming', 'bowl', 'ramen'] },
+    { emoji: '🍲', keywords: ['pot', 'food', 'stew'] },
+    { emoji: '🍛', keywords: ['curry', 'rice'] },
+    { emoji: '🍣', keywords: ['sushi'] },
+    { emoji: '🍱', keywords: ['bento', 'box'] },
+    { emoji: '🥟', keywords: ['dumpling'] },
+    { emoji: '🦪', keywords: ['oyster'] },
+    { emoji: '🍤', keywords: ['fried', 'shrimp'] },
+    { emoji: '🍙', keywords: ['rice', 'ball'] },
+    { emoji: '🍚', keywords: ['cooked', 'rice'] },
+    { emoji: '🍘', keywords: ['rice', 'cracker'] },
+    { emoji: '🍥', keywords: ['fish', 'cake', 'swirl'] },
+    { emoji: '🥠', keywords: ['fortune', 'cookie'] },
+    { emoji: '🥮', keywords: ['moon', 'cake'] },
+    { emoji: '🍢', keywords: ['oden'] },
+    { emoji: '🍡', keywords: ['dango'] },
+    { emoji: '🍧', keywords: ['shaved', 'ice'] },
+    { emoji: '🍨', keywords: ['ice', 'cream'] },
+    { emoji: '🍦', keywords: ['soft', 'ice', 'cream'] },
+    { emoji: '🍰', keywords: ['shortcake', 'cake'] },
+    { emoji: '🧁', keywords: ['cupcake'] },
+    { emoji: '🥧', keywords: ['pie'] },
+    { emoji: '🍮', keywords: ['custard'] },
+    { emoji: '🍭', keywords: ['lollipop', 'candy'] },
+    { emoji: '🍬', keywords: ['candy', 'sweet'] },
+    { emoji: '🍫', keywords: ['chocolate', 'bar'] },
+    { emoji: '🍿', keywords: ['popcorn'] },
+    { emoji: '🍪', keywords: ['cookie'] },
+    { emoji: '🌰', keywords: ['chestnut'] },
+    { emoji: '🥜', keywords: ['peanuts', 'nuts'] },
+    { emoji: '🍯', keywords: ['honey', 'pot'] },
+    { emoji: '🥛', keywords: ['glass', 'milk'] },
+    { emoji: '🍼', keywords: ['baby', 'bottle'] },
+    { emoji: '🫖', keywords: ['teapot'] },
+
+    // Activities & Objects
+    { emoji: '⚽', keywords: ['soccer', 'ball', 'football'] },
+    { emoji: '🏀', keywords: ['basketball'] },
+    { emoji: '🏈', keywords: ['american', 'football'] },
+    { emoji: '⚾', keywords: ['baseball'] },
+    { emoji: '🥎', keywords: ['softball'] },
+    { emoji: '🎾', keywords: ['tennis'] },
+    { emoji: '🏐', keywords: ['volleyball'] },
+    { emoji: '🏉', keywords: ['rugby', 'football'] },
+    { emoji: '🥏', keywords: ['flying', 'disc', 'frisbee'] },
+    { emoji: '🎱', keywords: ['pool', '8', 'ball'] },
+    { emoji: '🪀', keywords: ['yo-yo'] },
+    { emoji: '🏓', keywords: ['ping', 'pong', 'table', 'tennis'] },
+    { emoji: '🏸', keywords: ['badminton'] },
+    { emoji: '🏒', keywords: ['ice', 'hockey'] },
+    { emoji: '🏑', keywords: ['field', 'hockey'] },
+    { emoji: '🥍', keywords: ['lacrosse'] },
+    { emoji: '🏏', keywords: ['cricket'] },
+    { emoji: '🥅', keywords: ['goal', 'net'] },
+    { emoji: '⛳', keywords: ['flag', 'hole', 'golf'] },
+    { emoji: '🪁', keywords: ['kite'] },
+    { emoji: '🏹', keywords: ['bow', 'arrow'] },
+    { emoji: '🎣', keywords: ['fishing', 'pole'] },
+    { emoji: '🤿', keywords: ['diving', 'mask'] },
+    { emoji: '🥊', keywords: ['boxing', 'glove'] },
+    { emoji: '🥋', keywords: ['martial', 'arts', 'uniform'] },
+    { emoji: '🎽', keywords: ['running', 'shirt'] },
+    { emoji: '🛹', keywords: ['skateboard'] },
+    { emoji: '🛷', keywords: ['sled'] },
+    { emoji: '⛸️', keywords: ['ice', 'skate'] },
+    { emoji: '🥌', keywords: ['curling', 'stone'] },
+    { emoji: '🎿', keywords: ['skis'] },
+    { emoji: '⛷️', keywords: ['skier'] },
+    { emoji: '🏂', keywords: ['snowboarder'] },
+    { emoji: '🪂', keywords: ['parachute'] },
+    { emoji: '🎭', keywords: ['performing', 'arts', 'theater'] },
+    { emoji: '🩰', keywords: ['ballet', 'shoes'] },
+    { emoji: '🎨', keywords: ['artist', 'palette', 'art'] },
+    { emoji: '🎬', keywords: ['clapper', 'board', 'movie'] },
+    { emoji: '🎤', keywords: ['microphone', 'singing'] },
+    { emoji: '🎧', keywords: ['headphone', 'music'] },
+    { emoji: '🎼', keywords: ['musical', 'score'] },
+    { emoji: '🎹', keywords: ['musical', 'keyboard', 'piano'] },
+    { emoji: '🥁', keywords: ['drum'] },
+    { emoji: '🪘', keywords: ['long', 'drum'] },
+    { emoji: '🎷', keywords: ['saxophone'] },
+    { emoji: '🎺', keywords: ['trumpet'] },
+    { emoji: '🎸', keywords: ['guitar'] },
+    { emoji: '🪕', keywords: ['banjo'] },
+    { emoji: '🎻', keywords: ['violin'] },
+    { emoji: '🎲', keywords: ['game', 'die', 'dice'] },
+    { emoji: '♟️', keywords: ['chess', 'pawn'] },
+    { emoji: '🎯', keywords: ['direct', 'hit', 'target'] },
+    { emoji: '🎳', keywords: ['bowling'] },
+    { emoji: '🎮', keywords: ['video', 'game', 'controller'] },
+    { emoji: '🎰', keywords: ['slot', 'machine'] },
+    { emoji: '🧩', keywords: ['puzzle', 'piece'] },
+    { emoji: '📱', keywords: ['mobile', 'phone', 'cell'] },
+
+    // Travel & Places
+    { emoji: '🚗', keywords: ['automobile', 'car'] },
+    { emoji: '🚕', keywords: ['taxi'] },
+    { emoji: '🚙', keywords: ['sport', 'utility', 'vehicle', 'suv'] },
+    { emoji: '🚌', keywords: ['bus'] },
+    { emoji: '🚎', keywords: ['trolleybus'] },
+    { emoji: '🏎️', keywords: ['racing', 'car'] },
+    { emoji: '🚓', keywords: ['police', 'car'] },
+    { emoji: '🚑', keywords: ['ambulance'] },
+    { emoji: '🚒', keywords: ['fire', 'engine'] },
+    { emoji: '🚐', keywords: ['minibus'] },
+    { emoji: '🚚', keywords: ['delivery', 'truck'] },
+    { emoji: '🚛', keywords: ['articulated', 'lorry'] },
+    { emoji: '🚜', keywords: ['tractor'] },
+    { emoji: '🛴', keywords: ['kick', 'scooter'] },
+    { emoji: '🛵', keywords: ['motor', 'scooter'] },
+    { emoji: '🏍️', keywords: ['motorcycle'] },
+    { emoji: '🚨', keywords: ['police', 'car', 'light'] },
+    { emoji: '🚔', keywords: ['oncoming', 'police', 'car'] },
+    { emoji: '🚍', keywords: ['oncoming', 'bus'] },
+    { emoji: '🚘', keywords: ['oncoming', 'automobile'] },
+    { emoji: '🚖', keywords: ['oncoming', 'taxi'] },
+    { emoji: '🚡', keywords: ['aerial', 'tramway'] },
+    { emoji: '🚠', keywords: ['mountain', 'cableway'] },
+    { emoji: '🚟', keywords: ['suspension', 'railway'] },
+    { emoji: '🚃', keywords: ['railway', 'car'] },
+    { emoji: '🚋', keywords: ['tram', 'car'] },
+    { emoji: '🚞', keywords: ['mountain', 'railway'] },
+    { emoji: '🚝', keywords: ['monorail'] },
+    { emoji: '🚄', keywords: ['high-speed', 'train'] },
+    { emoji: '🚅', keywords: ['bullet', 'train'] },
+    { emoji: '🚈', keywords: ['light', 'rail'] },
+    { emoji: '🚂', keywords: ['locomotive'] },
+    { emoji: '🚆', keywords: ['train'] },
+    { emoji: '🚇', keywords: ['metro', 'subway'] },
+    { emoji: '🚊', keywords: ['tram'] },
+    { emoji: '🚉', keywords: ['station'] },
+    { emoji: '✈️', keywords: ['airplane', 'plane', 'flight'] },
+    { emoji: '🛫', keywords: ['airplane', 'departure'] },
+    { emoji: '🛬', keywords: ['airplane', 'arrival'] },
+    { emoji: '🛩️', keywords: ['small', 'airplane'] },
+    { emoji: '💺', keywords: ['seat'] },
+    { emoji: '🛰️', keywords: ['satellite'] },
+    { emoji: '🚀', keywords: ['rocket', 'space'] },
+    { emoji: '🛸', keywords: ['flying', 'saucer', 'ufo'] },
+    { emoji: '🚁', keywords: ['helicopter'] },
+    { emoji: '🛶', keywords: ['canoe'] },
+    { emoji: '⛵', keywords: ['sailboat'] },
+    { emoji: '🚤', keywords: ['speedboat'] },
+    { emoji: '🛥️', keywords: ['motor', 'boat'] },
+    { emoji: '🛳️', keywords: ['passenger', 'ship'] },
+    { emoji: '⛴️', keywords: ['ferry'] },
+    { emoji: '🚢', keywords: ['ship'] },
+    { emoji: '⚓', keywords: ['anchor'] },
+    { emoji: '🚧', keywords: ['construction'] },
+    { emoji: '⛽', keywords: ['fuel', 'pump', 'gas'] },
+    { emoji: '🚏', keywords: ['bus', 'stop'] },
+    { emoji: '🚦', keywords: ['vertical', 'traffic', 'light'] },
+    { emoji: '🚥', keywords: ['horizontal', 'traffic', 'light'] },
+    { emoji: '🗺️', keywords: ['world', 'map'] },
+    { emoji: '🗿', keywords: ['moai', 'statue'] },
+    { emoji: '🗽', keywords: ['statue', 'liberty'] },
+    { emoji: '🗼', keywords: ['tokyo', 'tower'] },
+    { emoji: '🏰', keywords: ['castle'] },
+    { emoji: '🏯', keywords: ['japanese', 'castle'] },
+    { emoji: '🏟️', keywords: ['stadium'] },
+    { emoji: '🎡', keywords: ['ferris', 'wheel'] },
+    { emoji: '🎢', keywords: ['roller', 'coaster'] },
+    { emoji: '🎠', keywords: ['carousel', 'horse'] },
+    { emoji: '⛲', keywords: ['fountain'] },
+    { emoji: '⛱️', keywords: ['umbrella', 'beach'] },
+    { emoji: '🏖️', keywords: ['beach', 'umbrella'] },
+    { emoji: '🏝️', keywords: ['desert', 'island'] },
+    { emoji: '🏔️', keywords: ['snow-capped', 'mountain'] },
+    { emoji: '🗻', keywords: ['mount', 'fuji'] },
+    { emoji: '🌋', keywords: ['volcano'] },
+    { emoji: '🗾', keywords: ['map', 'japan'] },
+    { emoji: '🏕️', keywords: ['camping'] },
+    { emoji: '⛺', keywords: ['tent'] },
+    { emoji: '🏠', keywords: ['house'] },
+    { emoji: '🏡', keywords: ['house', 'garden'] },
+    { emoji: '🏘️', keywords: ['houses'] },
+    { emoji: '🏚️', keywords: ['derelict', 'house'] },
+    { emoji: '🏗️', keywords: ['building', 'construction'] },
+    { emoji: '🏭', keywords: ['factory'] },
+    { emoji: '🏢', keywords: ['office', 'building'] },
+    { emoji: '🏬', keywords: ['department', 'store'] },
+    { emoji: '🏣', keywords: ['japanese', 'post', 'office'] },
+    { emoji: '🏤', keywords: ['post', 'office'] },
+    { emoji: '🏥', keywords: ['hospital'] },
+    { emoji: '🏦', keywords: ['bank'] },
+    { emoji: '🏨', keywords: ['hotel'] },
+    { emoji: '🏪', keywords: ['convenience', 'store'] },
+    { emoji: '🏫', keywords: ['school'] },
+    { emoji: '🏩', keywords: ['love', 'hotel'] },
+    { emoji: '💒', keywords: ['wedding'] },
+    { emoji: '⛪', keywords: ['church'] },
+
+    // Symbols & Objects
+    { emoji: '❤️', keywords: ['red', 'heart', 'love'] },
+    { emoji: '🧡', keywords: ['orange', 'heart', 'love'] },
+    { emoji: '💛', keywords: ['yellow', 'heart', 'love'] },
+    { emoji: '💚', keywords: ['green', 'heart', 'love'] },
+    { emoji: '💙', keywords: ['blue', 'heart', 'love'] },
+    { emoji: '💜', keywords: ['purple', 'heart', 'love'] },
+    { emoji: '🖤', keywords: ['black', 'heart', 'love'] },
+    { emoji: '🤍', keywords: ['white', 'heart', 'love'] },
+    { emoji: '🤎', keywords: ['brown', 'heart', 'love'] },
+    { emoji: '💔', keywords: ['broken', 'heart', 'sad'] },
+    { emoji: '❣️', keywords: ['heavy', 'heart', 'exclamation'] },
+    { emoji: '💕', keywords: ['two', 'hearts', 'love'] },
+    { emoji: '💞', keywords: ['revolving', 'hearts', 'love'] },
+    { emoji: '💓', keywords: ['beating', 'heart', 'love'] },
+    { emoji: '💗', keywords: ['growing', 'heart', 'love'] },
+    { emoji: '💖', keywords: ['sparkling', 'heart', 'love'] },
+    { emoji: '💘', keywords: ['heart', 'arrow', 'cupid'] },
+    { emoji: '💝', keywords: ['heart', 'ribbon', 'gift'] },
+    { emoji: '💟', keywords: ['heart', 'decoration'] },
+    { emoji: '☮️', keywords: ['peace', 'symbol'] },
+    { emoji: '✝️', keywords: ['latin', 'cross'] },
+    { emoji: '☪️', keywords: ['star', 'crescent'] },
+    { emoji: '🕉️', keywords: ['om'] },
+    { emoji: '☸️', keywords: ['wheel', 'dharma'] },
+    { emoji: '✡️', keywords: ['star', 'david'] },
+    { emoji: '🔯', keywords: ['dotted', 'six-pointed', 'star'] },
+    { emoji: '🕎', keywords: ['menorah'] },
+    { emoji: '☯️', keywords: ['yin', 'yang'] },
+    { emoji: '☦️', keywords: ['orthodox', 'cross'] },
+    { emoji: '🛐', keywords: ['place', 'worship'] },
+    { emoji: '⛎', keywords: ['ophiuchus'] },
+    { emoji: '♈', keywords: ['aries'] },
+    { emoji: '♉', keywords: ['taurus'] },
+    { emoji: '♊', keywords: ['gemini'] },
+    { emoji: '♋', keywords: ['cancer'] },
+    { emoji: '♌', keywords: ['leo'] },
+    { emoji: '♍', keywords: ['virgo'] },
+    { emoji: '♎', keywords: ['libra'] },
+    { emoji: '♏', keywords: ['scorpio'] },
+    { emoji: '♐', keywords: ['sagittarius'] },
+    { emoji: '♑', keywords: ['capricorn'] },
+    { emoji: '♒', keywords: ['aquarius'] },
+    { emoji: '♓', keywords: ['pisces'] },
+    { emoji: '🆔', keywords: ['id', 'button'] },
+    { emoji: '⚛️', keywords: ['atom', 'symbol'] },
+    { emoji: '🉑', keywords: ['japanese', 'acceptable'] },
+    { emoji: '☢️', keywords: ['radioactive'] },
+    { emoji: '☣️', keywords: ['biohazard'] },
+    { emoji: '📴', keywords: ['mobile', 'phone', 'off'] },
+    { emoji: '📳', keywords: ['vibration', 'mode'] },
+    { emoji: '🈶', keywords: ['japanese', 'not', 'free', 'charge'] },
+    { emoji: '🈚', keywords: ['japanese', 'free', 'charge'] },
+    { emoji: '🈸', keywords: ['japanese', 'application'] },
+    { emoji: '🈺', keywords: ['japanese', 'open', 'business'] },
+    { emoji: '🈷️', keywords: ['japanese', 'monthly', 'amount'] },
+    { emoji: '✴️', keywords: ['eight-pointed', 'star'] },
+    { emoji: '🆚', keywords: ['vs', 'button'] },
+    { emoji: '💮', keywords: ['white', 'flower'] },
+    { emoji: '🉐', keywords: ['japanese', 'bargain'] },
+    { emoji: '㊙️', keywords: ['japanese', 'secret'] },
+    { emoji: '㊗️', keywords: ['japanese', 'congratulations'] },
+    { emoji: '🈴', keywords: ['japanese', 'passing', 'grade'] },
+    { emoji: '🈵', keywords: ['japanese', 'no', 'vacancy'] },
+    { emoji: '🈹', keywords: ['japanese', 'discount'] },
+    { emoji: '🈲', keywords: ['japanese', 'prohibited'] },
+    { emoji: '🅰️', keywords: ['a', 'button', 'blood', 'type'] },
+    { emoji: '🅱️', keywords: ['b', 'button', 'blood', 'type'] },
+    { emoji: '🆎', keywords: ['ab', 'button', 'blood', 'type'] },
+    { emoji: '🆑', keywords: ['cl', 'button'] },
+    { emoji: '🅾️', keywords: ['o', 'button', 'blood', 'type'] },
+    { emoji: '🆘', keywords: ['sos', 'button'] },
+    { emoji: '❌', keywords: ['cross', 'mark', 'no', 'x'] },
+    { emoji: '⭕', keywords: ['heavy', 'large', 'circle'] },
+    { emoji: '🛑', keywords: ['stop', 'sign'] },
+    { emoji: '⛔', keywords: ['no', 'entry'] },
+    { emoji: '📛', keywords: ['name', 'badge'] },
+    { emoji: '🚫', keywords: ['prohibited'] },
+    { emoji: '💯', keywords: ['hundred', 'points', 'perfect'] },
+    { emoji: '💢', keywords: ['anger', 'symbol'] },
+    { emoji: '♨️', keywords: ['hot', 'springs'] },
+    { emoji: '🚷', keywords: ['no', 'pedestrians'] },
+    { emoji: '🚯', keywords: ['no', 'littering'] },
+    { emoji: '🚳', keywords: ['no', 'bicycles'] },
+    { emoji: '🚱', keywords: ['non-potable', 'water'] },
+    { emoji: '🔞', keywords: ['no', 'one', 'under', 'eighteen'] },
+    { emoji: '📵', keywords: ['no', 'mobile', 'phones'] },
+    { emoji: '🚭', keywords: ['no', 'smoking'] },
+    { emoji: '❗', keywords: ['exclamation', 'mark'] },
+    { emoji: '❕', keywords: ['white', 'exclamation', 'mark'] },
+    { emoji: '❓', keywords: ['question', 'mark'] },
+    { emoji: '❔', keywords: ['white', 'question', 'mark'] },
+    { emoji: '‼️', keywords: ['double', 'exclamation', 'mark'] },
+    { emoji: '⁉️', keywords: ['exclamation', 'question', 'mark'] },
+    { emoji: '🔅', keywords: ['dim', 'button'] },
+    { emoji: '🔆', keywords: ['bright', 'button'] },
+    { emoji: '〽️', keywords: ['part', 'alternation', 'mark'] },
+
+    // Flags & Misc
+    { emoji: '🏁', keywords: ['chequered', 'flag', 'racing'] },
+    { emoji: '🚩', keywords: ['triangular', 'flag'] },
+    { emoji: '🎌', keywords: ['crossed', 'flags'] },
+    { emoji: '🏴', keywords: ['black', 'flag'] },
+    { emoji: '🏳️', keywords: ['white', 'flag'] },
+    { emoji: '🏳️‍🌈', keywords: ['rainbow', 'flag', 'pride'] },
+    { emoji: '🏴‍☠️', keywords: ['pirate', 'flag'] },
+    { emoji: '🎉', keywords: ['party', 'popper', 'celebration'] },
+    { emoji: '🎊', keywords: ['confetti', 'ball', 'celebration'] },
+    { emoji: '🎈', keywords: ['balloon', 'party'] },
+    { emoji: '🎂', keywords: ['birthday', 'cake'] },
+    { emoji: '🎁', keywords: ['wrapped', 'gift', 'present'] },
+    { emoji: '🎄', keywords: ['christmas', 'tree'] },
+    { emoji: '🎃', keywords: ['jack-o-lantern', 'halloween'] },
+    { emoji: '🎗️', keywords: ['reminder', 'ribbon'] },
+    { emoji: '🎟️', keywords: ['admission', 'tickets'] },
+    { emoji: '🎫', keywords: ['ticket'] },
+    { emoji: '🎖️', keywords: ['military', 'medal'] },
+    { emoji: '🏆', keywords: ['trophy', 'winner'] },
+    { emoji: '🏅', keywords: ['sports', 'medal'] },
+    { emoji: '🥇', keywords: ['1st', 'place', 'medal', 'gold'] },
+    { emoji: '🥈', keywords: ['2nd', 'place', 'medal', 'silver'] },
+    { emoji: '🥉', keywords: ['3rd', 'place', 'medal', 'bronze'] },
+    { emoji: '🔥', keywords: ['fire', 'hot', 'lit'] },
+    { emoji: '💯', keywords: ['hundred', 'points', 'perfect', '100'] },
+    { emoji: '✨', keywords: ['sparkles', 'magic', 'shiny'] },
+    { emoji: '🌟', keywords: ['glowing', 'star'] },
+    { emoji: '💫', keywords: ['dizzy'] },
+    { emoji: '⭐', keywords: ['star'] },
+    { emoji: '💥', keywords: ['collision', 'explosion'] },
+    { emoji: '⚡', keywords: ['high', 'voltage', 'lightning'] },
+    { emoji: '💦', keywords: ['sweat', 'droplets'] },
+    { emoji: '💨', keywords: ['dashing', 'away', 'wind'] },
+    { emoji: '☁️', keywords: ['cloud'] },
+    { emoji: '🌤️', keywords: ['sun', 'behind', 'small', 'cloud'] },
+    { emoji: '⛅', keywords: ['sun', 'behind', 'cloud'] },
+    { emoji: '🌥️', keywords: ['sun', 'behind', 'large', 'cloud'] },
+    { emoji: '🌦️', keywords: ['sun', 'behind', 'rain', 'cloud'] },
+    { emoji: '🌧️', keywords: ['cloud', 'rain'] },
+    { emoji: '⛈️', keywords: ['cloud', 'lightning', 'rain'] },
+    { emoji: '🌩️', keywords: ['cloud', 'lightning'] },
+    { emoji: '🌨️', keywords: ['cloud', 'snow'] },
+    { emoji: '☃️', keywords: ['snowman'] },
+    { emoji: '⛄', keywords: ['snowman', 'without', 'snow'] },
+    { emoji: '🌬️', keywords: ['wind', 'face'] },
+    { emoji: '🌪️', keywords: ['tornado'] },
+    { emoji: '🌫️', keywords: ['fog'] },
+    { emoji: '🌊', keywords: ['water', 'wave'] },
+    { emoji: '💧', keywords: ['droplet', 'water'] },
+    { emoji: '☔', keywords: ['umbrella', 'rain', 'drops'] },
+    { emoji: '☂️', keywords: ['umbrella'] },
+    { emoji: '🌂', keywords: ['closed', 'umbrella'] }
+  ];
+
+  // Filter emojis based on search term
+  const getFilteredEmojis = (searchTerm) => {
+    if (!searchTerm.trim()) {
+      return emojiData.map(item => item.emoji);
+    }
+    
+    const lowercaseSearch = searchTerm.toLowerCase();
+    return emojiData
+      .filter(item => 
+        item.keywords.some(keyword => 
+          keyword.toLowerCase().includes(lowercaseSearch)
+        )
+      )
+      .map(item => item.emoji);
+  };
   
   const toggleReactionsEmojiPicker = () => {
     const newState = !showReactionsEmojiPicker;
@@ -4973,12 +5615,38 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                     onClick={(e) => {
                       e.stopPropagation(); // Prevent event bubbling
                       setShowReactionsEmojiPicker(false);
+                      setReactionEmojiSearchTerm(''); // Clear search when closing
                     }}
                     className="text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors"
                     title="Close"
                   >
                     <FaTimes size={16} />
                   </button>
+                </div>
+                
+                {/* Search Box */}
+                <div className="mb-4">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Search emojis..."
+                      value={reactionEmojiSearchTerm}
+                      onChange={(e) => setReactionEmojiSearchTerm(e.target.value)}
+                      className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                  {reactionEmojiSearchTerm && (
+                    <div className="mt-2 text-sm text-gray-500">
+                      {getFilteredEmojis(reactionEmojiSearchTerm).length} emoji{getFilteredEmojis(reactionEmojiSearchTerm).length !== 1 ? 's' : ''} found
+                    </div>
+                  )}
                 </div>
                 <div 
                   className="overflow-y-auto max-h-[60vh] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
@@ -4998,71 +5666,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                       e.stopPropagation(); // Prevent any event bubbling
                     }}
                   >
-                    {[
-                      // Smileys & People
-                      '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰',
-                      '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏',
-                      '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠',
-                      '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥',
-                      '😶', '😐', '😑', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢',
-                      '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠', '💀', '👻', '👽', '👾', '🤖', '😈', '👿', '👹', '👺',
-                      
-                      // Gestures & Body Parts
-                      '💪', '🦾', '🦿', '🦵', '🦶', '👂', '🦻', '👃', '🧠', '🫀', '🫁', '🦷', '🦴', '👀', '👁️', '👅',
-                      '👄', '💋', '🩸', '🫂', '👶', '👧', '🧒', '👦', '👩', '🧑', '👨', '👵', '🧓', '👴', '👮‍♀️', '👮',
-                      '👮‍♂️', '🕵️‍♀️', '🕵️', '🕵️‍♂️', '👷‍♀️', '👷', '👷‍♂️', '🫅', '🤴', '👸', '👳‍♀️', '👳', '👳‍♂️',
-                      '👲', '🧕', '🤵‍♀️', '🤵', '🤵‍♂️', '👰‍♀️', '👰', '👰‍♂️', '🤰', '🤱', '👼', '🎅', '🤶', '🦸‍♀️', '🦸',
-                      '🦸‍♂️', '🦹‍♀️', '🦹', '🦹‍♂️', '🧙‍♀️', '🧙', '🧙‍♂️', '🧚‍♀️', '🧚', '🧚‍♂️', '🧛‍♀️', '🧛', '🧛‍♂️',
-                      '🧜‍♀️', '🧜', '🧜‍♂️', '🧝‍♀️', '🧝', '🧝‍♂️', '🧞‍♀️', '🧞', '🧞‍♂️', '🧟‍♀️', '🧟', '🧟‍♂️', '🧌',
-                      
-                      // Animals & Nature
-                      '🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐻‍❄️', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵',
-                      '🙈', '🙉', '🙊', '🐒', '🐔', '🐧', '🐦', '🐤', '🐣', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴',
-                      '🦄', '🐝', '🐛', '🦋', '🐌', '🐞', '🐜', '🦟', '🦗', '🕷️', '🕸️', '🦂', '🐢', '🐍', '🦎', '🦖',
-                      '🦕', '🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟', '🐬', '🐳', '🐋', '🦈', '🐊', '🐅', '🐆',
-                      '🦓', '🦍', '🦧', '🐘', '🦛', '🦏', '🐪', '🐫', '🦙', '🦒', '🐃', '🐂', '🐄', '🐎', '🐖', '🐏',
-                      '🐑', '🐐', '🦌', '🐕', '🐩', '🦮', '🐕‍🦺', '🐈', '🐈‍⬛', '🐓', '🦃', '🦚', '🦜', '🦢', '🦩', '🕊️',
-                      
-                      // Food & Drink
-                      '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝',
-                      '🍅', '🍆', '🥑', '🥦', '🥬', '🥒', '🌶️', '🫑', '🌽', '🥕', '🫒', '🧄', '🧅', '🥔', '🍠', '🥐',
-                      '🥯', '🍞', '🥖', '🥨', '🧀', '🥚', '🍳', '🧈', '🥞', '🧇', '🥓', '🥩', '🍗', '🍖', '🦴', '🌭',
-                      '🍔', '🍟', '🍕', '🥪', '🥙', '🧆', '🌮', '🌯', '🫔', '🥗', '🥘', '🫕', '🥫', '🍝', '🍜', '🍲',
-                      '🍛', '🍣', '🍱', '🥟', '🦪', '🍤', '🍙', '🍚', '🍘', '🍥', '🥠', '🥮', '🍢', '🍡', '🍧', '🍨',
-                      '🍦', '🍰', '🧁', '🥧', '🍮', '🍭', '🍬', '🍫', '🍿', '🍪', '🌰', '🥜', '🍯', '🥛', '🍼', '🫖',
-                      
-                      // Activities & Objects
-                      '⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🥏', '🎱', '🪀', '🏓', '🏸', '🏒', '🏑', '🥍',
-                      '🏏', '🥅', '⛳', '🪁', '🏹', '🎣', '🤿', '🥊', '🥋', '🎽', '🛹', '🛷️', '⛸️', '🥌', '🎿', '⛷️',
-                      '🏂', '🪂', '🏋️‍♀️', '🏋️', '🏋️‍♂️', '🤼‍♀️', '🤼', '🤼‍♂️', '🤸‍♀️', '🤸', '🤸‍♂️', '⛹️‍♀️', '⛹️', '⛹️‍♂️',
-                      '🤺', '🤾‍♀️', '🤾', '🤾‍♂️', '🏊‍♀️', '🏊', '🏊‍♂️', '🚣‍♀️', '🚣', '🚣‍♂️', '🏄‍♀️', '🏄', '🏄‍♂️', '🚴‍♀️', '🚴',
-                      '🚴‍♂️', '🚵‍♀️', '🚵', '🚵‍♂️', '🤹‍♀️', '🤹', '🤹‍♂️', '🎭', '🩰', '🎨', '🎬', '🎤', '🎧', '🎼', '🎹',
-                      '🥁', '🪘', '🎷', '🎺', '🎸', '🪕', '🎻', '🎲', '♟️', '🎯', '🎳', '🎮', '🎰', '🧩', '🎨', '📱',
-                      
-                      // Travel & Places
-                      '🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑', '🚒', '🚐', '🚚', '🚛', '🚜', '🛴', '🛵', '🏍️',
-                      '🚨', '🚔', '🚍', '🚘', '🚖', '🚡', '🚠', '🚟', '🚃', '🚋', '🚞', '🚝', '🚄', '🚅', '🚈', '🚂',
-                      '🚆', '🚇', '🚊', '🚉', '✈️', '🛫', '🛬', '🛩️', '💺', '🛰️', '🚀', '🛸', '🚁', '🛶', '⛵', '🚤',
-                      '🛥️', '🛳️', '⛴️', '🚢', '⚓', '🚧', '⛽', '🚏', '🚦', '🚥', '🗺️', '🗿', '🗽', '🗼', '🏰', '🏯',
-                      '🏟️', '🎡', '🎢', '🎠', '⛲', '⛱️', '🏖️', '🏝️', '🏔️', '🗻', '🌋', '🗾', '🏕️', '⛺', '🏠', '🏡',
-                      '🏘️', '🏚️', '🏗️', '🏭', '🏢', '🏬', '🏣', '🏤', '🏥', '🏦', '🏨', '🏪', '🏫', '🏩', '💒', '⛪',
-                      
-                      // Symbols & Objects
-                      '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖',
-                      '💘', '💝', '💟', '☮️', '✝️', '☪️', '🕉️', '☸️', '✡️', '🔯', '🕎', '☯️', '☦️', '🛐', '⛎', '♈',
-                      '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓', '🆔', '⚛️', '🉑', '☢️', '☣️',
-                      '📴', '📳', '🈶', '🈚', '🈸', '🈺', '🈷️', '✴️', '🆚', '💮', '🉐', '㊙️', '㊗️', '🈴', '🈵', '🈹',
-                      '🈲', '🅰️', '🅱️', '🆎', '🆑', '🅾️', '🆘', '❌', '⭕', '🛑', '⛔', '📛', '🚫', '💯', '💢', '♨️',
-                      '🚷', '🚯', '🚳', '🚱', '🔞', '📵', '🚭', '❗', '❕', '❓', '❔', '‼️', '⁉️', '🔅', '🔆', '〽️',
-                      
-                      // Flags & Misc
-                      '🏁', '🚩', '🎌', '🏴', '🏳️', '🏳️‍🌈', '🏴‍☠️', '🇦🇫', '🇦🇱', '🇩🇿', '🇦🇩', '🇦🇩', '🇦🇩', '🇦🇩', '🇦🇩', '🇦🇩',
-                      '👍', '👎', '👌', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '🖕', '👇', '☝️', '👋', '🤚',
-                      '🖐️', '✋', '🖖', '👌', '🤌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '🖕', '👇',
-                      '🎉', '🎊', '🎈', '🎂', '🎁', '🎄', '🎃', '🎗️', '🎟️', '🎫', '🎖️', '🏆', '🏅', '🥇', '🥈', '🥉',
-                      '🔥', '💯', '✨', '🌟', '💫', '⭐', '💥', '⚡', '💦', '💨', '☁️', '🌤️', '⛅', '🌥️', '☁️', '🌦️',
-                      '🌧️', '⛈️', '🌩️', '🌨️', '☃️', '⛄', '🌬️', '💨', '🌪️', '🌫️', '🌊', '💧', '💦', '☔', '☂️', '🌂'
-                    ].map((emoji) => (
+                    {getFilteredEmojis(reactionEmojiSearchTerm).map((emoji) => (
                       <button
                         key={emoji}
                         onMouseDown={(e) => {
@@ -6679,41 +7283,41 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                             </div>
                                             <div className="mt-2 flex justify-between items-center">
                                               <div className="flex items-center gap-2">
-                                                <button
-                                                  className={`px-3 py-1.5 text-xs rounded-full shadow-sm border transition-colors ${isMe ? 'bg-white text-blue-600 hover:bg-blue-50 border-blue-200' : 'bg-blue-600 text-white hover:bg-blue-700 border-transparent'}`}
-                                                  onClick={async (e) => {
-                                                    e.stopPropagation();
-                                                    try {
-                                                      const response = await fetch(c.audioUrl, { mode: 'cors' });
-                                                      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                                                      const blob = await response.blob();
-                                                      const blobUrl = window.URL.createObjectURL(blob);
-                                                      const a = document.createElement('a');
-                                                      a.href = blobUrl;
-                                                      a.download = c.audioName || `audio-${c._id || Date.now()}`;
-                                                      document.body.appendChild(a);
-                                                      a.click();
-                                                      a.remove();
-                                                      setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
-                                                      toast.success('Audio downloaded successfully');
-                                                    } catch (error) {
-                                                      const a = document.createElement('a');
-                                                      a.href = c.audioUrl;
-                                                      a.download = c.audioName || `audio-${c._id || Date.now()}`;
-                                                      a.target = '_blank';
-                                                      document.body.appendChild(a);
-                                                      a.click();
-                                                      a.remove();
-                                                      toast.success('Audio download started');
-                                                    }
-                                                  }}
-                                                  title="Download audio"
-                                                >
-                                                  <span className="inline-flex items-center gap-1">
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" /></svg>
-                                                    Download
-                                                  </span>
-                                                </button>
+                                              <button
+                                                className={`px-3 py-1.5 text-xs rounded-full shadow-sm border transition-colors ${isMe ? 'bg-white text-blue-600 hover:bg-blue-50 border-blue-200' : 'bg-blue-600 text-white hover:bg-blue-700 border-transparent'}`}
+                                                onClick={async (e) => {
+                                                  e.stopPropagation();
+                                                  try {
+                                                    const response = await fetch(c.audioUrl, { mode: 'cors' });
+                                                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                                    const blob = await response.blob();
+                                                    const blobUrl = window.URL.createObjectURL(blob);
+                                                    const a = document.createElement('a');
+                                                    a.href = blobUrl;
+                                                    a.download = c.audioName || `audio-${c._id || Date.now()}`;
+                                                    document.body.appendChild(a);
+                                                    a.click();
+                                                    a.remove();
+                                                    setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                                    toast.success('Audio downloaded successfully');
+                                                  } catch (error) {
+                                                    const a = document.createElement('a');
+                                                    a.href = c.audioUrl;
+                                                    a.download = c.audioName || `audio-${c._id || Date.now()}`;
+                                                    a.target = '_blank';
+                                                    document.body.appendChild(a);
+                                                    a.click();
+                                                    a.remove();
+                                                    toast.success('Audio download started');
+                                                  }
+                                                }}
+                                                title="Download audio"
+                                              >
+                                                <span className="inline-flex items-center gap-1">
+                                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" /></svg>
+                                                  Download
+                                                </span>
+                                              </button>
                                                 <span className={`text-xs playback-rate-display ${isMe ? 'text-blue-100' : 'text-gray-500'}`} data-audio-id={c._id}>1x</span>
                                               </div>
                                               
@@ -7037,14 +7641,14 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                       {/* Only show message text for non-audio messages (audio messages handle their caption internally) */}
                                       {!c.audioUrl && (
                                         <div className="inline">
-                                          <FormattedTextWithReadMore 
-                                            text={(c.message || '').replace(/\n+$/, '')}
-                                            isSentMessage={isMe}
-                                            className="whitespace-pre-wrap break-words"
-                                            searchQuery={searchQuery}
-                                          />
-                                          {c.edited && (
-                                            <span className="ml-2 text-[10px] italic text-gray-300 whitespace-nowrap">(Edited)</span>
+                                      <FormattedTextWithReadMore 
+                                        text={(c.message || '').replace(/\n+$/, '')}
+                                        isSentMessage={isMe}
+                                        className="whitespace-pre-wrap break-words"
+                                        searchQuery={searchQuery}
+                                      />
+                                      {c.edited && (
+                                        <span className="ml-2 text-[10px] italic text-gray-300 whitespace-nowrap">(Edited)</span>
                                           )}
                                         </div>
                                       )}
@@ -8429,7 +9033,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                             <button onClick={startAudioRecording} className="px-4 py-2 rounded-lg bg-rose-600 text-white hover:bg-rose-700">Start</button>
                           ) : (
                             <>
-                              <button onClick={stopAudioRecording} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Stop & Preview</button>
+                            <button onClick={stopAudioRecording} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Stop & Preview</button>
                               {isPaused ? (
                                 <button onClick={resumeAudioRecording} className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">Resume</button>
                               ) : (
