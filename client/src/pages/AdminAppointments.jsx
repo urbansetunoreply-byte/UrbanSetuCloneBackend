@@ -5241,7 +5241,7 @@ function AdminAppointmentRow({
                         <div 
                           ref={el => messageRefs.current[c && c._id ? c._id : 'unknown'] = el}
                           data-message-id={c && c._id ? c._id : 'unknown'}
-                          className={`relative rounded-2xl px-4 sm:px-5 py-3 text-sm shadow-xl max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] break-words overflow-visible transition-all duration-300 min-h-[60px] ${c && c.audioUrl ? 'min-w-[320px]' : ''} ${
+                          className={`relative rounded-2xl px-4 sm:px-5 py-3 text-sm shadow-xl max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] break-words overflow-visible transition-all duration-300 min-h-[60px] ${c && c.audioUrl ? 'min-w-[280px] sm:min-w-[320px]' : ''} ${
                             isMe 
                               ? 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white shadow-blue-200 hover:shadow-blue-300 hover:shadow-2xl' 
                               : 'bg-white hover:bg-gray-100 text-gray-800 border border-gray-200 shadow-gray-200 hover:shadow-lg hover:border-gray-300 hover:shadow-xl'
@@ -5495,7 +5495,7 @@ function AdminAppointmentRow({
                                       {c && c.audioUrl && (
                                         <div className="mb-2">
                                           <div className="relative">
-                                            <div className="w-full min-w-[320px]">
+                                            <div className="w-full min-w-[280px] sm:min-w-[320px]">
                                             <audio
                                               src={c.audioUrl}
                                               className="w-full"
