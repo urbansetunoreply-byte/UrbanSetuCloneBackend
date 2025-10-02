@@ -2515,29 +2515,8 @@ function AdminAppointmentRow({
     };
   }, [showChatModal]);
 
-  // Toast notification for new messages when chat is closed
-  React.useEffect(() => {
-    function handleCommentUpdateNotify(data) {
-      if (data.appointmentId === appt._id && !showChatModal) {
-        // Don't show notification for deleted messages
-        if (data.comment.deleted) {
-          return;
-        }
-        
-        // Check if sender is admin by checking if senderEmail matches any admin user
-        const isSenderBuyer = data.comment.senderEmail === appt.buyerId?.email;
-        const isSenderSeller = data.comment.senderEmail === appt.sellerId?.email;
-        const isSenderAdmin = !isSenderBuyer && !isSenderSeller;
-        
-        const senderName = isSenderAdmin ? "UrbanSetu" : (data.comment.senderEmail || 'User');
-        toast.info(`New message from ${senderName}`);
-      }
-    }
-    socket.on('commentUpdate', handleCommentUpdateNotify);
-    return () => {
-      socket.off('commentUpdate', handleCommentUpdateNotify);
-    };
-  }, [appt._id, showChatModal]);
+  // Note: Toast notifications for new messages removed for admin interface
+  // Admins don't need popup notifications as they manage messages proactively
 
   // Chat clearing and message removal events (keeping only these, parent handles commentUpdate)
   React.useEffect(() => {
