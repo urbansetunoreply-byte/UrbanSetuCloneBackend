@@ -423,7 +423,7 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
       pdf.text('No messages in this conversation.', margin, yPosition);
     } else {
       const validMessages = comments
-        .filter(msg => !msg.deleted && (msg.message?.trim() || msg.imageUrl))
+        .filter(msg => !msg.deleted && (msg.message?.trim() || msg.imageUrl || msg.audioUrl || msg.videoUrl || msg.documentUrl))
         .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
       let currentDate = '';
@@ -711,7 +711,9 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
           const isAudio = !!message.audioUrl && !isVideo && !isDocument;
           const label = isVideo ? '🎬 Video' : isDocument ? '📄 Document' : '🎧 Audio';
           const rawLink = isVideo ? message.videoUrl : isDocument ? message.documentUrl : message.audioUrl;
-          const name = message.documentName || (isVideo ? 'Video' : isDocument ? 'Document' : 'Audio');
+          const name = isAudio ? (message.audioName || 'Audio') : 
+                       isVideo ? (message.videoName || 'Video') : 
+                       isDocument ? (message.documentName || 'Document') : 'Media';
           // For videos/audio: keep original URL to allow preview on Cloudinary
           // For documents: transform to force download with correct filename/type
           const link = (isVideo || isAudio) ? rawLink : buildCloudinaryDownloadLink(rawLink, name);

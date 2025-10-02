@@ -1372,7 +1372,7 @@ export default function MyAppointments() {
           }
         }}
         appointment={exportAppointment}
-        messageCount={exportComments.filter(msg => !msg.deleted && (msg.message?.trim() || msg.imageUrl)).length}
+        messageCount={exportComments.filter(msg => !msg.deleted && (msg.message?.trim() || msg.imageUrl || msg.audioUrl || msg.videoUrl || msg.documentUrl)).length}
         imageCount={exportComments.filter(msg => msg.imageUrl && !msg.deleted).length}
       />
     </div>
