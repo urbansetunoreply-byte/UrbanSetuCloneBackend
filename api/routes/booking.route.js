@@ -261,16 +261,18 @@ router.patch('/:id/status', verifyToken, async (req, res) => {
           ? `Your appointment for "${updated.listingId.name}" was accepted by the seller.`
           : `Your appointment for "${updated.listingId.name}" was rejected by the seller.`;
 
-        const notification = await Notification.create({
-          userId: updated.buyerId._id || updated.buyerId,
-          type: notificationType,
-          title: notificationTitle,
-          message: notificationMessage,
-          listingId: updated.listingId._id || updated.listingId,
-          adminId: null
-        });
+        if (updated.buyerId && (updated.buyerId._id || updated.buyerId)) {
+          const notification = await Notification.create({
+            userId: updated.buyerId._id || updated.buyerId,
+            type: notificationType,
+            title: notificationTitle,
+            message: notificationMessage,
+            listingId: updated.listingId._id || updated.listingId,
+            adminId: null
+          });
 
-        if (io) io.to((updated.buyerId._id || updated.buyerId).toString()).emit('notificationCreated', notification);
+          if (io) io.to((updated.buyerId._id || updated.buyerId).toString()).emit('notificationCreated', notification);
+        }
       }
     } catch (notificationError) {
       console.error('Failed to create notification for buyer:', notificationError);
@@ -1039,29 +1041,33 @@ router.patch('/:id/reinitiate', verifyToken, async (req, res) => {
       io.emit('appointmentUpdate', { appointmentId: id, updatedAppointment: updated });
       // Notify buyer
       try {
-        const notification = await Notification.create({
-          userId: updated.buyerId._id,
-          type: 'appointment_reinitiated_by_admin',
-          title: 'Appointment Reinitiated by Admin',
-          message: `The appointment for "${updated.propertyName}" was reinitiated by admin. Please review the details.`,
-          listingId: updated.listingId._id,
-          adminId: req.user.id
-        });
-        io.to(updated.buyerId._id.toString()).emit('notificationCreated', notification);
+        if (updated.buyerId && updated.buyerId._id) {
+          const notification = await Notification.create({
+            userId: updated.buyerId._id,
+            type: 'appointment_reinitiated_by_admin',
+            title: 'Appointment Reinitiated by Admin',
+            message: `The appointment for "${updated.propertyName}" was reinitiated by admin. Please review the details.`,
+            listingId: updated.listingId._id,
+            adminId: req.user.id
+          });
+          io.to(updated.buyerId._id.toString()).emit('notificationCreated', notification);
+        }
       } catch (notificationError) {
         console.error('Failed to create notification for buyer:', notificationError);
       }
       // Notify seller
       try {
-        const notification = await Notification.create({
-          userId: updated.sellerId._id,
-          type: 'appointment_reinitiated_by_admin',
-          title: 'Appointment Reinitiated by Admin',
-          message: `The appointment for "${updated.propertyName}" was reinitiated by admin. Please review the details.`,
-          listingId: updated.listingId._id,
-          adminId: req.user.id
-        });
-        io.to(updated.sellerId._id.toString()).emit('notificationCreated', notification);
+        if (updated.sellerId && updated.sellerId._id) {
+          const notification = await Notification.create({
+            userId: updated.sellerId._id,
+            type: 'appointment_reinitiated_by_admin',
+            title: 'Appointment Reinitiated by Admin',
+            message: `The appointment for "${updated.propertyName}" was reinitiated by admin. Please review the details.`,
+            listingId: updated.listingId._id,
+            adminId: req.user.id
+          });
+          io.to(updated.sellerId._id.toString()).emit('notificationCreated', notification);
+        }
       } catch (notificationError) {
         console.error('Failed to create notification for seller:', notificationError);
       }
@@ -1290,7 +1296,15 @@ router.get('/archived', verifyToken, async (req, res) => {
     const appointmentsWithRole = archivedAppointments.map(appointment => {
       const appointmentObj = appointment.toObject();
       if (!isAdmin && !isRootAdmin) {
-        appointmentObj.role = appointment.buyerId._id.toString() === userId ? 'buyer' : 'seller';
+        // Add null checks to prevent errors when buyerId or sellerId is null
+        if (appointment.buyerId && appointment.buyerId._id) {
+          appointmentObj.role = appointment.buyerId._id.toString() === userId ? 'buyer' : 'seller';
+        } else if (appointment.sellerId && appointment.sellerId._id) {
+          appointmentObj.role = appointment.sellerId._id.toString() === userId ? 'seller' : 'buyer';
+        } else {
+          // Fallback if both are null - this shouldn't happen but prevents crashes
+          appointmentObj.role = 'unknown';
+        }
       }
       return appointmentObj;
     });
@@ -2104,8 +2118,8 @@ router.get('/:id/pinned-messages', verifyToken, async (req, res) => {
     }
 
     // Check if user is authorized (buyer, seller, or admin)
-    const isBuyer = appointment.buyerId._id.toString() === userId;
-    const isSeller = appointment.sellerId._id.toString() === userId;
+    const isBuyer = appointment.buyerId && appointment.buyerId._id && appointment.buyerId._id.toString() === userId;
+    const isSeller = appointment.sellerId && appointment.sellerId._id && appointment.sellerId._id.toString() === userId;
     const isAdmin = req.user.role === 'admin' || req.user.role === 'rootadmin';
 
     if (!isBuyer && !isSeller && !isAdmin) {
@@ -2148,8 +2162,8 @@ router.get('/:id/starred-messages', verifyToken, async (req, res) => {
     }
 
     // Check if user is authorized (buyer, seller, or admin)
-    const isBuyer = appointment.buyerId._id.toString() === userId;
-    const isSeller = appointment.sellerId._id.toString() === userId;
+    const isBuyer = appointment.buyerId && appointment.buyerId._id && appointment.buyerId._id.toString() === userId;
+    const isSeller = appointment.sellerId && appointment.sellerId._id && appointment.sellerId._id.toString() === userId;
     const isAdmin = req.user.role === 'admin' || req.user.role === 'rootadmin';
 
     if (!isBuyer && !isSeller && !isAdmin) {
