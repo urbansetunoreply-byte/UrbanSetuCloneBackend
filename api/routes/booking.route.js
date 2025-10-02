@@ -380,7 +380,7 @@ router.post('/:id/comment', verifyToken, async (req, res) => {
       } else {
         // If buyer or seller is sending, emit to the other party
         const recipientId = isBuyer ? bookingToComment.sellerId.toString() : bookingToComment.buyerId.toString();
-        console.log(`🔔 User message: Emitting to recipient ${recipientId}`);
+        // Removed excessive logging
         io.to(recipientId).emit('commentUpdate', emitData);
         
         // Also emit to the sender for their own message sync
@@ -416,7 +416,7 @@ router.post('/:id/comment', verifyToken, async (req, res) => {
           // Emit delivery status immediately
           io.emit('commentDelivered', { appointmentId: id, commentId: newCommentObj._id });
         } else {
-          console.log(`Message sent to offline users, status remains 'sent'`);
+          // Removed excessive logging
         }
       } else {
         // If buyer or seller is sending, check if the other party is online
@@ -433,7 +433,7 @@ router.post('/:id/comment', verifyToken, async (req, res) => {
         } else {
           // Recipient is offline, keep status as "sent"
           // When they come online, the socket handler will mark it as delivered
-          console.log(`Message sent to offline user ${recipientId}, status remains 'sent'`);
+          // Removed excessive logging
         }
       }
     }
@@ -1516,11 +1516,65 @@ router.patch('/:id/comments/read', verifyToken, async (req, res) => {
     }
     
     if (updated) {
-      try {
-        await bookingDoc.save();
-      } catch (saveError) {
-        console.error('Error saving booking document:', saveError);
-        return res.status(500).json({ message: 'Failed to save read status.', error: saveError.message });
+      // Use retry logic to handle version conflicts
+      let retryCount = 0;
+      const maxRetries = 3;
+      
+      while (retryCount < maxRetries) {
+        try {
+          await bookingDoc.save();
+          break; // Success, exit retry loop
+        } catch (saveError) {
+          if (saveError.name === 'VersionError' && retryCount < maxRetries - 1) {
+            // Retry with fresh document
+            retryCount++;
+            console.log(`Version conflict, retrying... (${retryCount}/${maxRetries})`);
+            
+            // Refetch the document to get latest version
+            const freshDoc = await booking.findById(id);
+            if (!freshDoc) {
+              return res.status(404).json({ message: 'Appointment not found during retry.' });
+            }
+            
+            // Reapply the read status updates to fresh document
+            let freshUpdated = false;
+            if (freshDoc.comments && Array.isArray(freshDoc.comments)) {
+              freshDoc.comments.forEach(comment => {
+                try {
+                  if (comment.deleted || comment.senderEmail === req.user.email) {
+                    return;
+                  }
+                  
+                  if (!comment.readBy || !Array.isArray(comment.readBy)) {
+                    comment.readBy = [];
+                  }
+                  
+                  const readByStrings = comment.readBy.map(id => id ? id.toString() : '');
+                  if (!readByStrings.includes(userIdStr)) {
+                    comment.readBy.push(userId);
+                    comment.status = "read";
+                    comment.readAt = new Date();
+                    freshUpdated = true;
+                  }
+                } catch (commentError) {
+                  console.error('Error processing comment during retry:', commentError.message);
+                }
+              });
+            }
+            
+            bookingDoc = freshDoc;
+            updated = freshUpdated;
+            
+            if (!updated) {
+              // No updates needed on fresh document, break out
+              break;
+            }
+          } else {
+            // Non-version error or max retries reached
+            console.error('Error saving booking document:', saveError);
+            return res.status(500).json({ message: 'Failed to save read status.', error: saveError.message });
+          }
+        }
       }
     }
 
@@ -2072,7 +2126,59 @@ router.patch('/:id/comment/:commentId/react', verifyToken, async (req, res) => {
     }
 
     appointment.markModified('comments');
-    await appointment.save();
+    
+    // Use retry logic to handle version conflicts
+    let retryCount = 0;
+    const maxRetries = 3;
+    
+    while (retryCount < maxRetries) {
+      try {
+        await appointment.save();
+        break; // Success, exit retry loop
+      } catch (saveError) {
+        if (saveError.name === 'VersionError' && retryCount < maxRetries - 1) {
+          retryCount++;
+          console.log(`Version conflict in reaction, retrying... (${retryCount}/${maxRetries})`);
+          
+          // Refetch the document to get latest version
+          const freshDoc = await booking.findById(id);
+          if (!freshDoc) {
+            return res.status(404).json({ message: 'Appointment not found during retry.' });
+          }
+          
+          const freshComment = freshDoc.comments.id(commentId);
+          if (!freshComment) {
+            return res.status(404).json({ message: 'Comment not found during retry.' });
+          }
+          
+          // Reapply the reaction logic to fresh document
+          const existingReactionIndex = freshComment.reactions.findIndex(
+            reaction => reaction.userId.toString() === userId && reaction.emoji === emoji
+          );
+          
+          if (existingReactionIndex !== -1) {
+            freshComment.reactions.splice(existingReactionIndex, 1);
+          } else {
+            freshComment.reactions = freshComment.reactions.filter(
+              reaction => reaction.userId.toString() !== userId
+            );
+            freshComment.reactions.push({
+              emoji,
+              userId,
+              userName: user.username,
+              timestamp: new Date()
+            });
+          }
+          
+          freshDoc.markModified('comments');
+          appointment = freshDoc;
+          comment = freshComment;
+        } else {
+          console.error('Error saving reaction:', saveError);
+          return res.status(500).json({ message: 'Failed to save reaction.', error: saveError.message });
+        }
+      }
+    }
 
     // Emit real-time update
     try {
