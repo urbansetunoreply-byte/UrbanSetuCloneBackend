@@ -76,7 +76,8 @@ const ExportChatModal = ({
                   <div>
                     <div className="font-medium text-gray-900">With Media</div>
                     <div className="text-sm text-gray-600">
-                      Include all images in the PDF (larger file size)
+                      Include all images in the PDF (larger file size)<br/>
+                      <span className="text-xs text-blue-600">✓ Includes reactions, edit indicators, and reply context</span>
                     </div>
                   </div>
                 </div>
@@ -99,7 +100,8 @@ const ExportChatModal = ({
                   <div>
                     <div className="font-medium text-gray-900">Text Only</div>
                     <div className="text-sm text-gray-600">
-                      Text messages only with image placeholders (smaller file)
+                      Text messages only with image placeholders (smaller file)<br/>
+                      <span className="text-xs text-green-600">✓ Includes reactions, edit indicators, and reply context</span>
                     </div>
                   </div>
                 </div>

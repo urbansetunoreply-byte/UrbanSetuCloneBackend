@@ -482,10 +482,14 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
             minute: '2-digit'
           });
           
+          // Add edited indicator to timestamp if message was edited
+          const editedText = message.edited ? ' (Edited)' : '';
+          const timestampText = `${senderName} ${timestamp}${editedText}`;
+          
           if (isCurrentUser) {
-            pdf.text(`${senderName} ${timestamp}`, pageWidth - margin - 60, yPosition - 2);
+            pdf.text(timestampText, pageWidth - margin - 60, yPosition - 2);
           } else {
-            pdf.text(`${senderName} ${timestamp}`, margin + 25, yPosition - 2);
+            pdf.text(timestampText, margin + 25, yPosition - 2);
           }
 
           if (includeMedia && imageCache[message.imageUrl]) {
@@ -701,6 +705,49 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
             });
           }
 
+          // Add reply context if this message is a reply
+          if (message.replyTo) {
+            checkPageBreak(12);
+            const replyToMessage = comments.find(msg => msg._id === message.replyTo);
+            if (replyToMessage) {
+              pdf.setTextColor(128, 128, 128);
+              pdf.setFontSize(7);
+              pdf.setFont('helvetica', 'italic');
+              
+              const replyText = `↩ Replying to: "${(replyToMessage.message || 'Media message').substring(0, 50)}${(replyToMessage.message || '').length > 50 ? '...' : ''}"`;
+              const replyX = isCurrentUser ? pageWidth - margin - 60 : margin + 25;
+              
+              pdf.text(replyText, replyX, yPosition);
+              yPosition += 6;
+            }
+          }
+
+          // Add reactions if present
+          if (message.reactions && message.reactions.length > 0) {
+            checkPageBreak(8);
+            
+            // Group reactions by emoji
+            const groupedReactions = {};
+            message.reactions.forEach(reaction => {
+              if (!groupedReactions[reaction.emoji]) {
+                groupedReactions[reaction.emoji] = [];
+              }
+              groupedReactions[reaction.emoji].push(reaction);
+            });
+
+            pdf.setTextColor(100, 100, 100);
+            pdf.setFontSize(7);
+            pdf.setFont('helvetica', 'normal');
+            
+            const reactionsText = Object.entries(groupedReactions)
+              .map(([emoji, reactions]) => `${emoji} ${reactions.length}`)
+              .join('  ');
+            
+            const reactionsX = isCurrentUser ? pageWidth - margin - 60 : margin + 25;
+            pdf.text(`Reactions: ${reactionsText}`, reactionsX, yPosition);
+            yPosition += 6;
+          }
+
           yPosition += 8;
         } 
         // Handle video/doc/audio placeholders with links
@@ -790,6 +837,49 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
             });
           }
 
+          // Add reply context if this message is a reply
+          if (message.replyTo) {
+            checkPageBreak(12);
+            const replyToMessage = comments.find(msg => msg._id === message.replyTo);
+            if (replyToMessage) {
+              pdf.setTextColor(128, 128, 128);
+              pdf.setFontSize(7);
+              pdf.setFont('helvetica', 'italic');
+              
+              const replyText = `↩ Replying to: "${(replyToMessage.message || 'Media message').substring(0, 50)}${(replyToMessage.message || '').length > 50 ? '...' : ''}"`;
+              const replyX = isCurrentUser ? pageWidth - margin - bubbleWidth + 5 : margin + 25;
+              
+              pdf.text(replyText, replyX, yPosition);
+              yPosition += 6;
+            }
+          }
+
+          // Add reactions if present
+          if (message.reactions && message.reactions.length > 0) {
+            checkPageBreak(8);
+            
+            // Group reactions by emoji
+            const groupedReactions = {};
+            message.reactions.forEach(reaction => {
+              if (!groupedReactions[reaction.emoji]) {
+                groupedReactions[reaction.emoji] = [];
+              }
+              groupedReactions[reaction.emoji].push(reaction);
+            });
+
+            pdf.setTextColor(100, 100, 100);
+            pdf.setFontSize(7);
+            pdf.setFont('helvetica', 'normal');
+            
+            const reactionsText = Object.entries(groupedReactions)
+              .map(([emoji, reactions]) => `${emoji} ${reactions.length}`)
+              .join('  ');
+            
+            const reactionsX = isCurrentUser ? pageWidth - margin - bubbleWidth + 5 : margin + 25;
+            pdf.text(`Reactions: ${reactionsText}`, reactionsX, yPosition);
+            yPosition += 6;
+          }
+
           yPosition += 4;
         }
         else if (message.message && message.message.trim()) {
@@ -828,13 +918,62 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
             minute: '2-digit'
           });
           
+          // Add edited indicator to timestamp if message was edited
+          const editedText = message.edited ? ' (Edited)' : '';
+          const timestampText = `${senderName} ${timestamp}${editedText}`;
+          
           if (isCurrentUser) {
-            pdf.text(`${senderName} ${timestamp}`, pageWidth - margin - bubbleWidth + 5, yPosition - 2);
+            pdf.text(timestampText, pageWidth - margin - bubbleWidth + 5, yPosition - 2);
           } else {
-            pdf.text(`${senderName} ${timestamp}`, margin + 25, yPosition - 2);
+            pdf.text(timestampText, margin + 25, yPosition - 2);
           }
 
           yPosition += bubbleHeight + 8;
+
+          // Add reply context if this message is a reply
+          if (message.replyTo) {
+            checkPageBreak(12);
+            const replyToMessage = comments.find(msg => msg._id === message.replyTo);
+            if (replyToMessage) {
+              pdf.setTextColor(128, 128, 128);
+              pdf.setFontSize(7);
+              pdf.setFont('helvetica', 'italic');
+              
+              const replyText = `↩ Replying to: "${(replyToMessage.message || 'Media message').substring(0, 50)}${(replyToMessage.message || '').length > 50 ? '...' : ''}"`;
+              const replyX = isCurrentUser ? pageWidth - margin - bubbleWidth + 5 : margin + 25;
+              
+              pdf.text(replyText, replyX, yPosition);
+              yPosition += 6;
+            }
+          }
+
+          // Add reactions if present
+          if (message.reactions && message.reactions.length > 0) {
+            checkPageBreak(8);
+            
+            // Group reactions by emoji
+            const groupedReactions = {};
+            message.reactions.forEach(reaction => {
+              if (!groupedReactions[reaction.emoji]) {
+                groupedReactions[reaction.emoji] = [];
+              }
+              groupedReactions[reaction.emoji].push(reaction);
+            });
+
+            pdf.setTextColor(100, 100, 100);
+            pdf.setFontSize(7);
+            pdf.setFont('helvetica', 'normal');
+            
+            const reactionsText = Object.entries(groupedReactions)
+              .map(([emoji, reactions]) => `${emoji} ${reactions.length}`)
+              .join('  ');
+            
+            const reactionsX = isCurrentUser ? pageWidth - margin - bubbleWidth + 5 : margin + 25;
+            pdf.text(`Reactions: ${reactionsText}`, reactionsX, yPosition);
+            yPosition += 6;
+          }
+
+          yPosition += 2;
           pdf.setTextColor(...textColor);
         }
       }
