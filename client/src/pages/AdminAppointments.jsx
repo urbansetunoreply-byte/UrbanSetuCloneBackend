@@ -5289,8 +5289,8 @@ function AdminAppointmentRow({
                 {localComments.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-center py-8">
                     <FaCommentDots className="text-gray-300 text-4xl mb-3" />
-                    <p className="text-gray-500 font-medium text-sm">No messages yet</p>
-                    <p className="text-gray-400 text-xs mt-1">Start a conversation to communicate with the parties</p>
+                    <p className="text-gray-500 font-medium text-sm">No messages in this conversation</p>
+                    <p className="text-gray-400 text-xs mt-1">Monitor and manage communication between parties</p>
                   </div>
                 ) : (
                   (localComments.slice(Math.max(0, localComments.length - visibleCount)).filter(c => c != null)).map((c, mapIndex, arr) => {
