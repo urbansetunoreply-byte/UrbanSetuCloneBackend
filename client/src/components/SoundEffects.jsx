@@ -109,7 +109,7 @@ export const useSoundEffects = () => {
     return isMuted.current;
   };
 
-  const setVolume = (volume) => {
+  const setVolume = (volume, skipAudioElements = false) => {
     const normalizedVolume = Math.max(0, Math.min(1, volume));
     currentVolume.current = normalizedVolume;
     
@@ -120,12 +120,14 @@ export const useSoundEffects = () => {
       }
     });
     
-    // Set volume for all audio message elements in the chat
-    document.querySelectorAll('audio[data-audio-id]').forEach(audioEl => {
-      if (audioEl) {
-        audioEl.volume = normalizedVolume;
-      }
-    });
+    // Set volume for all audio message elements in the chat (unless skipped to prevent circular updates)
+    if (!skipAudioElements) {
+      document.querySelectorAll('audio[data-audio-id]').forEach(audioEl => {
+        if (audioEl) {
+          audioEl.volume = normalizedVolume;
+        }
+      });
+    }
   };
 
   return {

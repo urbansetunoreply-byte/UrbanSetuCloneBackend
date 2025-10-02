@@ -6636,7 +6636,6 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                             onVolumeChange={(volume) => {
                               setVolume(volume);
                               setCurrentVolume(volume); // Update reactive state immediately
-                              toast.info(`Master volume: ${Math.round(volume * 100)}%`);
                             }}
                           />
                         </div>
@@ -7337,6 +7336,17 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                           }
                                                         });
                                                       }
+                                                    });
+                                                    
+                                                    // Add volume change listener for bidirectional sync
+                                                    audioEl.addEventListener('volumechange', () => {
+                                                      // Update header volume bar when audio player volume changes
+                                                      if (!audioEl.muted) {
+                                                        setCurrentVolume(audioEl.volume);
+                                                        setVolume(audioEl.volume, true); // Skip audio elements to prevent circular updates
+                                                      }
+                                                      // Update mute state if audio is muted/unmuted
+                                                      setIsSoundMuted(audioEl.muted);
                                                     });
                                                     
                                                     // Set initial speed display
