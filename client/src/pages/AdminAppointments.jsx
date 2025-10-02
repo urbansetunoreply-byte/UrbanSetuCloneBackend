@@ -5968,13 +5968,13 @@ function AdminAppointmentRow({
                                       onClick={() => handleQuickReaction(c._id, emoji)}
                                       className={`text-xs rounded-full px-2 py-1 flex items-center gap-1 transition-all duration-200 hover:scale-105 ${
                                         hasUserReaction 
-                                          ? 'bg-blue-100 border border-blue-300 hover:bg-blue-200' 
-                                          : 'bg-gray-100 hover:bg-gray-200'
+                                          ? 'bg-blue-500 border-2 border-blue-600 hover:bg-blue-600 shadow-md' 
+                                          : 'bg-gray-100 border border-gray-300 hover:bg-gray-200'
                                       }`}
                                       title={`${userNames} reacted with ${emoji}${hasUserReaction ? ' (Click to remove)' : ' (Click to add)'}`}
                                     >
                                       <span>{emoji}</span>
-                                      <span className={`${hasUserReaction ? 'text-blue-600' : 'text-gray-600'}`}>
+                                      <span className={`${hasUserReaction ? 'text-white font-semibold' : 'text-gray-600'}`}>
                                         {reactions.length}
                                       </span>
                                     </button>
