@@ -708,7 +708,7 @@ export default function AdminAppointments() {
    }, []);
  
    // Add state to track updated comments for each appointment
-  const [updatedComments, setUpdatedComments] = useState({});
+  // REMOVED: updatedComments state - no longer needed, using appointments array directly
   
   // Add ref to prevent infinite loops in comment updates
   const isUpdatingCommentsRef = useRef(false);
@@ -720,50 +720,40 @@ export default function AdminAppointments() {
       return;
     }
     
-    setUpdatedComments(prev => {
-      const currentComments = prev[appointmentId];
-      // Only update if there are actual changes and the change is not just a count difference
-      if (currentComments && comments) {
-        // Check if this is just a count update or actual content change
-        const hasContentChanges = comments.some((comment, index) => {
-          const currentComment = currentComments[index];
-          return !currentComment || JSON.stringify(currentComment) !== JSON.stringify(comment);
-        });
-        
-        if (hasContentChanges) {
-          // Set flag to prevent infinite loops
-          isUpdatingCommentsRef.current = true;
-          
-
-          
-          // Reset flag after a short delay
-          setTimeout(() => {
-            isUpdatingCommentsRef.current = false;
-          }, 100);
-          
-          return {
-            ...prev,
-            [appointmentId]: comments
-          };
+    // CRITICAL FIX: Update appointments array directly instead of separate updatedComments state
+    setAppointments(prev => {
+      const updated = prev.map(appt => {
+        if (appt._id === appointmentId) {
+          // Only update if there are actual changes
+          if (JSON.stringify(appt.comments) !== JSON.stringify(comments)) {
+            // Set flag to prevent infinite loops
+            isUpdatingCommentsRef.current = true;
+            
+            // Reset flag after a short delay
+            setTimeout(() => {
+              isUpdatingCommentsRef.current = false;
+            }, 100);
+            
+            return { ...appt, comments };
+          }
         }
-      } else if (JSON.stringify(currentComments) !== JSON.stringify(comments)) {
-        // Handle case where one of them is null/undefined
-        // Set flag to prevent infinite loops
-        isUpdatingCommentsRef.current = true;
-        
-
-        
-        // Reset flag after a short delay
-        setTimeout(() => {
-          isUpdatingCommentsRef.current = false;
-        }, 100);
-        
-        return {
-          ...prev,
-          [appointmentId]: comments
-        };
-      }
-      return prev; // No changes needed
+        return appt;
+      });
+      return updated;
+    });
+    
+    // Also update archived appointments if needed
+    setArchivedAppointments(prev => {
+      const updated = prev.map(appt => {
+        if (appt._id === appointmentId) {
+          // Only update if there are actual changes
+          if (JSON.stringify(appt.comments) !== JSON.stringify(comments)) {
+            return { ...appt, comments };
+          }
+        }
+        return appt;
+      });
+      return updated;
     });
   }, []);
 
@@ -972,27 +962,8 @@ export default function AdminAppointments() {
         })
       );
 
-      // Update the updatedComments state to trigger child component updates
-      setUpdatedComments(prev => {
-        const currentComments = prev[data.appointmentId] || [];
-        const newComments = [...currentComments];
-        
-        const existingCommentIndex = newComments.findIndex(c => c._id === data.comment._id);
-        if (existingCommentIndex !== -1) {
-          // Update existing comment and preserve starred status
-          const existingComment = newComments[existingCommentIndex];
-          const updatedComment = { ...data.comment, starredBy: existingComment.starredBy || [] };
-          newComments[existingCommentIndex] = updatedComment;
-        } else {
-          // Add new comment
-          newComments.push(data.comment);
-        }
-        
-        return {
-          ...prev,
-          [data.appointmentId]: newComments
-        };
-      });
+      // REMOVED: updatedComments state update that was causing race conditions
+      // The appointments array is already updated above, no need for separate state
     };
     socket.on('commentUpdate', handleCommentUpdate);
 
@@ -1372,18 +1343,18 @@ export default function AdminAppointments() {
     setUserLoading(false);
   };
 
-  // Filtering and pagination is now handled in useEffect
-  // Apply comments updates to current appointments
+  // CRITICAL FIX: Use appointments directly since socket updates them in real-time
+  // Remove the updatedComments override that was causing race conditions
   const appointmentsWithComments = appointments.map((appt) => ({
     ...appt,
-    comments: updatedComments[appt._id] || appt.comments || []
+    comments: appt.comments || []
   }));
 
-  // Filtering and pagination for archived appointments is now handled in useEffect
-  // Apply comments updates to current archived appointments
+  // CRITICAL FIX: Use filteredArchivedAppointments directly since socket updates them in real-time
+  // Remove the updatedComments override that was causing race conditions
   const archivedAppointmentsWithComments = filteredArchivedAppointments.map((appt) => ({
     ...appt,
-    comments: updatedComments[appt._id] || appt.comments || []
+    comments: appt.comments || []
   }));
 
   // Add this function to fetch latest data on demand
