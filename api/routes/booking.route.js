@@ -1468,7 +1468,7 @@ router.patch('/:id/comments/read', verifyToken, async (req, res) => {
       return res.status(400).json({ message: 'User ID not found in token.' });
     }
 
-    const bookingDoc = await booking.findById(id);
+    let bookingDoc = await booking.findById(id);
     if (!bookingDoc) {
       return res.status(404).json({ message: 'Appointment not found.' });
     }
@@ -2077,7 +2077,7 @@ router.patch('/:id/comment/:commentId/react', verifyToken, async (req, res) => {
       return res.status(400).json({ message: 'Emoji is required.' });
     }
 
-    const appointment = await booking.findById(id);
+    let appointment = await booking.findById(id);
     if (!appointment) {
       return res.status(404).json({ message: 'Appointment not found.' });
     }
