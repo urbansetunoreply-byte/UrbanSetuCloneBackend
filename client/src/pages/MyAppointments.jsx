@@ -6792,14 +6792,20 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                             <div>• Photos: JPG, PNG, GIF, WebP (≤ 5MB)</div>
                             <div>• Videos: MP4, WebM, MOV, MKV, OGG (≤ 5MB)</div>
                             <div>• Documents: PDF, DOCX, XLSX, TXT and more (≤ 5MB)</div>
-                              <div>• Add captions to images</div>
-                              <div>• Other file types coming soon</div>
+                            <div>• Audio: MP3, WAV, M4A, OGG (≤ 5MB)</div>
+                            <div>• Camera: Direct photo capture from device</div>
+                            <div>• Add captions to all media types</div>
                             </div>
                             <div className="border-t border-gray-600 pt-2 mt-2">
                               <div className="font-semibold mb-2">💬 Chat Features:</div>
                               <div>• Real-time messaging with socket.io</div>
                               <div>• Message reactions and emoji support</div>
-                              <div>• File sharing and image previews</div>
+                              <div>• File sharing and media previews</div>
+                              <div>• Audio recording with pause/resume</div>
+                              <div>• Audio playback with speed controls</div>
+                              <div>• Message editing and deletion</div>
+                              <div>• Message starring and search</div>
+                              <div>• Chat export to PDF</div>
                               <div>• Chat locking for dispute resolution</div>
                             </div>
                             <div className="border-t border-gray-600 pt-2 mt-2">
