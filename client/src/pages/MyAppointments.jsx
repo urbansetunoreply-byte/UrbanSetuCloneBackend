@@ -1785,7 +1785,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const { playMessageSent, playMessageReceived, playNotification, toggleMute, setVolume, isMuted, getCurrentVolume } = useSoundEffects();
   
   // Reactive state for volume control UI
-  const [currentVolume, setCurrentVolume] = useState(0.6); // Default volume
+  const [currentVolume, setCurrentVolume] = useState(1.0); // Default volume
   const [isSoundMuted, setIsSoundMuted] = useState(false);
   
   // Text styling panel state

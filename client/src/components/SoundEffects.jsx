@@ -44,14 +44,14 @@ export const useSoundEffects = () => {
   const audioRefs = useRef({});
   const fallbackSounds = useRef(null);
   const isMuted = useRef(false);
-  const currentVolume = useRef(0.6); // Default volume
+  const currentVolume = useRef(1.0); // Default volume
 
   useEffect(() => {
     // Initialize audio elements
     Object.keys(SOUNDS).forEach(soundKey => {
       const audio = new Audio(SOUNDS[soundKey]);
       audio.preload = 'auto';
-      audio.volume = 0.6;
+      audio.volume = 1.0;
       audioRefs.current[soundKey] = audio;
     });
 
@@ -145,7 +145,7 @@ export const useSoundEffects = () => {
 };
 
 // Sound Control Component
-export const SoundControl = ({ onToggleMute, isMuted, onVolumeChange, currentVolume = 0.6 }) => {
+export const SoundControl = ({ onToggleMute, isMuted, onVolumeChange, currentVolume = 1.0 }) => {
   return (
     <div className="flex items-center gap-2 p-2 bg-white/10 backdrop-blur-sm rounded-lg">
       <button
