@@ -1657,6 +1657,9 @@ export default function AdminAppointments() {
                         setReactionsMessageId={setReactionsMessageId}
                         showReactionsEmojiPicker={showReactionsEmojiPicker}
                         setShowReactionsEmojiPicker={setShowReactionsEmojiPicker}
+                        reactionEmojiSearchTerm={reactionEmojiSearchTerm}
+                        setReactionEmojiSearchTerm={setReactionEmojiSearchTerm}
+                        getFilteredEmojis={getFilteredEmojis}
                         toggleReactionsBar={toggleReactionsBar}
                         toggleReactionsEmojiPicker={toggleReactionsEmojiPicker}
                         onExportChat={(appointment, comments) => {
@@ -1729,6 +1732,9 @@ export default function AdminAppointments() {
                       setReactionsMessageId={setReactionsMessageId}
                       showReactionsEmojiPicker={showReactionsEmojiPicker}
                       setShowReactionsEmojiPicker={setShowReactionsEmojiPicker}
+                      reactionEmojiSearchTerm={reactionEmojiSearchTerm}
+                      setReactionEmojiSearchTerm={setReactionEmojiSearchTerm}
+                      getFilteredEmojis={getFilteredEmojis}
                       toggleReactionsBar={toggleReactionsBar}
                       toggleReactionsEmojiPicker={toggleReactionsEmojiPicker}
                       onExportChat={(appointment, comments) => {
@@ -2192,6 +2198,9 @@ function AdminAppointmentRow({
   setReactionsMessageId,
   showReactionsEmojiPicker,
   setShowReactionsEmojiPicker,
+  reactionEmojiSearchTerm,
+  setReactionEmojiSearchTerm,
+  getFilteredEmojis,
   toggleReactionsBar,
   toggleReactionsEmojiPicker,
   onExportChat
