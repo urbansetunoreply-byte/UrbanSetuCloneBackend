@@ -2879,38 +2879,25 @@ function AdminAppointmentRow({
   React.useEffect(() => {
     const serverComments = appt.comments || [];
     
-    // Only update if there are actual changes in server comments
+    // Always merge server comments with local temp messages to ensure consistency
     setLocalComments(prev => {
       const serverCommentIds = new Set(serverComments.map(c => c._id));
       const localTempMessages = prev.filter(c => c._id.startsWith('temp-'));
-      const localNonTempComments = prev.filter(c => !c._id.startsWith('temp-'));
       
-      // Check if server comments are different from local non-temp comments
-      const localNonTempIds = new Set(localNonTempComments.map(c => c._id));
-      const hasNewServerComments = serverComments.some(c => !localNonTempIds.has(c._id));
-      const hasRemovedComments = localNonTempComments.some(c => !serverCommentIds.has(c._id));
-      const hasUpdatedComments = serverComments.some(serverComment => {
-        const localComment = localNonTempComments.find(c => c._id === serverComment._id);
-        return localComment && JSON.stringify(localComment) !== JSON.stringify(serverComment);
+      // Always start with server comments as the source of truth
+      const mergedComments = [...serverComments];
+      
+      // Add back any local temp messages that haven't been confirmed yet
+      localTempMessages.forEach(tempMsg => {
+        if (!serverCommentIds.has(tempMsg._id)) {
+          mergedComments.push(tempMsg);
+        }
       });
       
-      // Only update if there are actual changes
-      if (hasNewServerComments || hasRemovedComments || hasUpdatedComments) {
-        // Combine server comments with local temp messages
-        const mergedComments = [...serverComments];
-        
-        // Add back any local temp messages that haven't been confirmed yet
-        localTempMessages.forEach(tempMsg => {
-          if (!serverCommentIds.has(tempMsg._id)) {
-            mergedComments.push(tempMsg);
-          }
-        });
-        
-        return mergedComments;
-      }
+      // Sort by timestamp to maintain chronological order
+      mergedComments.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
       
-      // No changes, return current state
-      return prev;
+      return mergedComments;
     });
     
     // Handle unread message count and auto-scroll for new messages
