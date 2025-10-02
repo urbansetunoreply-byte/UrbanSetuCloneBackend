@@ -96,15 +96,17 @@ export const useSoundEffects = () => {
     }
   };
 
-  const toggleMute = () => {
+  const toggleMute = (skipAudioElements = false) => {
     isMuted.current = !isMuted.current;
     
-    // Mute/unmute all audio message elements in the chat
-    document.querySelectorAll('audio[data-audio-id]').forEach(audioEl => {
-      if (audioEl) {
-        audioEl.muted = isMuted.current;
-      }
-    });
+    // Mute/unmute all audio message elements in the chat (unless skipped to prevent circular updates)
+    if (!skipAudioElements) {
+      document.querySelectorAll('audio[data-audio-id]').forEach(audioEl => {
+        if (audioEl) {
+          audioEl.muted = isMuted.current;
+        }
+      });
+    }
     
     return isMuted.current;
   };

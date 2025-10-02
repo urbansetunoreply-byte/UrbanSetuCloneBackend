@@ -7345,8 +7345,20 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                         setCurrentVolume(audioEl.volume);
                                                         setVolume(audioEl.volume, true); // Skip audio elements to prevent circular updates
                                                       }
-                                                      // Update mute state if audio is muted/unmuted
-                                                      setIsSoundMuted(audioEl.muted);
+                                                      
+                                                      // Check if all audio elements are muted to update header mute state
+                                                      const allAudioElements = document.querySelectorAll('audio[data-audio-id]');
+                                                      const allMuted = Array.from(allAudioElements).every(audio => audio.muted);
+                                                      const anyUnmuted = Array.from(allAudioElements).some(audio => !audio.muted);
+                                                      
+                                                      // Only update header mute state if all are muted or if this was a global unmute action
+                                                      if (allMuted && !isSoundMuted) {
+                                                        // All audio elements are now muted, update header to muted
+                                                        setIsSoundMuted(true);
+                                                      } else if (anyUnmuted && isSoundMuted) {
+                                                        // At least one audio is unmuted and header shows muted, update header to unmuted
+                                                        setIsSoundMuted(false);
+                                                      }
                                                     });
                                                     
                                                     // Set initial speed display
@@ -7626,6 +7638,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                         const audioEl = document.querySelector(`[data-audio-id="${c._id}"]`);
                                                         if (audioEl) {
                                                           audioEl.muted = !audioEl.muted;
+                                                          // Trigger volumechange event to sync with header
+                                                          audioEl.dispatchEvent(new Event('volumechange'));
                                                         }
                                                         const menu = document.querySelector(`[data-audio-controls-menu="${c._id}"]`);
                                                         if (menu) {
