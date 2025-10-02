@@ -5104,16 +5104,16 @@ function AdminAppointmentRow({
                   <div className="flex items-center justify-end w-full gap-4">
                     <div className="flex items-center gap-4">
                       {/* For deleted messages, only show star and close options */}
-                      {selectedMessageForHeaderOptions.deleted ? (
+                      {selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.deleted ? (
                         <>
                           {/* Star/Unstar - for deleted messages */}
                           <button
                             className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
                             onClick={async () => { 
-                              const isStarred = selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id);
+                              const isStarred = selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id);
                               setStarringSaving(true);
                               try {
-                                const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${selectedMessageForHeaderOptions._id}/star`, 
+                                const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id}/star`, 
                                   { starred: !isStarred },
                                   { 
                                     withCredentials: true,
@@ -5123,7 +5123,7 @@ function AdminAppointmentRow({
                                   // Update the local state
                                   setLocalComments(prev => {
                                     const updated = prev.map(c => 
-                                      c._id === selectedMessageForHeaderOptions._id 
+                                      c._id === selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id 
                                         ? { 
                                             ...c, 
                                             starredBy: isStarred 
@@ -5142,7 +5142,7 @@ function AdminAppointmentRow({
                                   // Update starred messages list
                                   if (isStarred) {
                                     // Remove from starred messages
-                                    setStarredMessages(prev => prev.filter(m => m._id !== selectedMessageForHeaderOptions._id));
+                                    setStarredMessages(prev => prev.filter(m => m._id !== selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id));
                                   } else {
                                     // Add to starred messages
                                     setStarredMessages(prev => [...prev, selectedMessageForHeaderOptions]);
@@ -5156,13 +5156,13 @@ function AdminAppointmentRow({
                               }
                               setHeaderOptionsMessageId(null);
                             }}
-                            title={selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id) ? "Unstar message" : "Star message"}
-                            aria-label={selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id) ? "Unstar message" : "Star message"}
+                            title={selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id) ? "Unstar message" : "Star message"}
+                            aria-label={selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id) ? "Unstar message" : "Star message"}
                             disabled={starringSaving}
                           >
                             {starringSaving ? (
                               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            ) : selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id) ? (
+                            ) : selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id) ? (
                               <FaStar size={18} />
                             ) : (
                               <FaRegStar size={18} />
@@ -5185,7 +5185,7 @@ function AdminAppointmentRow({
                           </button>
                           <button
                             className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
-                            onClick={() => { copyMessageToClipboard(selectedMessageForHeaderOptions.message); setHeaderOptionsMessageId(null); }}
+                            onClick={() => { copyMessageToClipboard(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.message); setHeaderOptionsMessageId(null); }}
                             title="Copy message"
                             aria-label="Copy message"
                           >
@@ -5195,10 +5195,10 @@ function AdminAppointmentRow({
                           <button
                             className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
                             onClick={async () => { 
-                              const isStarred = selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id);
+                              const isStarred = selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id);
                               setStarringSaving(true);
                               try {
-                                const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${selectedMessageForHeaderOptions._id}/star`, 
+                                const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id}/star`, 
                                   { starred: !isStarred },
                                   { 
                                     withCredentials: true,
@@ -5208,7 +5208,7 @@ function AdminAppointmentRow({
                                   // Update the local state
                                   setLocalComments(prev => {
                                     const updated = prev.map(c => 
-                                      c._id === selectedMessageForHeaderOptions._id 
+                                      c._id === selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id 
                                         ? { 
                                             ...c, 
                                             starredBy: isStarred 
@@ -5227,7 +5227,7 @@ function AdminAppointmentRow({
                                   // Update starred messages list
                                   if (isStarred) {
                                     // Remove from starred messages
-                                    setStarredMessages(prev => prev.filter(m => m._id !== selectedMessageForHeaderOptions._id));
+                                    setStarredMessages(prev => prev.filter(m => m._id !== selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id));
                                   } else {
                                     // Add to starred messages
                                     setStarredMessages(prev => [...prev, selectedMessageForHeaderOptions]);
@@ -5241,13 +5241,13 @@ function AdminAppointmentRow({
                               }
                               setHeaderOptionsMessageId(null);
                             }}
-                            title={selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id) ? "Unstar message" : "Star message"}
-                            aria-label={selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id) ? "Unstar message" : "Star message"}
+                            title={selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id) ? "Unstar message" : "Star message"}
+                            aria-label={selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id) ? "Unstar message" : "Star message"}
                             disabled={starringSaving}
                           >
                             {starringSaving ? (
                               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            ) : selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id) ? (
+                            ) : selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id) ? (
                               <FaStar size={18} />
                             ) : (
                               <FaRegStar size={18} />
@@ -5256,7 +5256,7 @@ function AdminAppointmentRow({
                         </>
                       )}
                       {/* Three-dots menu: sent -> Info, Edit, Delete; received -> Info, Delete */}
-                      {!selectedMessageForHeaderOptions.deleted && (
+                      {selectedMessageForHeaderOptions && !selectedMessageForHeaderOptions.deleted && (
                         <div className="relative">
                           <button
                             className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
@@ -5275,14 +5275,14 @@ function AdminAppointmentRow({
                           </button>
                           {showHeaderMoreMenu && (
                             <div className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-20 min-w-[180px] chat-options-menu">
-                              {(selectedMessageForHeaderOptions.senderEmail === currentUser.email) ? (
+                              {(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.senderEmail === currentUser.email) ? (
                                 <>
                                   {/* Download option for image messages */}
-                                  {selectedMessageForHeaderOptions.imageUrl && (
+                                  {selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.imageUrl && (
                                     <button
                                       className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
                                       onClick={() => { 
-                                        handleDownloadChatImage(selectedMessageForHeaderOptions.imageUrl, selectedMessageForHeaderOptions._id); 
+                                        handleDownloadChatImage(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.imageUrl, selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id); 
                                         setShowHeaderMoreMenu(false); 
                                         setHeaderOptionsMessageId(null); 
                                       }}
@@ -5292,18 +5292,18 @@ function AdminAppointmentRow({
                                     </button>
                                   )}
                                     {/* Download option for video messages */}
-                                  {selectedMessageForHeaderOptions.videoUrl && (
+                                  {selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.videoUrl && (
                                     <button
                                       className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
                                       onClick={async () => { 
                                         try {
-                                          const response = await fetch(selectedMessageForHeaderOptions.videoUrl, { mode: 'cors' });
+                                          const response = await fetch(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.videoUrl, { mode: 'cors' });
                                           if (!response.ok) throw new Error(`HTTP ${response.status}`);
                                           const blob = await response.blob();
                                           const blobUrl = window.URL.createObjectURL(blob);
                                           const a = document.createElement('a');
                                           a.href = blobUrl;
-                                          a.download = `video-${selectedMessageForHeaderOptions._id || Date.now()}.mp4`;
+                                          a.download = `video-${selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id || Date.now()}.mp4`;
                                           document.body.appendChild(a);
                                           a.click();
                                           a.remove();
@@ -5313,8 +5313,8 @@ function AdminAppointmentRow({
                                           console.error('Video download failed:', error);
                                           // Fallback to direct link
                                           const a = document.createElement('a');
-                                          a.href = selectedMessageForHeaderOptions.videoUrl;
-                                          a.download = `video-${selectedMessageForHeaderOptions._id || Date.now()}.mp4`;
+                                          a.href = selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.videoUrl;
+                                          a.download = `video-${selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id || Date.now()}.mp4`;
                                           a.target = '_blank';
                                           document.body.appendChild(a);
                                           a.click();
@@ -5330,18 +5330,18 @@ function AdminAppointmentRow({
                                     </button>
                                   )}
                                   {/* Download option for audio messages */}
-                                  {selectedMessageForHeaderOptions.audioUrl && (
+                                  {selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl && (
                                     <button
                                       className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
                                       onClick={async () => { 
                                         try {
-                                          const response = await fetch(selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
+                                          const response = await fetch(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
                                           if (!response.ok) throw new Error(`HTTP ${response.status}`);
                                           const blob = await response.blob();
                                           const blobUrl = window.URL.createObjectURL(blob);
                                           const a = document.createElement('a');
                                           a.href = blobUrl;
-                                          a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions._id || Date.now()}`;
+                                          a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id || Date.now()}`;
                                           document.body.appendChild(a);
                                           a.click();
                                           a.remove();
@@ -5349,8 +5349,8 @@ function AdminAppointmentRow({
                                           toast.success('Audio downloaded successfully');
                                         } catch (error) {
                                           const a = document.createElement('a');
-                                          a.href = selectedMessageForHeaderOptions.audioUrl;
-                                          a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions._id || Date.now()}`;
+                                          a.href = selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl;
+                                          a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id || Date.now()}`;
                                           a.target = '_blank';
                                           document.body.appendChild(a);
                                           a.click();
@@ -5391,11 +5391,11 @@ function AdminAppointmentRow({
                               ) : (
                                 <>
                                   {/* Download option for image messages (for received messages) */}
-                                  {selectedMessageForHeaderOptions.imageUrl && (
+                                  {selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.imageUrl && (
                                     <button
                                       className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
                                       onClick={() => { 
-                                        handleDownloadChatImage(selectedMessageForHeaderOptions.imageUrl, selectedMessageForHeaderOptions._id); 
+                                        handleDownloadChatImage(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.imageUrl, selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id); 
                                         setShowHeaderMoreMenu(false); 
                                         setHeaderOptionsMessageId(null); 
                                       }}
@@ -5405,18 +5405,18 @@ function AdminAppointmentRow({
                                     </button>
                                   )}
                                   {/* Download option for video messages (for received messages) */}
-                                  {selectedMessageForHeaderOptions.videoUrl && (
+                                  {selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.videoUrl && (
                                     <button
                                       className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
                                       onClick={async () => { 
                                         try {
-                                          const response = await fetch(selectedMessageForHeaderOptions.videoUrl, { mode: 'cors' });
+                                          const response = await fetch(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.videoUrl, { mode: 'cors' });
                                           if (!response.ok) throw new Error(`HTTP ${response.status}`);
                                           const blob = await response.blob();
                                           const blobUrl = window.URL.createObjectURL(blob);
                                           const a = document.createElement('a');
                                           a.href = blobUrl;
-                                          a.download = `video-${selectedMessageForHeaderOptions._id || Date.now()}.mp4`;
+                                          a.download = `video-${selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id || Date.now()}.mp4`;
                                           document.body.appendChild(a);
                                           a.click();
                                           a.remove();
@@ -5426,8 +5426,8 @@ function AdminAppointmentRow({
                                           console.error('Video download failed:', error);
                                           // Fallback to direct link
                                           const a = document.createElement('a');
-                                          a.href = selectedMessageForHeaderOptions.videoUrl;
-                                          a.download = `video-${selectedMessageForHeaderOptions._id || Date.now()}.mp4`;
+                                          a.href = selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.videoUrl;
+                                          a.download = `video-${selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id || Date.now()}.mp4`;
                                           a.target = '_blank';
                                           document.body.appendChild(a);
                                           a.click();
@@ -5443,18 +5443,18 @@ function AdminAppointmentRow({
                                     </button>
                                   )}
                                   {/* Download option for audio messages (for received messages) */}
-                                  {selectedMessageForHeaderOptions.audioUrl && (
+                                  {selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl && (
                                     <button
                                       className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
                                       onClick={async () => { 
                                         try {
-                                          const response = await fetch(selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
+                                          const response = await fetch(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
                                           if (!response.ok) throw new Error(`HTTP ${response.status}`);
                                           const blob = await response.blob();
                                           const blobUrl = window.URL.createObjectURL(blob);
                                           const a = document.createElement('a');
                                           a.href = blobUrl;
-                                          a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions._id || Date.now()}`;
+                                          a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id || Date.now()}`;
                                           document.body.appendChild(a);
                                           a.click();
                                           a.remove();
@@ -5462,8 +5462,8 @@ function AdminAppointmentRow({
                                           toast.success('Audio downloaded successfully');
                                         } catch (error) {
                                           const a = document.createElement('a');
-                                          a.href = selectedMessageForHeaderOptions.audioUrl;
-                                          a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions._id || Date.now()}`;
+                                          a.href = selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl;
+                                          a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id || Date.now()}`;
                                           a.target = '_blank';
                                           document.body.appendChild(a);
                                           a.click();
@@ -5917,9 +5917,9 @@ function AdminAppointmentRow({
                   
                   const index = localComments.length - arr.length + mapIndex;
                   const isMe = c && c.senderEmail === currentUser.email;
-                  const isEditing = editingComment === c._id;
+                  const isEditing = editingComment === (c && c._id);
                   const currentDate = c && c.timestamp ? new Date(c.timestamp) : new Date();
-                  const previousDate = index > 0 && localComments[index - 1] ? new Date(localComments[index - 1].timestamp) : null;
+                  const previousDate = index > 0 && localComments[index - 1] && localComments[index - 1].timestamp ? new Date(localComments[index - 1].timestamp) : null;
                   const isNewDay = previousDate ? currentDate.toDateString() !== previousDate.toDateString() : true;
 
                   return (
@@ -6061,18 +6061,18 @@ function AdminAppointmentRow({
                                       </div>
                                     )}
                                     {/* Download option for audio messages */}
-                                    {selectedMessageForHeaderOptions.audioUrl && (
+                                    {selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl && (
                                       <button
                                         className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
                                         onClick={async () => { 
                                           try {
-                                            const response = await fetch(selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
+                                            const response = await fetch(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
                                             if (!response.ok) throw new Error(`HTTP ${response.status}`);
                                             const blob = await response.blob();
                                             const blobUrl = window.URL.createObjectURL(blob);
                                             const a = document.createElement('a');
                                             a.href = blobUrl;
-                                            a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions._id || Date.now()}`;
+                                            a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id || Date.now()}`;
                                             document.body.appendChild(a);
                                             a.click();
                                             a.remove();
@@ -6080,8 +6080,8 @@ function AdminAppointmentRow({
                                           toast.success('Audio downloaded successfully');
                                           } catch (error) {
                                             const a = document.createElement('a');
-                                            a.href = selectedMessageForHeaderOptions.audioUrl;
-                                            a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions._id || Date.now()}`;
+                                            a.href = selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl;
+                                            a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id || Date.now()}`;
                                             a.target = '_blank';
                                             document.body.appendChild(a);
                                             a.click();
