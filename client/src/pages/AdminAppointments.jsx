@@ -2291,6 +2291,15 @@ function AdminAppointmentRow({
   // Chat options menu state
   const [showChatOptionsMenu, setShowChatOptionsMenu] = useLocalState(false);
   
+  // Text styling panel state
+  const [showTextStylingPanel, setShowTextStylingPanel] = useLocalState(false);
+  
+  // Helper function to apply formatting and close panel
+  const applyFormattingAndClose = (formatFunction) => {
+    formatFunction();
+    setTimeout(() => setShowTextStylingPanel(false), 100); // Small delay for better UX
+  };
+  
   // Multi-select message states
   const [isSelectionMode, setIsSelectionMode] = useLocalState(false);
   const [selectedMessages, setSelectedMessages] = useLocalState([]);
@@ -5699,6 +5708,22 @@ function AdminAppointmentRow({
                               <FaCheckSquare className="text-sm" />
                               Select Messages
                             </button>
+                            {/* Text Styling option */}
+                            <button
+                              className="w-full px-4 py-2 text-left text-sm text-purple-600 hover:bg-purple-50 flex items-center gap-2"
+                              onClick={() => {
+                                setShowTextStylingPanel(!showTextStylingPanel);
+                                setShowChatOptionsMenu(false);
+                                // Close reactions bar when text styling panel toggles
+                                setShowReactionsBar(false);
+                                setReactionsMessageId(null);
+                              }}
+                            >
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M5 4v3h5.5v12h3V7H19V4H5z"/>
+                              </svg>
+                              Text Styling
+                            </button>
                             {/* Keyboard shortcuts and file upload guidelines */}
                             <button
                               className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
@@ -7339,22 +7364,33 @@ function AdminAppointmentRow({
                       />
                     </div>
                   )}
-                  {/* Formatting toolbar */}
-                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                  {/* Formatting toolbar - Collapsible */}
+                  {showTextStylingPanel && (
+                    <div className="flex flex-wrap items-center gap-2 mb-2 animate-slideDown bg-gradient-to-r from-purple-50 to-blue-50 p-3 rounded-lg border border-purple-200 shadow-sm">
                     <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
-                      const el = inputRef.current; if (!el) return; const start = el.selectionStart||0; const end=el.selectionEnd||0; const base=newComment||''; const selected=base.slice(start,end); const wrapped=`**${selected||'bold'}**`; const next=base.slice(0,start)+wrapped+base.slice(end); setNewComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2,start+2+(selected||'bold').length);}catch(_){}} ,0);
+                      applyFormattingAndClose(() => {
+                        const el = inputRef.current; if (!el) return; const start = el.selectionStart||0; const end=el.selectionEnd||0; const base=newComment||''; const selected=base.slice(start,end); const wrapped=`**${selected||'bold'}**`; const next=base.slice(0,start)+wrapped+base.slice(end); setNewComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2,start+2+(selected||'bold').length);}catch(_){}} ,0);
+                      });
                     }}>B</button>
                     <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100 italic" onClick={() => {
-                      const el = inputRef.current; if (!el) return; const start = el.selectionStart||0; const end=el.selectionEnd||0; const base=newComment||''; const selected=base.slice(start,end); const wrapped=`*${selected||'italic'}*`; const next=base.slice(0,start)+wrapped+base.slice(end); setNewComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+1,start+1+(selected||'italic').length);}catch(_){}} ,0);
+                      applyFormattingAndClose(() => {
+                        const el = inputRef.current; if (!el) return; const start = el.selectionStart||0; const end=el.selectionEnd||0; const base=newComment||''; const selected=base.slice(start,end); const wrapped=`*${selected||'italic'}*`; const next=base.slice(0,start)+wrapped+base.slice(end); setNewComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+1,start+1+(selected||'italic').length);}catch(_){}} ,0);
+                      });
                     }}>I</button>
                     <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100 underline" onClick={() => {
-                      const el = inputRef.current; if (!el) return; const start = el.selectionStart||0; const end=el.selectionEnd||0; const base=newComment||''; const selected=base.slice(start,end); const wrapped=`__${selected||'underline'}__`; const next=base.slice(0,start)+wrapped+base.slice(end); setNewComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2,start+2+(selected||'underline').length);}catch(_){}} ,0);
+                      applyFormattingAndClose(() => {
+                        const el = inputRef.current; if (!el) return; const start = el.selectionStart||0; const end=el.selectionEnd||0; const base=newComment||''; const selected=base.slice(start,end); const wrapped=`__${selected||'underline'}__`; const next=base.slice(0,start)+wrapped+base.slice(end); setNewComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2,start+2+(selected||'underline').length);}catch(_){}} ,0);
+                      });
                     }}>U</button>
                     <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
-                      const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = newComment || ''; const selected = base.slice(start, end); const wrapped = `~~${selected || 'strike'}~~`; const next = base.slice(0, start) + wrapped + base.slice(end); setNewComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 2, start + 2 + (selected || 'strike').length); } catch (_) {} }, 0);
+                      applyFormattingAndClose(() => {
+                        const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = newComment || ''; const selected = base.slice(start, end); const wrapped = `~~${selected || 'strike'}~~`; const next = base.slice(0, start) + wrapped + base.slice(end); setNewComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 2, start + 2 + (selected || 'strike').length); } catch (_) {} }, 0);
+                      });
                     }}>S</button>
                     <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
-                      const el=inputRef.current; if(!el)return; const base=newComment||''; const start=el.selectionStart||0; setNewComment(base.slice(0,start)+`- `+base.slice(start));
+                      applyFormattingAndClose(() => {
+                        const el=inputRef.current; if(!el)return; const base=newComment||''; const start=el.selectionStart||0; setNewComment(base.slice(0,start)+`- `+base.slice(start));
+                      });
                     }}>• List</button>
                     <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
                       const el=inputRef.current; if(!el)return; const base=newComment||''; const start=el.selectionStart||0; const before = base.slice(0,start); const after = base.slice(start); 
@@ -7375,21 +7411,32 @@ function AdminAppointmentRow({
                         }
                       }
                       
-                      setNewComment(base.slice(0,start)+`${nextNum}. `+base.slice(start));
+                      applyFormattingAndClose(() => {
+                        setNewComment(base.slice(0,start)+`${nextNum}. `+base.slice(start));
+                      });
                     }}>1. List</button>
                     <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
-                      const el=inputRef.current; if(!el)return; const base=newComment||''; const start=el.selectionStart||0; setNewComment(base.slice(0,start)+`> `+base.slice(start));
+                      applyFormattingAndClose(() => {
+                        const el=inputRef.current; if(!el)return; const base=newComment||''; const start=el.selectionStart||0; setNewComment(base.slice(0,start)+`> `+base.slice(start));
+                      });
                     }}>&gt; Quote</button>
                     <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" title="Tag Property" onClick={() => {
-                      const el=inputRef.current; if(!el)return; const start=el.selectionStart||0; const base=newComment||''; const insert='@'; setNewComment(base.slice(0,start)+insert+base.slice(start));
+                      applyFormattingAndClose(() => {
+                        const el=inputRef.current; if(!el)return; const start=el.selectionStart||0; const base=newComment||''; const insert='@'; setNewComment(base.slice(0,start)+insert+base.slice(start));
+                      });
                     }}>@Prop</button>
                     <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" title="Insert appointment card" onClick={() => {
-                      const el=inputRef.current; if(!el)return; const start=el.selectionStart||0; const base=newComment||''; const card='[Appointment: date • time • with]'; setNewComment(base.slice(0,start)+card+base.slice(start));
+                      applyFormattingAndClose(() => {
+                        const el=inputRef.current; if(!el)return; const start=el.selectionStart||0; const base=newComment||''; const card='[Appointment: date • time • with]'; setNewComment(base.slice(0,start)+card+base.slice(start));
+                      });
                     }}>Appt</button>
                     <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" title="Insert service link" onClick={() => {
-                      const el=inputRef.current; if(!el)return; const start=el.selectionStart||0; const base=newComment||''; const link='Book Movers: /user/movers'; setNewComment(base.slice(0,start)+link+base.slice(start));
+                      applyFormattingAndClose(() => {
+                        const el=inputRef.current; if(!el)return; const start=el.selectionStart||0; const base=newComment||''; const link='Book Movers: /user/movers'; setNewComment(base.slice(0,start)+link+base.slice(start));
+                      });
                     }}>Service</button>
-                  </div>
+                    </div>
+                  )}
                   {/* Property mention suggestions */}
                   {newComment && /@[^\s]*$/.test(newComment) && (
                     <div className="absolute bottom-16 left-2 right-2 bg-white border rounded shadow-lg max-h-48 overflow-auto z-30">
