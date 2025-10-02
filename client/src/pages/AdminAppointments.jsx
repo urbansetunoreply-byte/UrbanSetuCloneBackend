@@ -4018,11 +4018,18 @@ function AdminAppointmentRow({
     setSavingComment(commentId);
     
     // Optimistic update - update UI immediately
-    const optimisticUpdate = prev => prev.map(c => 
-      c._id === commentId 
-        ? { ...c, message: editText, edited: true, editedAt: new Date() }
-        : c
-    );
+    const optimisticUpdate = prev => {
+      const updated = prev.map(c => 
+        c._id === commentId 
+          ? { ...c, message: editText, edited: true, editedAt: new Date() }
+          : c
+      );
+      
+      // Update parent component state immediately
+      updateAppointmentComments(appt._id, updated);
+      
+      return updated;
+    };
     setLocalComments(optimisticUpdate);
     
     try {
@@ -4035,20 +4042,31 @@ function AdminAppointmentRow({
       );
 
         // Update with server response
-        setLocalComments(prev => prev.map(c => {
-          const serverComment = data.comments.find(sc => sc._id === c._id);
-          if (serverComment) {
-            // For the edited message, use server data
-            if (serverComment._id === commentId) {
-              return serverComment;
+        setLocalComments(prev => {
+          const updated = prev.map(c => {
+            const serverComment = data.comments.find(sc => sc._id === c._id);
+            if (serverComment) {
+              // For the edited message, preserve edited state and use server data
+              if (serverComment._id === commentId) {
+                return { 
+                  ...serverComment, 
+                  edited: true, 
+                  editedAt: serverComment.editedAt || new Date() 
+                };
+              }
+              // For other messages, preserve local read status if it exists
+              return c.status === 'read' && serverComment.status !== 'read' 
+                ? { ...serverComment, status: 'read' }
+                : serverComment;
             }
-            // For other messages, preserve local read status if it exists
-            return c.status === 'read' && serverComment.status !== 'read' 
-              ? { ...serverComment, status: 'read' }
-              : serverComment;
-          }
-          return c;
-        }));
+            return c;
+          });
+          
+          // Update parent component state with the updated comments
+          updateAppointmentComments(appt._id, updated);
+          
+          return updated;
+        });
         setEditingComment(null);
         setEditText("");
         // Restore original draft and clear it after a small delay to ensure state update
@@ -4092,11 +4110,18 @@ function AdminAppointmentRow({
     } catch (err) {
       console.error('Error editing comment:', err);
       // Revert optimistic update on error
-      setLocalComments(prev => prev.map(c => 
-        c._id === commentId 
-          ? { ...c, message: c.originalMessage || c.message, edited: c.wasEdited || false }
-          : c
-      ));
+      setLocalComments(prev => {
+        const reverted = prev.map(c => 
+          c._id === commentId 
+            ? { ...c, message: c.originalMessage || c.message, edited: c.wasEdited || false }
+            : c
+        );
+        
+        // Update parent component state with reverted changes
+        updateAppointmentComments(appt._id, reverted);
+        
+        return reverted;
+      });
       setEditingComment(commentId);
       setEditText(editText);
       setNewComment(editText); // Restore the text in main input for retry
