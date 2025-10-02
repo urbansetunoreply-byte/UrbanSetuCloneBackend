@@ -2188,9 +2188,6 @@ function AdminAppointmentRow({
       if (showHeaderMoreMenu) {
         setShowHeaderMoreMenu(false);
       }
-      if (showReactionsEmojiPicker) {
-        setShowReactionsEmojiPicker(false);
-      }
       if (showReactionsBar && !showReactionsEmojiPicker) {
         setShowReactionsBar(false);
         setReactionsMessageId(null);
