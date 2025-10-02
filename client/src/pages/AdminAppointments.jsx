@@ -5987,7 +5987,7 @@ function AdminAppointmentRow({
                 }}
               >
                 {/* Privacy Notice for Admins */}
-                <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-purple-50 border-l-4 border-blue-400 rounded-r-lg mb-4 transform transition-all duration-500 hover:scale-105 hover:shadow-lg hover:from-blue-100 hover:to-purple-100 hover:border-blue-500 hover:border-l-6 backdrop-blur-sm">
+                <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-purple-50 border-l-4 border-blue-400 rounded-r-lg mb-4 backdrop-blur-sm">
                   <p className="text-sm text-blue-700 font-medium text-center flex items-center justify-center gap-2">
                     <span className="animate-gentlePulse">🔒</span>
                     Chats are encrypted and secure. View only for valid purposes like disputes or fraud checks. Unauthorized access or sharing is prohibited and will be logged.
