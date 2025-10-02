@@ -1783,6 +1783,26 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
 
   // Sound effects
   const { playMessageSent, playMessageReceived, playNotification, toggleMute, setVolume, isMuted, getCurrentVolume } = useSoundEffects();
+  
+  // Reactive state for volume control UI
+  const [currentVolume, setCurrentVolume] = useState(0.6); // Default volume
+  const [isSoundMuted, setIsSoundMuted] = useState(false);
+  
+  // Sync reactive state with sound effects hook on initialization
+  useEffect(() => {
+    setCurrentVolume(getCurrentVolume());
+    setIsSoundMuted(isMuted());
+  }, [getCurrentVolume, isMuted]);
+  
+  // Update all existing audio elements when volume or mute state changes
+  useEffect(() => {
+    document.querySelectorAll('audio[data-audio-id]').forEach(audioEl => {
+      if (audioEl) {
+        audioEl.volume = currentVolume;
+        audioEl.muted = isSoundMuted;
+      }
+    });
+  }, [currentVolume, isSoundMuted]);
 
   // Manage video object URL to prevent reloading on each keystroke
   useEffect(() => {
@@ -6599,12 +6619,14 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           <SoundControl 
                             onToggleMute={() => {
                               const muted = toggleMute();
+                              setIsSoundMuted(muted); // Update reactive state immediately
                               toast.info(`All sounds ${muted ? 'muted' : 'unmuted'}`);
                             }}
-                            isMuted={isMuted()}
-                            currentVolume={getCurrentVolume()}
+                            isMuted={isSoundMuted}
+                            currentVolume={currentVolume}
                             onVolumeChange={(volume) => {
                               setVolume(volume);
+                              setCurrentVolume(volume); // Update reactive state immediately
                               toast.info(`Master volume: ${Math.round(volume * 100)}%`);
                             }}
                           />
@@ -7260,8 +7282,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                                     audioEl.dataset.audioId = c._id;
                                                     
                                                     // Sync with header volume control
-                                                    audioEl.volume = getCurrentVolume();
-                                                    audioEl.muted = isMuted();
+                                                    audioEl.volume = currentVolume;
+                                                    audioEl.muted = isSoundMuted;
                                                     
                                                     // Add play event listener to pause other audios
                                                     audioEl.addEventListener('play', () => {
