@@ -1527,10 +1527,17 @@ router.patch('/:id/comments/read', verifyToken, async (req, res) => {
         } catch (saveError) {
           if (saveError.name === 'VersionError' && retryCount < maxRetries - 1) {
             // Retry with fresh document
-            retryCount++;
-            console.log(`Version conflict, retrying... (${retryCount}/${maxRetries})`);
-            
-            // Refetch the document to get latest version
+          retryCount++;
+          // Only log on final retry to reduce log spam
+          if (retryCount === maxRetries - 1) {
+            console.log(`Version conflict, final retry... (${retryCount}/${maxRetries})`);
+          }
+          
+          // Add exponential backoff delay to reduce contention
+          const delay = Math.min(100 * Math.pow(2, retryCount - 1), 1000); // 100ms, 200ms, 400ms max
+          await new Promise(resolve => setTimeout(resolve, delay));
+          
+          // Refetch the document to get latest version
             const freshDoc = await booking.findById(id);
             if (!freshDoc) {
               return res.status(404).json({ message: 'Appointment not found during retry.' });
@@ -2138,7 +2145,14 @@ router.patch('/:id/comment/:commentId/react', verifyToken, async (req, res) => {
       } catch (saveError) {
         if (saveError.name === 'VersionError' && retryCount < maxRetries - 1) {
           retryCount++;
-          console.log(`Version conflict in reaction, retrying... (${retryCount}/${maxRetries})`);
+          // Only log on final retry to reduce log spam
+          if (retryCount === maxRetries - 1) {
+            console.log(`Version conflict in reaction, final retry... (${retryCount}/${maxRetries})`);
+          }
+          
+          // Add exponential backoff delay to reduce contention
+          const delay = Math.min(100 * Math.pow(2, retryCount - 1), 1000); // 100ms, 200ms, 400ms max
+          await new Promise(resolve => setTimeout(resolve, delay));
           
           // Refetch the document to get latest version
           const freshDoc = await booking.findById(id);
