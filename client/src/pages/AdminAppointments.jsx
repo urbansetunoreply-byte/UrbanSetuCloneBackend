@@ -1739,6 +1739,7 @@ function AdminAppointmentRow({
   // Audio Recording states (parity with MyAppointments)
   const [showRecordAudioModal, setShowRecordAudioModal] = useLocalState(false);
   const [isRecording, setIsRecording] = useLocalState(false);
+  const [isPaused, setIsPaused] = useLocalState(false);
   const [recordingElapsedMs, setRecordingElapsedMs] = useLocalState(0);
   const [recordingStream, setRecordingStream] = useLocalState(null);
   const mediaRecorderRef = React.useRef(null);
@@ -1746,6 +1747,7 @@ function AdminAppointmentRow({
   const recordingTimerRef = React.useRef(null);
   const recordingStartTimeRef = React.useRef(0);
   const recordingCancelledRef = React.useRef(false);
+  const pausedTimeRef = React.useRef(0); // Total time spent paused
 
   // Manage video object URL to prevent reloading on each keystroke
   React.useEffect(() => {
@@ -1777,18 +1779,18 @@ function AdminAppointmentRow({
 
   // Ensure timer ticks reliably while recording (redundant guard)
   React.useEffect(() => {
-    if (isRecording) {
+    if (isRecording && !isPaused) {
       // Initialize start time if not set
       if (!recordingStartTimeRef.current) {
         recordingStartTimeRef.current = Date.now();
       }
       const id = setInterval(() => {
-        const elapsed = Date.now() - recordingStartTimeRef.current;
+        const elapsed = Date.now() - recordingStartTimeRef.current - pausedTimeRef.current;
         setRecordingElapsedMs(elapsed);
       }, 500);
       return () => clearInterval(id);
     }
-  }, [isRecording]);
+  }, [isRecording, isPaused]);
 
   // Recording timer cleanup
   React.useEffect(() => {
@@ -1826,7 +1828,9 @@ function AdminAppointmentRow({
           if (recordingStream) recordingStream.getTracks().forEach(t => t.stop());
           setRecordingStream(null);
           setIsRecording(false);
+          setIsPaused(false);
           setRecordingElapsedMs(0);
+          pausedTimeRef.current = 0;
           if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
           recordingStartTimeRef.current = 0;
           recordingCancelledRef.current = false;
@@ -1837,7 +1841,7 @@ function AdminAppointmentRow({
       recordingStartTimeRef.current = Date.now();
       setRecordingElapsedMs(0);
       recordingTimerRef.current = setInterval(() => {
-        const elapsed = Date.now() - recordingStartTimeRef.current;
+        const elapsed = Date.now() - recordingStartTimeRef.current - pausedTimeRef.current;
         setRecordingElapsedMs(elapsed);
       }, 500);
     } catch (err) {
@@ -1853,6 +1857,41 @@ function AdminAppointmentRow({
     } catch {}
   };
 
+  const pauseAudioRecording = () => {
+    if (!mediaRecorderRef.current || mediaRecorderRef.current.state !== 'recording') return;
+    try {
+      mediaRecorderRef.current.pause();
+      setIsPaused(true);
+      // Clear the timer when pausing
+      if (recordingTimerRef.current) {
+        clearInterval(recordingTimerRef.current);
+        recordingTimerRef.current = null;
+      }
+    } catch (err) {
+      console.error('Pause recording error:', err);
+    }
+  };
+
+  const resumeAudioRecording = () => {
+    if (!mediaRecorderRef.current || mediaRecorderRef.current.state !== 'paused') return;
+    try {
+      mediaRecorderRef.current.resume();
+      setIsPaused(false);
+      // Update paused time accumulator
+      const pauseEndTime = Date.now();
+      const pauseStartTime = recordingStartTimeRef.current + recordingElapsedMs + pausedTimeRef.current;
+      pausedTimeRef.current += (pauseEndTime - pauseStartTime);
+      
+      // Restart the timer
+      recordingTimerRef.current = setInterval(() => {
+        const elapsed = Date.now() - recordingStartTimeRef.current - pausedTimeRef.current;
+        setRecordingElapsedMs(elapsed);
+      }, 500);
+    } catch (err) {
+      console.error('Resume recording error:', err);
+    }
+  };
+
   const cancelAudioRecording = () => {
     try {
       recordingCancelledRef.current = true;
@@ -1863,7 +1902,9 @@ function AdminAppointmentRow({
     if (recordingStream) recordingStream.getTracks().forEach(t => t.stop());
     setRecordingStream(null);
     setIsRecording(false);
+    setIsPaused(false);
     setRecordingElapsedMs(0);
+    pausedTimeRef.current = 0;
     if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
     setShowRecordAudioModal(false);
     // Ensure preview is not shown and any selection cleared
@@ -8227,7 +8268,11 @@ function AdminAppointmentRow({
                 </svg>
               </div>
               <div className="text-sm text-gray-600 mb-4">
-                {isRecording ? `${Math.floor(recordingElapsedMs / 60000).toString().padStart(2, '0')}:${Math.floor((recordingElapsedMs % 60000) / 1000).toString().padStart(2, '0')}` : 'Ready'}
+                {isRecording ? (
+                  isPaused ? 
+                    `${Math.floor(recordingElapsedMs / 60000).toString().padStart(2, '0')}:${Math.floor((recordingElapsedMs % 60000) / 1000).toString().padStart(2, '0')} (Paused)` : 
+                    `${Math.floor(recordingElapsedMs / 60000).toString().padStart(2, '0')}:${Math.floor((recordingElapsedMs % 60000) / 1000).toString().padStart(2, '0')}`
+                ) : 'Ready'}
               </div>
               <div className="flex items-center gap-3">
                 {!isRecording ? (
@@ -8235,6 +8280,11 @@ function AdminAppointmentRow({
                 ) : (
                   <>
                     <button onClick={stopAudioRecording} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Stop & Preview</button>
+                    {isPaused ? (
+                      <button onClick={resumeAudioRecording} className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">Resume</button>
+                    ) : (
+                      <button onClick={pauseAudioRecording} className="px-4 py-2 rounded-lg bg-yellow-600 text-white hover:bg-yellow-700">Pause</button>
+                    )}
                     <button onClick={cancelAudioRecording} className="px-4 py-2 rounded-lg border">Cancel</button>
                   </>
                 )}
