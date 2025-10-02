@@ -5768,6 +5768,42 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                         Download Video
                                       </button>
                                     )}
+                                    {/* Download option for audio messages (for received messages) */}
+                                    {selectedMessageForHeaderOptions.audioUrl && (
+                                      <button
+                                        className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+                                        onClick={async () => { 
+                                          try {
+                                            const response = await fetch(selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
+                                            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                            const blob = await response.blob();
+                                            const blobUrl = window.URL.createObjectURL(blob);
+                                            const a = document.createElement('a');
+                                            a.href = blobUrl;
+                                            a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions._id || Date.now()}`;
+                                            document.body.appendChild(a);
+                                            a.click();
+                                            a.remove();
+                                            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                            toast.success('Audio downloaded successfully');
+                                          } catch (error) {
+                                            const a = document.createElement('a');
+                                            a.href = selectedMessageForHeaderOptions.audioUrl;
+                                            a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions._id || Date.now()}`;
+                                            a.target = '_blank';
+                                            document.body.appendChild(a);
+                                            a.click();
+                                            a.remove();
+                                            toast.success('Audio download started');
+                                          }
+                                          setShowHeaderMoreMenu(false); 
+                                          setHeaderOptionsMessageId(null); 
+                                        }}
+                                      >
+                                        <FaDownload className="text-sm" />
+                                        Download Audio
+                                      </button>
+                                    )}
                                     <button
                                       className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 ${
                                         isChatSendBlocked 
