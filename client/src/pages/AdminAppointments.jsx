@@ -6095,6 +6095,96 @@ function AdminAppointmentRow({
                                         />
                                       </div>
                                     )}
+                                    
+                                    {/* Show preserved video if exists */}
+                                    {c && c.videoUrl && (
+                                      <div className="mb-2">
+                                        <video 
+                                          src={c.videoUrl} 
+                                          className="max-w-full max-h-64 rounded-lg border cursor-pointer hover:opacity-90 transition-opacity" 
+                                          controls 
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            if (e.target.requestFullscreen) {
+                                              e.target.requestFullscreen();
+                                            } else if (e.target.webkitRequestFullscreen) {
+                                              e.target.webkitRequestFullscreen();
+                                            }
+                                          }}
+                                        />
+                                        <div className="mt-1 text-xs text-gray-600 italic">
+                                          Preserved video from deleted message
+                                        </div>
+                                      </div>
+                                    )}
+                                    
+                                    {/* Show preserved audio if exists */}
+                                    {c && c.audioUrl && (
+                                      <div className="mb-2">
+                                        <div className="bg-gray-100 border border-gray-300 rounded-lg p-3">
+                                          <audio
+                                            src={c.audioUrl}
+                                            className="w-full"
+                                            controls
+                                            preload="metadata"
+                                          />
+                                          <div className="mt-2 text-xs text-gray-600 italic">
+                                            Preserved audio from deleted message: {c.audioName || 'Audio file'}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
+                                    
+                                    {/* Show preserved document if exists */}
+                                    {c && c.documentUrl && (
+                                      <div className="mb-2">
+                                        <div className="bg-gray-100 border border-gray-300 rounded-lg p-3">
+                                          <div className="flex items-center gap-2 mb-2">
+                                            <span className="text-2xl">📄</span>
+                                            <div className="flex-1">
+                                              <div className="text-sm font-medium text-gray-800">
+                                                {c.documentName || 'Document'}
+                                              </div>
+                                              <div className="text-xs text-gray-600 italic">
+                                                Preserved document from deleted message
+                                              </div>
+                                            </div>
+                                            <button
+                                              className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                                              onClick={async (e) => {
+                                                e.stopPropagation();
+                                                try {
+                                                  const response = await fetch(c.documentUrl, { mode: 'cors' });
+                                                  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                                  const blob = await response.blob();
+                                                  const blobUrl = window.URL.createObjectURL(blob);
+                                                  const a = document.createElement('a');
+                                                  a.href = blobUrl;
+                                                  a.download = c.documentName || `document-${c._id || Date.now()}`;
+                                                  document.body.appendChild(a);
+                                                  a.click();
+                                                  a.remove();
+                                                  setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                                  toast.success('Document downloaded successfully');
+                                                } catch (error) {
+                                                  const a = document.createElement('a');
+                                                  a.href = c.documentUrl;
+                                                  a.download = c.documentName || `document-${c._id || Date.now()}`;
+                                                  a.target = '_blank';
+                                                  document.body.appendChild(a);
+                                                  a.click();
+                                                  a.remove();
+                                                  toast.success('Document download started');
+                                                }
+                                              }}
+                                            >
+                                              Download
+                                            </button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
                                     {/* Download option for audio messages */}
                                     {selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl && (
                                       <button
@@ -8607,6 +8697,124 @@ function AdminAppointmentRow({
                                       <FaBan className="inline-block" />
                                       Message deleted by {message.deletedBy || 'user'} (Admin view - preserved for records)
                                     </div>
+                                    
+                                    {/* Show preserved image if exists */}
+                                    {(message.originalImageUrl || message.imageUrl) && (
+                                      <div className="mb-2">
+                                        <img
+                                          src={message.originalImageUrl || message.imageUrl}
+                                          alt="Preserved image from deleted message"
+                                          className="max-w-full max-h-64 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            const chatImages = (localComments || []).filter(msg => !!(msg.originalImageUrl || msg.imageUrl)).map(msg => msg.originalImageUrl || msg.imageUrl);
+                                            const currentUrl = message.originalImageUrl || message.imageUrl;
+                                            const startIndex = Math.max(0, chatImages.indexOf(currentUrl));
+                                            setPreviewImages(chatImages);
+                                            setPreviewIndex(startIndex);
+                                            setShowImagePreview(true);
+                                          }}
+                                          onError={(e) => {
+                                            e.target.src = "https://via.placeholder.com/300x200?text=Image+Not+Found";
+                                            e.target.className = "max-w-full max-h-64 rounded-lg opacity-50";
+                                          }}
+                                        />
+                                        <div className="mt-1 text-xs text-gray-600 italic">
+                                          Preserved image from deleted message
+                                        </div>
+                                      </div>
+                                    )}
+                                    
+                                    {/* Show preserved video if exists */}
+                                    {message.videoUrl && (
+                                      <div className="mb-2">
+                                        <video 
+                                          src={message.videoUrl} 
+                                          className="max-w-full max-h-64 rounded-lg border cursor-pointer hover:opacity-90 transition-opacity" 
+                                          controls 
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            if (e.target.requestFullscreen) {
+                                              e.target.requestFullscreen();
+                                            } else if (e.target.webkitRequestFullscreen) {
+                                              e.target.webkitRequestFullscreen();
+                                            }
+                                          }}
+                                        />
+                                        <div className="mt-1 text-xs text-gray-600 italic">
+                                          Preserved video from deleted message
+                                        </div>
+                                      </div>
+                                    )}
+                                    
+                                    {/* Show preserved audio if exists */}
+                                    {message.audioUrl && (
+                                      <div className="mb-2">
+                                        <div className="bg-gray-100 border border-gray-300 rounded-lg p-3">
+                                          <audio
+                                            src={message.audioUrl}
+                                            className="w-full"
+                                            controls
+                                            preload="metadata"
+                                          />
+                                          <div className="mt-2 text-xs text-gray-600 italic">
+                                            Preserved audio from deleted message: {message.audioName || 'Audio file'}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
+                                    
+                                    {/* Show preserved document if exists */}
+                                    {message.documentUrl && (
+                                      <div className="mb-2">
+                                        <div className="bg-gray-100 border border-gray-300 rounded-lg p-3">
+                                          <div className="flex items-center gap-2 mb-2">
+                                            <span className="text-2xl">📄</span>
+                                            <div className="flex-1">
+                                              <div className="text-sm font-medium text-gray-800">
+                                                {message.documentName || 'Document'}
+                                              </div>
+                                              <div className="text-xs text-gray-600 italic">
+                                                Preserved document from deleted message
+                                              </div>
+                                            </div>
+                                            <button
+                                              className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                                              onClick={async (e) => {
+                                                e.stopPropagation();
+                                                try {
+                                                  const response = await fetch(message.documentUrl, { mode: 'cors' });
+                                                  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                                  const blob = await response.blob();
+                                                  const blobUrl = window.URL.createObjectURL(blob);
+                                                  const a = document.createElement('a');
+                                                  a.href = blobUrl;
+                                                  a.download = message.documentName || `document-${message._id || Date.now()}`;
+                                                  document.body.appendChild(a);
+                                                  a.click();
+                                                  a.remove();
+                                                  setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                                  toast.success('Document downloaded successfully');
+                                                } catch (error) {
+                                                  const a = document.createElement('a');
+                                                  a.href = message.documentUrl;
+                                                  a.download = message.documentName || `document-${message._id || Date.now()}`;
+                                                  a.target = '_blank';
+                                                  document.body.appendChild(a);
+                                                  a.click();
+                                                  a.remove();
+                                                  toast.success('Document download started');
+                                                }
+                                              }}
+                                            >
+                                              Download
+                                            </button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
+                                    
                                     <div className="text-gray-800 bg-white p-2 rounded border-l-4 border-red-400 relative group">
                                       {(() => {
                                         const messageContent = message.originalMessage || message.message;
