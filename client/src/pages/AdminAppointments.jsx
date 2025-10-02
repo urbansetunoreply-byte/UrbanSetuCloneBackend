@@ -901,9 +901,20 @@ export default function AdminAppointments() {
             const existingCommentIndex = appt.comments?.findIndex(c => c._id === data.comment._id);
             if (existingCommentIndex !== -1) {
               // Update existing comment - only if there are actual changes
-              // and preserve starred status
+              // and preserve starred status and media URLs for deleted messages
               const existingComment = appt.comments[existingCommentIndex];
-              const updatedComment = { ...data.comment, starredBy: existingComment.starredBy || [] };
+              const updatedComment = { 
+                ...data.comment, 
+                starredBy: existingComment.starredBy || [],
+                // Preserve media URLs if the message is being deleted and they're not in the update
+                videoUrl: data.comment.videoUrl || existingComment.videoUrl,
+                audioUrl: data.comment.audioUrl || existingComment.audioUrl,
+                audioName: data.comment.audioName || existingComment.audioName,
+                documentUrl: data.comment.documentUrl || existingComment.documentUrl,
+                documentName: data.comment.documentName || existingComment.documentName,
+                originalImageUrl: data.comment.originalImageUrl || existingComment.originalImageUrl || existingComment.imageUrl,
+                imageUrl: data.comment.imageUrl || existingComment.imageUrl
+              };
               if (JSON.stringify(existingComment) !== JSON.stringify(updatedComment)) {
                 const updatedComments = [...(appt.comments || [])];
                 updatedComments[existingCommentIndex] = updatedComment;
@@ -929,9 +940,20 @@ export default function AdminAppointments() {
             const existingCommentIndex = appt.comments?.findIndex(c => c._id === data.comment._id);
             if (existingCommentIndex !== -1) {
               // Update existing comment - only if there are actual changes
-              // and preserve starred status
+              // and preserve starred status and media URLs for deleted messages
               const existingComment = appt.comments[existingCommentIndex];
-              const updatedComment = { ...data.comment, starredBy: existingComment.starredBy || [] };
+              const updatedComment = { 
+                ...data.comment, 
+                starredBy: existingComment.starredBy || [],
+                // Preserve media URLs if the message is being deleted and they're not in the update
+                videoUrl: data.comment.videoUrl || existingComment.videoUrl,
+                audioUrl: data.comment.audioUrl || existingComment.audioUrl,
+                audioName: data.comment.audioName || existingComment.audioName,
+                documentUrl: data.comment.documentUrl || existingComment.documentUrl,
+                documentName: data.comment.documentName || existingComment.documentName,
+                originalImageUrl: data.comment.originalImageUrl || existingComment.originalImageUrl || existingComment.imageUrl,
+                imageUrl: data.comment.imageUrl || existingComment.imageUrl
+              };
               if (JSON.stringify(existingComment) !== JSON.stringify(updatedComment)) {
                 const updatedComments = [...(appt.comments || [])];
                 updatedComments[existingCommentIndex] = updatedComment;
