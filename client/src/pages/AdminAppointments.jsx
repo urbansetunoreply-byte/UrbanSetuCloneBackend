@@ -3069,6 +3069,9 @@ function AdminAppointmentRow({
         
         return mergedComments;
       });
+      
+      // CRITICAL: Update parent appointments array to keep sync working
+      updateAppointmentComments(appt._id, data.comments || data.updated?.comments || data?.appointment?.comments || []);
     } catch (err) {
       toast.error('Failed to send video');
       setLocalComments(prev => prev.filter(m => m._id !== tempId));
@@ -3143,6 +3146,9 @@ function AdminAppointmentRow({
         
         return mergedComments;
       });
+      
+      // CRITICAL: Update parent appointments array to keep sync working
+      updateAppointmentComments(appt._id, data.comments || data.updated?.comments || data?.appointment?.comments || []);
     } catch (err) {
       toast.error('Failed to send document');
       setLocalComments(prev => prev.filter(m => m._id !== tempId));
@@ -3191,6 +3197,9 @@ function AdminAppointmentRow({
         
         return mergedComments;
       });
+      
+      // CRITICAL: Update parent appointments array to keep sync working
+      updateAppointmentComments(appt._id, data.comments || data.updated?.comments || data?.appointment?.comments || []);
     } catch (err) {
       toast.error('Failed to send audio');
       setLocalComments(prev => prev.filter(m => m._id !== tempId));
@@ -3356,6 +3365,9 @@ function AdminAppointmentRow({
               }
             : msg
         ));
+        
+        // CRITICAL: Update parent appointments array to keep sync working
+        updateAppointmentComments(appt._id, data.comments);
         
         // Don't show success toast as it's too verbose for chat
       } catch (err) {
@@ -3938,6 +3950,9 @@ function AdminAppointmentRow({
               
               return mergedComments;
             });
+            
+            // CRITICAL: Update parent appointments array to keep sync working
+            updateAppointmentComments(appt._id, data.comments);
           }
           toast.success(`Deleted ${ids.length} messages for everyone!`);
         } else {
@@ -3964,6 +3979,10 @@ function AdminAppointmentRow({
               
               return mergedComments;
             });
+            
+            // CRITICAL: Update parent appointments array to keep sync working
+            updateAppointmentComments(appt._id, data.comments);
+            
             if (wasUnread) {
               setUnreadNewMessages(prev => Math.max(0, prev - 1));
             }
