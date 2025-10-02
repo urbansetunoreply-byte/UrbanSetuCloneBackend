@@ -5158,7 +5158,7 @@ function AdminAppointmentRow({
                                   // Update the local state
                                   setLocalComments(prev => {
                                     const updated = prev.map(c => 
-                                      c._id === selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id 
+                                      c._id === (selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id) 
                                         ? { 
                                             ...c, 
                                             starredBy: isStarred 
@@ -5243,7 +5243,7 @@ function AdminAppointmentRow({
                                   // Update the local state
                                   setLocalComments(prev => {
                                     const updated = prev.map(c => 
-                                      c._id === selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id 
+                                      c._id === (selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id) 
                                         ? { 
                                             ...c, 
                                             starredBy: isStarred 
