@@ -2257,6 +2257,7 @@ function AdminAppointmentRow({
   const chatEndRef = React.useRef(null);
   const chatContainerRef = React.useRef(null);
   const inputRef = React.useRef(null);
+  const prevServerCommentsLengthRef = React.useRef(0);
   const [allProperties, setAllProperties] = useState([]);
   const [propertiesLoaded, setPropertiesLoaded] = useState(false);
   const messageRefs = React.useRef({});
@@ -2879,6 +2880,10 @@ function AdminAppointmentRow({
   React.useEffect(() => {
     const serverComments = appt.comments || [];
     
+    // CRITICAL FIX: Use ref to track previous server comments length to avoid race conditions
+    const prevServerLength = prevServerCommentsLengthRef.current;
+    const currentServerLength = serverComments.length;
+    
     // Always merge server comments with local temp messages to ensure consistency
     setLocalComments(prev => {
       const serverCommentIds = new Set(serverComments.map(c => c._id));
@@ -2901,8 +2906,7 @@ function AdminAppointmentRow({
     });
     
     // Handle unread message count and auto-scroll for new messages
-    const prevServerLength = localComments.filter(c => !c._id.startsWith('temp-')).length;
-    if (serverComments.length > prevServerLength) {
+    if (currentServerLength > prevServerLength) {
       const newMessages = serverComments.slice(prevServerLength);
       const receivedMessages = newMessages.filter(msg => msg.senderEmail !== currentUser.email);
       
@@ -2933,7 +2937,19 @@ function AdminAppointmentRow({
         }
       }
     }
+    
+    // Update the ref with current server comments length for next comparison
+    prevServerCommentsLengthRef.current = currentServerLength;
   }, [appt.comments, appt._id, showChatModal, isAtBottom, currentUser.email]);
+
+  // Initialize prevServerCommentsLengthRef when component mounts or chatbox opens
+  React.useEffect(() => {
+    if (showChatModal) {
+      // Initialize ref with current server comments length when chatbox opens
+      const serverComments = appt.comments || [];
+      prevServerCommentsLengthRef.current = serverComments.length;
+    }
+  }, [showChatModal, appt._id]);
 
   // Auto-scroll to bottom when chat modal opens
   React.useEffect(() => {
