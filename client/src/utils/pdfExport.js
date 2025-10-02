@@ -94,6 +94,27 @@ const loadImageAsBase64 = (url) => {
 };
 
 /**
+ * Convert emojis to text for better PDF compatibility
+ */
+const convertEmojiToText = (emoji) => {
+  const emojiToText = {
+    '👍': 'Like',
+    '❤️': 'Love', 
+    '😂': 'Laugh',
+    '😮': 'Wow',
+    '😢': 'Sad',
+    '😡': 'Angry',
+    '🔥': 'Fire',
+    '💯': '100',
+    '🎉': 'Party',
+    '👏': 'Clap',
+    '💪': 'Strong',
+    '🙏': 'Thanks'
+  };
+  return emojiToText[emoji] || emoji.replace(/[^\x00-\x7F]/g, '?'); // Replace non-ASCII with ?
+};
+
+/**
  * Process message text to handle markdown formatting, links and split into lines
  */
 const processMessageWithMarkdownAndLinks = (message, pdf, maxWidth) => {
@@ -714,7 +735,7 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
               pdf.setFontSize(7);
               pdf.setFont('helvetica', 'italic');
               
-              const replyText = `↩ Replying to: "${(replyToMessage.message || 'Media message').substring(0, 50)}${(replyToMessage.message || '').length > 50 ? '...' : ''}"`;
+              const replyText = `Reply to: "${(replyToMessage.message || 'Media message').substring(0, 50)}${(replyToMessage.message || '').length > 50 ? '...' : ''}"`;
               const replyX = isCurrentUser ? pageWidth - margin - 60 : margin + 25;
               
               pdf.text(replyText, replyX, yPosition);
@@ -740,7 +761,10 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
             pdf.setFont('helvetica', 'normal');
             
             const reactionsText = Object.entries(groupedReactions)
-              .map(([emoji, reactions]) => `${emoji} ${reactions.length}`)
+              .map(([emoji, reactions]) => {
+                const displayText = convertEmojiToText(emoji);
+                return `${displayText}(${reactions.length})`;
+              })
               .join('  ');
             
             const reactionsX = isCurrentUser ? pageWidth - margin - 60 : margin + 25;
@@ -846,7 +870,7 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
               pdf.setFontSize(7);
               pdf.setFont('helvetica', 'italic');
               
-              const replyText = `↩ Replying to: "${(replyToMessage.message || 'Media message').substring(0, 50)}${(replyToMessage.message || '').length > 50 ? '...' : ''}"`;
+              const replyText = `Reply to: "${(replyToMessage.message || 'Media message').substring(0, 50)}${(replyToMessage.message || '').length > 50 ? '...' : ''}"`;
               const replyX = isCurrentUser ? pageWidth - margin - bubbleWidth + 5 : margin + 25;
               
               pdf.text(replyText, replyX, yPosition);
@@ -872,7 +896,10 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
             pdf.setFont('helvetica', 'normal');
             
             const reactionsText = Object.entries(groupedReactions)
-              .map(([emoji, reactions]) => `${emoji} ${reactions.length}`)
+              .map(([emoji, reactions]) => {
+                const displayText = convertEmojiToText(emoji);
+                return `${displayText}(${reactions.length})`;
+              })
               .join('  ');
             
             const reactionsX = isCurrentUser ? pageWidth - margin - bubbleWidth + 5 : margin + 25;
@@ -939,7 +966,7 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
               pdf.setFontSize(7);
               pdf.setFont('helvetica', 'italic');
               
-              const replyText = `↩ Replying to: "${(replyToMessage.message || 'Media message').substring(0, 50)}${(replyToMessage.message || '').length > 50 ? '...' : ''}"`;
+              const replyText = `Reply to: "${(replyToMessage.message || 'Media message').substring(0, 50)}${(replyToMessage.message || '').length > 50 ? '...' : ''}"`;
               const replyX = isCurrentUser ? pageWidth - margin - bubbleWidth + 5 : margin + 25;
               
               pdf.text(replyText, replyX, yPosition);
@@ -965,7 +992,10 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
             pdf.setFont('helvetica', 'normal');
             
             const reactionsText = Object.entries(groupedReactions)
-              .map(([emoji, reactions]) => `${emoji} ${reactions.length}`)
+              .map(([emoji, reactions]) => {
+                const displayText = convertEmojiToText(emoji);
+                return `${displayText}(${reactions.length})`;
+              })
               .join('  ');
             
             const reactionsX = isCurrentUser ? pageWidth - margin - bubbleWidth + 5 : margin + 25;
