@@ -6039,7 +6039,7 @@ function AdminAppointmentRow({
                                     </div>
                                     
                                     {/* Show preserved image if exists */}
-                                    {(c.originalImageUrl || c.imageUrl) && (
+                                    {c && (c.originalImageUrl || c.imageUrl) && (
                                       <div className="mb-2">
                                         <img
                                           src={(c && c.originalImageUrl) || (c && c.imageUrl)}
@@ -6152,7 +6152,7 @@ function AdminAppointmentRow({
                                   ) : (
                                     <>
                                       {/* Image Message - Show preserved image if message is deleted */}
-                                      {(c.originalImageUrl || c.imageUrl) && (
+                                      {c && (c.originalImageUrl || c.imageUrl) && (
                                         <div className="mb-2">
                                           <img
                                             src={(c && c.originalImageUrl) || (c && c.imageUrl)}
@@ -6160,7 +6160,7 @@ function AdminAppointmentRow({
                                             className="max-w-full max-h-64 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
                                             onClick={() => {
                                               const chatImages = (localComments || []).filter(msg => !!(msg.originalImageUrl || msg.imageUrl)).map(msg => msg.originalImageUrl || msg.imageUrl);
-                                              const currentUrl = c.originalImageUrl || c.imageUrl;
+                                              const currentUrl = (c && c.originalImageUrl) || (c && c.imageUrl);
                                               const startIndex = Math.max(0, chatImages.indexOf(currentUrl));
                                               setPreviewImages(chatImages);
                                               setPreviewIndex(startIndex);
@@ -6174,7 +6174,7 @@ function AdminAppointmentRow({
                                         </div>
                                       )}
                                       {/* Video Message */}
-                                      {c.videoUrl && (
+                                      {c && c.videoUrl && (
                                         <div className="mb-2">
                                           <video 
                                             src={c.videoUrl} 
@@ -6570,13 +6570,13 @@ function AdminAppointmentRow({
                                             onClick={async (e) => {
                                               e.stopPropagation();
                                               try {
-                                                const response = await fetch(c.documentUrl, { mode: 'cors' });
+                                                const response = await fetch(c && c.documentUrl ? c.documentUrl : '', { mode: 'cors' });
                                                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                                                 const blob = await response.blob();
                                                 const blobUrl = window.URL.createObjectURL(blob);
                                                 const a = document.createElement('a');
                                                 a.href = blobUrl;
-                                                a.download = c.documentName || `document-${c._id || Date.now()}`;
+                                                a.download = (c && c.documentName) || `document-${(c && c._id) || Date.now()}`;
                                                 document.body.appendChild(a);
                                                 a.click();
                                                 a.remove();
@@ -6586,8 +6586,8 @@ function AdminAppointmentRow({
                                                 console.error('Download failed:', error);
                                                 // Fallback to direct link
                                                 const a = document.createElement('a');
-                                                a.href = c.documentUrl;
-                                                a.download = c.documentName || `document-${c._id || Date.now()}`;
+                                                a.href = c && c.documentUrl ? c.documentUrl : '';
+                                                a.download = (c && c.documentName) || `document-${(c && c._id) || Date.now()}`;
                                                 a.target = '_blank';
                                                 document.body.appendChild(a);
                                                 a.click();
@@ -6597,17 +6597,17 @@ function AdminAppointmentRow({
                                             }}
                                           >
                                             <span className="text-2xl">📄</span>
-                                            <span className={`text-sm truncate max-w-[200px] ${isMe ? 'text-white' : 'text-blue-700'}`}>{c.documentName || 'Document'}</span>
+                                            <span className={`text-sm truncate max-w-[200px] ${isMe ? 'text-white' : 'text-blue-700'}`}>{(c && c.documentName) || 'Document'}</span>
                                           </button>
                                         </div>
                                       )}
                                       {/* Link Preview in Message */}
                                       {(() => {
                                         // Only show preview if it wasn't dismissed before sending
-                                        if (c.previewDismissed) return null;
+                                        if (c && c.previewDismissed) return null;
                                         
                                         const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
-                                        const urls = (c.message || '').match(urlRegex);
+                                        const urls = ((c && c.message) || '').match(urlRegex);
                                                                                 if (urls && urls.length > 0) {
                                           return (
                                             <div className="mb-2 max-h-40 overflow-hidden">
