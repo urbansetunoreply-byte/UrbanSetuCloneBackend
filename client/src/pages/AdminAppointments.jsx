@@ -2879,14 +2879,23 @@ function AdminAppointmentRow({
   React.useEffect(() => {
     const serverComments = appt.comments || [];
     
-    // Merge server comments with local temp messages to prevent loss of temporary messages
-    if (JSON.stringify(localComments) !== JSON.stringify(serverComments)) {
-      const prevLength = localComments.length;
+    // Only update if there are actual changes in server comments
+    setLocalComments(prev => {
+      const serverCommentIds = new Set(serverComments.map(c => c._id));
+      const localTempMessages = prev.filter(c => c._id.startsWith('temp-'));
+      const localNonTempComments = prev.filter(c => !c._id.startsWith('temp-'));
       
-      setLocalComments(prev => {
-        const serverCommentIds = new Set(serverComments.map(c => c._id));
-        const localTempMessages = prev.filter(c => c._id.startsWith('temp-'));
-        
+      // Check if server comments are different from local non-temp comments
+      const localNonTempIds = new Set(localNonTempComments.map(c => c._id));
+      const hasNewServerComments = serverComments.some(c => !localNonTempIds.has(c._id));
+      const hasRemovedComments = localNonTempComments.some(c => !serverCommentIds.has(c._id));
+      const hasUpdatedComments = serverComments.some(serverComment => {
+        const localComment = localNonTempComments.find(c => c._id === serverComment._id);
+        return localComment && JSON.stringify(localComment) !== JSON.stringify(serverComment);
+      });
+      
+      // Only update if there are actual changes
+      if (hasNewServerComments || hasRemovedComments || hasUpdatedComments) {
         // Combine server comments with local temp messages
         const mergedComments = [...serverComments];
         
@@ -2898,38 +2907,42 @@ function AdminAppointmentRow({
         });
         
         return mergedComments;
-      });
+      }
+      
+      // No changes, return current state
+      return prev;
+    });
+    
+    // Handle unread message count and auto-scroll for new messages
+    const prevServerLength = localComments.filter(c => !c._id.startsWith('temp-')).length;
+    if (serverComments.length > prevServerLength) {
+      const newMessages = serverComments.slice(prevServerLength);
+      const receivedMessages = newMessages.filter(msg => msg.senderEmail !== currentUser.email);
+      
+      if (receivedMessages.length > 0) {
+        // Increment unread count for messages from other users
+        if (!showChatModal) {
+          setUnreadNewMessages(prev => prev + receivedMessages.length);
+        }
         
-      // Handle unread message count and auto-scroll for new messages
-      if (serverComments.length > prevLength) {
-        const newMessages = serverComments.slice(prevLength);
-        const receivedMessages = newMessages.filter(msg => msg.senderEmail !== currentUser.email);
+        // Auto-scroll if chat is open and user is at bottom
+        if (showChatModal && isAtBottom) {
+          setTimeout(() => {
+            if (chatEndRef.current) {
+              chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+            }
+          }, 100);
+        }
         
-        if (receivedMessages.length > 0) {
-          // Increment unread count for messages from other users
-          if (!showChatModal) {
-            setUnreadNewMessages(prev => prev + receivedMessages.length);
-          }
-          
-          // Auto-scroll if chat is open and user is at bottom
-          if (showChatModal && isAtBottom) {
-            setTimeout(() => {
-              if (chatEndRef.current) {
-                chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
-              }
-            }, 100);
-          }
-          
-          // Mark messages as read if chat is open
-          if (showChatModal) {
-            setTimeout(() => {
-              axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comments/read`, {}, {
-                withCredentials: true
-              }).catch(err => {
-                console.error('Error marking messages as read:', err);
-              });
-            }, 100);
-          }
+        // Mark messages as read if chat is open
+        if (showChatModal) {
+          setTimeout(() => {
+            axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comments/read`, {}, {
+              withCredentials: true
+            }).catch(err => {
+              console.error('Error marking messages as read:', err);
+            });
+          }, 100);
         }
       }
     }
