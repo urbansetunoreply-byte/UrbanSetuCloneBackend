@@ -6887,7 +6887,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                             </div>
                                           </div>
                                           {c.message && (
-                                            <div className={`mt-2 text-sm whitespace-pre-wrap break-words ${isMe ? 'text-white' : 'text-gray-700'}`}>{c.message}</div>
+                                            <div className={`mt-2 text-sm whitespace-pre-wrap break-words ${isMe ? 'text-white' : 'text-gray-700'}`}>
+                                              {c.message}
+                                              {c.edited && (
+                                                <span className={`ml-2 text-[10px] italic whitespace-nowrap ${isMe ? 'text-blue-200' : 'text-gray-400'}`}>(Edited)</span>
+                                              )}
+                                            </div>
                                           )}
                                         </div>
                                       )}
@@ -6954,15 +6959,17 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                       
                                       {/* Only show message text for non-audio messages (audio messages handle their caption internally) */}
                                       {!c.audioUrl && (
-                                        <FormattedTextWithReadMore 
-                                          text={(c.message || '').replace(/\n+$/, '')}
-                                          isSentMessage={isMe}
-                                          className="whitespace-pre-wrap break-words"
-                                          searchQuery={searchQuery}
-                                        />
-                                      )}
-                                      {c.edited && (
-                                        <span className="ml-2 text-[10px] italic text-gray-300 whitespace-nowrap">(Edited)</span>
+                                        <div className="inline">
+                                          <FormattedTextWithReadMore 
+                                            text={(c.message || '').replace(/\n+$/, '')}
+                                            isSentMessage={isMe}
+                                            className="whitespace-pre-wrap break-words"
+                                            searchQuery={searchQuery}
+                                          />
+                                          {c.edited && (
+                                            <span className="ml-2 text-[10px] italic text-gray-300 whitespace-nowrap">(Edited)</span>
+                                          )}
+                                        </div>
                                       )}
                                     </>
                                   )}
