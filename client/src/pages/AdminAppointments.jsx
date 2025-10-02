@@ -6552,10 +6552,10 @@ function AdminAppointmentRow({
                                               </div>
                                             </div>
                                           </div>
-                                          {c.message && (
+                                          {c && c.message && (
                                             <div className={`mt-2 text-sm whitespace-pre-wrap break-words ${isMe ? 'text-white' : 'text-gray-700'}`}>
                                               {c.message}
-                                              {c.edited && (
+                                              {c && c.edited && (
                                                 <span className={`ml-2 text-[10px] italic whitespace-nowrap ${isMe ? 'text-blue-200' : 'text-gray-400'}`}>(Edited)</span>
                                               )}
                                             </div>
@@ -6563,7 +6563,7 @@ function AdminAppointmentRow({
                                         </div>
                                       )}
                                       {/* Document Message */}
-                                      {c.documentUrl && (
+                                      {c && c.documentUrl && (
                                         <div className="mb-2">
                                           <button
                                             className="flex items-center gap-2 px-3 py-2 rounded-lg border hover:bg-gray-50"
@@ -6624,15 +6624,15 @@ function AdminAppointmentRow({
                                       })()}
                                       
                                       {/* Only show message text for non-audio messages (audio messages handle their caption internally) */}
-                                      {!c.audioUrl && (
+                                      {c && !c.audioUrl && (
                                         <div className="inline">
                                       <FormattedTextWithReadMore 
-                                        text={(c.message || '').replace(/\n+$/, '')}
+                                        text={(c && c.message || '').replace(/\n+$/, '')}
                                         isSentMessage={isMe}
                                         className="whitespace-pre-wrap break-words"
                                         searchQuery={searchQuery}
                                       />
-                                      {c.edited && (
+                                      {c && c.edited && (
                                         <span className="ml-2 text-[10px] italic text-gray-300 whitespace-nowrap">(Edited)</span>
                                           )}
                                         </div>
