@@ -457,6 +457,11 @@ function AppRoutes({ bootstrapped }) {
   useEffect(() => {
     if (!currentUser) return; // Only run if user is logged in
     
+    // Don't show toast notifications for admin users
+    if (currentUser.role === 'admin' || currentUser.role === 'rootadmin') {
+      return;
+    }
+    
     const handleNewMessage = async (data) => {
       // Since backend now only sends to intended recipients, we can trust this message is for us
       // Just check if it's not from the current user
