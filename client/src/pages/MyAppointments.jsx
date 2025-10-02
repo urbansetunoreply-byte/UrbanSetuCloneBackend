@@ -6952,12 +6952,15 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                         return null;
                                       })()}
                                       
-                                      <FormattedTextWithReadMore 
-                                        text={(c.message || '').replace(/\n+$/, '')}
-                                        isSentMessage={isMe}
-                                        className="whitespace-pre-wrap break-words"
-                                        searchQuery={searchQuery}
-                                      />
+                                      {/* Only show message text for non-audio messages (audio messages handle their caption internally) */}
+                                      {!c.audioUrl && (
+                                        <FormattedTextWithReadMore 
+                                          text={(c.message || '').replace(/\n+$/, '')}
+                                          isSentMessage={isMe}
+                                          className="whitespace-pre-wrap break-words"
+                                          searchQuery={searchQuery}
+                                        />
+                                      )}
                                       {c.edited && (
                                         <span className="ml-2 text-[10px] italic text-gray-300 whitespace-nowrap">(Edited)</span>
                                       )}
