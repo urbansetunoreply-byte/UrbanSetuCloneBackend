@@ -2237,10 +2237,26 @@ function AdminAppointmentRow({
   React.useEffect(() => {
     const serverComments = appt.comments || [];
     
-    // Always update localComments when parent changes (real-time sync)
+    // Merge server comments with local temp messages to prevent loss of temporary messages
     if (JSON.stringify(localComments) !== JSON.stringify(serverComments)) {
       const prevLength = localComments.length;
-      setLocalComments(serverComments);
+      
+      setLocalComments(prev => {
+        const serverCommentIds = new Set(serverComments.map(c => c._id));
+        const localTempMessages = prev.filter(c => c._id.startsWith('temp-'));
+        
+        // Combine server comments with local temp messages
+        const mergedComments = [...serverComments];
+        
+        // Add back any local temp messages that haven't been confirmed yet
+        localTempMessages.forEach(tempMsg => {
+          if (!serverCommentIds.has(tempMsg._id)) {
+            mergedComments.push(tempMsg);
+          }
+        });
+        
+        return mergedComments;
+      });
         
       // Handle unread message count and auto-scroll for new messages
       if (serverComments.length > prevLength) {
@@ -3035,7 +3051,24 @@ function AdminAppointmentRow({
         videoUrl,
         type: 'video'
       }, { withCredentials: true });
-      setLocalComments(data.comments || data.updated?.comments || data?.appointment?.comments || []);
+      // Merge server comments with local temp messages to prevent loss of temporary messages
+      setLocalComments(prev => {
+        const serverComments = data.comments || data.updated?.comments || data?.appointment?.comments || [];
+        const serverCommentIds = new Set(serverComments.map(c => c._id));
+        const localTempMessages = prev.filter(c => c._id.startsWith('temp-'));
+        
+        // Combine server comments with local temp messages
+        const mergedComments = [...serverComments];
+        
+        // Add back any local temp messages that haven't been confirmed yet
+        localTempMessages.forEach(tempMsg => {
+          if (!serverCommentIds.has(tempMsg._id)) {
+            mergedComments.push(tempMsg);
+          }
+        });
+        
+        return mergedComments;
+      });
     } catch (err) {
       toast.error('Failed to send video');
       setLocalComments(prev => prev.filter(m => m._id !== tempId));
@@ -3092,7 +3125,24 @@ function AdminAppointmentRow({
         documentType: document.type,
         type: 'document'
       }, { withCredentials: true });
-      setLocalComments(data.comments || data.updated?.comments || data?.appointment?.comments || []);
+      // Merge server comments with local temp messages to prevent loss of temporary messages
+      setLocalComments(prev => {
+        const serverComments = data.comments || data.updated?.comments || data?.appointment?.comments || [];
+        const serverCommentIds = new Set(serverComments.map(c => c._id));
+        const localTempMessages = prev.filter(c => c._id.startsWith('temp-'));
+        
+        // Combine server comments with local temp messages
+        const mergedComments = [...serverComments];
+        
+        // Add back any local temp messages that haven't been confirmed yet
+        localTempMessages.forEach(tempMsg => {
+          if (!serverCommentIds.has(tempMsg._id)) {
+            mergedComments.push(tempMsg);
+          }
+        });
+        
+        return mergedComments;
+      });
     } catch (err) {
       toast.error('Failed to send document');
       setLocalComments(prev => prev.filter(m => m._id !== tempId));
@@ -3123,7 +3173,24 @@ function AdminAppointmentRow({
         audioMimeType: file.type || null,
         type: 'audio'
       }, { withCredentials: true });
-      setLocalComments(data.comments || data.updated?.comments || data?.appointment?.comments || []);
+      // Merge server comments with local temp messages to prevent loss of temporary messages
+      setLocalComments(prev => {
+        const serverComments = data.comments || data.updated?.comments || data?.appointment?.comments || [];
+        const serverCommentIds = new Set(serverComments.map(c => c._id));
+        const localTempMessages = prev.filter(c => c._id.startsWith('temp-'));
+        
+        // Combine server comments with local temp messages
+        const mergedComments = [...serverComments];
+        
+        // Add back any local temp messages that haven't been confirmed yet
+        localTempMessages.forEach(tempMsg => {
+          if (!serverCommentIds.has(tempMsg._id)) {
+            mergedComments.push(tempMsg);
+          }
+        });
+        
+        return mergedComments;
+      });
     } catch (err) {
       toast.error('Failed to send audio');
       setLocalComments(prev => prev.filter(m => m._id !== tempId));
@@ -3853,7 +3920,24 @@ function AdminAppointmentRow({
           data: { commentIds: ids }
         });
           if (data?.comments) {
-            setLocalComments(data.comments);
+            // Merge server comments with local temp messages to prevent loss of temporary messages
+            setLocalComments(prev => {
+              const serverComments = data.comments;
+              const serverCommentIds = new Set(serverComments.map(c => c._id));
+              const localTempMessages = prev.filter(c => c._id.startsWith('temp-'));
+              
+              // Combine server comments with local temp messages
+              const mergedComments = [...serverComments];
+              
+              // Add back any local temp messages that haven't been confirmed yet
+              localTempMessages.forEach(tempMsg => {
+                if (!serverCommentIds.has(tempMsg._id)) {
+                  mergedComments.push(tempMsg);
+                }
+              });
+              
+              return mergedComments;
+            });
           }
           toast.success(`Deleted ${ids.length} messages for everyone!`);
         } else {
@@ -3862,7 +3946,24 @@ function AdminAppointmentRow({
           const { data } = await axios.delete(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${messageToDelete._id}`, {
             withCredentials: true
           });
-            setLocalComments(data.comments);
+            // Merge server comments with local temp messages to prevent loss of temporary messages
+            setLocalComments(prev => {
+              const serverComments = data.comments;
+              const serverCommentIds = new Set(serverComments.map(c => c._id));
+              const localTempMessages = prev.filter(c => c._id.startsWith('temp-'));
+              
+              // Combine server comments with local temp messages
+              const mergedComments = [...serverComments];
+              
+              // Add back any local temp messages that haven't been confirmed yet
+              localTempMessages.forEach(tempMsg => {
+                if (!serverCommentIds.has(tempMsg._id)) {
+                  mergedComments.push(tempMsg);
+                }
+              });
+              
+              return mergedComments;
+            });
             if (wasUnread) {
               setUnreadNewMessages(prev => Math.max(0, prev - 1));
             }
