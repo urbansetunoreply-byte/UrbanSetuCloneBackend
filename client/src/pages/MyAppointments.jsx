@@ -4936,15 +4936,26 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
 
   // Function to scroll to bottom
   const scrollToBottom = useCallback(() => {
-    if (chatEndRef.current) {
-      // Manual scroll to bottom
-      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
-      setUnreadNewMessages(0); // Clear unread count when manually scrolling to bottom
+    // Clear unread count immediately
+    setUnreadNewMessages(0);
+    
+    // Use multiple methods to ensure scroll works
+    setTimeout(() => {
+      if (chatContainerRef.current) {
+        // Method 1: Scroll the container to bottom
+        chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      }
+      
+      // Method 2: Also use scrollIntoView as backup
+      if (chatEndRef.current) {
+        chatEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }
+      
       // Mark visible messages as read after scrolling
       setTimeout(() => {
         markVisibleMessagesAsRead();
       }, 500); // Wait for scroll animation to complete
-    }
+    }, 100); // Small delay to ensure DOM is updated
   }, [markVisibleMessagesAsRead]);
 
 
@@ -9283,11 +9294,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                 <button
                   onClick={() => {
                     setVisibleCount(Math.max(MESSAGES_PAGE_SIZE, filteredComments.length));
-                    scrollToBottom();
+                    setTimeout(() => scrollToBottom(), 50); // Small delay to ensure DOM updates
                   }}
                   className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-full p-3 shadow-xl transition-all duration-200 hover:scale-110 relative transform hover:shadow-2xl"
-                  title={unreadNewMessages > 0 ? `${unreadNewMessages} new message${unreadNewMessages > 1 ? 's' : ''}` : "Jump to latest"}
-                  aria-label={unreadNewMessages > 0 ? `${unreadNewMessages} new messages, jump to latest` : "Jump to latest"}
+                  title={unreadNewMessages > 0 ? `${unreadNewMessages} new message${unreadNewMessages > 1 ? 's' : ''} - Scroll to bottom` : "Scroll to bottom"}
+                  aria-label={unreadNewMessages > 0 ? `${unreadNewMessages} new messages, scroll to bottom` : "Scroll to bottom"}
                 >
                   <svg
                     width="16"
