@@ -15,6 +15,20 @@ import PDFDocument from 'pdfkit';
 
 const router = express.Router();
 
+// GET: Get Razorpay key for mobile app
+router.get("/razorpay-key", (req, res) => {
+  try {
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    if (!keyId) {
+      return res.status(500).json({ message: 'Razorpay key not configured' });
+    }
+    res.json({ key: keyId });
+  } catch (err) {
+    console.error('Error getting Razorpay key:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Generate unique payment ID
 const generatePaymentId = () => {
   return 'PAY_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
