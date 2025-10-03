@@ -2,12 +2,12 @@ import express from 'express';
 import Listing from '../models/listing.model.js';
 import User from '../models/user.model.js';
 import Booking from '../models/booking.model.js';
-import auth from '../middleware/auth.js';
+import { verifyToken } from '../utils/verify.js';
 
 const router = express.Router();
 
 // Get general statistics
-router.get('/', auth, async (req, res) => {
+router.get('/', verifyToken, async (req, res) => {
   try {
     const [
       totalListings,
@@ -70,7 +70,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // Get user-specific statistics
-router.get('/user/:userId', auth, async (req, res) => {
+router.get('/user/:userId', verifyToken, async (req, res) => {
   try {
     const { userId } = req.params;
     
@@ -116,7 +116,7 @@ router.get('/user/:userId', auth, async (req, res) => {
 });
 
 // Get listing statistics
-router.get('/listings', auth, async (req, res) => {
+router.get('/listings', verifyToken, async (req, res) => {
   try {
     const [
       totalListings,
@@ -155,7 +155,7 @@ router.get('/listings', auth, async (req, res) => {
 });
 
 // Get booking statistics
-router.get('/bookings', auth, async (req, res) => {
+router.get('/bookings', verifyToken, async (req, res) => {
   try {
     const [
       totalBookings,
