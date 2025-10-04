@@ -2877,5 +2877,188 @@ export const sendAdminDemotionEmail = async (email, demotionDetails) => {
   }
 };
 
+// Send outdated appointment email
+export const sendOutdatedAppointmentEmail = async (email, appointmentDetails, userRole) => {
+  try {
+    const { 
+      appointmentId,
+      propertyName, 
+      propertyDescription, 
+      propertyAddress,
+      propertyPrice,
+      propertyImages,
+      date, 
+      time, 
+      buyerName, 
+      buyerEmail, 
+      sellerName, 
+      sellerEmail, 
+      purpose,
+      listingId,
+      message
+    } = appointmentDetails;
+
+    const appointmentDate = new Date(date);
+    const formattedDate = appointmentDate.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    
+    const isBuyer = userRole === 'buyer';
+    const otherPartyName = isBuyer ? sellerName : buyerName;
+    const otherPartyEmail = isBuyer ? sellerEmail : buyerEmail;
+    const userName = isBuyer ? buyerName : sellerName;
+    
+    const subject = `Appointment Expired - ${propertyName} - Book New Appointment`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Appointment Expired - UrbanSetu</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9f9f9;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 40px 30px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">⏰ Appointment Expired</h1>
+            <p style="color: #fecaca; margin: 10px 0 0; font-size: 16px;">Your appointment has passed - Book a new one!</p>
+          </div>
+          
+          <!-- Content -->
+          <div style="padding: 40px 30px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(239, 68, 68, 0.3);">
+                <span style="color: #ffffff; font-size: 32px;">📅</span>
+              </div>
+              <h2 style="color: #1f2937; margin: 0 0 10px; font-size: 24px; font-weight: 700;">Hello ${userName}!</h2>
+              <p style="color: #6b7280; margin: 0; font-size: 16px; line-height: 1.6;">Your appointment for <strong>${propertyName}</strong> has expired and is no longer valid.</p>
+            </div>
+            
+            <!-- Property Details -->
+            <div style="background-color: #f8fafc; padding: 25px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #e2e8f0;">
+              <h3 style="color: #1e293b; margin: 0 0 20px; font-size: 20px; font-weight: 600;">🏠 Property Details</h3>
+              <div style="display: grid; gap: 15px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <span style="color: #64748b; font-size: 18px;">🏷️</span>
+                  <div>
+                    <div style="color: #1e293b; font-weight: 600; font-size: 16px;">${propertyName}</div>
+                    <div style="color: #64748b; font-size: 14px;">${propertyAddress}</div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <span style="color: #64748b; font-size: 18px;">💰</span>
+                  <div>
+                    <div style="color: #1e293b; font-weight: 600; font-size: 16px;">₹${propertyPrice?.toLocaleString() || 'Price not available'}</div>
+                    <div style="color: #64748b; font-size: 14px;">${purpose === 'buy' ? 'For Sale' : 'For Rent'}</div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <span style="color: #64748b; font-size: 18px;">📝</span>
+                  <div>
+                    <div style="color: #1e293b; font-weight: 600; font-size: 16px;">Description</div>
+                    <div style="color: #64748b; font-size: 14px; line-height: 1.5;">${propertyDescription}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Expired Appointment Details -->
+            <div style="background-color: #fef2f2; padding: 25px; border-radius: 12px; margin-bottom: 30px; border-left: 4px solid #ef4444;">
+              <h3 style="color: #991b1b; margin: 0 0 20px; font-size: 18px; font-weight: 600;">❌ Expired Appointment</h3>
+              <div style="display: grid; gap: 12px;">
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #fecaca;">
+                  <span style="color: #991b1b; font-weight: 500; font-size: 14px;">Date:</span>
+                  <span style="color: #991b1b; font-weight: 600; font-size: 14px;">${formattedDate}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #fecaca;">
+                  <span style="color: #991b1b; font-weight: 500; font-size: 14px;">Time:</span>
+                  <span style="color: #991b1b; font-weight: 600; font-size: 14px;">${time}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #fecaca;">
+                  <span style="color: #991b1b; font-weight: 500; font-size: 14px;">Status:</span>
+                  <span style="color: #991b1b; font-weight: 600; font-size: 14px;">Expired</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                  <span style="color: #991b1b; font-weight: 500; font-size: 14px;">Other Party:</span>
+                  <span style="color: #991b1b; font-weight: 600; font-size: 14px;">${otherPartyName}</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
+                <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/property/${listingId}" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); transition: all 0.3s ease; min-width: 200px;">
+                  🏠 View Property Details
+                </a>
+                <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/my-appointments" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); transition: all 0.3s ease; min-width: 200px;">
+                  📅 My Appointments
+                </a>
+              </div>
+            </div>
+            
+            <!-- Next Steps -->
+            <div style="background-color: #f0f9ff; padding: 25px; border-radius: 12px; margin-bottom: 30px; border-left: 4px solid #3b82f6;">
+              <h3 style="color: #1e40af; margin: 0 0 15px; font-size: 18px; font-weight: 600;">🚀 What's Next?</h3>
+              <ul style="color: #1e40af; margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.6;">
+                <li>Visit the property page to book a new appointment</li>
+                <li>Choose a new date and time that works for both parties</li>
+                <li>Contact the ${isBuyer ? 'seller' : 'buyer'} directly if needed</li>
+                <li>Check your appointments page for all scheduled meetings</li>
+              </ul>
+            </div>
+            
+            <!-- Thank You Message -->
+            <div style="text-align: center; padding: 25px; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border-radius: 12px; margin-bottom: 20px;">
+              <h3 style="color: #1f2937; margin: 0 0 10px; font-size: 18px; font-weight: 600;">Thank You for Using UrbanSetu!</h3>
+              <p style="color: #6b7280; margin: 0; font-size: 14px; line-height: 1.6;">
+                We appreciate your business and look forward to helping you find your perfect property. 
+                If you have any questions, feel free to contact our support team.
+              </p>
+            </div>
+            
+            <!-- Contact Information -->
+            <div style="text-align: center; color: #6b7280; font-size: 14px; line-height: 1.6;">
+              <p style="margin: 0 0 10px;">
+                <strong>Need Help?</strong> Contact us at 
+                <a href="mailto:support@urbansetu.com" style="color: #3b82f6; text-decoration: none;">support@urbansetu.com</a>
+              </p>
+              <p style="margin: 0;">
+                Visit our website: 
+                <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}" style="color: #3b82f6; text-decoration: none;">UrbanSetu.com</a>
+              </p>
+            </div>
+          </div>
+          
+          <!-- Footer -->
+          <div style="background-color: #f9fafb; padding: 20px 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+            <p style="color: #6b7280; margin: 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved. | 
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/privacy" style="color: #6b7280; text-decoration: none;">Privacy Policy</a> | 
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/terms" style="color: #6b7280; text-decoration: none;">Terms of Service</a>
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending outdated appointment email:', error);
+    return createErrorResponse(error, 'outdated_appointment_email');
+  }
+};
+
 // Export the current transporter (will be set during initialization)
 export default currentTransporter;

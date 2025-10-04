@@ -1,5 +1,6 @@
 import cron from 'node-cron';
 import { checkAndSendAppointmentReminders } from './appointmentReminderService.js';
+import { checkAndSendOutdatedAppointmentEmails } from './outdatedAppointmentService.js';
 import { autoPurgeSoftbannedAccounts } from './autoPurgeService.js';
 import { sendAccountDeletionReminders } from './accountReminderService.js';
 import { checkEmailServiceStatus } from './emailMonitoringService.js';
@@ -24,6 +25,28 @@ const scheduleAppointmentReminders = () => {
   
   console.log('✅ Appointment reminder scheduler set up successfully');
   console.log('📋 Schedule: Every day at 9:00 AM (Asia/Kolkata timezone)');
+};
+
+// Schedule outdated appointment emails to run every day at 8:00 AM
+const scheduleOutdatedAppointmentEmails = () => {
+  console.log('📅 Setting up outdated appointment email scheduler...');
+  
+  // Run every day at 8:00 AM
+  cron.schedule('0 8 * * *', async () => {
+    console.log('⏰ Running scheduled outdated appointment email check...');
+    try {
+      const result = await checkAndSendOutdatedAppointmentEmails();
+      console.log('✅ Scheduled outdated appointment email check completed:', result);
+    } catch (error) {
+      console.error('❌ Error in scheduled outdated appointment email check:', error);
+    }
+  }, {
+    scheduled: true,
+    timezone: "Asia/Kolkata" // Adjust timezone as needed
+  });
+  
+  console.log('✅ Outdated appointment email scheduler set up successfully');
+  console.log('📋 Schedule: Every day at 8:00 AM (Asia/Kolkata timezone)');
 };
 
 // Schedule automatic purging of softbanned accounts to run every day at 2:00 AM
@@ -96,6 +119,7 @@ const scheduleEmailMonitoring = (app) => {
 export const startScheduler = (app) => {
   console.log('🚀 Starting scheduler service...');
   scheduleAppointmentReminders();
+  scheduleOutdatedAppointmentEmails();
   scheduleAutoPurge();
   scheduleAccountReminders();
   scheduleEmailMonitoring(app);
