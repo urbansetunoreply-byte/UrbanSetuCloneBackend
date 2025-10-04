@@ -30,6 +30,7 @@ import appointmentReminderRouter from "./routes/appointmentReminder.route.js";
 import priceDropAlertRouter from "./routes/priceDropAlert.route.js";
 import statisticsRouter from "./routes/statistics.route.js";
 import configRouter from "./routes/config.route.js";
+import deploymentRouter from "./routes/deployment.route.js";
 import { startScheduler } from "./services/schedulerService.js";
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -447,6 +448,7 @@ app.use("/api/appointment-reminders", appointmentReminderRouter);
 app.use("/api/price-drop-alerts", priceDropAlertRouter);
 app.use("/api/statistics", statisticsRouter);
 app.use("/api/config", configRouter);
+app.use("/api/deployment", deploymentRouter);
 console.log('All API routes registered successfully');
 
 // Catch-all route for 404s - must be after all other routes
