@@ -54,7 +54,7 @@ const getLatestAndroidApkUrl = async () => {
     return `https://res.cloudinary.com/${cloudName}/raw/upload/v1/urbansetu-debug.apk`;
   }
   
-  return 'https://res.cloudinary.com/your-cloud-name/raw/upload/v1/urbansetu-debug.apk';
+  return 'https://res.cloudinary.com/dl462tj9t/raw/upload/v1/urbansetu-debug.apk';
 };
 
 // Alternative fallback URL (you can host the APK on your own server)
