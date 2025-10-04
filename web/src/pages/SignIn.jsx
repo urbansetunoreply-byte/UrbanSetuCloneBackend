@@ -693,8 +693,8 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                             onChange={handleChange} 
                                             ref={emailInputRef}
                                             readOnly={emailStep || authInProgress === 'google'}
-                                            disabled={authInProgress === 'google'}
-                                            className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${emailStep ? 'pr-12 bg-gray-50' : ''} ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                            disabled={authInProgress === 'google' || (authInProgress === 'password' && emailStep) || loading}
+                                            className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${emailStep ? 'pr-12 bg-gray-50' : ''} ${(authInProgress === 'google' || (authInProgress === 'password' && emailStep) || loading) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                                             required
                                         />
                                         {emailStep && (
@@ -726,14 +726,14 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                                 value={formData.password}
                                                 onChange={handleChange} 
                                                 ref={passwordInputRef}
-                                                disabled={authInProgress === 'google'}
-                                                className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pr-12 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                                disabled={authInProgress === 'google' || authInProgress === 'password' || loading}
+                                                className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pr-12 ${(authInProgress === 'google' || authInProgress === 'password' || loading) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                                                 required
                                             />
                                             <button
                                                 type="button"
-                                                disabled={authInProgress === 'google'}
-                                                className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 focus:outline-none ${authInProgress === 'google' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                disabled={authInProgress === 'google' || authInProgress === 'password' || loading}
+                                                className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 focus:outline-none ${(authInProgress === 'google' || authInProgress === 'password' || loading) ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                 tabIndex={-1}
                                                 onClick={() => setShowPassword((prev) => !prev)}
                                                 aria-label={showPassword ? "Hide password" : "Show password"}
