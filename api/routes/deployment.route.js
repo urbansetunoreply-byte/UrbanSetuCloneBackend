@@ -33,7 +33,7 @@ const handleMulterError = (error, req, res, next) => {
     if (error.code === 'LIMIT_FILE_SIZE') {
       return res.status(413).json({
         success: false,
-        message: 'File too large. Maximum size is 200MB.'
+        message: 'File too large. Maximum size is 10MB due to Cloudinary limitations. Please compress your APK file.'
       });
     }
     if (error.code === 'LIMIT_UNEXPECTED_FILE') {
@@ -69,8 +69,8 @@ cloudinary.v2.config({
 const upload = multer({ 
   storage: multer.memoryStorage(), // Use memory storage instead of CloudinaryStorage
   limits: {
-    fileSize: 200 * 1024 * 1024, // 200MB limit
-    fieldSize: 200 * 1024 * 1024, // 200MB for form fields
+    fileSize: 10 * 1024 * 1024, // 10MB limit (Cloudinary's limit)
+    fieldSize: 10 * 1024 * 1024, // 10MB for form fields
     files: 1, // Only one file
   },
   fileFilter: (req, file, cb) => {
@@ -209,9 +209,18 @@ router.post('/upload', verifyToken, upload.single('file'), handleMulterError, as
       bufferSize: file.buffer ? file.buffer.length : 'No buffer'
     });
 
+    // Check file size before attempting upload
+    if (file.size > 10 * 1024 * 1024) { // 10MB limit
+      console.log('File too large for Cloudinary:', file.size);
+      return res.status(413).json({
+        success: false,
+        message: 'File too large for Cloudinary. Maximum size is 10MB. Please compress your APK file or contact support for alternative hosting.'
+      });
+    }
+
     let uploadResult;
     try {
-      // Upload from buffer instead of file path
+      // Use regular upload for files under 10MB
       uploadResult = await cloudinary.v2.uploader.upload(
         `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
         {
