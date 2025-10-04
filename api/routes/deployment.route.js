@@ -6,6 +6,31 @@ import { verifyToken } from '../utils/verify.js';
 
 const router = express.Router();
 
+// Error handling middleware for multer
+const handleMulterError = (error, req, res, next) => {
+  if (error instanceof multer.MulterError) {
+    if (error.code === 'LIMIT_FILE_SIZE') {
+      return res.status(413).json({
+        success: false,
+        message: 'File too large. Maximum size is 500MB.'
+      });
+    }
+    if (error.code === 'LIMIT_UNEXPECTED_FILE') {
+      return res.status(400).json({
+        success: false,
+        message: 'Unexpected file field. Please use the correct form field name.'
+      });
+    }
+    if (error.code === 'LIMIT_FILE_COUNT') {
+      return res.status(400).json({
+        success: false,
+        message: 'Too many files. Only one file allowed per upload.'
+      });
+    }
+  }
+  next(error);
+};
+
 // Configure Cloudinary
 cloudinary.v2.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -121,16 +146,18 @@ router.get('/active', async (req, res) => {
 });
 
 // Upload new deployment file
-router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
+router.post('/upload', verifyToken, upload.single('file'), handleMulterError, async (req, res) => {
   try {
     // Check if user is admin
     if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'rootadmin')) {
       return res.status(403).json({ success: false, message: 'Access denied. Admin privileges required.' });
     }
+
+    // Check for multer errors (file size, file type, etc.)
     if (!req.file) {
       return res.status(400).json({
         success: false,
-        message: 'No file uploaded'
+        message: 'No file uploaded or file upload failed. Please check file size (max 500MB) and file type.'
       });
     }
 
@@ -171,9 +198,32 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
     });
   } catch (error) {
     console.error('Error uploading deployment file:', error);
+    
+    // Handle specific multer errors
+    if (error.code === 'LIMIT_FILE_SIZE') {
+      return res.status(413).json({
+        success: false,
+        message: 'File too large. Maximum size is 500MB.'
+      });
+    }
+    
+    if (error.code === 'LIMIT_UNEXPECTED_FILE') {
+      return res.status(400).json({
+        success: false,
+        message: 'Unexpected file field. Please use the correct form field name.'
+      });
+    }
+    
+    if (error.message && error.message.includes('Invalid file type')) {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
+    
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to upload file'
+      message: 'Upload failed: ' + (error.message || 'Unknown error')
     });
   }
 });
