@@ -83,7 +83,7 @@ router.get('/', verifyToken, async (req, res) => {
     }
     const result = await cloudinary.v2.search
       .expression('folder:mobile-apps')
-      .sort_by([['created_at', 'desc']])
+      .sort_by([{ created_at: 'desc' }])
       .max_results(50)
       .execute();
 
@@ -117,7 +117,7 @@ router.get('/active', async (req, res) => {
   try {
     const result = await cloudinary.v2.search
       .expression('folder:mobile-apps AND public_id:latest*')
-      .sort_by([['created_at', 'desc']])
+      .sort_by([{ created_at: 'desc' }])
       .max_results(10)
       .execute();
 
