@@ -30,7 +30,7 @@ import appointmentReminderRouter from "./routes/appointmentReminder.route.js";
 import priceDropAlertRouter from "./routes/priceDropAlert.route.js";
 import statisticsRouter from "./routes/statistics.route.js";
 import configRouter from "./routes/config.route.js";
-import deploymentRouter from "./routes/deployment.route.js";
+import deploymentRouter from "./routes/deployment-s3.route.js";
 import { startScheduler } from "./services/schedulerService.js";
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
