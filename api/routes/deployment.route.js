@@ -65,24 +65,21 @@ cloudinary.v2.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Configure multer storage for APK files
-const apkStorage = new CloudinaryStorage({
-  cloudinary: cloudinary.v2,
-  params: {
-    folder: 'mobile-apps',
-    resource_type: 'raw',
-    allowed_formats: ['apk', 'ipa', 'exe', 'msi', 'dmg', 'pkg'],
-    use_filename: true,
-    unique_filename: false,
-  },
-});
-
+// Configure multer with memory storage for better control
 const upload = multer({ 
-  storage: apkStorage,
+  storage: multer.memoryStorage(), // Use memory storage instead of CloudinaryStorage
   limits: {
-    fileSize: 200 * 1024 * 1024, // 200MB limit (reduced for Render)
+    fileSize: 200 * 1024 * 1024, // 200MB limit
+    fieldSize: 200 * 1024 * 1024, // 200MB for form fields
+    files: 1, // Only one file
   },
   fileFilter: (req, file, cb) => {
+    console.log('File being processed:', {
+      originalname: file.originalname,
+      mimetype: file.mimetype,
+      size: file.size
+    });
+    
     // Allow specific file types
     const allowedTypes = [
       'application/vnd.android.package-archive', // APK
@@ -204,22 +201,26 @@ router.post('/upload', verifyToken, upload.single('file'), handleMulterError, as
     const baseName = `${platform}-${version || 'v1.0.0'}-${timestamp}`;
     const publicId = `mobile-apps/latest-${baseName}`;
 
-    // Upload to Cloudinary with specific public_id
+    // Upload to Cloudinary with specific public_id using buffer
     console.log('Uploading to Cloudinary:', {
-      filePath: file.path,
       publicId: publicId,
       fileSize: file.size,
-      fileType: file.mimetype
+      fileType: file.mimetype,
+      bufferSize: file.buffer ? file.buffer.length : 'No buffer'
     });
 
     let uploadResult;
     try {
-      uploadResult = await cloudinary.v2.uploader.upload(file.path, {
-        public_id: publicId,
-        resource_type: 'raw',
-        folder: 'mobile-apps',
-        overwrite: true,
-      });
+      // Upload from buffer instead of file path
+      uploadResult = await cloudinary.v2.uploader.upload(
+        `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
+        {
+          public_id: publicId,
+          resource_type: 'raw',
+          folder: 'mobile-apps',
+          overwrite: true,
+        }
+      );
       console.log('Cloudinary upload successful:', uploadResult.public_id);
     } catch (cloudinaryError) {
       console.error('Cloudinary upload error:', cloudinaryError);
