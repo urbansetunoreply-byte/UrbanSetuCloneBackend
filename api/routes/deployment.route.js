@@ -6,13 +6,34 @@ import { verifyToken } from '../utils/verify.js';
 
 const router = express.Router();
 
+// Test Cloudinary connection
+router.get('/test-cloudinary', async (req, res) => {
+  try {
+    console.log('Testing Cloudinary connection...');
+    const result = await cloudinary.v2.api.ping();
+    res.json({
+      success: true,
+      message: 'Cloudinary connection successful',
+      result: result
+    });
+  } catch (error) {
+    console.error('Cloudinary test error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Cloudinary connection failed: ' + error.message
+    });
+  }
+});
+
 // Error handling middleware for multer
 const handleMulterError = (error, req, res, next) => {
+  console.log('Multer error:', error);
   if (error instanceof multer.MulterError) {
+    console.log('Multer error code:', error.code);
     if (error.code === 'LIMIT_FILE_SIZE') {
       return res.status(413).json({
         success: false,
-        message: 'File too large. Maximum size is 500MB.'
+        message: 'File too large. Maximum size is 200MB.'
       });
     }
     if (error.code === 'LIMIT_UNEXPECTED_FILE') {
@@ -32,6 +53,12 @@ const handleMulterError = (error, req, res, next) => {
 };
 
 // Configure Cloudinary
+console.log('Cloudinary Config:', {
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY ? 'Set' : 'Not Set',
+  api_secret: process.env.CLOUDINARY_API_SECRET ? 'Set' : 'Not Set'
+});
+
 cloudinary.v2.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -178,12 +205,29 @@ router.post('/upload', verifyToken, upload.single('file'), handleMulterError, as
     const publicId = `mobile-apps/latest-${baseName}`;
 
     // Upload to Cloudinary with specific public_id
-    const uploadResult = await cloudinary.v2.uploader.upload(file.path, {
-      public_id: publicId,
-      resource_type: 'raw',
-      folder: 'mobile-apps',
-      overwrite: true,
+    console.log('Uploading to Cloudinary:', {
+      filePath: file.path,
+      publicId: publicId,
+      fileSize: file.size,
+      fileType: file.mimetype
     });
+
+    let uploadResult;
+    try {
+      uploadResult = await cloudinary.v2.uploader.upload(file.path, {
+        public_id: publicId,
+        resource_type: 'raw',
+        folder: 'mobile-apps',
+        overwrite: true,
+      });
+      console.log('Cloudinary upload successful:', uploadResult.public_id);
+    } catch (cloudinaryError) {
+      console.error('Cloudinary upload error:', cloudinaryError);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to upload to Cloudinary: ' + cloudinaryError.message
+      });
+    }
 
     // Store deployment info in database (you can create a deployment model)
     const deploymentInfo = {
