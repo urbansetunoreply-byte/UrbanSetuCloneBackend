@@ -53,7 +53,7 @@ const apkStorage = new CloudinaryStorage({
 const upload = multer({ 
   storage: apkStorage,
   limits: {
-    fileSize: 500 * 1024 * 1024, // 500MB limit
+    fileSize: 200 * 1024 * 1024, // 200MB limit (reduced for Render)
   },
   fileFilter: (req, file, cb) => {
     // Allow specific file types
@@ -83,7 +83,7 @@ router.get('/', verifyToken, async (req, res) => {
     }
     const result = await cloudinary.v2.search
       .expression('folder:mobile-apps')
-      .sort_by([{ created_at: 'desc' }])
+      .sort_by('created_at', 'desc')
       .max_results(50)
       .execute();
 
@@ -117,7 +117,7 @@ router.get('/active', async (req, res) => {
   try {
     const result = await cloudinary.v2.search
       .expression('folder:mobile-apps AND public_id:latest*')
-      .sort_by([{ created_at: 'desc' }])
+      .sort_by('created_at', 'desc')
       .max_results(10)
       .execute();
 
@@ -148,6 +148,13 @@ router.get('/active', async (req, res) => {
 // Upload new deployment file
 router.post('/upload', verifyToken, upload.single('file'), handleMulterError, async (req, res) => {
   try {
+    console.log('Upload request received:', {
+      hasFile: !!req.file,
+      fileSize: req.file?.size,
+      contentType: req.headers['content-type'],
+      contentLength: req.headers['content-length']
+    });
+
     // Check if user is admin
     if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'rootadmin')) {
       return res.status(403).json({ success: false, message: 'Access denied. Admin privileges required.' });
@@ -155,6 +162,7 @@ router.post('/upload', verifyToken, upload.single('file'), handleMulterError, as
 
     // Check for multer errors (file size, file type, etc.)
     if (!req.file) {
+      console.log('No file received in request');
       return res.status(400).json({
         success: false,
         message: 'No file uploaded or file upload failed. Please check file size (max 500MB) and file type.'
