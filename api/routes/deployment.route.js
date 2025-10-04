@@ -33,7 +33,7 @@ const handleMulterError = (error, req, res, next) => {
     if (error.code === 'LIMIT_FILE_SIZE') {
       return res.status(413).json({
         success: false,
-        message: 'File too large. Maximum size is 10MB due to Cloudinary limitations. Please compress your APK file.'
+        message: 'File too large for Cloudinary free plan. Maximum size is 10MB. Please compress your APK file or upgrade to Cloudinary Pro plan.'
       });
     }
     if (error.code === 'LIMIT_UNEXPECTED_FILE') {
@@ -211,10 +211,13 @@ router.post('/upload', verifyToken, upload.single('file'), handleMulterError, as
 
     // Check file size before attempting upload
     if (file.size > 10 * 1024 * 1024) { // 10MB limit
-      console.log('File too large for Cloudinary:', file.size);
+      console.log('File too large for Cloudinary free plan:', file.size);
+      
+      // For now, we'll reject files larger than 10MB
+      // In the future, we can implement alternative hosting
       return res.status(413).json({
         success: false,
-        message: 'File too large for Cloudinary. Maximum size is 10MB. Please compress your APK file or contact support for alternative hosting.'
+        message: 'File too large for Cloudinary free plan. Maximum size is 10MB. Please either: 1) Compress your APK file to under 10MB, 2) Upgrade to Cloudinary Pro plan ($89/month), or 3) Contact support for alternative hosting solutions.'
       });
     }
 
