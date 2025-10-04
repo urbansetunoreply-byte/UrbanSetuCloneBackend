@@ -9,6 +9,8 @@ export default function AdminDeploymentManagement() {
   const [activeFiles, setActiveFiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadXhr, setUploadXhr] = useState(null);
   const [uploadData, setUploadData] = useState({
     platform: 'android',
     version: '',
@@ -20,6 +22,15 @@ export default function AdminDeploymentManagement() {
     fetchFiles();
     fetchActiveFiles();
   }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (uploadXhr) {
+        uploadXhr.abort();
+      }
+    };
+  }, [uploadXhr]);
 
   const fetchFiles = async () => {
     try {
@@ -57,48 +68,101 @@ export default function AdminDeploymentManagement() {
       return;
     }
 
+    const fileInput = document.getElementById('fileInput');
+    if (!fileInput.files[0]) {
+      toast.error('Please select a file');
+      return;
+    }
+
     setUploading(true);
+    setUploadProgress(0);
+
     try {
       const formData = new FormData();
-      const fileInput = document.getElementById('fileInput');
-      if (!fileInput.files[0]) {
-        toast.error('Please select a file');
-        setUploading(false);
-        return;
-      }
-
       formData.append('file', fileInput.files[0]);
       formData.append('platform', uploadData.platform);
       formData.append('version', uploadData.version);
       formData.append('description', uploadData.description);
       formData.append('isActive', uploadData.isActive);
 
-      const response = await fetch(`${API_BASE_URL}/api/deployment/upload`, {
-        method: 'POST',
-        credentials: 'include',
-        body: formData
+      // Use XMLHttpRequest for progress tracking
+      const xhr = new XMLHttpRequest();
+      setUploadXhr(xhr);
+      
+      // Track upload progress
+      xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable) {
+          const progress = Math.round((event.loaded / event.total) * 100);
+          setUploadProgress(progress);
+        }
       });
 
-      const data = await response.json();
-      if (data.success) {
-        toast.success('File uploaded successfully!');
-        setUploadData({
-          platform: 'android',
-          version: '',
-          description: '',
-          isActive: false
-        });
-        document.getElementById('fileInput').value = '';
-        fetchFiles();
-        fetchActiveFiles();
-      } else {
-        toast.error(data.message || 'Upload failed');
-      }
+      // Handle response
+      xhr.addEventListener('load', () => {
+        if (xhr.status === 200) {
+          try {
+            const data = JSON.parse(xhr.responseText);
+            if (data.success) {
+              toast.success('File uploaded successfully!');
+              setUploadData({
+                platform: 'android',
+                version: '',
+                description: '',
+                isActive: false
+              });
+              document.getElementById('fileInput').value = '';
+              fetchFiles();
+              fetchActiveFiles();
+            } else {
+              toast.error(data.message || 'Upload failed');
+            }
+          } catch (parseError) {
+            console.error('Error parsing response:', parseError);
+            toast.error('Upload failed - invalid response');
+          }
+        } else {
+          toast.error(`Upload failed with status: ${xhr.status}`);
+        }
+        setUploading(false);
+        setUploadProgress(0);
+        setUploadXhr(null);
+      });
+
+      // Handle errors
+      xhr.addEventListener('error', () => {
+        console.error('Upload error:', xhr.statusText);
+        toast.error('Upload failed - network error');
+        setUploading(false);
+        setUploadProgress(0);
+        setUploadXhr(null);
+      });
+
+      // Handle abort
+      xhr.addEventListener('abort', () => {
+        console.log('Upload aborted');
+        toast.error('Upload cancelled');
+        setUploading(false);
+        setUploadProgress(0);
+        setUploadXhr(null);
+      });
+
+      // Start upload
+      xhr.open('POST', `${API_BASE_URL}/api/deployment/upload`);
+      xhr.withCredentials = true; // Include credentials for cookies
+      xhr.send(formData);
+
     } catch (error) {
       console.error('Upload error:', error);
       toast.error('Upload failed');
-    } finally {
       setUploading(false);
+      setUploadProgress(0);
+      setUploadXhr(null);
+    }
+  };
+
+  const handleCancelUpload = () => {
+    if (uploadXhr) {
+      uploadXhr.abort();
     }
   };
 
@@ -277,23 +341,55 @@ export default function AdminDeploymentManagement() {
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={uploading}
-              className="w-full md:w-auto px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {uploading ? (
-                <>
-                  <FaSpinner className="animate-spin" />
-                  Uploading...
-                </>
-              ) : (
-                <>
-                  <FaUpload />
-                  Upload File
-                </>
+            {/* Upload Progress Bar */}
+            {uploading && (
+              <div className="w-full">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium text-gray-700">Upload Progress</span>
+                  <span className="text-sm text-gray-500">{uploadProgress}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                  <div 
+                    className="bg-blue-600 h-2.5 rounded-full transition-all duration-300 ease-out"
+                    style={{ width: `${uploadProgress}%` }}
+                  ></div>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {uploadProgress < 100 ? 'Uploading file...' : 'Processing upload...'}
+                </p>
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={uploading}
+                className="flex-1 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {uploading ? (
+                  <>
+                    <FaSpinner className="animate-spin" />
+                    {uploadProgress < 100 ? `Uploading... ${uploadProgress}%` : 'Processing...'}
+                  </>
+                ) : (
+                  <>
+                    <FaUpload />
+                    Upload File
+                  </>
+                )}
+              </button>
+              
+              {uploading && (
+                <button
+                  type="button"
+                  onClick={handleCancelUpload}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 flex items-center gap-2"
+                >
+                  <FaTimes />
+                  Cancel
+                </button>
               )}
-            </button>
+            </div>
           </form>
         </div>
 
