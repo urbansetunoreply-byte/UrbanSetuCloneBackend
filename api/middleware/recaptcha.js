@@ -123,12 +123,21 @@ export const validateRecaptcha = (options = {}) => {
             
             const { recaptchaToken } = req.body;
             
+            // Check if this is a mobile app request (skip reCAPTCHA for mobile apps)
+            const userAgent = req.get('User-Agent') || '';
+            const isMobileApp = userAgent.includes('UrbanSetuMobile') || userAgent.includes('UrbanSetu/1.0');
+            
+            if (isMobileApp) {
+                console.log('Skipping reCAPTCHA verification for mobile app:', userAgent);
+                return next();
+            }
+            
             // Check if token is provided
             if (!recaptchaToken) {
                 if (required) {
                     logSecurityEvent('captcha_token_missing', {
                         ip: req.ip,
-                        userAgent: req.get('User-Agent'),
+                        userAgent: userAgent,
                         endpoint: req.path
                     });
                     return next(errorHandler(400, 'reCAPTCHA verification is required'));
