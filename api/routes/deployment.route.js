@@ -2,7 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import cloudinary from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
-import { verifyToken, verifyAdmin } from '../middleware/auth.js';
+import { verifyToken } from '../utils/verify.js';
 
 const router = express.Router();
 
@@ -50,8 +50,12 @@ const upload = multer({
 });
 
 // Get all deployment files
-router.get('/', verifyToken, verifyAdmin, async (req, res) => {
+router.get('/', verifyToken, async (req, res) => {
   try {
+    // Check if user is admin
+    if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'rootadmin')) {
+      return res.status(403).json({ success: false, message: 'Access denied. Admin privileges required.' });
+    }
     const result = await cloudinary.v2.search
       .expression('folder:mobile-apps')
       .sort_by([['created_at', 'desc']])
@@ -117,8 +121,12 @@ router.get('/active', async (req, res) => {
 });
 
 // Upload new deployment file
-router.post('/upload', verifyToken, verifyAdmin, upload.single('file'), async (req, res) => {
+router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
   try {
+    // Check if user is admin
+    if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'rootadmin')) {
+      return res.status(403).json({ success: false, message: 'Access denied. Admin privileges required.' });
+    }
     if (!req.file) {
       return res.status(400).json({
         success: false,
@@ -171,8 +179,12 @@ router.post('/upload', verifyToken, verifyAdmin, upload.single('file'), async (r
 });
 
 // Set active deployment
-router.put('/set-active/:id', verifyToken, verifyAdmin, async (req, res) => {
+router.put('/set-active/:id', verifyToken, async (req, res) => {
   try {
+    // Check if user is admin
+    if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'rootadmin')) {
+      return res.status(403).json({ success: false, message: 'Access denied. Admin privileges required.' });
+    }
     const { id } = req.params;
     
     // First, remove 'latest' from all files
@@ -206,8 +218,12 @@ router.put('/set-active/:id', verifyToken, verifyAdmin, async (req, res) => {
 });
 
 // Delete deployment file
-router.delete('/:id', verifyToken, verifyAdmin, async (req, res) => {
+router.delete('/:id', verifyToken, async (req, res) => {
   try {
+    // Check if user is admin
+    if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'rootadmin')) {
+      return res.status(403).json({ success: false, message: 'Access denied. Admin privileges required.' });
+    }
     const { id } = req.params;
     
     await cloudinary.v2.uploader.destroy(id, { resource_type: 'raw' });
