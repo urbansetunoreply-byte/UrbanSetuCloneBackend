@@ -30,7 +30,21 @@ import appointmentReminderRouter from "./routes/appointmentReminder.route.js";
 import priceDropAlertRouter from "./routes/priceDropAlert.route.js";
 import statisticsRouter from "./routes/statistics.route.js";
 import configRouter from "./routes/config.route.js";
-import deploymentRouter from "./routes/deployment-s3.route.js";
+// Use S3 deployment route if AWS is configured, otherwise fallback to Cloudinary
+let deploymentRouter;
+try {
+  if (process.env.AWS_S3_BUCKET_NAME) {
+    console.log('🔧 Using AWS S3 deployment route');
+    deploymentRouter = (await import("./routes/deployment-s3.route.js")).default;
+  } else {
+    console.log('🔧 Using Cloudinary deployment route (AWS S3 not configured)');
+    deploymentRouter = (await import("./routes/deployment.route.js")).default;
+  }
+} catch (error) {
+  console.error('❌ Error loading deployment router:', error);
+  console.log('🔧 Falling back to Cloudinary deployment route');
+  deploymentRouter = (await import("./routes/deployment.route.js")).default;
+}
 import { startScheduler } from "./services/schedulerService.js";
 import cors from 'cors';
 import cookieParser from 'cookie-parser';

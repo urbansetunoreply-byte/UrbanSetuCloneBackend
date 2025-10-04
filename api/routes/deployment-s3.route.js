@@ -15,11 +15,18 @@ AWS.config.update({
 
 const s3 = new AWS.S3();
 
+// Check if AWS S3 is properly configured
+const bucketName = process.env.AWS_S3_BUCKET_NAME;
+if (!bucketName) {
+  console.error('❌ AWS_S3_BUCKET_NAME environment variable is not set');
+  console.error('Please configure AWS S3 environment variables in Render dashboard');
+}
+
 // Configure multer for S3 storage
 const upload = multer({
   storage: multerS3({
     s3: s3,
-    bucket: process.env.AWS_S3_BUCKET_NAME,
+    bucket: bucketName || 'placeholder-bucket',
     acl: 'public-read',
     key: function (req, file, cb) {
       const { platform, version } = req.body;
@@ -98,6 +105,13 @@ const handleMulterError = (error, req, res, next) => {
 // Test S3 connection
 router.get('/test-s3', async (req, res) => {
   try {
+    if (!bucketName) {
+      return res.status(500).json({
+        success: false,
+        message: 'AWS S3 not configured. Please set AWS_S3_BUCKET_NAME environment variable.'
+      });
+    }
+    
     console.log('Testing S3 connection...');
     const result = await s3.listBuckets().promise();
     res.json({
@@ -117,6 +131,13 @@ router.get('/test-s3', async (req, res) => {
 // Get all deployment files from S3
 router.get('/', verifyToken, async (req, res) => {
   try {
+    if (!bucketName) {
+      return res.status(500).json({
+        success: false,
+        message: 'AWS S3 not configured. Please set AWS_S3_BUCKET_NAME environment variable.'
+      });
+    }
+    
     // Check if user is admin
     if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'rootadmin')) {
       return res.status(403).json({ success: false, message: 'Access denied. Admin privileges required.' });
@@ -163,8 +184,15 @@ router.get('/', verifyToken, async (req, res) => {
 // Get active deployment files
 router.get('/active', async (req, res) => {
   try {
+    if (!bucketName) {
+      return res.status(500).json({
+        success: false,
+        message: 'AWS S3 not configured. Please set AWS_S3_BUCKET_NAME environment variable.'
+      });
+    }
+    
     const params = {
-      Bucket: process.env.AWS_S3_BUCKET_NAME,
+      Bucket: bucketName,
       Prefix: 'mobile-apps/latest-',
       MaxKeys: 10
     };
