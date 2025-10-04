@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { FaSearch, FaHome, FaInfoCircle, FaCompass, FaPlus, FaList, FaHeart, FaCalendarAlt, FaUser, FaSignOutAlt, FaStar, FaBars, FaTimes, FaTrash, FaTools, FaRoute } from "react-icons/fa";
+import { FaSearch, FaHome, FaInfoCircle, FaCompass, FaPlus, FaList, FaHeart, FaCalendarAlt, FaUser, FaSignOutAlt, FaStar, FaBars, FaTimes, FaTrash, FaTools, FaRoute, FaDownload, FaMobile } from "react-icons/fa";
 import UserAvatar from "./UserAvatar";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -8,6 +8,7 @@ import NotificationBell from "./NotificationBell.jsx";
 import { persistor } from '../redux/store';
 import { reconnectSocket, socket } from "../utils/socket";
 import { toast } from 'react-toastify';
+import { downloadAndroidApp, isAndroidDevice, isMobileDevice, getDownloadMessage, getDownloadButtonText } from '../utils/androidDownload';
 
 export default function Header() {
   const { currentUser } = useSelector((state) => state.user);
@@ -255,6 +256,22 @@ export default function Header() {
               <div className="hidden md:flex items-center gap-4">
                 <span>📞 +1 (555) 123-4567</span>
                 <span>✉️ info@urbansetu.com</span>
+                {/* Android App Download Button */}
+                <button
+                  onClick={async () => {
+                    const result = await downloadAndroidApp();
+                    if (result.success) {
+                      toast.success(result.message);
+                    } else {
+                      toast.error(result.message);
+                    }
+                  }}
+                  className="flex items-center gap-1 px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors duration-200 font-medium"
+                  title={getDownloadMessage()}
+                >
+                  <FaMobile className="text-xs" />
+                  <span>Download App</span>
+                </button>
               </div>
               {/* Mobile auth links when logged out */}
               {!currentUser && (
@@ -376,6 +393,28 @@ export default function Header() {
                   </form>
                 </div>
                 
+                {/* Android App Download - Mobile */}
+                <div className="p-6 border-b border-gray-200">
+                  <button
+                    onClick={async () => {
+                      const result = await downloadAndroidApp();
+                      if (result.success) {
+                        toast.success(result.message);
+                      } else {
+                        toast.error(result.message);
+                      }
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200 font-medium"
+                  >
+                    <FaMobile className="text-lg" />
+                    <span>{getDownloadButtonText()}</span>
+                  </button>
+                  <p className="text-xs text-gray-500 text-center mt-2">
+                    {getDownloadMessage()}
+                  </p>
+                </div>
+
                 {/* Navigation Links */}
                 <div className="flex-1 overflow-y-auto p-6">
                   <UserNavLinks mobile onNavigate={() => setMobileMenuOpen(false)} />

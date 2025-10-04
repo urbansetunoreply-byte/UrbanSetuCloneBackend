@@ -55,6 +55,7 @@ const AdminExplore = lazy(() => import("./pages/AdminExplore"));
 const AdminCreateListing = lazy(() => import("./pages/AdminCreateListing"));
 // AdminWishlist removed (no admin wishlist page)
 const AdminProfile = lazy(() => import("./pages/AdminProfile"));
+const AdminDeploymentManagement = lazy(() => import("./pages/AdminDeploymentManagement"));
 const AdminRequests = lazy(() => import("./pages/AdminRequests"));
 const AdminListings = lazy(() => import("./pages/AdminListings"));
 const AdminMyListings = lazy(() => import("./pages/AdminMyListings"));
@@ -683,6 +684,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/admin/update-listing/:listingId" element={<AdminEditListing />} />
             {/* Admin wishlist removed */}
             <Route path="/admin/profile" element={<AdminProfile />} />
+            <Route path="/admin/deployment-management" element={<AdminDeploymentManagement />} />
             <Route path="/admin/change-password" element={<AdminChangePassword />} />
             <Route path="/admin/requests" element={<AdminRequests />} />
             <Route path="/admin/listing/:listingId" element={<Listing key={location.pathname} />} />
