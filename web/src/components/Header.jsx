@@ -267,7 +267,7 @@ export default function Header() {
                     }
                   }}
                   className="flex items-center gap-1 px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors duration-200 font-medium"
-                  title={getDownloadMessage()}
+                  title="Download Android App"
                 >
                   <FaMobile className="text-xs" />
                   <span>Download App</span>
@@ -411,7 +411,7 @@ export default function Header() {
                     <span>{getDownloadButtonText()}</span>
                   </button>
                   <p className="text-xs text-gray-500 text-center mt-2">
-                    {getDownloadMessage()}
+                    Download our Android app for the best mobile experience!
                   </p>
                 </div>
 

@@ -124,7 +124,7 @@ export default function About() {
             </div>
             
             <p className="text-sm text-gray-500">
-              {getDownloadMessage()}
+              Download our Android app to access UrbanSetu on your mobile device!
             </p>
           </div>
         </div>

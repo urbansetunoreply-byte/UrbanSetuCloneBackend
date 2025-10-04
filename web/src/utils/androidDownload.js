@@ -33,28 +33,59 @@ const getActiveDeployments = async () => {
   return [];
 };
 
+// Get all deployments (not cached, for fallback)
+const getAllDeployments = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/deployment`, {
+      credentials: 'include'
+    });
+    const data = await response.json();
+    
+    if (data.success) {
+      return data.data;
+    }
+  } catch (error) {
+    console.error('Error fetching all deployments:', error);
+  }
+  
+  return [];
+};
+
 // Get the latest Android APK URL
 const getLatestAndroidApkUrl = async () => {
   try {
     const activeDeployments = await getActiveDeployments();
+    console.log('Active deployments:', activeDeployments);
+    
+    // Find the latest Android APK from active deployments
     const androidApk = activeDeployments.find(file => 
       file.platform === 'android' && file.format === 'apk'
     );
     
     if (androidApk) {
+      console.log('Found active Android APK:', androidApk);
       return androidApk.url;
+    }
+    
+    console.log('No active Android APK found, checking all deployments...');
+    
+    // If no active Android APK, get the latest one from all deployments
+    const allDeployments = await getAllDeployments();
+    const latestAndroidApk = allDeployments
+      .filter(file => file.platform === 'android' && file.format === 'apk')
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+    
+    if (latestAndroidApk) {
+      console.log('Found latest Android APK:', latestAndroidApk);
+      return latestAndroidApk.url;
     }
   } catch (error) {
     console.error('Error getting latest Android APK:', error);
   }
   
-  // Fallback to static URL
-  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-  if (cloudName) {
-    return `https://res.cloudinary.com/${cloudName}/raw/upload/v1/urbansetu-debug.apk`;
-  }
-  
-  return 'https://res.cloudinary.com/dl462tj9t/raw/upload/v1/urbansetu-debug.apk';
+  // Final fallback - return null to indicate no APK available
+  console.warn('No Android APK found in deployments');
+  return null;
 };
 
 // Alternative fallback URL (you can host the APK on your own server)
@@ -68,6 +99,13 @@ export const downloadAndroidApp = async (filename = 'UrbanSetu_debug.apk') => {
   try {
     // Get the latest Android APK URL
     const apkUrl = await getLatestAndroidApkUrl();
+    
+    if (!apkUrl) {
+      return {
+        success: false,
+        message: 'No Android app is currently available for download. Please contact support or check back later.'
+      };
+    }
     
     // Create a temporary anchor element
     const link = document.createElement('a');
@@ -133,7 +171,16 @@ export const isAndroidDevice = () => {
  * Gets appropriate download message based on device
  * @returns {string} Download message
  */
-export const getDownloadMessage = () => {
+export const getDownloadMessage = async () => {
+  try {
+    const apkUrl = await getLatestAndroidApkUrl();
+    if (!apkUrl) {
+      return 'Android app coming soon! Check back later for the download.';
+    }
+  } catch (error) {
+    console.error('Error checking APK availability:', error);
+  }
+  
   if (isAndroidDevice()) {
     return 'Download our Android app for the best mobile experience!';
   } else if (isMobileDevice()) {
