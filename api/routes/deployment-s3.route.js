@@ -1,19 +1,19 @@
 import express from 'express';
 import multer from 'multer';
 import multerS3 from 'multer-s3';
-import AWS from 'aws-sdk';
+import { S3Client, ListBucketsCommand, ListObjectsV2Command, CopyObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { verifyToken } from '../utils/verify.js';
 
 const router = express.Router();
 
-// Configure AWS S3
-AWS.config.update({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION || 'us-east-1'
+// Configure AWS S3 Client v3
+const s3Client = new S3Client({
+  region: process.env.AWS_REGION || 'us-east-1',
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  }
 });
-
-const s3 = new AWS.S3();
 
 // Check if AWS S3 is properly configured
 const bucketName = process.env.AWS_S3_BUCKET_NAME;
@@ -25,7 +25,7 @@ if (!bucketName) {
 // Configure multer for S3 storage
 const upload = multer({
   storage: multerS3({
-    s3: s3,
+    s3: s3Client,
     bucket: bucketName || 'placeholder-bucket',
     acl: 'public-read',
     key: function (req, file, cb) {
@@ -113,7 +113,8 @@ router.get('/test-s3', async (req, res) => {
     }
     
     console.log('Testing S3 connection...');
-    const result = await s3.listBuckets().promise();
+    const command = new ListBucketsCommand({});
+    const result = await s3Client.send(command);
     res.json({
       success: true,
       message: 'S3 connection successful',
@@ -143,13 +144,13 @@ router.get('/', verifyToken, async (req, res) => {
       return res.status(403).json({ success: false, message: 'Access denied. Admin privileges required.' });
     }
 
-    const params = {
-      Bucket: process.env.AWS_S3_BUCKET_NAME,
+    const command = new ListObjectsV2Command({
+      Bucket: bucketName,
       Prefix: 'mobile-apps/',
       MaxKeys: 50
-    };
+    });
 
-    const result = await s3.listObjectsV2(params).promise();
+    const result = await s3Client.send(command);
     
     const files = result.Contents.map(file => {
       const fileName = file.Key.split('/').pop();
@@ -191,13 +192,13 @@ router.get('/active', async (req, res) => {
       });
     }
     
-    const params = {
+    const command = new ListObjectsV2Command({
       Bucket: bucketName,
       Prefix: 'mobile-apps/latest-',
       MaxKeys: 10
-    };
+    });
 
-    const result = await s3.listObjectsV2(params).promise();
+    const result = await s3Client.send(command);
     
     const activeFiles = result.Contents.map(file => {
       const fileName = file.Key.split('/').pop();
@@ -296,26 +297,28 @@ router.put('/set-active/:id', verifyToken, async (req, res) => {
     const { id } = req.params;
     
     // First, remove 'latest' from all files
-    const listParams = {
-      Bucket: process.env.AWS_S3_BUCKET_NAME,
+    const listCommand = new ListObjectsV2Command({
+      Bucket: bucketName,
       Prefix: 'mobile-apps/latest-'
-    };
+    });
 
-    const allFiles = await s3.listObjectsV2(listParams).promise();
+    const allFiles = await s3Client.send(listCommand);
     
     for (const file of allFiles.Contents) {
       if (file.Key.includes('latest')) {
         const newKey = file.Key.replace('latest-', '');
-        await s3.copyObject({
-          Bucket: process.env.AWS_S3_BUCKET_NAME,
-          CopySource: `${process.env.AWS_S3_BUCKET_NAME}/${file.Key}`,
+        const copyCommand = new CopyObjectCommand({
+          Bucket: bucketName,
+          CopySource: `${bucketName}/${file.Key}`,
           Key: newKey
-        }).promise();
+        });
+        await s3Client.send(copyCommand);
         
-        await s3.deleteObject({
-          Bucket: process.env.AWS_S3_BUCKET_NAME,
+        const deleteCommand = new DeleteObjectCommand({
+          Bucket: bucketName,
           Key: file.Key
-        }).promise();
+        });
+        await s3Client.send(deleteCommand);
       }
     }
 
@@ -323,11 +326,12 @@ router.put('/set-active/:id', verifyToken, async (req, res) => {
     const fileKey = decodeURIComponent(id);
     const newKey = fileKey.replace('mobile-apps/', 'mobile-apps/latest-');
     
-    await s3.copyObject({
-      Bucket: process.env.AWS_S3_BUCKET_NAME,
-      CopySource: `${process.env.AWS_S3_BUCKET_NAME}/${fileKey}`,
+    const copyCommand = new CopyObjectCommand({
+      Bucket: bucketName,
+      CopySource: `${bucketName}/${fileKey}`,
       Key: newKey
-    }).promise();
+    });
+    await s3Client.send(copyCommand);
 
     res.json({
       success: true,
@@ -353,10 +357,11 @@ router.delete('/:id', verifyToken, async (req, res) => {
     const { id } = req.params;
     const fileKey = decodeURIComponent(id);
     
-    await s3.deleteObject({
-      Bucket: process.env.AWS_S3_BUCKET_NAME,
+    const deleteCommand = new DeleteObjectCommand({
+      Bucket: bucketName,
       Key: fileKey
-    }).promise();
+    });
+    await s3Client.send(deleteCommand);
 
     res.json({
       success: true,

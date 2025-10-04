@@ -1,14 +1,14 @@
 // Test script to verify AWS S3 setup
-import AWS from 'aws-sdk';
+import { S3Client, ListBucketsCommand, ListObjectsV2Command, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 
-// Configure AWS
-AWS.config.update({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION || 'us-east-1'
+// Configure AWS S3 Client v3
+const s3Client = new S3Client({
+  region: process.env.AWS_REGION || 'us-east-1',
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  }
 });
-
-const s3 = new AWS.S3();
 
 async function testS3Setup() {
   try {
@@ -16,7 +16,8 @@ async function testS3Setup() {
     
     // Test 1: List buckets
     console.log('\n1. Testing bucket access...');
-    const buckets = await s3.listBuckets().promise();
+    const listBucketsCommand = new ListBucketsCommand({});
+    const buckets = await s3Client.send(listBucketsCommand);
     console.log('✅ Buckets accessible:', buckets.Buckets.map(b => b.Name));
     
     // Test 2: Check specific bucket
@@ -34,11 +35,12 @@ async function testS3Setup() {
     
     // Test 3: List objects in bucket
     console.log('\n3. Testing object listing...');
-    const objects = await s3.listObjectsV2({
+    const listObjectsCommand = new ListObjectsV2Command({
       Bucket: bucketName,
       Prefix: 'mobile-apps/',
       MaxKeys: 5
-    }).promise();
+    });
+    const objects = await s3Client.send(listObjectsCommand);
     console.log('✅ Objects in bucket:', objects.Contents.length);
     
     // Test 4: Test upload permissions (small test file)
@@ -46,20 +48,22 @@ async function testS3Setup() {
     const testKey = `mobile-apps/test-${Date.now()}.txt`;
     const testContent = 'Test file for S3 setup verification';
     
-    await s3.putObject({
+    const putCommand = new PutObjectCommand({
       Bucket: bucketName,
       Key: testKey,
       Body: testContent,
       ContentType: 'text/plain'
-    }).promise();
+    });
+    await s3Client.send(putCommand);
     console.log('✅ Upload test successful');
     
     // Test 5: Test delete permissions
     console.log('\n5. Testing delete permissions...');
-    await s3.deleteObject({
+    const deleteCommand = new DeleteObjectCommand({
       Bucket: bucketName,
       Key: testKey
-    }).promise();
+    });
+    await s3Client.send(deleteCommand);
     console.log('✅ Delete test successful');
     
     console.log('\n🎉 All S3 tests passed! Your setup is ready for large APK uploads.');
