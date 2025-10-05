@@ -14,21 +14,36 @@ export const checkAndSendOutdatedAppointmentEmails = async () => {
     
     console.log(`📅 Current date: ${currentDateString}, Current time: ${currentTimeString}`);
     
+    // Calculate date range for recent expired appointments (24-48 hours ago)
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const dayBeforeYesterday = new Date();
+    dayBeforeYesterday.setDate(dayBeforeYesterday.getDate() - 2);
+    
+    const yesterdayString = yesterday.toISOString().split('T')[0];
+    const dayBeforeYesterdayString = dayBeforeYesterday.toISOString().split('T')[0];
+    
+    console.log(`📅 Checking for appointments expired between ${dayBeforeYesterdayString} and ${yesterdayString}`);
+    
     // Find appointments that are outdated (past date or past time on current date)
+    // Only check appointments that expired in the last 24-48 hours
+    // Exclude appointments that already have outdated emails sent
     const outdatedAppointments = await Booking.find({
       $or: [
-        // Past dates
+        // Past dates within the last 48 hours
         { 
-          date: { $lt: currentDateString },
+          date: { $gte: dayBeforeYesterdayString, $lt: currentDateString },
           status: { $in: ["pending", "accepted"] }
         },
-        // Past times on current date
+        // Past times on current date (today's appointments that are past)
         { 
           date: currentDateString,
           time: { $lt: currentTimeString },
           status: { $in: ["pending", "accepted"] }
         }
-      ]
+      ],
+      // Exclude appointments that already have outdated emails sent
+      outdatedEmailSent: { $ne: true }
     })
     .populate('buyerId', 'username email firstName lastName')
     .populate('sellerId', 'username email firstName lastName')
@@ -50,9 +65,10 @@ export const checkAndSendOutdatedAppointmentEmails = async () => {
     // Process each outdated appointment
     for (const appointment of outdatedAppointments) {
       try {
-        // Update appointment status to outdated
+        // Update appointment status to outdated and mark email as sent
         await Booking.findByIdAndUpdate(appointment._id, {
           status: 'outdated',
+          outdatedEmailSent: true,
           updatedAt: new Date()
         });
         

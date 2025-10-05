@@ -1716,7 +1716,7 @@ export const sendAppointmentReminderEmail = async (email, appointmentDetails, us
                 View Appointment Details
               </a>
               ${listingId ? `
-                <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/listing/${listingId}" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3); margin: 5px;">
+                <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3); margin: 5px;">
                   View Property Listing
                 </a>
               ` : ''}
@@ -1867,7 +1867,7 @@ export const sendPriceDropAlertEmail = async (email, priceDropDetails) => {
             
             <!-- CTA Buttons -->
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/listing/${listingId}" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); margin: 5px;">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); margin: 5px;">
                 View Property Details
               </a>
               <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/watchlist" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3); margin: 5px;">
@@ -2993,11 +2993,11 @@ export const sendOutdatedAppointmentEmail = async (email, appointmentDetails, us
             
             <!-- Action Buttons -->
             <div style="text-align: center; margin-bottom: 30px;">
-              <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
-                <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/property/${listingId}" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); transition: all 0.3s ease; min-width: 200px;">
+              <div style="display: flex; flex-direction: column; gap: 15px; align-items: center; max-width: 100%;">
+                <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); transition: all 0.3s ease; min-width: 200px; text-align: center; word-wrap: break-word;">
                   🏠 View Property Details
                 </a>
-                <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/my-appointments" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); transition: all 0.3s ease; min-width: 200px;">
+                <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/my-appointments" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); transition: all 0.3s ease; min-width: 200px; text-align: center; word-wrap: break-word;">
                   📅 My Appointments
                 </a>
               </div>

@@ -56,7 +56,8 @@ router.get('/', (req, res) => {
         appId: process.env.FIREBASE_APP_ID
       },
       google: {
-        webClientId: process.env.GOOGLE_WEB_CLIENT_ID
+        webClientId: process.env.GOOGLE_WEB_CLIENT_ID,
+        androidClientId: process.env.GOOGLE_ANDROID_CLIENT_ID
       },
       razorpay: {
         keyId: process.env.RAZORPAY_KEY_ID

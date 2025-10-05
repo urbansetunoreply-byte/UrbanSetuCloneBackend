@@ -57,6 +57,7 @@ const bookingSchema = new mongoose.Schema({
   noShow: { type: Boolean, default: false },
   noShowNote: String,
   permanentlyDeleted: { type: Boolean, default: false },
+  outdatedEmailSent: { type: Boolean, default: false },
   adminComment: {
     type: String,
     default: ""
