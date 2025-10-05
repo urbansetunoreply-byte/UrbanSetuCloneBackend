@@ -51,12 +51,18 @@ export const verifyCSRFToken = (req, res, next) => {
         const token = req.body._csrf || req.headers['x-csrf-token'] || req.headers['X-CSRF-Token'];
         const cookieToken = req.cookies.csrf_token;
         
+        // Check if this is a mobile app request
+        const userAgent = req.get('User-Agent') || '';
+        const isMobileApp = userAgent.includes('UrbanSetuMobile') || userAgent.includes('UrbanSetu/1.0');
+        
         // Debug logging
         console.log('CSRF Verification:', {
             hasToken: !!token,
             hasCookieToken: !!cookieToken,
             tokenLength: token ? token.length : 0,
             cookieTokenLength: cookieToken ? cookieToken.length : 0,
+            isMobileApp: isMobileApp,
+            userAgent: userAgent,
             headers: {
                 'x-csrf-token': req.headers['x-csrf-token'] ? 'present' : 'missing',
                 'X-CSRF-Token': req.headers['X-CSRF-Token'] ? 'present' : 'missing'
@@ -75,14 +81,21 @@ export const verifyCSRFToken = (req, res, next) => {
             return next(errorHandler(403, 'CSRF token expired'));
         }
         
-        // Check identifier (IP + User-Agent)
-        const identifier = `${req.ip}-${req.get('User-Agent') || 'unknown'}`;
-        if (tokenData.sessionId !== identifier) {
-            console.error('CSRF token identifier mismatch:', { 
-                expected: tokenData.sessionId,
-                actual: identifier
-            });
-            return next(errorHandler(403, 'CSRF token mismatch'));
+        // For mobile apps, be more lenient with identifier matching
+        if (isMobileApp) {
+            console.log('Mobile app CSRF verification - using lenient matching');
+            // For mobile apps, only check if the token exists and is not expired
+            // Skip the IP + User-Agent matching as mobile apps might have different IPs
+        } else {
+            // Check identifier (IP + User-Agent) for web requests
+            const identifier = `${req.ip}-${req.get('User-Agent') || 'unknown'}`;
+            if (tokenData.sessionId !== identifier) {
+                console.error('CSRF token identifier mismatch:', { 
+                    expected: tokenData.sessionId,
+                    actual: identifier
+                });
+                return next(errorHandler(403, 'CSRF token mismatch'));
+            }
         }
         
         // Remove used token (one-time use) - except for OTP endpoints which need multiple uses
