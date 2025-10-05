@@ -1025,7 +1025,7 @@ export default function AdminManagement() {
               setStatusFilter("all");
             }}
           >
-            Users
+            Users ({users.length})
           </button>
           <button
             className={`px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-bold text-sm sm:text-lg shadow transition-all duration-200 ${tab === "admins" ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white scale-105" : "bg-gray-100 text-gray-700 hover:bg-purple-50"}`}
@@ -1043,7 +1043,7 @@ export default function AdminManagement() {
               }
             }}
           >
-            Admins
+            Admins ({admins.length})
           </button>
           <button
             className={`px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-bold text-sm sm:text-lg shadow transition-all duration-200 ${tab === "softbanned" ? "bg-gradient-to-r from-red-500 to-red-600 text-white scale-105" : "bg-gray-100 text-gray-700 hover:bg-rose-50"}`}
@@ -1052,8 +1052,8 @@ export default function AdminManagement() {
               fetchSoftbannedAccounts();
             }}
           >
-            <span className="hidden sm:inline">Softbanned Accounts</span>
-            <span className="sm:hidden">Softbanned</span>
+            <span className="hidden sm:inline">Softbanned Accounts ({softbannedAccounts.length})</span>
+            <span className="sm:hidden">Softbanned ({softbannedAccounts.length})</span>
           </button>
           <button
             className={`px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-bold text-sm sm:text-lg shadow transition-all duration-200 ${tab === "purged" ? "bg-gradient-to-r from-red-500 to-orange-500 text-white scale-105" : "bg-gray-100 text-gray-700 hover:bg-red-50"}`}
@@ -1062,8 +1062,8 @@ export default function AdminManagement() {
               fetchPurgedAccounts();
             }}
           >
-            <span className="hidden sm:inline">Purged Accounts</span>
-            <span className="sm:hidden">Purged</span>
+            <span className="hidden sm:inline">Purged Accounts ({purgedAccounts.length})</span>
+            <span className="sm:hidden">Purged ({purgedAccounts.length})</span>
           </button>
         </div>
 
@@ -1199,7 +1199,7 @@ export default function AdminManagement() {
             {(tab === "users") && (
               <div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2 animate-fadeIn">
-                  <FaUser className="text-blue-500" /> Users
+                  <FaUser className="text-blue-500" /> Users ({users.length})
                 </h2>
                 {filteredUsers.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-16 animate-fadeIn">
@@ -1325,7 +1325,7 @@ export default function AdminManagement() {
             {tab === "admins" && currentUser.isDefaultAdmin && !showRestriction && (
               <div className="mt-10">
                 <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2 animate-fadeIn">
-                  <FaUserShield className="text-purple-500" /> Admins
+                  <FaUserShield className="text-purple-500" /> Admins ({admins.length})
                 </h2>
                 {filteredAdmins.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-16 animate-fadeIn">
@@ -1450,7 +1450,7 @@ export default function AdminManagement() {
             )}
             {tab === 'softbanned' && (
               <div className="mt-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">Softbanned Accounts</h2>
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">Softbanned Accounts ({softbannedAccounts.length})</h2>
                 {softbannedLoading ? (
                   <div className="flex items-center justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div><span className="ml-3 text-gray-600">Loading...</span></div>
                 ) : softbannedAccounts.length === 0 ? (
@@ -1516,7 +1516,7 @@ export default function AdminManagement() {
             )}
             {tab === 'purged' && (
               <div className="mt-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">Purged Accounts (Permanently Removed)</h2>
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">Purged Accounts (Permanently Removed) ({purgedAccounts.length})</h2>
                 {purgedLoading ? (
                   <div className="flex items-center justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div><span className="ml-3 text-gray-600">Loading...</span></div>
                 ) : purgedAccounts.length === 0 ? (
