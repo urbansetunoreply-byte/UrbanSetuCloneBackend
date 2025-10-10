@@ -16,8 +16,8 @@ export const getManagementUsers = async (req, res, next) => {
     if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'rootadmin')) {
       return next(errorHandler(403, 'Access denied'));
     }
-    // Admins: only see users (not admins/rootadmin)
-    // Rootadmin: see all users (not admins/rootadmin)
+    // Include all users regardless of status (active, suspended, etc.)
+    // This includes Google sign-up users and all user statuses
     const users = await User.find({ role: 'user' }).select('-password');
     res.status(200).json(users);
   } catch (err) {
@@ -32,13 +32,13 @@ export const getManagementAdmins = async (req, res, next) => {
     if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'rootadmin')) {
       return next(errorHandler(403, 'Access denied. Only admins can access admin management.'));
     }
+    // Include all admins regardless of approval status (pending, approved, rejected)
     // Regular admins: only see other admins (not rootadmin/default admin)
     // Rootadmin: see all admins (not rootadmin/default admin)
-    // Exclude rejected admins - they should be treated as regular users
     const query = { 
       role: 'admin', 
-      _id: { $ne: currentUser._id },
-      adminApprovalStatus: { $ne: 'rejected' } // Exclude rejected admins
+      _id: { $ne: currentUser._id }
+      // Removed adminApprovalStatus filter to include pending and rejected admins
     };
     if (currentUser.role === 'admin') {
       // Regular admins cannot see rootadmin or default admin

@@ -50,6 +50,7 @@ export default function AdminManagement() {
   const [accountStats, setAccountStats] = useState({ listings: 0, appointments: 0 });
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [adminApprovalFilter, setAdminApprovalFilter] = useState("all");
   const [passwordLockouts, setPasswordLockouts] = useState([]); // { email, unlockAt }
   const [showPasswordModal, setShowPasswordModal] = useState(true);
   const [managementPassword, setManagementPassword] = useState("");
@@ -731,6 +732,11 @@ export default function AdminManagement() {
       }
     }
     
+    // Admin approval status filter (only for admin tab)
+    if (tab === "admins" && adminApprovalFilter !== "all") {
+      filtered = filtered.filter(account => account.adminApprovalStatus === adminApprovalFilter);
+    }
+    
     return filtered;
   };
 
@@ -1023,6 +1029,7 @@ export default function AdminManagement() {
               setShowRestriction(false);
               setSearchTerm("");
               setStatusFilter("all");
+              setAdminApprovalFilter("all");
             }}
           >
             Users ({users.length})
@@ -1040,6 +1047,7 @@ export default function AdminManagement() {
                 setTab("admins");
                 setSearchTerm("");
                 setStatusFilter("all");
+                setAdminApprovalFilter("all");
               }
             }}
           >
@@ -1049,6 +1057,9 @@ export default function AdminManagement() {
             className={`px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-bold text-sm sm:text-lg shadow transition-all duration-200 ${tab === "softbanned" ? "bg-gradient-to-r from-red-500 to-red-600 text-white scale-105" : "bg-gray-100 text-gray-700 hover:bg-rose-50"}`}
             onClick={() => {
               setTab("softbanned");
+              setSearchTerm("");
+              setStatusFilter("all");
+              setAdminApprovalFilter("all");
               fetchSoftbannedAccounts();
             }}
           >
@@ -1059,6 +1070,9 @@ export default function AdminManagement() {
             className={`px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-bold text-sm sm:text-lg shadow transition-all duration-200 ${tab === "purged" ? "bg-gradient-to-r from-red-500 to-orange-500 text-white scale-105" : "bg-gray-100 text-gray-700 hover:bg-red-50"}`}
             onClick={() => {
               setTab("purged");
+              setSearchTerm("");
+              setStatusFilter("all");
+              setAdminApprovalFilter("all");
               fetchPurgedAccounts();
             }}
           >
@@ -1116,12 +1130,37 @@ export default function AdminManagement() {
               </div>
             </div>
 
+            {/* Admin Approval Status Filter (only for admin tab) */}
+            {tab === "admins" && (
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaUserShield className="h-5 w-5 text-gray-400 group-hover:text-purple-500 transition-colors duration-200" />
+                </div>
+                <select
+                  value={adminApprovalFilter}
+                  onChange={(e) => setAdminApprovalFilter(e.target.value)}
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl leading-5 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 shadow-sm appearance-none cursor-pointer"
+                >
+                  <option value="all">All Approval Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            )}
+
             {/* Clear All Filters */}
             <div className="flex items-center">
               <button
                 onClick={() => {
                   setSearchTerm("");
                   setStatusFilter("all");
+                  setAdminApprovalFilter("all");
                 }}
                 className="w-full px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors duration-200 flex items-center justify-center gap-2"
               >
@@ -1171,12 +1210,13 @@ export default function AdminManagement() {
           )}
 
           {/* Results Summary */}
-          {tab !== 'softbanned' && tab !== 'purged' && (searchTerm || statusFilter !== "all") && (
+          {tab !== 'softbanned' && tab !== 'purged' && (searchTerm || statusFilter !== "all" || adminApprovalFilter !== "all") && (
             <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
               <div className="text-sm text-blue-800">
                 <span className="font-semibold">Active Filters:</span>
                 {searchTerm && <span className="ml-2 px-2 py-1 bg-blue-200 rounded text-xs">Search: "{searchTerm}"</span>}
                 {statusFilter !== "all" && <span className="ml-2 px-2 py-1 bg-green-200 rounded text-xs">Status: {statusFilter}</span>}
+                {tab === "admins" && adminApprovalFilter !== "all" && <span className="ml-2 px-2 py-1 bg-purple-200 rounded text-xs">Approval: {adminApprovalFilter}</span>}
               </div>
               <div className="mt-2 text-sm text-blue-700">
                 Found {tab === "users" ? filteredUsers.length : filteredAdmins.length} {tab === "users" ? "user" : "admin"}{tab === "users" ? (filteredUsers.length !== 1 ? "s" : "") : (filteredAdmins.length !== 1 ? "s" : "")} matching your filters
@@ -1331,13 +1371,14 @@ export default function AdminManagement() {
                   <div className="flex flex-col items-center justify-center py-16 animate-fadeIn">
                     <FaUserLock className="text-6xl text-gray-300 mb-4" />
                     <p className="text-gray-500 text-lg font-medium">
-                      {(searchTerm || statusFilter !== "all") ? `No admins found matching your filters` : "No admins found."}
+                      {(searchTerm || statusFilter !== "all" || adminApprovalFilter !== "all") ? `No admins found matching your filters` : "No admins found."}
                     </p>
-                    {(searchTerm || statusFilter !== "all") && (
+                    {(searchTerm || statusFilter !== "all" || adminApprovalFilter !== "all") && (
                       <button
                         onClick={() => {
                           setSearchTerm("");
                           setStatusFilter("all");
+                          setAdminApprovalFilter("all");
                         }}
                         className="mt-4 text-blue-500 hover:text-blue-600 underline"
                       >
