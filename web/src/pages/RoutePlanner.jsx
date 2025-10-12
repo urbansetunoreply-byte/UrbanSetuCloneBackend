@@ -41,6 +41,7 @@ export default function RoutePlanner() {
   const [routeStats, setRouteStats] = useState(null);
   const [alternatives, setAlternatives] = useState([]);
   const [selectedAlternative, setSelectedAlternative] = useState(0);
+  const [isRouteSaved, setIsRouteSaved] = useState(false);
 
   const mapRef = useRef(null);
   const geocoderRefs = useRef([]);
@@ -349,6 +350,7 @@ export default function RoutePlanner() {
     }
 
     setOptimizing(true);
+    setIsRouteSaved(false); // Reset saved status when planning new route
     try {
       // Prepare coordinates for Mapbox Directions API
       const coordinates = validStops.map(stop => stop.coordinates).join(';');
@@ -561,6 +563,7 @@ export default function RoutePlanner() {
       if (response.ok) {
         const data = await response.json();
         setSavedRoutes(prev => [data.route, ...prev]);
+        setIsRouteSaved(true);
         toast.success('Route saved successfully!');
       } else {
         throw new Error('Failed to save route');
@@ -576,6 +579,7 @@ export default function RoutePlanner() {
     setStops(savedRoute.stops);
     setTravelMode(savedRoute.travelMode);
     setRouteData(savedRoute.route);
+    setIsRouteSaved(true);
     toast.success('Route loaded successfully!');
   };
 
@@ -592,6 +596,54 @@ export default function RoutePlanner() {
       }
     } catch (error) {
       console.error('Error fetching saved routes:', error);
+    }
+  };
+
+  // Delete a saved route
+  const deleteSavedRoute = async (routeId) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/route-planner/saved/${routeId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        setSavedRoutes(prev => prev.filter(route => route._id !== routeId));
+        toast.success('Route deleted successfully!');
+      } else {
+        throw new Error('Failed to delete route');
+      }
+    } catch (error) {
+      console.error('Error deleting route:', error);
+      toast.error('Failed to delete route. Please try again.');
+    }
+  };
+
+  // Delete all saved routes
+  const deleteAllSavedRoutes = async () => {
+    if (savedRoutes.length === 0) {
+      toast.info('No routes to delete');
+      return;
+    }
+
+    if (!window.confirm(`Are you sure you want to delete all ${savedRoutes.length} saved routes? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const deletePromises = savedRoutes.map(route => 
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/route-planner/saved/${route._id}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        })
+      );
+
+      await Promise.all(deletePromises);
+      setSavedRoutes([]);
+      toast.success('All routes deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting all routes:', error);
+      toast.error('Failed to delete all routes. Please try again.');
     }
   };
 
@@ -752,27 +804,49 @@ export default function RoutePlanner() {
 
   return (
     <div className={`${isFullscreen ? 'fixed inset-0 z-40 bg-white overflow-auto p-4' : 'max-w-7xl mx-auto px-2 sm:px-4 py-6 sm:py-10'}`}>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <FaRoute className="text-blue-600"/> Advanced Route Planner
-        </h1>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setIsFullscreen(!isFullscreen)}
-            className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
-            title="Toggle Fullscreen"
-          >
-            <FaMapPin className="text-gray-600" />
-          </button>
+      {!isFullscreen && (
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <FaRoute className="text-blue-600"/> Advanced Route Planner
+          </h1>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsFullscreen(!isFullscreen)}
+              className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+              title="Toggle Fullscreen"
+            >
+              <FaMapPin className="text-gray-600" />
+            </button>
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+              title="Saved Routes"
+            >
+              <FaBookmark className="text-gray-600" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Fullscreen Controls */}
+      {isFullscreen && (
+        <div className="fixed top-4 right-4 z-50 flex gap-2">
           <button
             onClick={() => setShowSettings(!showSettings)}
-            className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+            className="p-3 rounded-full bg-white shadow-lg hover:bg-gray-50 transition-colors border border-gray-200"
             title="Saved Routes"
           >
-            <FaBookmark className="text-gray-600" />
+            <FaBookmark className="text-gray-600 text-lg" />
+          </button>
+          <button
+            onClick={() => setIsFullscreen(false)}
+            className="p-3 rounded-full bg-white shadow-lg hover:bg-gray-50 transition-colors border border-gray-200"
+            title="Exit Fullscreen"
+          >
+            <FaMapPin className="text-gray-600 text-lg" />
           </button>
         </div>
-      </div>
+      )}
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Route Planning Panel */}
@@ -932,10 +1006,15 @@ export default function RoutePlanner() {
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={saveRoute}
-                  className="p-2 rounded bg-green-100 text-green-600 hover:bg-green-200 transition-colors flex items-center gap-2 justify-center"
+                  className={`p-2 rounded transition-colors flex items-center gap-2 justify-center ${
+                    isRouteSaved 
+                      ? 'bg-green-200 text-green-700 cursor-default' 
+                      : 'bg-green-100 text-green-600 hover:bg-green-200'
+                  }`}
+                  disabled={isRouteSaved}
                 >
                   <FaBookmark />
-                  <span className="text-sm">Save</span>
+                  <span className="text-sm">{isRouteSaved ? 'Saved' : 'Save'}</span>
                 </button>
                 <button
                   onClick={exportRoute}
@@ -1123,53 +1202,85 @@ export default function RoutePlanner() {
       {/* Settings Panel */}
       {showSettings && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4"
           style={{ overflow: 'hidden' }}
           onWheel={(e) => e.preventDefault()}
           onTouchMove={(e) => e.preventDefault()}
         >
-          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold flex items-center gap-2">
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+            <div className="p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
                   <FaBookmark className="text-blue-600" />
-                  Saved Routes & History
+                  <span className="hidden sm:inline">Saved Routes & History</span>
+                  <span className="sm:hidden">Saved Routes</span>
                 </h2>
-                <button
-                  onClick={() => setShowSettings(false)}
-                  className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
-                >
-                  ✕
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={fetchSavedRoutes}
+                    className="p-2 rounded-lg bg-blue-100 hover:bg-blue-200 transition-colors"
+                    title="Refresh saved routes"
+                  >
+                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setShowSettings(false)}
+                    className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
 
                 {/* Saved Routes */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <FaBookmark className="text-purple-600" />
-                    Saved Routes
-                  </h3>
+                <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+                  <div className="flex items-center justify-between mb-3 sm:mb-4">
+                    <h3 className="text-base sm:text-lg font-semibold flex items-center gap-2">
+                      <FaBookmark className="text-purple-600" />
+                      Saved Routes
+                    </h3>
+                    {savedRoutes.length > 0 && (
+                      <button
+                        onClick={deleteAllSavedRoutes}
+                        className="px-2 sm:px-3 py-1 bg-red-100 text-red-600 rounded text-xs sm:text-sm hover:bg-red-200 transition-colors"
+                      >
+                        <span className="hidden sm:inline">Delete All</span>
+                        <span className="sm:hidden">Clear</span>
+                      </button>
+                    )}
+                  </div>
                   {savedRoutes.length > 0 ? (
                     <div className="space-y-2 max-h-40 overflow-y-auto">
                       {savedRoutes.map((route) => (
-                        <div key={route.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
-                          <div className="flex-1">
-                            <div className="font-medium text-sm">{route.name}</div>
+                        <div key={route._id || route.id} className="flex items-center justify-between p-2 sm:p-3 bg-white rounded-lg border">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-xs sm:text-sm truncate">{route.name}</div>
                             <div className="text-xs text-gray-500">
                               {new Date(route.timestamp).toLocaleDateString()}
                             </div>
                           </div>
-                          <button
-                            onClick={() => {
-                              loadRoute(route);
-                              setShowSettings(false);
-                            }}
-                            className="px-3 py-1 bg-blue-100 text-blue-600 rounded text-sm hover:bg-blue-200"
-                          >
-                            Load
-                          </button>
+                          <div className="flex items-center gap-1 sm:gap-2 ml-2">
+                            <button
+                              onClick={() => {
+                                loadRoute(route);
+                                setShowSettings(false);
+                              }}
+                              className="px-2 sm:px-3 py-1 bg-blue-100 text-blue-600 rounded text-xs sm:text-sm hover:bg-blue-200 transition-colors"
+                            >
+                              Load
+                            </button>
+                            <button
+                              onClick={() => deleteSavedRoute(route._id || route.id)}
+                              className="px-2 py-1 bg-red-100 text-red-600 rounded text-xs sm:text-sm hover:bg-red-200 transition-colors"
+                              title="Delete route"
+                            >
+                              <FaTrash className="text-xs" />
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -1179,17 +1290,17 @@ export default function RoutePlanner() {
                 </div>
 
                 {/* Route History */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+                  <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2">
                     <FaHistory className="text-orange-600" />
                     Recent Routes
                   </h3>
                   {routeHistory.length > 0 ? (
                     <div className="space-y-2 max-h-40 overflow-y-auto">
                       {routeHistory.slice(0, 5).map((route) => (
-                        <div key={route.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
-                          <div className="flex-1">
-                            <div className="font-medium text-sm">
+                        <div key={route.id} className="flex items-center justify-between p-2 sm:p-3 bg-white rounded-lg border">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-xs sm:text-sm truncate">
                               {route.stops.map(s => s.address.split(',')[0]).join(' → ')}
                             </div>
                             <div className="text-xs text-gray-500">
@@ -1201,7 +1312,7 @@ export default function RoutePlanner() {
                               loadRoute(route);
                               setShowSettings(false);
                             }}
-                            className="px-3 py-1 bg-green-100 text-green-600 rounded text-sm hover:bg-green-200"
+                            className="px-2 sm:px-3 py-1 bg-green-100 text-green-600 rounded text-xs sm:text-sm hover:bg-green-200 transition-colors ml-2"
                           >
                             Load
                           </button>
@@ -1209,15 +1320,15 @@ export default function RoutePlanner() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-gray-500 text-sm">No recent routes</p>
+                    <p className="text-gray-500 text-xs sm:text-sm">No recent routes</p>
                   )}
                 </div>
               </div>
 
-              <div className="flex justify-end mt-6 pt-4 border-t">
+              <div className="flex justify-end mt-4 sm:mt-6 pt-3 sm:pt-4 border-t">
                 <button
                   onClick={() => setShowSettings(false)}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base"
                 >
                   Close
                 </button>
