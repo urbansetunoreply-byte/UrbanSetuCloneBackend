@@ -228,6 +228,9 @@ function AppRoutes({ bootstrapped }) {
   const navigate = useNavigate(); // Fix: ensure navigate is defined
   const { playNotification } = useSoundEffects();
 
+  // Do not show header on /appointments admin route
+  const hideHeaderRoutes = ["/appointments"];
+
   // Enhanced auto-refresh logic using Page Visibility API + Focus/Blur Events
   useEffect(() => {
     const REFRESH_AFTER_MINUTES = 10; // Configurable refresh threshold
