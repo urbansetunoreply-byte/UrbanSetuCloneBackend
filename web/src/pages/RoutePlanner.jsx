@@ -7,12 +7,16 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 
 import { usePageTitle } from '../hooks/usePageTitle';
+import { useHeader } from '../contexts/HeaderContext';
 
 const MAPBOX_ACCESS_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
 export default function RoutePlanner() {
   // Set page title
   usePageTitle("Advanced Route Planner - Navigation Tool");
+  
+  // Header context
+  const { hideHeader, showHeader } = useHeader();
 
   // State management
   const [stops, setStops] = useState([{ address: '', coordinates: null }]);
@@ -811,7 +815,15 @@ export default function RoutePlanner() {
           </h1>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setIsFullscreen(!isFullscreen)}
+              onClick={() => {
+                const newFullscreen = !isFullscreen;
+                setIsFullscreen(newFullscreen);
+                if (newFullscreen) {
+                  hideHeader();
+                } else {
+                  showHeader();
+                }
+              }}
               className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
               title="Toggle Fullscreen"
             >
@@ -839,7 +851,10 @@ export default function RoutePlanner() {
             <FaBookmark className="text-gray-600 text-lg" />
           </button>
           <button
-            onClick={() => setIsFullscreen(false)}
+            onClick={() => {
+              setIsFullscreen(false);
+              showHeader();
+            }}
             className="p-3 rounded-full bg-white shadow-lg hover:bg-gray-50 transition-colors border border-gray-200"
             title="Exit Fullscreen"
           >
@@ -1199,13 +1214,11 @@ export default function RoutePlanner() {
       )}
 
 
-      {/* Settings Panel */}
+      {/* Saved Routes & History Panel */}
       {showSettings && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4"
           style={{ overflow: 'hidden' }}
-          onWheel={(e) => e.preventDefault()}
-          onTouchMove={(e) => e.preventDefault()}
         >
           <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
             <div className="p-4 sm:p-6">

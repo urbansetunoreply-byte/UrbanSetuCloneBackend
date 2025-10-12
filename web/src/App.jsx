@@ -9,6 +9,7 @@ import Private from "./components/Private";
 import AdminRoute from "./components/AdminRoute";
 import WishlistProvider from "./WishlistContext";
 import { ImageFavoritesProvider } from "./contexts/ImageFavoritesContext";
+import { HeaderProvider, useHeader } from "./contexts/HeaderContext";
 import ContactSupportWrapper from "./components/ContactSupportWrapper";
 import NetworkStatus from "./components/NetworkStatus";
 import UserChangePassword from './pages/UserChangePassword';
@@ -222,6 +223,7 @@ function AppRoutes({ bootstrapped }) {
   const location = useLocation();
   const dispatch = useDispatch();
   const { currentUser, loading } = useSelector((state) => state.user);
+  const { isHeaderVisible } = useHeader();
   const [sessionChecked, setSessionChecked] = useState(false);
   const navigate = useNavigate(); // Fix: ensure navigate is defined
   const { playNotification } = useSoundEffects();
@@ -611,13 +613,10 @@ function AppRoutes({ bootstrapped }) {
     return <LoadingSpinner />;
   }
 
-  // Do not show header on /appointments admin route
-  const hideHeaderRoutes = ["/appointments"];
-
   return (
     <>
       <NetworkStatus />
-      {!hideHeaderRoutes.includes(location.pathname) && (
+      {!hideHeaderRoutes.includes(location.pathname) && isHeaderVisible && (
         currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
           ? <AdminHeader />
           : <Header />
@@ -758,9 +757,11 @@ export default function App() {
   return (
     <WishlistProvider>
       <ImageFavoritesProvider>
-        <BrowserRouter>
-          <AppRoutes bootstrapped={bootstrapped} />
-        </BrowserRouter>
+        <HeaderProvider>
+          <BrowserRouter>
+            <AppRoutes bootstrapped={bootstrapped} />
+          </BrowserRouter>
+        </HeaderProvider>
       </ImageFavoritesProvider>
     </WishlistProvider>
   );
