@@ -5,6 +5,7 @@ class RealTimeDataService {
   constructor() {
     this.apiKeys = {
       googlePlaces: process.env.GOOGLE_PLACES_API_KEY,
+      mapbox: process.env.MAPBOX_ACCESS_TOKEN,
       openWeather: process.env.OPENWEATHER_API_KEY,
       foursquare: process.env.FOURSQUARE_API_KEY,
       // Add more API keys as needed
@@ -556,6 +557,57 @@ class RealTimeDataService {
     }
     
     return sentiment;
+  }
+
+  // 8. Mapbox Route Planning
+  async getRoutePlan(waypoints, profile = 'driving') {
+    if (!this.apiKeys.mapbox) {
+      return this.getMockRouteData();
+    }
+
+    try {
+      const coordinates = waypoints.map(wp => `${wp.longitude},${wp.latitude}`).join(';');
+      const url = `https://api.mapbox.com/directions/v5/mapbox/${profile}/${coordinates}`;
+      
+      const response = await axios.get(url, {
+        params: {
+          geometries: 'geojson',
+          overview: 'full',
+          steps: true,
+          access_token: this.apiKeys.mapbox
+        }
+      });
+
+      if (response.data.routes && response.data.routes.length > 0) {
+        const route = response.data.routes[0];
+        return {
+          distance: route.distance / 1000, // Convert to km
+          duration: route.duration / 60, // Convert to minutes
+          geometry: route.geometry,
+          legs: route.legs,
+          waypoints: response.data.waypoints,
+          success: true
+        };
+      } else {
+        throw new Error('No routes found');
+      }
+    } catch (error) {
+      console.error('Error fetching route from Mapbox:', error);
+      return this.getMockRouteData();
+    }
+  }
+
+  // Mock route data fallback
+  getMockRouteData() {
+    return {
+      distance: Math.random() * 20 + 5, // 5-25 km
+      duration: Math.random() * 60 + 15, // 15-75 minutes
+      geometry: null,
+      legs: [],
+      waypoints: [],
+      success: false,
+      message: 'Using mock data - Mapbox API not configured'
+    };
   }
 }
 

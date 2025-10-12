@@ -1,0 +1,180 @@
+import express from 'express';
+import { verifyToken } from '../utils/verify.js';
+import realTimeDataService from '../services/realTimeDataService.js';
+import { API_KEYS, API_ENDPOINTS } from '../config/apiKeys.js';
+
+const router = express.Router();
+
+// POST: Plan route using Mapbox Directions API
+router.post('/plan', verifyToken, async (req, res) => {
+  try {
+    const { waypoints, profile = 'driving' } = req.body;
+
+    // Validate input
+    if (!waypoints || !Array.isArray(waypoints) || waypoints.length < 2) {
+      return res.status(400).json({
+        success: false,
+        message: 'At least 2 waypoints are required'
+      });
+    }
+
+    // Validate waypoint format
+    const validWaypoints = waypoints.filter(wp => 
+      wp && typeof wp.latitude === 'number' && typeof wp.longitude === 'number'
+    );
+
+    if (validWaypoints.length < 2) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid coordinates (latitude, longitude) are required for each waypoint'
+      });
+    }
+
+    // Get route plan from Mapbox
+    const routeData = await realTimeDataService.getRoutePlan(validWaypoints, profile);
+
+    res.json({
+      success: true,
+      data: routeData
+    });
+
+  } catch (error) {
+    console.error('Error planning route:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to plan route',
+      error: error.message
+    });
+  }
+});
+
+// POST: Geocode address using Mapbox Geocoding API
+router.post('/geocode', verifyToken, async (req, res) => {
+  try {
+    const { address, country = 'in', types = 'address,poi', limit = 5 } = req.body;
+
+    if (!address || address.trim().length < 3) {
+      return res.status(400).json({
+        success: false,
+        message: 'Address must be at least 3 characters long'
+      });
+    }
+
+    if (!API_KEYS.MAPBOX_ACCESS_TOKEN) {
+      return res.status(503).json({
+        success: false,
+        message: 'Mapbox API not configured'
+      });
+    }
+
+    const response = await fetch(
+      `${API_ENDPOINTS.MAPBOX.GEOCODING}/${encodeURIComponent(address.trim())}.json`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Mapbox API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    // Filter results by country if specified
+    const filteredFeatures = data.features.filter(feature => {
+      if (country === 'in') {
+        return feature.context?.some(ctx => ctx.country_code === 'IN');
+      }
+      return true;
+    }).slice(0, limit);
+
+    res.json({
+      success: true,
+      data: {
+        features: filteredFeatures,
+        query: data.query
+      }
+    });
+
+  } catch (error) {
+    console.error('Error geocoding address:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to geocode address',
+      error: error.message
+    });
+  }
+});
+
+// GET: Get route optimization suggestions
+router.get('/optimize/:propertyId', verifyToken, async (req, res) => {
+  try {
+    const { propertyId } = req.params;
+    const { userLocation } = req.query;
+
+    if (!propertyId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Property ID is required'
+      });
+    }
+
+    // Get property details (you'll need to import your Listing model)
+    // const property = await Listing.findById(propertyId);
+    // if (!property) {
+    //   return res.status(404).json({
+    //     success: false,
+    //     message: 'Property not found'
+    //   });
+    // }
+
+    // Mock optimization suggestions for now
+    const suggestions = {
+      nearbyAmenities: [
+        { name: 'Metro Station', distance: 0.5, type: 'transport' },
+        { name: 'Shopping Mall', distance: 1.2, type: 'shopping' },
+        { name: 'Hospital', distance: 2.1, type: 'healthcare' },
+        { name: 'School', distance: 0.8, type: 'education' }
+      ],
+      routeOptimization: {
+        suggestedOrder: ['Metro Station', 'Shopping Mall', 'Property', 'Hospital', 'School'],
+        totalDistance: 8.5,
+        totalDuration: 25
+      }
+    };
+
+    res.json({
+      success: true,
+      data: suggestions
+    });
+
+  } catch (error) {
+    console.error('Error getting optimization suggestions:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get optimization suggestions',
+      error: error.message
+    });
+  }
+});
+
+// GET: Get Mapbox API status
+router.get('/status', (req, res) => {
+  const hasMapboxKey = !!API_KEYS.MAPBOX_ACCESS_TOKEN;
+  
+  res.json({
+    success: true,
+    data: {
+      mapboxConfigured: hasMapboxKey,
+      endpoints: hasMapboxKey ? Object.keys(API_ENDPOINTS.MAPBOX) : [],
+      rateLimits: {
+        mapbox: '100,000 requests/month (free tier)'
+      }
+    }
+  });
+});
+
+export default router;

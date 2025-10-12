@@ -6,6 +6,9 @@ export const API_KEYS = {
   GOOGLE_PLACES_API_KEY: process.env.GOOGLE_PLACES_API_KEY,
   GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY,
   
+  // Mapbox APIs
+  MAPBOX_ACCESS_TOKEN: process.env.MAPBOX_ACCESS_TOKEN,
+  
   // Weather APIs
   OPENWEATHER_API_KEY: process.env.OPENWEATHER_API_KEY,
   
@@ -34,6 +37,14 @@ export const API_ENDPOINTS = {
     TEXT_SEARCH: 'https://maps.googleapis.com/maps/api/place/textsearch/json'
   },
   
+  // Mapbox APIs
+  MAPBOX: {
+    DIRECTIONS: 'https://api.mapbox.com/directions/v5/mapbox',
+    GEOCODING: 'https://api.mapbox.com/geocoding/v5/mapbox.places',
+    MATRIX: 'https://api.mapbox.com/directions-matrix/v1/mapbox',
+    ISOLINE: 'https://api.mapbox.com/isochrone/v1/mapbox'
+  },
+  
   // OpenWeather API
   OPENWEATHER: {
     CURRENT_WEATHER: 'https://api.openweathermap.org/data/2.5/weather',
@@ -58,6 +69,7 @@ export const API_ENDPOINTS = {
 // Rate limiting configuration
 export const RATE_LIMITS = {
   GOOGLE_PLACES: 1000, // requests per day
+  MAPBOX: 100000, // requests per month (free tier)
   OPENWEATHER: 1000, // requests per day
   FOURSQUARE: 500, // requests per day
   GENERAL: 100 // requests per hour

@@ -31,6 +31,7 @@ import priceDropAlertRouter from "./routes/priceDropAlert.route.js";
 import statisticsRouter from "./routes/statistics.route.js";
 import configRouter from "./routes/config.route.js";
 import analyticsRouter from "./routes/analytics.route.js";
+import routePlannerRouter from "./routes/routePlanner.route.js";
 // Use S3 deployment route if AWS is configured, otherwise fallback to Cloudinary
 let deploymentRouter;
 try {
@@ -476,6 +477,7 @@ app.use("/api/price-drop-alerts", priceDropAlertRouter);
 app.use("/api/statistics", statisticsRouter);
 app.use("/api/config", configRouter);
 app.use("/api/analytics", analyticsRouter);
+app.use("/api/route-planner", routePlannerRouter);
 app.use("/api/deployment", deploymentRouter);
 console.log('All API routes registered successfully');
 
