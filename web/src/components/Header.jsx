@@ -288,7 +288,7 @@ export default function Header() {
           
           {/* Desktop Navigation - Right Side */}
           <nav className="hidden lg:flex items-center space-x-2">
-            <UserNavLinks />
+            <UserNavLinks signout={signout} />
           </nav>
 
           {/* Mobile Menu Button */}
@@ -372,7 +372,7 @@ export default function Header() {
 
                 {/* Navigation Links */}
                 <div className="flex-1 overflow-y-auto p-6">
-                  <UserNavLinks mobile onNavigate={() => setMobileMenuOpen(false)} />
+                  <UserNavLinks mobile onNavigate={() => setMobileMenuOpen(false)} signout={signout} />
                 </div>
               </div>
             </div>
@@ -383,7 +383,7 @@ export default function Header() {
   );
 }
 
-function UserNavLinks({ mobile = false, onNavigate }) {
+function UserNavLinks({ mobile = false, onNavigate, signout }) {
   const { currentUser } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -414,11 +414,13 @@ function UserNavLinks({ mobile = false, onNavigate }) {
   };
 
   const handleSignout = async () => {
-    await signout({
-      showToast: true,
-      navigateTo: "/",
-      delay: 0
-    });
+    if (signout) {
+      await signout({
+        showToast: true,
+        navigateTo: "/",
+        delay: 0
+      });
+    }
   };
 
   
