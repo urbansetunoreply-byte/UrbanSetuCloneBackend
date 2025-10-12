@@ -6,6 +6,7 @@ import User from "../models/user.model.js";
 import { verifyToken } from '../utils/verify.js';
 import Review from '../models/review.model.js';
 import Notification from '../models/notification.model.js';
+import { sendAppointmentBookingEmail } from '../utils/emailService.js';
 import bcryptjs from 'bcryptjs';
 
 const router = express.Router();
@@ -106,6 +107,54 @@ router.post("/", verifyToken, async (req, res) => {
     } catch (notificationError) {
       console.error('Failed to create notification for seller:', notificationError);
     }
+
+    // Send appointment booking confirmation emails
+    try {
+      // Prepare appointment details for email
+      const appointmentDetails = {
+        appointmentId: newBooking._id,
+        propertyName: listing.name,
+        propertyDescription: listing.description,
+        propertyAddress: listing.address,
+        propertyPrice: listing.regularPrice || listing.discountPrice,
+        propertyImages: listing.imageUrls || [],
+        date: newBooking.date,
+        time: newBooking.time,
+        buyerName: buyer.firstName && buyer.lastName 
+          ? `${buyer.firstName} ${buyer.lastName}` 
+          : buyer.username,
+        buyerEmail: buyer.email,
+        sellerName: seller.firstName && seller.lastName 
+          ? `${seller.firstName} ${seller.lastName}` 
+          : seller.username,
+        sellerEmail: seller.email,
+        purpose: newBooking.purpose,
+        message: newBooking.message,
+        listingId: listing._id,
+        paymentStatus: 'pending' // New appointments start as pending payment
+      };
+
+      // Send email to buyer
+      try {
+        await sendAppointmentBookingEmail(buyer.email, appointmentDetails, 'buyer');
+        console.log(`✅ Appointment booking email sent to buyer: ${buyer.email}`);
+      } catch (buyerEmailError) {
+        console.error(`❌ Failed to send booking email to buyer: ${buyer.email}`, buyerEmailError);
+      }
+
+      // Send email to seller
+      try {
+        await sendAppointmentBookingEmail(seller.email, appointmentDetails, 'seller');
+        console.log(`✅ Appointment booking email sent to seller: ${seller.email}`);
+      } catch (sellerEmailError) {
+        console.error(`❌ Failed to send booking email to seller: ${seller.email}`, sellerEmailError);
+      }
+
+    } catch (emailError) {
+      console.error('❌ Error sending appointment booking emails:', emailError);
+      // Don't fail the booking if email fails
+    }
+
     res.status(201).json({ message: "Appointment booked successfully!", appointment: newBooking });
   } catch (err) {
     console.error("Error creating booking:", err);
@@ -1742,10 +1791,108 @@ router.post("/admin", verifyToken, async (req, res) => {
     } catch (notificationError) {
       console.error('Failed to create notification for seller:', notificationError);
     }
+
+    // Send appointment booking confirmation emails for admin booking
+    try {
+      // Prepare appointment details for email
+      const appointmentDetails = {
+        appointmentId: newBooking._id,
+        propertyName: listing.name,
+        propertyDescription: listing.description,
+        propertyAddress: listing.address,
+        propertyPrice: listing.regularPrice || listing.discountPrice,
+        propertyImages: listing.imageUrls || [],
+        date: newBooking.date,
+        time: newBooking.time,
+        buyerName: buyer.firstName && buyer.lastName 
+          ? `${buyer.firstName} ${buyer.lastName}` 
+          : buyer.username,
+        buyerEmail: buyer.email,
+        sellerName: seller.firstName && seller.lastName 
+          ? `${seller.firstName} ${seller.lastName}` 
+          : seller.username,
+        sellerEmail: seller.email,
+        purpose: newBooking.purpose,
+        message: newBooking.message,
+        listingId: listing._id,
+        paymentStatus: 'pending' // New appointments start as pending payment
+      };
+
+      // Send email to buyer
+      try {
+        await sendAppointmentBookingEmail(buyer.email, appointmentDetails, 'buyer');
+        console.log(`✅ Admin booking email sent to buyer: ${buyer.email}`);
+      } catch (buyerEmailError) {
+        console.error(`❌ Failed to send admin booking email to buyer: ${buyer.email}`, buyerEmailError);
+      }
+
+      // Send email to seller
+      try {
+        await sendAppointmentBookingEmail(seller.email, appointmentDetails, 'seller');
+        console.log(`✅ Admin booking email sent to seller: ${seller.email}`);
+      } catch (sellerEmailError) {
+        console.error(`❌ Failed to send admin booking email to seller: ${seller.email}`, sellerEmailError);
+      }
+
+    } catch (emailError) {
+      console.error('❌ Error sending admin appointment booking emails:', emailError);
+      // Don't fail the booking if email fails
+    }
+
     res.status(201).json({ message: "Appointment booked successfully!", appointment: newBooking });
   } catch (err) {
     console.error("Error creating admin booking:", err);
     res.status(500).json({ message: "Server error" });
+  }
+});
+
+// POST: Test appointment booking email (for testing purposes)
+router.post("/test-booking-email", verifyToken, async (req, res) => {
+  try {
+    const { email, userRole = 'buyer' } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ message: "Email is required for testing" });
+    }
+
+    // Sample appointment details for testing
+    const testAppointmentDetails = {
+      appointmentId: 'test_123',
+      propertyName: 'Beautiful 3BHK Apartment in Downtown',
+      propertyDescription: 'Spacious 3 bedroom apartment with modern amenities',
+      propertyAddress: '123 Main Street, Downtown City',
+      propertyPrice: 5000000,
+      propertyImages: ['https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=500'],
+      date: '2024-01-15',
+      time: '14:00',
+      buyerName: 'John Doe',
+      buyerEmail: 'buyer@example.com',
+      sellerName: 'Jane Smith',
+      sellerEmail: 'seller@example.com',
+      purpose: 'Property Viewing',
+      message: 'I am interested in viewing this property. Please let me know if the time works for you.',
+      listingId: 'listing_123',
+      paymentStatus: 'pending'
+    };
+
+    // Send test email
+    const result = await sendAppointmentBookingEmail(email, testAppointmentDetails, userRole);
+    
+    if (result.success) {
+      res.status(200).json({ 
+        message: "Test booking email sent successfully!", 
+        email: email,
+        userRole: userRole
+      });
+    } else {
+      res.status(500).json({ 
+        message: "Failed to send test booking email", 
+        error: result.error 
+      });
+    }
+  } catch (error) {
+    console.error("Error sending test booking email:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 });
 
