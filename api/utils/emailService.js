@@ -1712,14 +1712,16 @@ export const sendAppointmentReminderEmail = async (email, appointmentDetails, us
             
             <!-- CTA Buttons -->
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/myappointments" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); margin: 5px;">
-                View Appointment Details
-              </a>
-              ${listingId ? `
-                <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3); margin: 5px;">
-                  View Property Listing
+              <div style="display: flex; flex-direction: column; gap: 15px; align-items: center; max-width: 100%;">
+                <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/myappointments" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); min-width: 200px; text-align: center; word-wrap: break-word;">
+                  View Appointment Details
                 </a>
-              ` : ''}
+                ${listingId ? `
+                  <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3); min-width: 200px; text-align: center; word-wrap: break-word;">
+                    View Property Listing
+                  </a>
+                ` : ''}
+              </div>
             </div>
             
             <!-- Footer -->
@@ -3382,17 +3384,19 @@ export const sendAppointmentBookingEmail = async (email, appointmentDetails, use
           </div>
           
           <div class="action-buttons">
-            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
-              🏠 View Property Details
-            </a>
-            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
-              📅 My Appointments
-            </a>
-            ${isBuyer && paymentStatus !== 'paid' ? `
-            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-outline">
-              💳 Make Payment
-            </a>
-            ` : ''}
+            <div style="display: flex; flex-direction: column; gap: 15px; align-items: center; max-width: 100%;">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary" style="min-width: 200px; text-align: center; word-wrap: break-word;">
+                🏠 View Property Details
+              </a>
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary" style="min-width: 200px; text-align: center; word-wrap: break-word;">
+                📅 My Appointments
+              </a>
+              ${isBuyer && paymentStatus !== 'paid' ? `
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-outline" style="min-width: 200px; text-align: center; word-wrap: break-word;">
+                💳 Make Payment
+              </a>
+              ` : ''}
+            </div>
           </div>
           
           <div class="next-steps">
@@ -3735,12 +3739,14 @@ export const sendSellerPaymentNotificationEmail = async (email, paymentDetails) 
           </div>
           
           <div class="action-buttons">
-            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
-              🏠 View Property Details
-            </a>
-            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
-              📅 My Appointments
-            </a>
+            <div style="display: flex; flex-direction: column; gap: 15px; align-items: center; max-width: 100%;">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary" style="min-width: 200px; text-align: center; word-wrap: break-word;">
+                🏠 View Property Details
+              </a>
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary" style="min-width: 200px; text-align: center; word-wrap: break-word;">
+                📅 My Appointments
+              </a>
+            </div>
           </div>
           
           <div class="next-steps">
@@ -4095,12 +4101,14 @@ export const sendAppointmentRejectedEmail = async (email, appointmentDetails) =>
           </div>
           
           <div class="action-buttons">
-            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
-              🏠 View Property Details
-            </a>
-            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
-              📅 My Appointments
-            </a>
+            <div style="display: flex; flex-direction: column; gap: 15px; align-items: center; max-width: 100%;">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary" style="min-width: 200px; text-align: center; word-wrap: break-word;">
+                🏠 View Property Details
+              </a>
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary" style="min-width: 200px; text-align: center; word-wrap: break-word;">
+                📅 My Appointments
+              </a>
+            </div>
           </div>
           
           <div class="next-steps">
@@ -4445,12 +4453,14 @@ export const sendAppointmentAcceptedEmail = async (email, appointmentDetails) =>
           </div>
           
           <div class="action-buttons">
-            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
-              🏠 View Property Details
-            </a>
-            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
-              📅 My Appointments
-            </a>
+            <div style="display: flex; flex-direction: column; gap: 15px; align-items: center; max-width: 100%;">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary" style="min-width: 200px; text-align: center; word-wrap: break-word;">
+                🏠 View Property Details
+              </a>
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary" style="min-width: 200px; text-align: center; word-wrap: break-word;">
+                📅 My Appointments
+              </a>
+            </div>
           </div>
           
           <div class="next-steps">
@@ -4804,12 +4814,14 @@ export const sendAppointmentCancelledByBuyerEmail = async (email, appointmentDet
           </div>
           
           <div class="action-buttons">
-            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
-              🏠 View Property Details
-            </a>
-            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
-              📅 My Appointments
-            </a>
+            <div style="display: flex; flex-direction: column; gap: 15px; align-items: center; max-width: 100%;">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary" style="min-width: 200px; text-align: center; word-wrap: break-word;">
+                🏠 View Property Details
+              </a>
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary" style="min-width: 200px; text-align: center; word-wrap: break-word;">
+                📅 My Appointments
+              </a>
+            </div>
           </div>
           
           <div class="next-steps">
@@ -5163,12 +5175,14 @@ export const sendAppointmentCancelledBySellerEmail = async (email, appointmentDe
           </div>
           
           <div class="action-buttons">
-            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
-              🏠 View Property Details
-            </a>
-            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
-              📅 My Appointments
-            </a>
+            <div style="display: flex; flex-direction: column; gap: 15px; align-items: center; max-width: 100%;">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary" style="min-width: 200px; text-align: center; word-wrap: break-word;">
+                🏠 View Property Details
+              </a>
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary" style="min-width: 200px; text-align: center; word-wrap: break-word;">
+                📅 My Appointments
+              </a>
+            </div>
           </div>
           
           <div class="next-steps">
@@ -5551,12 +5565,14 @@ export const sendAppointmentCancelledByAdminEmail = async (email, appointmentDet
           </div>
           
           <div class="action-buttons">
-            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
-              🏠 View Property Details
-            </a>
-            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
-              📅 My Appointments
-            </a>
+            <div style="display: flex; flex-direction: column; gap: 15px; align-items: center; max-width: 100%;">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary" style="min-width: 200px; text-align: center; word-wrap: break-word;">
+                🏠 View Property Details
+              </a>
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary" style="min-width: 200px; text-align: center; word-wrap: break-word;">
+                📅 My Appointments
+              </a>
+            </div>
           </div>
           
           <div class="next-steps">
@@ -5943,12 +5959,14 @@ export const sendAppointmentReinitiatedByAdminEmail = async (email, appointmentD
           </div>
           
           <div class="action-buttons">
-            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
-              🏠 View Property Details
-            </a>
-            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
-              📅 My Appointments
-            </a>
+            <div style="display: flex; flex-direction: column; gap: 15px; align-items: center; max-width: 100%;">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary" style="min-width: 200px; text-align: center; word-wrap: break-word;">
+                🏠 View Property Details
+              </a>
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary" style="min-width: 200px; text-align: center; word-wrap: break-word;">
+                📅 My Appointments
+              </a>
+            </div>
           </div>
           
           <div class="next-steps">
@@ -6307,12 +6325,14 @@ export const sendAppointmentReinitiatedBySellerEmail = async (email, appointment
           </div>
           
           <div class="action-buttons">
-            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
-              🏠 View Property Details
-            </a>
-            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
-              📅 My Appointments
-            </a>
+            <div style="display: flex; flex-direction: column; gap: 15px; align-items: center; max-width: 100%;">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary" style="min-width: 200px; text-align: center; word-wrap: break-word;">
+                🏠 View Property Details
+              </a>
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary" style="min-width: 200px; text-align: center; word-wrap: break-word;">
+                📅 My Appointments
+              </a>
+            </div>
           </div>
           
           <div class="next-steps">
@@ -6664,12 +6684,14 @@ export const sendAppointmentReinitiatedByBuyerEmail = async (email, appointmentD
           </div>
           
           <div class="action-buttons">
-            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
-              🏠 View Property Details
-            </a>
-            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
-              📅 My Appointments
-            </a>
+            <div style="display: flex; flex-direction: column; gap: 15px; align-items: center; max-width: 100%;">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary" style="min-width: 200px; text-align: center; word-wrap: break-word;">
+                🏠 View Property Details
+              </a>
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary" style="min-width: 200px; text-align: center; word-wrap: break-word;">
+                📅 My Appointments
+              </a>
+            </div>
           </div>
           
           <div class="next-steps">
