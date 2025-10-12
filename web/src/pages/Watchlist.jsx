@@ -6,9 +6,13 @@ import { toast } from 'react-toastify';
 import { socket } from '../utils/socket.js';
 import { FaEye, FaTrash, FaSearch, FaFilter, FaSort, FaPlus, FaTimes, FaFire, FaArrowDown, FaArrowUp, FaExclamationTriangle, FaCheckCircle, FaDownload, FaShare, FaBookmark, FaCalendarAlt, FaChartLine, FaBars, FaCheck, FaTimes as FaX } from 'react-icons/fa';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function Watchlist() {
+  // Set page title
+  usePageTitle("My Watchlist - Property Alerts");
+
   const { currentUser } = useSelector((state) => state.user);
   const [items, setItems] = useState([]); // available listings
   const [watchlistItems, setWatchlistItems] = useState([]); // raw docs

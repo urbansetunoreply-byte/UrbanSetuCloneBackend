@@ -3,7 +3,11 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import GeminiChatbox from '../components/GeminiChatbox';
 import PublicHome from './PublicHome';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 export default function PublicAI() {
+  // Set page title
+  usePageTitle("AI Assistant - Smart Property Search");
+
   const navigate = useNavigate();
   const location = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false);

@@ -9,9 +9,13 @@ import { focusWithoutKeyboard } from '../utils/mobileUtils';
 import { calculatePasswordStrength, getPasswordStrengthColor, getPasswordStrengthBgColor, getPasswordStrengthText, meetsMinimumRequirements } from "../utils/passwordStrength.js";
 import { authenticatedFetch, getCSRFToken } from '../utils/csrf';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function ForgotPassword({ bootstrapped, sessionChecked }) {
+  // Set page title
+  usePageTitle("Reset Password - Forgot Password");
+
   const emailInputRef = useRef(null);
   const otpInputRef = useRef(null);
   const [step, setStep] = useState(1); // 1: verification, 2: reset password

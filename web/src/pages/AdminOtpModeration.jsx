@@ -2,9 +2,13 @@ import React, { useEffect, useState } from "react";
 import { FaShieldAlt, FaSync, FaUnlockAlt, FaSearch } from "react-icons/fa";
 import { useSelector } from "react-redux";
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminSecurityModeration() {
+  // Set page title
+  usePageTitle("OTP Moderation - Security Management");
+
   const { currentUser } = useSelector((state) => state.user);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ recent: [], activeLockouts: 0 });

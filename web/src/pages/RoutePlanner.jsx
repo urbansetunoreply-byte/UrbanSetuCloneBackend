@@ -2,9 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import { FaRoute, FaPlus, FaTrash, FaClock } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 export default function RoutePlanner() {
+  // Set page title
+  usePageTitle("Route Planner - Navigation Tool");
+
   const [stops, setStops] = useState([{ address: '' }]);
   const [optimizing, setOptimizing] = useState(false);
   const [plan, setPlan] = useState([]);

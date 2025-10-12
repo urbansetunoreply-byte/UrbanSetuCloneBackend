@@ -3,6 +3,7 @@ import { FaBroom, FaBolt, FaWrench, FaBug, FaTools, FaTruckMoving, FaCalendarAlt
 import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const services = [
   { key: 'cleaning', name: 'Cleaning', icon: <FaBroom className="text-blue-600"/> },
   { key: 'electrician', name: 'Electrician', icon: <FaBolt className="text-yellow-600"/> },
@@ -12,6 +13,9 @@ const services = [
 ];
 
 export default function OnDemandServices() {
+  // Set page title
+  usePageTitle("On-Demand Services - Service Requests");
+
   const { currentUser } = useSelector((state) => state.user);
   const [selected, setSelected] = useState([]);
   const [details, setDetails] = useState({ date: '', address: '', notes: '' });

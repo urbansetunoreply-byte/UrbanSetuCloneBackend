@@ -3,7 +3,11 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import AdminContactSupport from '../components/AdminContactSupport';
 import AdminDashboard from './AdminDashboard';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 export default function AdminSupport() {
+  // Set page title
+  usePageTitle("Admin Support - Help & Support");
+
   const navigate = useNavigate();
   const location = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false);

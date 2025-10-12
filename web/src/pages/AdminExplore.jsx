@@ -8,9 +8,13 @@ import GeminiAIWrapper from "../components/GeminiAIWrapper";
 import LocationSelector from "../components/LocationSelector";
 import duckImg from "../assets/duck-go-final.gif";
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
+import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminExplore() {
+  // Set page title
+  usePageTitle("Property Explorer - Admin Panel");
+
   const location = useLocation();
   const navigate = useNavigate();
   const { currentUser } = useSelector((state) => state.user);

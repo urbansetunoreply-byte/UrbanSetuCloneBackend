@@ -3,9 +3,13 @@ import { useSelector } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
 import LocationSelector from "../components/LocationSelector";
 import { toast } from 'react-toastify';
+import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function CreateListing() {
+  // Set page title
+  usePageTitle("Create Listing - Add New Property");
+
   const [formData, setFormData] = useState({
     imageUrls: [],
     videoUrls: [],

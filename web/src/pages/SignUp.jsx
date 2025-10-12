@@ -7,10 +7,14 @@ import RecaptchaWidget from "../components/RecaptchaWidget";
 import { useSelector } from "react-redux";
 import { calculatePasswordStrength, getPasswordStrengthColor, getPasswordStrengthBgColor, getPasswordStrengthText, meetsMinimumRequirements } from "../utils/passwordStrength.js";
 import { authenticatedFetch, getCSRFToken } from '../utils/csrf';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function SignUp({ bootstrapped, sessionChecked }) {
+  // Set page title
+  usePageTitle("Sign Up - Join Our Community");
+  
   const [formData, setFormData] = useState({
     username: "",
     email: "",

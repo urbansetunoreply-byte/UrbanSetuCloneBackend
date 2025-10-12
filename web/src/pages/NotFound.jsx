@@ -4,7 +4,11 @@ import { FaExclamationTriangle } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import duckImg from "../assets/duck-go-final.gif";
 
+import { usePageTitle } from '../hooks/usePageTitle';
 export default function NotFound() {
+  // Set page title
+  usePageTitle("404 Not Found - Page Not Found");
+
   const { currentUser } = useSelector((state) => state.user);
   let homePath = "/";
   if (currentUser) {

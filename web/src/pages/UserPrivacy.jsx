@@ -1,7 +1,11 @@
 import React from "react";
 
 
+import { usePageTitle } from '../hooks/usePageTitle';
 export default function UserPrivacy() {
+  // Set page title
+  usePageTitle("User Privacy Policy - Data Protection");
+
   return (
     <div className="max-w-4xl mx-auto py-10 px-4">
       <h1 className="text-4xl font-bold mb-6 text-blue-700">User Privacy Policy</h1>

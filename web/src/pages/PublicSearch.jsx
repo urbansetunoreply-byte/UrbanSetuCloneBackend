@@ -5,9 +5,13 @@ import LocationSelector from "../components/LocationSelector";
 import data from "../data/countries+states+cities.json";
 import duckImg from "../assets/duck-go-final.gif";
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
+import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function PublicSearch() {
+  // Set page title
+  usePageTitle("Search Properties - Find Your Dream Home");
+
     const location = useLocation();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({

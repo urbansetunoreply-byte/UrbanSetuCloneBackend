@@ -4,9 +4,13 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import LocationSelector from "../components/LocationSelector";
 import { toast } from 'react-toastify';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminEditListing() {
+  // Set page title
+  usePageTitle("Edit Property - Admin Panel");
+
   const [formData, setFormData] = useState({
     imageUrls: [],
     videoUrls: [],

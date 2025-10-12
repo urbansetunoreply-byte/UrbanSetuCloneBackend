@@ -15,11 +15,15 @@ import { useSoundEffects } from "../components/SoundEffects";
 import { exportEnhancedChatToPDF } from '../utils/pdfExport';
 import ExportChatModal from '../components/ExportChatModal';
 import axios from 'axios';
+import { usePageTitle } from '../hooks/usePageTitle';
 // Note: Do not import server-only libs here
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminAppointments() {
+  // Set page title
+  usePageTitle("Appointment Management - Admin Panel");
+
   const { currentUser } = useSelector((state) => state.user);
   const [appointments, setAppointments] = useState([]);
   const [allAppointments, setAllAppointments] = useState([]);

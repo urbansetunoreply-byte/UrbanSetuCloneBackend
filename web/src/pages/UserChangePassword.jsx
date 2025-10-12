@@ -10,9 +10,13 @@ import { calculatePasswordStrength, getPasswordStrengthColor, getPasswordStrengt
 import { authenticatedFetch } from '../utils/csrf';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function UserChangePassword() {
+  // Set page title
+  usePageTitle("Change Password - Security Settings");
+
   const { currentUser } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const dispatch = useDispatch();

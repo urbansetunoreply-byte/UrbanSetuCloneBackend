@@ -8,11 +8,15 @@ import "swiper/css/pagination";
 import ListingItem from "../components/ListingItem";
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 import GeminiAIWrapper from '../components/GeminiAIWrapper';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { FaHome, FaSearch, FaHeart, FaStar, FaMapMarkerAlt, FaPhone, FaEnvelope, FaShieldAlt, FaAward, FaUsers, FaChartLine, FaLightbulb, FaRocket, FaGem, FaQuoteLeft, FaQuoteRight, FaCheckCircle, FaClock, FaHandshake, FaGlobe, FaMobile, FaDesktop, FaTablet, FaInfoCircle } from "react-icons/fa";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function PublicHome() {
+  // Set page title
+  usePageTitle("Find Your Dream Home - Smart Real Estate Platform");
+  
   const [offerListings, setOfferListings] = useState([]);
   const [saleListings, setSaleListings] = useState([]);
   const [rentListings, setRentListings] = useState([]);

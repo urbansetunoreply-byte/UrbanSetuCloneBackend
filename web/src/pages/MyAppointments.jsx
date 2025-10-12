@@ -18,9 +18,13 @@ import ExportChatModal from '../components/ExportChatModal';
 import axios from 'axios';
 import PaymentModal from '../components/PaymentModal';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function MyAppointments() {
+  // Set page title
+  usePageTitle("My Appointments - Bookings");
+
   const { currentUser } = useSelector((state) => state.user);
   const [appointments, setAppointments] = useState([]);
   const [allAppointments, setAllAppointments] = useState([]);

@@ -3,9 +3,13 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toast } from 'react-toastify';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminAppointmentListing() {
+  // Set page title
+  usePageTitle("Appointment Listings - Admin Panel");
+
   const { currentUser } = useSelector((state) => state.user);
   const location = useLocation();
   const navigate = useNavigate();

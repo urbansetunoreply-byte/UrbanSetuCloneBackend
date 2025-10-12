@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import { toast } from 'react-toastify';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const AdminRequests = () => {

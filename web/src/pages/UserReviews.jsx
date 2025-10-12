@@ -6,9 +6,13 @@ import { socket } from '../utils/socket.js';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function UserReviews() {
+  // Set page title
+  usePageTitle("My Reviews - Property Reviews");
+
   const { currentUser } = useSelector((state) => state.user);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);

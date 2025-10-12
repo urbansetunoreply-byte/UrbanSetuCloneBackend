@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { signInFailure, signInStart, signInSuccess } from "../redux/user/userSlice.js";
 import Oauth from "../components/Oauth.jsx";
 import RecaptchaWidget from "../components/RecaptchaWidget";
+import { usePageTitle } from '../hooks/usePageTitle';
 
 import { reconnectSocket } from "../utils/socket";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
@@ -14,6 +15,9 @@ import { authenticatedFetch, getCSRFToken } from '../utils/csrf';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function SignIn({ bootstrapped, sessionChecked }) {
+    // Set page title
+    usePageTitle("Sign In - Welcome Back");
+    
     const emailInputRef = useRef(null);
     const otpEmailInputRef = useRef(null);
     const passwordInputRef = useRef(null);

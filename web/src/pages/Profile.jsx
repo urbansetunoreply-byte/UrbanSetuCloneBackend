@@ -26,6 +26,7 @@ import { socket } from '../utils/socket';
 import defaultAvatars from '../assets/avatars'; // Assume this is an array of avatar image URLs
 import avataaarsSchema from '../data/dicebear-avataaars-schema.json';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Animation CSS classes
@@ -235,6 +236,9 @@ const AnimatedCounter = ({ end, duration = 1000, delay = 0 }) => {
 };
 
 export default function Profile() {
+  // Set page title
+  usePageTitle("My Profile - Account Settings");
+
   const { currentUser, error } = useSelector((state) => state.user);
   const { wishlist } = useWishlist();
   const dispatch = useDispatch();

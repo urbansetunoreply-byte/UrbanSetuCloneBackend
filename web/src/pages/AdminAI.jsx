@@ -3,7 +3,11 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import GeminiChatbox from '../components/GeminiChatbox';
 import AdminDashboard from './AdminDashboard';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 export default function AdminAI() {
+  // Set page title
+  usePageTitle("AI Assistant - Admin Panel");
+
   const navigate = useNavigate();
   const location = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false);

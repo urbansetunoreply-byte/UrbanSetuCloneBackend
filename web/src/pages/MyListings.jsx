@@ -8,9 +8,13 @@ import { toast } from 'react-toastify';
 import { useDispatch } from "react-redux";
 import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from "../redux/user/userSlice";
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function MyListings() {
+  // Set page title
+  usePageTitle("My Listings - My Properties");
+
   const { currentUser } = useSelector((state) => state.user);
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);

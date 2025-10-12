@@ -2,9 +2,13 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { FaUnlockAlt, FaShieldAlt, FaLock, FaEye, FaEyeSlash, FaFilter, FaSearch, FaRedo, FaExclamationTriangle, FaCheckCircle, FaClock, FaUser, FaGlobe, FaEnvelope, FaKey } from 'react-icons/fa';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminSecurityModeration() {
+  // Set page title
+  usePageTitle("Security Moderation - Safety Management");
+
   const { currentUser } = useSelector((state) => state.user);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');

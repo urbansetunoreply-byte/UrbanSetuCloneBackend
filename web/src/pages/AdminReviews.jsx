@@ -7,9 +7,13 @@ import UserAvatar from '../components/UserAvatar';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 import axios from 'axios';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminReviews() {
+  // Set page title
+  usePageTitle("Review Management - Content Moderation");
+
   const { currentUser } = useSelector((state) => state.user);
 
   // Helper function to check if avatar is valid

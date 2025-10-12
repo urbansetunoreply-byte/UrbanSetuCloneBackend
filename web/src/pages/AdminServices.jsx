@@ -2,7 +2,11 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { FaTools, FaEnvelope, FaCheckCircle, FaTruckMoving } from 'react-icons/fa';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 export default function AdminServices() {
+  // Set page title
+  usePageTitle("Service Management - Admin Panel");
+
   const { currentUser } = useSelector((state) => state.user);
   const [items, setItems] = useState([]);
   const [serviceFilters, setServiceFilters] = useState({ q: '', status: 'all' });

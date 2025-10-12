@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const SessionManagement = () => {
   const { currentUser } = useSelector((state) => state.user);
   const [sessions, setSessions] = useState([]);

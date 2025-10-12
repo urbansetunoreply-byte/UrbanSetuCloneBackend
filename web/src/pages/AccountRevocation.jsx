@@ -2,9 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaCheckCircle, FaTimesCircle, FaClock, FaUser, FaEnvelope, FaCrown } from 'react-icons/fa';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AccountRevocation() {
+  // Set page title
+  usePageTitle("Account Recovery - Restore Account");
+
   const { token } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);

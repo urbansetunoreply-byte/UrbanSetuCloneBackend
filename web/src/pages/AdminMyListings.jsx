@@ -6,9 +6,13 @@ import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import { maskAddress } from '../utils/addressMasking';
 import { toast } from 'react-toastify';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminMyListings() {
+  // Set page title
+  usePageTitle("My Properties - Admin Panel");
+
   const { currentUser } = useSelector((state) => state.user);
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);

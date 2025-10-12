@@ -3,9 +3,13 @@ import ContactSupportWrapper from '../components/ContactSupportWrapper';
 import { FaBullseye, FaGlobe, FaUsers, FaShieldAlt, FaUserFriends, FaEnvelope, FaStar, FaEdit, FaPhone, FaMobileAlt } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminAbout() {
+  // Set page title
+  usePageTitle("About Management - Admin Panel");
+
   const [aboutData, setAboutData] = useState(null);
   const [editData, setEditData] = useState(null);
   const [loading, setLoading] = useState(true);

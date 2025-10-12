@@ -10,7 +10,11 @@ import { calculatePasswordStrength, getPasswordStrengthColor, getPasswordStrengt
 import { authenticatedFetch } from '../utils/csrf';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 export default function AdminChangePassword() {
+  // Set page title
+  usePageTitle("Change Password - Security Settings");
+
   const { currentUser } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const dispatch = useDispatch();

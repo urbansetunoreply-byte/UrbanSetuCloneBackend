@@ -3,6 +3,7 @@ import { FaDollarSign, FaCreditCard, FaChartLine, FaDownload, FaUndo, FaCheckCir
 import PaymentHistory from '../components/PaymentHistory';
 import RefundManagement from '../components/RefundManagement';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const PaymentDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [stats, setStats] = useState({

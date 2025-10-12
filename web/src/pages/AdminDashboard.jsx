@@ -24,9 +24,13 @@ import GeminiAIWrapper from "../components/GeminiAIWrapper";
 import { toast } from 'react-toastify';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 import axios from 'axios';
+import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminDashboard() {
+  // Set page title
+  usePageTitle("Admin Dashboard - Analytics & Management");
+
   const { currentUser } = useSelector((state) => state.user);
   const [offerListings, setOfferListings] = useState([]);
   const [saleListings, setSaleListings] = useState([]);

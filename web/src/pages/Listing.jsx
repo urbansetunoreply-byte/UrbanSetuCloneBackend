@@ -18,9 +18,13 @@ import { maskAddress, shouldShowLocationLink, getLocationLinkText } from "../uti
 import { toast } from 'react-toastify';
 import { useWishlist } from '../WishlistContext';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function Listing() {
+  // Set page title
+  usePageTitle("Property Details - View Listing");
+
   const params = useParams();
   const navigate = useNavigate();
   const location = useLocation();

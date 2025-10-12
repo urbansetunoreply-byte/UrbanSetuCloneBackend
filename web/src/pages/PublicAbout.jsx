@@ -2,9 +2,13 @@ import React, { useState, useEffect } from 'react';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 import { FaBullseye, FaGlobe, FaUsers, FaShieldAlt, FaUserFriends, FaEnvelope, FaStar, FaPhone, FaMobileAlt } from 'react-icons/fa';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function PublicAbout() {
+  // Set page title
+  usePageTitle("About Us - Learn About UrbanSetu");
+
   const [aboutData, setAboutData] = useState(null);
   const [loading, setLoading] = useState(true);
   

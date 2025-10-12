@@ -6,9 +6,13 @@ import { maskAddress } from '../utils/addressMasking';
 import { useSelector } from "react-redux";
 import { toast } from 'react-toastify';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminListings() {
+  // Set page title
+  usePageTitle("Property Management - Admin Panel");
+
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

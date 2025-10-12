@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { FaDollarSign, FaCreditCard, FaDownload, FaClock, FaCheckCircle, FaTimes, FaExclamationTriangle, FaSpinner, FaMoneyBill } from 'react-icons/fa';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const MyPayments = () => {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -5,9 +5,13 @@ import { useSelector } from 'react-redux';
 import { downloadAndroidApp, isAndroidDevice, isMobileDevice, getDownloadMessage, getDownloadButtonText } from '../utils/androidDownload';
 import { toast } from 'react-toastify';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function About() {
+  // Set page title
+  usePageTitle("About Us - Learn About UrbanSetu");
+
   const [aboutData, setAboutData] = useState(null);
   const [loading, setLoading] = useState(true);
   const { currentUser } = useSelector((state) => state.user) || {};

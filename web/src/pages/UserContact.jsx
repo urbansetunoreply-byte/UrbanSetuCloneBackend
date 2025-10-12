@@ -3,7 +3,11 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import ContactSupport from '../components/ContactSupport';
 import Home from './Home';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 export default function UserContact() {
+  // Set page title
+  usePageTitle("Contact Support - Get Help");
+
   const navigate = useNavigate();
   const location = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false);
