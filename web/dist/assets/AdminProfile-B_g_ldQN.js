@@ -1,1 +1,0 @@
-import{u as r,j as e}from"./index-C5FYe_cc.js";import i from"./Profile-DxP-36wK.js";import"./RecaptchaWidget-C1BDYolj.js";function n(){return r("Admin Profile - Account Settings"),e.jsx("div",{className:"min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 py-10 px-2 md:px-8",children:e.jsx(i,{})})}export{n as default};

@@ -4,5 +4,8 @@ node_modules
 client/dist/
 client/build/
 api/dist/
+dist/
+web/dist/
+mobile/dist/
 *.log
 .DS_Store
