@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { FaRoute, FaPlus, FaTrash, FaClock, FaMapMarkerAlt } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import Map, { Marker, Source, Layer } from 'react-map-gl';
 import mapboxgl from 'mapbox-gl';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -21,11 +20,7 @@ export default function RoutePlanner() {
   const [routeData, setRouteData] = useState(null);
   const [predictions, setPredictions] = useState([]);
   const [mapReady, setMapReady] = useState(false);
-  const [viewport, setViewport] = useState({
-    longitude: 77.2090,
-    latitude: 28.6139,
-    zoom: 11
-  });
+  const [map, setMap] = useState(null);
 
   const mapRef = useRef(null);
   const geocoderRefs = useRef([]);
@@ -49,14 +44,48 @@ export default function RoutePlanner() {
     setMapReady(true);
   }, []);
 
+  // Initialize map
+  useEffect(() => {
+    if (!mapReady || !mapRef.current || map) return;
+
+    const mapInstance = new mapboxgl.Map({
+      container: mapRef.current,
+      style: 'mapbox://styles/mapbox/streets-v12',
+      center: [77.2090, 28.6139], // Delhi coordinates
+      zoom: 11
+    });
+
+    mapInstance.on('load', () => {
+      setMap(mapInstance);
+      
+      // Add navigation controls
+      mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
+      
+      // Add geolocate control
+      mapInstance.addControl(new mapboxgl.GeolocateControl({
+        positionOptions: {
+          enableHighAccuracy: true
+        },
+        trackUserLocation: true,
+        showUserHeading: true
+      }), 'top-right');
+    });
+
+    return () => {
+      if (mapInstance) {
+        mapInstance.remove();
+      }
+    };
+  }, [mapReady, map]);
+
   // Initialize geocoders for each stop
   useEffect(() => {
-    if (!mapReady || !mapRef.current) return;
+    if (!map || !map.isStyleLoaded()) return;
 
     // Clear existing geocoders
     geocoderRefs.current.forEach(geocoder => {
-      if (geocoder) {
-        geocoder.remove();
+      if (geocoder && map) {
+        map.removeControl(geocoder);
       }
     });
     geocoderRefs.current = [];
@@ -89,20 +118,20 @@ export default function RoutePlanner() {
       });
 
       // Add geocoder to the map
-      if (mapRef.current) {
-        mapRef.current.addControl(geocoder, 'top-left');
+      if (map) {
+        map.addControl(geocoder, 'top-left');
         geocoderRefs.current[index] = geocoder;
       }
     });
 
     return () => {
       geocoderRefs.current.forEach(geocoder => {
-        if (geocoder && mapRef.current) {
-          mapRef.current.removeControl(geocoder);
+        if (geocoder && map) {
+          map.removeControl(geocoder);
         }
       });
     };
-  }, [mapReady, stops.length]);
+  }, [map, stops.length]);
 
   const computePlanFallback = () => {
     const valid = stops.map(s => s.address.trim()).filter(Boolean);
@@ -140,11 +169,36 @@ export default function RoutePlanner() {
       if (data.routes && data.routes.length > 0) {
         const route = data.routes[0];
         
-        // Set route data for map display
-        setRouteData({
-          type: 'Feature',
-          properties: {},
-          geometry: route.geometry
+        // Remove existing route source and layer
+        if (map.getSource('route')) {
+          map.removeLayer('route');
+          map.removeSource('route');
+        }
+
+        // Add route source
+        map.addSource('route', {
+          type: 'geojson',
+          data: {
+            type: 'Feature',
+            properties: {},
+            geometry: route.geometry
+          }
+        });
+
+        // Add route layer
+        map.addLayer({
+          id: 'route',
+          type: 'line',
+          source: 'route',
+          layout: {
+            'line-join': 'round',
+            'line-cap': 'round'
+          },
+          paint: {
+            'line-color': '#3b82f6',
+            'line-width': 4,
+            'line-opacity': 0.8
+          }
         });
 
         // Calculate ETAs based on route legs
@@ -169,12 +223,12 @@ export default function RoutePlanner() {
         setPlan(itinerary);
 
         // Fit map to route bounds
-        if (mapRef.current && route.geometry.coordinates.length > 0) {
+        if (route.geometry.coordinates.length > 0) {
           const bounds = route.geometry.coordinates.reduce((bounds, coord) => {
             return bounds.extend(coord);
           }, new mapboxgl.LngLatBounds(route.geometry.coordinates[0], route.geometry.coordinates[0]));
 
-          mapRef.current.fitBounds(bounds, {
+          map.fitBounds(bounds, {
             padding: 50
           });
         }
@@ -233,25 +287,25 @@ export default function RoutePlanner() {
     });
   };
 
-  const routeLayer = {
-    id: 'route',
-    type: 'line',
-    source: 'route',
-    layout: {
-      'line-join': 'round',
-      'line-cap': 'round'
-    },
-    paint: {
-      'line-color': '#3b82f6',
-      'line-width': 4,
-      'line-opacity': 0.8
-    }
-  };
+  // Add markers for stops
+  useEffect(() => {
+    if (!map || !map.isStyleLoaded()) return;
 
-  const routeSource = {
-    type: 'geojson',
-    data: routeData
-  };
+    // Clear existing markers
+    const existingMarkers = document.querySelectorAll('.mapboxgl-marker');
+    existingMarkers.forEach(marker => marker.remove());
+
+    // Add markers for each stop
+    stops.forEach((stop, index) => {
+      if (stop.coordinates) {
+        const marker = new mapboxgl.Marker({
+          color: index === 0 ? '#10b981' : index === stops.length - 1 ? '#ef4444' : '#3b82f6'
+        })
+          .setLngLat(stop.coordinates)
+          .addTo(map);
+      }
+    });
+  }, [map, stops]);
 
   return (
     <div className="max-w-6xl mx-auto px-2 sm:px-4 py-6 sm:py-10">
@@ -330,34 +384,7 @@ export default function RoutePlanner() {
         <div className="bg-white rounded-xl shadow overflow-hidden">
           {MAPBOX_ACCESS_TOKEN ? (
             <div className="h-64 sm:h-80 lg:h-96">
-              <Map
-                ref={mapRef}
-                {...viewport}
-                onMove={evt => setViewport(evt.viewState)}
-                mapStyle="mapbox://styles/mapbox/streets-v12"
-                style={{ width: '100%', height: '100%' }}
-                attributionControl={false}
-              >
-                {/* Route Line */}
-                {routeData && (
-                  <Source id="route" {...routeSource}>
-                    <Layer {...routeLayer} />
-                  </Source>
-                )}
-                
-                {/* Markers for stops */}
-                {stops.map((stop, index) => {
-                  if (!stop.coordinates) return null;
-                  return (
-                    <Marker
-                      key={index}
-                      longitude={stop.coordinates[0]}
-                      latitude={stop.coordinates[1]}
-                      color={index === 0 ? '#10b981' : index === stops.length - 1 ? '#ef4444' : '#3b82f6'}
-                    />
-                  );
-                })}
-              </Map>
+              <div ref={mapRef} className="w-full h-full" />
             </div>
           ) : (
             <div className="h-64 sm:h-80 lg:h-96 flex items-center justify-center text-gray-500">
