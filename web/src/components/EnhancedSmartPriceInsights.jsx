@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
-import { FaChartLine, FaArrowUp, FaCalculator, FaHome, FaBuilding, FaPercentage, FaClock, FaMapMarkerAlt, FaStar, FaInfoCircle, FaShieldAlt, FaGraduationCap, FaBus, FaCloud, FaTrendingUp, FaTrendingDown, FaExclamationTriangle, FaCheckCircle, FaTimes, FaSpinner } from 'react-icons/fa';
+import { FaChartLine, FaArrowUp, FaCalculator, FaHome, FaBuilding, FaPercentage, FaClock, FaMapMarkerAlt, FaStar, FaInfoCircle, FaShieldAlt, FaGraduationCap, FaBus, FaCloud, FaArrowUp as FaTrendingUp, FaArrowDown as FaTrendingDown, FaExclamationTriangle, FaCheckCircle, FaTimes, FaSpinner } from 'react-icons/fa';
 
 const EnhancedSmartPriceInsights = ({ listing, currentUser }) => {
   const [analyticsData, setAnalyticsData] = useState(null);
