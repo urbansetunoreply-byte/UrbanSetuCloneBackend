@@ -2,6 +2,7 @@ import express from 'express';
 import { verifyToken } from '../utils/verify.js';
 import realTimeDataService from '../services/realTimeDataService.js';
 import { API_KEYS, API_ENDPOINTS } from '../config/apiKeys.js';
+import Route from '../models/Route.js';
 
 const router = express.Router();
 
@@ -175,6 +176,77 @@ router.get('/status', (req, res) => {
       }
     }
   });
+});
+
+// POST: Save a route
+router.post('/save', verifyToken, async (req, res) => {
+  try {
+    const { name, stops, route, travelMode, timestamp } = req.body;
+    const userId = req.user.id;
+
+    if (!name || !stops || !route) {
+      return res.status(400).json({ message: 'Route name, stops, and route data are required.' });
+    }
+
+    const savedRoute = new Route({
+      name,
+      stops,
+      route,
+      travelMode,
+      timestamp: new Date(timestamp),
+      userId
+    });
+
+    await savedRoute.save();
+
+    res.status(201).json({
+      message: 'Route saved successfully',
+      route: savedRoute
+    });
+  } catch (error) {
+    console.error('Error saving route:', error);
+    res.status(500).json({ message: 'Server error saving route.' });
+  }
+});
+
+// GET: Fetch saved routes for user
+router.get('/saved', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const routes = await Route.find({ userId })
+      .sort({ timestamp: -1 })
+      .limit(20); // Limit to last 20 routes
+
+    res.status(200).json({
+      message: 'Saved routes fetched successfully',
+      routes
+    });
+  } catch (error) {
+    console.error('Error fetching saved routes:', error);
+    res.status(500).json({ message: 'Server error fetching saved routes.' });
+  }
+});
+
+// DELETE: Delete a saved route
+router.delete('/saved/:routeId', verifyToken, async (req, res) => {
+  try {
+    const { routeId } = req.params;
+    const userId = req.user.id;
+
+    const route = await Route.findOneAndDelete({ _id: routeId, userId });
+
+    if (!route) {
+      return res.status(404).json({ message: 'Route not found or access denied.' });
+    }
+
+    res.status(200).json({
+      message: 'Route deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting route:', error);
+    res.status(500).json({ message: 'Server error deleting route.' });
+  }
 });
 
 export default router;

@@ -178,16 +178,29 @@ export default function RoutePlanner() {
   const clearRoutes = useCallback(() => {
     if (!map) return;
     
-    routeSourcesRef.current.forEach((sourceId, index) => {
+    // Clear main route
+    try {
+      if (map.getLayer('route-main')) {
+        map.removeLayer('route-main');
+      }
+      if (map.getSource('route-main')) {
+        map.removeSource('route-main');
+      }
+    } catch (error) {
+      console.warn('Error removing main route:', error);
+    }
+    
+    // Clear alternative routes
+    routeSourcesRef.current.forEach((sourceId) => {
       try {
-        if (map.getLayer(`route-${index}`)) {
-          map.removeLayer(`route-${index}`);
+        if (map.getLayer(sourceId)) {
+          map.removeLayer(sourceId);
         }
         if (map.getSource(sourceId)) {
           map.removeSource(sourceId);
         }
       } catch (error) {
-        console.warn(`Error removing route ${index}:`, error);
+        console.warn(`Error removing route ${sourceId}:`, error);
       }
     });
     routeSourcesRef.current = [];
@@ -520,15 +533,14 @@ export default function RoutePlanner() {
     return 0;
   };
 
-  // Save route
-  const saveRoute = () => {
+  // Save route to backend
+  const saveRoute = async () => {
     if (!routeData) {
       toast.error('No route to save');
       return;
     }
 
     const routeToSave = {
-      id: Date.now(),
       name: `Route ${stops.filter(s => s.address).map(s => s.address.split(',')[0]).join(' → ')}`,
       stops: stops.filter(s => s.address && s.coordinates),
       route: routeData,
@@ -536,8 +548,27 @@ export default function RoutePlanner() {
       timestamp: new Date()
     };
 
-    setSavedRoutes(prev => [routeToSave, ...prev]);
-    toast.success('Route saved successfully!');
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/route-planner/save`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(routeToSave)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSavedRoutes(prev => [data.route, ...prev]);
+        toast.success('Route saved successfully!');
+      } else {
+        throw new Error('Failed to save route');
+      }
+    } catch (error) {
+      console.error('Error saving route:', error);
+      toast.error('Failed to save route. Please try again.');
+    }
   };
 
   // Load saved route
@@ -546,6 +577,22 @@ export default function RoutePlanner() {
     setTravelMode(savedRoute.travelMode);
     setRouteData(savedRoute.route);
     toast.success('Route loaded successfully!');
+  };
+
+  // Fetch saved routes from backend
+  const fetchSavedRoutes = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/route-planner/saved`, {
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSavedRoutes(data.routes || []);
+      }
+    } catch (error) {
+      console.error('Error fetching saved routes:', error);
+    }
   };
 
   // Export route as GPX
@@ -683,6 +730,11 @@ export default function RoutePlanner() {
       toast.error('Current location not available');
     }
   };
+
+  // Fetch saved routes on component mount
+  useEffect(() => {
+    fetchSavedRoutes();
+  }, []);
 
   return (
     <div className={`max-w-7xl mx-auto px-2 sm:px-4 py-6 sm:py-10 ${isFullscreen ? 'fixed inset-0 z-50 bg-white' : ''}`}>
@@ -1080,6 +1132,218 @@ export default function RoutePlanner() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Settings Panel */}
+      {showSettings && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <FaCog className="text-blue-600" />
+                  Route Planner Settings
+                </h2>
+                <button
+                  onClick={() => setShowSettings(false)}
+                  className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {/* Map Settings */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <FaMapPin className="text-green-600" />
+                    Map Settings
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Map Style
+                      </label>
+                      <select
+                        value={mapStyle}
+                        onChange={(e) => changeMapStyle(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        {Object.keys(mapStyles).map((style) => (
+                          <option key={style} value={style}>
+                            {style.charAt(0).toUpperCase() + style.slice(1).replace(/([A-Z])/g, ' $1')}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="traffic"
+                        checked={showTraffic}
+                        onChange={toggleTraffic}
+                        className="rounded"
+                      />
+                      <label htmlFor="traffic" className="text-sm font-medium text-gray-700">
+                        Show Traffic
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Route Settings */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <FaRoute className="text-blue-600" />
+                    Route Settings
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="optimization"
+                        checked={routeOptimization}
+                        onChange={(e) => setRouteOptimization(e.target.checked)}
+                        className="rounded"
+                      />
+                      <label htmlFor="optimization" className="text-sm font-medium text-gray-700">
+                        Optimize waypoints
+                      </label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="avoidTolls"
+                        checked={avoidTolls}
+                        onChange={(e) => setAvoidTolls(e.target.checked)}
+                        className="rounded"
+                      />
+                      <label htmlFor="avoidTolls" className="text-sm font-medium text-gray-700">
+                        Avoid tolls
+                      </label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="avoidHighways"
+                        checked={avoidHighways}
+                        onChange={(e) => setAvoidHighways(e.target.checked)}
+                        className="rounded"
+                      />
+                      <label htmlFor="avoidHighways" className="text-sm font-medium text-gray-700">
+                        Avoid highways
+                      </label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="alternatives"
+                        checked={showAlternatives}
+                        onChange={(e) => setShowAlternatives(e.target.checked)}
+                        className="rounded"
+                      />
+                      <label htmlFor="alternatives" className="text-sm font-medium text-gray-700">
+                        Show alternative routes
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Saved Routes */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <FaBookmark className="text-purple-600" />
+                    Saved Routes
+                  </h3>
+                  {savedRoutes.length > 0 ? (
+                    <div className="space-y-2 max-h-40 overflow-y-auto">
+                      {savedRoutes.map((route) => (
+                        <div key={route.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">{route.name}</div>
+                            <div className="text-xs text-gray-500">
+                              {new Date(route.timestamp).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => {
+                              loadRoute(route);
+                              setShowSettings(false);
+                            }}
+                            className="px-3 py-1 bg-blue-100 text-blue-600 rounded text-sm hover:bg-blue-200"
+                          >
+                            Load
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 text-sm">No saved routes yet</p>
+                  )}
+                </div>
+
+                {/* Route History */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <FaHistory className="text-orange-600" />
+                    Recent Routes
+                  </h3>
+                  {routeHistory.length > 0 ? (
+                    <div className="space-y-2 max-h-40 overflow-y-auto">
+                      {routeHistory.slice(0, 5).map((route) => (
+                        <div key={route.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">
+                              {route.stops.map(s => s.address.split(',')[0]).join(' → ')}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {route.timestamp.toLocaleString()}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => {
+                              loadRoute(route);
+                              setShowSettings(false);
+                            }}
+                            className="px-3 py-1 bg-green-100 text-green-600 rounded text-sm hover:bg-green-200"
+                          >
+                            Load
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 text-sm">No recent routes</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6 pt-4 border-t">
+                <button
+                  onClick={() => setShowSettings(false)}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    // Reset to defaults
+                    setMapStyle('streets');
+                    setShowTraffic(false);
+                    setRouteOptimization(true);
+                    setAvoidTolls(false);
+                    setAvoidHighways(false);
+                    setShowAlternatives(false);
+                    toast.success('Settings reset to defaults');
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Reset to Defaults
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
