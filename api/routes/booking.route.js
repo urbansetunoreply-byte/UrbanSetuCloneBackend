@@ -277,6 +277,9 @@ router.patch('/:id/status', verifyToken, async (req, res) => {
     const { id } = req.params;
     const sellerId = req.user.id;
     
+    // Get socket.io instance early
+    const io = req.app.get('io');
+    
     // Find the booking and verify the seller owns it
     const bookingToUpdate = await booking.findById(id);
     if (!bookingToUpdate) {
@@ -377,7 +380,6 @@ router.patch('/:id/status', verifyToken, async (req, res) => {
     // --- END Notify buyer logic ---
 
     // Emit socket.io event for real-time appointment update
-    const io = req.app.get('io');
     if (io) {
       io.emit('appointmentUpdate', { appointmentId: id, updatedAppointment: updated });
       // Also emit to admin rooms for real-time updates
