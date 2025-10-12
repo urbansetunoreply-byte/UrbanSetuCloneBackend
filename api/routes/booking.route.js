@@ -290,6 +290,13 @@ router.patch('/:id/status', verifyToken, async (req, res) => {
       return res.status(403).json({ message: 'You can only update appointments for your own properties.' });
     }
     
+    // Prevent rejection of paid appointments
+    if (status === 'rejected' && bookingToUpdate.paymentConfirmed) {
+      return res.status(400).json({ 
+        message: 'Cannot reject appointment as payment has been completed by the buyer. Please contact support if you need to cancel this appointment.' 
+      });
+    }
+    
     const updated = await booking.findByIdAndUpdate(
       id,
       { status },
