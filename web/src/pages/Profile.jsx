@@ -27,6 +27,7 @@ import defaultAvatars from '../assets/avatars'; // Assume this is an array of av
 import avataaarsSchema from '../data/dicebear-avataaars-schema.json';
 
 import { usePageTitle } from '../hooks/usePageTitle';
+import { useSignout } from '../hooks/useSignout';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Animation CSS classes
@@ -241,6 +242,7 @@ export default function Profile() {
 
   const { currentUser, error } = useSelector((state) => state.user);
   const { wishlist } = useWishlist();
+  const { signout } = useSignout();
   const dispatch = useDispatch();
   const [formData, setFormData] = useState({ avatar: currentUser?.avatar || "" });
   const [updateSuccess, setUpdateSuccess] = useState(false);
@@ -1306,60 +1308,11 @@ export default function Profile() {
 
   const onHandleSignout = async (e) => {
     e.preventDefault();
-    try {
-      dispatch(signoutUserStart());
-      const res = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
-      const data = await res.json();
-      if (data.success === false) {
-        dispatch(signoutUserFailure(data.message));
-      } else {
-        dispatch(signoutUserSuccess(data));
-        
-        // Clear persisted state
-        await persistor.purge();
-        
-        // Clear all tokens and cookies
-        localStorage.removeItem('accessToken');
-        document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
-        document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
-        document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
-        
-        // Disconnect socket completely before reconnecting
-        if (socket && socket.connected) {
-          socket.disconnect();
-        }
-        
-        // Reconnect socket with cleared auth
-        reconnectSocket();
-        
-        toast.info("You have been signed out.");
-        await new Promise(resolve => setTimeout(resolve, 50));
-        navigate("/", { replace: true });
-      }
-    } catch (error) {
-      dispatch(signoutUserFailure(error.message));
-      
-      // Clear all authentication state even on error
-      dispatch(signoutUserSuccess());
-      await persistor.purge();
-      
-      // Clear all tokens and cookies
-      localStorage.removeItem('accessToken');
-      document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
-      document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
-      document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
-      
-      // Disconnect socket completely before reconnecting
-      if (socket && socket.connected) {
-        socket.disconnect();
-      }
-      
-      // Reconnect socket with cleared auth
-      reconnectSocket();
-      
-      toast.info("You have been signed out.");
-      navigate("/", { replace: true });
-    }
+    await signout({
+      showToast: true,
+      navigateTo: "/",
+      delay: 50
+    });
   };
 
   const handleShowListings = () => {

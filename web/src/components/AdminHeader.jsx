@@ -8,6 +8,7 @@ import NotificationBell from "./NotificationBell.jsx";
 import { persistor } from '../redux/store';
 import { reconnectSocket } from "../utils/socket";
 import { toast } from 'react-toastify';
+import { useSignout } from '../hooks/useSignout';
 
 export default function AdminHeader() {
   const { currentUser } = useSelector((state) => state.user);
@@ -20,6 +21,7 @@ export default function AdminHeader() {
   const [appointmentCount, setAppointmentCount] = useState(0);
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { signout } = useSignout();
 
   // NEW: For desktop search icon expansion
   const [searchOpen, setSearchOpen] = useState(false);
@@ -186,24 +188,11 @@ export default function AdminHeader() {
   };
 
   const handleSignout = async () => {
-    try {
-      dispatch(signoutUserStart());
-      const res = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
-      const data = await res.json();
-      if (data.success === false) {
-        dispatch(signoutUserFailure(data.message));
-      } else {
-        dispatch(signoutUserSuccess());
-        await persistor.purge();
-        reconnectSocket();
-        localStorage.removeItem('accessToken');
-        document.cookie = 'access_token=; Max-Age=0; path=/; domain=' + window.location.hostname + '; secure; samesite=None';
-        toast.info("You have been signed out.");
-        navigate("/");
-      }
-    } catch (error) {
-      dispatch(signoutUserFailure(error.message));
-    }
+    await signout({
+      showToast: true,
+      navigateTo: "/",
+      delay: 0
+    });
   };
 
   // Unified search handler for both desktop and mobile

@@ -9,6 +9,7 @@ import { persistor } from '../redux/store';
 import { reconnectSocket, socket } from "../utils/socket";
 import { toast } from 'react-toastify';
 import { downloadAndroidApp, isAndroidDevice, isMobileDevice, getDownloadMessage, getDownloadButtonText } from '../utils/androidDownload';
+import { useSignout } from '../hooks/useSignout';
 
 export default function Header() {
   const { currentUser } = useSelector((state) => state.user);
@@ -18,6 +19,7 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { signout } = useSignout();
   const [searchOpen, setSearchOpen] = useState(false);
   const searchInputRef = useRef(null);
 
@@ -186,58 +188,11 @@ export default function Header() {
   };
 
   const handleSignout = async () => {
-    try {
-      const res = await fetch("/api/auth/signout", { method: "GET", credentials: "include" });
-      const data = await res.json();
-      if (data.success === false) {
-        console.log(data.message);
-        return;
-      }
-      
-      // Clear all authentication state
-      dispatch(signoutUserSuccess());
-      await persistor.purge();
-      
-      // Clear all tokens and cookies
-      localStorage.removeItem('accessToken');
-      document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
-      document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
-      document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
-      
-      // Disconnect socket completely before reconnecting
-      if (socket && socket.connected) {
-        socket.disconnect();
-      }
-      
-      // Reconnect socket with cleared auth
-      reconnectSocket();
-      
-      toast.info("You have been signed out.");
-      navigate("/", { replace: true });
-    } catch (error) {
-      console.log(error.message);
-      
-      // Clear all authentication state even on error
-      dispatch(signoutUserSuccess());
-      await persistor.purge();
-      
-      // Clear all tokens and cookies
-      localStorage.removeItem('accessToken');
-      document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
-      document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
-      document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
-      
-      // Disconnect socket completely before reconnecting
-      if (socket && socket.connected) {
-        socket.disconnect();
-      }
-      
-      // Reconnect socket with cleared auth
-      reconnectSocket();
-      
-      toast.info("You have been signed out.");
-      navigate("/", { replace: true });
-    }
+    await signout({
+      showToast: true,
+      navigateTo: "/",
+      delay: 0
+    });
   };
 
   return (
@@ -459,58 +414,11 @@ function UserNavLinks({ mobile = false, onNavigate }) {
   };
 
   const handleSignout = async () => {
-    try {
-      const res = await fetch("/api/auth/signout", { method: "GET", credentials: "include" });
-      const data = await res.json();
-      if (data.success === false) {
-        console.log(data.message);
-        return;
-      }
-      
-      // Clear all authentication state
-      dispatch(signoutUserSuccess());
-      await persistor.purge();
-      
-      // Clear all tokens and cookies
-      localStorage.removeItem('accessToken');
-      document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
-      document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
-      document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
-      
-      // Disconnect socket completely before reconnecting
-      if (socket && socket.connected) {
-        socket.disconnect();
-      }
-      
-      // Reconnect socket with cleared auth
-      reconnectSocket();
-      
-      toast.info("You have been signed out.");
-      navigate("/", { replace: true });
-    } catch (error) {
-      console.log(error.message);
-      
-      // Clear all authentication state even on error
-      dispatch(signoutUserSuccess());
-      await persistor.purge();
-      
-      // Clear all tokens and cookies
-      localStorage.removeItem('accessToken');
-      document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
-      document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
-      document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
-      
-      // Disconnect socket completely before reconnecting
-      if (socket && socket.connected) {
-        socket.disconnect();
-      }
-      
-      // Reconnect socket with cleared auth
-      reconnectSocket();
-      
-      toast.info("You have been signed out.");
-      navigate("/", { replace: true });
-    }
+    await signout({
+      showToast: true,
+      navigateTo: "/",
+      delay: 0
+    });
   };
 
   
