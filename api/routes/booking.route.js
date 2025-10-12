@@ -13,7 +13,9 @@ import {
   sendAppointmentCancelledByBuyerEmail,
   sendAppointmentCancelledBySellerEmail,
   sendAppointmentCancelledByAdminEmail,
-  sendAppointmentReinitiatedByAdminEmail
+  sendAppointmentReinitiatedByAdminEmail,
+  sendAppointmentReinitiatedBySellerEmail,
+  sendAppointmentReinitiatedByBuyerEmail
 } from '../utils/emailService.js';
 import bcryptjs from 'bcryptjs';
 
@@ -1610,6 +1612,43 @@ router.post('/reinitiate', verifyToken, async (req, res) => {
         });
         const io = req.app.get('io');
         if (io) io.to(notifyUserId.toString()).emit('notificationCreated', notification);
+      }
+
+      // Send email notification to the opposite party
+      try {
+        const appointment = await booking.findById(original._id)
+          .populate('buyerId', 'username email firstName lastName')
+          .populate('sellerId', 'username email firstName lastName')
+          .populate('listingId', 'name description address imageUrls regularPrice');
+        
+        const appointmentDetails = {
+          appointmentId: appointment._id,
+          propertyName: appointment.listingId.name,
+          propertyDescription: appointment.listingId.description || '',
+          propertyAddress: appointment.listingId.address,
+          propertyPrice: appointment.listingId.regularPrice,
+          propertyImages: appointment.listingId.imageUrls || [],
+          date: appointment.date,
+          time: appointment.time,
+          buyerName: appointment.buyerId.username,
+          sellerName: appointment.sellerId.username,
+          purpose: appointment.purpose,
+          message: appointment.message,
+          listingId: appointment.listingId._id,
+          reinitiationCount: count + 1
+        };
+
+        if (userId === original.buyerId.toString()) {
+          // Buyer reinitiated, send email to seller
+          await sendAppointmentReinitiatedByBuyerEmail(appointment.sellerId.email, appointmentDetails);
+          console.log(`🔄 Appointment reinitiated by buyer email sent to seller: ${appointment.sellerId.email}`);
+        } else if (userId === original.sellerId.toString()) {
+          // Seller reinitiated, send email to buyer
+          await sendAppointmentReinitiatedBySellerEmail(appointment.buyerId.email, appointmentDetails);
+          console.log(`🔄 Appointment reinitiated by seller email sent to buyer: ${appointment.buyerId.email}`);
+        }
+      } catch (emailError) {
+        console.error('Error sending user reinitiation email:', emailError);
       }
     } catch (notificationError) {
       console.error('Failed to create notification for opposite party:', notificationError);
