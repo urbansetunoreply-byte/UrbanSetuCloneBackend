@@ -335,6 +335,8 @@ router.patch('/:id/status', verifyToken, async (req, res) => {
 
         // Send email notification to buyer
         try {
+          console.log(`📧 Preparing to send ${status} email to buyer: ${updated.buyerId.email}`);
+          
           const appointmentDetails = {
             appointmentId: updated._id,
             propertyName: updated.listingId.name,
@@ -351,12 +353,19 @@ router.patch('/:id/status', verifyToken, async (req, res) => {
             rejectionReason: req.body.rejectionReason || null
           };
 
+          console.log(`📧 Appointment details for email:`, {
+            buyerEmail: updated.buyerId.email,
+            status: status,
+            propertyName: appointmentDetails.propertyName,
+            sellerName: appointmentDetails.sellerName
+          });
+
           if (status === 'accepted') {
-            await sendAppointmentAcceptedEmail(updated.buyerId.email, appointmentDetails);
-            console.log(`✅ Appointment accepted email sent to buyer: ${updated.buyerId.email}`);
+            const emailResult = await sendAppointmentAcceptedEmail(updated.buyerId.email, appointmentDetails);
+            console.log(`✅ Appointment accepted email sent to buyer: ${updated.buyerId.email}`, emailResult);
           } else if (status === 'rejected') {
-            await sendAppointmentRejectedEmail(updated.buyerId.email, appointmentDetails);
-            console.log(`❌ Appointment rejected email sent to buyer: ${updated.buyerId.email}`);
+            const emailResult = await sendAppointmentRejectedEmail(updated.buyerId.email, appointmentDetails);
+            console.log(`❌ Appointment rejected email sent to buyer: ${updated.buyerId.email}`, emailResult);
           }
         } catch (emailError) {
           console.error('Error sending status change email to buyer:', emailError);
@@ -2963,6 +2972,52 @@ router.patch('/:id/chat/forgot-password', verifyToken, async (req, res) => {
   } catch (err) {
     console.error('Error unlocking chat via forgot password:', err);
     return res.status(500).json({ message: 'Failed to unlock chat.' });
+  }
+});
+
+// POST: Test seller accept/reject emails (for testing purposes)
+router.post("/test-seller-status-emails", verifyToken, async (req, res) => {
+  try {
+    const { email, status } = req.body;
+    
+    if (!email || !status) {
+      return res.status(400).json({ message: 'Email and status are required for testing.' });
+    }
+
+    if (!['accepted', 'rejected'].includes(status)) {
+      return res.status(400).json({ message: 'Status must be either "accepted" or "rejected".' });
+    }
+
+    const testAppointmentDetails = {
+      appointmentId: 'test123',
+      propertyName: 'Test Property',
+      propertyDescription: 'This is a test property description',
+      propertyAddress: '123 Test Street, Test City',
+      propertyPrice: 500000,
+      propertyImages: ['https://via.placeholder.com/400x300'],
+      date: '2024-01-15',
+      time: '14:00',
+      sellerName: 'Test Seller',
+      purpose: 'Property viewing',
+      message: 'This is a test appointment',
+      listingId: 'test-listing-123',
+      rejectionReason: status === 'rejected' ? 'Test rejection reason' : null
+    };
+
+    let result;
+    if (status === 'accepted') {
+      result = await sendAppointmentAcceptedEmail(email, testAppointmentDetails);
+    } else if (status === 'rejected') {
+      result = await sendAppointmentRejectedEmail(email, testAppointmentDetails);
+    }
+
+    res.status(200).json({ 
+      message: `Test ${status} email sent successfully to ${email}`, 
+      result: result 
+    });
+  } catch (error) {
+    console.error(`Error sending test ${req.body.status} email:`, error);
+    res.status(500).json({ message: `Failed to send test ${req.body.status} email`, error: error.message });
   }
 });
 
