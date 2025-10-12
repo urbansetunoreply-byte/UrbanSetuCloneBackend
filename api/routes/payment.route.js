@@ -459,6 +459,10 @@ router.post("/verify", verifyToken, async (req, res) => {
 
     // Send payment notification email to seller
     try {
+      // Get seller details
+      await appointment.populate('sellerId', 'email username firstName lastName');
+      const seller = appointment.sellerId;
+      
       await sendSellerPaymentNotificationEmail(seller.email, {
         appointmentId: appointment._id,
         propertyName: listing.name,
@@ -614,6 +618,10 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
 
     // Send payment notification email to seller
     try {
+      // Get seller details
+      await appointment.populate('sellerId', 'email username firstName lastName');
+      const seller = appointment.sellerId;
+      
       await sendSellerPaymentNotificationEmail(seller.email, {
         appointmentId: appointment._id,
         propertyName: listing.name,
