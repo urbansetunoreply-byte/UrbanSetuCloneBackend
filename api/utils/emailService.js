@@ -3520,7 +3520,7 @@ export const sendAppointmentBookingEmail = async (email, appointmentDetails, use
                 📅 My Appointments
               </a>
               ${isBuyer && paymentStatus !== 'paid' ? `
-              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/payment/${appointmentId}" class="btn btn-outline">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-payments" class="btn btn-outline">
                 💳 Make Payment
               </a>
               ` : ''}
@@ -7292,6 +7292,1039 @@ export const sendAppointmentReinitiatedByBuyerEmail = async (email, appointmentD
   } catch (error) {
     console.error('Error sending appointment reinitiated by buyer email:', error);
     return createErrorResponse(error, 'appointment_reinitiated_by_buyer_email');
+  }
+};
+
+// Send Refund Request Approved Email
+export const sendRefundRequestApprovedEmail = async (email, refundDetails) => {
+  try {
+    const {
+      propertyName,
+      propertyAddress,
+      propertyPrice,
+      propertyImage,
+      appointmentDate,
+      appointmentTime,
+      buyerName,
+      requestedAmount,
+      approvedAmount,
+      originalAmount,
+      currency,
+      refundType,
+      refundReason,
+      adminNotes,
+      refundId,
+      processedAt,
+      appointmentId,
+      listingId
+    } = refundDetails;
+
+    const subject = `✅ Refund Request Approved - ${propertyName} | UrbanSetu`;
+    
+    // Format date and time
+    const appointmentDateFormatted = new Date(appointmentDate).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    const processedDate = new Date(processedAt).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    const processedTime = new Date(processedAt).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Refund Request Approved - UrbanSetu</title>
+        <style>
+          body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f8fafc;
+          }
+          .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          }
+          .header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+          }
+          .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+          }
+          .header p {
+            margin: 10px 0 0;
+            font-size: 16px;
+            opacity: 0.9;
+          }
+          .content {
+            padding: 30px;
+          }
+          .success-icon {
+            text-align: center;
+            margin-bottom: 20px;
+          }
+          .success-icon .icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);
+          }
+          .success-icon .icon span {
+            color: white;
+            font-size: 36px;
+            font-weight: bold;
+          }
+          .refund-card {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 2px solid #10b981;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            text-align: center;
+          }
+          .refund-amount {
+            font-size: 32px;
+            font-weight: 700;
+            color: #059669;
+            margin: 10px 0;
+          }
+          .refund-status {
+            background: #10b981;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-block;
+            margin: 10px 0;
+          }
+          .property-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #e2e8f0;
+          }
+          .property-image {
+            width: 100%;
+            max-width: 200px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin: 0 auto 15px;
+            display: block;
+          }
+          .property-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0 0 10px;
+            text-align: center;
+          }
+          .property-address {
+            color: #6b7280;
+            font-size: 14px;
+            margin: 0 0 15px;
+            text-align: center;
+          }
+          .property-price {
+            font-size: 18px;
+            font-weight: 600;
+            color: #059669;
+            text-align: center;
+            margin: 0;
+          }
+          .details-section {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+          }
+          .details-section h3 {
+            color: #1f2937;
+            margin: 0 0 15px;
+            font-size: 18px;
+            font-weight: 600;
+          }
+          .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+          }
+          .detail-row:last-child {
+            border-bottom: none;
+          }
+          .detail-label {
+            color: #6b7280;
+            font-weight: 500;
+          }
+          .detail-value {
+            color: #1f2937;
+            font-weight: 600;
+          }
+          .refund-breakdown {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+          }
+          .refund-breakdown h3 {
+            color: #d97706;
+            margin: 0 0 15px;
+            font-size: 18px;
+            font-weight: 600;
+          }
+          .breakdown-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+          }
+          .breakdown-label {
+            color: #92400e;
+            font-weight: 500;
+          }
+          .breakdown-value {
+            color: #92400e;
+            font-weight: 600;
+          }
+          .highlight {
+            background: #fef3c7;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+          }
+          .admin-notes {
+            background: #eff6ff;
+            border: 1px solid #3b82f6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+          }
+          .admin-notes h3 {
+            color: #1e40af;
+            margin: 0 0 10px;
+            font-size: 16px;
+            font-weight: 600;
+          }
+          .admin-notes p {
+            color: #1e40af;
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.5;
+          }
+          .action-buttons {
+            text-align: center;
+            margin: 30px 0;
+            padding: 0 10px;
+          }
+          .btn-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+            max-width: 100%;
+            width: 100%;
+          }
+          .btn-container.horizontal {
+            flex-direction: row;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+          }
+          .btn {
+            display: inline-block;
+            width: auto;
+            max-width: 280px;
+            padding: 15px 25px;
+            margin: 5px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            text-align: center;
+            box-sizing: border-box;
+            word-wrap: break-word;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          }
+          .btn-container:not(.horizontal) .btn {
+            display: block;
+            width: 100%;
+            margin: 0;
+            padding: 12px 20px;
+          }
+          .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white !important;
+          }
+          .btn-secondary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white !important;
+          }
+          .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+          }
+          .next-steps {
+            background: #f0fdf4;
+            border: 1px solid #10b981;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+          }
+          .next-steps h3 {
+            color: #059669;
+            margin: 0 0 15px;
+            font-size: 18px;
+            font-weight: 600;
+          }
+          .next-steps ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #047857;
+          }
+          .next-steps li {
+            margin: 8px 0;
+            line-height: 1.5;
+          }
+          .footer {
+            background: #f8fafc;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+          }
+          .footer p {
+            color: #6b7280;
+            font-size: 14px;
+            margin: 5px 0;
+          }
+          @media (max-width: 600px) {
+            .container {
+              margin: 0;
+              border-radius: 0;
+            }
+            .header, .content {
+              padding: 20px;
+            }
+            .refund-amount {
+              font-size: 24px;
+            }
+            .btn-container.horizontal {
+              flex-direction: column;
+              gap: 10px;
+            }
+            .btn {
+              max-width: 100%;
+              padding: 14px 16px;
+              font-size: 15px;
+              margin: 0;
+              display: block;
+              width: 100%;
+            }
+            .detail-row {
+              flex-direction: column;
+              align-items: flex-start;
+              gap: 5px;
+            }
+            .breakdown-row {
+              flex-direction: column;
+              align-items: flex-start;
+              gap: 5px;
+            }
+          }
+          @media (max-width: 400px) {
+            .btn {
+              padding: 12px 14px;
+              font-size: 14px;
+            }
+            .action-buttons {
+              padding: 0 2px;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🎉 Refund Request Approved!</h1>
+            <p>Your refund has been processed successfully</p>
+          </div>
+          
+          <div class="content">
+            <div class="success-icon">
+              <div class="icon">
+                <span>✓</span>
+              </div>
+            </div>
+            
+            <div class="refund-card">
+              <div class="refund-amount">
+                ${currency === 'INR' ? '₹' : '$'}${approvedAmount.toLocaleString()}
+              </div>
+              <div class="refund-status">REFUND APPROVED</div>
+              <p style="margin: 10px 0 0; color: #047857; font-size: 14px;">
+                ${refundType === 'full' ? 'Full refund processed' : 'Partial refund processed'}
+              </p>
+            </div>
+            
+            <div class="property-card">
+              <img src="${propertyImage}" alt="${propertyName}" class="property-image" />
+              <h2 class="property-title">${propertyName}</h2>
+              <p class="property-address">📍 ${propertyAddress || 'Address not specified'}</p>
+              <p class="property-price">💰 ${currency === 'INR' ? '₹' : '$'}${propertyPrice || 'Price not specified'}</p>
+            </div>
+            
+            <div class="details-section">
+              <h3>📋 Refund Details</h3>
+              <div class="detail-row">
+                <span class="detail-label">👤 Buyer:</span>
+                <span class="detail-value">${buyerName}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">📅 Appointment Date:</span>
+                <span class="detail-value">${appointmentDateFormatted}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">🕐 Appointment Time:</span>
+                <span class="detail-value">${appointmentTime}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">🆔 Refund ID:</span>
+                <span class="detail-value">${refundId}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">📅 Processed Date:</span>
+                <span class="detail-value">${processedDate}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">🕐 Processed Time:</span>
+                <span class="detail-value">${processedTime}</span>
+              </div>
+            </div>
+            
+            <div class="refund-breakdown">
+              <h3>💰 Refund Breakdown</h3>
+              <div class="breakdown-row">
+                <span class="breakdown-label">Original Payment Amount:</span>
+                <span class="breakdown-value">${currency === 'INR' ? '₹' : '$'}${originalAmount.toLocaleString()}</span>
+              </div>
+              <div class="breakdown-row">
+                <span class="breakdown-label">Requested Refund Amount:</span>
+                <span class="breakdown-value">${currency === 'INR' ? '₹' : '$'}${requestedAmount.toLocaleString()}</span>
+              </div>
+              <div class="breakdown-row">
+                <span class="breakdown-label">Approved Refund Amount:</span>
+                <span class="breakdown-value highlight">${currency === 'INR' ? '₹' : '$'}${approvedAmount.toLocaleString()}</span>
+              </div>
+              ${approvedAmount !== requestedAmount ? `
+              <div class="breakdown-row">
+                <span class="breakdown-label">Admin Adjustment:</span>
+                <span class="breakdown-value">${currency === 'INR' ? '₹' : '$'}${(approvedAmount - requestedAmount).toLocaleString()}</span>
+              </div>
+              ` : ''}
+            </div>
+            
+            <div class="details-section">
+              <h3>📝 Refund Information</h3>
+              <div class="detail-row">
+                <span class="detail-label">Refund Type:</span>
+                <span class="detail-value">${refundType === 'full' ? 'Full Refund' : 'Partial Refund'}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Refund Reason:</span>
+                <span class="detail-value">${refundReason}</span>
+              </div>
+            </div>
+            
+            ${adminNotes ? `
+            <div class="admin-notes">
+              <h3>💬 Admin Notes</h3>
+              <p>${adminNotes}</p>
+            </div>
+            ` : ''}
+            
+            <div class="action-buttons">
+              <div class="btn-container horizontal">
+                <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
+                  🏠 View Property Details
+                </a>
+                <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
+                  📅 My Appointments
+                </a>
+              </div>
+            </div>
+            
+            <div class="next-steps">
+              <h3>📋 What's Next?</h3>
+              <ul>
+                <li>Your refund will be processed within 3-5 business days</li>
+                <li>You will receive the refund in your original payment method</li>
+                <li>Check your bank account or payment provider for the refund</li>
+                <li>If you have any questions, contact our support team</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="footer">
+            <p><strong>Thank you for using UrbanSetu!</strong></p>
+            <p>If you have any questions about this refund, please contact our support team.</p>
+            <p style="color: #9ca3af; margin: 15px 0 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending refund request approved email:', error);
+    return createErrorResponse(error, 'refund_request_approved_email');
+  }
+};
+
+// Send Refund Request Rejected Email
+export const sendRefundRequestRejectedEmail = async (email, refundDetails) => {
+  try {
+    const {
+      propertyName,
+      propertyAddress,
+      propertyPrice,
+      propertyImage,
+      appointmentDate,
+      appointmentTime,
+      buyerName,
+      requestedAmount,
+      originalAmount,
+      currency,
+      refundType,
+      refundReason,
+      adminNotes,
+      processedAt,
+      appointmentId,
+      listingId
+    } = refundDetails;
+
+    const subject = `❌ Refund Request Rejected - ${propertyName} | UrbanSetu`;
+    
+    // Format date and time
+    const appointmentDateFormatted = new Date(appointmentDate).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    const processedDate = new Date(processedAt).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    const processedTime = new Date(processedAt).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Refund Request Rejected - UrbanSetu</title>
+        <style>
+          body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f8fafc;
+          }
+          .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          }
+          .header {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+          }
+          .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+          }
+          .header p {
+            margin: 10px 0 0;
+            font-size: 16px;
+            opacity: 0.9;
+          }
+          .content {
+            padding: 30px;
+          }
+          .rejection-icon {
+            text-align: center;
+            margin-bottom: 20px;
+          }
+          .rejection-icon .icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 16px rgba(239, 68, 68, 0.3);
+          }
+          .rejection-icon .icon span {
+            color: white;
+            font-size: 36px;
+            font-weight: bold;
+          }
+          .rejection-card {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border: 2px solid #ef4444;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            text-align: center;
+          }
+          .rejection-status {
+            background: #ef4444;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-block;
+            margin: 10px 0;
+          }
+          .property-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #e2e8f0;
+          }
+          .property-image {
+            width: 100%;
+            max-width: 200px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin: 0 auto 15px;
+            display: block;
+          }
+          .property-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0 0 10px;
+            text-align: center;
+          }
+          .property-address {
+            color: #6b7280;
+            font-size: 14px;
+            margin: 0 0 15px;
+            text-align: center;
+          }
+          .property-price {
+            font-size: 18px;
+            font-weight: 600;
+            color: #059669;
+            text-align: center;
+            margin: 0;
+          }
+          .details-section {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+          }
+          .details-section h3 {
+            color: #1f2937;
+            margin: 0 0 15px;
+            font-size: 18px;
+            font-weight: 600;
+          }
+          .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+          }
+          .detail-row:last-child {
+            border-bottom: none;
+          }
+          .detail-label {
+            color: #6b7280;
+            font-weight: 500;
+          }
+          .detail-value {
+            color: #1f2937;
+            font-weight: 600;
+          }
+          .refund-breakdown {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+          }
+          .refund-breakdown h3 {
+            color: #d97706;
+            margin: 0 0 15px;
+            font-size: 18px;
+            font-weight: 600;
+          }
+          .breakdown-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+          }
+          .breakdown-label {
+            color: #92400e;
+            font-weight: 500;
+          }
+          .breakdown-value {
+            color: #92400e;
+            font-weight: 600;
+          }
+          .rejection-reason {
+            background: #fef2f2;
+            border: 1px solid #ef4444;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+          }
+          .rejection-reason h3 {
+            color: #dc2626;
+            margin: 0 0 10px;
+            font-size: 16px;
+            font-weight: 600;
+          }
+          .rejection-reason p {
+            color: #dc2626;
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.5;
+          }
+          .action-buttons {
+            text-align: center;
+            margin: 30px 0;
+            padding: 0 10px;
+          }
+          .btn-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+            max-width: 100%;
+            width: 100%;
+          }
+          .btn-container.horizontal {
+            flex-direction: row;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+          }
+          .btn {
+            display: inline-block;
+            width: auto;
+            max-width: 280px;
+            padding: 15px 25px;
+            margin: 5px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            text-align: center;
+            box-sizing: border-box;
+            word-wrap: break-word;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          }
+          .btn-container:not(.horizontal) .btn {
+            display: block;
+            width: 100%;
+            margin: 0;
+            padding: 12px 20px;
+          }
+          .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white !important;
+          }
+          .btn-secondary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white !important;
+          }
+          .btn-outline {
+            background: transparent;
+            color: #7c3aed !important;
+            border: 2px solid #7c3aed;
+          }
+          .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+          }
+          .appeal-section {
+            background: #f3e8ff;
+            border: 1px solid #7c3aed;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+          }
+          .appeal-section h3 {
+            color: #7c3aed;
+            margin: 0 0 15px;
+            font-size: 18px;
+            font-weight: 600;
+          }
+          .appeal-section ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #6b21a8;
+          }
+          .appeal-section li {
+            margin: 8px 0;
+            line-height: 1.5;
+          }
+          .footer {
+            background: #f8fafc;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+          }
+          .footer p {
+            color: #6b7280;
+            font-size: 14px;
+            margin: 5px 0;
+          }
+          @media (max-width: 600px) {
+            .container {
+              margin: 0;
+              border-radius: 0;
+            }
+            .header, .content {
+              padding: 20px;
+            }
+            .btn-container.horizontal {
+              flex-direction: column;
+              gap: 10px;
+            }
+            .btn {
+              max-width: 100%;
+              padding: 14px 16px;
+              font-size: 15px;
+              margin: 0;
+              display: block;
+              width: 100%;
+            }
+            .detail-row {
+              flex-direction: column;
+              align-items: flex-start;
+              gap: 5px;
+            }
+            .breakdown-row {
+              flex-direction: column;
+              align-items: flex-start;
+              gap: 5px;
+            }
+          }
+          @media (max-width: 400px) {
+            .btn {
+              padding: 12px 14px;
+              font-size: 14px;
+            }
+            .action-buttons {
+              padding: 0 2px;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>❌ Refund Request Rejected</h1>
+            <p>Your refund request could not be approved</p>
+          </div>
+          
+          <div class="content">
+            <div class="rejection-icon">
+              <div class="icon">
+                <span>✗</span>
+              </div>
+            </div>
+            
+            <div class="rejection-card">
+              <div class="rejection-status">REFUND REJECTED</div>
+              <p style="margin: 10px 0 0; color: #dc2626; font-size: 14px;">
+                Your refund request has been reviewed and cannot be approved at this time
+              </p>
+            </div>
+            
+            <div class="property-card">
+              <img src="${propertyImage}" alt="${propertyName}" class="property-image" />
+              <h2 class="property-title">${propertyName}</h2>
+              <p class="property-address">📍 ${propertyAddress || 'Address not specified'}</p>
+              <p class="property-price">💰 ${currency === 'INR' ? '₹' : '$'}${propertyPrice || 'Price not specified'}</p>
+            </div>
+            
+            <div class="details-section">
+              <h3>📋 Request Details</h3>
+              <div class="detail-row">
+                <span class="detail-label">👤 Buyer:</span>
+                <span class="detail-value">${buyerName}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">📅 Appointment Date:</span>
+                <span class="detail-value">${appointmentDateFormatted}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">🕐 Appointment Time:</span>
+                <span class="detail-value">${appointmentTime}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">📅 Rejected Date:</span>
+                <span class="detail-value">${processedDate}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">🕐 Rejected Time:</span>
+                <span class="detail-value">${processedTime}</span>
+              </div>
+            </div>
+            
+            <div class="refund-breakdown">
+              <h3>💰 Refund Request Details</h3>
+              <div class="breakdown-row">
+                <span class="breakdown-label">Original Payment Amount:</span>
+                <span class="breakdown-value">${currency === 'INR' ? '₹' : '$'}${originalAmount.toLocaleString()}</span>
+              </div>
+              <div class="breakdown-row">
+                <span class="breakdown-label">Requested Refund Amount:</span>
+                <span class="breakdown-value">${currency === 'INR' ? '₹' : '$'}${requestedAmount.toLocaleString()}</span>
+              </div>
+              <div class="breakdown-row">
+                <span class="breakdown-label">Refund Type:</span>
+                <span class="breakdown-value">${refundType === 'full' ? 'Full Refund' : 'Partial Refund'}</span>
+              </div>
+            </div>
+            
+            <div class="details-section">
+              <h3>📝 Request Information</h3>
+              <div class="detail-row">
+                <span class="detail-label">Your Reason:</span>
+                <span class="detail-value">${refundReason}</span>
+              </div>
+            </div>
+            
+            ${adminNotes ? `
+            <div class="rejection-reason">
+              <h3>💬 Admin Response</h3>
+              <p>${adminNotes}</p>
+            </div>
+            ` : ''}
+            
+            <div class="action-buttons">
+              <div class="btn-container horizontal">
+                <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
+                  🏠 View Property Details
+                </a>
+                <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
+                  📅 My Appointments
+                </a>
+              </div>
+            </div>
+            
+            <div class="appeal-section">
+              <h3>🔄 Appeal Your Refund Request</h3>
+              <p style="color: #6b21a8; margin: 0 0 15px; font-size: 14px;">
+                If you believe this decision was made in error, you can appeal your refund request with additional information or documentation.
+              </p>
+              <ul>
+                <li>Provide additional evidence or documentation</li>
+                <li>Explain any new circumstances</li>
+                <li>Include any relevant proof or receipts</li>
+                <li>Be specific about why you believe the refund should be approved</li>
+              </ul>
+              <div style="text-align: center; margin-top: 20px;">
+                <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-outline">
+                  🔄 Appeal Refund Request
+                </a>
+              </div>
+            </div>
+          </div>
+          
+          <div class="footer">
+            <p><strong>We're here to help!</strong></p>
+            <p>If you have any questions about this decision or need assistance, please contact our support team.</p>
+            <p style="color: #9ca3af; margin: 15px 0 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending refund request rejected email:', error);
+    return createErrorResponse(error, 'refund_request_rejected_email');
   }
 };
 

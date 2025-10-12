@@ -9,7 +9,7 @@ import Notification from "../models/notification.model.js";
 import { verifyToken } from '../utils/verify.js';
 import crypto from 'crypto';
 import { createPayPalOrder, capturePayPalOrder, getPayPalAccessToken } from '../controllers/paypalController.js';
-import { sendPaymentSuccessEmail, sendPaymentFailedEmail, sendSellerPaymentNotificationEmail } from '../utils/emailService.js';
+import { sendPaymentSuccessEmail, sendPaymentFailedEmail, sendSellerPaymentNotificationEmail, sendRefundRequestApprovedEmail, sendRefundRequestRejectedEmail } from '../utils/emailService.js';
 import fetch from 'node-fetch';
 import PDFDocument from 'pdfkit';
 
@@ -1023,6 +1023,74 @@ router.put("/refund-request/:requestId", verifyToken, async (req, res) => {
       // Update refund request status to processed
       refundRequest.status = 'processed';
       await refundRequest.save();
+
+      // Send refund approved email to user
+      try {
+        // Get user and appointment details for email
+        const user = await User.findById(refundRequest.userId);
+        const appointment = await Booking.findById(refundRequest.appointmentId).populate('listingId');
+        const listing = appointment.listingId;
+
+        if (user && appointment && listing) {
+          await sendRefundRequestApprovedEmail(user.email, {
+            propertyName: appointment.propertyName,
+            propertyAddress: listing.address,
+            propertyPrice: listing.regularPrice || listing.discountPrice,
+            propertyImage: listing.imageUrls && listing.imageUrls.length > 0 ? listing.imageUrls[0] : '',
+            appointmentDate: appointment.date,
+            appointmentTime: appointment.time,
+            buyerName: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username,
+            requestedAmount: refundRequest.requestedAmount,
+            approvedAmount: finalRefundAmount,
+            originalAmount: payment.amount,
+            currency: payment.currency,
+            refundType: refundRequest.type,
+            refundReason: refundRequest.reason,
+            adminNotes: adminNotes,
+            refundId: payment.refundId,
+            processedAt: refundRequest.processedAt,
+            appointmentId: appointment._id,
+            listingId: listing._id
+          });
+          console.log(`✅ Refund approved email sent to user: ${user.email}`);
+        }
+      } catch (emailError) {
+        console.error('Error sending refund approved email:', emailError);
+      }
+    }
+
+    // Send refund rejected email if status is rejected
+    if (status === 'rejected') {
+      try {
+        // Get user and appointment details for email
+        const user = await User.findById(refundRequest.userId);
+        const appointment = await Booking.findById(refundRequest.appointmentId).populate('listingId');
+        const listing = appointment.listingId;
+
+        if (user && appointment && listing) {
+          await sendRefundRequestRejectedEmail(user.email, {
+            propertyName: appointment.propertyName,
+            propertyAddress: listing.address,
+            propertyPrice: listing.regularPrice || listing.discountPrice,
+            propertyImage: listing.imageUrls && listing.imageUrls.length > 0 ? listing.imageUrls[0] : '',
+            appointmentDate: appointment.date,
+            appointmentTime: appointment.time,
+            buyerName: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username,
+            requestedAmount: refundRequest.requestedAmount,
+            originalAmount: payment.amount,
+            currency: payment.currency,
+            refundType: refundRequest.type,
+            refundReason: refundRequest.reason,
+            adminNotes: adminNotes,
+            processedAt: refundRequest.processedAt,
+            appointmentId: appointment._id,
+            listingId: listing._id
+          });
+          console.log(`❌ Refund rejected email sent to user: ${user.email}`);
+        }
+      } catch (emailError) {
+        console.error('Error sending refund rejected email:', emailError);
+      }
     }
 
     res.status(200).json({
