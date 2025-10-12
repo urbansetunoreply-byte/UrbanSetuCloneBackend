@@ -3747,6 +3747,7 @@ export const sendSellerPaymentNotificationEmail = async (email, paymentDetails) 
             <h3>📋 Next Steps:</h3>
             <ul>
               <li>Your appointment is now confirmed and secured</li>
+              <li>Accept the payment to get the buyer's contact details from your appointments page</li>
               <li>Prepare the property for viewing</li>
               <li>Be available at the scheduled appointment time</li>
               <li>You can communicate with the buyer through the appointment chat</li>
