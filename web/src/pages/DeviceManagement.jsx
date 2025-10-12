@@ -4,6 +4,9 @@ import { toast } from 'react-toastify';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const DeviceManagement = () => {
+  // Set page title
+  usePageTitle("Device Management - Security Settings");
+  
   const { currentUser } = useSelector((state) => state.user);
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);

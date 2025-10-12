@@ -3,6 +3,9 @@ import { FaDollarSign, FaCreditCard, FaDownload, FaClock, FaCheckCircle, FaTimes
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const MyPayments = () => {
+  // Set page title
+  usePageTitle("My Payments - Payment History");
+  
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ status: '', gateway: '', currency: '', q: '', fromDate: '', toDate: '' });

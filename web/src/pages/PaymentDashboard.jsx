@@ -5,6 +5,9 @@ import RefundManagement from '../components/RefundManagement';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const PaymentDashboard = () => {
+  // Set page title
+  usePageTitle("Payment Dashboard - Financial Management");
+  
   const [activeTab, setActiveTab] = useState('overview');
   const [stats, setStats] = useState({
     totalPayments: 0,

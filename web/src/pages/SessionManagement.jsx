@@ -4,6 +4,9 @@ import { toast } from 'react-toastify';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const SessionManagement = () => {
+  // Set page title
+  usePageTitle("Session Management - User Sessions");
+  
   const { currentUser } = useSelector((state) => state.user);
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);

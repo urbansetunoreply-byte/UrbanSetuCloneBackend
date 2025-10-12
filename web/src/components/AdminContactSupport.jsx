@@ -164,10 +164,20 @@ export default function AdminContactSupport({ forceModalOpen = false, onModalClo
         method: 'PUT',
         credentials: 'include',
       });
-      fetchMessages();
+      
+      // Update local state instead of refetching all messages
+      setMessages(prevMessages => 
+        prevMessages.map(msg => 
+          msg._id === messageId 
+            ? { ...msg, status: 'read' }
+            : msg
+        )
+      );
       fetchUnreadCount();
+      toast.success('Message marked as read');
     } catch (error) {
       console.error('Error marking message as read:', error);
+      toast.error('Failed to mark message as read');
     }
   };
 
@@ -177,10 +187,20 @@ export default function AdminContactSupport({ forceModalOpen = false, onModalClo
         method: 'PUT',
         credentials: 'include',
       });
-      fetchMessages();
+      
+      // Update local state instead of refetching all messages
+      setMessages(prevMessages => 
+        prevMessages.map(msg => 
+          msg._id === messageId 
+            ? { ...msg, status: 'replied' }
+            : msg
+        )
+      );
       fetchUnreadCount();
+      toast.success('Message marked as replied');
     } catch (error) {
       console.error('Error marking message as replied:', error);
+      toast.error('Failed to mark message as replied');
     }
   };
 
@@ -198,7 +218,11 @@ export default function AdminContactSupport({ forceModalOpen = false, onModalClo
         method: 'DELETE',
         credentials: 'include',
       });
-      fetchMessages();
+      
+      // Update local state instead of refetching all messages
+      setMessages(prevMessages => 
+        prevMessages.filter(msg => msg._id !== messageToDelete)
+      );
       fetchUnreadCount();
       toast.success('Message deleted successfully!');
     } catch (error) {
@@ -233,7 +257,15 @@ export default function AdminContactSupport({ forceModalOpen = false, onModalClo
       if (data.success) {
         setReplyMessage("");
         setReplyingTo(null);
-        fetchMessages();
+        
+        // Update local state instead of refetching all messages
+        setMessages(prevMessages => 
+          prevMessages.map(msg => 
+            msg._id === messageId 
+              ? { ...msg, adminReply: replyMessage.trim(), status: 'replied' }
+              : msg
+          )
+        );
         fetchUnreadCount();
         toast.success('Reply sent successfully!');
       } else {

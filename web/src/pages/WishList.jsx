@@ -9,6 +9,9 @@ import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const WishList = () => {
+  // Set page title
+  usePageTitle("My Wishlist - Saved Properties");
+  
   const navigate = useNavigate();
   const { currentUser } = useSelector((state) => state.user);
   const [items, setItems] = useState([]);

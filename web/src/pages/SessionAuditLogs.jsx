@@ -4,6 +4,9 @@ import { toast } from 'react-toastify';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const SessionAuditLogs = () => {
+  // Set page title
+  usePageTitle("Session Audit Logs - Security History");
+  
   const { currentUser } = useSelector((state) => state.user);
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
