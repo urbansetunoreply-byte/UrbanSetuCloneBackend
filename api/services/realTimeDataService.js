@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Listing } from '../models/listing.model.js';
+import Listing from '../models/listing.model.js';
 
 class RealTimeDataService {
   constructor() {

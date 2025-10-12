@@ -1,7 +1,7 @@
 import express from 'express';
 import { verifyToken } from '../utils/verify.js';
 import realTimeDataService from '../services/realTimeDataService.js';
-import { Listing } from '../models/listing.model.js';
+import Listing from '../models/listing.model.js';
 
 const router = express.Router();
 
