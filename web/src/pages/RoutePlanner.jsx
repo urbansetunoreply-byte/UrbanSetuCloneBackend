@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { FaRoute, FaPlus, FaTrash, FaClock, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaRoute, FaPlus, FaTrash, FaClock, FaMapMarkerAlt, FaCar, FaWalking, FaBicycle, FaBus, FaCog, FaDownload, FaShare, FaBookmark, FaHistory, FaFilter, FaSearch, FaLocationArrow, FaMapPin, FaDirections, FaInfoCircle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import mapboxgl from 'mapbox-gl';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
@@ -12,8 +12,9 @@ const MAPBOX_ACCESS_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
 export default function RoutePlanner() {
   // Set page title
-  usePageTitle("Route Planner - Navigation Tool");
+  usePageTitle("Advanced Route Planner - Navigation Tool");
 
+  // State management
   const [stops, setStops] = useState([{ address: '', coordinates: null }]);
   const [optimizing, setOptimizing] = useState(false);
   const [plan, setPlan] = useState([]);
@@ -22,10 +23,47 @@ export default function RoutePlanner() {
   const [mapReady, setMapReady] = useState(false);
   const [map, setMap] = useState(null);
   const [mapError, setMapError] = useState(null);
+  
+  // Advanced features state
+  const [travelMode, setTravelMode] = useState('driving');
+  const [mapStyle, setMapStyle] = useState('streets');
+  const [showTraffic, setShowTraffic] = useState(false);
+  const [showSatellite, setShowSatellite] = useState(false);
+  const [routeOptimization, setRouteOptimization] = useState(true);
+  const [avoidTolls, setAvoidTolls] = useState(false);
+  const [avoidHighways, setAvoidHighways] = useState(false);
+  const [showAlternatives, setShowAlternatives] = useState(false);
+  const [savedRoutes, setSavedRoutes] = useState([]);
+  const [routeHistory, setRouteHistory] = useState([]);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [currentLocation, setCurrentLocation] = useState(null);
+  const [routeStats, setRouteStats] = useState(null);
+  const [alternatives, setAlternatives] = useState([]);
+  const [selectedAlternative, setSelectedAlternative] = useState(0);
 
   const mapRef = useRef(null);
   const geocoderRefs = useRef([]);
   const markersRef = useRef([]);
+  const routeSourcesRef = useRef([]);
+
+  // Map styles configuration
+  const mapStyles = {
+    streets: 'mapbox://styles/mapbox/streets-v12',
+    outdoors: 'mapbox://styles/mapbox/outdoors-v12',
+    light: 'mapbox://styles/mapbox/light-v11',
+    dark: 'mapbox://styles/mapbox/dark-v11',
+    satellite: 'mapbox://styles/mapbox/satellite-v9',
+    satelliteStreets: 'mapbox://styles/mapbox/satellite-streets-v12'
+  };
+
+  // Travel modes configuration
+  const travelModes = [
+    { id: 'driving', name: 'Driving', icon: FaCar, color: '#3B82F6' },
+    { id: 'walking', name: 'Walking', icon: FaWalking, color: '#10B981' },
+    { id: 'cycling', name: 'Cycling', icon: FaBicycle, color: '#8B5CF6' },
+    { id: 'driving-traffic', name: 'Driving (Traffic)', icon: FaCar, color: '#F59E0B' }
+  ];
 
   const addStop = () => setStops(s => [...s, { address: '', coordinates: null }]);
   const removeStop = (i) => setStops(s => s.filter((_, idx) => idx !== i));
@@ -53,17 +91,19 @@ export default function RoutePlanner() {
     }
   }, []);
 
-  // Initialize map
+  // Initialize map with advanced features
   useEffect(() => {
     if (!mapReady || !mapRef.current || map) return;
 
     try {
       const mapInstance = new mapboxgl.Map({
         container: mapRef.current,
-        style: 'mapbox://styles/mapbox/streets-v12',
+        style: mapStyles[mapStyle],
         center: [77.2090, 28.6139], // Delhi coordinates
         zoom: 11,
-        attributionControl: false
+        attributionControl: false,
+        maxZoom: 20,
+        minZoom: 1
       });
 
       // Handle map load
@@ -73,16 +113,36 @@ export default function RoutePlanner() {
         setMapError(null);
         
         // Add navigation controls
-        mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
+        mapInstance.addControl(new mapboxgl.NavigationControl({
+          showCompass: true,
+          showZoom: true,
+          visualizePitch: true
+        }), 'top-right');
         
         // Add geolocate control
-        mapInstance.addControl(new mapboxgl.GeolocateControl({
+        const geolocate = new mapboxgl.GeolocateControl({
           positionOptions: {
             enableHighAccuracy: true
           },
           trackUserLocation: true,
-          showUserHeading: true
-        }), 'top-right');
+          showUserHeading: true,
+          showAccuracyCircle: true
+        });
+        
+        geolocate.on('geolocate', (e) => {
+          setCurrentLocation([e.coords.longitude, e.coords.latitude]);
+        });
+        
+        mapInstance.addControl(geolocate, 'top-right');
+        
+        // Add scale control
+        mapInstance.addControl(new mapboxgl.ScaleControl({
+          maxWidth: 100,
+          unit: 'metric'
+        }), 'bottom-left');
+        
+        // Add fullscreen control
+        mapInstance.addControl(new mapboxgl.FullscreenControl(), 'top-right');
       });
 
       // Handle map errors
@@ -91,7 +151,7 @@ export default function RoutePlanner() {
         setMapError('Map failed to load. Please check your internet connection.');
       });
 
-      // Handle style load errors
+      // Handle style load
       mapInstance.on('style.load', () => {
         console.log('Map style loaded successfully');
       });
@@ -112,7 +172,26 @@ export default function RoutePlanner() {
         setMap(null);
       }
     };
-  }, [mapReady]);
+  }, [mapReady, mapStyle]);
+
+  // Clear all route sources and layers
+  const clearRoutes = useCallback(() => {
+    if (!map) return;
+    
+    routeSourcesRef.current.forEach((sourceId, index) => {
+      try {
+        if (map.getLayer(`route-${index}`)) {
+          map.removeLayer(`route-${index}`);
+        }
+        if (map.getSource(sourceId)) {
+          map.removeSource(sourceId);
+        }
+      } catch (error) {
+        console.warn(`Error removing route ${index}:`, error);
+      }
+    });
+    routeSourcesRef.current = [];
+  }, [map]);
 
   // Clear markers
   const clearMarkers = useCallback(() => {
@@ -124,7 +203,7 @@ export default function RoutePlanner() {
     markersRef.current = [];
   }, []);
 
-  // Add markers for stops
+  // Add markers for stops with enhanced styling
   const addMarkers = useCallback(() => {
     if (!map || !map.isStyleLoaded()) return;
 
@@ -132,12 +211,46 @@ export default function RoutePlanner() {
 
     stops.forEach((stop, index) => {
       if (stop.coordinates) {
-        const marker = new mapboxgl.Marker({
-          color: index === 0 ? '#10b981' : index === stops.length - 1 ? '#ef4444' : '#3b82f6'
-        })
+        const isStart = index === 0;
+        const isEnd = index === stops.length - 1;
+        
+        // Create custom marker element
+        const el = document.createElement('div');
+        el.className = 'custom-marker';
+        el.style.cssText = `
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          background: ${isStart ? '#10b981' : isEnd ? '#ef4444' : '#3b82f6'};
+          border: 3px solid white;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-weight: bold;
+          font-size: 12px;
+        `;
+        el.textContent = index + 1;
+
+        const marker = new mapboxgl.Marker(el)
           .setLngLat(stop.coordinates)
           .addTo(map);
         
+        // Add popup with stop information
+        const popup = new mapboxgl.Popup({ offset: 25 })
+          .setHTML(`
+            <div class="p-2">
+              <h3 class="font-semibold text-sm">Stop ${index + 1}</h3>
+              <p class="text-xs text-gray-600">${stop.address}</p>
+              <button onclick="navigator.clipboard.writeText('${stop.coordinates[1]}, ${stop.coordinates[0]}')" 
+                      class="text-xs text-blue-600 hover:text-blue-800 mt-1">
+                Copy Coordinates
+              </button>
+            </div>
+          `);
+        
+        marker.setPopup(popup);
         markersRef.current.push(marker);
       }
     });
@@ -150,6 +263,56 @@ export default function RoutePlanner() {
     }
   }, [map, stops, addMarkers]);
 
+  // Change map style
+  const changeMapStyle = (style) => {
+    if (map) {
+      setMapStyle(style);
+      map.setStyle(mapStyles[style]);
+    }
+  };
+
+  // Toggle traffic layer
+  const toggleTraffic = () => {
+    if (!map) return;
+    
+    setShowTraffic(!showTraffic);
+    
+    if (!showTraffic) {
+      // Add traffic layer
+      map.addSource('traffic', {
+        type: 'vector',
+        url: 'mapbox://mapbox.mapbox-traffic-v1'
+      });
+      
+      map.addLayer({
+        id: 'traffic',
+        type: 'line',
+        source: 'traffic',
+        'source-layer': 'traffic',
+        paint: {
+          'line-width': 2,
+          'line-color': [
+            'case',
+            ['==', ['get', 'congestion'], 'low'], '#10b981',
+            ['==', ['get', 'congestion'], 'moderate'], '#f59e0b',
+            ['==', ['get', 'congestion'], 'heavy'], '#ef4444',
+            ['==', ['get', 'congestion'], 'severe'], '#dc2626',
+            '#6b7280'
+          ]
+        }
+      });
+    } else {
+      // Remove traffic layer
+      if (map.getLayer('traffic')) {
+        map.removeLayer('traffic');
+      }
+      if (map.getSource('traffic')) {
+        map.removeSource('traffic');
+      }
+    }
+  };
+
+  // Compute fallback plan
   const computePlanFallback = () => {
     const valid = stops.map(s => s.address.trim()).filter(Boolean);
     const now = new Date();
@@ -159,7 +322,7 @@ export default function RoutePlanner() {
     }));
   };
 
-  // Plan route using Mapbox Directions API
+  // Enhanced route planning with alternatives
   const optimize = async () => {
     const validStops = stops.filter(s => s.address.trim() && s.coordinates);
     if (validStops.length < 2) { 
@@ -177,9 +340,21 @@ export default function RoutePlanner() {
       // Prepare coordinates for Mapbox Directions API
       const coordinates = validStops.map(stop => stop.coordinates).join(';');
       
+      // Build request parameters
+      const params = new URLSearchParams({
+        geometries: 'geojson',
+        overview: 'full',
+        steps: 'true',
+        alternatives: showAlternatives ? 'true' : 'false',
+        access_token: MAPBOX_ACCESS_TOKEN
+      });
+
+      if (avoidTolls) params.append('exclude', 'toll');
+      if (avoidHighways) params.append('exclude', 'motorway');
+      
       // Call Mapbox Directions API
       const response = await fetch(
-        `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates}?geometries=geojson&overview=full&steps=true&access_token=${MAPBOX_ACCESS_TOKEN}`
+        `https://api.mapbox.com/directions/v5/mapbox/${travelMode}/${coordinates}?${params}`
       );
 
       if (!response.ok) {
@@ -189,55 +364,87 @@ export default function RoutePlanner() {
       const data = await response.json();
 
       if (data.routes && data.routes.length > 0) {
-        const route = data.routes[0];
+        // Clear existing routes
+        clearRoutes();
         
-        // Safely remove existing route source and layer
-        try {
-          if (map.getSource('route')) {
-            if (map.getLayer('route')) {
-              map.removeLayer('route');
-            }
-            map.removeSource('route');
-          }
-        } catch (error) {
-          console.warn('Error removing existing route:', error);
+        // Process main route
+        const mainRoute = data.routes[0];
+        setRouteData(mainRoute);
+        
+        // Process alternatives if available
+        if (data.routes.length > 1) {
+          setAlternatives(data.routes.slice(1));
+        } else {
+          setAlternatives([]);
         }
-
-        // Add route source
-        map.addSource('route', {
+        
+        // Add main route to map
+        const mainSourceId = 'route-main';
+        routeSourcesRef.current.push(mainSourceId);
+        
+        map.addSource(mainSourceId, {
           type: 'geojson',
           data: {
             type: 'Feature',
             properties: {},
-            geometry: route.geometry
+            geometry: mainRoute.geometry
           }
         });
 
-        // Add route layer
         map.addLayer({
-          id: 'route',
+          id: 'route-main',
           type: 'line',
-          source: 'route',
+          source: mainSourceId,
           layout: {
             'line-join': 'round',
             'line-cap': 'round'
           },
           paint: {
             'line-color': '#3b82f6',
-            'line-width': 4,
+            'line-width': 5,
             'line-opacity': 0.8
           }
         });
 
-        // Calculate ETAs based on route legs
+        // Add alternative routes
+        alternatives.forEach((altRoute, index) => {
+          const altSourceId = `route-alt-${index}`;
+          routeSourcesRef.current.push(altSourceId);
+          
+          map.addSource(altSourceId, {
+            type: 'geojson',
+            data: {
+              type: 'Feature',
+              properties: {},
+              geometry: altRoute.geometry
+            }
+          });
+
+          map.addLayer({
+            id: `route-alt-${index}`,
+            type: 'line',
+            source: altSourceId,
+            layout: {
+              'line-join': 'round',
+              'line-cap': 'round'
+            },
+            paint: {
+              'line-color': '#6b7280',
+              'line-width': 3,
+              'line-opacity': 0.6,
+              'line-dasharray': [2, 2]
+            }
+          });
+        });
+
+        // Calculate ETAs and route statistics
         const waypoints = data.waypoints || [];
         const now = Date.now();
         let cumulativeDuration = 0;
 
         const itinerary = validStops.map((stop, idx) => {
           if (idx > 0) {
-            // Calculate duration for this leg (in milliseconds)
-            const legDuration = route.legs[idx - 1]?.duration * 1000 || 0;
+            const legDuration = mainRoute.legs[idx - 1]?.duration * 1000 || 0;
             cumulativeDuration += legDuration;
           }
           
@@ -250,16 +457,36 @@ export default function RoutePlanner() {
 
         setPlan(itinerary);
 
+        // Set route statistics
+        setRouteStats({
+          distance: (mainRoute.distance / 1000).toFixed(2), // km
+          duration: Math.round(mainRoute.duration / 60), // minutes
+          fuelCost: calculateFuelCost(mainRoute.distance, travelMode),
+          co2Emission: calculateCO2Emission(mainRoute.distance, travelMode)
+        });
+
         // Fit map to route bounds
-        if (route.geometry.coordinates.length > 0) {
-          const bounds = route.geometry.coordinates.reduce((bounds, coord) => {
+        if (mainRoute.geometry.coordinates.length > 0) {
+          const bounds = mainRoute.geometry.coordinates.reduce((bounds, coord) => {
             return bounds.extend(coord);
-          }, new mapboxgl.LngLatBounds(route.geometry.coordinates[0], route.geometry.coordinates[0]));
+          }, new mapboxgl.LngLatBounds(mainRoute.geometry.coordinates[0], mainRoute.geometry.coordinates[0]));
 
           map.fitBounds(bounds, {
             padding: 50
           });
         }
+
+        // Save to route history
+        const routeRecord = {
+          id: Date.now(),
+          stops: validStops,
+          route: mainRoute,
+          alternatives: alternatives,
+          timestamp: new Date(),
+          travelMode: travelMode
+        };
+        
+        setRouteHistory(prev => [routeRecord, ...prev.slice(0, 9)]); // Keep last 10 routes
 
         toast.success('Route planned successfully!');
       } else {
@@ -272,6 +499,139 @@ export default function RoutePlanner() {
     } finally {
       setOptimizing(false);
     }
+  };
+
+  // Calculate fuel cost (rough estimate)
+  const calculateFuelCost = (distance, mode) => {
+    if (mode === 'driving' || mode === 'driving-traffic') {
+      const fuelEfficiency = 12; // km per liter
+      const fuelPrice = 100; // INR per liter
+      return ((distance / 1000) / fuelEfficiency * fuelPrice).toFixed(2);
+    }
+    return 0;
+  };
+
+  // Calculate CO2 emission (rough estimate)
+  const calculateCO2Emission = (distance, mode) => {
+    if (mode === 'driving' || mode === 'driving-traffic') {
+      const emissionRate = 120; // grams CO2 per km
+      return ((distance / 1000) * emissionRate).toFixed(0);
+    }
+    return 0;
+  };
+
+  // Save route
+  const saveRoute = () => {
+    if (!routeData) {
+      toast.error('No route to save');
+      return;
+    }
+
+    const routeToSave = {
+      id: Date.now(),
+      name: `Route ${stops.filter(s => s.address).map(s => s.address.split(',')[0]).join(' → ')}`,
+      stops: stops.filter(s => s.address && s.coordinates),
+      route: routeData,
+      travelMode: travelMode,
+      timestamp: new Date()
+    };
+
+    setSavedRoutes(prev => [routeToSave, ...prev]);
+    toast.success('Route saved successfully!');
+  };
+
+  // Load saved route
+  const loadRoute = (savedRoute) => {
+    setStops(savedRoute.stops);
+    setTravelMode(savedRoute.travelMode);
+    setRouteData(savedRoute.route);
+    toast.success('Route loaded successfully!');
+  };
+
+  // Export route as GPX
+  const exportRoute = () => {
+    if (!routeData) {
+      toast.error('No route to export');
+      return;
+    }
+
+    const gpxContent = generateGPX(routeData, stops);
+    const blob = new Blob([gpxContent], { type: 'application/gpx+xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `route-${Date.now()}.gpx`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Route exported as GPX file!');
+  };
+
+  // Generate GPX content
+  const generateGPX = (route, waypoints) => {
+    const coordinates = route.geometry.coordinates;
+    let gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="UrbanSetu Route Planner">
+  <trk>
+    <name>Route</name>
+    <trkseg>`;
+    
+    coordinates.forEach(coord => {
+      gpx += `
+      <trkpt lat="${coord[1]}" lon="${coord[0]}"></trkpt>`;
+    });
+    
+    gpx += `
+    </trkseg>
+  </trk>`;
+    
+    waypoints.forEach((waypoint, index) => {
+      if (waypoint.coordinates) {
+        gpx += `
+  <wpt lat="${waypoint.coordinates[1]}" lon="${waypoint.coordinates[0]}">
+    <name>Stop ${index + 1}</name>
+    <desc>${waypoint.address}</desc>
+  </wpt>`;
+      }
+    });
+    
+    gpx += `
+</gpx>`;
+    return gpx;
+  };
+
+  // Share route
+  const shareRoute = async () => {
+    if (!routeData) {
+      toast.error('No route to share');
+      return;
+    }
+
+    const shareData = {
+      title: 'Route from UrbanSetu',
+      text: `Check out this route: ${stops.filter(s => s.address).map(s => s.address).join(' → ')}`,
+      url: window.location.href
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        toast.success('Route shared successfully!');
+      } catch (error) {
+        console.error('Error sharing:', error);
+        fallbackShare(shareData);
+      }
+    } else {
+      fallbackShare(shareData);
+    }
+  };
+
+  // Fallback share method
+  const fallbackShare = (shareData) => {
+    navigator.clipboard.writeText(shareData.url).then(() => {
+      toast.success('Route URL copied to clipboard!');
+    }).catch(() => {
+      toast.error('Unable to share route');
+    });
   };
 
   // Handle address input with debounced geocoding
@@ -288,7 +648,6 @@ export default function RoutePlanner() {
     }
 
     try {
-      // Use Mapbox Geocoding API for suggestions
       const response = await fetch(
         `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(value)}.json?country=in&types=address,poi&limit=5&access_token=${MAPBOX_ACCESS_TOKEN}`
       );
@@ -315,112 +674,327 @@ export default function RoutePlanner() {
     });
   };
 
+  // Use current location
+  const useCurrentLocation = (index) => {
+    if (currentLocation) {
+      updateStop(index, 'Current Location', currentLocation);
+      toast.success('Current location added!');
+    } else {
+      toast.error('Current location not available');
+    }
+  };
+
   return (
-    <div className="max-w-6xl mx-auto px-2 sm:px-4 py-6 sm:py-10">
-      <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
-        <FaRoute className="text-blue-600"/> Property Visit Route Planner
-      </h1>
+    <div className={`max-w-7xl mx-auto px-2 sm:px-4 py-6 sm:py-10 ${isFullscreen ? 'fixed inset-0 z-50 bg-white' : ''}`}>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <FaRoute className="text-blue-600"/> Advanced Route Planner
+        </h1>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+            title="Toggle Fullscreen"
+          >
+            <FaMapPin className="text-gray-600" />
+          </button>
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+            title="Settings"
+          >
+            <FaCog className="text-gray-600" />
+          </button>
+        </div>
+      </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Route Planning Panel */}
-        <div className="bg-white rounded-xl shadow p-4 sm:p-5 space-y-3">
-          <h2 className="text-lg font-semibold mb-4">Plan Your Route</h2>
-          
-          {stops.map((s, i) => (
-            <div key={i} className="flex flex-col gap-1 relative">
-              <div className="flex gap-2">
-                <div className="flex-1 relative">
-                  <input 
-                    className="w-full border rounded p-2 text-sm sm:text-base pr-8" 
-                    value={s.address} 
-                    onChange={e => onChangeAddress(i, e.target.value)} 
-                    placeholder={`Stop ${i+1} address`}
-                  />
-                  {s.coordinates && (
-                    <FaMapMarkerAlt className="absolute right-2 top-1/2 transform -translate-y-1/2 text-green-500" />
+        <div className="lg:col-span-1 space-y-4">
+          {/* Travel Mode Selection */}
+          <div className="bg-white rounded-xl shadow p-4">
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              <FaDirections className="text-blue-600" /> Travel Mode
+            </h3>
+            <div className="grid grid-cols-2 gap-2">
+              {travelModes.map((mode) => {
+                const Icon = mode.icon;
+                return (
+                  <button
+                    key={mode.id}
+                    onClick={() => setTravelMode(mode.id)}
+                    className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
+                      travelMode === mode.id
+                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <Icon style={{ color: mode.color }} />
+                    <span className="text-sm font-medium">{mode.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Route Options */}
+          <div className="bg-white rounded-xl shadow p-4">
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              <FaFilter className="text-green-600" /> Route Options
+            </h3>
+            <div className="space-y-3">
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={routeOptimization}
+                  onChange={(e) => setRouteOptimization(e.target.checked)}
+                  className="rounded"
+                />
+                <span className="text-sm">Optimize waypoints</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={avoidTolls}
+                  onChange={(e) => setAvoidTolls(e.target.checked)}
+                  className="rounded"
+                />
+                <span className="text-sm">Avoid tolls</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={avoidHighways}
+                  onChange={(e) => setAvoidHighways(e.target.checked)}
+                  className="rounded"
+                />
+                <span className="text-sm">Avoid highways</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={showAlternatives}
+                  onChange={(e) => setShowAlternatives(e.target.checked)}
+                  className="rounded"
+                />
+                <span className="text-sm">Show alternatives</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Stops Input */}
+          <div className="bg-white rounded-xl shadow p-4">
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              <FaMapMarkerAlt className="text-red-600" /> Stops
+            </h3>
+            
+            {stops.map((s, i) => (
+              <div key={i} className="flex flex-col gap-1 relative mb-3">
+                <div className="flex gap-2">
+                  <div className="flex-1 relative">
+                    <input 
+                      className="w-full border rounded p-2 text-sm pr-8" 
+                      value={s.address} 
+                      onChange={e => onChangeAddress(i, e.target.value)} 
+                      placeholder={`Stop ${i+1} address`}
+                    />
+                    {s.coordinates && (
+                      <FaMapMarkerAlt className="absolute right-2 top-1/2 transform -translate-y-1/2 text-green-500" />
+                    )}
+                  </div>
+                  <button
+                    onClick={() => useCurrentLocation(i)}
+                    className="px-2 py-2 rounded bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
+                    title="Use current location"
+                  >
+                    <FaLocationArrow />
+                  </button>
+                  {stops.length > 1 && (
+                    <button 
+                      onClick={() => removeStop(i)} 
+                      className="px-2 py-2 rounded bg-red-100 text-red-600 hover:bg-red-200 transition-colors"
+                    >
+                      <FaTrash/>
+                    </button>
                   )}
                 </div>
-                {stops.length > 1 && (
-                  <button 
-                    onClick={() => removeStop(i)} 
-                    className="px-3 rounded bg-red-100 text-red-600 hover:bg-red-200 transition-colors"
-                  >
-                    <FaTrash/>
-                  </button>
+                
+                {predictions[i] && predictions[i].length > 0 && (
+                  <ul className="absolute z-10 top-full left-0 right-0 bg-white border border-gray-200 rounded shadow max-h-56 overflow-auto">
+                    {predictions[i].map((prediction, idx) => (
+                      <li 
+                        key={idx} 
+                        className="px-3 py-2 text-sm hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0" 
+                        onMouseDown={() => pickPrediction(i, prediction)}
+                      >
+                        <div className="font-medium">{prediction.place_name}</div>
+                        {prediction.context && (
+                          <div className="text-xs text-gray-500">
+                            {prediction.context.map(ctx => ctx.text).join(', ')}
+                          </div>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
                 )}
               </div>
-              
-              {predictions[i] && predictions[i].length > 0 && (
-                <ul className="absolute z-10 top-full left-0 right-0 bg-white border border-gray-200 rounded shadow max-h-56 overflow-auto">
-                  {predictions[i].map((prediction, idx) => (
-                    <li 
-                      key={idx} 
-                      className="px-3 py-2 text-sm hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0" 
-                      onMouseDown={() => pickPrediction(i, prediction)}
-                    >
-                      <div className="font-medium">{prediction.place_name}</div>
-                      {prediction.context && (
-                        <div className="text-xs text-gray-500">
-                          {prediction.context.map(ctx => ctx.text).join(', ')}
-                        </div>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              )}
+            ))}
+            
+            <div className="flex flex-col gap-2">
+              <button 
+                onClick={addStop} 
+                className="px-3 py-2 rounded bg-gray-100 hover:bg-gray-200 flex items-center gap-2 justify-center transition-colors"
+              >
+                <FaPlus/> Add Stop
+              </button>
+              <button 
+                onClick={optimize} 
+                disabled={optimizing || !map || !map.isStyleLoaded()} 
+                className="px-4 py-2 rounded bg-gradient-to-r from-blue-600 to-purple-600 text-white disabled:opacity-60 hover:from-blue-700 hover:to-purple-700 transition-all"
+              >
+                {optimizing ? 'Planning...' : 'Plan Route'}
+              </button>
             </div>
-          ))}
-          
-          <div className="flex flex-col sm:flex-row gap-2 pt-2">
-            <button 
-              onClick={addStop} 
-              className="px-3 py-2 rounded bg-gray-100 hover:bg-gray-200 flex items-center gap-2 justify-center transition-colors"
-            >
-              <FaPlus/> Add Stop
-            </button>
-            <button 
-              onClick={optimize} 
-              disabled={optimizing || !map || !map.isStyleLoaded()} 
-              className="px-4 py-2 rounded bg-gradient-to-r from-blue-600 to-purple-600 text-white disabled:opacity-60 hover:from-blue-700 hover:to-purple-700 transition-all"
-            >
-              {optimizing ? 'Planning...' : 'Plan Route'}
-            </button>
           </div>
-        </div>
 
-        {/* Map Container */}
-        <div className="bg-white rounded-xl shadow overflow-hidden">
-          {MAPBOX_ACCESS_TOKEN ? (
-            <div className="h-64 sm:h-80 lg:h-96 relative">
-              {mapError ? (
-                <div className="h-full flex items-center justify-center text-gray-500">
-                  <div className="text-center">
-                    <FaRoute className="text-4xl mb-2 mx-auto text-red-500" />
-                    <p className="text-red-600">{mapError}</p>
-                    <button 
-                      onClick={() => {
-                        setMapError(null);
-                        setMapReady(false);
-                        setTimeout(() => setMapReady(true), 100);
-                      }}
-                      className="mt-2 text-sm text-blue-600 hover:text-blue-800 underline"
-                    >
-                      Retry
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div ref={mapRef} className="w-full h-full" />
-              )}
-            </div>
-          ) : (
-            <div className="h-64 sm:h-80 lg:h-96 flex items-center justify-center text-gray-500">
-              <div className="text-center">
-                <FaRoute className="text-4xl mb-2 mx-auto" />
-                <p>Tip: Set VITE_MAPBOX_ACCESS_TOKEN to enable interactive map and directions.</p>
+          {/* Route Actions */}
+          {routeData && (
+            <div className="bg-white rounded-xl shadow p-4">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <FaInfoCircle className="text-purple-600" /> Route Actions
+              </h3>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={saveRoute}
+                  className="p-2 rounded bg-green-100 text-green-600 hover:bg-green-200 transition-colors flex items-center gap-2 justify-center"
+                >
+                  <FaBookmark />
+                  <span className="text-sm">Save</span>
+                </button>
+                <button
+                  onClick={exportRoute}
+                  className="p-2 rounded bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors flex items-center gap-2 justify-center"
+                >
+                  <FaDownload />
+                  <span className="text-sm">Export</span>
+                </button>
+                <button
+                  onClick={shareRoute}
+                  className="p-2 rounded bg-purple-100 text-purple-600 hover:bg-purple-200 transition-colors flex items-center gap-2 justify-center"
+                >
+                  <FaShare />
+                  <span className="text-sm">Share</span>
+                </button>
+                <button
+                  onClick={() => setShowSettings(!showSettings)}
+                  className="p-2 rounded bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors flex items-center gap-2 justify-center"
+                >
+                  <FaCog />
+                  <span className="text-sm">Settings</span>
+                </button>
               </div>
             </div>
           )}
+
+          {/* Route Statistics */}
+          {routeStats && (
+            <div className="bg-white rounded-xl shadow p-4">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <FaInfoCircle className="text-orange-600" /> Route Statistics
+              </h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span>Distance:</span>
+                  <span className="font-medium">{routeStats.distance} km</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Duration:</span>
+                  <span className="font-medium">{routeStats.duration} min</span>
+                </div>
+                {routeStats.fuelCost > 0 && (
+                  <div className="flex justify-between">
+                    <span>Fuel Cost:</span>
+                    <span className="font-medium">₹{routeStats.fuelCost}</span>
+                  </div>
+                )}
+                {routeStats.co2Emission > 0 && (
+                  <div className="flex justify-between">
+                    <span>CO₂ Emission:</span>
+                    <span className="font-medium">{routeStats.co2Emission}g</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Map Container */}
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-xl shadow overflow-hidden">
+            {MAPBOX_ACCESS_TOKEN ? (
+              <div className="h-64 sm:h-80 lg:h-96 relative">
+                {mapError ? (
+                  <div className="h-full flex items-center justify-center text-gray-500">
+                    <div className="text-center">
+                      <FaRoute className="text-4xl mb-2 mx-auto text-red-500" />
+                      <p className="text-red-600">{mapError}</p>
+                      <button 
+                        onClick={() => {
+                          setMapError(null);
+                          setMapReady(false);
+                          setTimeout(() => setMapReady(true), 100);
+                        }}
+                        className="mt-2 text-sm text-blue-600 hover:text-blue-800 underline"
+                      >
+                        Retry
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div ref={mapRef} className="w-full h-full" />
+                )}
+              </div>
+            ) : (
+              <div className="h-64 sm:h-80 lg:h-96 flex items-center justify-center text-gray-500">
+                <div className="text-center">
+                  <FaRoute className="text-4xl mb-2 mx-auto" />
+                  <p>Tip: Set VITE_MAPBOX_ACCESS_TOKEN to enable interactive map and directions.</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Map Controls */}
+          <div className="mt-4 bg-white rounded-xl shadow p-4">
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              <FaCog className="text-gray-600" /> Map Controls
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {Object.entries(mapStyles).map(([key, value]) => (
+                <button
+                  key={key}
+                  onClick={() => changeMapStyle(key)}
+                  className={`p-2 rounded text-sm capitalize ${
+                    mapStyle === key
+                      ? 'bg-blue-100 text-blue-700 border-2 border-blue-300'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {key.replace(/([A-Z])/g, ' $1').trim()}
+                </button>
+              ))}
+              <button
+                onClick={toggleTraffic}
+                className={`p-2 rounded text-sm ${
+                  showTraffic
+                    ? 'bg-red-100 text-red-700 border-2 border-red-300'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                Traffic
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -451,6 +1025,61 @@ export default function RoutePlanner() {
             <p className="text-sm text-blue-800">
               <strong>Route optimized using Mapbox Directions API</strong> - Real-time routing with traffic considerations.
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* Alternative Routes */}
+      {alternatives.length > 0 && (
+        <div className="mt-6 bg-white rounded-xl shadow p-5">
+          <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            <FaRoute className="text-gray-600"/> Alternative Routes
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {alternatives.map((alt, idx) => (
+              <div key={idx} className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium">Route {idx + 2}</span>
+                  <span className="text-sm text-gray-500">
+                    {Math.round(alt.duration / 60)} min
+                  </span>
+                </div>
+                <div className="text-sm text-gray-600">
+                  {(alt.distance / 1000).toFixed(2)} km
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Route History */}
+      {routeHistory.length > 0 && (
+        <div className="mt-6 bg-white rounded-xl shadow p-5">
+          <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            <FaHistory className="text-green-600"/> Recent Routes
+          </h2>
+          <div className="space-y-2">
+            {routeHistory.slice(0, 5).map((route) => (
+              <div key={route.id} className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <div className="font-medium text-sm">
+                      {route.stops.map(s => s.address.split(',')[0]).join(' → ')}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {route.timestamp.toLocaleString()}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => loadRoute(route)}
+                    className="px-3 py-1 bg-blue-100 text-blue-600 rounded text-sm hover:bg-blue-200"
+                  >
+                    Load
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

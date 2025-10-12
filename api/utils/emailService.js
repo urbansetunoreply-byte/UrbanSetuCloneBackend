@@ -7697,7 +7697,7 @@ export const sendRefundRequestApprovedEmail = async (email, refundDetails) => {
               </div>
               <div class="refund-status">REFUND APPROVED</div>
               <p style="margin: 10px 0 0; color: #047857; font-size: 14px;">
-                ${refundType === 'full' ? 'Full refund processed' : 'Partial refund processed'}
+                ${approvedAmount >= originalAmount ? 'Full refund processed' : 'Partial refund processed'}
               </p>
             </div>
             
@@ -7762,7 +7762,7 @@ export const sendRefundRequestApprovedEmail = async (email, refundDetails) => {
               <h3>📝 Refund Information</h3>
               <div class="detail-row">
                 <span class="detail-label">Refund Type:</span>
-                <span class="detail-value">${refundType === 'full' ? 'Full Refund' : 'Partial Refund'}</span>
+                <span class="detail-value">${approvedAmount >= originalAmount ? 'Full Refund' : 'Partial Refund'}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">Refund Reason:</span>
@@ -8256,7 +8256,7 @@ export const sendRefundRequestRejectedEmail = async (email, refundDetails) => {
               </div>
               <div class="breakdown-row">
                 <span class="breakdown-label">Refund Type:</span>
-                <span class="breakdown-value">${refundType === 'full' ? 'Full Refund' : 'Partial Refund'}</span>
+                <span class="breakdown-value">${requestedAmount >= originalAmount ? 'Full Refund' : 'Partial Refund'}</span>
               </div>
             </div>
             
