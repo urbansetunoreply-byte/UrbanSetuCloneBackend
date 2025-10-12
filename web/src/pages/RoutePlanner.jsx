@@ -21,9 +21,11 @@ export default function RoutePlanner() {
   const [predictions, setPredictions] = useState([]);
   const [mapReady, setMapReady] = useState(false);
   const [map, setMap] = useState(null);
+  const [mapError, setMapError] = useState(null);
 
   const mapRef = useRef(null);
   const geocoderRefs = useRef([]);
+  const markersRef = useRef([]);
 
   const addStop = () => setStops(s => [...s, { address: '', coordinates: null }]);
   const removeStop = (i) => setStops(s => s.filter((_, idx) => idx !== i));
@@ -37,101 +39,116 @@ export default function RoutePlanner() {
   useEffect(() => {
     if (!MAPBOX_ACCESS_TOKEN) {
       console.warn('Mapbox access token not found. Please set VITE_MAPBOX_ACCESS_TOKEN in your environment variables.');
+      setMapError('Mapbox access token not configured');
       return;
     }
     
-    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
-    setMapReady(true);
+    try {
+      mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+      setMapReady(true);
+      setMapError(null);
+    } catch (error) {
+      console.error('Error setting Mapbox access token:', error);
+      setMapError('Failed to initialize Mapbox');
+    }
   }, []);
 
   // Initialize map
   useEffect(() => {
     if (!mapReady || !mapRef.current || map) return;
 
-    const mapInstance = new mapboxgl.Map({
-      container: mapRef.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
-      center: [77.2090, 28.6139], // Delhi coordinates
-      zoom: 11
-    });
+    try {
+      const mapInstance = new mapboxgl.Map({
+        container: mapRef.current,
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: [77.2090, 28.6139], // Delhi coordinates
+        zoom: 11,
+        attributionControl: false
+      });
 
-    mapInstance.on('load', () => {
-      setMap(mapInstance);
-      
-      // Add navigation controls
-      mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
-      
-      // Add geolocate control
-      mapInstance.addControl(new mapboxgl.GeolocateControl({
-        positionOptions: {
-          enableHighAccuracy: true
-        },
-        trackUserLocation: true,
-        showUserHeading: true
-      }), 'top-right');
-    });
+      // Handle map load
+      mapInstance.on('load', () => {
+        console.log('Map loaded successfully');
+        setMap(mapInstance);
+        setMapError(null);
+        
+        // Add navigation controls
+        mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
+        
+        // Add geolocate control
+        mapInstance.addControl(new mapboxgl.GeolocateControl({
+          positionOptions: {
+            enableHighAccuracy: true
+          },
+          trackUserLocation: true,
+          showUserHeading: true
+        }), 'top-right');
+      });
+
+      // Handle map errors
+      mapInstance.on('error', (e) => {
+        console.error('Map error:', e);
+        setMapError('Map failed to load. Please check your internet connection.');
+      });
+
+      // Handle style load errors
+      mapInstance.on('style.load', () => {
+        console.log('Map style loaded successfully');
+      });
+
+      mapInstance.on('style.error', (e) => {
+        console.error('Map style error:', e);
+        setMapError('Map style failed to load');
+      });
+
+    } catch (error) {
+      console.error('Error creating map:', error);
+      setMapError('Failed to create map instance');
+    }
 
     return () => {
-      if (mapInstance) {
-        mapInstance.remove();
+      if (map) {
+        map.remove();
+        setMap(null);
       }
     };
-  }, [mapReady, map]);
+  }, [mapReady]);
 
-  // Initialize geocoders for each stop
-  useEffect(() => {
+  // Clear markers
+  const clearMarkers = useCallback(() => {
+    markersRef.current.forEach(marker => {
+      if (marker) {
+        marker.remove();
+      }
+    });
+    markersRef.current = [];
+  }, []);
+
+  // Add markers for stops
+  const addMarkers = useCallback(() => {
     if (!map || !map.isStyleLoaded()) return;
 
-    // Clear existing geocoders
-    geocoderRefs.current.forEach(geocoder => {
-      if (geocoder && map) {
-        map.removeControl(geocoder);
+    clearMarkers();
+
+    stops.forEach((stop, index) => {
+      if (stop.coordinates) {
+        const marker = new mapboxgl.Marker({
+          color: index === 0 ? '#10b981' : index === stops.length - 1 ? '#ef4444' : '#3b82f6'
+        })
+          .setLngLat(stop.coordinates)
+          .addTo(map);
+        
+        markersRef.current.push(marker);
       }
     });
-    geocoderRefs.current = [];
+  }, [map, stops, clearMarkers]);
 
-    // Create geocoders for each stop
-    stops.forEach((_, index) => {
-      const geocoder = new MapboxGeocoder({
-        accessToken: MAPBOX_ACCESS_TOKEN,
-        mapboxgl: mapboxgl,
-        placeholder: `Stop ${index + 1} address`,
-        countries: 'in', // Restrict to India
-        types: 'address,poi',
-        limit: 5,
-        autocomplete: true,
-        minLength: 3
-      });
-
-      geocoder.on('result', (e) => {
-        const { place_name, center } = e.result;
-        updateStop(index, place_name, center);
-        setPredictions(prev => {
-          const copy = [...prev];
-          copy[index] = [];
-          return copy;
-        });
-      });
-
-      geocoder.on('clear', () => {
-        updateStop(index, '', null);
-      });
-
-      // Add geocoder to the map
-      if (map) {
-        map.addControl(geocoder, 'top-left');
-        geocoderRefs.current[index] = geocoder;
-      }
-    });
-
-    return () => {
-      geocoderRefs.current.forEach(geocoder => {
-        if (geocoder && map) {
-          map.removeControl(geocoder);
-        }
-      });
-    };
-  }, [map, stops.length]);
+  // Update markers when stops change
+  useEffect(() => {
+    if (map && map.isStyleLoaded()) {
+      addMarkers();
+    }
+  }, [map, stops, addMarkers]);
 
   const computePlanFallback = () => {
     const valid = stops.map(s => s.address.trim()).filter(Boolean);
@@ -148,6 +165,11 @@ export default function RoutePlanner() {
     if (validStops.length < 2) { 
       toast.error('Please add at least 2 valid addresses with coordinates');
       return; 
+    }
+
+    if (!map || !map.isStyleLoaded()) {
+      toast.error('Map is not ready. Please wait for the map to load.');
+      return;
     }
 
     setOptimizing(true);
@@ -169,10 +191,16 @@ export default function RoutePlanner() {
       if (data.routes && data.routes.length > 0) {
         const route = data.routes[0];
         
-        // Remove existing route source and layer
-        if (map.getSource('route')) {
-          map.removeLayer('route');
-          map.removeSource('route');
+        // Safely remove existing route source and layer
+        try {
+          if (map.getSource('route')) {
+            if (map.getLayer('route')) {
+              map.removeLayer('route');
+            }
+            map.removeSource('route');
+          }
+        } catch (error) {
+          console.warn('Error removing existing route:', error);
         }
 
         // Add route source
@@ -287,26 +315,6 @@ export default function RoutePlanner() {
     });
   };
 
-  // Add markers for stops
-  useEffect(() => {
-    if (!map || !map.isStyleLoaded()) return;
-
-    // Clear existing markers
-    const existingMarkers = document.querySelectorAll('.mapboxgl-marker');
-    existingMarkers.forEach(marker => marker.remove());
-
-    // Add markers for each stop
-    stops.forEach((stop, index) => {
-      if (stop.coordinates) {
-        const marker = new mapboxgl.Marker({
-          color: index === 0 ? '#10b981' : index === stops.length - 1 ? '#ef4444' : '#3b82f6'
-        })
-          .setLngLat(stop.coordinates)
-          .addTo(map);
-      }
-    });
-  }, [map, stops]);
-
   return (
     <div className="max-w-6xl mx-auto px-2 sm:px-4 py-6 sm:py-10">
       <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
@@ -372,7 +380,7 @@ export default function RoutePlanner() {
             </button>
             <button 
               onClick={optimize} 
-              disabled={optimizing} 
+              disabled={optimizing || !map || !map.isStyleLoaded()} 
               className="px-4 py-2 rounded bg-gradient-to-r from-blue-600 to-purple-600 text-white disabled:opacity-60 hover:from-blue-700 hover:to-purple-700 transition-all"
             >
               {optimizing ? 'Planning...' : 'Plan Route'}
@@ -383,8 +391,27 @@ export default function RoutePlanner() {
         {/* Map Container */}
         <div className="bg-white rounded-xl shadow overflow-hidden">
           {MAPBOX_ACCESS_TOKEN ? (
-            <div className="h-64 sm:h-80 lg:h-96">
-              <div ref={mapRef} className="w-full h-full" />
+            <div className="h-64 sm:h-80 lg:h-96 relative">
+              {mapError ? (
+                <div className="h-full flex items-center justify-center text-gray-500">
+                  <div className="text-center">
+                    <FaRoute className="text-4xl mb-2 mx-auto text-red-500" />
+                    <p className="text-red-600">{mapError}</p>
+                    <button 
+                      onClick={() => {
+                        setMapError(null);
+                        setMapReady(false);
+                        setTimeout(() => setMapReady(true), 100);
+                      }}
+                      className="mt-2 text-sm text-blue-600 hover:text-blue-800 underline"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div ref={mapRef} className="w-full h-full" />
+              )}
             </div>
           ) : (
             <div className="h-64 sm:h-80 lg:h-96 flex items-center justify-center text-gray-500">
