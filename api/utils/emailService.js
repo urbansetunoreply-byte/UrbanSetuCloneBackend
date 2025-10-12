@@ -788,8 +788,86 @@ export const sendPaymentSuccessEmail = async (email, paymentDetails) => {
     const subject = `Payment Successful - ${propertyName}`;
     
     const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
-        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Payment Successful - UrbanSetu</title>
+        <style>
+          .btn-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+            max-width: 100%;
+            width: 100%;
+          }
+          .btn-container.horizontal {
+            flex-direction: row;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+          }
+          .btn {
+            display: inline-block;
+            width: auto;
+            max-width: 280px;
+            padding: 15px 25px;
+            margin: 5px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            text-align: center;
+            box-sizing: border-box;
+            word-wrap: break-word;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          }
+          .btn-container:not(.horizontal) .btn {
+            display: block;
+            width: 100%;
+            margin: 0;
+            padding: 12px 20px;
+          }
+          .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white !important;
+          }
+          .btn-secondary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white !important;
+          }
+          .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+          }
+          @media (max-width: 600px) {
+            .btn-container.horizontal {
+              flex-direction: column;
+              gap: 10px;
+            }
+            .btn {
+              max-width: 100%;
+              padding: 14px 16px;
+              font-size: 15px;
+              margin: 0;
+              display: block;
+              width: 100%;
+            }
+          }
+          @media (max-width: 400px) {
+            .btn {
+              padding: 12px 14px;
+              font-size: 14px;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+          <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
           <div style="text-align: center; margin-bottom: 30px;">
             <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3); position: relative;">
               <div style="position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; opacity: 0.2;"></div>
@@ -829,12 +907,12 @@ export const sendPaymentSuccessEmail = async (email, paymentDetails) => {
             </div>
           </div>
           
-          <div style="text-align: center; margin: 30px 0;">
-            <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; align-items: center;">
-              <a href="${receiptUrl}" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); transition: all 0.3s ease; margin: 5px;">
+          <div style="text-align: center; margin: 30px 0; padding: 0 10px;">
+            <div class="btn-container horizontal">
+              <a href="${receiptUrl}" class="btn btn-primary">
                 📄 Download Receipt
               </a>
-              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3); transition: all 0.3s ease; margin: 5px;">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
                 📅 View Appointments
               </a>
             </div>
@@ -3253,12 +3331,18 @@ export const sendAppointmentBookingEmail = async (email, appointmentDetails, use
           max-width: 100%;
           width: 100%;
         }
+        .btn-container.horizontal {
+          flex-direction: row;
+          gap: 20px;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
         .btn {
-          display: block;
-          width: 100%;
+          display: inline-block;
+          width: auto;
           max-width: 280px;
-          padding: 12px 20px;
-          margin: 0;
+          padding: 15px 25px;
+          margin: 5px;
           text-decoration: none;
           border-radius: 8px;
           font-weight: 600;
@@ -3268,6 +3352,12 @@ export const sendAppointmentBookingEmail = async (email, appointmentDetails, use
           word-wrap: break-word;
           transition: all 0.3s ease;
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-container:not(.horizontal) .btn {
+          display: block;
+          width: 100%;
+          margin: 0;
+          padding: 12px 20px;
         }
         .btn-primary {
           background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
@@ -3339,10 +3429,17 @@ export const sendAppointmentBookingEmail = async (email, appointmentDetails, use
           .btn-container {
             gap: 10px;
           }
+          .btn-container.horizontal {
+            flex-direction: column;
+            gap: 10px;
+          }
           .btn {
             max-width: 100%;
             padding: 14px 16px;
             font-size: 15px;
+            margin: 0;
+            display: block;
+            width: 100%;
           }
           .detail-row {
             flex-direction: column;
@@ -3649,12 +3746,18 @@ export const sendSellerPaymentNotificationEmail = async (email, paymentDetails) 
           max-width: 100%;
           width: 100%;
         }
+        .btn-container.horizontal {
+          flex-direction: row;
+          gap: 20px;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
         .btn {
-          display: block;
-          width: 100%;
+          display: inline-block;
+          width: auto;
           max-width: 280px;
-          padding: 12px 20px;
-          margin: 0;
+          padding: 15px 25px;
+          margin: 5px;
           text-decoration: none;
           border-radius: 8px;
           font-weight: 600;
@@ -3664,6 +3767,12 @@ export const sendSellerPaymentNotificationEmail = async (email, paymentDetails) 
           word-wrap: break-word;
           transition: all 0.3s ease;
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-container:not(.horizontal) .btn {
+          display: block;
+          width: 100%;
+          margin: 0;
+          padding: 12px 20px;
         }
         .btn-primary {
           background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
@@ -3730,10 +3839,17 @@ export const sendSellerPaymentNotificationEmail = async (email, paymentDetails) 
           .btn-container {
             gap: 10px;
           }
+          .btn-container.horizontal {
+            flex-direction: column;
+            gap: 10px;
+          }
           .btn {
             max-width: 100%;
             padding: 14px 16px;
             font-size: 15px;
+            margin: 0;
+            display: block;
+            width: 100%;
           }
           .detail-row {
             flex-direction: column;
@@ -3799,11 +3915,11 @@ export const sendSellerPaymentNotificationEmail = async (email, paymentDetails) 
           </div>
           
           <div class="action-buttons">
-            <div class="btn-container">
-              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary" >
+            <div class="btn-container horizontal">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
                 🏠 View Property Details
               </a>
-              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary" >
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
                 📅 My Appointments
               </a>
             </div>
@@ -4028,12 +4144,18 @@ export const sendAppointmentRejectedEmail = async (email, appointmentDetails) =>
           max-width: 100%;
           width: 100%;
         }
+        .btn-container.horizontal {
+          flex-direction: row;
+          gap: 20px;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
         .btn {
-          display: block;
-          width: 100%;
+          display: inline-block;
+          width: auto;
           max-width: 280px;
-          padding: 12px 20px;
-          margin: 0;
+          padding: 15px 25px;
+          margin: 5px;
           text-decoration: none;
           border-radius: 8px;
           font-weight: 600;
@@ -4043,6 +4165,12 @@ export const sendAppointmentRejectedEmail = async (email, appointmentDetails) =>
           word-wrap: break-word;
           transition: all 0.3s ease;
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-container:not(.horizontal) .btn {
+          display: block;
+          width: 100%;
+          margin: 0;
+          padding: 12px 20px;
         }
         .btn-primary {
           background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
@@ -4109,10 +4237,17 @@ export const sendAppointmentRejectedEmail = async (email, appointmentDetails) =>
           .btn-container {
             gap: 10px;
           }
+          .btn-container.horizontal {
+            flex-direction: column;
+            gap: 10px;
+          }
           .btn {
             max-width: 100%;
             padding: 14px 16px;
             font-size: 15px;
+            margin: 0;
+            display: block;
+            width: 100%;
           }
           .detail-row {
             flex-direction: column;
@@ -4190,11 +4325,11 @@ export const sendAppointmentRejectedEmail = async (email, appointmentDetails) =>
           </div>
           
           <div class="action-buttons">
-            <div class="btn-container">
-              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary" >
+            <div class="btn-container horizontal">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
                 🏠 View Property Details
               </a>
-              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary" >
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
                 📅 My Appointments
               </a>
             </div>
@@ -4416,12 +4551,18 @@ export const sendAppointmentAcceptedEmail = async (email, appointmentDetails) =>
           max-width: 100%;
           width: 100%;
         }
+        .btn-container.horizontal {
+          flex-direction: row;
+          gap: 20px;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
         .btn {
-          display: block;
-          width: 100%;
+          display: inline-block;
+          width: auto;
           max-width: 280px;
-          padding: 12px 20px;
-          margin: 0;
+          padding: 15px 25px;
+          margin: 5px;
           text-decoration: none;
           border-radius: 8px;
           font-weight: 600;
@@ -4431,6 +4572,12 @@ export const sendAppointmentAcceptedEmail = async (email, appointmentDetails) =>
           word-wrap: break-word;
           transition: all 0.3s ease;
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-container:not(.horizontal) .btn {
+          display: block;
+          width: 100%;
+          margin: 0;
+          padding: 12px 20px;
         }
         .btn-primary {
           background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
@@ -4497,10 +4644,17 @@ export const sendAppointmentAcceptedEmail = async (email, appointmentDetails) =>
           .btn-container {
             gap: 10px;
           }
+          .btn-container.horizontal {
+            flex-direction: column;
+            gap: 10px;
+          }
           .btn {
             max-width: 100%;
             padding: 14px 16px;
             font-size: 15px;
+            margin: 0;
+            display: block;
+            width: 100%;
           }
           .detail-row {
             flex-direction: column;
@@ -4571,11 +4725,11 @@ export const sendAppointmentAcceptedEmail = async (email, appointmentDetails) =>
           </div>
           
           <div class="action-buttons">
-            <div class="btn-container">
-              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary" >
+            <div class="btn-container horizontal">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
                 🏠 View Property Details
               </a>
-              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary" >
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
                 📅 My Appointments
               </a>
             </div>
@@ -4799,12 +4953,18 @@ export const sendAppointmentCancelledByBuyerEmail = async (email, appointmentDet
           max-width: 100%;
           width: 100%;
         }
+        .btn-container.horizontal {
+          flex-direction: row;
+          gap: 20px;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
         .btn {
-          display: block;
-          width: 100%;
+          display: inline-block;
+          width: auto;
           max-width: 280px;
-          padding: 12px 20px;
-          margin: 0;
+          padding: 15px 25px;
+          margin: 5px;
           text-decoration: none;
           border-radius: 8px;
           font-weight: 600;
@@ -4814,6 +4974,12 @@ export const sendAppointmentCancelledByBuyerEmail = async (email, appointmentDet
           word-wrap: break-word;
           transition: all 0.3s ease;
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-container:not(.horizontal) .btn {
+          display: block;
+          width: 100%;
+          margin: 0;
+          padding: 12px 20px;
         }
         .btn-primary {
           background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
@@ -4880,10 +5046,17 @@ export const sendAppointmentCancelledByBuyerEmail = async (email, appointmentDet
           .btn-container {
             gap: 10px;
           }
+          .btn-container.horizontal {
+            flex-direction: column;
+            gap: 10px;
+          }
           .btn {
             max-width: 100%;
             padding: 14px 16px;
             font-size: 15px;
+            margin: 0;
+            display: block;
+            width: 100%;
           }
           .detail-row {
             flex-direction: column;
@@ -4961,11 +5134,11 @@ export const sendAppointmentCancelledByBuyerEmail = async (email, appointmentDet
           </div>
           
           <div class="action-buttons">
-            <div class="btn-container">
-              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary" >
+            <div class="btn-container horizontal">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
                 🏠 View Property Details
               </a>
-              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary" >
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
                 📅 My Appointments
               </a>
             </div>
@@ -5189,12 +5362,18 @@ export const sendAppointmentCancelledBySellerEmail = async (email, appointmentDe
           max-width: 100%;
           width: 100%;
         }
+        .btn-container.horizontal {
+          flex-direction: row;
+          gap: 20px;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
         .btn {
-          display: block;
-          width: 100%;
+          display: inline-block;
+          width: auto;
           max-width: 280px;
-          padding: 12px 20px;
-          margin: 0;
+          padding: 15px 25px;
+          margin: 5px;
           text-decoration: none;
           border-radius: 8px;
           font-weight: 600;
@@ -5204,6 +5383,12 @@ export const sendAppointmentCancelledBySellerEmail = async (email, appointmentDe
           word-wrap: break-word;
           transition: all 0.3s ease;
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-container:not(.horizontal) .btn {
+          display: block;
+          width: 100%;
+          margin: 0;
+          padding: 12px 20px;
         }
         .btn-primary {
           background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
@@ -5270,10 +5455,17 @@ export const sendAppointmentCancelledBySellerEmail = async (email, appointmentDe
           .btn-container {
             gap: 10px;
           }
+          .btn-container.horizontal {
+            flex-direction: column;
+            gap: 10px;
+          }
           .btn {
             max-width: 100%;
             padding: 14px 16px;
             font-size: 15px;
+            margin: 0;
+            display: block;
+            width: 100%;
           }
           .detail-row {
             flex-direction: column;
@@ -5351,11 +5543,11 @@ export const sendAppointmentCancelledBySellerEmail = async (email, appointmentDe
           </div>
           
           <div class="action-buttons">
-            <div class="btn-container">
-              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary" >
+            <div class="btn-container horizontal">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
                 🏠 View Property Details
               </a>
-              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary" >
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
                 📅 My Appointments
               </a>
             </div>
@@ -5601,12 +5793,18 @@ export const sendAppointmentCancelledByAdminEmail = async (email, appointmentDet
           max-width: 100%;
           width: 100%;
         }
+        .btn-container.horizontal {
+          flex-direction: row;
+          gap: 20px;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
         .btn {
-          display: block;
-          width: 100%;
+          display: inline-block;
+          width: auto;
           max-width: 280px;
-          padding: 12px 20px;
-          margin: 0;
+          padding: 15px 25px;
+          margin: 5px;
           text-decoration: none;
           border-radius: 8px;
           font-weight: 600;
@@ -5616,6 +5814,12 @@ export const sendAppointmentCancelledByAdminEmail = async (email, appointmentDet
           word-wrap: break-word;
           transition: all 0.3s ease;
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-container:not(.horizontal) .btn {
+          display: block;
+          width: 100%;
+          margin: 0;
+          padding: 12px 20px;
         }
         .btn-primary {
           background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
@@ -5682,10 +5886,17 @@ export const sendAppointmentCancelledByAdminEmail = async (email, appointmentDet
           .btn-container {
             gap: 10px;
           }
+          .btn-container.horizontal {
+            flex-direction: column;
+            gap: 10px;
+          }
           .btn {
             max-width: 100%;
             padding: 14px 16px;
             font-size: 15px;
+            margin: 0;
+            display: block;
+            width: 100%;
           }
           .detail-row {
             flex-direction: column;
@@ -5770,11 +5981,11 @@ export const sendAppointmentCancelledByAdminEmail = async (email, appointmentDet
           </div>
           
           <div class="action-buttons">
-            <div class="btn-container">
-              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary" >
+            <div class="btn-container horizontal">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
                 🏠 View Property Details
               </a>
-              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary" >
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
                 📅 My Appointments
               </a>
             </div>
@@ -6026,12 +6237,18 @@ export const sendAppointmentReinitiatedByAdminEmail = async (email, appointmentD
           max-width: 100%;
           width: 100%;
         }
+        .btn-container.horizontal {
+          flex-direction: row;
+          gap: 20px;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
         .btn {
-          display: block;
-          width: 100%;
+          display: inline-block;
+          width: auto;
           max-width: 280px;
-          padding: 12px 20px;
-          margin: 0;
+          padding: 15px 25px;
+          margin: 5px;
           text-decoration: none;
           border-radius: 8px;
           font-weight: 600;
@@ -6041,6 +6258,12 @@ export const sendAppointmentReinitiatedByAdminEmail = async (email, appointmentD
           word-wrap: break-word;
           transition: all 0.3s ease;
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-container:not(.horizontal) .btn {
+          display: block;
+          width: 100%;
+          margin: 0;
+          padding: 12px 20px;
         }
         .btn-primary {
           background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
@@ -6107,10 +6330,17 @@ export const sendAppointmentReinitiatedByAdminEmail = async (email, appointmentD
           .btn-container {
             gap: 10px;
           }
+          .btn-container.horizontal {
+            flex-direction: column;
+            gap: 10px;
+          }
           .btn {
             max-width: 100%;
             padding: 14px 16px;
             font-size: 15px;
+            margin: 0;
+            display: block;
+            width: 100%;
           }
           .detail-row {
             flex-direction: column;
@@ -6193,11 +6423,11 @@ export const sendAppointmentReinitiatedByAdminEmail = async (email, appointmentD
           </div>
           
           <div class="action-buttons">
-            <div class="btn-container">
-              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary" >
+            <div class="btn-container horizontal">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
                 🏠 View Property Details
               </a>
-              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary" >
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
                 📅 My Appointments
               </a>
             </div>
@@ -6428,12 +6658,18 @@ export const sendAppointmentReinitiatedBySellerEmail = async (email, appointment
           max-width: 100%;
           width: 100%;
         }
+        .btn-container.horizontal {
+          flex-direction: row;
+          gap: 20px;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
         .btn {
-          display: block;
-          width: 100%;
+          display: inline-block;
+          width: auto;
           max-width: 280px;
-          padding: 12px 20px;
-          margin: 0;
+          padding: 15px 25px;
+          margin: 5px;
           text-decoration: none;
           border-radius: 8px;
           font-weight: 600;
@@ -6443,6 +6679,12 @@ export const sendAppointmentReinitiatedBySellerEmail = async (email, appointment
           word-wrap: break-word;
           transition: all 0.3s ease;
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-container:not(.horizontal) .btn {
+          display: block;
+          width: 100%;
+          margin: 0;
+          padding: 12px 20px;
         }
         .btn-primary {
           background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
@@ -6509,10 +6751,17 @@ export const sendAppointmentReinitiatedBySellerEmail = async (email, appointment
           .btn-container {
             gap: 10px;
           }
+          .btn-container.horizontal {
+            flex-direction: column;
+            gap: 10px;
+          }
           .btn {
             max-width: 100%;
             padding: 14px 16px;
             font-size: 15px;
+            margin: 0;
+            display: block;
+            width: 100%;
           }
           .detail-row {
             flex-direction: column;
@@ -6588,11 +6837,11 @@ export const sendAppointmentReinitiatedBySellerEmail = async (email, appointment
           </div>
           
           <div class="action-buttons">
-            <div class="btn-container">
-              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary" >
+            <div class="btn-container horizontal">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
                 🏠 View Property Details
               </a>
-              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary" >
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
                 📅 My Appointments
               </a>
             </div>
@@ -6816,12 +7065,18 @@ export const sendAppointmentReinitiatedByBuyerEmail = async (email, appointmentD
           max-width: 100%;
           width: 100%;
         }
+        .btn-container.horizontal {
+          flex-direction: row;
+          gap: 20px;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
         .btn {
-          display: block;
-          width: 100%;
+          display: inline-block;
+          width: auto;
           max-width: 280px;
-          padding: 12px 20px;
-          margin: 0;
+          padding: 15px 25px;
+          margin: 5px;
           text-decoration: none;
           border-radius: 8px;
           font-weight: 600;
@@ -6831,6 +7086,12 @@ export const sendAppointmentReinitiatedByBuyerEmail = async (email, appointmentD
           word-wrap: break-word;
           transition: all 0.3s ease;
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-container:not(.horizontal) .btn {
+          display: block;
+          width: 100%;
+          margin: 0;
+          padding: 12px 20px;
         }
         .btn-primary {
           background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
@@ -6897,10 +7158,17 @@ export const sendAppointmentReinitiatedByBuyerEmail = async (email, appointmentD
           .btn-container {
             gap: 10px;
           }
+          .btn-container.horizontal {
+            flex-direction: column;
+            gap: 10px;
+          }
           .btn {
             max-width: 100%;
             padding: 14px 16px;
             font-size: 15px;
+            margin: 0;
+            display: block;
+            width: 100%;
           }
           .detail-row {
             flex-direction: column;
@@ -6976,11 +7244,11 @@ export const sendAppointmentReinitiatedByBuyerEmail = async (email, appointmentD
           </div>
           
           <div class="action-buttons">
-            <div class="btn-container">
-              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary" >
+            <div class="btn-container horizontal">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
                 🏠 View Property Details
               </a>
-              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary" >
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
                 📅 My Appointments
               </a>
             </div>
