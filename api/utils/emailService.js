@@ -3358,10 +3358,10 @@ export const sendAppointmentBookingEmail = async (email, appointmentDetails, use
                 <span class="detail-value">${isBuyer ? sellerName : buyerName}</span>
               </div>
               <div class="detail-row">
-                <span class="detail-label">💳 Payment Status:</span>
+                <span class="detail-label">📊 Appointment Status:</span>
                 <span class="detail-value">
-                  <span class="status-badge ${paymentStatus === 'paid' ? 'status-paid' : 'status-pending'}">
-                    ${paymentStatus === 'paid' ? '✅ Paid' : '⏳ Pending'}
+                  <span class="status-badge status-pending">
+                    ⏳ Pending
                   </span>
                 </span>
               </div>
@@ -3780,6 +3780,1829 @@ export const sendSellerPaymentNotificationEmail = async (email, paymentDetails) 
   } catch (error) {
     console.error('Error sending seller payment notification email:', error);
     return createErrorResponse(error, 'seller_payment_notification_email');
+  }
+};
+
+// Appointment Rejected Email (to buyer)
+export const sendAppointmentRejectedEmail = async (email, appointmentDetails) => {
+  try {
+    const { 
+      appointmentId,
+      propertyName, 
+      propertyDescription, 
+      propertyAddress,
+      propertyPrice,
+      propertyImages,
+      date, 
+      time, 
+      sellerName,
+      purpose,
+      message,
+      listingId,
+      rejectionReason
+    } = appointmentDetails;
+
+    const subject = `❌ Appointment Rejected - ${propertyName} | UrbanSetu`;
+    
+    // Format date and time
+    const appointmentDate = new Date(date).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    
+    const appointmentTime = time ? new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    }) : 'Time TBD';
+
+    // Get property image for email
+    const propertyImage = propertyImages && propertyImages.length > 0 
+      ? propertyImages[0] 
+      : `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/placeholder-property.jpg`;
+
+    const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Appointment Rejected - UrbanSetu</title>
+      <style>
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+          background-color: #f8fafc;
+        }
+        .container {
+          background: white;
+          border-radius: 12px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          overflow: hidden;
+        }
+        .header {
+          background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+          color: white;
+          padding: 30px;
+          text-align: center;
+        }
+        .header h1 {
+          margin: 0;
+          font-size: 28px;
+          font-weight: 700;
+        }
+        .header p {
+          margin: 10px 0 0 0;
+          font-size: 16px;
+          opacity: 0.9;
+        }
+        .content {
+          padding: 30px;
+        }
+        .appointment-card {
+          background: #fef2f2;
+          border: 2px solid #fecaca;
+          border-radius: 12px;
+          padding: 25px;
+          margin: 20px 0;
+        }
+        .property-image {
+          width: 100%;
+          height: 200px;
+          object-fit: cover;
+          border-radius: 8px;
+          margin-bottom: 20px;
+        }
+        .property-title {
+          font-size: 24px;
+          font-weight: 700;
+          color: #1e293b;
+          margin: 0 0 10px 0;
+        }
+        .property-address {
+          color: #64748b;
+          font-size: 16px;
+          margin: 0 0 15px 0;
+        }
+        .property-price {
+          font-size: 20px;
+          font-weight: 700;
+          color: #059669;
+          margin: 0 0 20px 0;
+        }
+        .appointment-details {
+          background: white;
+          border-radius: 8px;
+          padding: 20px;
+          margin: 20px 0;
+        }
+        .detail-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px 0;
+          border-bottom: 1px solid #e2e8f0;
+        }
+        .detail-row:last-child {
+          border-bottom: none;
+        }
+        .detail-label {
+          font-weight: 600;
+          color: #374151;
+        }
+        .detail-value {
+          color: #1f2937;
+          font-weight: 500;
+        }
+        .status-badge {
+          display: inline-block;
+          padding: 8px 16px;
+          border-radius: 20px;
+          font-size: 14px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          background: #fecaca;
+          color: #dc2626;
+        }
+        .rejection-reason {
+          background: #fef2f2;
+          border: 1px solid #fecaca;
+          border-radius: 8px;
+          padding: 20px;
+          margin: 20px 0;
+        }
+        .rejection-reason h3 {
+          color: #dc2626;
+          margin: 0 0 10px 0;
+          font-size: 18px;
+        }
+        .rejection-reason p {
+          color: #7f1d1d;
+          margin: 0;
+          font-style: italic;
+        }
+        .action-buttons {
+          text-align: center;
+          margin: 30px 0;
+        }
+        .btn {
+          display: inline-block;
+          padding: 15px 30px;
+          margin: 10px;
+          text-decoration: none;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 16px;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+          color: white !important;
+        }
+        .btn-secondary {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          color: white !important;
+        }
+        .btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        .next-steps {
+          background: #fef3c7;
+          border: 1px solid #f59e0b;
+          border-radius: 8px;
+          padding: 20px;
+          margin: 20px 0;
+        }
+        .next-steps h3 {
+          color: #d97706;
+          margin: 0 0 15px 0;
+          font-size: 18px;
+        }
+        .next-steps ul {
+          margin: 0;
+          padding-left: 20px;
+        }
+        .next-steps li {
+          margin: 8px 0;
+          color: #92400e;
+        }
+        .footer {
+          background: #f8fafc;
+          padding: 30px;
+          text-align: center;
+          color: #64748b;
+          border-top: 1px solid #e2e8f0;
+        }
+        .footer p {
+          margin: 5px 0;
+        }
+        .social-links {
+          margin: 20px 0;
+        }
+        .social-links a {
+          display: inline-block;
+          margin: 0 10px;
+          color: #3b82f6;
+          text-decoration: none;
+        }
+        @media (max-width: 600px) {
+          .container {
+            margin: 10px;
+            border-radius: 8px;
+          }
+          .content {
+            padding: 20px;
+          }
+          .btn {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+          }
+          .detail-row {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          .detail-value {
+            margin-top: 5px;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>❌ Appointment Rejected</h1>
+          <p>Unfortunately, your appointment request was not accepted</p>
+        </div>
+        
+        <div class="content">
+          <div class="appointment-card">
+            <img src="${propertyImage}" alt="${propertyName}" class="property-image" />
+            <h2 class="property-title">${propertyName}</h2>
+            <p class="property-address">📍 ${propertyAddress || 'Address not specified'}</p>
+            <p class="property-price">💰 ₹${propertyPrice || 'Price not specified'}</p>
+            
+            <div class="appointment-details">
+              <div class="detail-row">
+                <span class="detail-label">📅 Date:</span>
+                <span class="detail-value">${appointmentDate}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">🕐 Time:</span>
+                <span class="detail-value">${appointmentTime}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">👤 Seller:</span>
+                <span class="detail-value">${sellerName}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">📊 Status:</span>
+                <span class="detail-value">
+                  <span class="status-badge">REJECTED</span>
+                </span>
+              </div>
+              ${purpose ? `
+              <div class="detail-row">
+                <span class="detail-label">🎯 Purpose:</span>
+                <span class="detail-value">${purpose}</span>
+              </div>
+              ` : ''}
+            </div>
+            
+            ${message ? `
+            <div class="message-section">
+              <div class="message-label">💬 Your Message:</div>
+              <div class="message-text">"${message}"</div>
+            </div>
+            ` : ''}
+            
+            ${rejectionReason ? `
+            <div class="rejection-reason">
+              <h3>📝 Rejection Reason:</h3>
+              <p>"${rejectionReason}"</p>
+            </div>
+            ` : ''}
+          </div>
+          
+          <div class="action-buttons">
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
+              🏠 View Property Details
+            </a>
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
+              📅 My Appointments
+            </a>
+          </div>
+          
+          <div class="next-steps">
+            <h3>📋 What's Next:</h3>
+            <ul>
+              <li>Don't worry! You can explore other similar properties</li>
+              <li>Use our search filters to find properties that match your criteria</li>
+              <li>Consider reaching out to other sellers for similar properties</li>
+              <li>You can book new appointments anytime</li>
+              <li>Check our recommendations for properties you might like</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p><strong>UrbanSetu - Smart Real Estate Platform</strong></p>
+          <p>Keep exploring to find your perfect property!</p>
+          <div class="social-links">
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}">Website</a>
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/contact">Support</a>
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/privacy">Privacy</a>
+          </div>
+          <p style="font-size: 12px; margin-top: 20px;">
+            This is an automated email. Please do not reply to this email address.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending appointment rejected email:', error);
+    return createErrorResponse(error, 'appointment_rejected_email');
+  }
+};
+
+// Appointment Accepted Email (to buyer)
+export const sendAppointmentAcceptedEmail = async (email, appointmentDetails) => {
+  try {
+    const { 
+      appointmentId,
+      propertyName, 
+      propertyDescription, 
+      propertyAddress,
+      propertyPrice,
+      propertyImages,
+      date, 
+      time, 
+      sellerName,
+      purpose,
+      message,
+      listingId
+    } = appointmentDetails;
+
+    const subject = `✅ Appointment Accepted - ${propertyName} | UrbanSetu`;
+    
+    // Format date and time
+    const appointmentDate = new Date(date).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    
+    const appointmentTime = time ? new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    }) : 'Time TBD';
+
+    // Get property image for email
+    const propertyImage = propertyImages && propertyImages.length > 0 
+      ? propertyImages[0] 
+      : `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/placeholder-property.jpg`;
+
+    const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Appointment Accepted - UrbanSetu</title>
+      <style>
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+          background-color: #f8fafc;
+        }
+        .container {
+          background: white;
+          border-radius: 12px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          overflow: hidden;
+        }
+        .header {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          color: white;
+          padding: 30px;
+          text-align: center;
+        }
+        .header h1 {
+          margin: 0;
+          font-size: 28px;
+          font-weight: 700;
+        }
+        .header p {
+          margin: 10px 0 0 0;
+          font-size: 16px;
+          opacity: 0.9;
+        }
+        .content {
+          padding: 30px;
+        }
+        .appointment-card {
+          background: #f0fdf4;
+          border: 2px solid #bbf7d0;
+          border-radius: 12px;
+          padding: 25px;
+          margin: 20px 0;
+        }
+        .property-image {
+          width: 100%;
+          height: 200px;
+          object-fit: cover;
+          border-radius: 8px;
+          margin-bottom: 20px;
+        }
+        .property-title {
+          font-size: 24px;
+          font-weight: 700;
+          color: #1e293b;
+          margin: 0 0 10px 0;
+        }
+        .property-address {
+          color: #64748b;
+          font-size: 16px;
+          margin: 0 0 15px 0;
+        }
+        .property-price {
+          font-size: 20px;
+          font-weight: 700;
+          color: #059669;
+          margin: 0 0 20px 0;
+        }
+        .appointment-details {
+          background: white;
+          border-radius: 8px;
+          padding: 20px;
+          margin: 20px 0;
+        }
+        .detail-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px 0;
+          border-bottom: 1px solid #e2e8f0;
+        }
+        .detail-row:last-child {
+          border-bottom: none;
+        }
+        .detail-label {
+          font-weight: 600;
+          color: #374151;
+        }
+        .detail-value {
+          color: #1f2937;
+          font-weight: 500;
+        }
+        .status-badge {
+          display: inline-block;
+          padding: 8px 16px;
+          border-radius: 20px;
+          font-size: 14px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          background: #d1fae5;
+          color: #059669;
+        }
+        .message-section {
+          background: #f1f5f9;
+          border-left: 4px solid #3b82f6;
+          padding: 20px;
+          margin: 20px 0;
+          border-radius: 0 8px 8px 0;
+        }
+        .message-label {
+          font-weight: 600;
+          color: #374151;
+          margin-bottom: 8px;
+        }
+        .message-text {
+          color: #1f2937;
+          font-style: italic;
+        }
+        .action-buttons {
+          text-align: center;
+          margin: 30px 0;
+        }
+        .btn {
+          display: inline-block;
+          padding: 15px 30px;
+          margin: 10px;
+          text-decoration: none;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 16px;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+          color: white !important;
+        }
+        .btn-secondary {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          color: white !important;
+        }
+        .btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        .next-steps {
+          background: #fef3c7;
+          border: 1px solid #f59e0b;
+          border-radius: 8px;
+          padding: 20px;
+          margin: 20px 0;
+        }
+        .next-steps h3 {
+          color: #d97706;
+          margin: 0 0 15px 0;
+          font-size: 18px;
+        }
+        .next-steps ul {
+          margin: 0;
+          padding-left: 20px;
+        }
+        .next-steps li {
+          margin: 8px 0;
+          color: #92400e;
+        }
+        .footer {
+          background: #f8fafc;
+          padding: 30px;
+          text-align: center;
+          color: #64748b;
+          border-top: 1px solid #e2e8f0;
+        }
+        .footer p {
+          margin: 5px 0;
+        }
+        .social-links {
+          margin: 20px 0;
+        }
+        .social-links a {
+          display: inline-block;
+          margin: 0 10px;
+          color: #3b82f6;
+          text-decoration: none;
+        }
+        @media (max-width: 600px) {
+          .container {
+            margin: 10px;
+            border-radius: 8px;
+          }
+          .content {
+            padding: 20px;
+          }
+          .btn {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+          }
+          .detail-row {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          .detail-value {
+            margin-top: 5px;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>✅ Appointment Accepted!</h1>
+          <p>Great news! Your appointment request has been approved</p>
+        </div>
+        
+        <div class="content">
+          <div class="appointment-card">
+            <img src="${propertyImage}" alt="${propertyName}" class="property-image" />
+            <h2 class="property-title">${propertyName}</h2>
+            <p class="property-address">📍 ${propertyAddress || 'Address not specified'}</p>
+            <p class="property-price">💰 ₹${propertyPrice || 'Price not specified'}</p>
+            
+            <div class="appointment-details">
+              <div class="detail-row">
+                <span class="detail-label">📅 Date:</span>
+                <span class="detail-value">${appointmentDate}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">🕐 Time:</span>
+                <span class="detail-value">${appointmentTime}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">👤 Seller:</span>
+                <span class="detail-value">${sellerName}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">📊 Status:</span>
+                <span class="detail-value">
+                  <span class="status-badge">ACCEPTED</span>
+                </span>
+              </div>
+              ${purpose ? `
+              <div class="detail-row">
+                <span class="detail-label">🎯 Purpose:</span>
+                <span class="detail-value">${purpose}</span>
+              </div>
+              ` : ''}
+            </div>
+            
+            ${message ? `
+            <div class="message-section">
+              <div class="message-label">💬 Your Message:</div>
+              <div class="message-text">"${message}"</div>
+            </div>
+            ` : ''}
+          </div>
+          
+          <div class="action-buttons">
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
+              🏠 View Property Details
+            </a>
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
+              📅 My Appointments
+            </a>
+          </div>
+          
+          <div class="next-steps">
+            <h3>📋 Next Steps:</h3>
+            <ul>
+              <li>Mark your calendar for the scheduled appointment</li>
+              <li>Prepare any questions you have about the property</li>
+              <li>Arrive on time for your appointment</li>
+              <li>You can now communicate with the seller through the appointment chat</li>
+              <li>Contact information is now visible to both parties</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p><strong>UrbanSetu - Smart Real Estate Platform</strong></p>
+          <p>We're excited to help you find your perfect property!</p>
+          <div class="social-links">
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}">Website</a>
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/contact">Support</a>
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/privacy">Privacy</a>
+          </div>
+          <p style="font-size: 12px; margin-top: 20px;">
+            This is an automated email. Please do not reply to this email address.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending appointment accepted email:', error);
+    return createErrorResponse(error, 'appointment_accepted_email');
+  }
+};
+
+// Appointment Cancelled by Buyer Email (to seller)
+export const sendAppointmentCancelledByBuyerEmail = async (email, appointmentDetails) => {
+  try {
+    const { 
+      appointmentId,
+      propertyName, 
+      propertyDescription, 
+      propertyAddress,
+      propertyPrice,
+      propertyImages,
+      date, 
+      time, 
+      buyerName,
+      purpose,
+      message,
+      listingId,
+      cancellationReason
+    } = appointmentDetails;
+
+    const subject = `❌ Appointment Cancelled by Buyer - ${propertyName} | UrbanSetu`;
+    
+    // Format date and time
+    const appointmentDate = new Date(date).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    
+    const appointmentTime = time ? new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    }) : 'Time TBD';
+
+    // Get property image for email
+    const propertyImage = propertyImages && propertyImages.length > 0 
+      ? propertyImages[0] 
+      : `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/placeholder-property.jpg`;
+
+    const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Appointment Cancelled by Buyer - UrbanSetu</title>
+      <style>
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+          background-color: #f8fafc;
+        }
+        .container {
+          background: white;
+          border-radius: 12px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          overflow: hidden;
+        }
+        .header {
+          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+          color: white;
+          padding: 30px;
+          text-align: center;
+        }
+        .header h1 {
+          margin: 0;
+          font-size: 28px;
+          font-weight: 700;
+        }
+        .header p {
+          margin: 10px 0 0 0;
+          font-size: 16px;
+          opacity: 0.9;
+        }
+        .content {
+          padding: 30px;
+        }
+        .appointment-card {
+          background: #fffbeb;
+          border: 2px solid #fed7aa;
+          border-radius: 12px;
+          padding: 25px;
+          margin: 20px 0;
+        }
+        .property-image {
+          width: 100%;
+          height: 200px;
+          object-fit: cover;
+          border-radius: 8px;
+          margin-bottom: 20px;
+        }
+        .property-title {
+          font-size: 24px;
+          font-weight: 700;
+          color: #1e293b;
+          margin: 0 0 10px 0;
+        }
+        .property-address {
+          color: #64748b;
+          font-size: 16px;
+          margin: 0 0 15px 0;
+        }
+        .property-price {
+          font-size: 20px;
+          font-weight: 700;
+          color: #059669;
+          margin: 0 0 20px 0;
+        }
+        .appointment-details {
+          background: white;
+          border-radius: 8px;
+          padding: 20px;
+          margin: 20px 0;
+        }
+        .detail-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px 0;
+          border-bottom: 1px solid #e2e8f0;
+        }
+        .detail-row:last-child {
+          border-bottom: none;
+        }
+        .detail-label {
+          font-weight: 600;
+          color: #374151;
+        }
+        .detail-value {
+          color: #1f2937;
+          font-weight: 500;
+        }
+        .status-badge {
+          display: inline-block;
+          padding: 8px 16px;
+          border-radius: 20px;
+          font-size: 14px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          background: #fed7aa;
+          color: #d97706;
+        }
+        .cancellation-reason {
+          background: #fffbeb;
+          border: 1px solid #fed7aa;
+          border-radius: 8px;
+          padding: 20px;
+          margin: 20px 0;
+        }
+        .cancellation-reason h3 {
+          color: #d97706;
+          margin: 0 0 10px 0;
+          font-size: 18px;
+        }
+        .cancellation-reason p {
+          color: #92400e;
+          margin: 0;
+          font-style: italic;
+        }
+        .action-buttons {
+          text-align: center;
+          margin: 30px 0;
+        }
+        .btn {
+          display: inline-block;
+          padding: 15px 30px;
+          margin: 10px;
+          text-decoration: none;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 16px;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+          color: white !important;
+        }
+        .btn-secondary {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          color: white !important;
+        }
+        .btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        .next-steps {
+          background: #fef3c7;
+          border: 1px solid #f59e0b;
+          border-radius: 8px;
+          padding: 20px;
+          margin: 20px 0;
+        }
+        .next-steps h3 {
+          color: #d97706;
+          margin: 0 0 15px 0;
+          font-size: 18px;
+        }
+        .next-steps ul {
+          margin: 0;
+          padding-left: 20px;
+        }
+        .next-steps li {
+          margin: 8px 0;
+          color: #92400e;
+        }
+        .footer {
+          background: #f8fafc;
+          padding: 30px;
+          text-align: center;
+          color: #64748b;
+          border-top: 1px solid #e2e8f0;
+        }
+        .footer p {
+          margin: 5px 0;
+        }
+        .social-links {
+          margin: 20px 0;
+        }
+        .social-links a {
+          display: inline-block;
+          margin: 0 10px;
+          color: #3b82f6;
+          text-decoration: none;
+        }
+        @media (max-width: 600px) {
+          .container {
+            margin: 10px;
+            border-radius: 8px;
+          }
+          .content {
+            padding: 20px;
+          }
+          .btn {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+          }
+          .detail-row {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          .detail-value {
+            margin-top: 5px;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>❌ Appointment Cancelled</h1>
+          <p>The buyer has cancelled their appointment request</p>
+        </div>
+        
+        <div class="content">
+          <div class="appointment-card">
+            <img src="${propertyImage}" alt="${propertyName}" class="property-image" />
+            <h2 class="property-title">${propertyName}</h2>
+            <p class="property-address">📍 ${propertyAddress || 'Address not specified'}</p>
+            <p class="property-price">💰 ₹${propertyPrice || 'Price not specified'}</p>
+            
+            <div class="appointment-details">
+              <div class="detail-row">
+                <span class="detail-label">📅 Date:</span>
+                <span class="detail-value">${appointmentDate}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">🕐 Time:</span>
+                <span class="detail-value">${appointmentTime}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">👤 Buyer:</span>
+                <span class="detail-value">${buyerName}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">📊 Status:</span>
+                <span class="detail-value">
+                  <span class="status-badge">CANCELLED BY BUYER</span>
+                </span>
+              </div>
+              ${purpose ? `
+              <div class="detail-row">
+                <span class="detail-label">🎯 Purpose:</span>
+                <span class="detail-value">${purpose}</span>
+              </div>
+              ` : ''}
+            </div>
+            
+            ${message ? `
+            <div class="message-section">
+              <div class="message-label">💬 Buyer's Message:</div>
+              <div class="message-text">"${message}"</div>
+            </div>
+            ` : ''}
+            
+            ${cancellationReason ? `
+            <div class="cancellation-reason">
+              <h3>📝 Cancellation Reason:</h3>
+              <p>"${cancellationReason}"</p>
+            </div>
+            ` : ''}
+          </div>
+          
+          <div class="action-buttons">
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
+              🏠 View Property Details
+            </a>
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
+              📅 My Appointments
+            </a>
+          </div>
+          
+          <div class="next-steps">
+            <h3>📋 What's Next:</h3>
+            <ul>
+              <li>Your property is still available for other potential buyers</li>
+              <li>You can continue to receive new appointment requests</li>
+              <li>Consider updating your property listing if needed</li>
+              <li>Monitor your appointments for new bookings</li>
+              <li>You can contact support if you have any questions</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p><strong>UrbanSetu - Smart Real Estate Platform</strong></p>
+          <p>Don't worry, more opportunities are coming your way!</p>
+          <div class="social-links">
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}">Website</a>
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/contact">Support</a>
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/privacy">Privacy</a>
+          </div>
+          <p style="font-size: 12px; margin-top: 20px;">
+            This is an automated email. Please do not reply to this email address.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending appointment cancelled by buyer email:', error);
+    return createErrorResponse(error, 'appointment_cancelled_by_buyer_email');
+  }
+};
+
+// Appointment Cancelled by Seller Email (to buyer)
+export const sendAppointmentCancelledBySellerEmail = async (email, appointmentDetails) => {
+  try {
+    const { 
+      appointmentId,
+      propertyName, 
+      propertyDescription, 
+      propertyAddress,
+      propertyPrice,
+      propertyImages,
+      date, 
+      time, 
+      sellerName,
+      purpose,
+      message,
+      listingId,
+      cancellationReason
+    } = appointmentDetails;
+
+    const subject = `❌ Appointment Cancelled by Seller - ${propertyName} | UrbanSetu`;
+    
+    // Format date and time
+    const appointmentDate = new Date(date).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    
+    const appointmentTime = time ? new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    }) : 'Time TBD';
+
+    // Get property image for email
+    const propertyImage = propertyImages && propertyImages.length > 0 
+      ? propertyImages[0] 
+      : `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/placeholder-property.jpg`;
+
+    const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Appointment Cancelled by Seller - UrbanSetu</title>
+      <style>
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+          background-color: #f8fafc;
+        }
+        .container {
+          background: white;
+          border-radius: 12px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          overflow: hidden;
+        }
+        .header {
+          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+          color: white;
+          padding: 30px;
+          text-align: center;
+        }
+        .header h1 {
+          margin: 0;
+          font-size: 28px;
+          font-weight: 700;
+        }
+        .header p {
+          margin: 10px 0 0 0;
+          font-size: 16px;
+          opacity: 0.9;
+        }
+        .content {
+          padding: 30px;
+        }
+        .appointment-card {
+          background: #fffbeb;
+          border: 2px solid #fed7aa;
+          border-radius: 12px;
+          padding: 25px;
+          margin: 20px 0;
+        }
+        .property-image {
+          width: 100%;
+          height: 200px;
+          object-fit: cover;
+          border-radius: 8px;
+          margin-bottom: 20px;
+        }
+        .property-title {
+          font-size: 24px;
+          font-weight: 700;
+          color: #1e293b;
+          margin: 0 0 10px 0;
+        }
+        .property-address {
+          color: #64748b;
+          font-size: 16px;
+          margin: 0 0 15px 0;
+        }
+        .property-price {
+          font-size: 20px;
+          font-weight: 700;
+          color: #059669;
+          margin: 0 0 20px 0;
+        }
+        .appointment-details {
+          background: white;
+          border-radius: 8px;
+          padding: 20px;
+          margin: 20px 0;
+        }
+        .detail-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px 0;
+          border-bottom: 1px solid #e2e8f0;
+        }
+        .detail-row:last-child {
+          border-bottom: none;
+        }
+        .detail-label {
+          font-weight: 600;
+          color: #374151;
+        }
+        .detail-value {
+          color: #1f2937;
+          font-weight: 500;
+        }
+        .status-badge {
+          display: inline-block;
+          padding: 8px 16px;
+          border-radius: 20px;
+          font-size: 14px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          background: #fed7aa;
+          color: #d97706;
+        }
+        .cancellation-reason {
+          background: #fffbeb;
+          border: 1px solid #fed7aa;
+          border-radius: 8px;
+          padding: 20px;
+          margin: 20px 0;
+        }
+        .cancellation-reason h3 {
+          color: #d97706;
+          margin: 0 0 10px 0;
+          font-size: 18px;
+        }
+        .cancellation-reason p {
+          color: #92400e;
+          margin: 0;
+          font-style: italic;
+        }
+        .action-buttons {
+          text-align: center;
+          margin: 30px 0;
+        }
+        .btn {
+          display: inline-block;
+          padding: 15px 30px;
+          margin: 10px;
+          text-decoration: none;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 16px;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+          color: white !important;
+        }
+        .btn-secondary {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          color: white !important;
+        }
+        .btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        .next-steps {
+          background: #fef3c7;
+          border: 1px solid #f59e0b;
+          border-radius: 8px;
+          padding: 20px;
+          margin: 20px 0;
+        }
+        .next-steps h3 {
+          color: #d97706;
+          margin: 0 0 15px 0;
+          font-size: 18px;
+        }
+        .next-steps ul {
+          margin: 0;
+          padding-left: 20px;
+        }
+        .next-steps li {
+          margin: 8px 0;
+          color: #92400e;
+        }
+        .footer {
+          background: #f8fafc;
+          padding: 30px;
+          text-align: center;
+          color: #64748b;
+          border-top: 1px solid #e2e8f0;
+        }
+        .footer p {
+          margin: 5px 0;
+        }
+        .social-links {
+          margin: 20px 0;
+        }
+        .social-links a {
+          display: inline-block;
+          margin: 0 10px;
+          color: #3b82f6;
+          text-decoration: none;
+        }
+        @media (max-width: 600px) {
+          .container {
+            margin: 10px;
+            border-radius: 8px;
+          }
+          .content {
+            padding: 20px;
+          }
+          .btn {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+          }
+          .detail-row {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          .detail-value {
+            margin-top: 5px;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>❌ Appointment Cancelled</h1>
+          <p>The seller has cancelled your appointment</p>
+        </div>
+        
+        <div class="content">
+          <div class="appointment-card">
+            <img src="${propertyImage}" alt="${propertyName}" class="property-image" />
+            <h2 class="property-title">${propertyName}</h2>
+            <p class="property-address">📍 ${propertyAddress || 'Address not specified'}</p>
+            <p class="property-price">💰 ₹${propertyPrice || 'Price not specified'}</p>
+            
+            <div class="appointment-details">
+              <div class="detail-row">
+                <span class="detail-label">📅 Date:</span>
+                <span class="detail-value">${appointmentDate}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">🕐 Time:</span>
+                <span class="detail-value">${appointmentTime}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">👤 Seller:</span>
+                <span class="detail-value">${sellerName}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">📊 Status:</span>
+                <span class="detail-value">
+                  <span class="status-badge">CANCELLED BY SELLER</span>
+                </span>
+              </div>
+              ${purpose ? `
+              <div class="detail-row">
+                <span class="detail-label">🎯 Purpose:</span>
+                <span class="detail-value">${purpose}</span>
+              </div>
+              ` : ''}
+            </div>
+            
+            ${message ? `
+            <div class="message-section">
+              <div class="message-label">💬 Your Message:</div>
+              <div class="message-text">"${message}"</div>
+            </div>
+            ` : ''}
+            
+            ${cancellationReason ? `
+            <div class="cancellation-reason">
+              <h3>📝 Cancellation Reason:</h3>
+              <p>"${cancellationReason}"</p>
+            </div>
+            ` : ''}
+          </div>
+          
+          <div class="action-buttons">
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
+              🏠 View Property Details
+            </a>
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
+              📅 My Appointments
+            </a>
+          </div>
+          
+          <div class="next-steps">
+            <h3>📋 What's Next:</h3>
+            <ul>
+              <li>Don't worry! You can explore other similar properties</li>
+              <li>Use our search filters to find properties that match your criteria</li>
+              <li>Consider reaching out to other sellers for similar properties</li>
+              <li>You can book new appointments anytime</li>
+              <li>Check our recommendations for properties you might like</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p><strong>UrbanSetu - Smart Real Estate Platform</strong></p>
+          <p>Keep exploring to find your perfect property!</p>
+          <div class="social-links">
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}">Website</a>
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/contact">Support</a>
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/privacy">Privacy</a>
+          </div>
+          <p style="font-size: 12px; margin-top: 20px;">
+            This is an automated email. Please do not reply to this email address.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending appointment cancelled by seller email:', error);
+    return createErrorResponse(error, 'appointment_cancelled_by_seller_email');
+  }
+};
+
+// Appointment Cancelled by Admin Email (to both buyer and seller)
+export const sendAppointmentCancelledByAdminEmail = async (email, appointmentDetails, userRole) => {
+  try {
+    const { 
+      appointmentId,
+      propertyName, 
+      propertyDescription, 
+      propertyAddress,
+      propertyPrice,
+      propertyImages,
+      date, 
+      time, 
+      buyerName,
+      sellerName,
+      purpose,
+      message,
+      listingId,
+      cancellationReason,
+      adminName
+    } = appointmentDetails;
+
+    const subject = `❌ Appointment Cancelled by Admin - ${propertyName} | UrbanSetu`;
+    
+    const isBuyer = userRole === 'buyer';
+    const isSeller = userRole === 'seller';
+    
+    // Format date and time
+    const appointmentDate = new Date(date).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    
+    const appointmentTime = time ? new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    }) : 'Time TBD';
+
+    // Get property image for email
+    const propertyImage = propertyImages && propertyImages.length > 0 
+      ? propertyImages[0] 
+      : `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/placeholder-property.jpg`;
+
+    const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Appointment Cancelled by Admin - UrbanSetu</title>
+      <style>
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+          background-color: #f8fafc;
+        }
+        .container {
+          background: white;
+          border-radius: 12px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          overflow: hidden;
+        }
+        .header {
+          background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+          color: white;
+          padding: 30px;
+          text-align: center;
+        }
+        .header h1 {
+          margin: 0;
+          font-size: 28px;
+          font-weight: 700;
+        }
+        .header p {
+          margin: 10px 0 0 0;
+          font-size: 16px;
+          opacity: 0.9;
+        }
+        .content {
+          padding: 30px;
+        }
+        .appointment-card {
+          background: #f9fafb;
+          border: 2px solid #d1d5db;
+          border-radius: 12px;
+          padding: 25px;
+          margin: 20px 0;
+        }
+        .property-image {
+          width: 100%;
+          height: 200px;
+          object-fit: cover;
+          border-radius: 8px;
+          margin-bottom: 20px;
+        }
+        .property-title {
+          font-size: 24px;
+          font-weight: 700;
+          color: #1e293b;
+          margin: 0 0 10px 0;
+        }
+        .property-address {
+          color: #64748b;
+          font-size: 16px;
+          margin: 0 0 15px 0;
+        }
+        .property-price {
+          font-size: 20px;
+          font-weight: 700;
+          color: #059669;
+          margin: 0 0 20px 0;
+        }
+        .appointment-details {
+          background: white;
+          border-radius: 8px;
+          padding: 20px;
+          margin: 20px 0;
+        }
+        .detail-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px 0;
+          border-bottom: 1px solid #e2e8f0;
+        }
+        .detail-row:last-child {
+          border-bottom: none;
+        }
+        .detail-label {
+          font-weight: 600;
+          color: #374151;
+        }
+        .detail-value {
+          color: #1f2937;
+          font-weight: 500;
+        }
+        .status-badge {
+          display: inline-block;
+          padding: 8px 16px;
+          border-radius: 20px;
+          font-size: 14px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          background: #d1d5db;
+          color: #6b7280;
+        }
+        .cancellation-reason {
+          background: #f9fafb;
+          border: 1px solid #d1d5db;
+          border-radius: 8px;
+          padding: 20px;
+          margin: 20px 0;
+        }
+        .cancellation-reason h3 {
+          color: #6b7280;
+          margin: 0 0 10px 0;
+          font-size: 18px;
+        }
+        .cancellation-reason p {
+          color: #374151;
+          margin: 0;
+          font-style: italic;
+        }
+        .admin-info {
+          background: #eff6ff;
+          border: 1px solid #bfdbfe;
+          border-radius: 8px;
+          padding: 15px;
+          margin: 20px 0;
+        }
+        .admin-info h4 {
+          color: #1e40af;
+          margin: 0 0 5px 0;
+          font-size: 16px;
+        }
+        .admin-info p {
+          color: #1e40af;
+          margin: 0;
+          font-size: 14px;
+        }
+        .action-buttons {
+          text-align: center;
+          margin: 30px 0;
+        }
+        .btn {
+          display: inline-block;
+          padding: 15px 30px;
+          margin: 10px;
+          text-decoration: none;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 16px;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+          color: white !important;
+        }
+        .btn-secondary {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          color: white !important;
+        }
+        .btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        .next-steps {
+          background: #fef3c7;
+          border: 1px solid #f59e0b;
+          border-radius: 8px;
+          padding: 20px;
+          margin: 20px 0;
+        }
+        .next-steps h3 {
+          color: #d97706;
+          margin: 0 0 15px 0;
+          font-size: 18px;
+        }
+        .next-steps ul {
+          margin: 0;
+          padding-left: 20px;
+        }
+        .next-steps li {
+          margin: 8px 0;
+          color: #92400e;
+        }
+        .footer {
+          background: #f8fafc;
+          padding: 30px;
+          text-align: center;
+          color: #64748b;
+          border-top: 1px solid #e2e8f0;
+        }
+        .footer p {
+          margin: 5px 0;
+        }
+        .social-links {
+          margin: 20px 0;
+        }
+        .social-links a {
+          display: inline-block;
+          margin: 0 10px;
+          color: #3b82f6;
+          text-decoration: none;
+        }
+        @media (max-width: 600px) {
+          .container {
+            margin: 10px;
+            border-radius: 8px;
+          }
+          .content {
+            padding: 20px;
+          }
+          .btn {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+          }
+          .detail-row {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          .detail-value {
+            margin-top: 5px;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>❌ Appointment Cancelled by Admin</h1>
+          <p>This appointment has been cancelled by our admin team</p>
+        </div>
+        
+        <div class="content">
+          <div class="appointment-card">
+            <img src="${propertyImage}" alt="${propertyName}" class="property-image" />
+            <h2 class="property-title">${propertyName}</h2>
+            <p class="property-address">📍 ${propertyAddress || 'Address not specified'}</p>
+            <p class="property-price">💰 ₹${propertyPrice || 'Price not specified'}</p>
+            
+            <div class="appointment-details">
+              <div class="detail-row">
+                <span class="detail-label">📅 Date:</span>
+                <span class="detail-value">${appointmentDate}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">🕐 Time:</span>
+                <span class="detail-value">${appointmentTime}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">👤 ${isBuyer ? 'Seller' : 'Buyer'}:</span>
+                <span class="detail-value">${isBuyer ? sellerName : buyerName}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">📊 Status:</span>
+                <span class="detail-value">
+                  <span class="status-badge">CANCELLED BY ADMIN</span>
+                </span>
+              </div>
+              ${purpose ? `
+              <div class="detail-row">
+                <span class="detail-label">🎯 Purpose:</span>
+                <span class="detail-value">${purpose}</span>
+              </div>
+              ` : ''}
+            </div>
+            
+            ${message ? `
+            <div class="message-section">
+              <div class="message-label">💬 ${isBuyer ? 'Your' : 'Buyer\'s'} Message:</div>
+              <div class="message-text">"${message}"</div>
+            </div>
+            ` : ''}
+            
+            ${cancellationReason ? `
+            <div class="cancellation-reason">
+              <h3>📝 Admin Cancellation Reason:</h3>
+              <p>"${cancellationReason}"</p>
+            </div>
+            ` : ''}
+            
+            ${adminName ? `
+            <div class="admin-info">
+              <h4>👨‍💼 Admin Information:</h4>
+              <p>Cancelled by: ${adminName}</p>
+            </div>
+            ` : ''}
+          </div>
+          
+          <div class="action-buttons">
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
+              🏠 View Property Details
+            </a>
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
+              📅 My Appointments
+            </a>
+          </div>
+          
+          <div class="next-steps">
+            <h3>📋 What's Next:</h3>
+            <ul>
+              ${isBuyer ? `
+              <li>Don't worry! You can explore other similar properties</li>
+              <li>Use our search filters to find properties that match your criteria</li>
+              <li>Consider reaching out to other sellers for similar properties</li>
+              <li>You can book new appointments anytime</li>
+              <li>Contact our support team if you have any questions</li>
+              ` : `
+              <li>Your property is still available for other potential buyers</li>
+              <li>You can continue to receive new appointment requests</li>
+              <li>Consider updating your property listing if needed</li>
+              <li>Monitor your appointments for new bookings</li>
+              <li>Contact our support team if you have any questions</li>
+              `}
+            </ul>
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p><strong>UrbanSetu - Smart Real Estate Platform</strong></p>
+          <p>We're here to help you find the perfect property match!</p>
+          <div class="social-links">
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}">Website</a>
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/contact">Support</a>
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/privacy">Privacy</a>
+          </div>
+          <p style="font-size: 12px; margin-top: 20px;">
+            This is an automated email. Please do not reply to this email address.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending appointment cancelled by admin email:', error);
+    return createErrorResponse(error, 'appointment_cancelled_by_admin_email');
   }
 };
 

@@ -6,7 +6,14 @@ import User from "../models/user.model.js";
 import { verifyToken } from '../utils/verify.js';
 import Review from '../models/review.model.js';
 import Notification from '../models/notification.model.js';
-import { sendAppointmentBookingEmail } from '../utils/emailService.js';
+import { 
+  sendAppointmentBookingEmail,
+  sendAppointmentRejectedEmail,
+  sendAppointmentAcceptedEmail,
+  sendAppointmentCancelledByBuyerEmail,
+  sendAppointmentCancelledBySellerEmail,
+  sendAppointmentCancelledByAdminEmail
+} from '../utils/emailService.js';
 import bcryptjs from 'bcryptjs';
 
 const router = express.Router();
@@ -321,6 +328,35 @@ router.patch('/:id/status', verifyToken, async (req, res) => {
           });
 
           if (io) io.to((updated.buyerId._id || updated.buyerId).toString()).emit('notificationCreated', notification);
+        }
+
+        // Send email notification to buyer
+        try {
+          const appointmentDetails = {
+            appointmentId: updated._id,
+            propertyName: updated.listingId.name,
+            propertyDescription: updated.listingId.description || '',
+            propertyAddress: updated.listingId.address,
+            propertyPrice: updated.listingId.regularPrice,
+            propertyImages: updated.listingId.imageUrls || [],
+            date: updated.date,
+            time: updated.time,
+            sellerName: updated.sellerId.username,
+            purpose: updated.purpose,
+            message: updated.message,
+            listingId: updated.listingId._id,
+            rejectionReason: req.body.rejectionReason || null
+          };
+
+          if (status === 'accepted') {
+            await sendAppointmentAcceptedEmail(updated.buyerId.email, appointmentDetails);
+            console.log(`✅ Appointment accepted email sent to buyer: ${updated.buyerId.email}`);
+          } else if (status === 'rejected') {
+            await sendAppointmentRejectedEmail(updated.buyerId.email, appointmentDetails);
+            console.log(`❌ Appointment rejected email sent to buyer: ${updated.buyerId.email}`);
+          }
+        } catch (emailError) {
+          console.error('Error sending status change email to buyer:', emailError);
         }
       }
     } catch (notificationError) {
@@ -958,6 +994,35 @@ router.patch('/:id/cancel', verifyToken, async (req, res) => {
         } catch (notificationError) {
           console.error('Failed to create notification for seller:', notificationError);
         }
+
+        // Send email notification to seller
+        try {
+          const appointment = await booking.findById(id)
+            .populate('buyerId', 'username email firstName lastName')
+            .populate('sellerId', 'username email firstName lastName')
+            .populate('listingId', 'name description address imageUrls regularPrice');
+          
+          const appointmentDetails = {
+            appointmentId: appointment._id,
+            propertyName: appointment.listingId.name,
+            propertyDescription: appointment.listingId.description || '',
+            propertyAddress: appointment.listingId.address,
+            propertyPrice: appointment.listingId.regularPrice,
+            propertyImages: appointment.listingId.imageUrls || [],
+            date: appointment.date,
+            time: appointment.time,
+            buyerName: appointment.buyerId.username,
+            purpose: appointment.purpose,
+            message: appointment.message,
+            listingId: appointment.listingId._id,
+            cancellationReason: reason
+          };
+
+          await sendAppointmentCancelledByBuyerEmail(appointment.sellerId.email, appointmentDetails);
+          console.log(`❌ Appointment cancelled by buyer email sent to seller: ${appointment.sellerId.email}`);
+        } catch (emailError) {
+          console.error('Error sending cancellation email to seller:', emailError);
+        }
       }
       return res.status(200).json(bookingToCancel);
     }
@@ -991,6 +1056,35 @@ router.patch('/:id/cancel', verifyToken, async (req, res) => {
           io.to(bookingToCancel.buyerId.toString()).emit('notificationCreated', notification);
         } catch (notificationError) {
           console.error('Failed to create notification for buyer:', notificationError);
+        }
+
+        // Send email notification to buyer
+        try {
+          const appointment = await booking.findById(id)
+            .populate('buyerId', 'username email firstName lastName')
+            .populate('sellerId', 'username email firstName lastName')
+            .populate('listingId', 'name description address imageUrls regularPrice');
+          
+          const appointmentDetails = {
+            appointmentId: appointment._id,
+            propertyName: appointment.listingId.name,
+            propertyDescription: appointment.listingId.description || '',
+            propertyAddress: appointment.listingId.address,
+            propertyPrice: appointment.listingId.regularPrice,
+            propertyImages: appointment.listingId.imageUrls || [],
+            date: appointment.date,
+            time: appointment.time,
+            sellerName: appointment.sellerId.username,
+            purpose: appointment.purpose,
+            message: appointment.message,
+            listingId: appointment.listingId._id,
+            cancellationReason: reason
+          };
+
+          await sendAppointmentCancelledBySellerEmail(appointment.buyerId.email, appointmentDetails);
+          console.log(`❌ Appointment cancelled by seller email sent to buyer: ${appointment.buyerId.email}`);
+        } catch (emailError) {
+          console.error('Error sending cancellation email to buyer:', emailError);
         }
       }
       return res.status(200).json(bookingToCancel);
@@ -1036,6 +1130,45 @@ router.patch('/:id/cancel', verifyToken, async (req, res) => {
           io.to(bookingToCancel.sellerId.toString()).emit('notificationCreated', notification);
         } catch (notificationError) {
           console.error('Failed to create notification for seller:', notificationError);
+        }
+
+        // Send email notifications to both buyer and seller
+        try {
+          const appointment = await booking.findById(id)
+            .populate('buyerId', 'username email firstName lastName')
+            .populate('sellerId', 'username email firstName lastName')
+            .populate('listingId', 'name description address imageUrls regularPrice');
+          
+          const admin = await User.findById(req.user.id);
+          const adminName = admin ? admin.username : 'Admin';
+          
+          const appointmentDetails = {
+            appointmentId: appointment._id,
+            propertyName: appointment.listingId.name,
+            propertyDescription: appointment.listingId.description || '',
+            propertyAddress: appointment.listingId.address,
+            propertyPrice: appointment.listingId.regularPrice,
+            propertyImages: appointment.listingId.imageUrls || [],
+            date: appointment.date,
+            time: appointment.time,
+            buyerName: appointment.buyerId.username,
+            sellerName: appointment.sellerId.username,
+            purpose: appointment.purpose,
+            message: appointment.message,
+            listingId: appointment.listingId._id,
+            cancellationReason: reason,
+            adminName: adminName
+          };
+
+          // Send to buyer
+          await sendAppointmentCancelledByAdminEmail(appointment.buyerId.email, appointmentDetails, 'buyer');
+          console.log(`❌ Appointment cancelled by admin email sent to buyer: ${appointment.buyerId.email}`);
+          
+          // Send to seller
+          await sendAppointmentCancelledByAdminEmail(appointment.sellerId.email, appointmentDetails, 'seller');
+          console.log(`❌ Appointment cancelled by admin email sent to seller: ${appointment.sellerId.email}`);
+        } catch (emailError) {
+          console.error('Error sending admin cancellation emails:', emailError);
         }
       }
       return res.status(200).json(bookingToCancel);
