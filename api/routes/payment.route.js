@@ -9,7 +9,7 @@ import Notification from "../models/notification.model.js";
 import { verifyToken } from '../utils/verify.js';
 import crypto from 'crypto';
 import { createPayPalOrder, capturePayPalOrder, getPayPalAccessToken } from '../controllers/paypalController.js';
-import { sendPaymentSuccessEmail, sendPaymentFailedEmail } from '../utils/emailService.js';
+import { sendPaymentSuccessEmail, sendPaymentFailedEmail, sendSellerPaymentNotificationEmail } from '../utils/emailService.js';
 import fetch from 'node-fetch';
 import PDFDocument from 'pdfkit';
 
@@ -440,7 +440,7 @@ router.post("/verify", verifyToken, async (req, res) => {
     payment.receiptUrl = receiptUrl;
     await payment.save();
 
-    // Send payment success email
+    // Send payment success email to buyer
     try {
       await sendPaymentSuccessEmail(user.email, {
         paymentId: payment.paymentId,
@@ -452,8 +452,33 @@ router.post("/verify", verifyToken, async (req, res) => {
         paymentType: payment.paymentType,
         gateway: payment.gateway
       });
+      console.log(`✅ Payment success email sent to buyer: ${user.email}`);
     } catch (emailError) {
       console.error('Error sending payment success email:', emailError);
+    }
+
+    // Send payment notification email to seller
+    try {
+      await sendSellerPaymentNotificationEmail(seller.email, {
+        appointmentId: appointment._id,
+        propertyName: listing.name,
+        propertyDescription: listing.description,
+        propertyAddress: listing.address,
+        propertyPrice: listing.regularPrice || listing.discountPrice,
+        propertyImages: listing.imageUrls || [],
+        date: appointment.date,
+        time: appointment.time,
+        buyerName: user.firstName && user.lastName 
+          ? `${user.firstName} ${user.lastName}` 
+          : user.username,
+        paymentAmount: payment.amount,
+        paymentCurrency: payment.currency,
+        paymentGateway: payment.gateway,
+        listingId: listing._id
+      });
+      console.log(`✅ Seller payment notification email sent to: ${seller.email}`);
+    } catch (sellerEmailError) {
+      console.error('Error sending seller payment notification email:', sellerEmailError);
     }
 
     res.status(200).json({
@@ -570,7 +595,7 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
     payment.receiptUrl = receiptUrl;
     await payment.save();
 
-    // Send payment success email (reusing existing appointment, user, listing variables)
+    // Send payment success email to buyer (reusing existing appointment, user, listing variables)
     try {
       await sendPaymentSuccessEmail(user.email, {
         paymentId: payment.paymentId,
@@ -582,8 +607,33 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
         paymentType: payment.paymentType,
         gateway: payment.gateway
       });
+      console.log(`✅ Payment success email sent to buyer: ${user.email}`);
     } catch (emailError) {
       console.error('Error sending payment success email:', emailError);
+    }
+
+    // Send payment notification email to seller
+    try {
+      await sendSellerPaymentNotificationEmail(seller.email, {
+        appointmentId: appointment._id,
+        propertyName: listing.name,
+        propertyDescription: listing.description,
+        propertyAddress: listing.address,
+        propertyPrice: listing.regularPrice || listing.discountPrice,
+        propertyImages: listing.imageUrls || [],
+        date: appointment.date,
+        time: appointment.time,
+        buyerName: user.firstName && user.lastName 
+          ? `${user.firstName} ${user.lastName}` 
+          : user.username,
+        paymentAmount: payment.amount,
+        paymentCurrency: payment.currency,
+        paymentGateway: payment.gateway,
+        listingId: listing._id
+      });
+      console.log(`✅ Seller payment notification email sent to: ${seller.email}`);
+    } catch (sellerEmailError) {
+      console.error('Error sending seller payment notification email:', sellerEmailError);
     }
 
     return res.json({ message: 'Payment verified successfully', payment, receiptUrl });
@@ -1423,7 +1473,7 @@ router.post('/admin/mark-paid', verifyToken, async (req, res) => {
     const buyer = appointment.buyerId;
     const listing = appointment.listingId;
 
-    // Send payment success email (admin marked as paid)
+    // Send payment success email to buyer (admin marked as paid)
     try {
       await sendPaymentSuccessEmail(buyer.email, {
         paymentId: payment.paymentId,
@@ -1435,8 +1485,37 @@ router.post('/admin/mark-paid', verifyToken, async (req, res) => {
         paymentType: payment.paymentType,
         gateway: payment.gateway
       });
+      console.log(`✅ Admin payment success email sent to buyer: ${buyer.email}`);
     } catch (emailError) {
       console.error('Error sending payment success email:', emailError);
+    }
+
+    // Send payment notification email to seller (admin marked as paid)
+    try {
+      // Get seller details
+      await appointment.populate('sellerId', 'email username firstName lastName');
+      const seller = appointment.sellerId;
+      
+      await sendSellerPaymentNotificationEmail(seller.email, {
+        appointmentId: appointment._id,
+        propertyName: listing.name,
+        propertyDescription: listing.description,
+        propertyAddress: listing.address,
+        propertyPrice: listing.regularPrice || listing.discountPrice,
+        propertyImages: listing.imageUrls || [],
+        date: appointment.date,
+        time: appointment.time,
+        buyerName: buyer.firstName && buyer.lastName 
+          ? `${buyer.firstName} ${buyer.lastName}` 
+          : buyer.username,
+        paymentAmount: payment.amount,
+        paymentCurrency: payment.currency,
+        paymentGateway: payment.gateway,
+        listingId: listing._id
+      });
+      console.log(`✅ Admin seller payment notification email sent to: ${seller.email}`);
+    } catch (sellerEmailError) {
+      console.error('Error sending seller payment notification email:', sellerEmailError);
     }
 
     // Emit socket event for real-time payment status update
