@@ -11,10 +11,14 @@ import { useWishlist } from '../WishlistContext';
 import { useSelector } from 'react-redux';
 import ImagePreview from "../components/ImagePreview.jsx";
 import SmartPriceInsights from "../components/SmartPriceInsights.jsx";
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminListing() {
+  // Set page title
+  usePageTitle("Admin Property Details - Property Management");
+  
   const params = useParams();
   const navigate = useNavigate();
   const [listing, setListing] = useState(null);
