@@ -5606,5 +5606,397 @@ export const sendAppointmentCancelledByAdminEmail = async (email, appointmentDet
   }
 };
 
+// Appointment Reinitiated by Admin Email (to both buyer and seller)
+export const sendAppointmentReinitiatedByAdminEmail = async (email, appointmentDetails, userRole) => {
+  try {
+    const { 
+      appointmentId,
+      propertyName, 
+      propertyDescription, 
+      propertyAddress,
+      propertyPrice,
+      propertyImages,
+      date, 
+      time, 
+      buyerName,
+      sellerName,
+      purpose,
+      message,
+      listingId,
+      adminName
+    } = appointmentDetails;
+
+    const subject = `🔄 Appointment Reinitiated by Admin - ${propertyName} | UrbanSetu`;
+    
+    const isBuyer = userRole === 'buyer';
+    const isSeller = userRole === 'seller';
+    
+    // Format date and time
+    const appointmentDate = new Date(date).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    
+    const appointmentTime = time ? new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    }) : 'Time TBD';
+
+    // Get property image for email
+    const propertyImage = propertyImages && propertyImages.length > 0 
+      ? propertyImages[0] 
+      : `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/placeholder-property.jpg`;
+
+    const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Appointment Reinitiated by Admin - UrbanSetu</title>
+      <style>
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+          background-color: #f8fafc;
+        }
+        .container {
+          background: white;
+          border-radius: 12px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          overflow: hidden;
+        }
+        .header {
+          background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+          color: white;
+          padding: 30px;
+          text-align: center;
+        }
+        .header h1 {
+          margin: 0;
+          font-size: 28px;
+          font-weight: 700;
+        }
+        .header p {
+          margin: 10px 0 0 0;
+          font-size: 16px;
+          opacity: 0.9;
+        }
+        .content {
+          padding: 30px;
+        }
+        .appointment-card {
+          background: #faf5ff;
+          border: 2px solid #e9d5ff;
+          border-radius: 12px;
+          padding: 25px;
+          margin: 20px 0;
+        }
+        .property-image {
+          width: 100%;
+          height: 200px;
+          object-fit: cover;
+          border-radius: 8px;
+          margin-bottom: 20px;
+        }
+        .property-title {
+          font-size: 24px;
+          font-weight: 700;
+          color: #1e293b;
+          margin: 0 0 10px 0;
+        }
+        .property-address {
+          color: #64748b;
+          font-size: 16px;
+          margin: 0 0 15px 0;
+        }
+        .property-price {
+          font-size: 20px;
+          font-weight: 700;
+          color: #059669;
+          margin: 0 0 20px 0;
+        }
+        .appointment-details {
+          background: white;
+          border-radius: 8px;
+          padding: 20px;
+          margin: 20px 0;
+        }
+        .detail-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px 0;
+          border-bottom: 1px solid #e2e8f0;
+        }
+        .detail-row:last-child {
+          border-bottom: none;
+        }
+        .detail-label {
+          font-weight: 600;
+          color: #374151;
+        }
+        .detail-value {
+          color: #1f2937;
+          font-weight: 500;
+        }
+        .status-badge {
+          display: inline-block;
+          padding: 8px 16px;
+          border-radius: 20px;
+          font-size: 14px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          background: #e9d5ff;
+          color: #7c3aed;
+        }
+        .admin-info {
+          background: #eff6ff;
+          border: 1px solid #bfdbfe;
+          border-radius: 8px;
+          padding: 15px;
+          margin: 20px 0;
+        }
+        .admin-info h4 {
+          color: #1e40af;
+          margin: 0 0 5px 0;
+          font-size: 16px;
+        }
+        .admin-info p {
+          color: #1e40af;
+          margin: 0;
+          font-size: 14px;
+        }
+        .reinitiation-notice {
+          background: #fef3c7;
+          border: 1px solid #f59e0b;
+          border-radius: 8px;
+          padding: 20px;
+          margin: 20px 0;
+        }
+        .reinitiation-notice h3 {
+          color: #d97706;
+          margin: 0 0 10px 0;
+          font-size: 18px;
+        }
+        .reinitiation-notice p {
+          color: #92400e;
+          margin: 0;
+        }
+        .action-buttons {
+          text-align: center;
+          margin: 30px 0;
+        }
+        .btn {
+          display: inline-block;
+          padding: 15px 30px;
+          margin: 10px;
+          text-decoration: none;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 16px;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+          color: white !important;
+        }
+        .btn-secondary {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          color: white !important;
+        }
+        .btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        .next-steps {
+          background: #fef3c7;
+          border: 1px solid #f59e0b;
+          border-radius: 8px;
+          padding: 20px;
+          margin: 20px 0;
+        }
+        .next-steps h3 {
+          color: #d97706;
+          margin: 0 0 15px 0;
+          font-size: 18px;
+        }
+        .next-steps ul {
+          margin: 0;
+          padding-left: 20px;
+        }
+        .next-steps li {
+          margin: 8px 0;
+          color: #92400e;
+        }
+        .footer {
+          background: #f8fafc;
+          padding: 30px;
+          text-align: center;
+          color: #64748b;
+          border-top: 1px solid #e2e8f0;
+        }
+        .footer p {
+          margin: 5px 0;
+        }
+        .social-links {
+          margin: 20px 0;
+        }
+        .social-links a {
+          display: inline-block;
+          margin: 0 10px;
+          color: #3b82f6;
+          text-decoration: none;
+        }
+        @media (max-width: 600px) {
+          .container {
+            margin: 10px;
+            border-radius: 8px;
+          }
+          .content {
+            padding: 20px;
+          }
+          .btn {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+          }
+          .detail-row {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          .detail-value {
+            margin-top: 5px;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🔄 Appointment Reinitiated</h1>
+          <p>This appointment has been reinitiated by our admin team</p>
+        </div>
+        
+        <div class="content">
+          <div class="appointment-card">
+            <img src="${propertyImage}" alt="${propertyName}" class="property-image" />
+            <h2 class="property-title">${propertyName}</h2>
+            <p class="property-address">📍 ${propertyAddress || 'Address not specified'}</p>
+            <p class="property-price">💰 ₹${propertyPrice || 'Price not specified'}</p>
+            
+            <div class="appointment-details">
+              <div class="detail-row">
+                <span class="detail-label">📅 Date:</span>
+                <span class="detail-value">${appointmentDate}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">🕐 Time:</span>
+                <span class="detail-value">${appointmentTime}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">👤 ${isBuyer ? 'Seller' : 'Buyer'}:</span>
+                <span class="detail-value">${isBuyer ? sellerName : buyerName}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">📊 Status:</span>
+                <span class="detail-value">
+                  <span class="status-badge">REINITIATED</span>
+                </span>
+              </div>
+              ${purpose ? `
+              <div class="detail-row">
+                <span class="detail-label">🎯 Purpose:</span>
+                <span class="detail-value">${purpose}</span>
+              </div>
+              ` : ''}
+            </div>
+            
+            ${message ? `
+            <div class="message-section">
+              <div class="message-label">💬 ${isBuyer ? 'Your' : 'Buyer\'s'} Message:</div>
+              <div class="message-text">"${message}"</div>
+            </div>
+            ` : ''}
+            
+            ${adminName ? `
+            <div class="admin-info">
+              <h4>👨‍💼 Admin Information:</h4>
+              <p>Reinitiated by: ${adminName}</p>
+            </div>
+            ` : ''}
+            
+            <div class="reinitiation-notice">
+              <h3>🔄 What This Means:</h3>
+              <p>This appointment was previously cancelled by an admin but has now been reinitiated. The appointment is back to pending status and both parties can now proceed with the booking process.</p>
+            </div>
+          </div>
+          
+          <div class="action-buttons">
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${listingId}" class="btn btn-primary">
+              🏠 View Property Details
+            </a>
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments" class="btn btn-secondary">
+              📅 My Appointments
+            </a>
+          </div>
+          
+          <div class="next-steps">
+            <h3>📋 Next Steps:</h3>
+            <ul>
+              ${isBuyer ? `
+              <li>Review the appointment details and confirm if you still want to proceed</li>
+              <li>You can communicate with the seller through the appointment chat</li>
+              <li>Wait for the seller to accept or reject the appointment</li>
+              <li>If accepted, prepare for your scheduled appointment</li>
+              <li>Contact our support team if you have any questions</li>
+              ` : `
+              <li>Review the appointment details and decide whether to accept or reject</li>
+              <li>You can communicate with the buyer through the appointment chat</li>
+              <li>Consider the appointment details before making your decision</li>
+              <li>If you accept, prepare for the scheduled appointment</li>
+              <li>Contact our support team if you have any questions</li>
+              `}
+            </ul>
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p><strong>UrbanSetu - Smart Real Estate Platform</strong></p>
+          <p>We're here to help facilitate successful property transactions!</p>
+          <div class="social-links">
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}">Website</a>
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/contact">Support</a>
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/privacy">Privacy</a>
+          </div>
+          <p style="font-size: 12px; margin-top: 20px;">
+            This is an automated email. Please do not reply to this email address.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending appointment reinitiated by admin email:', error);
+    return createErrorResponse(error, 'appointment_reinitiated_by_admin_email');
+  }
+};
+
 // Export the current transporter (will be set during initialization)
 export default currentTransporter;

@@ -12,7 +12,8 @@ import {
   sendAppointmentAcceptedEmail,
   sendAppointmentCancelledByBuyerEmail,
   sendAppointmentCancelledBySellerEmail,
-  sendAppointmentCancelledByAdminEmail
+  sendAppointmentCancelledByAdminEmail,
+  sendAppointmentReinitiatedByAdminEmail
 } from '../utils/emailService.js';
 import bcryptjs from 'bcryptjs';
 
@@ -1252,6 +1253,44 @@ router.patch('/:id/reinitiate', verifyToken, async (req, res) => {
         }
       } catch (notificationError) {
         console.error('Failed to create notification for seller:', notificationError);
+      }
+
+      // Send email notifications to both buyer and seller
+      try {
+        const appointment = await booking.findById(id)
+          .populate('buyerId', 'username email firstName lastName')
+          .populate('sellerId', 'username email firstName lastName')
+          .populate('listingId', 'name description address imageUrls regularPrice');
+        
+        const admin = await User.findById(req.user.id);
+        const adminName = admin ? admin.username : 'Admin';
+        
+        const appointmentDetails = {
+          appointmentId: appointment._id,
+          propertyName: appointment.listingId.name,
+          propertyDescription: appointment.listingId.description || '',
+          propertyAddress: appointment.listingId.address,
+          propertyPrice: appointment.listingId.regularPrice,
+          propertyImages: appointment.listingId.imageUrls || [],
+          date: appointment.date,
+          time: appointment.time,
+          buyerName: appointment.buyerId.username,
+          sellerName: appointment.sellerId.username,
+          purpose: appointment.purpose,
+          message: appointment.message,
+          listingId: appointment.listingId._id,
+          adminName: adminName
+        };
+
+        // Send to buyer
+        await sendAppointmentReinitiatedByAdminEmail(appointment.buyerId.email, appointmentDetails, 'buyer');
+        console.log(`🔄 Appointment reinitiated by admin email sent to buyer: ${appointment.buyerId.email}`);
+        
+        // Send to seller
+        await sendAppointmentReinitiatedByAdminEmail(appointment.sellerId.email, appointmentDetails, 'seller');
+        console.log(`🔄 Appointment reinitiated by admin email sent to seller: ${appointment.sellerId.email}`);
+      } catch (emailError) {
+        console.error('Error sending admin reinitiation emails:', emailError);
       }
     }
     // Notify the opposite party when appointment is reinitiated by buyer or seller
