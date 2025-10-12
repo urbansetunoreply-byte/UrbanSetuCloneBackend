@@ -14,6 +14,7 @@ import VideoPreview from "../components/VideoPreview.jsx";
 import EMICalculator from "../components/EMICalculator.jsx";
 import SocialSharePanel from "../components/SocialSharePanel.jsx";
 import SmartPriceInsights from "../components/SmartPriceInsights.jsx";
+import EnhancedSmartPriceInsights from "../components/EnhancedSmartPriceInsights.jsx";
 import { maskAddress, shouldShowLocationLink, getLocationLinkText } from "../utils/addressMasking";
 import { toast } from 'react-toastify';
 import { useWishlist } from '../WishlistContext';
@@ -1753,7 +1754,7 @@ export default function Listing() {
 
           {/* Smart Price Insights Section */}
           {showSmartPriceInsights && currentUser && (
-            <SmartPriceInsights listing={listing} currentUser={currentUser} />
+            <EnhancedSmartPriceInsights listing={listing} currentUser={currentUser} />
           )}
 
           {/* Admin Information - Only show for admins */}
