@@ -535,6 +535,14 @@ export default function AdminCreateListing() {
                 onChange={onHandleChanges}
                 value={formData.pincode}
                 className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                pattern="[0-9]*"
+                inputMode="numeric"
+                maxLength="6"
+                onKeyPress={(e) => {
+                  if (!/[0-9]/.test(e.key)) {
+                    e.preventDefault();
+                  }
+                }}
               />
               <input
                 type="text"

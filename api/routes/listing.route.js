@@ -34,6 +34,7 @@ router.post("/update/:id",verifyToken,updateListing)
 router.post("/view/:listingId",async (req, res, next) => {
   try {
     const { listingId } = req.params;
+    console.log(`🔍 View tracking request for listing: ${listingId}`);
     
     // Find the listing and increment view count
     const listing = await Listing.findByIdAndUpdate(
@@ -41,6 +42,8 @@ router.post("/view/:listingId",async (req, res, next) => {
       { $inc: { viewCount: 1 } },
       { new: true }
     ).populate('userRef', 'email username');
+    
+    console.log(`📊 Listing found: ${listing ? 'Yes' : 'No'}, Name: ${listing?.name}, Previous View Count: ${listing?.viewCount - 1}, New View Count: ${listing?.viewCount}`);
     
     if (!listing) {
       return res.status(404).json({ message: 'Listing not found.' });
@@ -51,8 +54,11 @@ router.post("/view/:listingId",async (req, res, next) => {
     const milestones = [10, 25, 50, 100, 250, 500, 1000, 2500, 5000];
     const reachedMilestone = milestones.find(milestone => viewCount === milestone);
     
+    console.log(`🔍 View tracking debug - Property: ${listing.name}, View Count: ${viewCount}, Reached Milestone: ${reachedMilestone}, User Email: ${listing.userRef?.email}`);
+    
     if (reachedMilestone && listing.userRef && listing.userRef.email) {
       try {
+        console.log(`📧 Attempting to send milestone email for ${reachedMilestone} views to ${listing.userRef.email}`);
         const { sendPropertyViewsMilestoneEmail } = await import('../utils/emailService.js');
         
         const milestoneDetails = {
@@ -64,12 +70,15 @@ router.post("/view/:listingId",async (req, res, next) => {
           imageUrls: listing.imageUrls
         };
         
-        await sendPropertyViewsMilestoneEmail(listing.userRef.email, milestoneDetails);
-        console.log(`✅ Property views milestone email sent to: ${listing.userRef.email} for ${reachedMilestone} views`);
+        console.log(`📧 Milestone details:`, milestoneDetails);
+        const emailResult = await sendPropertyViewsMilestoneEmail(listing.userRef.email, milestoneDetails);
+        console.log(`✅ Property views milestone email sent to: ${listing.userRef.email} for ${reachedMilestone} views. Result:`, emailResult);
       } catch (emailError) {
         console.error(`❌ Failed to send property views milestone email to ${listing.userRef.email}:`, emailError);
         // Don't fail the view count if email fails
       }
+    } else {
+      console.log(`⏭️ Skipping milestone email - Reached: ${reachedMilestone}, UserRef: ${!!listing.userRef}, Email: ${listing.userRef?.email}`);
     }
     
     res.status(200).json({ 
@@ -81,6 +90,49 @@ router.post("/view/:listingId",async (req, res, next) => {
     next(error);
   }
 })
+// Test endpoint for milestone email (for debugging)
+router.post("/test-milestone-email/:listingId", async (req, res, next) => {
+  try {
+    const { listingId } = req.params;
+    console.log(`🧪 Testing milestone email for listing: ${listingId}`);
+    
+    const listing = await Listing.findById(listingId).populate('userRef', 'email username');
+    
+    if (!listing) {
+      return res.status(404).json({ message: 'Listing not found.' });
+    }
+    
+    if (!listing.userRef || !listing.userRef.email) {
+      return res.status(400).json({ message: 'Listing has no associated user email.' });
+    }
+    
+    // Force a milestone email for testing
+    const milestoneDetails = {
+      propertyName: listing.name,
+      propertyId: listing._id,
+      viewCount: listing.viewCount,
+      milestone: `${listing.viewCount} views`,
+      previousMilestone: null,
+      imageUrls: listing.imageUrls
+    };
+    
+    console.log(`🧪 Sending test milestone email to: ${listing.userRef.email}`);
+    const { sendPropertyViewsMilestoneEmail } = await import('../utils/emailService.js');
+    const result = await sendPropertyViewsMilestoneEmail(listing.userRef.email, milestoneDetails);
+    
+    res.status(200).json({ 
+      success: true, 
+      message: 'Test milestone email sent',
+      result: result,
+      email: listing.userRef.email,
+      propertyName: listing.name
+    });
+  } catch (error) {
+    console.error('Test milestone email error:', error);
+    res.status(500).json({ message: 'Failed to send test milestone email', error: error.message });
+  }
+});
+
 router.post("/reassign-owner/:listingId",verifyToken,reassignPropertyOwner)
 router.post("/report/:listingId",verifyToken,async (req, res, next) => {
   try {
