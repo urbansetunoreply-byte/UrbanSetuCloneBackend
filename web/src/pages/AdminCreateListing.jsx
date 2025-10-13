@@ -479,7 +479,12 @@ export default function AdminCreateListing() {
                     <div
                       key={user._id}
                       className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                      onClick={() => handleEmailSuggestionClick(user.email)}
+                      onClick={(event) => {
+                        event?.preventDefault?.();
+                        event?.stopPropagation?.();
+                        handleEmailSuggestionClick(user.email);
+                      }}
+                      onMouseDown={(event) => event.preventDefault()}
                     >
                       <div className="font-medium text-gray-800">{user.email}</div>
                       <div className="text-sm text-gray-500">{user.username}</div>
