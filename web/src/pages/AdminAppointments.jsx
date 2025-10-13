@@ -1907,17 +1907,33 @@ export default function AdminAppointments() {
                   <div className="space-y-4">
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 border-blue-500">
                       <FaEnvelope className="text-blue-500 w-5 h-5 flex-shrink-0" />
-                      <div>
+                      <div className="flex-1">
                         <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Email</p>
-                        <p className="text-gray-800 font-medium">{selectedUser.email}</p>
+                        <a
+                          href={`mailto:${selectedUser.email}`}
+                          className="text-blue-700 hover:text-blue-800 hover:underline font-medium transition-colors duration-200"
+                          title="Click to send email"
+                        >
+                          {selectedUser.email}
+                        </a>
                       </div>
                     </div>
                     
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 border-green-500">
                       <FaPhone className="text-green-500 w-5 h-5 flex-shrink-0" />
-                      <div>
+                      <div className="flex-1">
                         <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Phone</p>
-                        <p className="text-gray-800 font-medium">{selectedUser.mobileNumber || 'Not provided'}</p>
+                        {selectedUser.mobileNumber && selectedUser.mobileNumber !== '' ? (
+                          <button
+                            onClick={() => handlePhoneClick(selectedUser.mobileNumber)}
+                            className="text-green-700 hover:text-green-800 hover:underline font-medium transition-colors duration-200 text-left"
+                            title="Click to call or copy phone number"
+                          >
+                            {selectedUser.mobileNumber}
+                          </button>
+                        ) : (
+                          <p className="text-gray-800 font-medium">Not provided</p>
+                        )}
                       </div>
                     </div>
 
