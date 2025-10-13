@@ -361,13 +361,16 @@ const EnhancedSmartPriceInsights = ({ listing, currentUser }) => {
                 Nearby Amenities
               </h5>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {Object.entries(locationData.amenities).map(([type, places]) => (
-                  <div key={type} className="bg-white p-3 rounded-lg">
-                    <h6 className="font-semibold text-gray-800 capitalize mb-2">{type.replace('_', ' ')}</h6>
-                    <p className="text-2xl font-bold text-green-600">{places.length}</p>
-                    <p className="text-sm text-gray-600">within 2km</p>
-                  </div>
-                ))}
+                {['restaurant','hospital','school','shopping_mall','park','gym','pharmacy','bank','gas_station','airport'].map((type) => {
+                  const places = (locationData.amenities && locationData.amenities[type]) || [];
+                  return (
+                    <div key={type} className="bg-white p-3 rounded-lg">
+                      <h6 className="font-semibold text-gray-800 capitalize mb-2">{type.replace('_', ' ')}</h6>
+                      <p className="text-2xl font-bold text-green-600">{places.length}</p>
+                      <p className="text-sm text-gray-600">within 2km</p>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

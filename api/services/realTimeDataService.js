@@ -151,7 +151,8 @@ class RealTimeDataService {
           { key: 'bank', query: 'bank' },
           { key: 'pharmacy', query: 'pharmacy' },
           { key: 'gym', query: 'gym' },
-          { key: 'park', query: 'park' }
+          { key: 'park', query: 'park' },
+          { key: 'airport', query: 'airport' }
         ];
 
         const amenities = {};
@@ -197,7 +198,7 @@ class RealTimeDataService {
 
       const amenityTypes = [
         'hospital', 'school', 'shopping_mall', 'restaurant', 
-        'gas_station', 'bank', 'pharmacy', 'gym', 'park'
+        'gas_station', 'bank', 'pharmacy', 'gym', 'park', 'airport'
       ];
 
       const amenities = {};
