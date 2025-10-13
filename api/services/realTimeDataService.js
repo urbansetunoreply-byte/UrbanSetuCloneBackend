@@ -141,6 +141,60 @@ class RealTimeDataService {
 
   // 3. Nearby Amenities (Google Places API / Mapbox fallback)
   async getNearbyAmenities(location) {
+    // Prefer Foursquare if available
+    if (this.apiKeys.foursquare) {
+      try {
+        const lat = location.latitude || 0;
+        const lng = location.longitude || 0;
+        const amenityQueries = [
+          { key: 'restaurant', cat: '13065' }, // Food & Beverage
+          { key: 'hospital', cat: '15014' },   // Hospital
+          { key: 'school', cat: '12000' },     // Education
+          { key: 'shopping_mall', cat: '17069' }, // Shopping Mall
+          { key: 'park', cat: '16032' },       // Park
+          { key: 'gym', cat: '18021' },        // Gym / Fitness
+          { key: 'pharmacy', cat: '17069' },   // Retail (approx)
+          { key: 'bank', cat: '11046' },       // Bank
+          { key: 'gas_station', cat: '17067' }, // Gas Station
+          { key: 'airport', cat: '19040' }     // Airport
+        ];
+
+        const amenities = {};
+        for (const item of amenityQueries) {
+          try {
+            const url = 'https://api.foursquare.com/v3/places/search';
+            const response = await axios.get(url, {
+              headers: {
+                'Authorization': this.apiKeys.foursquare,
+                'Accept': 'application/json'
+              },
+              params: {
+                ll: `${lat},${lng}`,
+                radius: 2000,
+                categories: item.cat,
+                limit: 15
+              }
+            });
+
+            amenities[item.key] = (response.data.results || []).map(place => ({
+              name: place.name,
+              rating: 0,
+              distance: place.distance || this.calculateDistance(lat, lng, place.geocodes?.main?.latitude, place.geocodes?.main?.longitude),
+              vicinity: place.location?.formatted_address || place.location?.address || ''
+            }));
+          } catch (fsqErr) {
+            console.error(`FSQ fetch error for ${item.key}:`, fsqErr?.response?.status || fsqErr?.message);
+          }
+        }
+
+        // If Foursquare yielded any category, return it
+        const anyData = Object.values(amenities).some(arr => Array.isArray(arr) && arr.length > 0);
+        if (anyData) return amenities;
+      } catch (error) {
+        console.error('Error fetching amenities from Foursquare:', error);
+      }
+    }
+
     // Prefer Mapbox if available
     if (this.apiKeys.mapbox) {
       try {
@@ -253,6 +307,41 @@ class RealTimeDataService {
 
   // 5. School Data (Google Places API / Mapbox fallback)
   async getSchoolData(location) {
+    // Try Foursquare Education category first
+    if (this.apiKeys.foursquare) {
+      try {
+        const lat = location.latitude || 0;
+        const lng = location.longitude || 0;
+        const url = 'https://api.foursquare.com/v3/places/search';
+        const response = await axios.get(url, {
+          headers: {
+            'Authorization': this.apiKeys.foursquare,
+            'Accept': 'application/json'
+          },
+          params: {
+            ll: `${lat},${lng}`,
+            radius: 5000,
+            categories: '12000', // Education
+            limit: 20
+          }
+        });
+        const features = response.data.results || [];
+        const schools = features.map(school => ({
+          name: school.name,
+          rating: 0,
+          distance: school.distance || this.calculateDistance(lat, lng, school.geocodes?.main?.latitude, school.geocodes?.main?.longitude),
+          vicinity: school.location?.formatted_address || ''
+        }));
+        return {
+          schools: schools.slice(0, 10),
+          averageRating: 0,
+          totalSchools: schools.length
+        };
+      } catch (err) {
+        console.error('FSQ school fetch error:', err?.response?.status || err?.message);
+      }
+    }
+
     // Prefer Mapbox if available
     if (this.apiKeys.mapbox) {
       try {
@@ -324,6 +413,55 @@ class RealTimeDataService {
 
   // 6. Transport Data (Google Places API / Mapbox fallback)
   async getTransportData(location) {
+    // Try Foursquare for transit stations
+    if (this.apiKeys.foursquare) {
+      try {
+        const lat = location.latitude || 0;
+        const lng = location.longitude || 0;
+        const queries = ['19046','19047','19048']; // Train, Bus, Metro categories (approx)
+        let stationsCombined = [];
+        for (const cat of queries) {
+          try {
+            const url = 'https://api.foursquare.com/v3/places/search';
+            const resp = await axios.get(url, {
+              headers: {
+                'Authorization': this.apiKeys.foursquare,
+                'Accept': 'application/json'
+              },
+              params: {
+                ll: `${lat},${lng}`,
+                radius: 3000,
+                categories: cat,
+                limit: 10
+              }
+            });
+            const items = (resp.data.results || []).map(station => ({
+              name: station.name,
+              distance: station.distance || this.calculateDistance(lat, lng, station.geocodes?.main?.latitude, station.geocodes?.main?.longitude),
+              vicinity: station.location?.formatted_address || ''
+            }));
+            stationsCombined = stationsCombined.concat(items);
+          } catch (innerFsq) {
+            console.error('FSQ transport fetch error:', innerFsq?.response?.status || innerFsq?.message);
+          }
+        }
+        const seen = new Set();
+        const stations = stationsCombined.filter(s => {
+          const key = `${s.name}|${s.vicinity}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        }).sort((a, b) => a.distance - b.distance);
+        return {
+          stations: stations.slice(0, 5),
+          connectivityScore: this.calculateConnectivityScore(stations),
+          totalStations: stations.length
+        };
+      } catch (err) {
+        console.error('Error fetching transport from Foursquare:', err?.response?.status || err?.message);
+      }
+    }
+
     // Prefer Mapbox if available
     if (this.apiKeys.mapbox) {
       try {
