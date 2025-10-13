@@ -8328,5 +8328,395 @@ export const sendRefundRequestRejectedEmail = async (email, refundDetails) => {
   }
 };
 
+// Property Listing Published Email
+export const sendPropertyListingPublishedEmail = async (email, listingDetails, isAdminCreated = false) => {
+  try {
+    const { 
+      listingId,
+      propertyName, 
+      propertyDescription,
+      propertyAddress,
+      propertyPrice,
+      propertyType,
+      bedrooms,
+      bathrooms,
+      area,
+      city,
+      state,
+      imageUrls,
+      createdBy
+    } = listingDetails;
+
+    const subject = isAdminCreated 
+      ? `🏠 Property Added by Admin - ${propertyName}`
+      : `🎉 Your Property "${propertyName}" is Now Live!`;
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${subject}</title>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f8fafc; }
+          .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+          .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 20px; text-align: center; }
+          .content { padding: 30px 20px; }
+          .property-card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin: 20px 0; background-color: #f9fafb; }
+          .property-image { width: 100%; max-width: 300px; height: 200px; object-fit: cover; border-radius: 8px; margin: 10px 0; }
+          .price { font-size: 24px; font-weight: bold; color: #059669; margin: 10px 0; }
+          .details { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 15px 0; }
+          .detail-item { background-color: #ffffff; padding: 10px; border-radius: 6px; text-align: center; }
+          .btn { display: inline-block; padding: 12px 24px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 10px 5px; }
+          .btn:hover { background-color: #2563eb; }
+          .btn-outline { background-color: transparent; color: #3b82f6; border: 2px solid #3b82f6; }
+          .btn-outline:hover { background-color: #3b82f6; color: white; }
+          .footer { background-color: #f3f4f6; padding: 20px; text-align: center; color: #6b7280; }
+          .admin-notice { background-color: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 15px; margin: 15px 0; }
+          .admin-notice h3 { color: #92400e; margin: 0 0 10px 0; }
+          .admin-notice p { color: #92400e; margin: 0; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>${isAdminCreated ? '🏠 Property Added by Admin' : '🎉 Property Successfully Published!'}</h1>
+            <p>${isAdminCreated ? 'A new property has been added to your account' : 'Your property is now live and visible to potential buyers'}</p>
+          </div>
+          
+          <div class="content">
+            ${isAdminCreated ? `
+              <div class="admin-notice">
+                <h3>📋 Admin Action</h3>
+                <p>This property was created by an admin on your behalf. You can manage it from your property dashboard.</p>
+              </div>
+            ` : ''}
+            
+            <div class="property-card">
+              <h2 style="color: #1f2937; margin: 0 0 15px 0;">${propertyName}</h2>
+              
+              ${imageUrls && imageUrls.length > 0 ? `
+                <img src="${imageUrls[0]}" alt="${propertyName}" class="property-image">
+              ` : ''}
+              
+              <div class="price">₹${new Intl.NumberFormat('en-IN').format(propertyPrice)}</div>
+              
+              <div class="details">
+                <div class="detail-item">
+                  <strong>Type</strong><br>
+                  ${propertyType === 'rent' ? 'For Rent' : 'For Sale'}
+                </div>
+                <div class="detail-item">
+                  <strong>Bedrooms</strong><br>
+                  ${bedrooms || 'N/A'}
+                </div>
+                <div class="detail-item">
+                  <strong>Bathrooms</strong><br>
+                  ${bathrooms || 'N/A'}
+                </div>
+                <div class="detail-item">
+                  <strong>Area</strong><br>
+                  ${area ? `${area} sq ft` : 'N/A'}
+                </div>
+              </div>
+              
+              <p><strong>📍 Location:</strong> ${propertyAddress}, ${city}, ${state}</p>
+              
+              ${propertyDescription ? `
+                <p><strong>Description:</strong></p>
+                <p style="color: #6b7280; line-height: 1.6;">${propertyDescription}</p>
+              ` : ''}
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/listing/${listingId}" class="btn">
+                🏠 View Property
+              </a>
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-listings" class="btn btn-outline">
+                📋 My Properties
+              </a>
+            </div>
+            
+            <div style="background-color: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 20px; margin: 20px 0;">
+              <h3 style="color: #0c4a6e; margin: 0 0 15px 0;">🚀 What's Next?</h3>
+              <ul style="color: #0c4a6e; margin: 0; padding-left: 20px;">
+                <li>Your property is now visible to potential buyers</li>
+                <li>You'll receive notifications for new inquiries</li>
+                <li>Monitor your property's performance in the dashboard</li>
+                <li>Respond quickly to appointment requests</li>
+                <li>Keep your property information updated</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="footer">
+            <p><strong>Need help managing your property?</strong></p>
+            <p>Contact our support team for assistance with your listing.</p>
+            <p style="color: #9ca3af; margin: 15px 0 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending property listing published email:', error);
+    return createErrorResponse(error, 'property_listing_published_email');
+  }
+};
+
+// New Properties Matching Search Email
+export const sendNewPropertiesMatchingSearchEmail = async (email, searchDetails) => {
+  try {
+    const { 
+      searchQuery,
+      properties,
+      totalCount,
+      searchCriteria
+    } = searchDetails;
+
+    const subject = `🔍 New Properties Found - ${totalCount} matches for "${searchQuery}"`;
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${subject}</title>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f8fafc; }
+          .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+          .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 30px 20px; text-align: center; }
+          .content { padding: 30px 20px; }
+          .property-card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin: 20px 0; background-color: #f9fafb; }
+          .property-image { width: 100%; max-width: 200px; height: 150px; object-fit: cover; border-radius: 8px; margin: 10px 0; }
+          .price { font-size: 20px; font-weight: bold; color: #059669; margin: 10px 0; }
+          .btn { display: inline-block; padding: 12px 24px; background-color: #10b981; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 10px 5px; }
+          .btn:hover { background-color: #059669; }
+          .btn-outline { background-color: transparent; color: #10b981; border: 2px solid #10b981; }
+          .btn-outline:hover { background-color: #10b981; color: white; }
+          .footer { background-color: #f3f4f6; padding: 20px; text-align: center; color: #6b7280; }
+          .search-criteria { background-color: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 15px; margin: 15px 0; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🔍 New Properties Found!</h1>
+            <p>We found ${totalCount} new properties matching your search</p>
+          </div>
+          
+          <div class="content">
+            <div class="search-criteria">
+              <h3 style="color: #0c4a6e; margin: 0 0 10px 0;">📋 Your Search Criteria</h3>
+              <p style="color: #0c4a6e; margin: 0;"><strong>Query:</strong> "${searchQuery}"</p>
+              ${searchCriteria ? `
+                <p style="color: #0c4a6e; margin: 5px 0 0 0;"><strong>Filters:</strong> ${searchCriteria}</p>
+              ` : ''}
+            </div>
+            
+            <h2 style="color: #1f2937;">🏠 New Properties (${properties.length} shown)</h2>
+            
+            ${properties.map(property => `
+              <div class="property-card">
+                <h3 style="color: #1f2937; margin: 0 0 10px 0;">${property.name}</h3>
+                
+                ${property.imageUrls && property.imageUrls.length > 0 ? `
+                  <img src="${property.imageUrls[0]}" alt="${property.name}" class="property-image">
+                ` : ''}
+                
+                <div class="price">₹${new Intl.NumberFormat('en-IN').format(property.price)}</div>
+                
+                <p><strong>📍 Location:</strong> ${property.address}, ${property.city}, ${property.state}</p>
+                <p><strong>🏠 Type:</strong> ${property.type === 'rent' ? 'For Rent' : 'For Sale'}</p>
+                ${property.bedrooms ? `<p><strong>🛏️ Bedrooms:</strong> ${property.bedrooms}</p>` : ''}
+                ${property.area ? `<p><strong>📐 Area:</strong> ${property.area} sq ft</p>` : ''}
+                
+                <div style="text-align: center; margin: 15px 0;">
+                  <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/listing/${property._id}" class="btn">
+                    View Property
+                  </a>
+                </div>
+              </div>
+            `).join('')}
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/explore" class="btn btn-outline">
+                🔍 View All Properties
+              </a>
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/saved-searches" class="btn btn-outline">
+                📋 Manage Saved Searches
+              </a>
+            </div>
+            
+            <div style="background-color: #f0fdf4; border: 1px solid #22c55e; border-radius: 8px; padding: 20px; margin: 20px 0;">
+              <h3 style="color: #166534; margin: 0 0 15px 0;">💡 Pro Tip</h3>
+              <p style="color: #166534; margin: 0;">Save your search criteria to get instant notifications when new matching properties are added!</p>
+            </div>
+          </div>
+          
+          <div class="footer">
+            <p><strong>Happy house hunting!</strong></p>
+            <p>Don't miss out on your dream property - act fast on properties that interest you.</p>
+            <p style="color: #9ca3af; margin: 15px 0 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending new properties matching search email:', error);
+    return createErrorResponse(error, 'new_properties_matching_search_email');
+  }
+};
+
+// Property Views Milestone Email
+export const sendPropertyViewsMilestoneEmail = async (email, milestoneDetails) => {
+  try {
+    const { 
+      propertyName,
+      propertyId,
+      viewCount,
+      milestone,
+      previousMilestone,
+      imageUrls
+    } = milestoneDetails;
+
+    const subject = `🎉 Milestone Reached! "${propertyName}" has ${viewCount} views`;
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${subject}</title>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f8fafc; }
+          .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+          .header { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 30px 20px; text-align: center; }
+          .content { padding: 30px 20px; }
+          .milestone-card { border: 2px solid #f59e0b; border-radius: 12px; padding: 30px; margin: 20px 0; background-color: #fffbeb; text-align: center; }
+          .milestone-number { font-size: 48px; font-weight: bold; color: #d97706; margin: 10px 0; }
+          .property-image { width: 100%; max-width: 300px; height: 200px; object-fit: cover; border-radius: 8px; margin: 15px 0; }
+          .btn { display: inline-block; padding: 12px 24px; background-color: #f59e0b; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 10px 5px; }
+          .btn:hover { background-color: #d97706; }
+          .btn-outline { background-color: transparent; color: #f59e0b; border: 2px solid #f59e0b; }
+          .btn-outline:hover { background-color: #f59e0b; color: white; }
+          .footer { background-color: #f3f4f6; padding: 20px; text-align: center; color: #6b7280; }
+          .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; margin: 20px 0; }
+          .stat-item { background-color: #ffffff; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #e5e7eb; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🎉 Congratulations!</h1>
+            <p>Your property has reached a new milestone</p>
+          </div>
+          
+          <div class="content">
+            <div class="milestone-card">
+              <h2 style="color: #92400e; margin: 0 0 15px 0;">${propertyName}</h2>
+              
+              ${imageUrls && imageUrls.length > 0 ? `
+                <img src="${imageUrls[0]}" alt="${propertyName}" class="property-image">
+              ` : ''}
+              
+              <div class="milestone-number">${viewCount}</div>
+              <h3 style="color: #92400e; margin: 0;">Total Views</h3>
+              <p style="color: #92400e; margin: 10px 0 0 0;">
+                🚀 You've reached the ${milestone} milestone!
+                ${previousMilestone ? `(Previous: ${previousMilestone})` : ''}
+              </p>
+            </div>
+            
+            <div class="stats">
+              <div class="stat-item">
+                <div style="font-size: 24px; font-weight: bold; color: #059669;">${viewCount}</div>
+                <div style="color: #6b7280;">Total Views</div>
+              </div>
+              <div class="stat-item">
+                <div style="font-size: 24px; font-weight: bold; color: #3b82f6;">📈</div>
+                <div style="color: #6b7280;">Growing Interest</div>
+              </div>
+              <div class="stat-item">
+                <div style="font-size: 24px; font-weight: bold; color: #8b5cf6;">🎯</div>
+                <div style="color: #6b7280;">High Visibility</div>
+              </div>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/listing/${propertyId}" class="btn">
+                🏠 View Property
+              </a>
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-listings" class="btn btn-outline">
+                📊 Property Analytics
+              </a>
+            </div>
+            
+            <div style="background-color: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 20px; margin: 20px 0;">
+              <h3 style="color: #0c4a6e; margin: 0 0 15px 0;">📈 What This Means</h3>
+              <ul style="color: #0c4a6e; margin: 0; padding-left: 20px;">
+                <li>Your property is getting great visibility</li>
+                <li>More views often lead to more inquiries</li>
+                <li>Consider optimizing your listing for even better results</li>
+                <li>Respond quickly to any new inquiries</li>
+                <li>Keep your property information updated</li>
+              </ul>
+            </div>
+            
+            <div style="background-color: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 20px; margin: 20px 0;">
+              <h3 style="color: #92400e; margin: 0 0 15px 0;">💡 Tips to Increase Views</h3>
+              <ul style="color: #92400e; margin: 0; padding-left: 20px;">
+                <li>Add high-quality photos</li>
+                <li>Write a compelling description</li>
+                <li>Keep your pricing competitive</li>
+                <li>Update your listing regularly</li>
+                <li>Share your property on social media</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="footer">
+            <p><strong>Keep up the great work!</strong></p>
+            <p>High view counts are a great sign of interest in your property.</p>
+            <p style="color: #9ca3af; margin: 15px 0 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending property views milestone email:', error);
+    return createErrorResponse(error, 'property_views_milestone_email');
+  }
+};
+
 // Export the current transporter (will be set during initialization)
 export default currentTransporter;

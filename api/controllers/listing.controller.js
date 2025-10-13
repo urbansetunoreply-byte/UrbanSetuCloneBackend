@@ -5,6 +5,7 @@ import { notifyWatchersOnChange } from "./propertyWatchlist.controller.js"
 import User from "../models/user.model.js"
 import Notification from "../models/notification.model.js"
 import { errorHandler } from "../utils/error.js"
+import { sendPropertyListingPublishedEmail } from "../utils/emailService.js"
 
 
 
@@ -38,9 +39,14 @@ export const createListing=async (req,res,next)=>{
             userRef: userRef
         });
         
+        // Get the user who will receive the email
+        const listingOwner = await User.findById(userRef);
+        
         // Prepare success message based on assignment
         let successMessage = "Property Added Successfully";
-        if (assignToEmail && assignToEmail.trim()) {
+        const isAdminCreated = assignToEmail && assignToEmail.trim();
+        
+        if (isAdminCreated) {
             successMessage = `Listing assigned to ${assignToEmail}`;
             // Send notification to the user
             try {
@@ -59,6 +65,33 @@ export const createListing=async (req,res,next)=>{
             }
         } else {
             successMessage = "Listing created under admin ownership";
+        }
+        
+        // Send property listing published email
+        if (listingOwner && listingOwner.email) {
+            try {
+                const listingDetails = {
+                    listingId: listing._id,
+                    propertyName: listing.name,
+                    propertyDescription: listing.description,
+                    propertyAddress: listing.address,
+                    propertyPrice: listing.offer ? listing.discountPrice : listing.regularPrice,
+                    propertyType: listing.type,
+                    bedrooms: listing.bedrooms,
+                    bathrooms: listing.bathrooms,
+                    area: listing.area,
+                    city: listing.city,
+                    state: listing.state,
+                    imageUrls: listing.imageUrls,
+                    createdBy: isAdminCreated ? 'admin' : 'user'
+                };
+                
+                await sendPropertyListingPublishedEmail(listingOwner.email, listingDetails, isAdminCreated);
+                console.log(`✅ Property listing published email sent to: ${listingOwner.email}`);
+            } catch (emailError) {
+                console.error(`❌ Failed to send property listing published email to ${listingOwner.email}:`, emailError);
+                // Don't fail the listing creation if email fails
+            }
         }
         
         return res.status(201).json({

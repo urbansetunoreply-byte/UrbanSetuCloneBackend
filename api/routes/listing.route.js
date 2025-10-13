@@ -40,10 +40,36 @@ router.post("/view/:listingId",async (req, res, next) => {
       listingId,
       { $inc: { viewCount: 1 } },
       { new: true }
-    );
+    ).populate('userRef', 'email username');
     
     if (!listing) {
       return res.status(404).json({ message: 'Listing not found.' });
+    }
+    
+    // Check for view milestones and send email if reached
+    const viewCount = listing.viewCount;
+    const milestones = [10, 25, 50, 100, 250, 500, 1000, 2500, 5000];
+    const reachedMilestone = milestones.find(milestone => viewCount === milestone);
+    
+    if (reachedMilestone && listing.userRef && listing.userRef.email) {
+      try {
+        const { sendPropertyViewsMilestoneEmail } = await import('../utils/emailService.js');
+        
+        const milestoneDetails = {
+          propertyName: listing.name,
+          propertyId: listing._id,
+          viewCount: viewCount,
+          milestone: `${reachedMilestone} views`,
+          previousMilestone: milestones[milestones.indexOf(reachedMilestone) - 1] ? `${milestones[milestones.indexOf(reachedMilestone) - 1]} views` : null,
+          imageUrls: listing.imageUrls
+        };
+        
+        await sendPropertyViewsMilestoneEmail(listing.userRef.email, milestoneDetails);
+        console.log(`✅ Property views milestone email sent to: ${listing.userRef.email} for ${reachedMilestone} views`);
+      } catch (emailError) {
+        console.error(`❌ Failed to send property views milestone email to ${listing.userRef.email}:`, emailError);
+        // Don't fail the view count if email fails
+      }
     }
     
     res.status(200).json({ 
