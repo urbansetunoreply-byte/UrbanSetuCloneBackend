@@ -416,8 +416,10 @@ class RealTimeDataService {
     }
 
     try {
-      const lat = location.latitude || 0;
-      const lng = location.longitude || 0;
+      // Ensure coordinates (resolve via Mapbox if needed)
+      const coords = await this.resolveCoordinates(location);
+      const lat = coords.lat || 0;
+      const lng = coords.lng || 0;
 
       const response = await axios.get('https://api.openweathermap.org/data/2.5/weather', {
         params: {
