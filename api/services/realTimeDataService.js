@@ -79,6 +79,7 @@ class RealTimeDataService {
 
     return await this.getCachedData(cacheKey, async () => {
       try {
+        console.log('[LocationIntelligence] cacheKey:', cacheKey, 'city:', location.city, 'district:', location.district, 'latKey:', latKey, 'lngKey:', lngKey);
         const locWithCoords = { ...location, latitude: coords.lat, longitude: coords.lng };
 
         const [amenities, crimeData, schoolData, transportData] = await Promise.all([
@@ -125,6 +126,7 @@ class RealTimeDataService {
           });
           const feature = response.data && response.data.features && response.data.features[0];
           if (feature && Array.isArray(feature.center) && feature.center.length === 2) {
+            console.log('[ResolveCoords] query:', query, '→', { lat: feature.center[1], lng: feature.center[0] });
             return { lat: feature.center[1], lng: feature.center[0] };
           }
         }
