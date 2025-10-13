@@ -25,6 +25,31 @@ export default function AdminAppointments() {
   usePageTitle("Appointment Management - Admin Panel");
 
   const { currentUser } = useSelector((state) => state.user);
+
+  // Function to handle phone number clicks
+  const handlePhoneClick = (phoneNumber) => {
+    // Check if it's a mobile device
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      // For mobile devices, open phone dialer
+      window.location.href = `tel:${phoneNumber}`;
+    } else {
+      // For desktop, copy to clipboard
+      navigator.clipboard.writeText(phoneNumber).then(() => {
+        toast.success(`Phone number ${phoneNumber} copied to clipboard!`);
+      }).catch(() => {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = phoneNumber;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        toast.success(`Phone number ${phoneNumber} copied to clipboard!`);
+      });
+    }
+  };
   const [appointments, setAppointments] = useState([]);
   const [allAppointments, setAllAppointments] = useState([]);
   const [archivedAppointments, setArchivedAppointments] = useState([]);
@@ -4789,8 +4814,32 @@ function AdminAppointmentRow({
           title="Click to view buyer details"
         >
           <div className="font-semibold">{appt.buyerId?.username || 'Unknown'}</div>
-          <div className="text-sm text-gray-600">{appt.buyerId?.email || appt.email}</div>
-          <div className="text-sm text-gray-600">{appt.buyerId?.mobileNumber || 'No phone'}</div>
+          <div className="text-sm text-gray-600">
+            <a
+              href={`mailto:${appt.buyerId?.email || appt.email}`}
+              className="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200"
+              title="Click to send email"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {appt.buyerId?.email || appt.email}
+            </a>
+          </div>
+          <div className="text-sm text-gray-600">
+            {appt.buyerId?.mobileNumber && appt.buyerId?.mobileNumber !== '' ? (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePhoneClick(appt.buyerId.mobileNumber);
+                }}
+                className="text-green-600 hover:text-green-800 hover:underline transition-colors duration-200"
+                title="Click to call or copy phone number"
+              >
+                {appt.buyerId.mobileNumber}
+              </button>
+            ) : (
+              'No phone'
+            )}
+          </div>
         </button>
       </td>
       <td className="border p-2">
@@ -4800,8 +4849,32 @@ function AdminAppointmentRow({
           title="Click to view seller details"
         >
           <div className="font-semibold">{appt.sellerId?.username || 'Unknown'}</div>
-          <div className="text-sm text-gray-600">{appt.sellerId?.email}</div>
-          <div className="text-sm text-gray-600">{appt.sellerId?.mobileNumber || 'No phone'}</div>
+          <div className="text-sm text-gray-600">
+            <a
+              href={`mailto:${appt.sellerId?.email}`}
+              className="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200"
+              title="Click to send email"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {appt.sellerId?.email}
+            </a>
+          </div>
+          <div className="text-sm text-gray-600">
+            {appt.sellerId?.mobileNumber && appt.sellerId?.mobileNumber !== '' ? (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePhoneClick(appt.sellerId.mobileNumber);
+                }}
+                className="text-green-600 hover:text-green-800 hover:underline transition-colors duration-200"
+                title="Click to call or copy phone number"
+              >
+                {appt.sellerId.mobileNumber}
+              </button>
+            ) : (
+              'No phone'
+            )}
+          </div>
         </button>
       </td>
       <td className="border p-2 capitalize">{appt.purpose}</td>

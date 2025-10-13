@@ -26,6 +26,31 @@ export default function MyAppointments() {
   usePageTitle("My Appointments - Bookings");
 
   const { currentUser } = useSelector((state) => state.user);
+
+  // Function to handle phone number clicks
+  const handlePhoneClick = (phoneNumber) => {
+    // Check if it's a mobile device
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      // For mobile devices, open phone dialer
+      window.location.href = `tel:${phoneNumber}`;
+    } else {
+      // For desktop, copy to clipboard
+      navigator.clipboard.writeText(phoneNumber).then(() => {
+        toast.success(`Phone number ${phoneNumber} copied to clipboard!`);
+      }).catch(() => {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = phoneNumber;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        toast.success(`Phone number ${phoneNumber} copied to clipboard!`);
+      });
+    }
+  };
   const [appointments, setAppointments] = useState([]);
   const [allAppointments, setAllAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1196,17 +1221,33 @@ export default function MyAppointments() {
                   <>
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 border-blue-500">
                       <FaEnvelope className="text-blue-500 w-5 h-5 flex-shrink-0" />
-                      <div>
+                      <div className="flex-1">
                         <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Email</p>
-                        <p className="text-gray-800 font-medium">{selectedOtherParty.email}</p>
+                        <a
+                          href={`mailto:${selectedOtherParty.email}`}
+                          className="text-blue-700 hover:text-blue-800 hover:underline font-medium transition-colors duration-200"
+                          title="Click to send email"
+                        >
+                          {selectedOtherParty.email}
+                        </a>
                       </div>
                     </div>
                     
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 border-green-500">
                       <FaPhone className="text-green-500 w-5 h-5 flex-shrink-0" />
-                      <div>
+                      <div className="flex-1">
                         <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Phone</p>
-                        <p className="text-gray-800 font-medium">{selectedOtherParty.mobileNumber || 'Not provided'}</p>
+                        {selectedOtherParty.mobileNumber && selectedOtherParty.mobileNumber !== '' ? (
+                          <button
+                            onClick={() => handlePhoneClick(selectedOtherParty.mobileNumber)}
+                            className="text-green-700 hover:text-green-800 hover:underline font-medium transition-colors duration-200 text-left"
+                            title="Click to call or copy phone number"
+                          >
+                            {selectedOtherParty.mobileNumber}
+                          </button>
+                        ) : (
+                          <p className="text-gray-800 font-medium">Not provided</p>
+                        )}
                       </div>
                     </div>
                   </>
@@ -5395,8 +5436,32 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
             )}
             {canSeeContactInfo ? (
               <>
-                <div className="text-sm text-gray-600">{otherParty?.email}</div>
-                <div className="text-sm text-gray-600">{otherParty?.mobileNumber && otherParty?.mobileNumber !== '' ? otherParty.mobileNumber : 'No phone'}</div>
+                <div className="text-sm text-gray-600">
+                  <a
+                    href={`mailto:${otherParty?.email}`}
+                    className="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200"
+                    title="Click to send email"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {otherParty?.email}
+                  </a>
+                </div>
+                <div className="text-sm text-gray-600">
+                  {otherParty?.mobileNumber && otherParty?.mobileNumber !== '' ? (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePhoneClick(otherParty.mobileNumber);
+                      }}
+                      className="text-green-600 hover:text-green-800 hover:underline transition-colors duration-200"
+                      title="Click to call or copy phone number"
+                    >
+                      {otherParty.mobileNumber}
+                    </button>
+                  ) : (
+                    'No phone'
+                  )}
+                </div>
               </>
             ) : (
               <div className="text-sm text-gray-500 italic">
