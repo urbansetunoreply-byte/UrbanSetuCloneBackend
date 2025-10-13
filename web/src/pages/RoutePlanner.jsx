@@ -47,6 +47,7 @@ export default function RoutePlanner() {
   const [alternatives, setAlternatives] = useState([]);
   const [selectedAlternative, setSelectedAlternative] = useState(0);
   const [isRouteSaved, setIsRouteSaved] = useState(false);
+  const [loadingLocation, setLoadingLocation] = useState(null);
 
   const mapRef = useRef(null);
   const geocoderRefs = useRef([]);
@@ -779,12 +780,84 @@ export default function RoutePlanner() {
   };
 
   // Use current location
-  const useCurrentLocation = (index) => {
-    if (currentLocation) {
-      updateStop(index, 'Current Location', currentLocation);
-      toast.success('Current location added!');
-    } else {
-      toast.error('Current location not available');
+  const useCurrentLocation = async (index) => {
+    if (!navigator.geolocation) {
+      toast.error('Geolocation is not supported by this browser');
+      return;
+    }
+
+    // Set loading state for this specific button
+    setLoadingLocation(index);
+    
+    // Show loading toast
+    const loadingToast = toast.loading('Getting your current location...');
+
+    try {
+      const position = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          resolve,
+          reject,
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 300000 // 5 minutes
+          }
+        );
+      });
+
+      const { latitude, longitude } = position.coords;
+      const coordinates = [longitude, latitude];
+      
+      // Update current location state
+      setCurrentLocation(coordinates);
+      
+      // Get address from coordinates using reverse geocoding
+      try {
+        const response = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${MAPBOX_ACCESS_TOKEN}&types=address,poi`
+        );
+        const data = await response.json();
+        
+        let address = 'Current Location';
+        if (data.features && data.features.length > 0) {
+          address = data.features[0].place_name;
+        }
+        
+        // Update the stop with current location
+        updateStop(index, address, coordinates);
+        
+        toast.dismiss(loadingToast);
+        toast.success('Current location added successfully!');
+        
+      } catch (geocodingError) {
+        console.warn('Reverse geocoding failed:', geocodingError);
+        // Still update with coordinates even if reverse geocoding fails
+        updateStop(index, 'Current Location', coordinates);
+        
+        toast.dismiss(loadingToast);
+        toast.success('Current location added!');
+      }
+      
+    } catch (error) {
+      toast.dismiss(loadingToast);
+      
+      switch (error.code) {
+        case error.PERMISSION_DENIED:
+          toast.error('Location access denied. Please enable location permissions in your browser settings.');
+          break;
+        case error.POSITION_UNAVAILABLE:
+          toast.error('Location information is unavailable. Please check your GPS settings.');
+          break;
+        case error.TIMEOUT:
+          toast.error('Location request timed out. Please try again.');
+          break;
+        default:
+          toast.error('An error occurred while getting your location. Please try again.');
+          break;
+      }
+    } finally {
+      // Clear loading state
+      setLoadingLocation(null);
     }
   };
 
@@ -960,10 +1033,19 @@ export default function RoutePlanner() {
                   </div>
                   <button
                     onClick={() => useCurrentLocation(i)}
-                    className="px-2 py-2 rounded bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
-                    title="Use current location"
+                    disabled={loadingLocation === i}
+                    className={`px-2 py-2 rounded transition-colors ${
+                      loadingLocation === i 
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                        : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+                    }`}
+                    title={loadingLocation === i ? "Getting location..." : "Use current location"}
                   >
-                    <FaLocationArrow />
+                    {loadingLocation === i ? (
+                      <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <FaLocationArrow />
+                    )}
                   </button>
                   {stops.length > 1 && (
                     <button 
