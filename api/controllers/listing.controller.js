@@ -137,7 +137,7 @@ export const deleteListing=async (req,res,next)=>{
       req.user.role !== 'admin' &&
       req.user.role !== 'rootadmin' &&
       !req.user.isDefaultAdmin &&
-      req.user.id !== listing.userRef
+      req.user.id !== listing.userRef.toString()
     ) {
       return next(errorHandler(401, 'You can only delete your own listing (unless you are admin/rootadmin)'))
     }
@@ -223,7 +223,7 @@ export const updateListing=async (req,res,next)=>{
       req.user.role !== 'admin' &&
       req.user.role !== 'rootadmin' &&
       !req.user.isDefaultAdmin &&
-      req.user.id !== listing.userRef
+      req.user.id !== listing.userRef.toString()
     ) {
       return next(errorHandler(401, 'You can only edit your own listing (unless you are admin/rootadmin)'))
     }
