@@ -15,6 +15,7 @@ import NetworkStatus from "./components/NetworkStatus";
 import UserChangePassword from './pages/UserChangePassword';
 import AdminChangePassword from './pages/AdminChangePassword';
 import AccountRevocation from './pages/AccountRevocation';
+import RestoreProperty from './pages/RestoreProperty';
 import NotFound from './pages/NotFound';
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
@@ -643,6 +644,7 @@ function AppRoutes({ bootstrapped }) {
           <Route path="/contact" element={currentUser ? <Navigate to="/user/contact" /> : <Contact />} />
           <Route path="/ai" element={currentUser ? <Navigate to="/user/ai" /> : <PublicAI />} />
           <Route path="/restore-account/:token" element={<AccountRevocation />} />
+          <Route path="/restore-property" element={<RestoreProperty />} />
 
           {/* User Routes (Protected) */}
           <Route element={<Private bootstrapped={bootstrapped} />}>

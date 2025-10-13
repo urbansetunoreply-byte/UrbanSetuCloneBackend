@@ -5,7 +5,9 @@ import { notifyWatchersOnChange } from "./propertyWatchlist.controller.js"
 import User from "../models/user.model.js"
 import Notification from "../models/notification.model.js"
 import { errorHandler } from "../utils/error.js"
-import { sendPropertyListingPublishedEmail, sendPropertyEditNotificationEmail } from "../utils/emailService.js"
+import { sendPropertyListingPublishedEmail, sendPropertyEditNotificationEmail, sendPropertyDeletionConfirmationEmail } from "../utils/emailService.js"
+import DeletedListing from "../models/deletedListing.model.js"
+import crypto from 'crypto'
 
 
 
@@ -184,6 +186,50 @@ export const deleteListing=async (req,res,next)=>{
             // Log notification error but don't fail the listing deletion
             console.error('Failed to create notification:', notificationError);
           }
+        }
+
+        // Store deleted listing for potential restoration before actual deletion
+        const restorationToken = crypto.randomBytes(32).toString('hex');
+        const tokenExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+        
+        const deletedListingRecord = new DeletedListing({
+          originalListingId: listing._id,
+          listingData: listing.toObject(), // Store complete listing data
+          userRef: listing.userRef,
+          deletedBy: req.user.id,
+          deletionType: isAdminDeletingOthersProperty ? 'admin' : 'owner',
+          deletionReason: isAdminDeletingOthersProperty ? req.body.reason : null,
+          restorationToken: restorationToken,
+          tokenExpiry: tokenExpiry
+        });
+        
+        await deletedListingRecord.save();
+
+        // Send property deletion confirmation email
+        try {
+          const propertyOwner = await User.findById(listing.userRef);
+          
+          if (propertyOwner && propertyOwner.email) {
+            const deletionDetails = {
+              propertyName: listing.name,
+              propertyId: listing._id,
+              propertyDescription: listing.description,
+              propertyAddress: listing.address,
+              propertyPrice: listing.offer ? listing.discountPrice : listing.regularPrice,
+              propertyImages: listing.imageUrls || [],
+              deletedBy: req.user.username || req.user.email,
+              deletionType: isAdminDeletingOthersProperty ? 'admin' : 'owner',
+              deletionReason: isAdminDeletingOthersProperty ? req.body.reason : null,
+              restorationToken: restorationToken,
+              tokenExpiry: tokenExpiry
+            };
+
+            await sendPropertyDeletionConfirmationEmail(propertyOwner.email, deletionDetails);
+            console.log(`✅ Property deletion confirmation email sent to: ${propertyOwner.email}`);
+          }
+        } catch (emailError) {
+          console.error(`❌ Failed to send property deletion confirmation email:`, emailError);
+          // Don't fail the deletion if email fails
         }
 
         // Delete the listing

@@ -8932,6 +8932,351 @@ export const sendPropertyEditNotificationEmail = async (email, editDetails, user
   }
 };
 
+// Property Deletion Confirmation Email
+export const sendPropertyDeletionConfirmationEmail = async (email, deletionDetails) => {
+  try {
+    const { 
+      propertyName,
+      propertyId,
+      propertyDescription,
+      propertyAddress,
+      propertyPrice,
+      propertyImages,
+      deletedBy,
+      deletionType,
+      deletionReason,
+      restorationToken,
+      tokenExpiry
+    } = deletionDetails;
+
+    const isAdminDeletion = deletionType === 'admin';
+    const subject = isAdminDeletion 
+      ? `🗑️ Property Deleted by Admin - ${propertyName} | UrbanSetu`
+      : `🗑️ Property Deleted - ${propertyName} | UrbanSetu`;
+
+    // Get property image for email
+    const propertyImage = propertyImages && propertyImages.length > 0 
+      ? propertyImages[0] 
+      : `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/placeholder-property.jpg`;
+
+    // Format expiry date
+    const expiryDate = new Date(tokenExpiry).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Property Deleted - UrbanSetu</title>
+      <style>
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+          background-color: #f8fafc;
+        }
+        .container {
+          background: white;
+          border-radius: 12px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          overflow: hidden;
+        }
+        .header {
+          background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+          color: white;
+          padding: 30px;
+          text-align: center;
+        }
+        .header h1 {
+          margin: 0;
+          font-size: 28px;
+          font-weight: 700;
+        }
+        .header p {
+          margin: 10px 0 0 0;
+          font-size: 16px;
+          opacity: 0.9;
+        }
+        .admin-notice {
+          background: #fef3c7;
+          border: 1px solid #f59e0b;
+          border-radius: 8px;
+          padding: 15px;
+          margin: 20px 0;
+          text-align: center;
+        }
+        .admin-notice p {
+          margin: 0;
+          color: #92400e;
+          font-weight: 600;
+        }
+        .content {
+          padding: 30px;
+        }
+        .property-card {
+          background: #fef2f2;
+          border: 2px solid #fecaca;
+          border-radius: 12px;
+          padding: 25px;
+          margin: 20px 0;
+        }
+        .property-image {
+          width: 100%;
+          height: 200px;
+          object-fit: cover;
+          border-radius: 8px;
+          margin-bottom: 20px;
+          opacity: 0.7;
+        }
+        .property-title {
+          font-size: 24px;
+          font-weight: 700;
+          color: #1e293b;
+          margin: 0 0 10px 0;
+        }
+        .property-address {
+          color: #64748b;
+          font-size: 16px;
+          margin: 0 0 15px 0;
+        }
+        .property-price {
+          font-size: 20px;
+          font-weight: 700;
+          color: #059669;
+          margin: 0 0 20px 0;
+        }
+        .deletion-info {
+          background: #f1f5f9;
+          border-left: 4px solid #3b82f6;
+          padding: 20px;
+          margin: 20px 0;
+          border-radius: 0 8px 8px 0;
+        }
+        .deletion-info h3 {
+          font-weight: 600;
+          color: #374151;
+          margin-bottom: 10px;
+          font-size: 18px;
+        }
+        .deletion-info p {
+          margin: 8px 0;
+          color: #1f2937;
+        }
+        .restoration-section {
+          background: #f0fdf4;
+          border: 2px solid #bbf7d0;
+          border-radius: 12px;
+          padding: 25px;
+          margin: 20px 0;
+          text-align: center;
+        }
+        .restoration-section h3 {
+          color: #059669;
+          margin: 0 0 15px 0;
+          font-size: 20px;
+        }
+        .restoration-section p {
+          color: #374151;
+          margin: 10px 0;
+        }
+        .expiry-notice {
+          background: #fef3c7;
+          border: 1px solid #f59e0b;
+          border-radius: 8px;
+          padding: 15px;
+          margin: 15px 0;
+        }
+        .expiry-notice p {
+          margin: 0;
+          color: #92400e;
+          font-weight: 600;
+          text-align: center;
+        }
+        .action-buttons {
+          text-align: center;
+          margin: 30px 0;
+          padding: 0 10px;
+        }
+        .btn-container {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          align-items: center;
+          max-width: 100%;
+          width: 100%;
+        }
+        .btn {
+          display: inline-block;
+          width: auto;
+          max-width: 300px;
+          padding: 15px 25px;
+          margin: 5px;
+          text-decoration: none;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 14px;
+          text-align: center;
+          box-sizing: border-box;
+          word-wrap: break-word;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-container .btn {
+          display: block;
+          width: 100%;
+          margin: 0;
+          padding: 12px 20px;
+        }
+        .btn-primary {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          color: white !important;
+        }
+        .btn-secondary {
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+          color: white !important;
+        }
+        .btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        .footer {
+          background: #f8fafc;
+          padding: 30px;
+          text-align: center;
+          color: #64748b;
+          border-top: 1px solid #e2e8f0;
+        }
+        .footer p {
+          margin: 5px 0;
+        }
+        .social-links {
+          margin: 20px 0;
+        }
+        .social-links a {
+          display: inline-block;
+          margin: 0 10px;
+          color: #3b82f6;
+          text-decoration: none;
+        }
+        @media (max-width: 600px) {
+          .container {
+            margin: 10px;
+            border-radius: 8px;
+          }
+          .content {
+            padding: 20px;
+          }
+          .action-buttons {
+            padding: 0 5px;
+          }
+          .btn-container {
+            gap: 10px;
+          }
+          .btn {
+            max-width: 100%;
+            padding: 14px 16px;
+            font-size: 15px;
+            margin: 0;
+            display: block;
+            width: 100%;
+          }
+        }
+        @media (max-width: 400px) {
+          .btn {
+            padding: 12px 14px;
+            font-size: 14px;
+          }
+          .action-buttons {
+            padding: 0 2px;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🗑️ Property Deleted</h1>
+          <p>Your property listing has been removed from our platform</p>
+        </div>
+        
+        <div class="content">
+          ${isAdminDeletion ? `
+          <div class="admin-notice">
+            <p>🔧 This property was deleted by our admin team</p>
+          </div>
+          ` : ''}
+          
+          <div class="property-card">
+            <img src="${propertyImage}" alt="${propertyName}" class="property-image" />
+            <h2 class="property-title">${propertyName}</h2>
+            <p class="property-address">📍 ${propertyAddress || 'Address not specified'}</p>
+            <p class="property-price">💰 ₹${propertyPrice || 'Price not specified'}</p>
+          </div>
+          
+          <div class="deletion-info">
+            <h3>📋 Deletion Details:</h3>
+            <p><strong>Property:</strong> ${propertyName}</p>
+            <p><strong>Deleted by:</strong> ${isAdminDeletion ? 'Administrator' : 'You'}</p>
+            <p><strong>Date:</strong> ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+            ${isAdminDeletion && deletionReason ? `<p><strong>Reason:</strong> ${deletionReason}</p>` : ''}
+          </div>
+          
+          <div class="restoration-section">
+            <h3>🔄 Accidentally Deleted?</h3>
+            <p>If you deleted this property by mistake, you can restore it within 30 days using the link below.</p>
+            <div class="expiry-notice">
+              <p>⏰ Restoration link expires on ${expiryDate}</p>
+            </div>
+            <div class="action-buttons">
+              <div class="btn-container">
+                <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/restore-property?token=${restorationToken}" class="btn btn-primary">
+                  🔄 Restore Property
+                </a>
+                <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-listings" class="btn btn-secondary">
+                  📊 My Properties
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p><strong>UrbanSetu - Smart Real Estate Platform</strong></p>
+          <p>Thank you for using our platform for your property needs!</p>
+          <div class="social-links">
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}">Website</a>
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/contact">Support</a>
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/privacy">Privacy</a>
+          </div>
+          <p style="font-size: 12px; margin-top: 20px;">
+            This is an automated email. Please do not reply to this email address.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending property deletion confirmation email:', error);
+    return createErrorResponse(error, 'property_deletion_confirmation_email');
+  }
+};
+
 // Property Views Milestone Email
 export const sendPropertyViewsMilestoneEmail = async (email, milestoneDetails) => {
   try {
