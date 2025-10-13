@@ -371,11 +371,11 @@ const EnhancedSmartPriceInsights = ({ listing, currentUser }) => {
                     </div>
                   );
                 })}
-                {/* Transit Stations (from transportData) */}
+                {/* Transit stations (from transportData) */}
                 <div className="bg-white p-3 rounded-lg">
-                  <h6 className="font-semibold text-gray-800 capitalize mb-2">Transit Stations</h6>
+                  <h6 className="font-semibold text-gray-800 capitalize mb-2">transit stations</h6>
                   <p className="text-2xl font-bold text-green-600">{locationData.transportData?.totalStations || 0}</p>
-                  <p className="text-sm text-gray-600">nearby</p>
+                  <p className="text-sm text-gray-600">within 2km</p>
                 </div>
               </div>
             </div>
