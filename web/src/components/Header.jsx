@@ -10,6 +10,7 @@ import { reconnectSocket, socket } from "../utils/socket";
 import { toast } from 'react-toastify';
 import { downloadAndroidApp, isAndroidDevice, isMobileDevice, getDownloadMessage, getDownloadButtonText } from '../utils/androidDownload';
 import { useSignout } from '../hooks/useSignout';
+import SearchSuggestions from './SearchSuggestions';
 
 export default function Header() {
   const { currentUser } = useSelector((state) => state.user);
@@ -21,6 +22,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { signout } = useSignout();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const searchInputRef = useRef(null);
 
   useEffect(() => {
@@ -183,8 +185,33 @@ export default function Header() {
     }
     // Close mobile menu if open
     setMobileMenuOpen(false);
+    setShowSuggestions(false);
     // Clear the search term after navigation
     setSearchTerm("");
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    setSearchTerm(suggestion.displayText);
+    setShowSuggestions(false);
+    
+    // Navigate to the property listing
+    navigate(`/listing/${suggestion.id}`);
+  };
+
+  const handleSearchInputChange = (e) => {
+    setSearchTerm(e.target.value);
+    setShowSuggestions(true);
+  };
+
+  const handleSearchInputFocus = () => {
+    if (searchTerm.trim().length >= 2) {
+      setShowSuggestions(true);
+    }
+  };
+
+  const handleSearchInputBlur = () => {
+    // Delay hiding suggestions to allow clicking on them
+    setTimeout(() => setShowSuggestions(false), 200);
   };
 
   const handleSignout = async () => {
@@ -333,19 +360,29 @@ export default function Header() {
                 </div>
                 
                 {/* Search */}
-                <div className="p-6 border-b border-gray-200">
+                <div className="p-6 border-b border-gray-200 relative">
                   <form onSubmit={handleSubmit} className={`flex items-center bg-gray-50 rounded-xl overflow-hidden focus-within:ring-2 ${getSearchFocusRingColor()} focus-within:bg-white transition-all`}>
                     <input
                       type="text"
                       placeholder="Search properties..."
                       value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onChange={handleSearchInputChange}
+                      onFocus={handleSearchInputFocus}
+                      onBlur={handleSearchInputBlur}
                       className="px-4 py-3 outline-none w-full text-gray-800 bg-transparent"
                     />
                     <button className={`${getSearchButtonColor()} text-white p-3 transition-colors`} type="submit">
                       <FaSearch />
                     </button>
                   </form>
+                  
+                  <SearchSuggestions
+                    searchTerm={searchTerm}
+                    onSuggestionClick={handleSuggestionClick}
+                    onClose={() => setShowSuggestions(false)}
+                    isVisible={showSuggestions}
+                    className="mt-1"
+                  />
                 </div>
                 
                 {/* Android App Download - Mobile */}
@@ -439,23 +476,34 @@ function UserNavLinks({ mobile = false, onNavigate, signout }) {
               <FaSearch className="text-base" />
             </button>
           ) : (
-            <form
-              onSubmit={handleSubmit}
-              className="flex items-center bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-yellow-300 focus-within:bg-white/20 transition-all duration-300 w-48"
-            >
-              <input
-                ref={searchInputRef}
-                type="text"
-                placeholder="Search..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onBlur={() => setSearchOpen(false)}
-                className="px-3 py-2 outline-none w-full text-white placeholder-white/70 bg-transparent text-sm"
+            <div className="relative">
+              <form
+                onSubmit={handleSubmit}
+                className="flex items-center bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-yellow-300 focus-within:bg-white/20 transition-all duration-300 w-48"
+              >
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="Search..."
+                  value={searchTerm}
+                  onChange={handleSearchInputChange}
+                  onFocus={handleSearchInputFocus}
+                  onBlur={handleSearchInputBlur}
+                  className="px-3 py-2 outline-none w-full text-white placeholder-white/70 bg-transparent text-sm"
+                />
+                <button className="bg-yellow-400 hover:bg-yellow-500 text-gray-800 p-2 transition-colors" type="submit">
+                  <FaSearch className="text-sm" />
+                </button>
+              </form>
+              
+              <SearchSuggestions
+                searchTerm={searchTerm}
+                onSuggestionClick={handleSuggestionClick}
+                onClose={() => setShowSuggestions(false)}
+                isVisible={showSuggestions}
+                className="mt-1 w-64"
               />
-              <button className="bg-yellow-400 hover:bg-yellow-500 text-gray-800 p-2 transition-colors" type="submit">
-                <FaSearch className="text-sm" />
-              </button>
-            </form>
+            </div>
           )}
         </li>
       )}

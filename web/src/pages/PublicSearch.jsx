@@ -5,6 +5,7 @@ import LocationSelector from "../components/LocationSelector";
 import data from "../data/countries+states+cities.json";
 import duckImg from "../assets/duck-go-final.gif";
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
+import SearchSuggestions from '../components/SearchSuggestions';
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -34,6 +35,7 @@ export default function PublicSearch() {
     const [showMoreListing, setShowMoreListing] = useState(false);
     const [error, setError] = useState(null);
     const [locationFilter, setLocationFilter] = useState({ state: "", district: "", city: "" });
+    const [showSuggestions, setShowSuggestions] = useState(false);
 
     useEffect(() => {
         const urlParams = new URLSearchParams(location.search);
@@ -86,6 +88,33 @@ export default function PublicSearch() {
             ...prev,
             [name]: type === "checkbox" ? checked : value,
         }));
+        
+        // Show suggestions when typing in search term
+        if (name === 'searchTerm') {
+            setShowSuggestions(value.trim().length >= 2);
+        }
+    };
+
+    const handleSuggestionClick = (suggestion) => {
+        setFormData(prev => ({
+            ...prev,
+            searchTerm: suggestion.displayText
+        }));
+        setShowSuggestions(false);
+        
+        // Navigate to the property listing
+        navigate(`/listing/${suggestion.id}`);
+    };
+
+    const handleSearchInputFocus = () => {
+        if (formData.searchTerm.trim().length >= 2) {
+            setShowSuggestions(true);
+        }
+    };
+
+    const handleSearchInputBlur = () => {
+        // Delay hiding suggestions to allow clicking on them
+        setTimeout(() => setShowSuggestions(false), 200);
     };
 
     const handleSubmit = (e) => {
@@ -140,14 +169,26 @@ export default function PublicSearch() {
                     onSubmit={handleSubmit}
                     className="grid md:grid-cols-2 gap-4 bg-gray-100 p-4 rounded-lg mb-6"
                 >
-                    <input
-                        type="text"
-                        name="searchTerm"
-                        placeholder="Search..."
-                        value={formData.searchTerm}
-                        onChange={handleChanges}
-                        className="p-2 border rounded-md w-full"
-                    />
+                    <div className="relative">
+                        <input
+                            type="text"
+                            name="searchTerm"
+                            placeholder="Search..."
+                            value={formData.searchTerm}
+                            onChange={handleChanges}
+                            onFocus={handleSearchInputFocus}
+                            onBlur={handleSearchInputBlur}
+                            className="p-2 border rounded-md w-full"
+                        />
+                        
+                        <SearchSuggestions
+                            searchTerm={formData.searchTerm}
+                            onSuggestionClick={handleSuggestionClick}
+                            onClose={() => setShowSuggestions(false)}
+                            isVisible={showSuggestions}
+                            className="mt-1"
+                        />
+                    </div>
 
                     <select
                         name="sort_order"
