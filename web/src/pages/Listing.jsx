@@ -716,14 +716,17 @@ export default function Listing() {
         category: name.toLowerCase()
       });
 
-      return [
+      const items = [
         mk('Restaurants', <FaUtensils />, amenities.restaurant || amenities.restaurants || []),
         mk('Hospitals', <FaHospital />, amenities.hospital || amenities.hospitals || []),
         mk('Schools', <FaSchool />, amenities.school || amenities.schools || []),
         mk('Shopping Malls', <FaShoppingCart />, amenities.shopping_mall || amenities.mall || amenities.malls || []),
         mk('Airport', <FaPlane />, amenities.airport || []) ,
         mk('Transit Stations', <FaPlane />, transport.stations || [])
-      ].filter(item => item.count !== '0');
+      ];
+
+      // Always show items, including zero-count categories
+      return items;
     }
     
     // Use property ID hash to generate consistent values
