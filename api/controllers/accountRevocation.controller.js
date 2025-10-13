@@ -139,8 +139,12 @@ export const restoreAccount = async (req, res, next) => {
       return next(errorHandler(400, 'Account with this email already exists'));
     }
 
-    // Restore user from original data
-    const restoredUser = await User.create(revocationRecord.originalData);
+    // Restore user from original data - CRITICAL: Preserve original user ID to maintain relationships
+    const restoredUser = new User({
+      _id: revocationRecord.accountId, // 🔑 KEY: Use original accountId to preserve all relationships
+      ...revocationRecord.originalData
+    });
+    await restoredUser.save();
 
     // Mark revocation token as used
     revocationRecord.isUsed = true;
