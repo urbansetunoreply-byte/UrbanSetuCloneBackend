@@ -450,6 +450,18 @@ function UserNavLinks({ mobile = false, onNavigate, signout }) {
     setSearchOpen(false);
   };
 
+  const handleSearchInputChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleSearchInputFocus = () => {
+    // Focus handler for UserNavLinks search
+  };
+
+  const handleSearchInputBlur = () => {
+    // Blur handler for UserNavLinks search
+  };
+
   const handleSignout = async () => {
     if (signout) {
       await signout({
