@@ -24,7 +24,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function Listing() {
   // Set page title
-  usePageTitle("Property Details - View Listing");
+  usePageTitle(listing ? `${listing.name} – ${listing.type === 'rent' ? 'For Rent' : 'For Sale'} in ${listing.city || ''}${listing.address ? `, ${listing.address}` : ''} | ₹${(listing.offer ? listing.discountPrice : listing.regularPrice).toLocaleString('en-IN')}` : "Property Details - View Listing");
 
   const params = useParams();
   const navigate = useNavigate();
