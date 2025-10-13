@@ -97,8 +97,57 @@ class RealTimeDataService {
     });
   }
 
-  // 3. Nearby Amenities (Google Places API)
+  // 3. Nearby Amenities (Google Places API / Mapbox fallback)
   async getNearbyAmenities(location) {
+    // Prefer Mapbox if available
+    if (this.apiKeys.mapbox) {
+      try {
+        const lat = location.latitude || 0;
+        const lng = location.longitude || 0;
+        const amenityQueries = [
+          { key: 'hospital', query: 'hospital' },
+          { key: 'school', query: 'school' },
+          { key: 'shopping_mall', query: 'shopping mall' },
+          { key: 'restaurant', query: 'restaurant' },
+          { key: 'gas_station', query: 'gas station' },
+          { key: 'bank', query: 'bank' },
+          { key: 'pharmacy', query: 'pharmacy' },
+          { key: 'gym', query: 'gym' },
+          { key: 'park', query: 'park' }
+        ];
+
+        const amenities = {};
+
+        for (const item of amenityQueries) {
+          try {
+            const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(item.query)}.json`;
+            const response = await axios.get(url, {
+              params: {
+                proximity: `${lng},${lat}`,
+                types: 'poi',
+                limit: 10,
+                access_token: this.apiKeys.mapbox
+              }
+            });
+
+            amenities[item.key] = (response.data.features || []).map(place => ({
+              name: place.text || place.place_name,
+              rating: 0, // Mapbox does not provide ratings
+              distance: this.calculateDistance(lat, lng, place.center[1], place.center[0]),
+              vicinity: place.properties && place.properties.address ? place.properties.address : (place.place_name || '')
+            }));
+          } catch (error) {
+            console.error(`Error fetching ${item.key} amenities from Mapbox:`, error);
+          }
+        }
+
+        return amenities;
+      } catch (error) {
+        console.error('Error fetching amenities from Mapbox:', error);
+        // Fall through to Google or mock
+      }
+    }
+
     if (!this.apiKeys.googlePlaces) {
       return this.getMockAmenities();
     }
@@ -159,8 +208,42 @@ class RealTimeDataService {
     };
   }
 
-  // 5. School Data (Google Places API)
+  // 5. School Data (Google Places API / Mapbox fallback)
   async getSchoolData(location) {
+    // Prefer Mapbox if available
+    if (this.apiKeys.mapbox) {
+      try {
+        const lat = location.latitude || 0;
+        const lng = location.longitude || 0;
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent('school')}.json`;
+        const response = await axios.get(url, {
+          params: {
+            proximity: `${lng},${lat}`,
+            types: 'poi',
+            limit: 15,
+            access_token: this.apiKeys.mapbox
+          }
+        });
+
+        const features = response.data.features || [];
+        const schools = features.map(school => ({
+          name: school.text || school.place_name,
+          rating: 0,
+          distance: this.calculateDistance(lat, lng, school.center[1], school.center[0]),
+          vicinity: school.properties && school.properties.address ? school.properties.address : (school.place_name || '')
+        }));
+
+        return {
+          schools: schools.slice(0, 10),
+          averageRating: schools.length ? (schools.reduce((sum, s) => sum + (s.rating || 0), 0) / schools.length) : 0,
+          totalSchools: schools.length
+        };
+      } catch (error) {
+        console.error('Error fetching school data from Mapbox:', error);
+        // Fall through to Google or mock
+      }
+    }
+
     if (!this.apiKeys.googlePlaces) {
       return this.getMockSchoolData();
     }
@@ -196,8 +279,61 @@ class RealTimeDataService {
     }
   }
 
-  // 6. Transport Data
+  // 6. Transport Data (Google Places API / Mapbox fallback)
   async getTransportData(location) {
+    // Prefer Mapbox if available
+    if (this.apiKeys.mapbox) {
+      try {
+        const lat = location.latitude || 0;
+        const lng = location.longitude || 0;
+
+        const queries = ['transit station', 'bus station', 'train station', 'metro station'];
+        let stationsCombined = [];
+
+        for (const q of queries) {
+          try {
+            const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(q)}.json`;
+            const response = await axios.get(url, {
+              params: {
+                proximity: `${lng},${lat}`,
+                types: 'poi',
+                limit: 8,
+                access_token: this.apiKeys.mapbox
+              }
+            });
+
+            const items = (response.data.features || []).map(station => ({
+              name: station.text || station.place_name,
+              distance: this.calculateDistance(lat, lng, station.center[1], station.center[0]),
+              vicinity: station.properties && station.properties.address ? station.properties.address : (station.place_name || '')
+            }));
+
+            stationsCombined = stationsCombined.concat(items);
+          } catch (innerErr) {
+            console.error(`Error fetching transport query "${q}" from Mapbox:`, innerErr);
+          }
+        }
+
+        // De-duplicate by name + vicinity
+        const seen = new Set();
+        const stations = stationsCombined.filter(s => {
+          const key = `${s.name}|${s.vicinity}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        }).sort((a, b) => a.distance - b.distance);
+
+        return {
+          stations: stations.slice(0, 5),
+          connectivityScore: this.calculateConnectivityScore(stations),
+          totalStations: stations.length
+        };
+      } catch (error) {
+        console.error('Error fetching transport data from Mapbox:', error);
+        // Fall through to Google or mock
+      }
+    }
+
     if (!this.apiKeys.googlePlaces) {
       return this.getMockTransportData();
     }
