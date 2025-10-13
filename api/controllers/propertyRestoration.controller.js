@@ -14,6 +14,8 @@ export const verifyRestorationToken = async (req, res, next) => {
   try {
     const { token } = req.params;
 
+    console.log(`🔍 Verifying restoration token: ${token}`);
+
     if (!token) {
       return next(errorHandler(400, 'Restoration token is required'));
     }
@@ -22,6 +24,8 @@ export const verifyRestorationToken = async (req, res, next) => {
     const deletedListing = await DeletedListing.findOne({ 
       restorationToken: token 
     }).populate('userRef', 'email username');
+
+    console.log(`📊 Deleted listing found:`, deletedListing ? 'Yes' : 'No');
 
     if (!deletedListing) {
       return next(errorHandler(404, 'Invalid restoration token'));
@@ -190,6 +194,32 @@ export const getDeletedProperties = async (req, res, next) => {
   } catch (error) {
     console.error('Error fetching deleted properties:', error);
     return next(errorHandler(500, 'Failed to fetch deleted properties'));
+  }
+};
+
+// Test endpoint to check if the model is working
+export const testRestorationSystem = async (req, res, next) => {
+  try {
+    // Check if we can connect to the database and find any deleted listings
+    const count = await DeletedListing.countDocuments();
+    const sample = await DeletedListing.findOne().populate('userRef', 'email username');
+    
+    res.status(200).json({
+      success: true,
+      message: 'Restoration system test',
+      data: {
+        totalDeletedListings: count,
+        sampleListing: sample ? {
+          id: sample._id,
+          token: sample.restorationToken,
+          propertyName: sample.listingData?.name,
+          userEmail: sample.userRef?.email
+        } : null
+      }
+    });
+  } catch (error) {
+    console.error('Error testing restoration system:', error);
+    return next(errorHandler(500, 'Failed to test restoration system'));
   }
 };
 

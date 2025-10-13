@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { FaHome, FaArrowLeft, FaCheckCircle, FaExclamationTriangle, FaSpinner } from 'react-icons/fa';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const RestoreProperty = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -26,8 +28,14 @@ const RestoreProperty = () => {
 
   const verifyToken = async () => {
     try {
-      const response = await fetch(`/api/property-restoration/verify/${token}`);
+      console.log('🔍 Verifying token:', token);
+      console.log('🔍 API Base URL:', API_BASE_URL);
+      
+      const response = await fetch(`${API_BASE_URL}/api/property-restoration/verify/${token}`);
+      console.log('🔍 Response status:', response.status);
+      
       const data = await response.json();
+      console.log('🔍 Response data:', data);
 
       if (data.success) {
         setPropertyData(data.deletedListing);
@@ -52,7 +60,7 @@ const RestoreProperty = () => {
     setError(null);
 
     try {
-      const response = await fetch(`/api/property-restoration/restore/${token}`, {
+      const response = await fetch(`${API_BASE_URL}/api/property-restoration/restore/${token}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
