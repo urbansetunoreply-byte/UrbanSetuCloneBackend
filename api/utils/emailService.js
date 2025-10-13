@@ -3161,7 +3161,8 @@ export const sendAppointmentBookingEmail = async (email, appointmentDetails, use
       purpose,
       message,
       listingId,
-      paymentStatus
+      paymentStatus,
+      bookedByAdmin = false
     } = appointmentDetails;
 
     const subject = `🏠 Appointment Booked - ${propertyName} | UrbanSetu`;
@@ -3465,6 +3466,7 @@ export const sendAppointmentBookingEmail = async (email, appointmentDetails, use
         <div class="header">
           <h1>🎉 Appointment Booked Successfully!</h1>
           <p>Your property viewing appointment has been confirmed</p>
+          ${bookedByAdmin ? '<p style="font-size: 14px; opacity: 0.8; margin-top: 10px;">📋 This appointment was booked by our admin team on your behalf</p>' : ''}
         </div>
         
         <div class="content">
@@ -8584,6 +8586,349 @@ export const sendNewPropertiesMatchingSearchEmail = async (email, searchDetails)
   } catch (error) {
     console.error('Error sending new properties matching search email:', error);
     return createErrorResponse(error, 'new_properties_matching_search_email');
+  }
+};
+
+// Property Edit Notification Email
+export const sendPropertyEditNotificationEmail = async (email, editDetails, userRole) => {
+  try {
+    const { 
+      propertyName,
+      propertyId,
+      propertyDescription,
+      propertyAddress,
+      propertyPrice,
+      propertyImages,
+      editedBy,
+      editType,
+      changes
+    } = editDetails;
+
+    const isAdminEdit = editType === 'admin';
+    const subject = isAdminEdit 
+      ? `📝 Property Updated by Admin - ${propertyName} | UrbanSetu`
+      : `📝 Property Updated - ${propertyName} | UrbanSetu`;
+
+    // Get property image for email
+    const propertyImage = propertyImages && propertyImages.length > 0 
+      ? propertyImages[0] 
+      : `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/placeholder-property.jpg`;
+
+    const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Property Updated - UrbanSetu</title>
+      <style>
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+          background-color: #f8fafc;
+        }
+        .container {
+          background: white;
+          border-radius: 12px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          overflow: hidden;
+        }
+        .header {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          color: white;
+          padding: 30px;
+          text-align: center;
+        }
+        .header h1 {
+          margin: 0;
+          font-size: 28px;
+          font-weight: 700;
+        }
+        .header p {
+          margin: 10px 0 0 0;
+          font-size: 16px;
+          opacity: 0.9;
+        }
+        .admin-notice {
+          background: #fef3c7;
+          border: 1px solid #f59e0b;
+          border-radius: 8px;
+          padding: 15px;
+          margin: 20px 0;
+          text-align: center;
+        }
+        .admin-notice p {
+          margin: 0;
+          color: #92400e;
+          font-weight: 600;
+        }
+        .content {
+          padding: 30px;
+        }
+        .property-card {
+          background: #f0fdf4;
+          border: 2px solid #bbf7d0;
+          border-radius: 12px;
+          padding: 25px;
+          margin: 20px 0;
+        }
+        .property-image {
+          width: 100%;
+          height: 200px;
+          object-fit: cover;
+          border-radius: 8px;
+          margin-bottom: 20px;
+        }
+        .property-title {
+          font-size: 24px;
+          font-weight: 700;
+          color: #1e293b;
+          margin: 0 0 10px 0;
+        }
+        .property-address {
+          color: #64748b;
+          font-size: 16px;
+          margin: 0 0 15px 0;
+        }
+        .property-price {
+          font-size: 20px;
+          font-weight: 700;
+          color: #059669;
+          margin: 0 0 20px 0;
+        }
+        .changes-section {
+          background: #f1f5f9;
+          border-left: 4px solid #3b82f6;
+          padding: 20px;
+          margin: 20px 0;
+          border-radius: 0 8px 8px 0;
+        }
+        .changes-title {
+          font-weight: 600;
+          color: #374151;
+          margin-bottom: 10px;
+          font-size: 18px;
+        }
+        .changes-list {
+          margin: 0;
+          padding-left: 20px;
+        }
+        .changes-list li {
+          margin: 8px 0;
+          color: #1f2937;
+        }
+        .action-buttons {
+          text-align: center;
+          margin: 30px 0;
+          padding: 0 10px;
+        }
+        .btn-container {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          align-items: center;
+          max-width: 100%;
+          width: 100%;
+        }
+        .btn-container.horizontal {
+          flex-direction: row;
+          gap: 20px;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+        .btn {
+          display: inline-block;
+          width: auto;
+          max-width: 280px;
+          padding: 15px 25px;
+          margin: 5px;
+          text-decoration: none;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 14px;
+          text-align: center;
+          box-sizing: border-box;
+          word-wrap: break-word;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-container:not(.horizontal) .btn {
+          display: block;
+          width: 100%;
+          margin: 0;
+          padding: 12px 20px;
+        }
+        .btn-primary {
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+          color: white !important;
+        }
+        .btn-secondary {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          color: white !important;
+        }
+        .btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        .next-steps {
+          background: #fef3c7;
+          border: 1px solid #f59e0b;
+          border-radius: 8px;
+          padding: 20px;
+          margin: 20px 0;
+        }
+        .next-steps h3 {
+          color: #d97706;
+          margin: 0 0 15px 0;
+          font-size: 18px;
+        }
+        .next-steps ul {
+          margin: 0;
+          padding-left: 20px;
+        }
+        .next-steps li {
+          margin: 8px 0;
+          color: #92400e;
+        }
+        .footer {
+          background: #f8fafc;
+          padding: 30px;
+          text-align: center;
+          color: #64748b;
+          border-top: 1px solid #e2e8f0;
+        }
+        .footer p {
+          margin: 5px 0;
+        }
+        .social-links {
+          margin: 20px 0;
+        }
+        .social-links a {
+          display: inline-block;
+          margin: 0 10px;
+          color: #3b82f6;
+          text-decoration: none;
+        }
+        @media (max-width: 600px) {
+          .container {
+            margin: 10px;
+            border-radius: 8px;
+          }
+          .content {
+            padding: 20px;
+          }
+          .action-buttons {
+            padding: 0 5px;
+          }
+          .btn-container {
+            gap: 10px;
+          }
+          .btn-container.horizontal {
+            flex-direction: column;
+            gap: 10px;
+          }
+          .btn {
+            max-width: 100%;
+            padding: 14px 16px;
+            font-size: 15px;
+            margin: 0;
+            display: block;
+            width: 100%;
+          }
+        }
+        @media (max-width: 400px) {
+          .btn {
+            padding: 12px 14px;
+            font-size: 14px;
+          }
+          .action-buttons {
+            padding: 0 2px;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>📝 Property Updated!</h1>
+          <p>Your property listing has been successfully updated</p>
+        </div>
+        
+        <div class="content">
+          ${isAdminEdit ? `
+          <div class="admin-notice">
+            <p>🔧 This property was updated by our admin team</p>
+          </div>
+          ` : ''}
+          
+          <div class="property-card">
+            <img src="${propertyImage}" alt="${propertyName}" class="property-image" />
+            <h2 class="property-title">${propertyName}</h2>
+            <p class="property-address">📍 ${propertyAddress || 'Address not specified'}</p>
+            <p class="property-price">💰 ₹${propertyPrice || 'Price not specified'}</p>
+          </div>
+          
+          ${changes && changes.length > 0 ? `
+          <div class="changes-section">
+            <h3 class="changes-title">📋 Changes Made:</h3>
+            <ul class="changes-list">
+              ${changes.map(change => `<li>${change}</li>`).join('')}
+            </ul>
+          </div>
+          ` : ''}
+          
+          <div class="action-buttons">
+            <div class="btn-container">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${propertyId}" class="btn btn-primary">
+                🏠 View Updated Property
+              </a>
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-listings" class="btn btn-secondary">
+                📊 My Properties
+              </a>
+            </div>
+          </div>
+          
+          <div class="next-steps">
+            <h3>📋 What's Next:</h3>
+            <ul>
+              <li>Review the updated property details</li>
+              <li>Check if all information is accurate</li>
+              <li>Monitor your property's performance</li>
+              <li>Respond to any new inquiries promptly</li>
+              ${isAdminEdit ? '<li>Contact support if you have questions about the changes</li>' : ''}
+            </ul>
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p><strong>UrbanSetu - Smart Real Estate Platform</strong></p>
+          <p>Thank you for keeping your property information up to date!</p>
+          <div class="social-links">
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}">Website</a>
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/contact">Support</a>
+            <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/privacy">Privacy</a>
+          </div>
+          <p style="font-size: 12px; margin-top: 20px;">
+            This is an automated email. Please do not reply to this email address.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending property edit notification email:', error);
+    return createErrorResponse(error, 'property_edit_notification_email');
   }
 };
 

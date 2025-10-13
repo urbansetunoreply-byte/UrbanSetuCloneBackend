@@ -141,7 +141,8 @@ router.post("/", verifyToken, async (req, res) => {
         purpose: newBooking.purpose,
         message: newBooking.message,
         listingId: listing._id,
-        paymentStatus: 'pending' // New appointments start as pending payment
+        paymentStatus: 'pending', // New appointments start as pending payment
+        bookedByAdmin: false // Flag to indicate this was booked by user
       };
 
       // Send email to buyer
@@ -2044,7 +2045,8 @@ router.post("/admin", verifyToken, async (req, res) => {
         purpose: newBooking.purpose,
         message: newBooking.message,
         listingId: listing._id,
-        paymentStatus: 'pending' // New appointments start as pending payment
+        paymentStatus: 'pending', // New appointments start as pending payment
+        bookedByAdmin: true // Flag to indicate this was booked by admin
       };
 
       // Send email to buyer

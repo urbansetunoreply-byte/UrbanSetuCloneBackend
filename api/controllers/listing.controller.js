@@ -5,7 +5,7 @@ import { notifyWatchersOnChange } from "./propertyWatchlist.controller.js"
 import User from "../models/user.model.js"
 import Notification from "../models/notification.model.js"
 import { errorHandler } from "../utils/error.js"
-import { sendPropertyListingPublishedEmail } from "../utils/emailService.js"
+import { sendPropertyListingPublishedEmail, sendPropertyEditNotificationEmail } from "../utils/emailService.js"
 
 
 
@@ -258,10 +258,10 @@ export const updateListing=async (req,res,next)=>{
         
         // Create notification if admin is editing someone else's property
         let notificationMessage = "Property Updated Successfully";
-        if (
-          (req.user.role === 'admin' || req.user.role === 'rootadmin' || req.user.isDefaultAdmin) &&
-          req.user.id !== listing.userRef.toString()
-        ) {
+        const isAdminEdit = (req.user.role === 'admin' || req.user.role === 'rootadmin' || req.user.isDefaultAdmin) &&
+                           req.user.id !== listing.userRef.toString();
+        
+        if (isAdminEdit) {
           try {
             // Get the property owner's details
             const propertyOwner = await User.findById(listing.userRef);
@@ -286,6 +286,83 @@ export const updateListing=async (req,res,next)=>{
             // Log notification error but don't fail the listing update
             console.error('Failed to create notification:', notificationError);
           }
+        }
+
+        // Send property edit notification email
+        try {
+          // Get the property owner (who should receive the email)
+          const propertyOwner = await User.findById(updateListing.userRef);
+          
+          if (propertyOwner && propertyOwner.email) {
+            // Detect changes made to the property
+            const changes = [];
+            
+            // Check for common field changes
+            if (req.body.name && req.body.name !== listing.name) {
+              changes.push(`Property name updated to "${req.body.name}"`);
+            }
+            if (req.body.description && req.body.description !== listing.description) {
+              changes.push("Property description updated");
+            }
+            if (req.body.address && req.body.address !== listing.address) {
+              changes.push("Property address updated");
+            }
+            if (req.body.regularPrice && req.body.regularPrice !== listing.regularPrice) {
+              changes.push(`Regular price updated to ₹${req.body.regularPrice}`);
+            }
+            if (req.body.discountPrice && req.body.discountPrice !== listing.discountPrice) {
+              changes.push(`Discount price updated to ₹${req.body.discountPrice}`);
+            }
+            if (req.body.bedrooms && req.body.bedrooms !== listing.bedrooms) {
+              changes.push(`Bedrooms updated to ${req.body.bedrooms}`);
+            }
+            if (req.body.bathrooms && req.body.bathrooms !== listing.bathrooms) {
+              changes.push(`Bathrooms updated to ${req.body.bathrooms}`);
+            }
+            if (req.body.area && req.body.area !== listing.area) {
+              changes.push(`Area updated to ${req.body.area} sq ft`);
+            }
+            if (req.body.type && req.body.type !== listing.type) {
+              changes.push(`Property type updated to ${req.body.type}`);
+            }
+            if (req.body.city && req.body.city !== listing.city) {
+              changes.push(`City updated to ${req.body.city}`);
+            }
+            if (req.body.state && req.body.state !== listing.state) {
+              changes.push(`State updated to ${req.body.state}`);
+            }
+            if (req.body.pincode && req.body.pincode !== listing.pincode) {
+              changes.push(`Pincode updated to ${req.body.pincode}`);
+            }
+            if (req.body.imageUrls && JSON.stringify(req.body.imageUrls) !== JSON.stringify(listing.imageUrls)) {
+              changes.push("Property images updated");
+            }
+            
+            // If no specific changes detected, add a generic message
+            if (changes.length === 0) {
+              changes.push("Property details have been updated");
+            }
+
+            // Prepare email details
+            const editDetails = {
+              propertyName: updateListing.name,
+              propertyId: updateListing._id,
+              propertyDescription: updateListing.description,
+              propertyAddress: updateListing.address,
+              propertyPrice: updateListing.offer ? updateListing.discountPrice : updateListing.regularPrice,
+              propertyImages: updateListing.imageUrls || [],
+              editedBy: req.user.username || req.user.email,
+              editType: isAdminEdit ? 'admin' : 'user',
+              changes: changes
+            };
+
+            // Send email to property owner
+            await sendPropertyEditNotificationEmail(propertyOwner.email, editDetails, 'owner');
+            console.log(`✅ Property edit notification email sent to: ${propertyOwner.email}`);
+          }
+        } catch (emailError) {
+          console.error(`❌ Failed to send property edit notification email:`, emailError);
+          // Don't fail the listing update if email fails
         }
         
         return res.status(200).json({
