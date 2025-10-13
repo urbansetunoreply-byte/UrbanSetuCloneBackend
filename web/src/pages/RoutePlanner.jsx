@@ -5,6 +5,7 @@ import mapboxgl from 'mapbox-gl';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
+import '../styles/routePlannerSuggestions.css';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useHeader } from '../contexts/HeaderContext';
@@ -975,22 +976,24 @@ export default function RoutePlanner() {
                 </div>
                 
                 {predictions[i] && predictions[i].length > 0 && (
-                  <ul className="absolute z-10 top-full left-0 right-0 bg-white border border-gray-200 rounded shadow max-h-56 overflow-auto">
-                    {predictions[i].map((prediction, idx) => (
-                      <li 
-                        key={idx} 
-                        className="px-3 py-2 text-sm hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0" 
-                        onMouseDown={() => pickPrediction(i, prediction)}
-                      >
-                        <div className="font-medium">{prediction.place_name}</div>
-                        {prediction.context && (
-                          <div className="text-xs text-gray-500">
-                            {prediction.context.map(ctx => ctx.text).join(', ')}
-                          </div>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
+                  <div className="suggestions-panel">
+                    <ul className="suggestions-list suggestions-scroll">
+                      {predictions[i].map((prediction, idx) => (
+                        <li 
+                          key={idx} 
+                          className="suggestion-item" 
+                          onMouseDown={() => pickPrediction(i, prediction)}
+                        >
+                          <div className="suggestion-name">{prediction.place_name}</div>
+                          {prediction.context && (
+                            <div className="suggestion-context">
+                              {prediction.context.map(ctx => ctx.text).join(', ')}
+                            </div>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
               </div>
             ))}
