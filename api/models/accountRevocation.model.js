@@ -49,6 +49,11 @@ const accountRevocationSchema = new mongoose.Schema({
     type: Date, 
     default: null 
   },
+  restoredBy: { 
+    type: String, 
+    default: null,
+    enum: ['user_link', 'admin_manual', null]
+  },
   originalData: { 
     type: mongoose.Schema.Types.Mixed, 
     required: true 

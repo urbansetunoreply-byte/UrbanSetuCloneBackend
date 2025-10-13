@@ -146,6 +146,7 @@ export const restoreAccount = async (req, res, next) => {
     revocationRecord.isUsed = true;
     revocationRecord.usedAt = new Date();
     revocationRecord.restoredAt = new Date();
+    revocationRecord.restoredBy = 'user_link';
     await revocationRecord.save();
 
     // Remove the SPECIFIC deleted account record (not all accounts with same email)

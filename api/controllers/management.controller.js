@@ -368,6 +368,29 @@ export const restoreDeletedAccount = async (req, res, next) => {
     await restored.save();
     await AuditLog.create({ action: 'restore', performedBy: currentUser._id, targetAccount: record._id, targetEmail: record.email });
     
+    // Invalidate any active revocation tokens for this account
+    try {
+      const AccountRevocation = (await import('../models/accountRevocation.model.js')).default;
+      await AccountRevocation.updateMany(
+        { 
+          accountId: record.accountId,
+          isUsed: false 
+        },
+        { 
+          $set: { 
+            isUsed: true,
+            usedAt: new Date(),
+            restoredAt: new Date(),
+            restoredBy: 'admin_manual'
+          }
+        }
+      );
+      console.log(`✅ Invalidated revocation tokens for account: ${record.email}`);
+    } catch (tokenError) {
+      console.error(`❌ Failed to invalidate revocation tokens for ${record.email}:`, tokenError);
+      // Don't fail the restoration if token invalidation fails
+    }
+    
     // Send manual account restoration email
     try {
       await sendManualAccountRestorationEmail(record.email, {
