@@ -100,7 +100,8 @@ const listingSchema = new mongoose.Schema({
         default: 0
     },
     userRef: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
         required: true
     },
     // Review-related fields

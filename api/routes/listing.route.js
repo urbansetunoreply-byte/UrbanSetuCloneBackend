@@ -44,6 +44,13 @@ router.post("/view/:listingId",async (req, res, next) => {
     ).populate('userRef', 'email username');
     
     console.log(`📊 Listing found: ${listing ? 'Yes' : 'No'}, Name: ${listing?.name}, Previous View Count: ${listing?.viewCount - 1}, New View Count: ${listing?.viewCount}`);
+    console.log(`👤 UserRef details:`, {
+      userRef: listing?.userRef,
+      userRefType: typeof listing?.userRef,
+      userRefId: listing?.userRef?._id,
+      userRefEmail: listing?.userRef?.email,
+      userRefUsername: listing?.userRef?.username
+    });
     
     if (!listing) {
       return res.status(404).json({ message: 'Listing not found.' });
@@ -56,29 +63,52 @@ router.post("/view/:listingId",async (req, res, next) => {
     
     console.log(`🔍 View tracking debug - Property: ${listing.name}, View Count: ${viewCount}, Reached Milestone: ${reachedMilestone}, User Email: ${listing.userRef?.email}`);
     
-    if (reachedMilestone && listing.userRef && listing.userRef.email) {
-      try {
-        console.log(`📧 Attempting to send milestone email for ${reachedMilestone} views to ${listing.userRef.email}`);
-        const { sendPropertyViewsMilestoneEmail } = await import('../utils/emailService.js');
-        
-        const milestoneDetails = {
-          propertyName: listing.name,
-          propertyId: listing._id,
-          viewCount: viewCount,
-          milestone: `${reachedMilestone} views`,
-          previousMilestone: milestones[milestones.indexOf(reachedMilestone) - 1] ? `${milestones[milestones.indexOf(reachedMilestone) - 1]} views` : null,
-          imageUrls: listing.imageUrls
-        };
-        
-        console.log(`📧 Milestone details:`, milestoneDetails);
-        const emailResult = await sendPropertyViewsMilestoneEmail(listing.userRef.email, milestoneDetails);
-        console.log(`✅ Property views milestone email sent to: ${listing.userRef.email} for ${reachedMilestone} views. Result:`, emailResult);
-      } catch (emailError) {
-        console.error(`❌ Failed to send property views milestone email to ${listing.userRef.email}:`, emailError);
-        // Don't fail the view count if email fails
+    if (reachedMilestone && listing.userRef) {
+      // Handle both ObjectId (populated) and String (legacy) userRef
+      let userEmail = null;
+      
+      if (typeof listing.userRef === 'object' && listing.userRef.email) {
+        // Populated userRef (ObjectId)
+        userEmail = listing.userRef.email;
+      } else if (typeof listing.userRef === 'string') {
+        // Legacy string userRef - need to fetch user
+        try {
+          const User = (await import('../models/user.model.js')).default;
+          const user = await User.findById(listing.userRef);
+          if (user && user.email) {
+            userEmail = user.email;
+          }
+        } catch (userError) {
+          console.error(`❌ Failed to fetch user for legacy userRef ${listing.userRef}:`, userError);
+        }
+      }
+      
+      if (userEmail) {
+        try {
+          console.log(`📧 Attempting to send milestone email for ${reachedMilestone} views to ${userEmail}`);
+          const { sendPropertyViewsMilestoneEmail } = await import('../utils/emailService.js');
+          
+          const milestoneDetails = {
+            propertyName: listing.name,
+            propertyId: listing._id,
+            viewCount: viewCount,
+            milestone: `${reachedMilestone} views`,
+            previousMilestone: milestones[milestones.indexOf(reachedMilestone) - 1] ? `${milestones[milestones.indexOf(reachedMilestone) - 1]} views` : null,
+            imageUrls: listing.imageUrls
+          };
+          
+          console.log(`📧 Milestone details:`, milestoneDetails);
+          const emailResult = await sendPropertyViewsMilestoneEmail(userEmail, milestoneDetails);
+          console.log(`✅ Property views milestone email sent to: ${userEmail} for ${reachedMilestone} views. Result:`, emailResult);
+        } catch (emailError) {
+          console.error(`❌ Failed to send property views milestone email to ${userEmail}:`, emailError);
+          // Don't fail the view count if email fails
+        }
+      } else {
+        console.log(`⏭️ Skipping milestone email - No valid email found for userRef: ${listing.userRef}`);
       }
     } else {
-      console.log(`⏭️ Skipping milestone email - Reached: ${reachedMilestone}, UserRef: ${!!listing.userRef}, Email: ${listing.userRef?.email}`);
+      console.log(`⏭️ Skipping milestone email - Reached: ${reachedMilestone}, UserRef: ${!!listing.userRef}`);
     }
     
     res.status(200).json({ 
