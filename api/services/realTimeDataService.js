@@ -75,11 +75,15 @@ class RealTimeDataService {
     
     return await this.getCachedData(cacheKey, async () => {
       try {
+        // Ensure we have coordinates; if missing, resolve via geocoding
+        const coords = await this.resolveCoordinates(location);
+        const locWithCoords = { ...location, latitude: coords.lat, longitude: coords.lng };
+
         const [amenities, crimeData, schoolData, transportData] = await Promise.all([
-          this.getNearbyAmenities(location),
-          this.getCrimeData(location),
-          this.getSchoolData(location),
-          this.getTransportData(location)
+          this.getNearbyAmenities(locWithCoords),
+          this.getCrimeData(locWithCoords),
+          this.getSchoolData(locWithCoords),
+          this.getTransportData(locWithCoords)
         ]);
 
         return {
@@ -95,6 +99,40 @@ class RealTimeDataService {
         return null;
       }
     });
+  }
+
+  // Resolve coordinates from location using Mapbox (preferred) or fallback to zeros
+  async resolveCoordinates(location) {
+    const hasCoords = typeof location.latitude === 'number' && typeof location.longitude === 'number' && !isNaN(location.latitude) && !isNaN(location.longitude);
+    if (hasCoords) {
+      return { lat: location.latitude, lng: location.longitude };
+    }
+
+    // Try Mapbox geocoding if available
+    if (this.apiKeys.mapbox) {
+      try {
+        const queryParts = [location.address, location.district, location.city, location.state].filter(Boolean);
+        const query = (queryParts.join(', ')).trim() || location.city || location.state;
+        if (query) {
+          const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json`;
+          const response = await axios.get(url, {
+            params: {
+              limit: 1,
+              access_token: this.apiKeys.mapbox
+            }
+          });
+          const feature = response.data && response.data.features && response.data.features[0];
+          if (feature && Array.isArray(feature.center) && feature.center.length === 2) {
+            return { lat: feature.center[1], lng: feature.center[0] };
+          }
+        }
+      } catch (err) {
+        console.error('Error resolving coordinates via Mapbox:', err);
+      }
+    }
+
+    // Fallback to 0,0 to avoid crashing; downstream will produce mock or empty
+    return { lat: 0, lng: 0 };
   }
 
   // 3. Nearby Amenities (Google Places API / Mapbox fallback)
