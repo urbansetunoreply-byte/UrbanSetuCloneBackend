@@ -8959,13 +8959,13 @@ export const sendPropertyDeletionConfirmationEmail = async (email, deletionDetai
       ? propertyImages[0] 
       : `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/placeholder-property.jpg`;
 
-    // Format expiry date
-    const expiryDate = new Date(tokenExpiry).toLocaleDateString('en-US', {
+    // Format expiry date (only for user deletions)
+    const expiryDate = tokenExpiry ? new Date(tokenExpiry).toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric'
-    });
+    }) : null;
 
     const html = `
     <!DOCTYPE html>
@@ -9230,6 +9230,7 @@ export const sendPropertyDeletionConfirmationEmail = async (email, deletionDetai
             ${isAdminDeletion && deletionReason ? `<p><strong>Reason:</strong> ${deletionReason}</p>` : ''}
           </div>
           
+          ${!isAdminDeletion && restorationToken ? `
           <div class="restoration-section">
             <h3>🔄 Accidentally Deleted?</h3>
             <p>If you deleted this property by mistake, you can restore it within 30 days using the link below.</p>
@@ -9247,6 +9248,18 @@ export const sendPropertyDeletionConfirmationEmail = async (email, deletionDetai
               </div>
             </div>
           </div>
+          ` : `
+          <div class="action-buttons">
+            <div class="btn-container">
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-listings" class="btn btn-primary">
+                📊 My Properties
+              </a>
+              <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/contact" class="btn btn-secondary">
+                📞 Contact Support
+              </a>
+            </div>
+          </div>
+          `}
         </div>
         
         <div class="footer">

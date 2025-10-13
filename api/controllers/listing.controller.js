@@ -189,21 +189,65 @@ export const deleteListing=async (req,res,next)=>{
         }
 
         // Store deleted listing for potential restoration before actual deletion
-        const restorationToken = crypto.randomBytes(32).toString('hex');
-        const tokenExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+        // Only create restoration token for user deletions, not admin deletions
+        let restorationToken = null;
+        let tokenExpiry = null;
+        let deletedListingRecord = null;
         
-        const deletedListingRecord = new DeletedListing({
-          originalListingId: listing._id,
-          listingData: listing.toObject(), // Store complete listing data
-          userRef: listing.userRef,
-          deletedBy: req.user.id,
-          deletionType: isAdminDeletingOthersProperty ? 'admin' : 'owner',
-          deletionReason: isAdminDeletingOthersProperty ? req.body.reason : null,
-          restorationToken: restorationToken,
-          tokenExpiry: tokenExpiry
-        });
-        
-        await deletedListingRecord.save();
+        if (!isAdminDeletingOthersProperty) {
+          try {
+            // Only create restoration token for user deletions
+            restorationToken = crypto.randomBytes(32).toString('hex');
+            tokenExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+            
+            // Check if there's already a deletion record for this listing
+            const existingDeletedRecord = await DeletedListing.findOne({
+              originalListingId: listing._id
+            });
+            
+            console.log(`🔍 Checking for existing deletion record for listing ${listing._id}:`, existingDeletedRecord ? 'Found' : 'Not found');
+            
+            if (existingDeletedRecord) {
+              console.log(`🔄 Updating existing deletion record for listing ${listing._id}`);
+              // Update existing record with new deletion info
+              existingDeletedRecord.listingData = listing.toObject();
+              existingDeletedRecord.deletedBy = req.user.id;
+              existingDeletedRecord.deletionType = 'owner';
+              existingDeletedRecord.deletionReason = null;
+              existingDeletedRecord.restorationToken = restorationToken;
+              existingDeletedRecord.tokenExpiry = tokenExpiry;
+              existingDeletedRecord.isRestored = false;
+              existingDeletedRecord.restoredAt = null;
+              existingDeletedRecord.restoredBy = null;
+              existingDeletedRecord.isUsed = false;
+              existingDeletedRecord.deletedAt = new Date();
+              
+              await existingDeletedRecord.save();
+              deletedListingRecord = existingDeletedRecord;
+              console.log(`✅ Updated existing deletion record for listing ${listing._id}`);
+            } else {
+              console.log(`🆕 Creating new deletion record for listing ${listing._id}`);
+              // Create new deletion record
+              deletedListingRecord = new DeletedListing({
+                originalListingId: listing._id,
+                listingData: listing.toObject(), // Store complete listing data
+                userRef: listing.userRef,
+                deletedBy: req.user.id,
+                deletionType: 'owner',
+                deletionReason: null,
+                restorationToken: restorationToken,
+                tokenExpiry: tokenExpiry
+              });
+              
+              await deletedListingRecord.save();
+              console.log(`✅ Created new deletion record for listing ${listing._id}`);
+            }
+          } catch (deletionRecordError) {
+            console.error(`❌ Error handling deletion record for listing ${listing._id}:`, deletionRecordError);
+            // Don't fail the deletion if deletion record creation fails
+            // The property will still be deleted, just without restoration capability
+          }
+        }
 
         // Send property deletion confirmation email
         try {
@@ -220,8 +264,8 @@ export const deleteListing=async (req,res,next)=>{
               deletedBy: req.user.username || req.user.email,
               deletionType: isAdminDeletingOthersProperty ? 'admin' : 'owner',
               deletionReason: isAdminDeletingOthersProperty ? req.body.reason : null,
-              restorationToken: restorationToken,
-              tokenExpiry: tokenExpiry
+              restorationToken: restorationToken, // Will be null for admin deletions
+              tokenExpiry: tokenExpiry // Will be null for admin deletions
             };
 
             await sendPropertyDeletionConfirmationEmail(propertyOwner.email, deletionDetails);
