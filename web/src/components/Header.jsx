@@ -427,6 +427,7 @@ function UserNavLinks({ mobile = false, onNavigate, signout }) {
   const location = useLocation();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const searchInputRef = useRef(null);
 
   useEffect(() => {
@@ -452,14 +453,26 @@ function UserNavLinks({ mobile = false, onNavigate, signout }) {
 
   const handleSearchInputChange = (e) => {
     setSearchTerm(e.target.value);
+    setShowSuggestions(true);
   };
 
   const handleSearchInputFocus = () => {
-    // Focus handler for UserNavLinks search
+    if (searchTerm.trim().length >= 2) {
+      setShowSuggestions(true);
+    }
   };
 
   const handleSearchInputBlur = () => {
-    // Blur handler for UserNavLinks search
+    // Delay hiding suggestions to allow clicking on them
+    setTimeout(() => setShowSuggestions(false), 200);
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    setSearchTerm(suggestion.displayText);
+    setShowSuggestions(false);
+    
+    // Navigate to the property listing
+    navigate(`/listing/${suggestion.id}`);
   };
 
   const handleSignout = async () => {
