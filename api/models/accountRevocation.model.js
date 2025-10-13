@@ -25,8 +25,7 @@ const accountRevocationSchema = new mongoose.Schema({
   revocationToken: { 
     type: String, 
     required: true, 
-    unique: true, 
-    index: true 
+    unique: true
   },
   deletedAt: { 
     type: Date, 

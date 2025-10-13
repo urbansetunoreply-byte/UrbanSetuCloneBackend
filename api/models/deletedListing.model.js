@@ -90,7 +90,7 @@ const deletedListingSchema = new mongoose.Schema({
 });
 
 // Index for efficient queries
-deletedListingSchema.index({ restorationToken: 1 });
+// Note: restorationToken already has unique: true in field definition, so no need for separate index
 deletedListingSchema.index({ userRef: 1 });
 deletedListingSchema.index({ tokenExpiry: 1 });
 deletedListingSchema.index({ isRestored: 1 });
