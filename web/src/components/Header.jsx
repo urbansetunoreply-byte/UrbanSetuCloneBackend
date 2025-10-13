@@ -191,6 +191,7 @@ export default function Header() {
   };
 
   const handleSuggestionClick = (suggestion) => {
+    console.log('Header handleSuggestionClick called:', suggestion);
     setSearchTerm(suggestion.displayText);
     setShowSuggestions(false);
     
@@ -468,6 +469,7 @@ function UserNavLinks({ mobile = false, onNavigate, signout }) {
   };
 
   const handleSuggestionClick = (suggestion) => {
+    console.log('UserNavLinks handleSuggestionClick called:', suggestion);
     setSearchTerm(suggestion.displayText);
     setShowSuggestions(false);
     

@@ -84,6 +84,7 @@ const SearchSuggestions = ({
   }, [suggestions]);
 
   const handleSuggestionClick = (suggestion) => {
+    console.log('Suggestion clicked:', suggestion);
     onSuggestionClick(suggestion);
     setSuggestions([]);
   };
