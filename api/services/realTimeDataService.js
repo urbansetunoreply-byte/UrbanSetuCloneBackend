@@ -71,15 +71,14 @@ class RealTimeDataService {
 
   // 2. Location Intelligence
   async getLocationIntelligence(location) {
-    // Build a cache key that differentiates properties within the same city by coordinates (rounded ~100m)
-    const latKey = (typeof location.latitude === 'number' && !isNaN(location.latitude)) ? location.latitude.toFixed(3) : 'nil';
-    const lngKey = (typeof location.longitude === 'number' && !isNaN(location.longitude)) ? location.longitude.toFixed(3) : 'nil';
+    // Ensure we have coordinates first, then compose cache key
+    const coords = await this.resolveCoordinates(location);
+    const latKey = (typeof coords.lat === 'number' && !isNaN(coords.lat)) ? coords.lat.toFixed(3) : 'nil';
+    const lngKey = (typeof coords.lng === 'number' && !isNaN(coords.lng)) ? coords.lng.toFixed(3) : 'nil';
     const cacheKey = `location_intel_${location.city || 'NA'}_${location.district || 'NA'}_${latKey}_${lngKey}`;
-    
+
     return await this.getCachedData(cacheKey, async () => {
       try {
-        // Ensure we have coordinates; if missing, resolve via geocoding
-        const coords = await this.resolveCoordinates(location);
         const locWithCoords = { ...location, latitude: coords.lat, longitude: coords.lng };
 
         const [amenities, crimeData, schoolData, transportData] = await Promise.all([
