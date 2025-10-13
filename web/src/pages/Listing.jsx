@@ -67,6 +67,10 @@ export default function Listing() {
   const [showNearbyPlaces, setShowNearbyPlaces] = useState(false);
   const [showPriceAnalysis, setShowPriceAnalysis] = useState(false);
   const [showSmartPriceInsights, setShowSmartPriceInsights] = useState(false);
+  // Real-time analytics data
+  const [rtAnalytics, setRtAnalytics] = useState(null);
+  const [rtAnalyticsLoading, setRtAnalyticsLoading] = useState(false);
+  const [rtAnalyticsError, setRtAnalyticsError] = useState(null);
   const [showContactInfo, setShowContactInfo] = useState(false);
   const [viewCount, setViewCount] = useState(0);
   const [similarProperties, setSimilarProperties] = useState([]);
@@ -695,6 +699,32 @@ export default function Listing() {
   // Function to get nearby places with static data based on property
   const getNearbyPlaces = () => {
     if (!listing) return [];
+
+    // Prefer real-time analytics if available
+    if (rtAnalytics && rtAnalytics.locationData) {
+      const { locationData } = rtAnalytics;
+      const amenities = locationData.amenities || {};
+      const transport = locationData.transportData || { stations: [] };
+
+      const mk = (name, icon, arrOrCount) => ({
+        name,
+        icon,
+        distance: arrOrCount && Array.isArray(arrOrCount) && arrOrCount.length > 0 && typeof arrOrCount[0].distance === 'number'
+          ? `${Math.max(0.1, Math.min(...arrOrCount.map(i => i.distance))).toFixed(1)} km`
+          : '—',
+        count: Array.isArray(arrOrCount) ? `${arrOrCount.length}` : `${arrOrCount || 0}`,
+        category: name.toLowerCase()
+      });
+
+      return [
+        mk('Restaurants', <FaUtensils />, amenities.restaurant || amenities.restaurants || []),
+        mk('Hospitals', <FaHospital />, amenities.hospital || amenities.hospitals || []),
+        mk('Schools', <FaSchool />, amenities.school || amenities.schools || []),
+        mk('Shopping Malls', <FaShoppingCart />, amenities.shopping_mall || amenities.mall || amenities.malls || []),
+        mk('Airport', <FaPlane />, amenities.airport || []) ,
+        mk('Transit Stations', <FaPlane />, transport.stations || [])
+      ].filter(item => item.count !== '0');
+    }
     
     // Use property ID hash to generate consistent values
     const propertyId = listing._id;
@@ -800,6 +830,37 @@ export default function Listing() {
     };
     fetchNeighborhood();
   }, [params.listingId]);
+
+  // Fetch real-time analytics (market, location, weather, investment)
+  useEffect(() => {
+    const fetchRtAnalytics = async () => {
+      if (!listing || !listing._id) return;
+      try {
+        setRtAnalyticsLoading(true);
+        setRtAnalyticsError(null);
+        const res = await fetch(`${API_BASE_URL}/api/analytics/property/${listing._id}/analytics`, {
+          method: 'GET',
+          credentials: 'include'
+        });
+        if (!res.ok) throw new Error('Failed to load analytics');
+        const json = await res.json();
+        const data = json.data || json;
+        setRtAnalytics(data);
+
+        // Opportunistically enrich existing neighborhood data for price analysis and insights UI
+        setNeighborhood(prev => ({
+          ...(prev || {}),
+          averagePriceNearby: data?.marketData?.averagePrice || (prev && prev.averagePriceNearby) || undefined,
+          nearbyAmenities: prev && prev.nearbyAmenities ? prev.nearbyAmenities : Object.keys(data?.locationData?.amenities || {})
+        }));
+      } catch (err) {
+        setRtAnalyticsError(err.message || 'Analytics error');
+      } finally {
+        setRtAnalyticsLoading(false);
+      }
+    };
+    fetchRtAnalytics();
+  }, [listing]);
 
   // Reset view tracking when listing ID changes
   useEffect(() => {
