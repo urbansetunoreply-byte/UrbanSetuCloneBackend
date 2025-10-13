@@ -5503,10 +5503,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                 {!isUpcoming ? (
                   <div className="flex flex-col gap-2">
                     <button
-                      className="text-gray-400 hover:text-red-700 text-xl"
+                      className="text-red-500 hover:text-red-700 text-xl"
                       onClick={handlePermanentDelete}
                       title="Delete outdated appointment from table"
-                      style={{ opacity: 0.7 }}
                     >
                       <FaTrash size={18} />
                     </button>
@@ -5553,18 +5552,17 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         onClick={handleUserCancel}
                         title="Cancel Appointment (Seller)"
                       >
-                        <FaTrash />
+                        <FaBan />
                       </button>
                     )}
-                    {/* Seller faded delete after cancellation, rejection, admin deletion, or deletedByAdmin */}
+                    {/* Seller red delete after cancellation, rejection, admin deletion, or deletedByAdmin */}
                     {isSeller && (appt.status === 'cancelledBySeller' || appt.status === 'cancelledByBuyer' || appt.status === 'cancelledByAdmin' || appt.status === 'rejected' || appt.status === 'deletedByAdmin') && (
                       <button
-                        className="text-gray-400 hover:text-red-700 text-xl"
+                        className="text-red-500 hover:text-red-700 text-xl"
                         onClick={handlePermanentDelete}
                         title="Remove from table"
-                        style={{ opacity: 0.5 }}
                       >
-                        <FaTrash className="group-hover:text-red-900 group-hover:scale-125 group-hover:animate-shake transition-all duration-200" />
+                        <FaTrash />
                       </button>
                     )}
                     {/* Buyer cancel button: allow for both pending and accepted (approved) */}
@@ -5574,18 +5572,17 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         onClick={handleUserCancel}
                         title="Cancel Appointment (Buyer)"
                       >
-                        <FaTrash />
+                        <FaBan />
                       </button>
                     )}
-                    {/* Buyer faded delete after cancellation, seller cancellation, admin deletion, rejected, or deletedByAdmin */}
+                    {/* Buyer red delete after cancellation, seller cancellation, admin deletion, rejected, or deletedByAdmin */}
                     {isBuyer && (appt.status === 'cancelledByBuyer' || appt.status === 'cancelledBySeller' || appt.status === 'cancelledByAdmin' || appt.status === 'deletedByAdmin' || appt.status === 'rejected') && (
                       <button
-                        className="text-gray-400 hover:text-red-700 text-xl"
+                        className="text-red-500 hover:text-red-700 text-xl"
                         onClick={handlePermanentDelete}
                         title="Remove from table"
-                        style={{ opacity: 0.5 }}
                       >
-                        <FaTrash className="group-hover:text-red-900 group-hover:scale-125 group-hover:animate-shake transition-all duration-200" />
+                        <FaTrash />
                       </button>
                     )}
                     {/* Admin cancel button */}
