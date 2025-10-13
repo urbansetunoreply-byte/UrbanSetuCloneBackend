@@ -34,9 +34,9 @@ export const sendAccountDeletionReminders = async () => {
           continue;
         }
         
-        // Find the active revocation token for this account
+        // Find the active revocation token for this SPECIFIC account
         const revocationRecord = await AccountRevocation.findOne({
-          email: account.email,
+          accountId: account.accountId,  // Match by account ID, not just email
           isUsed: false,
           expiresAt: { $gt: now }
         });

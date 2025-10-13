@@ -59,9 +59,10 @@ export const verifyRevocationToken = async (req, res, next) => {
       return next(errorHandler(404, 'Invalid or expired token'));
     }
 
-    // Check if the account has been purged (permanently deleted)
+    // Check if the SPECIFIC account has been purged (permanently deleted)
+    // This allows restoration when there are multiple accounts with same email
     const deletedAccount = await DeletedAccount.findOne({
-      email: revocationRecord.email,
+      accountId: revocationRecord.accountId,  // Check specific account ID, not just email
       purgedAt: { $exists: true, $ne: null }
     });
 
@@ -111,9 +112,10 @@ export const restoreAccount = async (req, res, next) => {
       return next(errorHandler(404, 'Invalid or expired token'));
     }
 
-    // Check if the account has been purged (permanently deleted)
+    // Check if the SPECIFIC account has been purged (permanently deleted)
+    // This allows restoration when there are multiple accounts with same email
     const deletedAccount = await DeletedAccount.findOne({
-      email: revocationRecord.email,
+      accountId: revocationRecord.accountId,  // Check specific account ID, not just email
       purgedAt: { $exists: true, $ne: null }
     });
 
@@ -146,8 +148,8 @@ export const restoreAccount = async (req, res, next) => {
     revocationRecord.restoredAt = new Date();
     await revocationRecord.save();
 
-    // Remove from deleted accounts
-    await DeletedAccount.findOneAndDelete({ email: revocationRecord.email });
+    // Remove the SPECIFIC deleted account record (not all accounts with same email)
+    await DeletedAccount.findOneAndDelete({ accountId: revocationRecord.accountId });
 
     // Send activation email
     try {
