@@ -83,8 +83,10 @@ const SearchSuggestions = ({
     setSelectedIndex(-1);
   }, [suggestions]);
 
-  const handleSuggestionClick = (suggestion) => {
-    console.log('Suggestion clicked:', suggestion);
+  const handleSuggestionClick = (suggestion, event) => {
+    // Prevent the blur event from hiding suggestions
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
     onSuggestionClick(suggestion);
     setSuggestions([]);
   };
@@ -119,7 +121,8 @@ const SearchSuggestions = ({
           {suggestions.map((suggestion, index) => (
             <div
               key={suggestion.id}
-              onClick={() => handleSuggestionClick(suggestion)}
+              onClick={(event) => handleSuggestionClick(suggestion, event)}
+              onMouseDown={(event) => event.preventDefault()}
               className={`px-4 py-3 cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors ${
                 index === selectedIndex ? 'bg-blue-50 border-blue-200' : ''
               }`}
