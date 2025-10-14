@@ -398,8 +398,16 @@ router.get('/admin/audit-logs', verifyToken, async (req, res, next) => {
       return res.status(403).json({ success: false, message: 'Access denied' });
     }
     
-    const { page = 1, limit = 50, action, isSuspicious, userId } = req.query;
-    const skip = (page - 1) * limit;
+    const { 
+      page = 1, 
+      limit = 50, 
+      action, 
+      isSuspicious, 
+      userId, 
+      search = '', 
+      dateRange = 'all', 
+      role = 'all' 
+    } = req.query;
     
     let filter = {};
     if (action) filter.action = action;
@@ -415,18 +423,79 @@ router.get('/admin/audit-logs', verifyToken, async (req, res, next) => {
       }
     }
     
-    const logs = await SessionAuditLog.find(filter)
+    // Date range filter
+    if (dateRange !== 'all') {
+      const now = new Date();
+      let cutoffDate;
+      
+      switch (dateRange) {
+        case '1h':
+          cutoffDate = new Date(now.getTime() - 60 * 60 * 1000);
+          break;
+        case '24h':
+          cutoffDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+          break;
+        case '7d':
+          cutoffDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case '30d':
+          cutoffDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        default:
+          cutoffDate = null;
+      }
+      
+      if (cutoffDate) {
+        filter.timestamp = { $gte: cutoffDate };
+      }
+    }
+    
+    // Get logs with population
+    let logs = await SessionAuditLog.find(filter)
       .populate('userId', 'username email role')
       .populate('performedBy', 'username email role')
-      .sort({ timestamp: -1 })
-      .skip(skip)
-      .limit(parseInt(limit));
+      .sort({ timestamp: -1 });
     
-    const total = await SessionAuditLog.countDocuments(filter);
+    // Apply search filter after population
+    if (search) {
+      const searchLower = search.toLowerCase();
+      logs = logs.filter(log => {
+        const user = log.userId;
+        const performedBy = log.performedBy;
+        return (
+          (user && (
+            user.username?.toLowerCase().includes(searchLower) ||
+            user.email?.toLowerCase().includes(searchLower)
+          )) ||
+          (performedBy && (
+            performedBy.username?.toLowerCase().includes(searchLower) ||
+            performedBy.email?.toLowerCase().includes(searchLower)
+          )) ||
+          log.device?.toLowerCase().includes(searchLower) ||
+          log.ip?.includes(search) ||
+          log.location?.toLowerCase().includes(searchLower) ||
+          log.details?.toLowerCase().includes(searchLower) ||
+          log.action?.toLowerCase().includes(searchLower)
+        );
+      });
+    }
+    
+    // Apply role filter after population
+    if (role !== 'all') {
+      logs = logs.filter(log => {
+        const user = log.userId;
+        return user && user.role === role;
+      });
+    }
+    
+    // Apply pagination
+    const total = logs.length;
+    const skip = (page - 1) * limit;
+    const paginatedLogs = logs.slice(skip, skip + parseInt(limit));
     
     res.json({
       success: true,
-      logs,
+      logs: paginatedLogs,
       total,
       page: parseInt(page),
       limit: parseInt(limit)
