@@ -37,6 +37,16 @@ function registerSessionRoom() {
   }
 }
 
+function registerUserRoom() {
+  try {
+    const match = document.cookie.split('; ').find(row => row.startsWith('_id='));
+    const userId = match ? decodeURIComponent(match.split('=')[1]) : null;
+    if (userId && socket && socket.connected) {
+      socket.emit('registerUser', { userId });
+    }
+  } catch (_) {}
+}
+
 // Periodically ensure we're joined to the current session room (covers cases where cookie appears after connect)
 let sessionRegisterInterval = null;
 function ensureSessionRoomRegistration() {
@@ -50,6 +60,7 @@ function ensureSessionRoomRegistration() {
 socket.on('connect', () => {
   console.log('[Socket] Connected to server');
   registerSessionRoom();
+  registerUserRoom();
   ensureSessionRoomRegistration();
 });
 

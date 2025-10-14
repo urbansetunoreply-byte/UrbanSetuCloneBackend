@@ -262,6 +262,13 @@ io.on('connection', (socket) => {
       }
     }
   } catch (_) {}
+
+  // Allow clients to explicitly register their user room without JWT in socket auth
+  socket.on('registerUser', ({ userId }) => {
+    if (userId) {
+      socket.join(userId.toString());
+    }
+  });
   // Broadcast forced logout to a specific session
   socket.on('forceLogoutSession', ({ userId, sessionId }) => {
     // Server-originated event: admins will not emit this; backend emits to room directly below
