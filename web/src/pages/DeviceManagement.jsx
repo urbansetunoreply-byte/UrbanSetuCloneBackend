@@ -121,7 +121,7 @@ const DeviceManagement = () => {
   };
 
   const revokeAllSessions = async () => {
-    if (!window.confirm('Are you sure you want to log out all devices? This will log you out of all sessions except the current one.')) {
+    if (!window.confirm('Are you sure you want to log out all other devices?')) {
       return;
     }
 
@@ -141,12 +141,8 @@ const DeviceManagement = () => {
       
       if (data.success) {
         toast.success(data.message);
-        // After revoke-all, backend emits forceLogout to all user's sessions; ensure local logout too
-        try { localStorage.removeItem('accessToken'); } catch (_) {}
-        document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
-        document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
-        document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
-        window.location.href = '/sign-in?error=all_sessions_revoked';
+        // Stay on current device; just refresh sessions
+        fetchSessions();
       } else {
         toast.error(data.message || 'Failed to revoke sessions');
       }

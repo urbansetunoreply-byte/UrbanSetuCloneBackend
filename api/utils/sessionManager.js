@@ -415,6 +415,31 @@ export const revokeAllUserSessionsFromDB = async (userId) => {
     return sessionCount;
 };
 
+// Revoke all other user sessions except the provided sessionId
+export const revokeAllOtherUserSessionsFromDB = async (userId, keepSessionId) => {
+    const user = await User.findById(userId);
+    if (!user || !user.activeSessions) return 0;
+
+    const sessionsToRemove = user.activeSessions.filter(s => s.sessionId !== keepSessionId);
+    const sessionIdsToRemove = sessionsToRemove.map(s => s.sessionId);
+
+    if (sessionIdsToRemove.length === 0) return 0;
+
+    // Pull all except keepSessionId
+    await User.findByIdAndUpdate(userId, {
+        $pull: {
+            activeSessions: {
+                sessionId: { $in: sessionIdsToRemove }
+            }
+        }
+    });
+
+    // Remove from active map
+    sessionIdsToRemove.forEach(id => revokeSession(id));
+
+    return sessionIdsToRemove.length;
+};
+
 // Update session activity in database
 export const updateSessionActivityInDB = async (userId, sessionId) => {
     await User.findOneAndUpdate(

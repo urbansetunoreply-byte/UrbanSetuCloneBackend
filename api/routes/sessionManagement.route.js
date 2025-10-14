@@ -4,6 +4,7 @@ import {
   getUserActiveSessions, 
   revokeSessionFromDB, 
   revokeAllUserSessionsFromDB,
+  revokeAllOtherUserSessionsFromDB,
   logSessionAction,
   updateSessionActivityInDB,
   getDeviceInfo,
@@ -88,18 +89,20 @@ router.post('/revoke-session', verifyToken, async (req, res, next) => {
   }
 });
 
-// Revoke all sessions
+// Revoke all other sessions (keep current)
 router.post('/revoke-all-sessions', verifyToken, async (req, res, next) => {
   try {
     const userId = req.user._id;
-    const sessionCount = await revokeAllUserSessionsFromDB(userId);
+    const currentSessionId = req.headers['x-session-id'] || req.cookies.session_id;
+    const sessionCount = await revokeAllOtherUserSessionsFromDB(userId, currentSessionId);
     
-  // Notify all (except possibly current) sessions to logout immediately
+  // Notify all other sessions to logout immediately
   try {
     const io = req.app.get('io');
     if (io) {
       // Broadcast to all of user's session rooms: we don't track rooms list, so emit by user room
       io.to(userId.toString()).emit('forceLogout', { reason: 'All sessions revoked by user' });
+      // Also target-specific sessionsUpdated for UI refresh
       io.to(userId.toString()).emit('sessionsUpdated');
       io.emit('adminSessionsUpdated');
     }
@@ -109,16 +112,16 @@ router.post('/revoke-all-sessions', verifyToken, async (req, res, next) => {
     await logSessionAction(
       userId, 
       'logout', 
-      'all', 
+      'others', 
       req.ip, 
       getDeviceInfo(req.get('User-Agent')),
       getLocationFromIP(req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip),
-      `User revoked all ${sessionCount} sessions`
+      `User revoked ${sessionCount} other session(s)`
     );
     
     res.json({ 
       success: true, 
-      message: `All ${sessionCount} sessions revoked successfully` 
+      message: `Logged out ${sessionCount} other device(s)` 
     });
   } catch (error) {
     next(error);
