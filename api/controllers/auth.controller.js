@@ -355,8 +355,9 @@ export const SignIn=async(req,res,next)=>{
         // Expose session id for client (non-httpOnly so client can identify current session)
         res.cookie('session_id', session.sessionId, {
             httpOnly: false,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            // Use Secure + SameSite=None for cross-origin sockets and web app
+            secure: true,
+            sameSite: 'none',
             path: '/'
         });
         
@@ -409,8 +410,8 @@ export const Google=async (req,res,next)=>{
             // Expose session id
             res.cookie('session_id', session.sessionId, {
                 httpOnly: false,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax',
+                secure: true,
+                sameSite: 'none',
                 path: '/'
             });
 
@@ -479,13 +480,13 @@ export const Google=async (req,res,next)=>{
             
             // Set secure cookies
             setSecureCookies(res, accessToken, refreshToken);
-            // Expose session id
-            res.cookie('session_id', session.sessionId, {
-                httpOnly: false,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax',
-                path: '/'
-            });
+        // Expose session id for cross-origin
+        res.cookie('session_id', session.sessionId, {
+            httpOnly: false,
+            secure: true,
+            sameSite: 'none',
+            path: '/'
+        });
             
             // Send welcome email for new Google sign-in users
             try {
