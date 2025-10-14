@@ -59,11 +59,12 @@ router.post('/revoke-session', verifyToken, async (req, res, next) => {
     // Revoke session
     await revokeSessionFromDB(userId, sessionId);
     
-  // Notify target session via socket to logout immediately
+  // Notify target session via socket to logout immediately; also user room with targeted sessionId as fallback
   try {
     const io = req.app.get('io');
     if (io) {
       io.to(`session_${sessionId}`).emit('forceLogout', { reason: 'Session revoked by user' });
+      io.to(userId.toString()).emit('forceLogoutSession', { sessionId, reason: 'Session revoked by user' });
     }
   } catch (_) {}
 
