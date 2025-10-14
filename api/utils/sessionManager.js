@@ -259,13 +259,15 @@ export const enforceSessionLimits = async (userId, userRole) => {
     
     if (!user || !user.activeSessions) return 0;
     
-    if (user.activeSessions.length >= limit) {
-        // Sort by lastActive and remove oldest sessions
+    // Only enforce when exceeding the limit (not when equal)
+    if (user.activeSessions.length > limit) {
+        // Sort by lastActive ascending and remove the oldest sessions beyond the limit
         const sortedSessions = user.activeSessions.sort((a, b) => 
             new Date(a.lastActive) - new Date(b.lastActive)
         );
         
-        const sessionsToRemove = sortedSessions.slice(0, user.activeSessions.length - limit + 1);
+        const countToRemove = user.activeSessions.length - limit;
+        const sessionsToRemove = sortedSessions.slice(0, countToRemove);
         
         // Remove from database
         const sessionIdsToRemove = sessionsToRemove.map(s => s.sessionId);
