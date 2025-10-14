@@ -15,6 +15,7 @@ const SessionAuditLogs = () => {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [autoRefresh, setAutoRefresh] = useState(false);
   const autoRefreshRef = useRef(null);
+  const [isClearing, setIsClearing] = useState(false);
   const [filters, setFilters] = useState({
     action: '',
     isSuspicious: '',
@@ -166,6 +167,7 @@ const SessionAuditLogs = () => {
                       const confirmed = window.confirm('This will permanently delete all session audit logs. Continue?');
                       if (!confirmed) return;
                       try {
+                        setIsClearing(true);
                         const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/audit-logs`, {
                           method: 'DELETE',
                           credentials: 'include',
@@ -182,15 +184,18 @@ const SessionAuditLogs = () => {
                       } catch (err) {
                         console.error('Failed to clear audit logs', err);
                         toast.error(err.message || 'Failed to clear audit logs');
+                      } finally {
+                        setIsClearing(false);
                       }
                     }}
-                    className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-red-300 text-red-700 shadow-sm text-sm leading-4 font-medium rounded-md bg-white hover:bg-red-50"
+                    className={`flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-red-300 text-red-700 shadow-sm text-sm leading-4 font-medium rounded-md bg-white hover:bg-red-50 ${isClearing ? 'opacity-50 cursor-not-allowed' : ''}`}
                     title="Clear all audit logs"
+                    disabled={isClearing}
                   >
                     <svg className="h-4 w-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2m-9 0h10" />
                     </svg>
-                    <span className="hidden sm:inline">Clear All Logs</span>
+                    <span className="hidden sm:inline">{isClearing ? 'Clearing...' : 'Clear All Logs'}</span>
                   </button>
                 )}
               </div>
