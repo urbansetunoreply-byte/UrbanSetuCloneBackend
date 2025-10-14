@@ -359,6 +359,21 @@ function AppRoutes({ bootstrapped }) {
   // Socket event listener for account suspension
   useEffect(() => {
     if (!currentUser) return; // Only run if user is logged in
+    // Ensure this client is joined to user and session rooms for targeted realtime actions
+    const registerRealtimeRooms = () => {
+      try {
+        if (socket && socket.connected) {
+          socket.emit('registerUser', { userId: currentUser._id });
+          const match = document.cookie.split('; ').find(row => row.startsWith('session_id='));
+          const sid = match ? decodeURIComponent(match.split('=')[1]) : null;
+          if (sid) {
+            socket.emit('registerSession', { sessionId: sid });
+          }
+        }
+      } catch (_) {}
+    };
+    registerRealtimeRooms();
+    const regInterval = setInterval(registerRealtimeRooms, 15000);
     
     const handleAccountSuspended = (data) => {
       // Check if the suspended account is the current user
@@ -431,6 +446,7 @@ function AppRoutes({ bootstrapped }) {
     socket.on('admin_update', handleAdminUpdate);
     
     return () => {
+      clearInterval(regInterval);
       socket.off('account_suspended', handleAccountSuspended);
       socket.off('force_signout', handleForceSignout);
       socket.off('user_update', handleUserUpdate);
