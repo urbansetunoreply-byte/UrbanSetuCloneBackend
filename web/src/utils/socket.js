@@ -37,10 +37,20 @@ function registerSessionRoom() {
   }
 }
 
+// Periodically ensure we're joined to the current session room (covers cases where cookie appears after connect)
+let sessionRegisterInterval = null;
+function ensureSessionRoomRegistration() {
+  if (sessionRegisterInterval) return;
+  sessionRegisterInterval = setInterval(() => {
+    try { registerSessionRoom(); } catch (_) {}
+  }, 15000); // every 15s
+}
+
 // Add socket event listeners for debugging
 socket.on('connect', () => {
   console.log('[Socket] Connected to server');
   registerSessionRoom();
+  ensureSessionRoomRegistration();
 });
 
 socket.on('disconnect', () => {
