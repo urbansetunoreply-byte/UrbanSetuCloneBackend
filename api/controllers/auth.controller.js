@@ -243,7 +243,7 @@ export const SignIn=async(req,res,next)=>{
             if (del) {
                 const policy = del.policy || {};
                 if (policy.banType === 'ban') {
-                    return next(errorHandler(403, "This account is temporarily suspended. Please reach out to support for help.."));
+                    return next(errorHandler(403, "This account is temporarily suspended. Please reach out to support for help."));
                 }
                 if (!del.purgedAt && typeof policy.allowResignupAfterDays === 'number' && policy.allowResignupAfterDays > 0 && del.deletedAt) {
                     const allowAfter = new Date(del.deletedAt.getTime() + policy.allowResignupAfterDays * 24 * 60 * 60 * 1000);
@@ -253,7 +253,7 @@ export const SignIn=async(req,res,next)=>{
                         const hours = Math.floor((msLeft % (24*60*60*1000)) / (60*60*1000));
                         const minutes = Math.floor((msLeft % (60*60*1000)) / (60*1000));
                         const waitMsg = days > 0 ? `${days} day(s)` : (hours > 0 ? `${hours} hour(s)` : `${minutes} minute(s)`);
-                        return next(errorHandler(403, "This account is temporarily suspended. Please reach out to support for help..."));
+                        return next(errorHandler(403, "This account is temporarily suspended. Please reach out to support for help."));
                     }
                 }
             }
