@@ -26,6 +26,20 @@ const SessionManagement = () => {
     return () => { if (autoRefreshRef.current) clearInterval(autoRefreshRef.current); };
   }, [filterRole, currentPage]);
 
+  // Refresh immediately when backend broadcasts updates
+  useEffect(() => {
+    const handler = () => fetchSessions();
+    try {
+      const { socket } = require('../utils/socket');
+      socket.on('adminSessionsUpdated', handler);
+      socket.on('sessionsUpdated', handler);
+      return () => {
+        socket.off('adminSessionsUpdated', handler);
+        socket.off('sessionsUpdated', handler);
+      };
+    } catch (_) {}
+  }, [filterRole, currentPage]);
+
   const fetchSessions = async () => {
     try {
       const params = new URLSearchParams({

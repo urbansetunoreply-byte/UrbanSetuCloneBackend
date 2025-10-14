@@ -65,6 +65,9 @@ router.post('/revoke-session', verifyToken, async (req, res, next) => {
     if (io) {
       io.to(`session_${sessionId}`).emit('forceLogout', { reason: 'Session revoked by user' });
       io.to(userId.toString()).emit('forceLogoutSession', { sessionId, reason: 'Session revoked by user' });
+      // Let clients refresh their session lists
+      io.to(userId.toString()).emit('sessionsUpdated');
+      io.emit('adminSessionsUpdated');
     }
   } catch (_) {}
 
@@ -97,6 +100,8 @@ router.post('/revoke-all-sessions', verifyToken, async (req, res, next) => {
     if (io) {
       // Broadcast to all of user's session rooms: we don't track rooms list, so emit by user room
       io.to(userId.toString()).emit('forceLogout', { reason: 'All sessions revoked by user' });
+      io.to(userId.toString()).emit('sessionsUpdated');
+      io.emit('adminSessionsUpdated');
     }
   } catch (_) {}
 
@@ -207,6 +212,8 @@ router.post('/admin/force-logout', verifyToken, async (req, res, next) => {
     if (io) {
       io.to(`session_${sessionId}`).emit('forceLogout', { reason });
       io.to(userId.toString()).emit('forceLogoutSession', { sessionId, reason });
+      io.to(userId.toString()).emit('sessionsUpdated');
+      io.emit('adminSessionsUpdated');
     }
   } catch (_) {}
 
@@ -263,6 +270,8 @@ router.post('/admin/force-logout-all', verifyToken, async (req, res, next) => {
     const io = req.app.get('io');
     if (io) {
       io.to(userId.toString()).emit('forceLogout', { reason });
+      io.to(userId.toString()).emit('sessionsUpdated');
+      io.emit('adminSessionsUpdated');
     }
   } catch (_) {}
 

@@ -22,6 +22,16 @@ const DeviceManagement = () => {
     };
   }, []);
 
+  // Listen for session list updates from server to refresh immediately
+  useEffect(() => {
+    const handler = () => fetchSessions();
+    try {
+      const { socket } = require('../utils/socket');
+      socket.on('sessionsUpdated', handler);
+      return () => socket.off('sessionsUpdated', handler);
+    } catch (_) {}
+  }, []);
+
   const fetchSessions = async () => {
     try {
       const controller = new AbortController();
