@@ -135,21 +135,34 @@ router.get('/admin/all-sessions', verifyToken, async (req, res, next) => {
       return res.status(403).json({ success: false, message: 'Access denied' });
     }
     
-    const { page = 1, limit = 20, role = 'all' } = req.query;
-    const skip = (page - 1) * limit;
+    const { 
+      page = 1, 
+      limit = 20, 
+      role = 'all', 
+      search = '', 
+      device = 'all', 
+      location = 'all', 
+      dateRange = 'all' 
+    } = req.query;
     
     let userFilter = {};
     if (role !== 'all') {
       userFilter.role = role;
     }
     
-    // Get users with their active sessions
-    const users = await User.find(userFilter)
-      .select('username email role activeSessions')
-      .skip(skip)
-      .limit(parseInt(limit));
+    // Add search filter for username/email
+    if (search) {
+      userFilter.$or = [
+        { username: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
     
-    const sessionsWithUserInfo = [];
+    // Get all users first (we'll filter sessions after)
+    const users = await User.find(userFilter)
+      .select('username email role activeSessions');
+    
+    let sessionsWithUserInfo = [];
     users.forEach(user => {
       if (user.activeSessions && user.activeSessions.length > 0) {
         user.activeSessions.forEach(session => {
@@ -169,10 +182,80 @@ router.get('/admin/all-sessions', verifyToken, async (req, res, next) => {
       }
     });
     
+    // Apply session-level filters
+    if (search) {
+      const searchLower = search.toLowerCase();
+      sessionsWithUserInfo = sessionsWithUserInfo.filter(session => 
+        session.username.toLowerCase().includes(searchLower) ||
+        session.email.toLowerCase().includes(searchLower) ||
+        session.device.toLowerCase().includes(searchLower) ||
+        session.ip.includes(search) ||
+        session.location.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    if (device !== 'all') {
+      sessionsWithUserInfo = sessionsWithUserInfo.filter(session => {
+        const deviceLower = session.device.toLowerCase();
+        switch (device) {
+          case 'mobile':
+            return deviceLower.includes('mobile') || deviceLower.includes('android') || deviceLower.includes('iphone');
+          case 'desktop':
+            return deviceLower.includes('windows') || deviceLower.includes('mac') || deviceLower.includes('linux');
+          case 'tablet':
+            return deviceLower.includes('tablet') || deviceLower.includes('ipad');
+          default:
+            return true;
+        }
+      });
+    }
+    
+    if (location !== 'all') {
+      sessionsWithUserInfo = sessionsWithUserInfo.filter(session => 
+        session.location && session.location.toLowerCase().includes(location.toLowerCase())
+      );
+    }
+    
+    if (dateRange !== 'all') {
+      const now = new Date();
+      let cutoffDate;
+      
+      switch (dateRange) {
+        case '1h':
+          cutoffDate = new Date(now.getTime() - 60 * 60 * 1000);
+          break;
+        case '24h':
+          cutoffDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+          break;
+        case '7d':
+          cutoffDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case '30d':
+          cutoffDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        default:
+          cutoffDate = null;
+      }
+      
+      if (cutoffDate) {
+        sessionsWithUserInfo = sessionsWithUserInfo.filter(session => 
+          new Date(session.lastActive) >= cutoffDate
+        );
+      }
+    }
+    
+    // Sort by last active (most recent first)
+    sessionsWithUserInfo.sort((a, b) => new Date(b.lastActive) - new Date(a.lastActive));
+    
+    // Apply pagination
+    const total = sessionsWithUserInfo.length;
+    const skip = (page - 1) * limit;
+    const paginatedSessions = sessionsWithUserInfo.slice(skip, skip + parseInt(limit));
+    
     res.json({
       success: true,
-      sessions: sessionsWithUserInfo,
-      total: sessionsWithUserInfo.length,
+      sessions: paginatedSessions,
+      total: total,
       page: parseInt(page),
       limit: parseInt(limit)
     });

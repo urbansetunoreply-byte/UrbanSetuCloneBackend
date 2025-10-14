@@ -15,16 +15,45 @@ const SessionManagement = () => {
   const [autoRefresh, setAutoRefresh] = useState(false);
   const autoRefreshRef = useRef(null);
   const [filterRole, setFilterRole] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterDevice, setFilterDevice] = useState('all');
+  const [filterLocation, setFilterLocation] = useState('all');
+  const [filterDateRange, setFilterDateRange] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalSessions, setTotalSessions] = useState(0);
   const [forceLogoutReason, setForceLogoutReason] = useState('');
   const [showForceLogoutModal, setShowForceLogoutModal] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [searchTimeout, setSearchTimeout] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Debounced search effect
+  useEffect(() => {
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+    
+    if (searchQuery) {
+      setIsSearching(true);
+    }
+    
+    const timeout = setTimeout(() => {
+      setCurrentPage(1); // Reset to first page when searching
+      fetchSessions().finally(() => setIsSearching(false));
+    }, 300); // 300ms debounce
+    
+    setSearchTimeout(timeout);
+    
+    return () => {
+      if (timeout) clearTimeout(timeout);
+    };
+  }, [searchQuery]);
 
   useEffect(() => {
     fetchSessions();
     return () => { if (autoRefreshRef.current) clearInterval(autoRefreshRef.current); };
-  }, [filterRole, currentPage]);
+  }, [filterRole, filterDevice, filterLocation, filterDateRange, currentPage]);
 
   // Refresh immediately when backend broadcasts updates
   useEffect(() => {
@@ -45,7 +74,11 @@ const SessionManagement = () => {
       const params = new URLSearchParams({
         page: currentPage,
         limit: 20,
-        role: filterRole
+        role: filterRole,
+        search: searchQuery,
+        device: filterDevice,
+        location: filterLocation,
+        dateRange: filterDateRange
       });
 
       const controller = new AbortController();
@@ -178,6 +211,32 @@ const SessionManagement = () => {
     setShowForceLogoutModal(true);
   };
 
+  const resetFilters = () => {
+    setFilterRole('all');
+    setSearchQuery('');
+    setFilterDevice('all');
+    setFilterLocation('all');
+    setFilterDateRange('all');
+    setCurrentPage(1);
+  };
+
+  const getUniqueValues = (sessions, key) => {
+    const values = sessions.map(session => session[key]).filter(Boolean);
+    return [...new Set(values)].sort();
+  };
+
+  const getActiveFiltersCount = () => {
+    let count = 0;
+    if (filterRole !== 'all') count++;
+    if (searchQuery) count++;
+    if (filterDevice !== 'all') count++;
+    if (filterLocation !== 'all') count++;
+    if (filterDateRange !== 'all') count++;
+    return count;
+  };
+
+  const hasActiveFilters = getActiveFiltersCount() > 0;
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleString();
   };
@@ -268,30 +327,153 @@ const SessionManagement = () => {
           </div>
         </div>
 
-        {/* Filters */}
+        {/* Search and Filters */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-          <div className="flex items-center space-x-4">
-            <div>
-              <label htmlFor="role-filter" className="block text-sm font-medium text-gray-700">
-                Filter by Role
-              </label>
-              <select
-                id="role-filter"
-                value={filterRole}
-                onChange={(e) => setFilterRole(e.target.value)}
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-              >
-                <option value="all">All Roles</option>
-                <option value="user">Users</option>
-                <option value="admin">Admins</option>
-                <option value="rootadmin">Root Admins</option>
-              </select>
-            </div>
-            <div className="flex-1"></div>
-            <div className="text-sm text-gray-500">
-              Page {currentPage} • {sessions.length} sessions shown
+          {/* Search Bar */}
+          <div className="mb-4">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                {isSearching ? (
+                  <svg className="animate-spin h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                ) : (
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                )}
+              </div>
+              <input
+                type="text"
+                placeholder="Search by username, email, device, IP, or location..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                >
+                  <svg className="h-4 w-4 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
             </div>
           </div>
+
+          {/* Filter Toggle */}
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`inline-flex items-center px-3 py-2 border shadow-sm text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+                hasActiveFilters 
+                  ? 'border-blue-300 text-blue-700 bg-blue-50 hover:bg-blue-100' 
+                  : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+              }`}
+            >
+              <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
+              </svg>
+              {showFilters ? 'Hide Filters' : 'Show Filters'}
+              {hasActiveFilters && (
+                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {getActiveFiltersCount()}
+                </span>
+              )}
+            </button>
+            <div className="flex items-center space-x-4">
+              {hasActiveFilters && (
+                <button
+                  onClick={resetFilters}
+                  className="text-sm text-red-600 hover:text-red-700 font-medium"
+                >
+                  Clear All Filters
+                </button>
+              )}
+              <div className="text-sm text-gray-500">
+                Page {currentPage} • {sessions.length} sessions shown
+                {totalSessions > 0 && ` of ${totalSessions} total`}
+              </div>
+            </div>
+          </div>
+
+          {/* Advanced Filters */}
+          {showFilters && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
+              {/* Role Filter */}
+              <div>
+                <label htmlFor="role-filter" className="block text-sm font-medium text-gray-700">
+                  Role
+                </label>
+                <select
+                  id="role-filter"
+                  value={filterRole}
+                  onChange={(e) => setFilterRole(e.target.value)}
+                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                >
+                  <option value="all">All Roles</option>
+                  <option value="user">Users</option>
+                  <option value="admin">Admins</option>
+                  <option value="rootadmin">Root Admins</option>
+                </select>
+              </div>
+
+              {/* Device Filter */}
+              <div>
+                <label htmlFor="device-filter" className="block text-sm font-medium text-gray-700">
+                  Device Type
+                </label>
+                <select
+                  id="device-filter"
+                  value={filterDevice}
+                  onChange={(e) => setFilterDevice(e.target.value)}
+                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                >
+                  <option value="all">All Devices</option>
+                  <option value="mobile">Mobile</option>
+                  <option value="desktop">Desktop</option>
+                  <option value="tablet">Tablet</option>
+                </select>
+              </div>
+
+              {/* Location Filter */}
+              <div>
+                <label htmlFor="location-filter" className="block text-sm font-medium text-gray-700">
+                  Location
+                </label>
+                <input
+                  type="text"
+                  id="location-filter"
+                  value={filterLocation === 'all' ? '' : filterLocation}
+                  onChange={(e) => setFilterLocation(e.target.value || 'all')}
+                  placeholder="Enter location..."
+                  className="mt-1 block w-full px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                />
+              </div>
+
+              {/* Date Range Filter */}
+              <div>
+                <label htmlFor="date-filter" className="block text-sm font-medium text-gray-700">
+                  Last Active
+                </label>
+                <select
+                  id="date-filter"
+                  value={filterDateRange}
+                  onChange={(e) => setFilterDateRange(e.target.value)}
+                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                >
+                  <option value="all">All Time</option>
+                  <option value="1h">Last Hour</option>
+                  <option value="24h">Last 24 Hours</option>
+                  <option value="7d">Last 7 Days</option>
+                  <option value="30d">Last 30 Days</option>
+                </select>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Sessions Table */}
