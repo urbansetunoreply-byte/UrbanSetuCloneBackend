@@ -339,6 +339,41 @@ router.get('/admin/audit-logs', verifyToken, async (req, res, next) => {
   }
 });
 
+// Root Admin: Clear all session audit logs
+router.delete('/admin/audit-logs', verifyToken, async (req, res, next) => {
+  try {
+    if (req.user.role !== 'rootadmin') {
+      return res.status(403).json({ success: false, message: 'Access denied' });
+    }
+
+    const { action, isSuspicious, userId } = req.query;
+
+    // Optional scoped deletion via query (defaults to ALL)
+    const filter = {};
+    if (action) filter.action = action;
+    if (isSuspicious !== undefined && isSuspicious !== '') {
+      filter.isSuspicious = isSuspicious === 'true';
+    }
+    if (userId) {
+      const isObjectIdLike = /^[a-fA-F0-9]{24}$/.test(String(userId));
+      if (isObjectIdLike) {
+        filter.userId = userId;
+      } else {
+        return res.status(400).json({ success: false, message: 'Invalid userId' });
+      }
+    }
+
+    const result = await SessionAuditLog.deleteMany(filter);
+
+    return res.json({
+      success: true,
+      message: `Deleted ${result.deletedCount || 0} audit log(s)`
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Update session activity (called on each request)
 router.post('/update-activity', verifyToken, async (req, res, next) => {
   try {
