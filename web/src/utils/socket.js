@@ -1,7 +1,10 @@
 import { io } from "socket.io-client";
 import { getAuthToken } from './auth';
 
-const SOCKET_URL = "https://urbansetu.onrender.com"; // backend URL
+// Prefer explicit socket URL, then API base URL, then same-origin
+const SOCKET_URL = (typeof import.meta !== 'undefined' && import.meta.env && (
+  import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_BASE_URL
+)) || (typeof window !== 'undefined' ? window.location.origin : "");
 
 function getToken() {
   const token = getAuthToken();
