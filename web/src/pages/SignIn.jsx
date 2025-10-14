@@ -640,7 +640,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                     <div className="flex bg-gray-100 rounded-lg p-1 mb-6">
                         <button
                             type="button"
-                            disabled={authInProgress !== null}
+                            disabled={authInProgress !== null || otpSent}
                             onClick={() => {
                                 setLoginMethod("password");
                                 setOtpSent(false);
@@ -655,7 +655,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 loginMethod === "password"
                                     ? "bg-white text-blue-600 shadow-sm"
                                     : "text-gray-600 hover:text-gray-800"
-                            } ${authInProgress !== null ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            } ${(authInProgress !== null || otpSent) ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                             Password Sign In
                         </button>
