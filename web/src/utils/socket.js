@@ -117,4 +117,15 @@ export function reconnectSocket() {
     document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
     window.location.href = '/sign-in?error=forced_logout';
   });
+  socket.on('forceLogoutSession', ({ sessionId, reason }) => {
+    const current = (document.cookie.split('; ').find(r => r.startsWith('session_id='))?.split('=')[1]) || null;
+    if (current && sessionId && current === sessionId) {
+      console.log('[Socket] Targeted force logout for this session:', reason);
+      try { localStorage.removeItem('accessToken'); } catch (_) {}
+      document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
+      document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
+      document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
+      window.location.href = '/sign-in?error=forced_logout';
+    }
+  });
 } 
