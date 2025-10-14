@@ -248,6 +248,20 @@ io.use(async (socket, next) => {
 
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id, 'UserID:', socket.user?._id?.toString());
+  // Auto-join session room using session_id from cookies if available
+  try {
+    const cookieHeader = socket.handshake.headers && socket.handshake.headers.cookie;
+    if (cookieHeader) {
+      const parts = cookieHeader.split(';').map(s => s.trim());
+      const sessionPair = parts.find(p => p.startsWith('session_id='));
+      if (sessionPair) {
+        const sessId = decodeURIComponent(sessionPair.split('=')[1] || '');
+        if (sessId) {
+          socket.join(`session_${sessId}`);
+        }
+      }
+    }
+  } catch (_) {}
   // Broadcast forced logout to a specific session
   socket.on('forceLogoutSession', ({ userId, sessionId }) => {
     // Server-originated event: admins will not emit this; backend emits to room directly below
