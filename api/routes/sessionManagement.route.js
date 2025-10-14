@@ -200,11 +200,12 @@ router.post('/admin/force-logout', verifyToken, async (req, res, next) => {
     // Revoke session
     await revokeSessionFromDB(userId, sessionId);
     
-  // Notify target session for immediate logout
+  // Notify target session for immediate logout; also notify user room with targeted sessionId as fallback
   try {
     const io = req.app.get('io');
     if (io) {
       io.to(`session_${sessionId}`).emit('forceLogout', { reason });
+      io.to(userId.toString()).emit('forceLogoutSession', { sessionId, reason });
     }
   } catch (_) {}
 

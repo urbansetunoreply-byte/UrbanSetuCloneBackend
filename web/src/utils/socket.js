@@ -61,6 +61,19 @@ socket.on('forceLogout', ({ reason }) => {
   window.location.href = '/sign-in?error=forced_logout';
 });
 
+// Targeted force logout for a specific session (fallback if session room isn't joined)
+socket.on('forceLogoutSession', ({ sessionId, reason }) => {
+  const current = (document.cookie.split('; ').find(r => r.startsWith('session_id='))?.split('=')[1]) || null;
+  if (current && sessionId && current === sessionId) {
+    console.log('[Socket] Targeted force logout for this session:', reason);
+    try { localStorage.removeItem('accessToken'); } catch (_) {}
+    document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
+    document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
+    document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
+    window.location.href = '/sign-in?error=forced_logout';
+  }
+});
+
 // Function to reconnect socket with new token (call after login/logout)
 export function reconnectSocket() {
   if (socket && socket.connected) {
