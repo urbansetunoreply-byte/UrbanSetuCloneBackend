@@ -13,7 +13,8 @@ import {
   cleanupOldSessions,
   checkSuspiciousLogin,
   enforceSessionLimits,
-  logSessionAction
+  logSessionAction,
+  revokeSessionFromDB
 } from "../utils/sessionManager.js";
 import { sendNewLoginEmail, sendSuspiciousLoginEmail } from "../utils/emailService.js";
 import OtpTracking from "../models/otpTracking.model.js";
@@ -548,6 +549,41 @@ export const Google=async (req,res,next)=>{
 
 export const Signout = async (req, res, next) => {
     try {
+      // Best-effort: identify user and current session to remove from activeSessions
+      const sessionId = req.cookies.session_id;
+      let userId = null;
+      try {
+        if (req.cookies.access_token) {
+          const decoded = jwt.verify(req.cookies.access_token, process.env.JWT_TOKEN);
+          userId = decoded.id;
+        } else if (req.cookies.refresh_token) {
+          const decoded = jwt.verify(req.cookies.refresh_token, process.env.JWT_TOKEN);
+          userId = decoded.id;
+        }
+      } catch (_) {}
+
+      if (userId && sessionId) {
+        try {
+          await revokeSessionFromDB(userId, sessionId);
+          // Broadcast updates so UIs refresh immediately
+          const io = req.app.get('io');
+          if (io) {
+            io.to(userId.toString()).emit('sessionsUpdated');
+            io.emit('adminSessionsUpdated');
+          }
+          // Log action
+          await logSessionAction(
+            userId,
+            'logout',
+            sessionId,
+            req.ip,
+            getDeviceInfo(req.get('User-Agent')),
+            getLocationFromIP(req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip),
+            'User signed out'
+          );
+        } catch (_) {}
+      }
+
       clearAuthCookies(res);
       res.status(200).json('User has been logged out!');
     } catch (error) {
