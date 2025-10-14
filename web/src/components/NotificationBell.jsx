@@ -23,6 +23,7 @@ export default function NotificationBell({ mobile = false }) {
   const [message, setMessage] = useState('');
   const [sendingNotification, setSendingNotification] = useState(false);
   const [fetchingUsers, setFetchingUsers] = useState(false);
+  const [userSearch, setUserSearch] = useState('');
   
   // Separate state for "Send to All Users" form
   const [allUsersTitle, setAllUsersTitle] = useState('');
@@ -187,6 +188,7 @@ export default function NotificationBell({ mobile = false }) {
         setSelectedUser('');
         setTitle('');
         setMessage('');
+        setUserSearch('');
         setActiveTab('notifications');
       } else {
         toast.error(data.message || 'Failed to send notification');
@@ -230,6 +232,7 @@ export default function NotificationBell({ mobile = false }) {
         // Reset form
         setAllUsersTitle('');
         setAllUsersMessage('');
+        setUserSearch('');
         setActiveTab('notifications');
       } else {
         toast.error(data.message || 'Failed to send notification');
@@ -807,6 +810,21 @@ export default function NotificationBell({ mobile = false }) {
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               Select User
                             </label>
+                            <input
+                              type="text"
+                              value={userSearch}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setUserSearch(value);
+                                // Clear selected user if search changes
+                                if (selectedUser && value.trim()) {
+                                  setSelectedUser('');
+                                }
+                              }}
+                              placeholder="Search users by name, email, or mobile number"
+                              className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 mb-2"
+                              disabled={fetchingUsers}
+                            />
                             <div className="relative">
                               <select
                                 value={selectedUser}
@@ -821,11 +839,52 @@ export default function NotificationBell({ mobile = false }) {
                                 {users.length === 0 && !fetchingUsers && (
                                   <option value="" disabled>No users found. Click "Refresh Users" to load.</option>
                                 )}
-                                {users.map((user) => (
-                                  <option key={user._id} value={user._id}>
-                                    {user.email} {user.username && `(${user.username})`}
-                                  </option>
-                                ))}
+                                {users
+                                  .filter((user) => {
+                                    const q = userSearch.trim().toLowerCase();
+                                    if (!q) return true;
+                                    
+                                    const name = (user.username || user.name || "").toLowerCase();
+                                    const email = (user.email || "").toLowerCase();
+                                    const mobileRaw = (user.mobileNumber || user.mobile || "").toString();
+                                    const mobile = mobileRaw.replace(/\D/g, '');
+                                    
+                                    // If query is exactly a 10-digit number, require exact mobile match
+                                    if (/^\d{10}$/.test(q)) {
+                                      return mobile === q;
+                                    }
+                                    
+                                    // Otherwise broad matching across fields
+                                    return (
+                                      name.includes(q) ||
+                                      email.includes(q) ||
+                                      mobileRaw.toLowerCase().includes(q)
+                                    );
+                                  })
+                                  .map((user) => {
+                                    const formatMobileNumber = (mobile) => {
+                                      if (!mobile) return '';
+                                      const cleanMobile = mobile.toString().replace(/[\s\-\(\)]/g, '');
+                                      if (cleanMobile.length === 10) {
+                                        return `+91-${cleanMobile}`;
+                                      } else if (cleanMobile.length === 12 && cleanMobile.startsWith('91')) {
+                                        return `+${cleanMobile}`;
+                                      } else if (cleanMobile.length === 13 && cleanMobile.startsWith('+91')) {
+                                        return cleanMobile;
+                                      }
+                                      return mobile;
+                                    };
+                                    
+                                    const displayName = user.username || user.name || user.email;
+                                    const displayEmail = user.email;
+                                    const displayMobile = formatMobileNumber(user.mobileNumber || user.mobile);
+                                    
+                                    return (
+                                      <option key={user._id} value={user._id}>
+                                        {displayName} ({displayEmail}{displayMobile ? `, ${displayMobile}` : ''})
+                                      </option>
+                                    );
+                                  })}
                               </select>
                               {fetchingUsers && (
                                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -835,7 +894,25 @@ export default function NotificationBell({ mobile = false }) {
                             </div>
                             <div className="flex items-center justify-between mt-1">
                               <span className="text-xs text-gray-500">
-                                {users.length} users available
+                                {users.filter((user) => {
+                                  const q = userSearch.trim().toLowerCase();
+                                  if (!q) return true;
+                                  
+                                  const name = (user.username || user.name || "").toLowerCase();
+                                  const email = (user.email || "").toLowerCase();
+                                  const mobileRaw = (user.mobileNumber || user.mobile || "").toString();
+                                  const mobile = mobileRaw.replace(/\D/g, '');
+                                  
+                                  if (/^\d{10}$/.test(q)) {
+                                    return mobile === q;
+                                  }
+                                  
+                                  return (
+                                    name.includes(q) ||
+                                    email.includes(q) ||
+                                    mobileRaw.toLowerCase().includes(q)
+                                  );
+                                }).length} users available
                               </span>
                               <button
                                 type="button"
@@ -1196,6 +1273,21 @@ export default function NotificationBell({ mobile = false }) {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Select User
                     </label>
+                    <input
+                      type="text"
+                      value={userSearch}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setUserSearch(value);
+                        // Clear selected user if search changes
+                        if (selectedUser && value.trim()) {
+                          setSelectedUser('');
+                        }
+                      }}
+                      placeholder="Search users by name, email, or mobile number"
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 mb-2"
+                      disabled={fetchingUsers}
+                    />
                     <div className="relative">
                       <select
                         value={selectedUser}
@@ -1210,11 +1302,52 @@ export default function NotificationBell({ mobile = false }) {
                         {users.length === 0 && !fetchingUsers && (
                           <option value="" disabled>No users found. Click "Refresh Users" to load.</option>
                         )}
-                        {users.map((user) => (
-                          <option key={user._id} value={user._id}>
-                            {user.email} {user.username && `(${user.username})`}
-                          </option>
-                        ))}
+                        {users
+                          .filter((user) => {
+                            const q = userSearch.trim().toLowerCase();
+                            if (!q) return true;
+                            
+                            const name = (user.username || user.name || "").toLowerCase();
+                            const email = (user.email || "").toLowerCase();
+                            const mobileRaw = (user.mobileNumber || user.mobile || "").toString();
+                            const mobile = mobileRaw.replace(/\D/g, '');
+                            
+                            // If query is exactly a 10-digit number, require exact mobile match
+                            if (/^\d{10}$/.test(q)) {
+                              return mobile === q;
+                            }
+                            
+                            // Otherwise broad matching across fields
+                            return (
+                              name.includes(q) ||
+                              email.includes(q) ||
+                              mobileRaw.toLowerCase().includes(q)
+                            );
+                          })
+                          .map((user) => {
+                            const formatMobileNumber = (mobile) => {
+                              if (!mobile) return '';
+                              const cleanMobile = mobile.toString().replace(/[\s\-\(\)]/g, '');
+                              if (cleanMobile.length === 10) {
+                                return `+91-${cleanMobile}`;
+                              } else if (cleanMobile.length === 12 && cleanMobile.startsWith('91')) {
+                                return `+${cleanMobile}`;
+                              } else if (cleanMobile.length === 13 && cleanMobile.startsWith('+91')) {
+                                return cleanMobile;
+                              }
+                              return mobile;
+                            };
+                            
+                            const displayName = user.username || user.name || user.email;
+                            const displayEmail = user.email;
+                            const displayMobile = formatMobileNumber(user.mobileNumber || user.mobile);
+                            
+                            return (
+                              <option key={user._id} value={user._id}>
+                                {displayName} ({displayEmail}{displayMobile ? `, ${displayMobile}` : ''})
+                              </option>
+                            );
+                          })}
                       </select>
                       {fetchingUsers && (
                         <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -1224,7 +1357,25 @@ export default function NotificationBell({ mobile = false }) {
                     </div>
                     <div className="flex items-center justify-between mt-1">
                       <span className="text-xs text-gray-500">
-                        {users.length} users available
+                        {users.filter((user) => {
+                          const q = userSearch.trim().toLowerCase();
+                          if (!q) return true;
+                          
+                          const name = (user.username || user.name || "").toLowerCase();
+                          const email = (user.email || "").toLowerCase();
+                          const mobileRaw = (user.mobileNumber || user.mobile || "").toString();
+                          const mobile = mobileRaw.replace(/\D/g, '');
+                          
+                          if (/^\d{10}$/.test(q)) {
+                            return mobile === q;
+                          }
+                          
+                          return (
+                            name.includes(q) ||
+                            email.includes(q) ||
+                            mobileRaw.toLowerCase().includes(q)
+                          );
+                        }).length} users available
                       </span>
                       <button
                         type="button"
