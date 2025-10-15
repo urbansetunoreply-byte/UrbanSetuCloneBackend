@@ -176,7 +176,8 @@ export default function AdminDeploymentManagement() {
 
   const handleSetActive = async (fileId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/deployment/set-active/${fileId}`, {
+      const encodedId = encodeURIComponent(fileId);
+      const response = await fetch(`${API_BASE_URL}/api/deployment/set-active/${encodedId}`, {
         method: 'PUT',
         credentials: 'include'
       });
@@ -201,7 +202,8 @@ export default function AdminDeploymentManagement() {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/deployment/${fileId}`, {
+      const encodedId = encodeURIComponent(fileId);
+      const response = await fetch(`${API_BASE_URL}/api/deployment/${encodedId}`, {
         method: 'DELETE',
         credentials: 'include'
       });
@@ -217,6 +219,21 @@ export default function AdminDeploymentManagement() {
     } catch (error) {
       console.error('Error deleting file:', error);
       toast.error('Failed to delete file');
+    }
+  };
+
+  const handleDownloadFile = async (fileId) => {
+    try {
+      const encodedId = encodeURIComponent(fileId);
+      const res = await fetch(`${API_BASE_URL}/api/deployment/download-url?id=${encodedId}`, { credentials: 'include' });
+      const data = await res.json();
+      if (data && data.success && data.url) {
+        window.location.href = data.url;
+      } else {
+        toast.error(data.message || 'Failed to get download link');
+      }
+    } catch (err) {
+      toast.error('Failed to get download link');
     }
   };
 
@@ -429,14 +446,13 @@ export default function AdminDeploymentManagement() {
                   <p className="text-sm text-gray-600 mb-2">Version: {file.version}</p>
                   <p className="text-xs text-gray-500 mb-3">{formatFileSize(file.size)}</p>
                   <div className="flex gap-2">
-                    <a
-                      href={file.url}
-                      download
+                    <button
+                      onClick={() => handleDownloadFile(file.id)}
                       className="flex-1 px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 flex items-center justify-center gap-1"
                     >
                       <FaDownload />
                       Download
-                    </a>
+                    </button>
                   </div>
                 </div>
               ))}
@@ -493,14 +509,13 @@ export default function AdminDeploymentManagement() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(file.createdAt)}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex gap-2">
-                          <a
-                            href={file.url}
-                            download
+                          <button
+                            onClick={() => handleDownloadFile(file.id)}
                             className="text-blue-600 hover:text-blue-900 p-1"
                             title="Download"
                           >
                             <FaDownload />
-                          </a>
+                          </button>
                           {!file.isActive && (
                             <button
                               onClick={() => handleSetActive(file.id)}

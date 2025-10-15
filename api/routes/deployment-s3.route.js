@@ -235,6 +235,24 @@ router.get('/active', async (req, res) => {
   }
 });
 
+// Get presigned download URL for an object key (rootadmin only)
+router.get('/download-url', verifyToken, async (req, res) => {
+  try {
+    if (!req.user || req.user.role !== 'rootadmin') {
+      return res.status(403).json({ success: false, message: 'Access denied. Root admin only.' });
+    }
+    const { id } = req.query;
+    if (!id) return res.status(400).json({ success: false, message: 'Missing id' });
+    const key = decodeURIComponent(id);
+    const command = new GetObjectCommand({ Bucket: bucketName, Key: key });
+    const url = await getSignedUrl(s3Client, command, { expiresIn: 60 });
+    return res.json({ success: true, url });
+  } catch (error) {
+    console.error('Error generating download URL:', error);
+    res.status(500).json({ success: false, message: 'Failed to generate download URL' });
+  }
+});
+
 // Upload new deployment file to S3
 router.post('/upload', verifyToken, upload.single('file'), handleMulterError, async (req, res) => {
   try {
