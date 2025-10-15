@@ -440,29 +440,18 @@ export default function Listing() {
     }
   };
 
-  // Function to track property view (only once per session)
+  // Function to track property view (robust dedup; fire-and-forget)
   const trackPropertyView = async () => {
     if (!listing || viewTracked) return;
-    
     try {
-      const res = await fetch(`${API_BASE_URL}/api/listing/view/${listing._id}`, {
+      // Fire-and-forget; backend dedupes by user/guest within 6h and ignores admin/owner
+      fetch(`${API_BASE_URL}/api/properties/${listing._id}/view`, {
         method: 'POST',
-        credentials: 'include'
-      });
-      
-      if (res.ok) {
-        const data = await res.json();
-        // Mark as tracked to prevent multiple calls
-        setViewTracked(true);
-        // Update the listing state with the new view count
-        setListing(prev => ({
-          ...prev,
-          viewCount: data.viewCount
-        }));
-      }
-    } catch (error) {
-      // Silent fail for view tracking
-      console.log('View tracking failed:', error);
+        credentials: 'include',
+        keepalive: true
+      }).catch(() => {});
+    } finally {
+      setViewTracked(true);
     }
   };
 
