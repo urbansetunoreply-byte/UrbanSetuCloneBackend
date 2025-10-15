@@ -2561,8 +2561,8 @@ export default function Profile() {
               </button>
             )}
 
-            {/* Deployment Management for admins */}
-            {(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
+            {/* Deployment Management for root admin only */}
+            {currentUser.role === 'rootadmin' && (
               <button
                 onClick={() => navigate('/admin/deployment-management')}
                 className={`w-full bg-teal-500 text-white px-6 py-3 rounded-lg hover:bg-teal-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp} animation-delay-1275`}

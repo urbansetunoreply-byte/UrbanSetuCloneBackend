@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { Navigate } from 'react-router-dom';
 import { FaUpload, FaTrash, FaDownload, FaCheck, FaTimes, FaMobile, FaDesktop, FaApple, FaAndroid, FaWindows, FaSpinner, FaCloudUploadAlt, FaHistory, FaInfoCircle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
@@ -8,6 +10,8 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export default function AdminDeploymentManagement() {
   // Set page title
   usePageTitle("Deployment Management - App Updates");
+
+  const { currentUser } = useSelector((state) => state.user);
 
   const [files, setFiles] = useState([]);
   const [activeFiles, setActiveFiles] = useState([]);
@@ -243,6 +247,11 @@ export default function AdminDeploymentManagement() {
       minute: '2-digit'
     });
   };
+
+  // Client-side guard: only rootadmin can access
+  if (currentUser && currentUser.role !== 'rootadmin') {
+    return <Navigate to="/admin" replace />;
+  }
 
   if (loading) {
     return (

@@ -101,9 +101,9 @@ const upload = multer({
 // Get all deployment files
 router.get('/', verifyToken, async (req, res) => {
   try {
-    // Check if user is admin
-    if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'rootadmin')) {
-      return res.status(403).json({ success: false, message: 'Access denied. Admin privileges required.' });
+    // Root admin only
+    if (!req.user || req.user.role !== 'rootadmin') {
+      return res.status(403).json({ success: false, message: 'Access denied. Root admin only.' });
     }
     const result = await cloudinary.v2.search
       .expression('folder:mobile-apps')
@@ -179,9 +179,9 @@ router.post('/upload', verifyToken, upload.single('file'), handleMulterError, as
       contentLength: req.headers['content-length']
     });
 
-    // Check if user is admin
-    if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'rootadmin')) {
-      return res.status(403).json({ success: false, message: 'Access denied. Admin privileges required.' });
+    // Root admin only
+    if (!req.user || req.user.role !== 'rootadmin') {
+      return res.status(403).json({ success: false, message: 'Access denied. Root admin only.' });
     }
 
     // Check for multer errors (file size, file type, etc.)
@@ -296,9 +296,9 @@ router.post('/upload', verifyToken, upload.single('file'), handleMulterError, as
 // Set active deployment
 router.put('/set-active/:id', verifyToken, async (req, res) => {
   try {
-    // Check if user is admin
-    if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'rootadmin')) {
-      return res.status(403).json({ success: false, message: 'Access denied. Admin privileges required.' });
+    // Root admin only
+    if (!req.user || req.user.role !== 'rootadmin') {
+      return res.status(403).json({ success: false, message: 'Access denied. Root admin only.' });
     }
     const { id } = req.params;
     
@@ -335,9 +335,9 @@ router.put('/set-active/:id', verifyToken, async (req, res) => {
 // Delete deployment file
 router.delete('/:id', verifyToken, async (req, res) => {
   try {
-    // Check if user is admin
-    if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'rootadmin')) {
-      return res.status(403).json({ success: false, message: 'Access denied. Admin privileges required.' });
+    // Root admin only
+    if (!req.user || req.user.role !== 'rootadmin') {
+      return res.status(403).json({ success: false, message: 'Access denied. Root admin only.' });
     }
     const { id } = req.params;
     
