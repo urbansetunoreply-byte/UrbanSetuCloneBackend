@@ -123,7 +123,7 @@ const EnhancedSmartPriceInsights = ({ listing, currentUser }) => {
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
+      <div className="flex flex-wrap gap-1 mb-6 bg-gray-100 p-1 rounded-lg">
         {[
           { id: 'overview', label: 'Overview', icon: FaChartLine },
           { id: 'investment', label: 'Investment', icon: FaCalculator },
@@ -133,7 +133,7 @@ const EnhancedSmartPriceInsights = ({ listing, currentUser }) => {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
+            className={`flex items-center gap-2 px-3 py-2 rounded-md transition-colors text-sm whitespace-normal ${
               activeTab === tab.id
                 ? 'bg-white text-purple-600 shadow-sm'
                 : 'text-gray-600 hover:text-gray-800'
@@ -185,6 +185,7 @@ const EnhancedSmartPriceInsights = ({ listing, currentUser }) => {
               <p className="text-sm text-gray-600">Annual growth</p>
             </div>
 
+            {(currentUser?.role === 'admin' || currentUser?.role === 'rootadmin') && (
             <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <FaShieldAlt className="text-purple-600" />
@@ -195,6 +196,7 @@ const EnhancedSmartPriceInsights = ({ listing, currentUser }) => {
               </p>
               <p className="text-sm text-gray-600">Lower is better</p>
             </div>
+            )}
           </div>
 
           {/* Market Comparison */}
@@ -267,45 +269,47 @@ const EnhancedSmartPriceInsights = ({ listing, currentUser }) => {
             </div>
           </div>
 
-          {/* Risk Analysis */}
-          <div className="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-xl">
-            <h5 className="text-lg font-semibold text-red-800 mb-4 flex items-center gap-2">
-              <FaExclamationTriangle className="text-red-600" />
-              Risk Analysis
-            </h5>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-600">Overall Risk Score</span>
-                  <span className={`font-bold ${getScoreColor(100 - investmentAnalysis.riskScore)}`}>
-                    {investmentAnalysis.riskScore}/100
-                  </span>
+          {/* Risk Analysis - admins only */}
+          {(currentUser?.role === 'admin' || currentUser?.role === 'rootadmin') && (
+            <div className="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-xl">
+              <h5 className="text-lg font-semibold text-red-800 mb-4 flex items-center gap-2">
+                <FaExclamationTriangle className="text-red-600" />
+                Risk Analysis
+              </h5>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-gray-600">Overall Risk Score</span>
+                    <span className={`font-bold ${getScoreColor(100 - investmentAnalysis.riskScore)}`}>
+                      {investmentAnalysis.riskScore}/100
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${getScoreBg(100 - investmentAnalysis.riskScore)}`}
+                      style={{ width: `${100 - investmentAnalysis.riskScore}%` }}
+                    ></div>
+                  </div>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className={`h-2 rounded-full ${getScoreBg(100 - investmentAnalysis.riskScore)}`}
-                    style={{ width: `${100 - investmentAnalysis.riskScore}%` }}
-                  ></div>
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600">Risk Level: 
+                    <span className={`ml-2 font-semibold ${
+                      investmentAnalysis.riskScore < 30 ? 'text-green-600' :
+                      investmentAnalysis.riskScore < 60 ? 'text-yellow-600' : 'text-red-600'
+                    }`}>
+                      {investmentAnalysis.riskScore < 30 ? 'Low' :
+                       investmentAnalysis.riskScore < 60 ? 'Medium' : 'High'}
+                    </span>
+                  </p>
+                  <p className="text-sm text-gray-600">Recommendation: 
+                    <span className={`ml-2 font-semibold ${getRecommendationColor(investmentAnalysis.recommendation)}`}>
+                      {investmentAnalysis.recommendation}
+                    </span>
+                  </p>
                 </div>
-              </div>
-              <div className="space-y-2">
-                <p className="text-sm text-gray-600">Risk Level: 
-                  <span className={`ml-2 font-semibold ${
-                    investmentAnalysis.riskScore < 30 ? 'text-green-600' :
-                    investmentAnalysis.riskScore < 60 ? 'text-yellow-600' : 'text-red-600'
-                  }`}>
-                    {investmentAnalysis.riskScore < 30 ? 'Low' :
-                     investmentAnalysis.riskScore < 60 ? 'Medium' : 'High'}
-                  </span>
-                </p>
-                <p className="text-sm text-gray-600">Recommendation: 
-                  <span className={`ml-2 font-semibold ${getRecommendationColor(investmentAnalysis.recommendation)}`}>
-                    {investmentAnalysis.recommendation}
-                  </span>
-                </p>
               </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 
@@ -416,7 +420,7 @@ const EnhancedSmartPriceInsights = ({ listing, currentUser }) => {
         <div className="space-y-6">
           {/* Price Trends Chart */}
           <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl">
-            <h5 className="text-lg font-semibold text-purple-800 mb-4 flex items-center gap-2">
+            <h5 className="text-base md:text-lg font-semibold text-purple-800 mb-4 flex items-center gap-2 break-words">
               <FaTrendingUp className="text-purple-600" />
               Market Trends
             </h5>

@@ -17,6 +17,7 @@ export default function AdminListings() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showMoreListing, setShowMoreListing] = useState(false);
+  const [fetching, setFetching] = useState(false);
   const { currentUser } = useSelector((state) => state.user);
   const [showReasonModal, setShowReasonModal] = useState(false);
   const [deleteReason, setDeleteReason] = useState("");
@@ -68,13 +69,15 @@ export default function AdminListings() {
   };
 
   useEffect(() => {
-   const fetchAllListings = async () => {
+    // Debounce filter fetches to avoid jarring reload on each keystroke
+    const controller = new AbortController();
+    const timeout = setTimeout(async () => {
       try {
-        setLoading(true);
+        setFetching(true);
         setError(null);
         const limit = 12;
         const params = buildParams(0, limit);
-        const res = await fetch(`${API_BASE_URL}/api/listing/get?${params.toString()}`, { credentials: 'include' });
+        const res = await fetch(`${API_BASE_URL}/api/listing/get?${params.toString()}`, { credentials: 'include', signal: controller.signal });
         if (res.ok) {
           const data = await res.json();
           setListings(data);
@@ -83,12 +86,16 @@ export default function AdminListings() {
           throw new Error("Failed to fetch listings");
         }
       } catch (err) {
-        setError("Failed to load listings. Please try again.");
+        if (err.name !== 'AbortError') setError("Failed to load listings. Please try again.");
       } finally {
+        setFetching(false);
         setLoading(false);
       }
+    }, 350);
+    return () => {
+      controller.abort();
+      clearTimeout(timeout);
     };
-    fetchAllListings();
   }, [filters]);
 
   const handleShowMore = async () => {
@@ -379,6 +386,9 @@ export default function AdminListings() {
                   </div>
                 ))}
               </div>
+              {fetching && (
+                <div className="flex justify-center mt-4 text-sm text-gray-500">Updating results…</div>
+              )}
               {showMoreListing && (
                 <div className="flex justify-center mt-6">
                   <button
