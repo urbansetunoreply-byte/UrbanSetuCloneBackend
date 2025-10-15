@@ -17,6 +17,16 @@ export default function AdminMyListings() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [visibleCount, setVisibleCount] = useState(12);
+  const [filters, setFilters] = useState({
+    searchTerm: '',
+    type: 'all',
+    offer: 'all',
+    furnished: 'all',
+    parking: 'all',
+    city: '',
+    state: ''
+  });
 
   useEffect(() => {
     const fetchMyListings = async () => {
@@ -93,6 +103,22 @@ export default function AdminMyListings() {
     return 0;
   };
 
+  const filteredListings = listings.filter((l) => {
+    const matchesSearch = filters.searchTerm
+      ? (l.name?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+         (l.address && String(l.address).toLowerCase().includes(filters.searchTerm.toLowerCase())) ||
+         (l.city && l.city.toLowerCase().includes(filters.searchTerm.toLowerCase())) ||
+         (l.state && l.state.toLowerCase().includes(filters.searchTerm.toLowerCase())))
+      : true;
+    const matchesType = filters.type === 'all' ? true : l.type === filters.type;
+    const matchesOffer = filters.offer === 'all' ? true : (filters.offer === 'true' ? !!l.offer : !l.offer);
+    const matchesFurnished = filters.furnished === 'all' ? true : (filters.furnished === 'true' ? !!l.furnished : !l.furnished);
+    const matchesParking = filters.parking === 'all' ? true : (filters.parking === 'true' ? !!l.parking : !l.parking);
+    const matchesCity = filters.city ? (l.city && l.city.toLowerCase().includes(filters.city.toLowerCase())) : true;
+    const matchesState = filters.state ? (l.state && l.state.toLowerCase().includes(filters.state.toLowerCase())) : true;
+    return matchesSearch && matchesType && matchesOffer && matchesFurnished && matchesParking && matchesCity && matchesState;
+  });
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -131,6 +157,55 @@ export default function AdminMyListings() {
               )}
             </div>
 
+            {/* Filters */}
+            {listings.length > 0 && (
+              <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <input
+                  type="text"
+                  value={filters.searchTerm}
+                  onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })}
+                  className="border rounded px-3 py-2 text-sm"
+                  placeholder="Search by name/address/city/state"
+                />
+                <select className="border rounded px-3 py-2 text-sm" value={filters.type} onChange={(e) => setFilters({ ...filters, type: e.target.value })}>
+                  <option value="all">All Types</option>
+                  <option value="sale">Sale</option>
+                  <option value="rent">Rent</option>
+                </select>
+                <select className="border rounded px-3 py-2 text-sm" value={filters.offer} onChange={(e) => setFilters({ ...filters, offer: e.target.value })}>
+                  <option value="all">Offer: Any</option>
+                  <option value="true">Offer: Yes</option>
+                  <option value="false">Offer: No</option>
+                </select>
+                <div className="grid grid-cols-2 gap-2">
+                  <select className="border rounded px-3 py-2 text-sm" value={filters.furnished} onChange={(e) => setFilters({ ...filters, furnished: e.target.value })}>
+                    <option value="all">Furnished: Any</option>
+                    <option value="true">Furnished</option>
+                    <option value="false">Unfurnished</option>
+                  </select>
+                  <select className="border rounded px-3 py-2 text-sm" value={filters.parking} onChange={(e) => setFilters({ ...filters, parking: e.target.value })}>
+                    <option value="all">Parking: Any</option>
+                    <option value="true">With Parking</option>
+                    <option value="false">No Parking</option>
+                  </select>
+                </div>
+                <input
+                  type="text"
+                  value={filters.city}
+                  onChange={(e) => setFilters({ ...filters, city: e.target.value })}
+                  className="border rounded px-3 py-2 text-sm"
+                  placeholder="City"
+                />
+                <input
+                  type="text"
+                  value={filters.state}
+                  onChange={(e) => setFilters({ ...filters, state: e.target.value })}
+                  className="border rounded px-3 py-2 text-sm"
+                  placeholder="State"
+                />
+              </div>
+            )}
+
             {listings.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-gray-400 text-6xl mb-4">🏠</div>
@@ -144,8 +219,9 @@ export default function AdminMyListings() {
                 </Link>
               </div>
             ) : (
+              <>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-                {listings.map((listing) => (
+                {filteredListings.slice(0, visibleCount).map((listing) => (
                   <div key={listing._id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
                     {/* Image */}
                     <div className="relative h-48 bg-gray-200">
@@ -251,6 +327,17 @@ export default function AdminMyListings() {
                   </div>
                 ))}
               </div>
+              {filteredListings.length > visibleCount && (
+                <div className="flex justify-center mt-6">
+                  <button
+                    onClick={() => setVisibleCount((c) => c + 12)}
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                  >
+                    Show more
+                  </button>
+                </div>
+              )}
+              </>
             )}
           </div>
         </div>

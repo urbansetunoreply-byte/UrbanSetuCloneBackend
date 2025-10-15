@@ -39,13 +39,41 @@ export default function AdminListings() {
      };
    }, [showReasonModal, showPasswordModal]);
  
+  const [filters, setFilters] = useState({
+    searchTerm: '',
+    type: 'all',
+    offer: 'all',
+    furnished: 'all',
+    parking: 'all',
+    minPrice: '',
+    maxPrice: '',
+    city: '',
+    state: ''
+  });
+
+  const buildParams = (startIndex, limit) => {
+    const params = new URLSearchParams();
+    params.set('limit', String(limit));
+    params.set('startIndex', String(startIndex));
+    if (filters.searchTerm) params.set('searchTerm', filters.searchTerm);
+    if (filters.type !== 'all') params.set('type', filters.type);
+    if (filters.offer !== 'all') params.set('offer', filters.offer);
+    if (filters.furnished !== 'all') params.set('furnished', filters.furnished);
+    if (filters.parking !== 'all') params.set('parking', filters.parking);
+    if (filters.minPrice) params.set('minPrice', filters.minPrice);
+    if (filters.maxPrice) params.set('maxPrice', filters.maxPrice);
+    if (filters.city) params.set('city', filters.city);
+    if (filters.state) params.set('state', filters.state);
+    return params;
+  };
+
   useEffect(() => {
    const fetchAllListings = async () => {
       try {
         setLoading(true);
         setError(null);
         const limit = 12;
-        const params = new URLSearchParams({ limit: String(limit), startIndex: '0' });
+        const params = buildParams(0, limit);
         const res = await fetch(`${API_BASE_URL}/api/listing/get?${params.toString()}`, { credentials: 'include' });
         if (res.ok) {
           const data = await res.json();
@@ -61,12 +89,12 @@ export default function AdminListings() {
       }
     };
     fetchAllListings();
-  }, []);
+  }, [filters]);
 
   const handleShowMore = async () => {
     try {
       const limit = 12;
-      const params = new URLSearchParams({ limit: String(limit), startIndex: String(listings.length) });
+      const params = buildParams(listings.length, limit);
       const res = await fetch(`${API_BASE_URL}/api/listing/get?${params.toString()}`, { credentials: 'include' });
       if (!res.ok) return;
       const data = await res.json();
@@ -188,6 +216,37 @@ export default function AdminListings() {
               >
                 <FaPlus /> <span>Create New Listing</span>
               </Link>
+            </div>
+
+            {/* Filters */}
+            <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <input type="text" value={filters.searchTerm} onChange={(e)=>setFilters({...filters,searchTerm:e.target.value})} className="border rounded px-3 py-2 text-sm" placeholder="Search by name/address/city/state" />
+              <select className="border rounded px-3 py-2 text-sm" value={filters.type} onChange={(e)=>setFilters({...filters,type:e.target.value})}>
+                <option value="all">All Types</option>
+                <option value="sale">Sale</option>
+                <option value="rent">Rent</option>
+              </select>
+              <select className="border rounded px-3 py-2 text-sm" value={filters.offer} onChange={(e)=>setFilters({...filters,offer:e.target.value})}>
+                <option value="all">Offer: Any</option>
+                <option value="true">Offer: Yes</option>
+                <option value="false">Offer: No</option>
+              </select>
+              <div className="grid grid-cols-2 gap-2">
+                <select className="border rounded px-3 py-2 text-sm" value={filters.furnished} onChange={(e)=>setFilters({...filters,furnished:e.target.value})}>
+                  <option value="all">Furnished: Any</option>
+                  <option value="true">Furnished</option>
+                  <option value="false">Unfurnished</option>
+                </select>
+                <select className="border rounded px-3 py-2 text-sm" value={filters.parking} onChange={(e)=>setFilters({...filters,parking:e.target.value})}>
+                  <option value="all">Parking: Any</option>
+                  <option value="true">With Parking</option>
+                  <option value="false">No Parking</option>
+                </select>
+              </div>
+              <input type="number" min="0" value={filters.minPrice} onChange={(e)=>setFilters({...filters,minPrice:e.target.value})} className="border rounded px-3 py-2 text-sm" placeholder="Min Price" />
+              <input type="number" min="0" value={filters.maxPrice} onChange={(e)=>setFilters({...filters,maxPrice:e.target.value})} className="border rounded px-3 py-2 text-sm" placeholder="Max Price" />
+              <input type="text" value={filters.city} onChange={(e)=>setFilters({...filters,city:e.target.value})} className="border rounded px-3 py-2 text-sm" placeholder="City" />
+              <input type="text" value={filters.state} onChange={(e)=>setFilters({...filters,state:e.target.value})} className="border rounded px-3 py-2 text-sm" placeholder="State" />
             </div>
 
             {listings.length === 0 ? (
