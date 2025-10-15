@@ -205,6 +205,37 @@ export default function PublicAbout() {
           </div>
         </div>
       </div>
+      {/* Android App Download Section (redundant placement to ensure visibility) */}
+      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6 mt-6">
+        <div className="mb-2 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border border-green-200">
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <FaAndroid className="text-4xl text-green-600" />
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800">Available on Android</h2>
+                <p className="text-gray-600">Get the UrbanSetu mobile app for the best experience</p>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-2">
+              <button
+                onClick={async () => {
+                  const result = await downloadAndroidApp();
+                  if (result.success) {
+                    toast.success(result.message);
+                  } else {
+                    toast.error(result.message);
+                  }
+                }}
+                className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                <FaDownload className="text-xl" />
+                <span>{getDownloadButtonText()}</span>
+              </button>
+            </div>
+            <p className="text-sm text-gray-500">Download our Android app to access UrbanSetu on your mobile device!</p>
+          </div>
+        </div>
+      </div>
       {/* Connect with Us section */}
       <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6 mt-6 flex flex-col items-center">
         <h2 className="text-xl font-bold mb-2">Connect with Us</h2>
