@@ -117,7 +117,13 @@ export const getUserListings=async (req,res,next)=>{
             listings = await Listing.find().sort({createdAt:-1});
         } else {
             // Regular admin or user: show only their own listings
-            listings = await Listing.find({userRef:req.user.id}).sort({createdAt:-1});
+            const userIdStr = req.user.id?.toString();
+            listings = await Listing.find({
+                $or: [
+                    { userRef: req.user.id },               // ObjectId match
+                    { userRef: userIdStr }                   // legacy string match (if any)
+                ]
+            }).sort({createdAt:-1});
         }
         res.status(200).json(listings)
     }

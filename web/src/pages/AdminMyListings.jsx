@@ -121,12 +121,14 @@ export default function AdminMyListings() {
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
               <h3 className="text-2xl sm:text-3xl font-extrabold text-blue-700 drop-shadow">My Listings (Admin)</h3>
-              <Link
-                to="/admin/create-listing"
-                className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 sm:px-6 py-2 sm:py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1 sm:gap-2 text-sm sm:text-base w-full sm:w-auto justify-center mt-4 md:mt-0"
-              >
-                <FaPlus /> <span>Create New Listing</span>
-              </Link>
+              {listings.length > 0 && (
+                <Link
+                  to="/admin/create-listing"
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 sm:px-6 py-2 sm:py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1 sm:gap-2 text-sm sm:text-base w-full sm:w-auto justify-center mt-4 md:mt-0"
+                >
+                  <FaPlus /> <span>Create New Listing</span>
+                </Link>
+              )}
             </div>
 
             {listings.length === 0 ? (
