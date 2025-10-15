@@ -25,6 +25,7 @@
   "description": "",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.901.0",
+    "@aws-sdk/s3-request-presigner": "^3.901.0",
     "@aws-sdk/lib-storage": "^3.903.0",
     "@google/genai": "^1.13.0",
     "axios": "^1.7.7",
