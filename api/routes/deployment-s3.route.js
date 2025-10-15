@@ -27,7 +27,7 @@ const upload = multer({
   storage: multerS3({
     s3: s3Client,
     bucket: bucketName || 'placeholder-bucket',
-    acl: 'public-read',
+    // Note: Do not set ACL when the bucket enforces bucket-owner ownership (ACLs disabled)
     key: function (req, file, cb) {
       const { platform, version } = req.body;
       const timestamp = Date.now();
@@ -151,8 +151,9 @@ router.get('/', verifyToken, async (req, res) => {
     });
 
     const result = await s3Client.send(command);
+    const contents = Array.isArray(result.Contents) ? result.Contents : [];
     
-    const files = result.Contents.map(file => {
+    const files = contents.map(file => {
       const fileName = file.Key.split('/').pop();
       const fileExtension = fileName.split('.').pop();
       
@@ -199,8 +200,9 @@ router.get('/active', async (req, res) => {
     });
 
     const result = await s3Client.send(command);
+    const contents = Array.isArray(result.Contents) ? result.Contents : [];
     
-    const activeFiles = result.Contents.map(file => {
+    const activeFiles = contents.map(file => {
       const fileName = file.Key.split('/').pop();
       const fileExtension = fileName.split('.').pop();
       
