@@ -1,7 +1,8 @@
 import express from 'express';
 import multer from 'multer';
 import multerS3 from 'multer-s3';
-import { S3Client, ListBucketsCommand, ListObjectsV2Command, CopyObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, ListBucketsCommand, ListObjectsV2Command, CopyObjectCommand, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { verifyToken } from '../utils/verify.js';
 
 const router = express.Router();
@@ -29,9 +30,12 @@ const upload = multer({
     bucket: bucketName || 'placeholder-bucket',
     // Note: Do not set ACL when the bucket enforces bucket-owner ownership (ACLs disabled)
     key: function (req, file, cb) {
-      const { platform, version } = req.body;
+      const incomingPlatform = req && req.body ? req.body.platform : undefined;
+      const incomingVersion = req && req.body ? req.body.version : undefined;
+      const safePlatform = (typeof incomingPlatform === 'string' && incomingPlatform.trim()) ? incomingPlatform.trim() : 'android';
+      const safeVersion = (typeof incomingVersion === 'string' && incomingVersion.trim()) ? incomingVersion.trim() : 'v1.0.0';
       const timestamp = Date.now();
-      const baseName = `${platform}-${version || 'v1.0.0'}-${timestamp}`;
+      const baseName = `${safePlatform}-${safeVersion}-${timestamp}`;
       const fileName = `mobile-apps/latest-${baseName}.${file.originalname.split('.').pop()}`;
       cb(null, fileName);
     },
@@ -160,7 +164,7 @@ router.get('/', verifyToken, async (req, res) => {
       return {
         id: file.Key,
         name: fileName,
-        url: `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_REGION || 'us-east-1'}.amazonaws.com/${file.Key}`,
+        url: null, // will be presigned on demand
         size: file.Size,
         format: fileExtension,
         platform: getPlatformFromFormat(fileExtension),
@@ -209,7 +213,7 @@ router.get('/active', async (req, res) => {
       return {
         id: file.Key,
         name: fileName,
-        url: `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_REGION || 'us-east-1'}.amazonaws.com/${file.Key}`,
+        url: null, // will be presigned on demand
         size: file.Size,
         format: fileExtension,
         platform: getPlatformFromFormat(fileExtension),
