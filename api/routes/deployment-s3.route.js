@@ -159,7 +159,10 @@ router.get('/', verifyToken, async (req, res) => {
     
     const files = contents.map(file => {
       const fileName = file.Key.split('/').pop();
-      const fileExtension = fileName.split('.').pop();
+      const fileExtension = (fileName.split('.').pop() || '').toLowerCase();
+      // Infer platform from key when possible: latest-<platform>-<version>-<ts>.<ext>
+      const nameWithoutPrefix = fileName.startsWith('latest-') ? fileName.slice('latest-'.length) : fileName;
+      const inferredPlatform = nameWithoutPrefix.split('-')[0];
       
       return {
         id: file.Key,
@@ -167,7 +170,7 @@ router.get('/', verifyToken, async (req, res) => {
         url: null, // will be presigned on demand
         size: file.Size,
         format: fileExtension,
-        platform: getPlatformFromFormat(fileExtension),
+        platform: getPlatformFromFormat(fileExtension) !== 'unknown' ? getPlatformFromFormat(fileExtension) : (['android','ios','windows','macos'].includes(inferredPlatform) ? inferredPlatform : 'unknown'),
         version: extractVersionFromFilename(fileName),
         createdAt: file.LastModified,
         isActive: file.Key.includes('latest'),
@@ -208,7 +211,9 @@ router.get('/active', async (req, res) => {
     
     const activeFiles = contents.map(file => {
       const fileName = file.Key.split('/').pop();
-      const fileExtension = fileName.split('.').pop();
+      const fileExtension = (fileName.split('.').pop() || '').toLowerCase();
+      const nameWithoutPrefix = fileName.startsWith('latest-') ? fileName.slice('latest-'.length) : fileName;
+      const inferredPlatform = nameWithoutPrefix.split('-')[0];
       
       return {
         id: file.Key,
@@ -216,7 +221,7 @@ router.get('/active', async (req, res) => {
         url: null, // will be presigned on demand
         size: file.Size,
         format: fileExtension,
-        platform: getPlatformFromFormat(fileExtension),
+        platform: getPlatformFromFormat(fileExtension) !== 'unknown' ? getPlatformFromFormat(fileExtension) : (['android','ios','windows','macos'].includes(inferredPlatform) ? inferredPlatform : 'unknown'),
         version: extractVersionFromFilename(fileName),
         createdAt: file.LastModified,
       };
@@ -232,6 +237,24 @@ router.get('/active', async (req, res) => {
       success: false,
       message: 'Failed to fetch active deployment files'
     });
+  }
+});
+
+// Public: Get presigned download URL for an object key (no auth)
+router.get('/public-download-url', async (req, res) => {
+  try {
+    if (!bucketName) {
+      return res.status(500).json({ success: false, message: 'AWS S3 not configured' });
+    }
+    const { id } = req.query;
+    if (!id) return res.status(400).json({ success: false, message: 'Missing id' });
+    const key = decodeURIComponent(id);
+    const command = new GetObjectCommand({ Bucket: bucketName, Key: key });
+    const url = await getSignedUrl(s3Client, command, { expiresIn: 60 });
+    return res.json({ success: true, url });
+  } catch (error) {
+    console.error('Error generating public download URL:', error);
+    res.status(500).json({ success: false, message: 'Failed to generate download URL' });
   }
 });
 

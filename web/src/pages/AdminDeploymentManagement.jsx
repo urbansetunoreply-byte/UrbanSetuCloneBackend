@@ -5,6 +5,7 @@ import { FaUpload, FaTrash, FaDownload, FaCheck, FaTimes, FaMobile, FaDesktop, F
 import { toast } from 'react-toastify';
 
 import { usePageTitle } from '../hooks/usePageTitle';
+import { resetAndroidDownloadCache } from '../utils/androidDownload';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminDeploymentManagement() {
@@ -190,6 +191,8 @@ export default function AdminDeploymentManagement() {
       } else {
         toast.error(data.message || 'Failed to set active deployment');
       }
+      // Invalidate public download cache immediately after changes
+      resetAndroidDownloadCache();
     } catch (error) {
       console.error('Error setting active:', error);
       toast.error('Failed to set active deployment');
@@ -216,6 +219,8 @@ export default function AdminDeploymentManagement() {
       } else {
         toast.error(data.message || 'Failed to delete file');
       }
+      // Invalidate public download cache immediately after changes
+      resetAndroidDownloadCache();
     } catch (error) {
       console.error('Error deleting file:', error);
       toast.error('Failed to delete file');

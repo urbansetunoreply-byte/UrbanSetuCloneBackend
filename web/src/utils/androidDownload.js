@@ -64,7 +64,11 @@ const getLatestAndroidApkUrl = async () => {
     
     if (androidApk) {
       console.log('Found active Android APK:', androidApk);
-      return androidApk.url;
+      // Use public presigned URL endpoint on demand
+      const encoded = encodeURIComponent(androidApk.id);
+      const res = await fetch(`${API_BASE_URL}/api/deployment/public-download-url?id=${encoded}`);
+      const d = await res.json();
+      if (d && d.success && d.url) return d.url;
     }
     
     console.log('No active Android APK found, checking all deployments...');
@@ -77,7 +81,10 @@ const getLatestAndroidApkUrl = async () => {
     
     if (latestAndroidApk) {
       console.log('Found latest Android APK:', latestAndroidApk);
-      return latestAndroidApk.url;
+      const encoded2 = encodeURIComponent(latestAndroidApk.id);
+      const res2 = await fetch(`${API_BASE_URL}/api/deployment/public-download-url?id=${encoded2}`);
+      const d2 = await res2.json();
+      if (d2 && d2.success && d2.url) return d2.url;
     }
   } catch (error) {
     console.error('Error getting latest Android APK:', error);
@@ -222,4 +229,10 @@ export const handleAndroidDownload = async (showToast, filename = 'UrbanSetu_deb
     console.error('Download error:', error);
     showToast.error('Download failed. Please try again.');
   }
+};
+
+// Reset cache so new uploads/deletions reflect immediately
+export const resetAndroidDownloadCache = () => {
+  activeDeploymentsCache = null;
+  cacheTimestamp = 0;
 };
