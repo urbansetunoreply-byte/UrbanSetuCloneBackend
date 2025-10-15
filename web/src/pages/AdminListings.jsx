@@ -16,6 +16,7 @@ export default function AdminListings() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showMoreListing, setShowMoreListing] = useState(false);
   const { currentUser } = useSelector((state) => state.user);
   const [showReasonModal, setShowReasonModal] = useState(false);
   const [deleteReason, setDeleteReason] = useState("");
@@ -38,15 +39,18 @@ export default function AdminListings() {
      };
    }, [showReasonModal, showPasswordModal]);
  
-   useEffect(() => {
-    const fetchAllListings = async () => {
+  useEffect(() => {
+   const fetchAllListings = async () => {
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch(`${API_BASE_URL}/api/listing/get`, { credentials: 'include' });
+        const limit = 12;
+        const params = new URLSearchParams({ limit: String(limit), startIndex: '0' });
+        const res = await fetch(`${API_BASE_URL}/api/listing/get?${params.toString()}`, { credentials: 'include' });
         if (res.ok) {
           const data = await res.json();
           setListings(data);
+          setShowMoreListing(Array.isArray(data) && data.length === limit);
         } else {
           throw new Error("Failed to fetch listings");
         }
@@ -58,6 +62,18 @@ export default function AdminListings() {
     };
     fetchAllListings();
   }, []);
+
+  const handleShowMore = async () => {
+    try {
+      const limit = 12;
+      const params = new URLSearchParams({ limit: String(limit), startIndex: String(listings.length) });
+      const res = await fetch(`${API_BASE_URL}/api/listing/get?${params.toString()}`, { credentials: 'include' });
+      if (!res.ok) return;
+      const data = await res.json();
+      setListings((prev) => [...prev, ...data]);
+      setShowMoreListing(Array.isArray(data) && data.length === limit);
+    } catch (_) {}
+  };
 
   const handleDelete = (id) => {
     setPendingDeleteId(id);
@@ -187,6 +203,7 @@ export default function AdminListings() {
                 </Link>
               </div>
             ) : (
+              <>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                 {listings.map((listing) => (
                   <div key={listing._id} className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
@@ -303,6 +320,17 @@ export default function AdminListings() {
                   </div>
                 ))}
               </div>
+              {showMoreListing && (
+                <div className="flex justify-center mt-6">
+                  <button
+                    onClick={handleShowMore}
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                  >
+                    Show more
+                  </button>
+                </div>
+              )}
+              </>
             )}
           </div>
         </div>
