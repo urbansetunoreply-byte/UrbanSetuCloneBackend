@@ -1284,45 +1284,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
                             {/* Enhanced Right controls */}
                             <div className="flex items-center gap-1 relative flex-shrink-0">
-                                {/* Theme selector */}
-                                <div className="relative group">
-                                    <button
-                                        onClick={() => setShowSettings(!showSettings)}
-                                        className="text-white/90 hover:text-white p-1.5 rounded border border-white/30 hover:border-white transition-colors"
-                                        title="Themes & Settings"
-                                    >
-                                        <FaPalette size={12} />
-                                    </button>
-                                </div>
-
-                                {/* Dark mode toggle */}
-                                <button
-                                    onClick={toggleDarkMode}
-                                    className="text-white/90 hover:text-white p-1.5 rounded border border-white/30 hover:border-white transition-colors"
-                                    title={isDarkMode ? "Light Mode" : "Dark Mode"}
-                                >
-                                    {isDarkMode ? <FaSun size={12} /> : <FaMoon size={12} />}
-                                </button>
-
-                                {/* Search in chat */}
-                                <button
-                                    onClick={() => setShowSearchInChat(!showSearchInChat)}
-                                    className="text-white/90 hover:text-white p-1.5 rounded border border-white/30 hover:border-white transition-colors"
-                                    title="Search in Chat"
-                                >
-                                    <FaSearch size={12} />
-                                </button>
-
-                                {/* Fullscreen toggle */}
-                                <button
-                                    onClick={() => setIsFullscreen(!isFullscreen)}
-                                    className="text-white/90 hover:text-white p-1.5 rounded border border-white/30 hover:border-white transition-colors"
-                                    title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
-                                >
-                                    {isFullscreen ? <FaCompress size={12} /> : <FaExpand size={12} />}
-                                </button>
-
-                                {/* Modes dropdown */}
+                                {/* Response Tone dropdown */}
                                 <select
                                     value={tone}
                                     onChange={(e) => { setTone(e.target.value); localStorage.setItem('gemini_tone', e.target.value); }}
@@ -1381,17 +1343,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 </button>
                                             </li>
 
-                                            {/* Dark/Light Mode */}
-                                            <li>
-                                                <button
-                                                    onClick={() => { toggleDarkMode(); setIsHeaderMenuOpen(false); }}
-                                                    className="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2"
-                                                >
-                                                    {isDarkMode ? <FaSun size={12} className="text-yellow-500" /> : <FaMoon size={12} className="text-gray-700" />}
-                                                    {isDarkMode ? 'Light Mode' : 'Dark Mode'}
-                                                </button>
-                                            </li>
-
                                             {/* Search in Chat */}
                                             <li>
                                                 <button
@@ -1412,21 +1363,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     {isFullscreen ? <FaCompress size={12} className="text-gray-700" /> : <FaExpand size={12} className="text-gray-700" />}
                                                     {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
                                                 </button>
-                                            </li>
-
-                                            {/* Tone select */}
-                                            <li className="px-3 py-2">
-                                                <label className="block text-xs text-gray-500 mb-1">Response Tone</label>
-                                                <select
-                                                    value={tone}
-                                                    onChange={(e) => { setTone(e.target.value); localStorage.setItem('gemini_tone', e.target.value); }}
-                                                    className="w-full border border-gray-300 rounded px-2 py-1 text-xs"
-                                                >
-                                                    <option value="neutral">Neutral</option>
-                                                    <option value="friendly">Friendly</option>
-                                                    <option value="formal">Formal</option>
-                                                    <option value="concise">Concise</option>
-                                                </select>
                                             </li>
 
                                             <li className="border-t border-gray-200 my-1"></li>
@@ -1866,19 +1802,19 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
                             <form onSubmit={handleSubmit} className="flex space-x-2">
                                 <div className="flex-1 relative">
-                                    <textarea
+                                    <input
                                         ref={inputRef}
+                                        type="text"
                                         value={inputMessage}
                                         onChange={(e) => setInputMessage(e.target.value)}
                                         onKeyPress={handleKeyPress}
                                         placeholder={!currentUser && promptCount >= 5 ? "Sign in to continue chatting..." : "Ask me anything about real estate..."}
-                                        className={`flex-1 px-4 py-3 border rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none min-h-[48px] max-h-[120px] ${
+                                        className={`w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm ${
                                             isDarkMode 
                                                 ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' 
                                                 : 'bg-white border-gray-300 text-gray-900'
                                         }`}
                                         disabled={isLoading || (!currentUser && promptCount >= 5)}
-                                        rows={2}
                                     />
                                     {inputMessage.length > 1800 && (
                                         <div className="absolute -top-6 right-0 text-xs text-orange-600">
@@ -1891,7 +1827,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 <button
                                     type="button"
                                     onClick={isRecording ? stopVoiceRecording : startVoiceRecording}
-                                    className={`px-3 py-3 rounded-full transition-all duration-200 min-h-[48px] flex items-center justify-center ${
+                                    className={`px-3 py-2 rounded-full transition-all duration-200 flex items-center justify-center ${
                                         isRecording 
                                             ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse' 
                                             : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
@@ -1902,7 +1838,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 </button>
 
                                 {/* File Upload Button */}
-                                <label className="px-3 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full transition-all duration-200 cursor-pointer min-h-[48px] flex items-center justify-center">
+                                <label className="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full transition-all duration-200 cursor-pointer flex items-center justify-center">
                                     <FaUpload size={14} />
                                     <input
                                         type="file"
@@ -1917,7 +1853,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     <button
                                         type="button"
                                         onClick={() => { abortControllerRef.current?.abort(); toast.info('Generation stopped'); }}
-                                        className="bg-red-600 hover:bg-red-700 text-white px-3 rounded-full min-h-[48px] text-xs font-medium shadow flex items-center justify-center"
+                                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-full text-xs font-medium shadow flex items-center justify-center"
                                         title="Stop generating"
                                         aria-label="Stop generating"
                                     >
@@ -1927,7 +1863,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     <button
                                         type="submit"
                                         disabled={!inputMessage.trim() || (!currentUser && promptCount >= 5)}
-                                        className={`bg-gradient-to-r ${themeColors.primary} text-white p-3 rounded-full hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-110 flex-shrink-0 flex items-center justify-center min-h-[48px] w-12 group hover:shadow-xl active:scale-95`}
+                                        className={`bg-gradient-to-r ${themeColors.primary} text-white p-2 rounded-full hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-110 flex-shrink-0 flex items-center justify-center w-10 h-10 group hover:shadow-xl active:scale-95`}
                                     >
                                         <div className="relative">
                                             {sendIconSent ? (
