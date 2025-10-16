@@ -1902,28 +1902,22 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 {/* Voice Input Button */}
                                 <button
                                     type="button"
-                                    onClick={isRecording ? stopVoiceRecording : startVoiceRecording}
-                                    className={`px-3 py-2 rounded-full transition-all duration-200 flex items-center justify-center ${
-                                        isRecording 
-                                            ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse' 
-                                            : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                                    }`}
-                                    title={isRecording ? "Stop Recording" : "Voice Input"}
+                                    onClick={() => setShowVoiceInput(true)}
+                                    className="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full transition-all duration-200 flex items-center justify-center"
+                                    title="Voice Input"
                                 >
-                                    {isRecording ? <FaStop size={14} /> : <FaMicrophone size={14} />}
+                                    <FaMicrophone size={14} />
                                 </button>
 
                                 {/* File Upload Button */}
-                                <label className="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full transition-all duration-200 cursor-pointer flex items-center justify-center" title="Upload files (Images, PDF, Documents)">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowFileUpload(true)}
+                                    className="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full transition-all duration-200 flex items-center justify-center"
+                                    title="Upload files (Images, PDF, Documents)"
+                                >
                                     <FaUpload size={14} />
-                                    <input
-                                        type="file"
-                                        multiple
-                                        accept="image/*,.pdf,.txt,.csv,.doc,.docx,.xls,.xlsx"
-                                        onChange={handleFileUpload}
-                                        className="hidden"
-                                    />
-                                </label>
+                                </button>
 
                                 {isLoading ? (
                                     <button
