@@ -99,6 +99,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [messageReactions, setMessageReactions] = useState({});
     const [showReactionPicker, setShowReactionPicker] = useState(false);
     const [reactionTargetMessage, setReactionTargetMessage] = useState(null);
+    const [showAudioPreview, setShowAudioPreview] = useState(false);
+    const [recordedAudioUrl, setRecordedAudioUrl] = useState(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -1039,9 +1041,17 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
             recorder.onstop = async () => {
                 const audioBlob = new Blob(chunks, { type: 'audio/wav' });
-                // Here you would typically send the audio to a speech-to-text service
-                toast.info('Voice input feature coming soon!');
-                setAudioChunks([]);
+                const audioUrl = URL.createObjectURL(audioBlob);
+                
+                // Store audio for preview
+                setAudioChunks([audioBlob]);
+                
+                // Show audio preview
+                setShowAudioPreview(true);
+                setRecordedAudioUrl(audioUrl);
+                
+                // Stop all tracks
+                stream.getTracks().forEach(track => track.stop());
             };
 
             recorder.start();
@@ -1049,31 +1059,62 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             setIsRecording(true);
             setAudioChunks(chunks);
         } catch (error) {
-            toast.error('Microphone access denied');
+            console.error('Voice recording error:', error);
+            toast.error('Microphone access denied or not available');
         }
     };
 
     const stopVoiceRecording = () => {
         if (mediaRecorder && isRecording) {
-            mediaRecorder.stop();
+            if (mediaRecorder.stop) {
+                mediaRecorder.stop();
+            }
             setIsRecording(false);
         }
     };
 
     const handleFileUpload = (event) => {
         const files = Array.from(event.target.files);
-        const validFiles = files.filter(file => {
-            const maxSize = 10 * 1024 * 1024; // 10MB
-            const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'text/plain'];
-            return file.size <= maxSize && validTypes.includes(file.type);
-        });
-
-        if (validFiles.length !== files.length) {
-            toast.error('Some files were rejected. Only images, PDFs, and text files under 10MB are allowed.');
+        
+        if (files.length === 0) {
+            return;
         }
 
-        setUploadedFiles(prev => [...prev, ...validFiles]);
-        toast.success(`${validFiles.length} file(s) uploaded successfully`);
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        const validTypes = [
+            'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
+            'application/pdf', 
+            'text/plain', 'text/csv',
+            'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        ];
+
+        const validFiles = [];
+        const rejectedFiles = [];
+
+        files.forEach(file => {
+            if (file.size > maxSize) {
+                rejectedFiles.push(`${file.name} (too large - max 10MB)`);
+            } else if (!validTypes.includes(file.type)) {
+                rejectedFiles.push(`${file.name} (unsupported format)`);
+            } else {
+                validFiles.push(file);
+            }
+        });
+
+        // Show error messages for rejected files
+        if (rejectedFiles.length > 0) {
+            toast.error(`Rejected files: ${rejectedFiles.join(', ')}`);
+        }
+
+        // Add valid files
+        if (validFiles.length > 0) {
+            setUploadedFiles(prev => [...prev, ...validFiles]);
+            toast.success(`${validFiles.length} file(s) uploaded successfully`);
+        }
+
+        // Clear the input so the same file can be selected again
+        event.target.value = '';
     };
 
     const removeUploadedFile = (index) => {
@@ -1208,14 +1249,20 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     {!isOpen && (
                         <div className="absolute bottom-16 right-0 flex flex-col gap-2 opacity-0 hover:opacity-100 transition-all duration-300">
                             <button
-                                onClick={() => setShowVoiceInput(true)}
+                                onClick={() => {
+                                    setIsOpen(true);
+                                    setTimeout(() => setShowVoiceInput(true), 100);
+                                }}
                                 className="w-10 h-10 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110"
                                 title="Voice Input"
                             >
                                 <FaMicrophone size={14} />
                             </button>
                             <button
-                                onClick={() => setShowFileUpload(true)}
+                                onClick={() => {
+                                    setIsOpen(true);
+                                    setTimeout(() => setShowFileUpload(true), 100);
+                                }}
                                 className="w-10 h-10 bg-purple-500 hover:bg-purple-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110"
                                 title="Upload File"
                             >
@@ -1867,12 +1914,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 </button>
 
                                 {/* File Upload Button */}
-                                <label className="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full transition-all duration-200 cursor-pointer flex items-center justify-center">
+                                <label className="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full transition-all duration-200 cursor-pointer flex items-center justify-center" title="Upload files (Images, PDF, Documents)">
                                     <FaUpload size={14} />
                                     <input
                                         type="file"
                                         multiple
-                                        accept="image/*,.pdf,.txt"
+                                        accept="image/*,.pdf,.txt,.csv,.doc,.docx,.xls,.xlsx"
                                         onChange={handleFileUpload}
                                         className="hidden"
                                     />
@@ -2426,7 +2473,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
                 <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-xl shadow-xl p-6 w-80 max-w-full text-center`}>
                     <div className="mb-4">
-                        <FaMicrophone size={32} className="mx-auto text-blue-500 mb-2" />
+                        <FaMicrophone size={32} className={`mx-auto mb-2 ${isRecording ? 'text-red-500 animate-pulse' : 'text-blue-500'}`} />
                         <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                             Voice Input
                         </h3>
@@ -2440,6 +2487,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             onMouseDown={startVoiceRecording}
                             onMouseUp={stopVoiceRecording}
                             onMouseLeave={stopVoiceRecording}
+                            onTouchStart={startVoiceRecording}
+                            onTouchEnd={stopVoiceRecording}
                             className={`w-20 h-20 rounded-full mx-auto flex items-center justify-center transition-all duration-200 ${
                                 isRecording 
                                     ? 'bg-red-500 animate-pulse' 
@@ -2450,7 +2499,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         </button>
                         
                         <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                            {isRecording ? 'Recording... Release to stop' : 'Hold to record'}
+                            Hold to record
                         </p>
                     </div>
                     
@@ -2460,6 +2509,55 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     >
                         Close
                     </button>
+                </div>
+            </div>
+        )}
+
+        {/* Audio Preview Modal */}
+        {showAudioPreview && recordedAudioUrl && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-xl shadow-xl p-6 w-80 max-w-full text-center`}>
+                    <div className="mb-4">
+                        <FaMicrophone size={32} className="mx-auto text-green-500 mb-2" />
+                        <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                            Audio Preview
+                        </h3>
+                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                            Review your recording
+                        </p>
+                    </div>
+                    
+                    <div className="space-y-3">
+                        <audio controls className="w-full">
+                            <source src={recordedAudioUrl} type="audio/wav" />
+                            Your browser does not support the audio element.
+                        </audio>
+                        
+                        <div className="flex gap-2 justify-center">
+                            <button
+                                onClick={() => {
+                                    // Here you would typically send the audio to a speech-to-text service
+                                    toast.info('Audio processing feature coming soon!');
+                                    setShowAudioPreview(false);
+                                    setRecordedAudioUrl(null);
+                                    setAudioChunks([]);
+                                }}
+                                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+                            >
+                                Use Audio
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowAudioPreview(false);
+                                    setRecordedAudioUrl(null);
+                                    setAudioChunks([]);
+                                }}
+                                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"
+                            >
+                                Record Again
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         )}
@@ -2489,7 +2587,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             <input
                                 type="file"
                                 multiple
-                                accept="image/*,.pdf,.txt"
+                                accept="image/*,.pdf,.txt,.csv,.doc,.docx,.xls,.xlsx"
                                 onChange={handleFileUpload}
                                 className="hidden"
                                 id="file-upload"
@@ -2502,8 +2600,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             </label>
                         </div>
                         
-                        <div className="text-xs text-gray-500">
-                            Supported: Images (JPG, PNG, GIF), PDF, Text files. Max 10MB per file.
+                        <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                            <p>Supported: Images (JPG, PNG, GIF), PDF, Text files. Max 10MB per file.</p>
                         </div>
                     </div>
                 </div>
