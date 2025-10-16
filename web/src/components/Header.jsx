@@ -251,7 +251,7 @@ export default function Header() {
                   className="flex items-center gap-1 px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors duration-200 font-medium"
                   title="Download Android App"
                 >
-                  <FaMobile className="text-xs" />
+                  <FaDownload className="text-xs" />
                   <span>Download App</span>
                 </button>
               </div>
@@ -399,7 +399,7 @@ export default function Header() {
                     }}
                     className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200 font-medium"
                   >
-                    <FaMobile className="text-lg" />
+                    <FaDownload className="text-lg" />
                     <span>{getDownloadButtonText()}</span>
                   </button>
                   <p className="text-xs text-gray-500 text-center mt-2">
