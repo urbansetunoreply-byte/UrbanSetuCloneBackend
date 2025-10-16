@@ -1098,10 +1098,39 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             return;
         }
 
-        const filtered = messages.filter(message => 
+        const filtered = messages.map((message, index) => ({
+            ...message,
+            originalIndex: index
+        })).filter(message => 
             message.content.toLowerCase().includes(query.toLowerCase())
         );
         setFilteredMessages(filtered);
+    };
+
+    const handleSearchResultClick = (message) => {
+        // Close the search modal
+        setShowSearchInChat(false);
+        setSearchQuery('');
+        setFilteredMessages([]);
+        
+        // Find the original message index
+        const originalIndex = message.originalIndex;
+        
+        // Highlight the message
+        setHighlightedMessage(originalIndex);
+        
+        // Scroll to the message
+        setTimeout(() => {
+            const messageElement = document.querySelector(`[data-message-index="${originalIndex}"]`);
+            if (messageElement) {
+                messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 100);
+        
+        // Remove highlight after 3 seconds
+        setTimeout(() => {
+            setHighlightedMessage(null);
+        }, 3000);
     };
 
     const filterMessages = (filter) => {
@@ -2520,8 +2549,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         {filteredMessages.map((message, index) => (
                                             <div
                                                 key={index}
-                                                className={`p-2 rounded border ${
-                                                    isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-gray-50 border-gray-200'
+                                                onClick={() => handleSearchResultClick(message)}
+                                                className={`p-2 rounded border cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:shadow-md ${
+                                                    isDarkMode 
+                                                        ? 'bg-gray-800 border-gray-600 hover:bg-gray-700 hover:border-gray-500' 
+                                                        : 'bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-gray-300'
                                                 }`}
                                             >
                                                 <div className="text-xs text-gray-500 mb-1">
