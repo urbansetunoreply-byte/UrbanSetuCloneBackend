@@ -249,6 +249,13 @@ export default function AdminExplore() {
     if (!natural) return;
     const extracted = { ...formData };
     
+    // Normalize number words (e.g., "two bhk" -> "2 bhk")
+    const numberWordToDigit = (text) => {
+      const map = { one: '1', two: '2', three: '3', four: '4', five: '5', six: '6', seven: '7', eight: '8', nine: '9', ten: '10' };
+      return text.replace(/\b(one|two|three|four|five|six|seven|eight|nine|ten)\b/gi, (m) => map[m.toLowerCase()]);
+    };
+    const norm = numberWordToDigit(natural);
+    
     // Enhanced NLP processing with context understanding
     const processNaturalLanguage = (query) => {
       const lowerQuery = query.toLowerCase();
@@ -270,7 +277,7 @@ export default function AdminExplore() {
       return { detectedIntent, query: lowerQuery };
     };
     
-    const { detectedIntent } = processNaturalLanguage(natural);
+    const { detectedIntent } = processNaturalLanguage(norm);
     
     // Enhanced city to state mapping
     const inferStateFromCity = (city) => {
@@ -305,7 +312,7 @@ export default function AdminExplore() {
     ];
     
     for (const pattern of bedPatterns) {
-      const bedsMatch = natural.match(pattern);
+      const bedsMatch = norm.match(pattern);
       if (bedsMatch) {
         extracted.bedrooms = bedsMatch[1];
         break;
@@ -323,7 +330,7 @@ export default function AdminExplore() {
     ];
     
     for (const pattern of bathPatterns) {
-      const bathMatch = natural.match(pattern);
+      const bathMatch = norm.match(pattern);
       if (bathMatch) {
         extracted.bathrooms = bathMatch[1];
         break;
@@ -346,7 +353,7 @@ export default function AdminExplore() {
     ];
     
     for (const pattern of pricePatterns) {
-      const priceMatch = natural.match(pattern);
+      const priceMatch = norm.match(pattern);
       if (priceMatch) {
         extracted.maxPrice = priceMatch[1].replace(/,/g,'');
         if (priceMatch[2]) {
@@ -367,7 +374,7 @@ export default function AdminExplore() {
     ];
     
     for (const pattern of minPricePatterns) {
-      const minPriceMatch = natural.match(pattern);
+      const minPriceMatch = norm.match(pattern);
       if (minPriceMatch) {
         extracted.minPrice = minPriceMatch[1].replace(/,/g,'');
         if (minPriceMatch[2]) {
@@ -379,6 +386,22 @@ export default function AdminExplore() {
         }
         break;
       }
+    }
+
+    // Price range detection: "between X and Y"
+    const rangeMatch = norm.match(/between\s+(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore)?\s+(?:and|to|\-)+\s+(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore)?/i);
+    if (rangeMatch) {
+      const toNumber = (val, unit) => {
+        let n = Number((val||'').replace(/,/g,''));
+        if (!unit) return String(n);
+        const u = unit.toLowerCase();
+        if (u==='k') n *= 1000;
+        if (u==='l' || u==='lac' || u==='lakh') n *= 100000;
+        if (u==='cr' || u==='crore') n *= 10000000;
+        return String(n);
+      };
+      extracted.minPrice = toNumber(rangeMatch[1], rangeMatch[2]);
+      extracted.maxPrice = toNumber(rangeMatch[3], rangeMatch[4]);
     }
 
     // Enhanced location detection with routine language
@@ -396,7 +419,7 @@ export default function AdminExplore() {
     ];
     
     for (const pattern of locationPatterns) {
-      const locationMatch = natural.match(pattern);
+      const locationMatch = norm.match(pattern);
       if (locationMatch) {
         const location = locationMatch[1].trim();
         // Check if it's a city or landmark
@@ -414,8 +437,8 @@ export default function AdminExplore() {
 
     // Enhanced state detection
     const states = ['andhra pradesh','arunachal pradesh','assam','bihar','chhattisgarh','goa','gujarat','haryana','himachal pradesh','jharkhand','karnataka','kerala','madhya pradesh','maharashtra','manipur','meghalaya','mizoram','nagaland','odisha','punjab','rajasthan','sikkim','tamil nadu','telangana','tripura','uttar pradesh','uttarakhand','west bengal','delhi','chandigarh','jammu and kashmir','ladakh'];
-    const lower = natural.toLowerCase();
-    const matchedState = states.find(s => new RegExp(`(^|\b)${s}(\b|$)`).test(lower));
+    const lower = norm.toLowerCase();
+    const matchedState = states.find(s => new RegExp(`(^|\\b)${s}(\\b|$)`).test(lower));
     if (matchedState) extracted.state = matchedState.replace(/\b\w/g, c => c.toUpperCase());
 
     // Enhanced property type detection with routine language
@@ -501,7 +524,7 @@ export default function AdminExplore() {
     // Process amenities
     Object.keys(amenitiesPatterns).forEach(amenity => {
       const patterns = amenitiesPatterns[amenity];
-      const hasAmenity = patterns.some(pattern => pattern.test(natural));
+      const hasAmenity = patterns.some(pattern => pattern.test(norm));
       if (hasAmenity) {
         if (amenity === 'furnished') extracted.furnished = true;
         if (amenity === 'parking') extracted.parking = true;
@@ -510,7 +533,7 @@ export default function AdminExplore() {
     });
     
     for (const pattern of typePatterns) {
-      const typeMatch = natural.match(pattern);
+      const typeMatch = norm.match(pattern);
       if (typeMatch) {
         const type = typeMatch[1] || typeMatch[0];
         if (/rent|kiran|bhada|lease/i.test(type)) extracted.type = 'rent';
@@ -576,46 +599,52 @@ export default function AdminExplore() {
     };
 
     // Check for parking
-    if (amenityPatterns.parking.some(pattern => pattern.test(natural))) {
+    if (amenityPatterns.parking.some(pattern => pattern.test(norm))) {
       extracted.parking = true;
-    } else if (/no\s+parking|without\s+parking/i.test(natural)) {
+    } else if (/no\s+parking|without\s+parking/i.test(norm)) {
       extracted.parking = false;
     }
 
     // Check for furnished/unfurnished
-    if (amenityPatterns.furnished.some(pattern => pattern.test(natural))) {
+    if (amenityPatterns.furnished.some(pattern => pattern.test(norm))) {
       extracted.furnished = true;
-    } else if (amenityPatterns.unfurnished.some(pattern => pattern.test(natural))) {
+    } else if (amenityPatterns.unfurnished.some(pattern => pattern.test(norm))) {
       extracted.furnished = false;
     }
 
     // Check for offers
-    if (amenityPatterns.offer.some(pattern => pattern.test(natural))) {
+    if (amenityPatterns.offer.some(pattern => pattern.test(norm))) {
       extracted.offer = true;
     }
 
     // Property size detection
-    if (/small|compact|studio|1\s*bhk/i.test(natural)) {
+    if (/small|compact|studio|1\s*bhk/i.test(norm)) {
       extracted.bedrooms = '1';
-    } else if (/medium|2\s*bhk|3\s*bhk/i.test(natural)) {
+    } else if (/medium|2\s*bhk|3\s*bhk/i.test(norm)) {
       extracted.bedrooms = '2';
-    } else if (/large|big|4\s*bhk|5\s*bhk/i.test(natural)) {
+    } else if (/large|big|4\s*bhk|5\s*bhk/i.test(norm)) {
       extracted.bedrooms = '4';
     }
 
     // Urgency detection
-    if (/urgent|immediate|asap|quick|fast/i.test(natural)) {
+    if (/urgent|immediate|asap|quick|fast/i.test(norm)) {
       extracted.sort = 'createdAt';
       extracted.order = 'desc';
     }
-    if (/no parking/i.test(natural)) extracted.parking = false; else if (/parking/i.test(natural)) extracted.parking = true;
-    if (/unfurnished/i.test(natural)) extracted.furnished = false; else if (/furnished/i.test(natural)) extracted.furnished = true;
-    const offerMatch = natural.match(/offer|discount|deal/i);
+    if (/no parking/i.test(norm)) extracted.parking = false; else if (/parking/i.test(norm)) extracted.parking = true;
+    if (/unfurnished/i.test(norm)) extracted.furnished = false; else if (/furnished/i.test(norm)) extracted.furnished = true;
+    const offerMatch = norm.match(/offer|discount|deal/i);
     if (offerMatch) extracted.offer = true;
-    const furnishedMatch = natural.match(/furnished/i);
+    const furnishedMatch = norm.match(/furnished/i);
     if (furnishedMatch) extracted.furnished = true;
-    const parkingMatch = natural.match(/parking/i);
+    const parkingMatch = norm.match(/parking/i);
     if (parkingMatch) extracted.parking = true;
+
+    // Monthly rent cues imply rent
+    if (/(per\s*month|monthly|\/mo|pm)/i.test(norm)) {
+      extracted.type = 'rent';
+    }
+ 
     const urlParams = new URLSearchParams(extracted);
     navigate(`?${urlParams.toString()}`);
   };
