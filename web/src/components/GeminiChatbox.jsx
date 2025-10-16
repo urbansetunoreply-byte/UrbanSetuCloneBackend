@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaCheck, FaDownload, FaUpload, FaCog, FaLightbulb, FaHistory, FaBookmark, FaShare, FaThumbsUp, FaThumbsDown, FaRegBookmark, FaBookmark as FaBookmarkSolid } from 'react-icons/fa';
+import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaCheck, FaDownload, FaUpload, FaCog, FaLightbulb, FaHistory, FaBookmark, FaShare, FaThumbsUp, FaThumbsDown, FaRegBookmark, FaBookmark as FaBookmarkSolid, FaMicrophone, FaStop, FaImage, FaFileAlt, FaMagic, FaSparkles, FaStar, FaMoon, FaSun, FaPalette, FaVolumeUp, FaVolumeMute, FaExpand, FaCompress, FaSearch, FaFilter, FaSort, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { formatLinksInText } from '../utils/linkFormatter.jsx';
 import { useSelector } from 'react-redux';
@@ -69,6 +69,36 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [floatingDateLabel, setFloatingDateLabel] = useState('');
     const [showFloatingDate, setShowFloatingDate] = useState(false);
     const floatingHideTimeoutRef = useRef(null);
+    
+    // Enhanced UI and Feature States
+    const [isRecording, setIsRecording] = useState(false);
+    const [mediaRecorder, setMediaRecorder] = useState(null);
+    const [audioChunks, setAudioChunks] = useState([]);
+    const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('gemini_dark_mode') === 'true');
+    const [showVoiceInput, setShowVoiceInput] = useState(false);
+    const [showFileUpload, setShowFileUpload] = useState(false);
+    const [uploadedFiles, setUploadedFiles] = useState([]);
+    const [showSmartSuggestions, setShowSmartSuggestions] = useState(true);
+    const [smartSuggestions, setSmartSuggestions] = useState([
+        "Find properties under ₹50L in Bangalore",
+        "What are the best areas for investment?",
+        "Help me understand home loan process",
+        "Compare 2BHK vs 3BHK apartments"
+    ]);
+    const [isMinimized, setIsMinimized] = useState(false);
+    const [showSearchInChat, setShowSearchInChat] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filteredMessages, setFilteredMessages] = useState([]);
+    const [showMessageFilters, setShowMessageFilters] = useState(false);
+    const [messageFilter, setMessageFilter] = useState('all'); // all, user, assistant, bookmarked
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const [showWelcomeScreen, setShowWelcomeScreen] = useState(true);
+    const [selectedTheme, setSelectedTheme] = useState(() => localStorage.getItem('gemini_theme') || 'blue');
+    const [showTypingIndicator, setShowTypingIndicator] = useState(false);
+    const [typingUsers, setTypingUsers] = useState([]);
+    const [messageReactions, setMessageReactions] = useState({});
+    const [showReactionPicker, setShowReactionPicker] = useState(false);
+    const [reactionTargetMessage, setReactionTargetMessage] = useState(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -996,71 +1026,302 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
     };
 
+    // Enhanced Features Functions
+    const startVoiceRecording = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const recorder = new MediaRecorder(stream);
+            const chunks = [];
+
+            recorder.ondataavailable = (event) => {
+                chunks.push(event.data);
+            };
+
+            recorder.onstop = async () => {
+                const audioBlob = new Blob(chunks, { type: 'audio/wav' });
+                // Here you would typically send the audio to a speech-to-text service
+                toast.info('Voice input feature coming soon!');
+                setAudioChunks([]);
+            };
+
+            recorder.start();
+            setMediaRecorder(recorder);
+            setIsRecording(true);
+            setAudioChunks(chunks);
+        } catch (error) {
+            toast.error('Microphone access denied');
+        }
+    };
+
+    const stopVoiceRecording = () => {
+        if (mediaRecorder && isRecording) {
+            mediaRecorder.stop();
+            setIsRecording(false);
+        }
+    };
+
+    const handleFileUpload = (event) => {
+        const files = Array.from(event.target.files);
+        const validFiles = files.filter(file => {
+            const maxSize = 10 * 1024 * 1024; // 10MB
+            const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'text/plain'];
+            return file.size <= maxSize && validTypes.includes(file.type);
+        });
+
+        if (validFiles.length !== files.length) {
+            toast.error('Some files were rejected. Only images, PDFs, and text files under 10MB are allowed.');
+        }
+
+        setUploadedFiles(prev => [...prev, ...validFiles]);
+        toast.success(`${validFiles.length} file(s) uploaded successfully`);
+    };
+
+    const removeUploadedFile = (index) => {
+        setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const toggleDarkMode = () => {
+        const newDarkMode = !isDarkMode;
+        setIsDarkMode(newDarkMode);
+        localStorage.setItem('gemini_dark_mode', newDarkMode.toString());
+    };
+
+    const handleSmartSuggestion = (suggestion) => {
+        setInputMessage(suggestion);
+        setShowSmartSuggestions(false);
+        inputRef.current?.focus();
+    };
+
+    const searchInMessages = (query) => {
+        if (!query.trim()) {
+            setFilteredMessages([]);
+            return;
+        }
+
+        const filtered = messages.filter(message => 
+            message.content.toLowerCase().includes(query.toLowerCase())
+        );
+        setFilteredMessages(filtered);
+    };
+
+    const filterMessages = (filter) => {
+        setMessageFilter(filter);
+        let filtered = messages;
+
+        switch (filter) {
+            case 'user':
+                filtered = messages.filter(m => m.role === 'user');
+                break;
+            case 'assistant':
+                filtered = messages.filter(m => m.role === 'assistant');
+                break;
+            case 'bookmarked':
+                filtered = messages.filter((message, index) => {
+                    const currentSessionId = getOrCreateSessionId();
+                    const key = `${currentSessionId}_${index}_${message.timestamp}`;
+                    return bookmarkedMessages.some(bm => bm.key === bookmarkKey);
+                });
+                break;
+            default:
+                filtered = messages;
+        }
+
+        setFilteredMessages(filtered);
+    };
+
+    const addReaction = (messageIndex, reaction) => {
+        setMessageReactions(prev => ({
+            ...prev,
+            [`${messageIndex}_${messages[messageIndex]?.timestamp}`]: reaction
+        }));
+        setShowReactionPicker(false);
+        setReactionTargetMessage(null);
+    };
+
+    const getThemeColors = () => {
+        const themes = {
+            blue: {
+                primary: 'from-blue-600 to-purple-600',
+                secondary: 'bg-blue-50',
+                accent: 'text-blue-600',
+                border: 'border-blue-200'
+            },
+            green: {
+                primary: 'from-green-600 to-emerald-600',
+                secondary: 'bg-green-50',
+                accent: 'text-green-600',
+                border: 'border-green-200'
+            },
+            purple: {
+                primary: 'from-purple-600 to-pink-600',
+                secondary: 'bg-purple-50',
+                accent: 'text-purple-600',
+                border: 'border-purple-200'
+            },
+            orange: {
+                primary: 'from-orange-600 to-red-600',
+                secondary: 'bg-orange-50',
+                accent: 'text-orange-600',
+                border: 'border-orange-200'
+            }
+        };
+        return themes[selectedTheme] || themes.blue;
+    };
+
+    const themeColors = getThemeColors();
+
     return (
         <>
             {/* Enhanced Floating AI Chat Button */}
             <div className="fixed bottom-20 right-6 z-50">
-                <button
-                    onClick={isOpen ? handleClose : handleOpen}
-                    className="relative group w-12 h-12 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 hover:rotate-12 flex items-center justify-center"
-                    style={{ 
-                        background: `linear-gradient(135deg, #6366f1, #6366f1dd)`,
-                        boxShadow: `0 10px 25px #6366f140`
-                    }}
-                    aria-label="Open AI Chat"
-                    title="Chat with Gemini AI Assistant!"
-                >
-                    {/* Animated background ring */}
-                    <div
-                        className="absolute inset-0 rounded-full animate-ping"
-                        style={{
-                            border: `3px solid #6366f155`, // semi-transparent color
-                        }}
-                    ></div>
-                    
-                    {/* Icon */}
-                    {isOpen ? <FaTimes className="w-5 h-5 text-white drop-shadow-lg" /> : <FaComments className="w-5 h-5 text-white drop-shadow-lg" />}
-                    {!isOpen && unreadCount > 0 && (
-                        <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center border-2 border-white shadow-lg">
-                            {unreadCount > 99 ? '99+' : unreadCount}
+                <div className="relative">
+                    {/* Quick Action Buttons */}
+                    {!isOpen && (
+                        <div className="absolute bottom-16 right-0 flex flex-col gap-2 opacity-0 hover:opacity-100 transition-all duration-300">
+                            <button
+                                onClick={() => setShowVoiceInput(true)}
+                                className="w-10 h-10 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110"
+                                title="Voice Input"
+                            >
+                                <FaMicrophone size={14} />
+                            </button>
+                            <button
+                                onClick={() => setShowFileUpload(true)}
+                                className="w-10 h-10 bg-purple-500 hover:bg-purple-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110"
+                                title="Upload File"
+                            >
+                                <FaUpload size={14} />
+                            </button>
                         </div>
                     )}
                     
-                    {/* Enhanced Hover Tooltip */}
-                    <div className="absolute bottom-full right-0 mb-3 bg-white text-gray-800 text-sm px-4 py-2 rounded-xl shadow-2xl hidden group-hover:block z-10 whitespace-nowrap border border-gray-100 transform -translate-y-1 transition-all duration-200">
-                        <div className="flex items-center gap-2">
-                            <span className="text-lg">🤖</span>
-                            <span className="font-medium">Chat with AI Assistant!</span>
+                    <button
+                        onClick={isOpen ? handleClose : handleOpen}
+                        className={`relative group w-14 h-14 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 hover:rotate-12 flex items-center justify-center ${
+                            isDarkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900' : `bg-gradient-to-br ${themeColors.primary}`
+                        }`}
+                        style={{ 
+                            boxShadow: isDarkMode ? '0 10px 25px rgba(0,0,0,0.3)' : `0 10px 25px ${selectedTheme === 'blue' ? '#6366f140' : '#10b98140'}`
+                        }}
+                        aria-label="Open AI Chat"
+                        title="Chat with Gemini AI Assistant!"
+                    >
+                        {/* Animated background ring */}
+                        <div
+                            className={`absolute inset-0 rounded-full animate-ping ${
+                                isDarkMode ? 'border-gray-600' : 'border-blue-400'
+                            }`}
+                            style={{
+                                border: `3px solid ${isDarkMode ? '#4b5563' : '#60a5fa'}`,
+                            }}
+                        ></div>
+                        
+                        {/* Icon with sparkle effect */}
+                        <div className="relative">
+                            {isOpen ? (
+                                <FaTimes className="w-6 h-6 text-white drop-shadow-lg" />
+                            ) : (
+                                <div className="relative">
+                                    <FaComments className="w-6 h-6 text-white drop-shadow-lg" />
+                                    <FaSparkles className="absolute -top-1 -right-1 w-3 h-3 text-yellow-300 animate-pulse" />
+                                </div>
+                            )}
                         </div>
-                        {/* Tooltip arrow */}
-                        <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white"></div>
-                    </div>
-                </button>
+                        
+                        {!isOpen && unreadCount > 0 && (
+                            <div className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[20px] h-[20px] px-1 flex items-center justify-center border-2 border-white shadow-lg animate-bounce">
+                                {unreadCount > 99 ? '99+' : unreadCount}
+                            </div>
+                        )}
+                        
+                        {/* Enhanced Hover Tooltip */}
+                        <div className={`absolute bottom-full right-0 mb-3 ${
+                            isDarkMode ? 'bg-gray-800 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-100'
+                        } text-sm px-4 py-2 rounded-xl shadow-2xl hidden group-hover:block z-10 whitespace-nowrap border transform -translate-y-1 transition-all duration-200`}>
+                            <div className="flex items-center gap-2">
+                                <span className="text-lg">🤖</span>
+                                <span className="font-medium">Chat with AI Assistant!</span>
+                            </div>
+                            {/* Tooltip arrow */}
+                            <div className={`absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent ${
+                                isDarkMode ? 'border-t-gray-800' : 'border-t-white'
+                            }`}></div>
+                        </div>
+                    </button>
+                </div>
             </div>
 
             {/* Chat Window */}
             {isOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4 md:p-0 md:items-end md:justify-end gemini-chatbox-modal animate-fadeIn">
-                    <div className={`bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col relative ${isExpanded ? 'w-full max-w-3xl h-[80vh] md:mb-12 md:mr-12' : 'w-full max-w-md h-full max-h-[90vh] md:w-96 md:h-[500px] md:mb-32 md:mr-6 md:max-h-[500px]'} animate-slideUp`}>
-                        {/* Header: left icon+title, right controls: modes dropdown, options (kebab), close */}
-                        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 md:p-4 rounded-t-2xl flex items-center justify-between flex-shrink-0 relative">
-                            {/* Left: assistant identity */}
+                <div className={`fixed inset-0 ${isDarkMode ? 'bg-black bg-opacity-70' : 'bg-black bg-opacity-50'} backdrop-blur-sm flex items-center justify-center z-50 p-4 md:p-0 md:items-end md:justify-end gemini-chatbox-modal animate-fadeIn`}>
+                    <div className={`${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} rounded-2xl shadow-2xl border flex flex-col relative ${
+                        isFullscreen ? 'w-full h-full max-w-none max-h-none rounded-none' :
+                        isExpanded ? 'w-full max-w-4xl h-[85vh] md:mb-12 md:mr-12' : 
+                        'w-full max-w-md h-full max-h-[90vh] md:w-96 md:h-[500px] md:mb-32 md:mr-6 md:max-h-[500px]'
+                    } animate-slideUp`}>
+                        {/* Enhanced Header */}
+                        <div className={`bg-gradient-to-r ${themeColors.primary} text-white p-3 md:p-4 ${isFullscreen ? 'rounded-none' : 'rounded-t-2xl'} flex items-center justify-between flex-shrink-0 relative`}>
+                            {/* Left: assistant identity with status */}
                             <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
-                                <div className="p-1.5 md:p-2 bg-white/10 rounded-lg border border-white/20">
-                                    <FaRobot size={16} className="opacity-90" />
+                                <div className="relative">
+                                    <div className="p-1.5 md:p-2 bg-white/10 rounded-lg border border-white/20">
+                                        <FaRobot size={16} className="opacity-90" />
+                                    </div>
+                                    {/* Online status indicator */}
+                                    <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></div>
                                 </div>
                                 <div className="leading-tight block max-w-full">
-                                    <div className="text-xs md:text-sm font-semibold truncate">
+                                    <div className="text-xs md:text-sm font-semibold truncate flex items-center gap-2">
                                         Gemini AI
+                                        <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full">PRO</span>
                                     </div>
-                                    <div className="text-[10px] md:text-xs text-white/80 truncate">
-                                        Your Smart Real Estate Assistant
+                                    <div className="text-[10px] md:text-xs text-white/80 truncate flex items-center gap-1">
+                                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                                        Online • Real Estate Expert
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Right controls: modes dropdown + kebab menu + close */}
+                            {/* Enhanced Right controls */}
                             <div className="flex items-center gap-1 relative flex-shrink-0">
+                                {/* Theme selector */}
+                                <div className="relative group">
+                                    <button
+                                        onClick={() => setShowSettings(!showSettings)}
+                                        className="text-white/90 hover:text-white p-1.5 rounded border border-white/30 hover:border-white transition-colors"
+                                        title="Themes & Settings"
+                                    >
+                                        <FaPalette size={12} />
+                                    </button>
+                                </div>
+
+                                {/* Dark mode toggle */}
+                                <button
+                                    onClick={toggleDarkMode}
+                                    className="text-white/90 hover:text-white p-1.5 rounded border border-white/30 hover:border-white transition-colors"
+                                    title={isDarkMode ? "Light Mode" : "Dark Mode"}
+                                >
+                                    {isDarkMode ? <FaSun size={12} /> : <FaMoon size={12} />}
+                                </button>
+
+                                {/* Search in chat */}
+                                <button
+                                    onClick={() => setShowSearchInChat(!showSearchInChat)}
+                                    className="text-white/90 hover:text-white p-1.5 rounded border border-white/30 hover:border-white transition-colors"
+                                    title="Search in Chat"
+                                >
+                                    <FaSearch size={12} />
+                                </button>
+
+                                {/* Fullscreen toggle */}
+                                <button
+                                    onClick={() => setIsFullscreen(!isFullscreen)}
+                                    className="text-white/90 hover:text-white p-1.5 rounded border border-white/30 hover:border-white transition-colors"
+                                    title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+                                >
+                                    {isFullscreen ? <FaCompress size={12} /> : <FaExpand size={12} />}
+                                </button>
+
                                 {/* Modes dropdown */}
                                 <select
                                     value={tone}
@@ -1504,17 +1765,104 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     </div>
                                 </div>
                             )}
+
+                            {/* Smart Suggestions */}
+                            {showSmartSuggestions && messages.length <= 1 && (
+                                <div className="mb-3">
+                                    <div className="text-xs text-gray-500 mb-2 flex items-center gap-2">
+                                        <FaLightbulb size={10} />
+                                        Try asking:
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {smartSuggestions.map((suggestion, index) => (
+                                            <button
+                                                key={index}
+                                                onClick={() => handleSmartSuggestion(suggestion)}
+                                                className={`text-xs px-3 py-1.5 rounded-full border transition-all duration-200 hover:scale-105 ${
+                                                    isDarkMode 
+                                                        ? 'bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700' 
+                                                        : 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100'
+                                                }`}
+                                            >
+                                                {suggestion}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Uploaded Files Display */}
+                            {uploadedFiles.length > 0 && (
+                                <div className="mb-3">
+                                    <div className="text-xs text-gray-500 mb-2">Attached files:</div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {uploadedFiles.map((file, index) => (
+                                            <div key={index} className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
+                                                isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-gray-50 border-gray-200'
+                                            }`}>
+                                                <FaFileAlt size={12} className="text-blue-500" />
+                                                <span className="text-xs truncate max-w-[120px]">{file.name}</span>
+                                                <button
+                                                    onClick={() => removeUploadedFile(index)}
+                                                    className="text-red-500 hover:text-red-700"
+                                                >
+                                                    <FaTimes size={10} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                             <form onSubmit={handleSubmit} className="flex space-x-2">
-                                <input
-                                    ref={inputRef}
-                                    type="text"
-                                    value={inputMessage}
-                                    onChange={(e) => setInputMessage(e.target.value)}
-                                    onKeyPress={handleKeyPress}
-                                    placeholder={!currentUser && promptCount >= 5 ? "Sign in to continue chatting..." : "Ask me anything about real estate..."}
-                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                                    disabled={isLoading || (!currentUser && promptCount >= 5)}
-                                />
+                                <div className="flex-1 relative">
+                                    <input
+                                        ref={inputRef}
+                                        type="text"
+                                        value={inputMessage}
+                                        onChange={(e) => setInputMessage(e.target.value)}
+                                        onKeyPress={handleKeyPress}
+                                        placeholder={!currentUser && promptCount >= 5 ? "Sign in to continue chatting..." : "Ask me anything about real estate..."}
+                                        className={`flex-1 px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm ${
+                                            isDarkMode 
+                                                ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' 
+                                                : 'bg-white border-gray-300 text-gray-900'
+                                        }`}
+                                        disabled={isLoading || (!currentUser && promptCount >= 5)}
+                                    />
+                                    {inputMessage.length > 1800 && (
+                                        <div className="absolute -top-6 right-0 text-xs text-orange-600">
+                                            {inputMessage.length}/2000
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                {/* Voice Input Button */}
+                                <button
+                                    type="button"
+                                    onClick={isRecording ? stopVoiceRecording : startVoiceRecording}
+                                    className={`px-3 py-2 rounded-full transition-all duration-200 ${
+                                        isRecording 
+                                            ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse' 
+                                            : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                                    }`}
+                                    title={isRecording ? "Stop Recording" : "Voice Input"}
+                                >
+                                    {isRecording ? <FaStop size={14} /> : <FaMicrophone size={14} />}
+                                </button>
+
+                                {/* File Upload Button */}
+                                <label className="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full transition-all duration-200 cursor-pointer">
+                                    <FaUpload size={14} />
+                                    <input
+                                        type="file"
+                                        multiple
+                                        accept="image/*,.pdf,.txt"
+                                        onChange={handleFileUpload}
+                                        className="hidden"
+                                    />
+                                </label>
+
                                 {isLoading ? (
                                     <button
                                         type="button"
@@ -1529,7 +1877,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     <button
                                         type="submit"
                                         disabled={!inputMessage.trim() || (!currentUser && promptCount >= 5)}
-                                        className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-full hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-110 flex-shrink-0 flex items-center justify-center w-10 h-10 group hover:shadow-xl active:scale-95"
+                                        className={`bg-gradient-to-r ${themeColors.primary} text-white p-2 rounded-full hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-110 flex-shrink-0 flex items-center justify-center w-10 h-10 group hover:shadow-xl active:scale-95`}
                                     >
                                         <div className="relative">
                                             {sendIconSent ? (
@@ -1972,6 +2320,238 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 Maybe Later
                             </button>
                         </div>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {/* Enhanced Settings Modal */}
+        {showSettings && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-xl shadow-xl p-6 w-96 max-w-full`}>
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                            Settings & Themes
+                        </h3>
+                        <button
+                            onClick={() => setShowSettings(false)}
+                            className="text-gray-500 hover:text-gray-700"
+                        >
+                            <FaTimes size={16} />
+                        </button>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        {/* Theme Selection */}
+                        <div>
+                            <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                Theme Color
+                            </label>
+                            <div className="grid grid-cols-4 gap-2">
+                                {['blue', 'green', 'purple', 'orange'].map((theme) => (
+                                    <button
+                                        key={theme}
+                                        onClick={() => {
+                                            setSelectedTheme(theme);
+                                            localStorage.setItem('gemini_theme', theme);
+                                        }}
+                                        className={`w-8 h-8 rounded-full border-2 ${
+                                            selectedTheme === theme ? 'border-gray-400' : 'border-gray-200'
+                                        } ${
+                                            theme === 'blue' ? 'bg-gradient-to-br from-blue-500 to-purple-500' :
+                                            theme === 'green' ? 'bg-gradient-to-br from-green-500 to-emerald-500' :
+                                            theme === 'purple' ? 'bg-gradient-to-br from-purple-500 to-pink-500' :
+                                            'bg-gradient-to-br from-orange-500 to-red-500'
+                                        }`}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Dark Mode Toggle */}
+                        <div className="flex items-center justify-between">
+                            <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                Dark Mode
+                            </span>
+                            <button
+                                onClick={toggleDarkMode}
+                                className={`w-12 h-6 rounded-full transition-colors ${
+                                    isDarkMode ? 'bg-blue-600' : 'bg-gray-300'
+                                }`}
+                            >
+                                <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                                    isDarkMode ? 'translate-x-6' : 'translate-x-0.5'
+                                }`} />
+                            </button>
+                        </div>
+
+                        {/* Smart Suggestions Toggle */}
+                        <div className="flex items-center justify-between">
+                            <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                Smart Suggestions
+                            </span>
+                            <button
+                                onClick={() => setShowSmartSuggestions(!showSmartSuggestions)}
+                                className={`w-12 h-6 rounded-full transition-colors ${
+                                    showSmartSuggestions ? 'bg-blue-600' : 'bg-gray-300'
+                                }`}
+                            >
+                                <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                                    showSmartSuggestions ? 'translate-x-6' : 'translate-x-0.5'
+                                }`} />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {/* Voice Input Modal */}
+        {showVoiceInput && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-xl shadow-xl p-6 w-80 max-w-full text-center`}>
+                    <div className="mb-4">
+                        <FaMicrophone size={32} className="mx-auto text-blue-500 mb-2" />
+                        <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                            Voice Input
+                        </h3>
+                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                            Click and hold to record your message
+                        </p>
+                    </div>
+                    
+                    <div className="space-y-3">
+                        <button
+                            onMouseDown={startVoiceRecording}
+                            onMouseUp={stopVoiceRecording}
+                            onMouseLeave={stopVoiceRecording}
+                            className={`w-20 h-20 rounded-full mx-auto flex items-center justify-center transition-all duration-200 ${
+                                isRecording 
+                                    ? 'bg-red-500 animate-pulse' 
+                                    : 'bg-blue-500 hover:bg-blue-600'
+                            }`}
+                        >
+                            <FaMicrophone size={24} className="text-white" />
+                        </button>
+                        
+                        <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                            {isRecording ? 'Recording... Release to stop' : 'Hold to record'}
+                        </p>
+                    </div>
+                    
+                    <button
+                        onClick={() => setShowVoiceInput(false)}
+                        className="mt-4 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"
+                    >
+                        Close
+                    </button>
+                </div>
+            </div>
+        )}
+
+        {/* File Upload Modal */}
+        {showFileUpload && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-xl shadow-xl p-6 w-80 max-w-full`}>
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                            Upload Files
+                        </h3>
+                        <button
+                            onClick={() => setShowFileUpload(false)}
+                            className="text-gray-500 hover:text-gray-700"
+                        >
+                            <FaTimes size={16} />
+                        </button>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                            <FaUpload size={32} className="mx-auto text-gray-400 mb-2" />
+                            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                Drag & drop files here or click to browse
+                            </p>
+                            <input
+                                type="file"
+                                multiple
+                                accept="image/*,.pdf,.txt"
+                                onChange={handleFileUpload}
+                                className="hidden"
+                                id="file-upload"
+                            />
+                            <label
+                                htmlFor="file-upload"
+                                className="mt-2 inline-block px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg cursor-pointer transition-colors"
+                            >
+                                Choose Files
+                            </label>
+                        </div>
+                        
+                        <div className="text-xs text-gray-500">
+                            Supported: Images (JPG, PNG, GIF), PDF, Text files. Max 10MB per file.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {/* Search in Chat Modal */}
+        {showSearchInChat && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-xl shadow-xl p-6 w-96 max-w-full`}>
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                            Search in Chat
+                        </h3>
+                        <button
+                            onClick={() => setShowSearchInChat(false)}
+                            className="text-gray-500 hover:text-gray-700"
+                        >
+                            <FaTimes size={16} />
+                        </button>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => {
+                                setSearchQuery(e.target.value);
+                                searchInMessages(e.target.value);
+                            }}
+                            placeholder="Search messages..."
+                            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                isDarkMode 
+                                    ? 'bg-gray-800 border-gray-600 text-white' 
+                                    : 'bg-white border-gray-300 text-gray-900'
+                            }`}
+                        />
+                        
+                        {searchQuery && (
+                            <div className="max-h-40 overflow-y-auto">
+                                {filteredMessages.length > 0 ? (
+                                    <div className="space-y-2">
+                                        {filteredMessages.map((message, index) => (
+                                            <div
+                                                key={index}
+                                                className={`p-2 rounded border ${
+                                                    isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-gray-50 border-gray-200'
+                                                }`}
+                                            >
+                                                <div className="text-xs text-gray-500 mb-1">
+                                                    {message.role === 'user' ? 'You' : 'Gemini'} • {new Date(message.timestamp).toLocaleString()}
+                                                </div>
+                                                <div className="text-sm">{message.content.substring(0, 100)}...</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        No messages found
+                                    </p>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
