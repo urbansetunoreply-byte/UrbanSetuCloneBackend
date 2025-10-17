@@ -1729,27 +1729,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         {/* Floating date label */}
                         {/* Removed old absolute-positioned floating date label */}
 
-                        {/* Quick suggestion prompts - always visible at bottom */}
-                        {messages && (
-                            <div className="px-4 pb-2 pt-2 border-t border-gray-100 flex-shrink-0">
-                                <div className="flex flex-wrap gap-2">
-                                    {[
-                                        'Show trending properties',
-                                        'How do I schedule a viewing?',
-                                        'What are popular areas near me?',
-                                        'Explain mortgage basics'
-                                    ].map((prompt) => (
-                                        <button
-                                            key={prompt}
-                                            onClick={() => { setInputMessage(prompt); setTimeout(() => handleSubmit(new Event('submit')), 0); }}
-                                            className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded-full"
-                                        >
-                                            {prompt}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
 
                         {/* Enhanced Features modal */}
                         {showFeatures && (
