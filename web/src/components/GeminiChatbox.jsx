@@ -1243,7 +1243,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     return (
         <>
             {/* Enhanced Floating AI Chat Button */}
-            <div className="fixed bottom-20 right-6 z-50">
+            <div className="fixed bottom-6 right-6 z-50">
                 <div className="relative">
                     {/* Quick Action Buttons */}
                     {!isOpen && (
@@ -1273,7 +1273,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     
                     <button
                         onClick={isOpen ? handleClose : handleOpen}
-                        className={`relative group w-14 h-14 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 hover:rotate-12 flex items-center justify-center ${
+                        className={`relative group w-12 h-12 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 hover:rotate-12 flex items-center justify-center ${
                             isDarkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900' : `bg-gradient-to-br ${themeColors.primary}`
                         }`}
                         style={{ 
@@ -1295,10 +1295,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         {/* Icon with sparkle effect */}
                         <div className="relative">
                             {isOpen ? (
-                                <FaTimes className="w-6 h-6 text-white drop-shadow-lg" />
+                                <FaTimes className="w-5 h-5 text-white drop-shadow-lg" />
                             ) : (
                                 <div className="relative">
-                                    <FaComments className="w-6 h-6 text-white drop-shadow-lg" />
+                                    <FaComments className="w-5 h-5 text-white drop-shadow-lg" />
                                     <FaStar className="absolute -top-1 -right-1 w-3 h-3 text-yellow-300 animate-pulse" />
                                 </div>
                             )}
