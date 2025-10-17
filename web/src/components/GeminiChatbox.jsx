@@ -52,10 +52,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [selectedHistoryIds, setSelectedHistoryIds] = useState([]);
     const [openHistoryMenuSessionId, setOpenHistoryMenuSessionId] = useState(null);
     
-    // Prompt limit for non-logged-in users
-    const [promptCount, setPromptCount] = useState(() => {
-        const saved = localStorage.getItem('gemini_prompt_count');
-        return saved ? parseInt(saved) : 0;
+    // Rate limiting state
+    const [rateLimitInfo, setRateLimitInfo] = useState({
+        role: 'public',
+        limit: 5,
+        remaining: 5,
+        resetTime: null,
+        windowMs: 15 * 60 * 1000
     });
     const [showSignInModal, setShowSignInModal] = useState(false);
     const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
@@ -141,6 +144,31 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         localStorage.setItem('gemini_session_id', newSessionId);
         setSessionId(newSessionId);
         return newSessionId;
+    };
+
+    // Fetch rate limit status from backend
+    const fetchRateLimitStatus = async () => {
+        try {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+            const token = localStorage.getItem('access_token');
+            
+            const response = await fetch(`${API_BASE_URL}/api/gemini/rate-limit-status`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token && { 'Authorization': `Bearer ${token}` })
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.rateLimit) {
+                    setRateLimitInfo(data.rateLimit);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to fetch rate limit status:', error);
+        }
     };
 
     // Load chat history for authenticated users
@@ -244,6 +272,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         const draftKey = `gemini_draft_${currentSessionId}`;
         const savedDraft = localStorage.getItem(draftKey);
         if (savedDraft) setInputMessage(savedDraft);
+        
+        // Fetch rate limit status
+        fetchRateLimitStatus();
     }, [currentUser, isHistoryLoaded]);
 
     // Persist draft input per session
@@ -254,11 +285,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         localStorage.setItem(draftKey, inputMessage);
     }, [inputMessage, sessionId]);
 
-    // Reset prompt count when user logs in
+    // Reset rate limit info when user logs in
     useEffect(() => {
         if (currentUser) {
-            setPromptCount(0);
-            localStorage.removeItem('gemini_prompt_count');
+            fetchRateLimitStatus();
         }
     }, [currentUser]);
 
@@ -474,8 +504,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         e.preventDefault();
         if (!inputMessage.trim() || isLoading) return;
 
-        // Check prompt limit for non-logged-in users
-        if (!currentUser && promptCount >= 5) {
+        // Check rate limit
+        if (rateLimitInfo.remaining <= 0) {
             setShowSignInModal(true);
             return;
         }
@@ -543,12 +573,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     localStorage.setItem('gemini_session_id', data.sessionId);
                 }
 
-                // Increment prompt count for non-logged-in users
-                if (!currentUser) {
-                    const newCount = promptCount + 1;
-                    setPromptCount(newCount);
-                    localStorage.setItem('gemini_prompt_count', newCount.toString());
-                }
+                // Refresh rate limit status after successful request
+                fetchRateLimitStatus();
 
                 // Show sent success check briefly
                 setSendIconSent(true);
@@ -618,8 +644,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const retryMessage = async (originalMessage, messageIndex) => {
         if (!originalMessage || isLoading) return;
 
-        // Check prompt limit for non-logged-in users
-        if (!currentUser && promptCount >= 5) {
+        // Check rate limit
+        if (rateLimitInfo.remaining <= 0) {
             setShowSignInModal(true);
             return;
         }
@@ -673,12 +699,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     localStorage.setItem('gemini_session_id', data.sessionId);
                 }
 
-                // Increment prompt count for non-logged-in users
-                if (!currentUser) {
-                    const newCount = promptCount + 1;
-                    setPromptCount(newCount);
-                    localStorage.setItem('gemini_prompt_count', newCount.toString());
-                }
+                // Refresh rate limit status after successful request
+                fetchRateLimitStatus();
             } else {
                 throw new Error('Invalid response structure from server');
             }
@@ -1675,7 +1697,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                     })();
                                                                     if (previousUserMessage) retryMessage(previousUserMessage, index);
                                                                 }}
-                                                                disabled={isLoading || (!currentUser && promptCount >= 5)}
+                                                                disabled={isLoading || rateLimitInfo.remaining <= 0}
                                                                 className="p-1 text-blue-600 hover:text-blue-700 hover:bg-blue-100 rounded transition-all duration-200 disabled:opacity-50"
                                                                 title="Try Again"
                                                                 aria-label="Try Again"
@@ -1792,14 +1814,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
                         {/* Input */}
                         <div className="p-4 border-t border-gray-200 flex-shrink-0">
-                            {/* Prompt Counter for Non-Logged-In Users */}
-                            {!currentUser && (
+                            {/* Rate Limit Counter */}
+                            {rateLimitInfo.role === 'public' && (
                                 <div className="mb-3 text-center">
                                     <div className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
                                         <span className="mr-1">💬</span>
                                         <span>
-                                            {promptCount < 5 
-                                                ? `${5 - promptCount} free prompts remaining` 
+                                            {rateLimitInfo.remaining > 0 
+                                                ? `${rateLimitInfo.remaining} free prompts remaining` 
                                                 : 'No free prompts left'
                                             }
                                         </span>
@@ -1863,13 +1885,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         value={inputMessage}
                                         onChange={(e) => setInputMessage(e.target.value)}
                                         onKeyPress={handleKeyPress}
-                                        placeholder={!currentUser && promptCount >= 5 ? "Sign in to continue chatting..." : "Ask me anything about real estate..."}
+                                        placeholder={rateLimitInfo.remaining <= 0 ? "Sign in to continue chatting..." : "Ask me anything about real estate..."}
                                         className={`w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm ${
                                             isDarkMode 
                                                 ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' 
                                                 : 'bg-white border-gray-300 text-gray-900'
                                         }`}
-                                        disabled={isLoading || (!currentUser && promptCount >= 5)}
+                                        disabled={isLoading || rateLimitInfo.remaining <= 0}
                                     />
                                     {inputMessage.length > 1800 && (
                                         <div className="absolute -top-6 right-0 text-xs text-orange-600">
@@ -1911,7 +1933,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 ) : (
                                     <button
                                         type="submit"
-                                        disabled={!inputMessage.trim() || (!currentUser && promptCount >= 5)}
+                                        disabled={!inputMessage.trim() || rateLimitInfo.remaining <= 0}
                                         className={`bg-gradient-to-r ${themeColors.primary} text-white p-2 rounded-full hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-110 flex-shrink-0 flex items-center justify-center w-10 h-10 group hover:shadow-xl active:scale-95`}
                                     >
                                         <div className="relative">
@@ -2327,7 +2349,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             Prompt Limit Reached
                         </h3>
                         <p className="text-sm text-gray-600 mb-6">
-                            You've used all 5 free prompts! Sign in to enjoy unlimited access to our AI assistant and unlock premium features like chat history, message ratings, and more.
+                            {rateLimitInfo.role === 'public' 
+                                ? "You've used all 5 free prompts! Sign in to enjoy unlimited access to our AI assistant and unlock premium features like chat history, message ratings, and more."
+                                : `You've reached your rate limit! Sign in to enjoy higher limits and premium features like chat history, message ratings, and more.`
+                            }
                         </p>
                         <div className="flex flex-col gap-3">
                             <button
