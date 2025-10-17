@@ -518,7 +518,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         if (!inputMessage.trim() || isLoading) return;
 
         // Check rate limit
-        if (rateLimitInfo.remaining <= 0) {
+        console.log('Frontend - Rate limit check:', { remaining: rateLimitInfo.remaining, role: rateLimitInfo.role, limit: rateLimitInfo.limit });
+        if (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin') {
+            console.log('Frontend - Rate limit exceeded, showing sign-in modal');
             setShowSignInModal(true);
             return;
         }
@@ -658,7 +660,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         if (!originalMessage || isLoading) return;
 
         // Check rate limit
-        if (rateLimitInfo.remaining <= 0) {
+        console.log('Frontend - Retry rate limit check:', { remaining: rateLimitInfo.remaining, role: rateLimitInfo.role, limit: rateLimitInfo.limit });
+        if (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin') {
+            console.log('Frontend - Retry rate limit exceeded, showing sign-in modal');
             setShowSignInModal(true);
             return;
         }
@@ -1710,7 +1714,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                     })();
                                                                     if (previousUserMessage) retryMessage(previousUserMessage, index);
                                                                 }}
-                                                                disabled={isLoading || rateLimitInfo.remaining <= 0}
+                                                                disabled={isLoading || (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin')}
                                                                 className="p-1 text-blue-600 hover:text-blue-700 hover:bg-blue-100 rounded transition-all duration-200 disabled:opacity-50"
                                                                 title="Try Again"
                                                                 aria-label="Try Again"
@@ -1841,6 +1845,16 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     </div>
                                 </div>
                             )}
+                            
+                            {/* Root Admin Indicator */}
+                            {rateLimitInfo.role === 'rootadmin' && (
+                                <div className="mb-3 text-center">
+                                    <div className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 border border-purple-200">
+                                        <span className="mr-1">👑</span>
+                                        <span>Unlimited AI Access - Root Admin</span>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Smart Suggestions */}
                             {showSmartSuggestions && messages.length <= 1 && (
@@ -1898,13 +1912,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         value={inputMessage}
                                         onChange={(e) => setInputMessage(e.target.value)}
                                         onKeyPress={handleKeyPress}
-                                        placeholder={rateLimitInfo.remaining <= 0 ? "Sign in to continue chatting..." : "Ask me anything about real estate..."}
+                                        placeholder={(rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin') ? "Sign in to continue chatting..." : "Ask me anything about real estate..."}
                                         className={`w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm ${
                                             isDarkMode 
                                                 ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' 
                                                 : 'bg-white border-gray-300 text-gray-900'
                                         }`}
-                                        disabled={isLoading || rateLimitInfo.remaining <= 0}
+                                        disabled={isLoading || (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin')}
                                     />
                                     {inputMessage.length > 1800 && (
                                         <div className="absolute -top-6 right-0 text-xs text-orange-600">
@@ -1946,7 +1960,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 ) : (
                                     <button
                                         type="submit"
-                                        disabled={!inputMessage.trim() || rateLimitInfo.remaining <= 0}
+                                        disabled={!inputMessage.trim() || (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin')}
                                         className={`bg-gradient-to-r ${themeColors.primary} text-white p-2 rounded-full hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-110 flex-shrink-0 flex items-center justify-center w-10 h-10 group hover:shadow-xl active:scale-95`}
                                     >
                                         <div className="relative">

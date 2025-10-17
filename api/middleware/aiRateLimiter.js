@@ -88,6 +88,14 @@ export const aiChatRateLimit = (req, res, next) => {
         
         // Root admins bypass rate limiting
         if (role === 'rootadmin') {
+            console.log('Rate limiter - Root admin detected, bypassing rate limiting');
+            // Add rate limit headers for root admin
+            res.set({
+                'X-RateLimit-Limit': 'unlimited',
+                'X-RateLimit-Remaining': 'unlimited',
+                'X-RateLimit-Reset': null,
+                'X-RateLimit-Role': 'rootadmin'
+            });
             return next();
         }
         
@@ -195,6 +203,7 @@ export const getRateLimitStatus = (req) => {
         console.log('getRateLimitStatus - role:', role, 'config:', config);
         
         if (role === 'rootadmin') {
+            console.log('getRateLimitStatus - Root admin detected, returning unlimited status');
             return {
                 role: role,
                 limit: Infinity,
