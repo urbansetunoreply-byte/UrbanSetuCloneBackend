@@ -6,7 +6,7 @@ import { aiChatRateLimit, getRateLimitStatus } from '../middleware/aiRateLimiter
 const router = express.Router();
 
 // Chat endpoint with role-based rate limiting and optional authentication
-router.post('/chat', aiChatRateLimit, optionalAuth, chatWithGemini);
+router.post('/chat', optionalAuth, aiChatRateLimit, chatWithGemini);
 
 // Get user's chat sessions (requires authentication)
 router.get('/sessions', verifyToken, getUserChatSessions);

@@ -114,9 +114,11 @@ export const optionalAuth = async (req, res, next) => {
       secure: process.env.NODE_ENV === 'production'
     });
     req.user = user;
+    console.log('optionalAuth - User authenticated:', { id: user._id, role: user.role, email: user.email });
     next();
   } catch (error) {
     // Any error in authentication, continue without authentication
+    console.log('optionalAuth - Authentication failed:', error.message);
     req.user = null;
     next();
   }

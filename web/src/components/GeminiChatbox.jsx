@@ -54,11 +54,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     
     // Rate limiting state
     const [rateLimitInfo, setRateLimitInfo] = useState({
-        role: 'public',
-        limit: 5,
-        remaining: 5,
+        role: currentUser ? (currentUser.role || 'user') : 'public',
+        limit: currentUser ? (currentUser.role === 'admin' ? 500 : currentUser.role === 'rootadmin' ? Infinity : 50) : 5,
+        remaining: currentUser ? (currentUser.role === 'admin' ? 500 : currentUser.role === 'rootadmin' ? Infinity : 50) : 5,
         resetTime: null,
-        windowMs: 15 * 60 * 1000
+        windowMs: currentUser ? (currentUser.role === 'admin' ? 24 * 60 * 60 * 1000 : 60 * 60 * 1000) : 15 * 60 * 1000
     });
     const [showSignInModal, setShowSignInModal] = useState(false);
     const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
@@ -150,24 +150,37 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const fetchRateLimitStatus = async () => {
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-            const token = localStorage.getItem('access_token');
             
             const response = await fetch(`${API_BASE_URL}/api/gemini/rate-limit-status`, {
                 method: 'GET',
+                credentials: 'include', // Use cookies for authentication
                 headers: {
-                    'Content-Type': 'application/json',
-                    ...(token && { 'Authorization': `Bearer ${token}` })
+                    'Content-Type': 'application/json'
                 }
             });
             
             if (response.ok) {
                 const data = await response.json();
+                console.log('Frontend - Rate limit status response:', data);
                 if (data.success && data.rateLimit) {
+                    console.log('Frontend - Setting rate limit info:', data.rateLimit);
                     setRateLimitInfo(data.rateLimit);
                 }
+            } else {
+                console.error('Frontend - Rate limit status failed:', response.status, response.statusText);
             }
         } catch (error) {
             console.error('Failed to fetch rate limit status:', error);
+            // Fallback: set default rate limit based on user role
+            const fallbackRole = currentUser ? (currentUser.role || 'user') : 'public';
+            const fallbackLimit = currentUser ? (currentUser.role === 'admin' ? 500 : currentUser.role === 'rootadmin' ? Infinity : 50) : 5;
+            setRateLimitInfo({
+                role: fallbackRole,
+                limit: fallbackLimit,
+                remaining: fallbackLimit,
+                resetTime: null,
+                windowMs: currentUser ? (currentUser.role === 'admin' ? 24 * 60 * 60 * 1000 : 60 * 60 * 1000) : 15 * 60 * 1000
+            });
         }
     };
 

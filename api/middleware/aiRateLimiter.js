@@ -44,12 +44,17 @@ const RATE_LIMITS = {
  * @returns {string} - User role (public, user, admin, rootadmin)
  */
 const getUserRole = (req) => {
+    // Debug logging
+    console.log('Rate limiter - req.user:', req.user ? { id: req.user._id, role: req.user.role, email: req.user.email } : 'null');
+    
     // If user is authenticated, use their role
     if (req.user && req.user.role) {
+        console.log('Rate limiter - Using authenticated user role:', req.user.role);
         return req.user.role;
     }
     
     // Default to public for non-authenticated users
+    console.log('Rate limiter - Using public role (no authenticated user)');
     return 'public';
 };
 
@@ -186,6 +191,8 @@ export const getRateLimitStatus = (req) => {
     try {
         const role = getUserRole(req);
         const config = RATE_LIMITS[role];
+        
+        console.log('getRateLimitStatus - role:', role, 'config:', config);
         
         if (role === 'rootadmin') {
             return {
