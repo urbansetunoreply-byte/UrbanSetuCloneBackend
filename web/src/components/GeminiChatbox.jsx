@@ -104,6 +104,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [reactionTargetMessage, setReactionTargetMessage] = useState(null);
     const [showAudioPreview, setShowAudioPreview] = useState(false);
     const [recordedAudioUrl, setRecordedAudioUrl] = useState(null);
+    const [recordedAudioFile, setRecordedAudioFile] = useState(null);
+    const [uploadingAudio, setUploadingAudio] = useState(false);
+    const [uploadingFile, setUploadingFile] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -1079,18 +1083,26 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             };
 
             recorder.onstop = async () => {
-                const audioBlob = new Blob(chunks, { type: 'audio/wav' });
-                const audioUrl = URL.createObjectURL(audioBlob);
-                
-                // Store audio for preview
-                setAudioChunks([audioBlob]);
-                
-                // Show audio preview
-                setShowAudioPreview(true);
-                setRecordedAudioUrl(audioUrl);
-                
-                // Stop all tracks
-                stream.getTracks().forEach(track => track.stop());
+                try {
+                    const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+                    const fileName = `recording-${Date.now()}.webm`;
+                    const audioFile = new File([audioBlob], fileName, { type: 'audio/webm' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    
+                    // Store audio for preview and upload
+                    setAudioChunks([audioBlob]);
+                    setRecordedAudioFile(audioFile);
+                    setRecordedAudioUrl(audioUrl);
+                    
+                    // Show audio preview
+                    setShowAudioPreview(true);
+                } catch (error) {
+                    console.error('Error processing recording:', error);
+                    toast.error('Failed to process recording');
+                } finally {
+                    // Stop all tracks
+                    stream.getTracks().forEach(track => track.stop());
+                }
             };
 
             recorder.start();
@@ -1112,7 +1124,90 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
     };
 
-    const handleFileUpload = (event) => {
+    // Upload audio to Cloudinary and get transcription
+    const uploadAudioAndTranscribe = async (audioFile) => {
+        try {
+            setUploadingAudio(true);
+            setUploadProgress(0);
+
+            // Upload audio to Cloudinary
+            const formData = new FormData();
+            formData.append('audio', audioFile);
+
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/upload/audio`, {
+                method: 'POST',
+                credentials: 'include',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error('Audio upload failed');
+            }
+
+            const uploadData = await response.json();
+            const audioUrl = uploadData.audioUrl;
+
+            // Send audio to Gemini for transcription
+            const transcriptionResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/gemini/chat`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: `Please transcribe this audio file: ${audioUrl}`,
+                    audioUrl: audioUrl,
+                    sessionId: sessionId || getOrCreateSessionId(),
+                    tone: 'neutral'
+                }),
+            });
+
+            if (!transcriptionResponse.ok) {
+                throw new Error('Transcription failed');
+            }
+
+            const transcriptionData = await transcriptionResponse.json();
+            return {
+                audioUrl,
+                transcription: transcriptionData.response || 'Transcription not available'
+            };
+
+        } catch (error) {
+            console.error('Audio upload/transcription error:', error);
+            toast.error('Failed to upload and transcribe audio');
+            throw error;
+        } finally {
+            setUploadingAudio(false);
+            setUploadProgress(0);
+        }
+    };
+
+    // Handle sending recorded audio
+    const handleSendRecordedAudio = async () => {
+        if (!recordedAudioFile) return;
+
+        try {
+            const { audioUrl, transcription } = await uploadAudioAndTranscribe(recordedAudioFile);
+            
+            // Add the transcribed message to input
+            setInputMessage(transcription);
+            
+            // Close audio preview
+            setShowAudioPreview(false);
+            setRecordedAudioUrl(null);
+            setRecordedAudioFile(null);
+            
+            // Auto-submit the transcribed message
+            setTimeout(() => {
+                handleSubmit(new Event('submit'));
+            }, 100);
+
+        } catch (error) {
+            console.error('Error sending recorded audio:', error);
+        }
+    };
+
+    const handleFileUpload = async (event) => {
         const files = Array.from(event.target.files);
         
         if (files.length === 0) {
@@ -1120,13 +1215,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
 
         const maxSize = 10 * 1024 * 1024; // 10MB
-        const validTypes = [
-            'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
-            'application/pdf', 
-            'text/plain', 'text/csv',
-            'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        ];
+        const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+        const validAudioTypes = ['audio/mp3', 'audio/wav', 'audio/m4a', 'audio/aac', 'audio/ogg', 'audio/webm'];
+        const validVideoTypes = ['video/mp4', 'video/webm', 'video/ogg', 'video/mov', 'video/mkv'];
+        const validDocTypes = ['application/pdf', 'text/plain', 'text/csv', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+        
+        const allValidTypes = [...validImageTypes, ...validAudioTypes, ...validVideoTypes, ...validDocTypes];
 
         const validFiles = [];
         const rejectedFiles = [];
@@ -1134,7 +1228,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         files.forEach(file => {
             if (file.size > maxSize) {
                 rejectedFiles.push(`${file.name} (too large - max 10MB)`);
-            } else if (!validTypes.includes(file.type)) {
+            } else if (!allValidTypes.includes(file.type)) {
                 rejectedFiles.push(`${file.name} (unsupported format)`);
             } else {
                 validFiles.push(file);
@@ -1146,14 +1240,84 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             toast.error(`Rejected files: ${rejectedFiles.join(', ')}`);
         }
 
-        // Add valid files
+        // Upload valid files immediately and close modal
         if (validFiles.length > 0) {
-            setUploadedFiles(prev => [...prev, ...validFiles]);
-            toast.success(`${validFiles.length} file(s) uploaded successfully`);
+            await uploadFilesAndSend(validFiles);
+            setShowFileUpload(false);
         }
 
         // Clear the input so the same file can be selected again
         event.target.value = '';
+    };
+
+    // Upload files to Cloudinary and send to chat
+    const uploadFilesAndSend = async (files) => {
+        try {
+            setUploadingFile(true);
+            setUploadProgress(0);
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                setUploadProgress(Math.round(((i + 1) / files.length) * 100));
+
+                let uploadEndpoint = '';
+                let formData = new FormData();
+
+                // Determine upload endpoint based on file type
+                if (file.type.startsWith('image/')) {
+                    uploadEndpoint = '/api/upload/image';
+                    formData.append('image', file);
+                } else if (file.type.startsWith('audio/')) {
+                    uploadEndpoint = '/api/upload/audio';
+                    formData.append('audio', file);
+                } else if (file.type.startsWith('video/')) {
+                    uploadEndpoint = '/api/upload/video';
+                    formData.append('video', file);
+                } else {
+                    uploadEndpoint = '/api/upload/document';
+                    formData.append('document', file);
+                }
+
+                // Upload to Cloudinary
+                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}${uploadEndpoint}`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to upload ${file.name}`);
+                }
+
+                const uploadData = await response.json();
+                
+                // Send to Gemini chat with file context
+                const fileType = file.type.startsWith('image/') ? 'image' : 
+                                file.type.startsWith('audio/') ? 'audio' : 
+                                file.type.startsWith('video/') ? 'video' : 'document';
+                
+                const fileUrl = uploadData.imageUrl || uploadData.audioUrl || uploadData.videoUrl || uploadData.documentUrl;
+                
+                // Create a message with file context
+                const messageWithFile = `I've uploaded a ${fileType} file: ${file.name}. Please analyze it and help me with it. File URL: ${fileUrl}`;
+                
+                // Add to input and auto-send
+                setInputMessage(messageWithFile);
+                
+                // Auto-submit after a short delay
+                setTimeout(() => {
+                    handleSubmit(new Event('submit'));
+                }, 100);
+            }
+
+            toast.success(`${files.length} file(s) uploaded and sent successfully`);
+        } catch (error) {
+            console.error('File upload error:', error);
+            toast.error('Failed to upload files');
+        } finally {
+            setUploadingFile(false);
+            setUploadProgress(0);
+        }
     };
 
     const removeUploadedFile = (index) => {
@@ -1620,6 +1784,100 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                         : ''
                                                 } transition-all duration-300`}
                                             >
+                                                {/* Media Display */}
+                                                {message.imageUrl && (
+                                                    <div className="mb-2">
+                                                        <img
+                                                            src={message.imageUrl}
+                                                            alt="Shared image"
+                                                            className="max-w-full max-h-64 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                // Open image in new tab
+                                                                window.open(message.imageUrl, '_blank');
+                                                            }}
+                                                            onError={(e) => {
+                                                                e.target.src = "https://via.placeholder.com/300x200?text=Image+Not+Found";
+                                                                e.target.className = "max-w-full max-h-64 rounded-lg opacity-50";
+                                                            }}
+                                                        />
+                                                    </div>
+                                                )}
+                                                
+                                                {message.audioUrl && (
+                                                    <div className="mb-2">
+                                                        <div className="relative">
+                                                            <div className="w-full min-w-[280px]">
+                                                                <audio
+                                                                    src={message.audioUrl}
+                                                                    className="w-full"
+                                                                    controls
+                                                                    preload="metadata"
+                                                                    onClick={(e) => e.stopPropagation()}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                
+                                                {message.videoUrl && (
+                                                    <div className="mb-2">
+                                                        <div className="relative">
+                                                            <video
+                                                                src={message.videoUrl}
+                                                                className="max-w-full max-h-64 rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
+                                                                controls
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    if (e.target.requestFullscreen) {
+                                                                        e.target.requestFullscreen();
+                                                                    }
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                
+                                                {message.documentUrl && (
+                                                    <div className="mb-2">
+                                                        <button
+                                                            className="flex items-center gap-2 px-3 py-2 rounded-lg border hover:bg-gray-50"
+                                                            onClick={async (e) => {
+                                                                e.stopPropagation();
+                                                                try {
+                                                                    const response = await fetch(message.documentUrl, { mode: 'cors' });
+                                                                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                                                    const blob = await response.blob();
+                                                                    const blobUrl = window.URL.createObjectURL(blob);
+                                                                    const a = document.createElement('a');
+                                                                    a.href = blobUrl;
+                                                                    a.download = message.documentName || `document-${Date.now()}.pdf`;
+                                                                    document.body.appendChild(a);
+                                                                    a.click();
+                                                                    document.body.removeChild(a);
+                                                                    window.URL.revokeObjectURL(blobUrl);
+                                                                } catch (error) {
+                                                                    console.error('Download failed:', error);
+                                                                    // Fallback to direct link
+                                                                    const a = document.createElement('a');
+                                                                    a.href = message.documentUrl;
+                                                                    a.download = message.documentName || `document-${Date.now()}.pdf`;
+                                                                    a.target = '_blank';
+                                                                    document.body.appendChild(a);
+                                                                    a.click();
+                                                                    document.body.removeChild(a);
+                                                                }
+                                                            }}
+                                                        >
+                                                            <FaFileAlt className="text-blue-500" />
+                                                            <span className="text-sm">
+                                                                {message.documentName || 'Download Document'}
+                                                            </span>
+                                                        </button>
+                                                    </div>
+                                                )}
+                                                
                                                 <p className="text-sm whitespace-pre-wrap leading-relaxed">{formatLinksInText(message.content, message.role === 'user')}</p>
                                                 
                                                 {/* Message footer with timestamp and actions */}
@@ -2558,26 +2816,48 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             Your browser does not support the audio element.
                         </audio>
                         
+                        {uploadingAudio && (
+                            <div className="mb-3">
+                                <div className="flex items-center justify-center gap-2 text-sm text-blue-600">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                    Uploading and transcribing audio...
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                    <div 
+                                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                                        style={{ width: `${uploadProgress}%` }}
+                                    ></div>
+                                </div>
+                            </div>
+                        )}
+                        
                         <div className="flex gap-2 justify-center">
                             <button
-                                onClick={() => {
-                                    // Here you would typically send the audio to a speech-to-text service
-                                    toast.info('Audio processing feature coming soon!');
-                                    setShowAudioPreview(false);
-                                    setRecordedAudioUrl(null);
-                                    setAudioChunks([]);
-                                }}
-                                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+                                onClick={handleSendRecordedAudio}
+                                disabled={uploadingAudio}
+                                className="px-4 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white rounded-lg transition-colors flex items-center gap-2"
                             >
-                                Use Audio
+                                {uploadingAudio ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                        Processing...
+                                    </>
+                                ) : (
+                                    <>
+                                        <FaMicrophone size={14} />
+                                        Transcribe & Send
+                                    </>
+                                )}
                             </button>
                             <button
                                 onClick={() => {
                                     setShowAudioPreview(false);
                                     setRecordedAudioUrl(null);
+                                    setRecordedAudioFile(null);
                                     setAudioChunks([]);
                                 }}
-                                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"
+                                disabled={uploadingAudio}
+                                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 text-gray-700 rounded-lg transition-colors"
                             >
                                 Record Again
                             </button>
@@ -2604,6 +2884,21 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     </div>
                     
                     <div className="space-y-4">
+                        {uploadingFile && (
+                            <div className="mb-4">
+                                <div className="flex items-center justify-center gap-2 text-sm text-blue-600 mb-2">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                    Uploading files...
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                    <div 
+                                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                                        style={{ width: `${uploadProgress}%` }}
+                                    ></div>
+                                </div>
+                            </div>
+                        )}
+                        
                         <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                             <FaUpload size={32} className="mx-auto text-gray-400 mb-2" />
                             <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -2612,21 +2907,26 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             <input
                                 type="file"
                                 multiple
-                                accept="image/*,.pdf,.txt,.csv,.doc,.docx,.xls,.xlsx"
+                                accept="image/*,audio/*,video/*,.pdf,.txt,.csv,.doc,.docx,.xls,.xlsx"
                                 onChange={handleFileUpload}
                                 className="hidden"
                                 id="file-upload"
+                                disabled={uploadingFile}
                             />
                             <label
                                 htmlFor="file-upload"
-                                className="mt-2 inline-block px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg cursor-pointer transition-colors"
+                                className={`mt-2 inline-block px-4 py-2 rounded-lg cursor-pointer transition-colors ${
+                                    uploadingFile 
+                                        ? 'bg-gray-400 cursor-not-allowed' 
+                                        : 'bg-blue-500 hover:bg-blue-600'
+                                } text-white`}
                             >
-                                Choose Files
+                                {uploadingFile ? 'Uploading...' : 'Choose Files'}
                             </label>
                         </div>
                         
                         <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                            <p>Supported: Images (JPG, PNG, GIF), PDF, Text files. Max 10MB per file.</p>
+                            <p>Supported: Images, Audio, Video, Documents (PDF, Word, Excel, Text). Max 10MB per file.</p>
                         </div>
                     </div>
                 </div>

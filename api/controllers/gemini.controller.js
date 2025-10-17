@@ -8,7 +8,7 @@ const ai = new GoogleGenAI({
 
 export const chatWithGemini = async (req, res) => {
     try {
-        const { message, history = [], sessionId, tone = 'neutral' } = req.body;
+        const { message, history = [], sessionId, tone = 'neutral', audioUrl, imageUrl, videoUrl, documentUrl } = req.body;
         const userId = req.user?.id;
 
         if (!message) {
@@ -93,11 +93,43 @@ export const chatWithGemini = async (req, res) => {
         
         // Dynamic model selection based on complexity
         const messageComplexity = sanitizedMessage.length > 500 ? 'complex' : 'simple';
+        
+        // Build parts array with text and media
+        const parts = [{ text: fullPrompt }];
+        
+        // Add media files if provided
+        if (imageUrl) {
+            parts.push({
+                inline_data: {
+                    mime_type: "image/jpeg", // Default, could be enhanced to detect actual type
+                    data: imageUrl // For now, using URL directly
+                }
+            });
+        }
+        
+        if (audioUrl) {
+            parts.push({
+                inline_data: {
+                    mime_type: "audio/webm", // Default for recorded audio
+                    data: audioUrl
+                }
+            });
+        }
+        
+        if (videoUrl) {
+            parts.push({
+                inline_data: {
+                    mime_type: "video/mp4", // Default
+                    data: videoUrl
+                }
+            });
+        }
+        
         const modelConfig = {
             model: "gemini-2.0-flash-exp",
             contents: [{
                 role: 'user',
-                parts: [{ text: fullPrompt }]
+                parts: parts
             }],
             config: {
                 maxOutputTokens: messageComplexity === 'complex' ? 4096 : 2048,
