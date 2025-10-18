@@ -4298,8 +4298,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         {/* Enhanced Settings Modal */}
         {showSettings && (
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
-                <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-xl shadow-xl p-6 w-[500px] max-w-full max-h-[80vh] overflow-y-auto`}>
-                    <div className="flex items-center justify-between mb-6">
+                <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-xl shadow-xl w-[500px] max-w-full max-h-[80vh] flex flex-col`}>
+                    {/* Fixed Header */}
+                    <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
                         <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                             Settings & Themes
                         </h3>
@@ -4310,6 +4311,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             <FaTimes size={20} />
                         </button>
                     </div>
+                    
+                    {/* Scrollable Content */}
+                    <div className="flex-1 overflow-y-auto p-6">
                     
                     <div className="space-y-6">
                         {/* Theme Selection */}
@@ -4920,6 +4924,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 </div>
                             </div>
                         )}
+                    </div>
                     </div>
                 </div>
             </div>
