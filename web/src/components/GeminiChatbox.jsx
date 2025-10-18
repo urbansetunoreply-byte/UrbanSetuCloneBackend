@@ -663,8 +663,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         setTimeout(() => setSendIconAnimating(false), 800);
 
         let userMessage = inputMessage.trim();
-        if (tone && tone !== 'neutral') {
-            userMessage = `[Tone: ${tone}] ${userMessage}`;
+        const currentTone = currentUser ? tone : 'neutral'; // Use default tone for public users
+        if (currentTone && currentTone !== 'neutral') {
+            userMessage = `[Tone: ${currentTone}] ${userMessage}`;
         }
         setInputMessage('');
         setMessages(prev => [...prev, { role: 'user', content: userMessage, timestamp: new Date().toISOString() }]);
@@ -692,7 +693,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     message: userMessage,
                     history: enableContextMemory ? messages.slice(-parseInt(contextWindow)) : messages.slice(-10), // Send context window messages
                     sessionId: currentSessionId,
-                    tone: tone, // Send current tone setting
+                    tone: currentUser ? tone : 'neutral', // Send current tone setting or default for public users
                     responseLength: aiResponseLength, // Send response length setting
                     creativity: aiCreativity, // Send creativity level setting
                     temperature: temperature, // Send custom temperature
@@ -839,7 +840,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     message: originalMessage,
                     history: enableContextMemory ? messages.slice(-parseInt(contextWindow)) : messages.slice(-10), // Send context window messages
                     sessionId: currentSessionId,
-                    tone: tone, // Send current tone setting
+                    tone: currentUser ? tone : 'neutral', // Send current tone setting or default for public users
                     responseLength: aiResponseLength, // Send response length setting
                     creativity: aiCreativity, // Send creativity level setting
                     temperature: temperature, // Send custom temperature
@@ -1080,7 +1081,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     message: messageContent,
                     history: messages.slice(-10), // Send last 10 messages for context
                     sessionId: currentSessionId,
-                    tone: tone, // Send current tone setting
+                    tone: currentUser ? tone : 'neutral', // Send current tone setting or default for public users
                     responseLength: aiResponseLength, // Send response length setting
                     creativity: aiCreativity // Send creativity level setting
                 }),
@@ -2594,19 +2595,21 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
                             {/* Enhanced Right controls */}
                             <div className="flex items-center gap-1 relative flex-shrink-0">
-                                {/* Response Tone dropdown */}
-                                <select
-                                    value={tone}
-                                    onChange={(e) => { setTone(e.target.value); localStorage.setItem('gemini_tone', e.target.value); }}
-                                    className="text-white/90 bg-white/10 hover:bg-white/20 border border-white/30 text-[10px] md:text-xs px-2 py-1 rounded outline-none max-w-[100px] md:max-w-[120px]"
-                                    title="Response Tone"
-                                    aria-label="Response Tone"
-                                >
-                                    <option className="text-gray-800" value="neutral">Neutral</option>
-                                    <option className="text-gray-800" value="friendly">Friendly</option>
-                                    <option className="text-gray-800" value="formal">Formal</option>
-                                    <option className="text-gray-800" value="concise">Concise</option>
-                                </select>
+                                {/* Response Tone dropdown - Only for logged-in users */}
+                                {currentUser && (
+                                    <select
+                                        value={tone}
+                                        onChange={(e) => { setTone(e.target.value); localStorage.setItem('gemini_tone', e.target.value); }}
+                                        className="text-white/90 bg-white/10 hover:bg-white/20 border border-white/30 text-[10px] md:text-xs px-2 py-1 rounded outline-none max-w-[100px] md:max-w-[120px]"
+                                        title="Response Tone"
+                                        aria-label="Response Tone"
+                                    >
+                                        <option className="text-gray-800" value="neutral">Neutral</option>
+                                        <option className="text-gray-800" value="friendly">Friendly</option>
+                                        <option className="text-gray-800" value="formal">Formal</option>
+                                        <option className="text-gray-800" value="concise">Concise</option>
+                                    </select>
+                                )}
                                 
                                 <button
                                     ref={headerMenuButtonRef}
@@ -3361,7 +3364,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             <h5 className="font-medium text-gray-800 mb-2">💬 Chat Features</h5>
                                             <ul className="text-sm text-gray-700 list-disc pl-5 space-y-1">
                                                 <li>Real-time conversation with AI</li>
-                                                <li>Multiple response tones (Neutral, Friendly, Formal, Concise)</li>
+                                                <li>Multiple response tones (Neutral, Friendly, Formal, Concise) - Login Required</li>
                                                 <li>Session-based chat history</li>
                                                 <li>Export conversations to .txt</li>
                                                 <li>Retry failed responses</li>
@@ -4204,11 +4207,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             </div>
                         </div>
 
-                        {/* AI Settings */}
-                        <div>
-                            <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                AI Response Settings
-                            </h4>
+                        {/* AI Settings - Only for logged-in users */}
+                        {currentUser && (
+                            <div>
+                                <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                    AI Response Settings
+                                </h4>
                             <div className="space-y-4">
                                 {/* Response Length */}
                                 <div className="flex items-center justify-between">
@@ -4243,12 +4247,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 </div>
                             </div>
                         </div>
+                        )}
 
-                        {/* Notification Settings */}
-                        <div>
-                            <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                Notifications & Sounds
-                            </h4>
+                        {/* Notification Settings - Only for logged-in users */}
+                        {currentUser && (
+                            <div>
+                                <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                    Notifications & Sounds
+                                </h4>
                             <div className="space-y-4">
                                 {/* Sound Enabled */}
                                 <div className="flex items-center justify-between">
@@ -4285,12 +4291,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 </div>
                             </div>
                         </div>
+                        )}
 
-                        {/* Privacy Settings */}
-                        <div>
-                            <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                Privacy & Data
-                            </h4>
+                        {/* Privacy Settings - Only for logged-in users */}
+                        {currentUser && (
+                            <div>
+                                <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                    Privacy & Data
+                                </h4>
                             <div className="space-y-4">
                                 {/* Data Retention */}
                                 <div className="flex items-center justify-between">
@@ -4345,12 +4353,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 </div>
                             </div>
                         </div>
+                        )}
 
-                        {/* Advanced Settings */}
-                        <div>
-                            <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                Advanced Settings
-                            </h4>
+                        {/* Advanced Settings - Only for logged-in users */}
+                        {currentUser && (
+                            <div>
+                                <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                    Advanced Settings
+                                </h4>
                             <div className="space-y-4">
                                 {/* Auto Save */}
                                 <div className="flex items-center justify-between">
@@ -4422,12 +4432,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 </div>
                             </div>
                         </div>
+                        )}
 
-                        {/* Accessibility Settings */}
-                        <div>
-                            <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                Accessibility
-                            </h4>
+                        {/* Accessibility Settings - Only for logged-in users */}
+                        {currentUser && (
+                            <div>
+                                <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                    Accessibility
+                                </h4>
                             <div className="space-y-4">
                                 {/* High Contrast */}
                                 <div className="flex items-center justify-between">
@@ -4498,12 +4510,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 </div>
                             </div>
                         </div>
+                        )}
 
-                        {/* Advanced AI Settings */}
-                        <div>
-                            <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                Advanced AI Settings
-                            </h4>
+                        {/* Advanced AI Settings - Only for logged-in users */}
+                        {currentUser && (
+                            <div>
+                                <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                    Advanced AI Settings
+                                </h4>
                             <div className="space-y-4">
                                 {/* Temperature */}
                                 <div>
@@ -4577,8 +4591,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 </div>
                             </div>
                         </div>
+                        )}
 
-                        {/* Smart Suggestions Toggle */}
+                        {/* Smart Suggestions Toggle - Only for logged-in users */}
+                        {currentUser && (
                         <div className="flex items-center justify-between">
                             <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                 Smart Suggestions
@@ -4598,6 +4614,28 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 }`} />
                             </button>
                         </div>
+                        )}
+
+                        {/* Login Required Message for Public Users */}
+                        {!currentUser && (
+                            <div className={`p-4 rounded-lg border ${isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-blue-50 border-blue-200'}`}>
+                                <div className="flex items-center space-x-3">
+                                    <div className={`p-2 rounded-full ${isDarkMode ? 'bg-blue-900' : 'bg-blue-100'}`}>
+                                        <svg className={`w-5 h-5 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 className={`text-sm font-medium ${isDarkMode ? 'text-blue-300' : 'text-blue-800'}`}>
+                                            Advanced Settings Available
+                                        </h4>
+                                        <p className={`text-xs mt-1 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                                            Sign in to access AI settings, notifications, privacy controls, and more advanced features.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
