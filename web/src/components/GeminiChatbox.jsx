@@ -2683,7 +2683,15 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         };
         
         // Store in localStorage for now (in production, send to analytics service)
-        const analytics = JSON.parse(localStorage.getItem('gemini_analytics') || '[]');
+        const analyticsData = localStorage.getItem('gemini_analytics');
+        let analytics = [];
+        try {
+            const parsed = JSON.parse(analyticsData || '[]');
+            analytics = Array.isArray(parsed) ? parsed : [];
+        } catch (error) {
+            console.warn('Corrupted analytics data, resetting:', error);
+            analytics = [];
+        }
         analytics.push(event);
         localStorage.setItem('gemini_analytics', JSON.stringify(analytics.slice(-100))); // Keep last 100 events
     };
@@ -2704,7 +2712,15 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         };
         
         // Store in localStorage for now (in production, send to error reporting service)
-        const errors = JSON.parse(localStorage.getItem('gemini_errors') || '[]');
+        const errorsData = localStorage.getItem('gemini_errors');
+        let errors = [];
+        try {
+            const parsed = JSON.parse(errorsData || '[]');
+            errors = Array.isArray(parsed) ? parsed : [];
+        } catch (error) {
+            console.warn('Corrupted errors data, resetting:', error);
+            errors = [];
+        }
         errors.push(errorReport);
         localStorage.setItem('gemini_errors', JSON.stringify(errors.slice(-50))); // Keep last 50 errors
         
