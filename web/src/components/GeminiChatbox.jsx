@@ -324,6 +324,69 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         localStorage.setItem('gemini_ratings', JSON.stringify({}));
     };
 
+    // Refresh messages function - reloads current session without losing state
+    const refreshMessages = async () => {
+        try {
+            const currentSessionId = getOrCreateSessionId();
+            if (!currentSessionId) {
+                toast.error('No active session to refresh');
+                return;
+            }
+
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+            const response = await fetch(`${API_BASE_URL}/api/chat-history/session/${currentSessionId}`, {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.data.messages) {
+                    // Only update if there are new messages or changes
+                    const serverMessages = data.data.messages;
+                    const currentMessageCount = messages.length;
+                    
+                    if (serverMessages.length !== currentMessageCount) {
+                        setMessages(serverMessages);
+                        toast.success(`Messages refreshed! ${serverMessages.length - currentMessageCount} new messages loaded.`);
+                    } else {
+                        // Check if any messages have been updated
+                        let hasUpdates = false;
+                        for (let i = 0; i < serverMessages.length; i++) {
+                            if (serverMessages[i].content !== messages[i]?.content || 
+                                serverMessages[i].timestamp !== messages[i]?.timestamp) {
+                                hasUpdates = true;
+                                break;
+                            }
+                        }
+                        
+                        if (hasUpdates) {
+                            setMessages(serverMessages);
+                            toast.success('Messages refreshed! Updates loaded.');
+                        } else {
+                            toast.info('Messages are already up to date.');
+                        }
+                    }
+                    
+                    // Scroll to bottom after refresh
+                    setTimeout(() => scrollToBottom(), 100);
+                } else {
+                    toast.info('No messages found to refresh.');
+                }
+            } else if (response.status === 404) {
+                toast.info('No saved messages found for this session.');
+            } else {
+                toast.error('Failed to refresh messages');
+            }
+        } catch (error) {
+            console.error('Error refreshing messages:', error);
+            toast.error('Failed to refresh messages');
+        }
+    };
+
     // Clear chat history (server + local) from within the chatbox header
     const handleClearChatHistory = async () => {
         try {
@@ -2664,6 +2727,19 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 >
                                                     <FaSearch size={12} className="text-blue-600" />
                                                     Search in Chat
+                                                </button>
+                                            </li>
+
+                                            {/* Refresh Messages */}
+                                            <li>
+                                                <button
+                                                    onClick={() => { refreshMessages(); setIsHeaderMenuOpen(false); }}
+                                                    className={`w-full text-left px-3 py-2 ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} flex items-center gap-2`}
+                                                >
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" className="text-green-600">
+                                                        <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                                                    </svg>
+                                                    Refresh Messages
                                                 </button>
                                             </li>
 
