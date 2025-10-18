@@ -3327,6 +3327,56 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     </div>
                                 </div>
                             )}
+                            
+                            {/* Sign-in prompt for public users */}
+                            {!currentUser && (
+                                <div className="flex justify-center my-6">
+                                    <div className={`max-w-md mx-4 p-4 rounded-xl border-2 border-dashed ${isDarkMode ? 'bg-gray-800/50 border-gray-600' : 'bg-blue-50 border-blue-200'} transition-all duration-300 hover:shadow-lg`}>
+                                        <div className="text-center">
+                                            <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full mb-3 ${isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100'}`}>
+                                                <svg className={`w-6 h-6 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                </svg>
+                                            </div>
+                                            <h3 className={`text-lg font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                                                Sign in to unlock full chatbot features
+                                            </h3>
+                                            <p className={`text-sm mb-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                                Get access to advanced AI settings, voice input, file uploads, chat history, and much more!
+                                            </p>
+                                            <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                                                <button
+                                                    onClick={() => {
+                                                        // Close chatbot and redirect to login
+                                                        setIsOpen(false);
+                                                        navigate('/login');
+                                                    }}
+                                                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${isDarkMode 
+                                                        ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                                                        : 'bg-blue-600 hover:bg-blue-700 text-white'
+                                                    } hover:shadow-md`}
+                                                >
+                                                    Sign In
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        // Close chatbot and redirect to register
+                                                        setIsOpen(false);
+                                                        navigate('/register');
+                                                    }}
+                                                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${isDarkMode 
+                                                        ? 'bg-gray-700 hover:bg-gray-600 text-white border border-gray-600' 
+                                                        : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300'
+                                                    } hover:shadow-md`}
+                                                >
+                                                    Create Account
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            
                             <div ref={messagesEndRef} />
                             {/* scroll button moved to container-level absolute positioning */}
                         </div>
