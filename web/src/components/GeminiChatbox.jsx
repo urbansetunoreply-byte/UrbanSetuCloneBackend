@@ -3743,7 +3743,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             <div
                                                 key={index}
                                                 onClick={() => handleSearchResultClick(message)}
-                                                className={`p-2 rounded border cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:shadow-md ${
+                                                className={`p-2 rounded border cursor-pointer transition-all duration-200 ${
                                                     isDarkMode 
                                                         ? 'bg-gray-800 border-gray-600 hover:bg-gray-700 hover:border-gray-500' 
                                                         : 'bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-gray-300'
