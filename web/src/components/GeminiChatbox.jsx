@@ -3026,7 +3026,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         );
                                     })()}
                                     <div className="flex justify-end mt-4">
-                                        <button onClick={() => setShowBookmarks(false)} className="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-700">Close</button>
+                                        <button onClick={() => setShowBookmarks(false)} className={`px-3 py-1.5 text-sm rounded bg-gradient-to-r ${themeColors.primary} text-white hover:opacity-90`}>Close</button>
                                     </div>
                                 </div>
                             </div>
@@ -3059,7 +3059,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     </div>
                                     {chatSessions.length === 0 ? (
                                         <div className="text-center py-8 space-y-3">
-                                            <p className="text-gray-500">No chats yet</p>
+                                            <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>No chats yet</p>
                                             <button
                                                 onClick={async () => { await createNewSession(); await loadChatSessions(); setShowHistory(false); }}
                                                 className="px-3 py-1.5 text-xs rounded bg-green-600 text-white hover:bg-green-700"
@@ -3092,13 +3092,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                             }}
                                                             className="flex-1 text-left"
                                                         >
-                                                            <div className="text-sm font-medium text-gray-800">
+                                                            <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
                                                                 {session.name?.trim() ? session.name : `New chat ${idx + 1}`}
                                                             </div>
-                                                            <div className="text-xs text-gray-600">
+                                                            <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                                                 {new Date(session.lastMessageAt).toLocaleString()}
                                                             </div>
-                                                            <div className="text-xs text-gray-500">
+                                                            <div className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                                                                 {session.messageCount} messages
                                                             </div>
                                                         </button>
@@ -3114,14 +3114,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                 ⋯
                                                             </button>
                                                             {openHistoryMenuSessionId === session.sessionId && (
-                                                            <div className="absolute right-0 top-6 bg-white border border-gray-200 rounded shadow-lg z-10 w-36">
+                                                            <div className={`absolute right-0 top-6 ${isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'} border rounded shadow-lg z-10 w-36`}>
                                                                 <button
                                                                     onClick={(e) => {
                                                                         e.stopPropagation();
                                                                         setDeleteTargetSessionId(session.sessionId);
                                                                         setShowDeleteSingleModal(true);
                                                                     }}
-                                                                    className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
+                                                                    className={`block w-full text-left px-3 py-2 text-sm ${isDarkMode ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-800 hover:bg-gray-100'}`}
                                                                 >
                                                                     Delete chat
                                                                 </button>
@@ -3148,7 +3148,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                             toast.error('Failed to share chat');
                                                                         }
                                                                     }}
-                                                                    className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
+                                                                    className={`block w-full text-left px-3 py-2 text-sm ${isDarkMode ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-800 hover:bg-gray-100'}`}
                                                                 >
                                                                     Share chat
                                                                 </button>
@@ -3160,7 +3160,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                         setRenameInput(currentName);
                                                                         setShowRenameModal(true);
                                                                     }}
-                                                                    className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
+                                                                    className={`block w-full text-left px-3 py-2 text-sm ${isDarkMode ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-800 hover:bg-gray-100'}`}
                                                                 >
                                                                     Rename
                                                                 </button>
@@ -3183,7 +3183,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         </div>
                                     )}
                                     <div className="flex justify-end mt-4">
-                                        <button onClick={() => { setShowHistory(false); setOpenHistoryMenuSessionId(null); }} className="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-700">Close</button>
+                                        <button onClick={() => { setShowHistory(false); setOpenHistoryMenuSessionId(null); }} className={`px-3 py-1.5 text-sm rounded bg-gradient-to-r ${themeColors.primary} text-white hover:opacity-90`}>Close</button>
                                     </div>
                                 </div>
                             </div>
@@ -3284,19 +3284,19 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         {/* Rename Chat Modal */}
         {showRenameModal && (
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
-                <div className="bg-white rounded-xl shadow-xl p-5 w-96 max-w-full">
-                    <h4 className="font-semibold mb-2">Rename chat</h4>
+                <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl p-5 w-96 max-w-full`}>
+                    <h4 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Rename chat</h4>
                     <input
                         type="text"
                         value={renameInput}
                         onChange={(e) => setRenameInput(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded mb-4"
+                        className={`w-full px-3 py-2 border ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded mb-4`}
                         placeholder="Enter chat name"
                         maxLength={80}
                         autoFocus
                     />
                     <div className="flex justify-end gap-2">
-                        <button onClick={() => { setShowRenameModal(false); setRenameTargetSessionId(null); }} className="px-3 py-1.5 text-sm rounded border border-gray-300 text-gray-700">Cancel</button>
+                        <button onClick={() => { setShowRenameModal(false); setRenameTargetSessionId(null); }} className={`px-3 py-1.5 text-sm rounded border ${isDarkMode ? 'border-gray-600 text-gray-300' : 'border-gray-300 text-gray-700'}`}>Cancel</button>
                         <button onClick={async () => {
                             try {
                                 const name = renameInput.trim();
@@ -3316,7 +3316,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 setRenameTargetSessionId(null);
                                 setOpenHistoryMenuSessionId(null);
                             }
-                        }} className="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-700">Save</button>
+                        }} className={`px-3 py-1.5 text-sm rounded bg-gradient-to-r ${themeColors.primary} text-white hover:opacity-90`}>Save</button>
                     </div>
                 </div>
             </div>
@@ -3460,7 +3460,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
                 <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-xl shadow-xl p-6 w-80 max-w-full text-center`}>
                     <div className="mb-4">
-                        <FaMicrophone size={32} className={`mx-auto mb-2 ${isRecording ? 'text-red-500 animate-pulse' : 'text-blue-500'}`} />
+                        <FaMicrophone size={32} className={`mx-auto mb-2 ${isRecording ? 'text-red-500 animate-pulse' : `text-${selectedTheme === 'blue' ? 'blue' : selectedTheme === 'green' ? 'green' : selectedTheme === 'purple' ? 'purple' : 'orange'}-500`}`} />
                         <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                             Voice Input
                         </h3>
@@ -3481,7 +3481,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             className={`w-20 h-20 rounded-full mx-auto flex items-center justify-center transition-all duration-200 ${
                                 isRecording 
                                     ? 'bg-red-500 animate-pulse' 
-                                    : 'bg-blue-500 hover:bg-blue-600'
+                                    : `bg-gradient-to-r ${themeColors.primary} hover:opacity-90`
                             }`}
                         >
                             {isRecording ? <FaStop size={24} className="text-white" /> : <FaMicrophone size={24} className="text-white" />}
@@ -3590,7 +3590,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     }, 100);
                                 }}
                                 disabled={uploadingAudio}
-                                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-lg transition-colors flex items-center gap-2"
+                                className={`px-4 py-2 bg-gradient-to-r ${themeColors.primary} hover:opacity-90 disabled:bg-gray-400 text-white rounded-lg transition-colors flex items-center gap-2`}
                             >
                                 <FaFileAlt size={14} />
                                 Send as Text
@@ -3669,7 +3669,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 className={`mt-2 inline-block px-4 py-2 rounded-lg cursor-pointer transition-colors ${
                                     uploadingFile 
                                         ? 'bg-gray-400 cursor-not-allowed' 
-                                        : 'bg-blue-500 hover:bg-blue-600'
+                                        : `bg-gradient-to-r ${themeColors.primary} hover:opacity-90`
                                 } text-white`}
                             >
                                 {uploadingFile ? 'Uploading...' : 'Choose Files'}
