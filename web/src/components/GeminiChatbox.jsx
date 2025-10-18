@@ -1104,7 +1104,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             // Check supported MIME types (prioritize formats that work with backend)
             const supportedTypes = [
                 'audio/wav',
-                'audio/mp4',
+                'video/webm',  // Backend expects video/webm for audio
+                'video/mp4',   // Backend expects video/mp4 for audio
                 'audio/webm',
                 'audio/webm;codecs=opus'
             ];
@@ -1169,6 +1170,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     if (selectedType.includes('wav')) extension = 'wav';
                     else if (selectedType.includes('mp4')) extension = 'mp4';
                     else if (selectedType.includes('ogg')) extension = 'ogg';
+                    else if (selectedType.includes('opus')) extension = 'webm';
                     
                     const fileName = `recording-${Date.now()}.${extension}`;
                     const audioFile = new File([audioBlob], fileName, { type: audioBlob.type });
@@ -1274,30 +1276,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             const uploadData = await response.json();
             const audioUrl = uploadData.audioUrl;
 
-            // For now, we'll use a simple approach - send the audio URL to Gemini
-            // In a production environment, you'd want to use a proper speech-to-text service
-            const transcriptionResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/gemini/chat`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    message: `I've uploaded an audio recording. Please help me with this audio content. The audio file is available at: ${audioUrl}`,
-                    audioUrl: audioUrl,
-                    sessionId: sessionId || getOrCreateSessionId(),
-                    tone: 'neutral'
-                }),
-            });
-
-            if (!transcriptionResponse.ok) {
-                throw new Error('Failed to process audio with Gemini');
-            }
-
-            const transcriptionData = await transcriptionResponse.json();
+            // Since Gemini doesn't support direct audio transcription via URL,
+            // we'll return a message asking the user to describe their audio content
             return {
                 audioUrl,
-                transcription: transcriptionData.response || 'Audio uploaded successfully. Please describe what you need help with regarding this audio.'
+                transcription: 'I\'ve uploaded an audio recording. Please describe what you said in the audio or what you need help with, and I\'ll assist you accordingly.'
             };
 
         } catch (error) {
@@ -3187,28 +3170,24 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             Voice Input
                         </h3>
                         <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                            Click and hold to record your message
+                            Click to start recording, click again to stop
                         </p>
                     </div>
                     
                     <div className="space-y-3">
                         <button
-                            onMouseDown={startVoiceRecording}
-                            onMouseUp={stopVoiceRecording}
-                            onMouseLeave={stopVoiceRecording}
-                            onTouchStart={startVoiceRecording}
-                            onTouchEnd={stopVoiceRecording}
+                            onClick={isRecording ? stopVoiceRecording : startVoiceRecording}
                             className={`w-20 h-20 rounded-full mx-auto flex items-center justify-center transition-all duration-200 ${
                                 isRecording 
                                     ? 'bg-red-500 animate-pulse' 
                                     : 'bg-blue-500 hover:bg-blue-600'
                             }`}
                         >
-                            <FaMicrophone size={24} className="text-white" />
+                            {isRecording ? <FaStop size={24} className="text-white" /> : <FaMicrophone size={24} className="text-white" />}
                         </button>
                         
                         <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                            {isRecording ? `Recording... ${recordingDuration}s` : 'Hold to record'}
+                            {isRecording ? `Recording... ${recordingDuration}s` : 'Click to start recording'}
                         </p>
                     </div>
                     
