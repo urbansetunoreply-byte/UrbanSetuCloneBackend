@@ -1370,6 +1370,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     // Load ratings for this session
                     await loadMessageRatings(sessionId);
                     
+                    // Load bookmarks for this session
+                    await loadBookmarkedMessages(sessionId);
+                    
                     toast.success('Session loaded');
                 }
             }
@@ -1490,6 +1493,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     // Clear ratings for new session
                     setMessageRatings({});
                     localStorage.setItem('gemini_ratings', JSON.stringify({}));
+                    
+                    // Clear bookmarks for new session
+                    setBookmarkedMessages([]);
                     
                     // Refresh chat sessions
                     await loadChatSessions();
