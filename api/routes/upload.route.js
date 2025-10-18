@@ -15,6 +15,26 @@ cloudinary.v2.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Validate Cloudinary configuration
+const validateCloudinaryConfig = () => {
+  const required = ['CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'];
+  const missing = required.filter(key => !process.env[key]);
+  
+  if (missing.length > 0) {
+    console.error('Missing Cloudinary environment variables:', missing);
+    throw new Error(`Missing required Cloudinary environment variables: ${missing.join(', ')}`);
+  }
+  
+  console.log('Cloudinary configuration validated successfully');
+};
+
+// Validate on startup
+try {
+  validateCloudinaryConfig();
+} catch (error) {
+  console.error('Cloudinary configuration error:', error.message);
+}
+
 // Configure multer storage for Cloudinary - IMAGES
 const imageStorage = new CloudinaryStorage({
   cloudinary: cloudinary.v2,
@@ -46,21 +66,24 @@ const documentStorage = new CloudinaryStorage({
   },
 });
 
-// Configure multer storage for Cloudinary - AUDIO (resource_type video per Cloudinary spec for audio)
+// Configure multer storage for Cloudinary - AUDIO
 const audioStorage = new CloudinaryStorage({
   cloudinary: cloudinary.v2,
   params: {
     folder: 'urbansetu-chat/audio',
-    // Cloudinary treats audio as resource_type 'video'
-    allowed_formats: ['mp3', 'wav', 'm4a', 'aac', 'ogg', 'oga', 'opus', 'webm', 'mp4'],
-    resource_type: 'video',
+    allowed_formats: ['mp3', 'wav', 'm4a', 'aac', 'ogg', 'oga', 'opus', 'webm'],
+    resource_type: 'video', // Cloudinary uses 'video' resource_type for audio files
+    transformation: [{ quality: 'auto', format: 'auto' }], // Optimize audio files
   },
 });
 
-// Configure multer per type (5MB limit)
+// Standard file size limit (10MB for better compatibility)
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+// Configure multer per type
 const uploadImage = multer({
   storage: imageStorage,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: MAX_FILE_SIZE },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) return cb(null, true);
     return cb(new Error('Only image files are allowed!'));
@@ -69,7 +92,7 @@ const uploadImage = multer({
 
 const uploadVideo = multer({
   storage: videoStorage,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: MAX_FILE_SIZE },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('video/')) return cb(null, true);
     return cb(new Error('Only video files are allowed!'));
@@ -78,7 +101,7 @@ const uploadVideo = multer({
 
 const uploadDocument = multer({
   storage: documentStorage,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: MAX_FILE_SIZE },
   fileFilter: (req, file, cb) => {
     // accept any non-image/video as document, plus common application/* types
     if (
@@ -92,7 +115,7 @@ const uploadDocument = multer({
 
 const uploadAudio = multer({
   storage: audioStorage,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: MAX_FILE_SIZE },
   fileFilter: (req, file, cb) => {
     // Accept typical audio types and common containers used for audio-only recordings
     if (
@@ -130,16 +153,50 @@ router.post('/image', uploadImage.single('image'), async (req, res) => {
   }
 });
 
-// Error handling middleware for multer
+// Enhanced error handling middleware for multer and Cloudinary
 router.use((error, req, res, next) => {
+  console.error('Upload error:', error);
+  
   if (error instanceof multer.MulterError) {
     if (error.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ message: 'File size too large. Maximum size is 5MB.' });
+      return res.status(400).json({ 
+        success: false,
+        message: `File size too large. Maximum size is ${MAX_FILE_SIZE / (1024 * 1024)}MB.` 
+      });
     }
-    return res.status(400).json({ message: 'File upload error', error: error.message });
+    if (error.code === 'LIMIT_UNEXPECTED_FILE') {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Unexpected file field. Please use the correct form field name.' 
+      });
+    }
+    if (error.code === 'LIMIT_FILE_COUNT') {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Too many files. Only one file allowed per upload.' 
+      });
+    }
+    return res.status(400).json({ 
+      success: false,
+      message: 'File upload error', 
+      error: error.message 
+    });
   }
+  
+  // Handle Cloudinary-specific errors
+  if (error.message && error.message.includes('Cloudinary')) {
+    return res.status(500).json({ 
+      success: false,
+      message: 'Cloudinary upload failed', 
+      error: error.message 
+    });
+  }
+  
   if (error) {
-    return res.status(400).json({ message: error.message || 'Upload error' });
+    return res.status(400).json({ 
+      success: false,
+      message: error.message || 'Upload error' 
+    });
   }
   next();
 });
@@ -224,19 +281,42 @@ router.post('/document', uploadDocument.single('document'), async (req, res) => 
 // Upload single audio
 router.post('/audio', uploadAudio.single('audio'), async (req, res) => {
   try {
+    console.log('Audio upload request received:', {
+      hasFile: !!req.file,
+      fileSize: req.file?.size,
+      mimeType: req.file?.mimetype,
+      originalName: req.file?.originalname
+    });
+    
     if (!req.file) {
-      return res.status(400).json({ message: 'No audio file provided' });
+      return res.status(400).json({ 
+        success: false,
+        message: 'No audio file provided' 
+      });
     }
+
+    console.log('Audio uploaded successfully to Cloudinary:', {
+      path: req.file.path,
+      filename: req.file.filename,
+      size: req.file.size
+    });
+
     res.status(200).json({
+      success: true,
       message: 'Audio uploaded successfully',
       audioUrl: req.file.path,
       publicId: req.file.filename,
       originalName: req.file.originalname,
       mimeType: req.file.mimetype,
+      size: req.file.size
     });
   } catch (error) {
     console.error('Audio upload error:', error);
-    res.status(500).json({ message: 'Error uploading audio', error: error.message });
+    res.status(500).json({ 
+      success: false,
+      message: 'Error uploading audio', 
+      error: error.message 
+    });
   }
 });
 

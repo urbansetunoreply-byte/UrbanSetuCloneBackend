@@ -110,6 +110,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [uploadProgress, setUploadProgress] = useState(0);
     const [recordingStartTime, setRecordingStartTime] = useState(null);
     const [recordingDuration, setRecordingDuration] = useState(0);
+    const [recordedAudioType, setRecordedAudioType] = useState('audio/webm');
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -1076,22 +1077,37 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     // Enhanced Features Functions
     const startVoiceRecording = async () => {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    sampleRate: 44100
+                }
+            });
             
-            // Configure MediaRecorder with proper MIME type
-            const options = { mimeType: 'audio/webm;codecs=opus' };
-            let recorder;
+            // Check supported MIME types
+            const supportedTypes = [
+                'audio/webm;codecs=opus',
+                'audio/webm',
+                'audio/mp4',
+                'audio/wav'
+            ];
             
-            try {
-                recorder = new MediaRecorder(stream, options);
-            } catch (e) {
-                // Fallback to default if webm not supported
-                recorder = new MediaRecorder(stream);
+            let selectedType = 'audio/webm';
+            for (const type of supportedTypes) {
+                if (MediaRecorder.isTypeSupported(type)) {
+                    selectedType = type;
+                    break;
+                }
             }
             
+            console.log('Selected audio type:', selectedType);
+            
+            const recorder = new MediaRecorder(stream, { mimeType: selectedType });
             const chunks = [];
 
             recorder.ondataavailable = (event) => {
+                console.log('Data available:', event.data.size, 'bytes');
                 if (event.data && event.data.size > 0) {
                     chunks.push(event.data);
                 }
@@ -1099,25 +1115,67 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
             recorder.onstop = async () => {
                 try {
-                    const audioBlob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
-                    const fileName = `recording-${Date.now()}.webm`;
+                    console.log('Recording stopped, chunks:', chunks.length);
+                    
+                    if (chunks.length === 0) {
+                        throw new Error('No audio data recorded');
+                    }
+                    
+                    // Check if recording was too short
+                    const totalSize = chunks.reduce((total, chunk) => total + chunk.size, 0);
+                    if (totalSize < 1000) { // Less than 1KB
+                        throw new Error('Recording too short, please record for at least 1 second');
+                    }
+                    
+                    const audioBlob = new Blob(chunks, { type: selectedType });
+                    console.log('Audio blob created:', audioBlob.size, 'bytes, type:', audioBlob.type);
+                    
+                    if (audioBlob.size === 0) {
+                        throw new Error('Empty audio blob');
+                    }
+                    
+                    // Test if the blob can be read
+                    try {
+                        const testUrl = URL.createObjectURL(audioBlob);
+                        const testAudio = new Audio(testUrl);
+                        testAudio.onerror = () => {
+                            console.warn('Audio blob test failed, trying fallback');
+                            URL.revokeObjectURL(testUrl);
+                        };
+                        testAudio.onloadedmetadata = () => {
+                            console.log('Audio blob test successful');
+                            URL.revokeObjectURL(testUrl);
+                        };
+                    } catch (testError) {
+                        console.warn('Audio blob test error:', testError);
+                    }
+                    
+                    const fileName = `recording-${Date.now()}.${selectedType.split('/')[1].split(';')[0]}`;
                     const audioFile = new File([audioBlob], fileName, { type: audioBlob.type });
                     const audioUrl = URL.createObjectURL(audioBlob);
+                    
+                    console.log('Audio URL created:', audioUrl);
                     
                     // Store audio for preview and upload
                     setAudioChunks([audioBlob]);
                     setRecordedAudioFile(audioFile);
                     setRecordedAudioUrl(audioUrl);
+                    setRecordedAudioType(selectedType);
                     
                     // Show audio preview
                     setShowAudioPreview(true);
                 } catch (error) {
                     console.error('Error processing recording:', error);
-                    toast.error('Failed to process recording');
+                    toast.error('Failed to process recording: ' + error.message);
                 } finally {
                     // Stop all tracks
                     stream.getTracks().forEach(track => track.stop());
                 }
+            };
+
+            recorder.onerror = (event) => {
+                console.error('MediaRecorder error:', event);
+                toast.error('Recording error occurred');
             };
 
             // Start recording with time slice for better data handling
@@ -1136,7 +1194,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
     const stopVoiceRecording = () => {
         if (mediaRecorder && isRecording) {
-            if (mediaRecorder.stop) {
+            console.log('Stopping recording...');
+            if (mediaRecorder.state === 'recording') {
                 mediaRecorder.stop();
             }
             setIsRecording(false);
@@ -2883,13 +2942,18 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             className="w-full"
                             onError={(e) => {
                                 console.error('Audio playback error:', e);
+                                console.error('Audio URL:', recordedAudioUrl);
+                                console.error('Audio type:', recordedAudioType);
                                 toast.error('Failed to play audio. Please try recording again.');
                             }}
                             onLoadStart={() => console.log('Audio loading started')}
                             onCanPlay={() => console.log('Audio can play')}
+                            onLoadedMetadata={() => console.log('Audio metadata loaded')}
                         >
+                            <source src={recordedAudioUrl} type={recordedAudioType} />
                             <source src={recordedAudioUrl} type="audio/webm" />
                             <source src={recordedAudioUrl} type="audio/wav" />
+                            <source src={recordedAudioUrl} type="audio/mp4" />
                             Your browser does not support the audio element.
                         </audio>
                         
