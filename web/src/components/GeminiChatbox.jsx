@@ -485,6 +485,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
     }, [dataRetention, currentUser]);
 
+    // Disable auto-save for public users
+    useEffect(() => {
+        if (!currentUser && autoSave) {
+            setAutoSave(false);
+        }
+    }, [currentUser, autoSave]);
+
     // Auto-save effect
     useEffect(() => {
         if (autoSave && messages.length > 0 && currentUser) {
@@ -492,7 +499,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             if (currentSessionId) {
                 // Auto-save every 30 seconds
                 const autoSaveInterval = setInterval(() => {
-                    saveCurrentSession();
+                    // Double-check user is still logged in before auto-saving
+                    if (currentUser) {
+                        saveCurrentSession();
+                    }
                 }, 30000);
                 
                 return () => clearInterval(autoSaveInterval);
@@ -2688,11 +2698,21 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
     // Save current session to backend
     const saveCurrentSession = async () => {
-        if (!currentUser || messages.length === 0) return;
+        if (!currentUser || messages.length === 0) {
+            console.log('Auto-save skipped: No user or no messages');
+            return;
+        }
         
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const currentSessionId = getOrCreateSessionId();
+            
+            if (!currentSessionId) {
+                console.log('Auto-save skipped: No session ID');
+                return;
+            }
+            
+            console.log('Auto-saving session:', currentSessionId, 'Messages:', messages.length);
             
             const saveResponse = await fetch(`${API_BASE_URL}/api/chat-history/session/${currentSessionId}`, {
                 method: 'PUT',
@@ -2708,12 +2728,17 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 })
             });
             
-            if (!saveResponse.ok) {
-                console.error('Failed to auto-save current session');
+            if (saveResponse.ok) {
+                console.log('Session auto-saved successfully');
+            } else {
+                console.error('Failed to auto-save current session:', saveResponse.status, saveResponse.statusText);
             }
         } catch (error) {
             console.error('Error auto-saving session:', error);
-            reportError(error, { action: 'auto_save_session' });
+            // Only report error if it's not a network issue for anonymous users
+            if (currentUser) {
+                reportError(error, { action: 'auto_save_session' });
+            }
         }
     };
 
