@@ -37,7 +37,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const headerMenuButtonRef = useRef(null);
     const headerMenuRef = useRef(null);
     const [showFeatures, setShowFeatures] = useState(false);
-    const [bookmarkedMessages, setBookmarkedMessages] = useState(() => JSON.parse(localStorage.getItem('gemini_bookmarks') || '[]'));
+    const [bookmarkedMessages, setBookmarkedMessages] = useState([]);
     const [messageRatings, setMessageRatings] = useState(() => JSON.parse(localStorage.getItem('gemini_ratings') || '{}'));
     const [showSettings, setShowSettings] = useState(false);
     const [showBookmarks, setShowBookmarks] = useState(false);
@@ -431,6 +431,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             loadChatHistory(currentSessionId);
             // Load ratings for current session
             loadMessageRatings(currentSessionId);
+            // Load bookmarks for current session
+            loadBookmarkedMessages(currentSessionId);
         } else if (!currentUser) {
             setIsHistoryLoaded(true);
         }
@@ -1036,14 +1038,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     })
                 });
 
-                if (response.ok) {
-                    const newBookmarks = bookmarkedMessages.filter(bm => bm.key !== bookmarkKey);
-                    setBookmarkedMessages(newBookmarks);
-                    localStorage.setItem('gemini_bookmarks', JSON.stringify(newBookmarks));
-                    toast.success('Bookmark removed');
-                } else {
-                    toast.error('Failed to remove bookmark');
-                }
+                    if (response.ok) {
+                        // Reload bookmarks from backend
+                        loadBookmarkedMessages(currentSessionId);
+                        toast.success('Bookmark removed');
+                    } else {
+                        toast.error('Failed to remove bookmark');
+                    }
             } else {
                 // Add bookmark
                 const response = await fetch(`${API_BASE_URL}/api/gemini/bookmark`, {
@@ -1061,21 +1062,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     })
                 });
 
-                if (response.ok) {
-                    const newBookmark = {
-                        key: bookmarkKey,
-                        content: message.content,
-                        timestamp: message.timestamp,
-                        role: message.role,
-                        sessionId: currentSessionId
-                    };
-                    const newBookmarks = [...bookmarkedMessages, newBookmark];
-                    setBookmarkedMessages(newBookmarks);
-                    localStorage.setItem('gemini_bookmarks', JSON.stringify(newBookmarks));
-                    toast.success('Message bookmarked');
-                } else {
-                    toast.error('Failed to bookmark message');
-                }
+                    if (response.ok) {
+                        // Reload bookmarks from backend
+                        loadBookmarkedMessages(currentSessionId);
+                        toast.success('Message bookmarked');
+                    } else {
+                        toast.error('Failed to bookmark message');
+                    }
             }
         } catch (error) {
             console.error('Error toggling bookmark:', error);
@@ -1394,6 +1387,39 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             }
         } catch (error) {
             console.error('Error loading message ratings:', error);
+        }
+    };
+
+    // Load bookmarked messages for current session
+    const loadBookmarkedMessages = async (sessionId) => {
+        if (!currentUser || !sessionId) return;
+        
+        try {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+            const response = await fetch(`${API_BASE_URL}/api/gemini/bookmarks/${sessionId}`, {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.bookmarks) {
+                    // Convert backend bookmarks to frontend format
+                    const formattedBookmarks = data.bookmarks.map(bookmark => ({
+                        key: `${sessionId}_${bookmark.messageIndex}_${bookmark.messageTimestamp}`,
+                        content: bookmark.messageContent,
+                        timestamp: bookmark.messageTimestamp,
+                        role: bookmark.messageRole,
+                        sessionId: sessionId
+                    }));
+                    setBookmarkedMessages(formattedBookmarks);
+                }
+            }
+        } catch (error) {
+            console.error('Error loading bookmarked messages:', error);
         }
     };
 
@@ -3867,14 +3893,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         <FaBookmark className="text-yellow-500" />
                                         Bookmarked Messages
                                     </h4>
-                                    {(() => {
-                                        const currentSessionId = getOrCreateSessionId();
-                                        const sessionBookmarks = bookmarkedMessages.filter(bm => bm.sessionId === currentSessionId);
-                                        return sessionBookmarks.length === 0 ? (
-                                            <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'} text-center py-8`}>No bookmarked messages in this session</p>
-                                        ) : (
-                                            <div className="space-y-3">
-                                                {sessionBookmarks.map((bookmark, idx) => (
+                                    {bookmarkedMessages.length === 0 ? (
+                                        <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'} text-center py-8`}>No bookmarked messages in this session</p>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {bookmarkedMessages.map((bookmark, idx) => (
                                                 <div key={idx} className={`p-3 border ${isDarkMode ? 'border-gray-600' : 'border-gray-200'} rounded-lg`}>
                                                     <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mb-2`}>
                                                         {new Date(bookmark.timestamp).toLocaleString()}
@@ -3900,9 +3923,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                         </button>
                                                         <button
                                                             onClick={() => {
-                                                                const newBookmarks = bookmarkedMessages.filter(bm => bm.key !== bookmark.key);
-                                                                setBookmarkedMessages(newBookmarks);
-                                                                localStorage.setItem('gemini_bookmarks', JSON.stringify(newBookmarks));
+                                                                const currentSessionId = getOrCreateSessionId();
+                                                                toggleBookmark(bookmark.messageIndex || 0, { content: bookmark.content, timestamp: bookmark.timestamp });
                                                             }}
                                                             className="text-xs px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded"
                                                         >
@@ -3912,8 +3934,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 </div>
                                             ))}
                                         </div>
-                                        );
-                                    })()}
+                                    )}
                                     <div className="flex justify-end mt-4">
                                         <button onClick={() => setShowBookmarks(false)} className={`px-3 py-1.5 text-sm rounded bg-gradient-to-r ${themeColors.primary} text-white hover:opacity-90`}>Close</button>
                                     </div>
