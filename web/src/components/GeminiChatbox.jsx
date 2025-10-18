@@ -1075,6 +1075,23 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
     };
 
+    // Web Speech API for real-time transcription (fallback)
+    const [isWebSpeechSupported, setIsWebSpeechSupported] = useState(false);
+    const [webSpeechRecognition, setWebSpeechRecognition] = useState(null);
+
+    // Check for Web Speech API support
+    useEffect(() => {
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            setIsWebSpeechSupported(true);
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+            setWebSpeechRecognition(recognition);
+        }
+    }, []);
+
     // Enhanced Features Functions
     const startVoiceRecording = async () => {
         // Prevent multiple simultaneous recordings
@@ -1276,12 +1293,43 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             const uploadData = await response.json();
             const audioUrl = uploadData.audioUrl;
 
-            // Since Gemini doesn't support direct audio transcription via URL,
-            // we'll return a message asking the user to describe their audio content
-            return {
-                audioUrl,
-                transcription: 'I\'ve uploaded an audio recording. Please describe what you said in the audio or what you need help with, and I\'ll assist you accordingly.'
-            };
+            // Use real speech-to-text API for transcription
+            try {
+                const transcriptionResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/speech/transcribe`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        audioUrl: audioUrl
+                    }),
+                });
+
+                if (!transcriptionResponse.ok) {
+                    const errorData = await transcriptionResponse.json();
+                    throw new Error(errorData.message || 'Transcription failed');
+                }
+
+                const transcriptionData = await transcriptionResponse.json();
+                
+                if (transcriptionData.success && transcriptionData.transcription) {
+                    return {
+                        audioUrl,
+                        transcription: transcriptionData.transcription,
+                        confidence: transcriptionData.confidence || 0
+                    };
+                } else {
+                    throw new Error('No transcription received');
+                }
+            } catch (transcriptionError) {
+                console.error('Speech-to-text error:', transcriptionError);
+                // Fallback to asking user to describe their audio
+                return {
+                    audioUrl,
+                    transcription: 'I\'ve uploaded an audio recording but had trouble transcribing it. Please describe what you said in the audio or what you need help with, and I\'ll assist you accordingly.'
+                };
+            }
 
         } catch (error) {
             console.error('Audio upload/transcription error:', error);
@@ -3172,6 +3220,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                             Click to start recording, click again to stop
                         </p>
+                        {isWebSpeechSupported && (
+                            <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                                Real-time transcription available
+                            </p>
+                        )}
                     </div>
                     
                     <div className="space-y-3">
