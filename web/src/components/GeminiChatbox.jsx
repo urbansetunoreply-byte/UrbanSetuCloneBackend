@@ -886,12 +886,17 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             const messagesToKeep = updatedMessages.slice(0, messageIndex + 1);
             setMessages(messagesToKeep);
 
-            // Send the edited message to get a new response
-            await sendMessage(editingMessageContent.trim());
-
-            // Clear editing state
+            // Set the input message and trigger handleSubmit
+            setInputMessage(editingMessageContent.trim());
+            
+            // Clear editing state first
             setEditingMessageIndex(null);
             setEditingMessageContent('');
+
+            // Trigger the submit after a short delay to ensure state is updated
+            setTimeout(() => {
+                handleSubmit(new Event('submit'));
+            }, 100);
 
             toast.success('Message updated and sent');
         } catch (error) {
@@ -2405,7 +2410,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                             value={editingMessageContent}
                                                             onChange={(e) => setEditingMessageContent(e.target.value)}
                                                             onKeyDown={(e) => handleEditKeyDown(e, index)}
-                                                            className="w-full p-2 text-sm border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                            className="w-full p-2 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
                                                             rows={3}
                                                             placeholder="Edit your message... (Ctrl+Enter to send, Esc to cancel)"
                                                             autoFocus
