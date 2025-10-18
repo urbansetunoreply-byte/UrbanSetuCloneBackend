@@ -3072,7 +3072,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             {chatSessions.map((session, idx) => (
                                                 <div
                                                     key={session.sessionId || idx}
-                                                    className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-200"
+                                                    className={`p-3 border ${isDarkMode ? 'border-gray-600' : 'border-gray-200'} rounded-lg ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition-all duration-200`}
                                                 >
                                                     <div className="flex items-center justify-between gap-2">
                                                         <input
