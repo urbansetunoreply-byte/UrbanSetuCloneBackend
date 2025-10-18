@@ -2171,7 +2171,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             <div
                                                 className={`max-w-[85%] p-3 rounded-2xl break-words relative group ${
                                                     message.role === 'user'
-                                                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                                                        ? `bg-gradient-to-r ${themeColors.primary} text-white`
                                                         : message.isError 
                                                             ? 'bg-red-100 text-red-800 border border-red-200'
                                                             : 'bg-gray-100 text-gray-800'
