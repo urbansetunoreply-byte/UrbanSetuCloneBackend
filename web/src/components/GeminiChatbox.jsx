@@ -956,12 +956,29 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 timestamp: new Date().toISOString()
             };
 
-            // Add the assistant message placeholder first
+            // Add the assistant message placeholder first with loading indicator
+            const loadingMessage = {
+                ...assistantMessage,
+                content: 'Thinking...',
+                isLoading: true
+            };
+            
             setMessages(prev => {
-                const newMessages = [...prev, assistantMessage];
+                const newMessages = [...prev, loadingMessage];
                 console.log('Added assistant message placeholder:', newMessages.length);
                 return newMessages;
             });
+            
+            // Force a re-render to ensure the placeholder is visible
+            setTimeout(() => {
+                setMessages(prev => {
+                    const newMessages = [...prev];
+                    if (newMessages.length > 0 && newMessages[newMessages.length - 1].role === 'assistant') {
+                        newMessages[newMessages.length - 1] = { ...assistantMessage };
+                    }
+                    return newMessages;
+                });
+            }, 50);
 
             while (true) {
                 const { done, value } = await reader.read();
@@ -980,10 +997,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 // Update the last message (assistant response) with new content
                                 setMessages(prev => {
                                     const newMessages = [...prev];
-                                    if (newMessages.length > 0) {
+                                    if (newMessages.length > 0 && newMessages[newMessages.length - 1].role === 'assistant') {
                                         newMessages[newMessages.length - 1] = { 
                                             ...assistantMessage,
-                                            content: assistantMessage.content 
+                                            content: assistantMessage.content,
+                                            timestamp: assistantMessage.timestamp,
+                                            isLoading: false // Remove loading indicator when content starts streaming
                                         };
                                     }
                                     return newMessages;
@@ -999,10 +1018,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             // Ensure the final message is properly set
             setMessages(prev => {
                 const newMessages = [...prev];
-                if (newMessages.length > 0) {
+                if (newMessages.length > 0 && newMessages[newMessages.length - 1].role === 'assistant') {
                     newMessages[newMessages.length - 1] = { 
                         ...assistantMessage,
-                        content: assistantMessage.content 
+                        content: assistantMessage.content,
+                        isLoading: false // Ensure loading is false
                     };
                 }
                 return newMessages;
@@ -2823,7 +2843,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             )}
 
                             {/* Smart Suggestions */}
-                            {showSmartSuggestions && messages.length <= 1 && (
+                            {showSmartSuggestions && messages.length <= 2 && (
                                 <div className="mb-3">
                                     <div className="text-xs text-gray-500 mb-2 flex items-center gap-2">
                                         <FaLightbulb size={10} />
