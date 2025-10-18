@@ -2658,6 +2658,37 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         console.error('Error reported:', errorReport);
     };
 
+    // Save current session to backend
+    const saveCurrentSession = async () => {
+        if (!currentUser || messages.length === 0) return;
+        
+        try {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+            const currentSessionId = getOrCreateSessionId();
+            
+            const saveResponse = await fetch(`${API_BASE_URL}/api/chat-history/session/${currentSessionId}`, {
+                method: 'PUT',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    messages: messages,
+                    name: `Chat ${new Date().toLocaleDateString()}`,
+                    totalMessages: messages.length,
+                    lastActivity: new Date().toISOString()
+                })
+            });
+            
+            if (!saveResponse.ok) {
+                console.error('Failed to auto-save current session');
+            }
+        } catch (error) {
+            console.error('Error auto-saving session:', error);
+            reportError(error, { action: 'auto_save_session' });
+        }
+    };
+
     // Get dynamic classes based on settings
     const getFontSizeClass = () => {
         switch (fontSize) {
