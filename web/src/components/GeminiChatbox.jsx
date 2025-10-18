@@ -1317,7 +1317,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     return {
                         audioUrl,
                         transcription: transcriptionData.transcription,
-                        confidence: transcriptionData.confidence || 0
+                        confidence: transcriptionData.confidence || 0,
+                        language: transcriptionData.language || 'en',
+                        duration: transcriptionData.duration || 0
                     };
                 } else {
                     throw new Error('No transcription received');
@@ -1327,13 +1329,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 // Fallback to asking user to describe their audio
                 return {
                     audioUrl,
-                    transcription: 'I\'ve uploaded an audio recording but had trouble transcribing it. Please describe what you said in the audio or what you need help with, and I\'ll assist you accordingly.'
+                    transcription: 'I\'ve uploaded an audio recording but had trouble transcribing it with Whisper AI. Please describe what you said in the audio or what you need help with, and I\'ll assist you accordingly.'
                 };
             }
 
         } catch (error) {
             console.error('Audio upload/transcription error:', error);
-            toast.error('Failed to upload and transcribe audio');
+            toast.error('Failed to upload and transcribe audio with Whisper AI');
             throw error;
         } finally {
             setUploadingAudio(false);
@@ -3220,11 +3222,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                             Click to start recording, click again to stop
                         </p>
-                        {isWebSpeechSupported && (
-                            <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                                Real-time transcription available
-                            </p>
-                        )}
+                        <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                            Powered by OpenAI Whisper AI
+                        </p>
                     </div>
                     
                     <div className="space-y-3">
