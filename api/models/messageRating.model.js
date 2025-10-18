@@ -42,15 +42,16 @@ const messageRatingSchema = new mongoose.Schema({
   timestamps: true,
   // Add indexes for better performance
   indexes: [
-    { userId: 1, sessionId: 1, messageIndex: 1, messageTimestamp: 1 },
+    { userId: 1, sessionId: 1, messageIndex: 1, messageTimestamp: 1, type: 1 },
     { userId: 1, rating: 1 },
+    { userId: 1, type: 1 },
     { sessionId: 1 }
   ]
 });
 
-// Ensure unique rating per message per user
+// Ensure unique rating/bookmark per message per user per type
 messageRatingSchema.index(
-  { userId: 1, sessionId: 1, messageIndex: 1, messageTimestamp: 1 },
+  { userId: 1, sessionId: 1, messageIndex: 1, messageTimestamp: 1, type: 1 },
   { unique: true }
 );
 

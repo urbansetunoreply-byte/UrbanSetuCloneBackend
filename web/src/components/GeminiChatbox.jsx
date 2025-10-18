@@ -3031,11 +3031,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 relative">
                             {/* Floating Date Indicator (sticky below header) */}
                             {floatingDateLabel && (
-                                <div className={`sticky top-0 left-0 right-0 z-30 pointer-events-none transition-all duration-300 ease-in-out ${
-                                    isScrolling ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                                <div className={`sticky top-0 left-0 right-0 z-30 pointer-events-none transition-all duration-500 ease-out ${
+                                    isScrolling ? 'opacity-100 scale-100 translate-y-0 animate-floatingDateFadeIn' : 'opacity-0 scale-95 translate-y-2 animate-floatingDateFadeOut'
                                 }`}>
                                     <div className="w-full flex justify-center py-2">
-                                        <div className={`bg-gradient-to-r ${themeColors.primary} text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white`}>
+                                        <div className={`bg-gradient-to-r ${themeColors.primary} text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white transform transition-all duration-300 ${
+                                            isScrolling ? 'shadow-xl' : 'shadow-lg'
+                                        }`}>
                                             {floatingDateLabel}
                                         </div>
                                     </div>
@@ -5326,6 +5328,33 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 }
                 .send-icon.animate-sent {
                   animation: sentSuccess 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                }
+                
+                @keyframes floatingDateFadeIn {
+                  from { 
+                    opacity: 0; 
+                    transform: translateY(-8px) scale(0.92); 
+                  }
+                  to { 
+                    opacity: 1; 
+                    transform: translateY(0) scale(1); 
+                  }
+                }
+                @keyframes floatingDateFadeOut {
+                  from { 
+                    opacity: 1; 
+                    transform: translateY(0) scale(1); 
+                  }
+                  to { 
+                    opacity: 0; 
+                    transform: translateY(4px) scale(0.96); 
+                  }
+                }
+                .animate-floatingDateFadeIn {
+                  animation: floatingDateFadeIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+                }
+                .animate-floatingDateFadeOut {
+                  animation: floatingDateFadeOut 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
                 }
                 
                 /* Accessibility Styles */

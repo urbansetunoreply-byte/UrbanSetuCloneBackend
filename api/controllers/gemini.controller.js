@@ -569,35 +569,30 @@ export const bookmarkMessage = async (req, res) => {
             });
         }
 
-        // Check if bookmark already exists
-        const existingBookmark = await MessageRating.findOne({
-            userId,
-            sessionId,
-            messageIndex,
-            messageTimestamp,
-            type: 'bookmark'
-        });
-
-        if (existingBookmark) {
-            return res.status(400).json({
-                success: false,
-                message: 'Message already bookmarked'
-            });
-        }
-
-        // Create new bookmark
-        const bookmark = new MessageRating({
-            userId,
-            sessionId,
-            messageIndex,
-            messageTimestamp,
-            messageContent,
-            messageRole,
-            type: 'bookmark',
-            rating: 'bookmarked'
-        });
-
-        await bookmark.save();
+        // Upsert bookmark (update if exists, create if not)
+        const bookmark = await MessageRating.findOneAndUpdate(
+            {
+                userId,
+                sessionId,
+                messageIndex,
+                messageTimestamp: new Date(messageTimestamp),
+                type: 'bookmark'
+            },
+            {
+                userId,
+                sessionId,
+                messageIndex,
+                messageTimestamp: new Date(messageTimestamp),
+                messageContent,
+                messageRole,
+                type: 'bookmark',
+                rating: 'bookmarked'
+            },
+            {
+                upsert: true,
+                new: true
+            }
+        );
 
         res.status(200).json({
             success: true,
@@ -637,7 +632,7 @@ export const removeBookmark = async (req, res) => {
             userId,
             sessionId,
             messageIndex,
-            messageTimestamp,
+            messageTimestamp: new Date(messageTimestamp),
             type: 'bookmark'
         });
 
