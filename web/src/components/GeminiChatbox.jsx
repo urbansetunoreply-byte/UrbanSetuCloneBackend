@@ -1077,6 +1077,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
     // Enhanced Features Functions
     const startVoiceRecording = async () => {
+        // Prevent multiple simultaneous recordings
+        if (isRecording) {
+            console.log('Recording already in progress, ignoring start request');
+            return;
+        }
+        
         try {
             // Cleanup any existing recording state
             if (recordedAudioUrl && recordedAudioUrl.startsWith('blob:')) {
@@ -1095,15 +1101,15 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 }
             });
             
-            // Check supported MIME types
+            // Check supported MIME types (prioritize formats that work with backend)
             const supportedTypes = [
-                'audio/webm;codecs=opus',
-                'audio/webm',
+                'audio/wav',
                 'audio/mp4',
-                'audio/wav'
+                'audio/webm',
+                'audio/webm;codecs=opus'
             ];
             
-            let selectedType = 'audio/webm';
+            let selectedType = 'audio/wav';
             for (const type of supportedTypes) {
                 if (MediaRecorder.isTypeSupported(type)) {
                     selectedType = type;
@@ -1158,7 +1164,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     // Skip blob test to avoid playback issues
                     console.log('Audio blob created successfully, skipping test');
                     
-                    const fileName = `recording-${Date.now()}.${selectedType.split('/')[1].split(';')[0]}`;
+                    // Generate filename with proper extension
+                    let extension = 'webm';
+                    if (selectedType.includes('wav')) extension = 'wav';
+                    else if (selectedType.includes('mp4')) extension = 'mp4';
+                    else if (selectedType.includes('ogg')) extension = 'ogg';
+                    
+                    const fileName = `recording-${Date.now()}.${extension}`;
                     const audioFile = new File([audioBlob], fileName, { type: audioBlob.type });
                     const audioUrl = URL.createObjectURL(audioBlob);
                     
@@ -1210,6 +1222,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             setRecordingStartTime(null);
             setRecordingDuration(0);
             // Don't clear chunks here - let onstop handle it
+        } else {
+            console.log('No active recording to stop');
         }
     };
 
@@ -1306,8 +1320,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             // Add the transcribed message to input
             setInputMessage(transcription);
             
-            // Close audio preview and cleanup immediately
+            // Close audio preview and voice input modals immediately
             setShowAudioPreview(false);
+            setShowVoiceInput(false);
             
             // Cleanup blob URL
             if (recordedAudioUrl && recordedAudioUrl.startsWith('blob:')) {
@@ -1337,8 +1352,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 // Send a message about the audio instead
                 setInputMessage('I recorded an audio message but had trouble uploading it. Please help me with my question.');
                 
-                // Close audio preview and cleanup
+                // Close audio preview and voice input modals
                 setShowAudioPreview(false);
+                setShowVoiceInput(false);
                 if (recordedAudioUrl && recordedAudioUrl.startsWith('blob:')) {
                     URL.revokeObjectURL(recordedAudioUrl);
                 }
