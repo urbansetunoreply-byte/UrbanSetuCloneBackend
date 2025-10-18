@@ -3045,7 +3045,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         }
                                         setShowVoiceInput(true);
                                     }}
-                                    className="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full transition-all duration-200 flex items-center justify-center"
+                                    className={`px-3 py-2 ${themeColors.secondary} hover:opacity-80 ${themeColors.accent} rounded-full transition-all duration-200 flex items-center justify-center`}
                                     title="Voice Input"
                                 >
                                     <FaMicrophone size={14} />
@@ -3867,7 +3867,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
                 <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-xl shadow-xl p-6 w-80 max-w-full text-center`}>
                     <div className="mb-4">
-                        <FaMicrophone size={32} className={`mx-auto mb-2 ${isRecording ? 'text-red-500 animate-pulse' : `text-${selectedTheme === 'blue' ? 'blue' : selectedTheme === 'green' ? 'green' : selectedTheme === 'purple' ? 'purple' : 'orange'}-500`}`} />
+                        <FaMicrophone size={32} className={`mx-auto mb-2 ${isRecording ? 'text-red-500 animate-pulse' : themeColors.accent}`} />
                         <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                             Voice Input
                         </h3>
@@ -3962,7 +3962,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             <button
                                 onClick={handleSendRecordedAudio}
                                 disabled={uploadingAudio}
-                                className="px-4 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white rounded-lg transition-colors flex items-center gap-2"
+                                className={`px-4 py-2 ${uploadingAudio ? 'bg-gray-400' : `bg-gradient-to-r ${themeColors.primary} hover:opacity-90`} text-white rounded-lg transition-colors flex items-center gap-2`}
                             >
                                 {uploadingAudio ? (
                                     <>
