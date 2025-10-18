@@ -388,6 +388,24 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         };
     }, [isHeaderMenuOpen]);
 
+    // Close chat options dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (!openHistoryMenuSessionId) return;
+            // Check if click is outside any chat options dropdown
+            const clickedInsideDropdown = event.target.closest('[data-chat-options-dropdown]');
+            if (!clickedInsideDropdown) {
+                setOpenHistoryMenuSessionId(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside, { passive: true });
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+        };
+    }, [openHistoryMenuSessionId]);
+
     // Keyboard shortcuts: Ctrl+F focus, Esc close
     useEffect(() => {
         if (!isOpen) return;
@@ -3110,11 +3128,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                 }}
                                                                 className="ml-2 p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-all duration-200"
                                                                 title="Chat options"
+                                                                data-chat-options-dropdown
                                                             >
                                                                 ⋯
                                                             </button>
                                                             {openHistoryMenuSessionId === session.sessionId && (
-                                                            <div className={`absolute right-0 top-6 ${isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'} border rounded shadow-lg z-10 w-36`}>
+                                                            <div className={`absolute right-0 top-6 ${isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'} border rounded shadow-lg z-10 w-36`} data-chat-options-dropdown>
                                                                 <button
                                                                     onClick={(e) => {
                                                                         e.stopPropagation();
