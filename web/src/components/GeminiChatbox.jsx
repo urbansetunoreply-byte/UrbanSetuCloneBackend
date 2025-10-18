@@ -1122,8 +1122,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             recorder.ondataavailable = (event) => {
                 if (event.data && event.data.size > 0) {
                     recordingChunksRef.current.push(event.data);
-                    // Only log every 5th chunk to reduce console spam
-                    if (recordingChunksRef.current.length % 5 === 0) {
+                    // Only log every 25th chunk to reduce console spam
+                    if (recordingChunksRef.current.length % 25 === 0) {
                         console.log('Recording progress:', recordingChunksRef.current.length, 'chunks');
                     }
                 }
@@ -1155,25 +1155,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         throw new Error('Empty audio blob');
                     }
                     
-                    // Test if the blob can be read (simplified test)
-                    try {
-                        const testUrl = URL.createObjectURL(audioBlob);
-                        const testAudio = new Audio(testUrl);
-                        testAudio.onerror = () => {
-                            console.warn('Audio blob test failed, but continuing with recording');
-                            URL.revokeObjectURL(testUrl);
-                        };
-                        testAudio.onloadedmetadata = () => {
-                            console.log('Audio blob test successful');
-                            URL.revokeObjectURL(testUrl);
-                        };
-                        // Set a timeout to clean up test URL
-                        setTimeout(() => {
-                            URL.revokeObjectURL(testUrl);
-                        }, 1000);
-                    } catch (testError) {
-                        console.warn('Audio blob test error:', testError);
-                    }
+                    // Skip blob test to avoid playback issues
+                    console.log('Audio blob created successfully, skipping test');
                     
                     const fileName = `recording-${Date.now()}.${selectedType.split('/')[1].split(';')[0]}`;
                     const audioFile = new File([audioBlob], fileName, { type: audioBlob.type });
@@ -1269,7 +1252,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             });
 
             if (!response.ok) {
-                throw new Error('Audio upload failed');
+                const errorText = await response.text();
+                console.error('Audio upload failed:', response.status, errorText);
+                throw new Error(`Audio upload failed: ${response.status} - ${errorText}`);
             }
 
             const uploadData = await response.json();
@@ -1342,7 +1327,33 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
         } catch (error) {
             console.error('Error sending recorded audio:', error);
-            toast.error('Failed to send audio: ' + error.message);
+            
+            // Show fallback option
+            const shouldContinue = window.confirm(
+                'Audio upload failed. Would you like to send a message about the audio recording instead?'
+            );
+            
+            if (shouldContinue) {
+                // Send a message about the audio instead
+                setInputMessage('I recorded an audio message but had trouble uploading it. Please help me with my question.');
+                
+                // Close audio preview and cleanup
+                setShowAudioPreview(false);
+                if (recordedAudioUrl && recordedAudioUrl.startsWith('blob:')) {
+                    URL.revokeObjectURL(recordedAudioUrl);
+                }
+                setRecordedAudioUrl(null);
+                setRecordedAudioFile(null);
+                setAudioChunks([]);
+                recordingChunksRef.current = [];
+                
+                // Auto-submit the fallback message
+                setTimeout(() => {
+                    handleSubmit(new Event('submit'));
+                }, 100);
+            } else {
+                toast.error('Audio upload failed. Please try recording again.');
+            }
         }
     };
 
@@ -3214,10 +3225,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             controls 
                             className="w-full"
                             onError={(e) => {
-                                console.error('Audio playback error:', e);
-                                console.error('Audio URL:', recordedAudioUrl);
-                                console.error('Audio type:', recordedAudioType);
-                                toast.error('Failed to play audio. Please try recording again.');
+                                console.warn('Audio playback error, but continuing with upload');
+                                // Don't show error toast, just log it
                             }}
                             onLoadStart={() => console.log('Audio loading started')}
                             onCanPlay={() => console.log('Audio can play')}
@@ -3227,6 +3236,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             <source src={recordedAudioUrl} type="audio/webm" />
                             <source src={recordedAudioUrl} type="audio/wav" />
                             <source src={recordedAudioUrl} type="audio/mp4" />
+                            <source src={recordedAudioUrl} type="audio/ogg" />
                             Your browser does not support the audio element.
                         </audio>
                         
@@ -3245,7 +3255,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             </div>
                         )}
                         
-                        <div className="flex gap-2 justify-center">
+                        <div className="flex gap-2 justify-center flex-wrap">
                             <button
                                 onClick={handleSendRecordedAudio}
                                 disabled={uploadingAudio}
@@ -3262,6 +3272,32 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         Transcribe & Send
                                     </>
                                 )}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    // Send as text message about audio
+                                    setInputMessage('I recorded an audio message but had trouble uploading it. Please help me with my question.');
+                                    
+                                    // Close audio preview and cleanup
+                                    setShowAudioPreview(false);
+                                    if (recordedAudioUrl && recordedAudioUrl.startsWith('blob:')) {
+                                        URL.revokeObjectURL(recordedAudioUrl);
+                                    }
+                                    setRecordedAudioUrl(null);
+                                    setRecordedAudioFile(null);
+                                    setAudioChunks([]);
+                                    recordingChunksRef.current = [];
+                                    
+                                    // Auto-submit the message
+                                    setTimeout(() => {
+                                        handleSubmit(new Event('submit'));
+                                    }, 100);
+                                }}
+                                disabled={uploadingAudio}
+                                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-lg transition-colors flex items-center gap-2"
+                            >
+                                <FaFileAlt size={14} />
+                                Send as Text
                             </button>
                             <button
                                 onClick={() => {
