@@ -1895,7 +1895,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     };
 
     // Data retention cleanup function
-    const cleanupOldData = () => {
+    const cleanupOldData = async () => {
         try {
             if (dataRetention === '0') return; // Forever - no cleanup
             
@@ -1909,7 +1909,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             
             // Clean up old chat sessions
             if (currentUser) {
-                loadChatSessions().then(sessions => {
+                loadChatSessions().then(async sessions => {
                     // Check if sessions is an array before filtering
                     if (Array.isArray(sessions) && sessions.length > 0) {
                         const sessionsToDelete = sessions.filter(session => {
