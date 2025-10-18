@@ -3,7 +3,7 @@ import ChatHistory from '../models/chatHistory.model.js';
 import MessageRating from '../models/messageRating.model.js';
 
 const ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY || "AIzaSyBg9wSoffCi3RfbaQV6zwH78xoULd2jG0A"
+    apiKey: process.env.GEMINI_API_KEY
 });
 
 export const chatWithGemini = async (req, res) => {
