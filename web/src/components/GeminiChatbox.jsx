@@ -343,13 +343,21 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
     // Data retention cleanup effect
     useEffect(() => {
-        // Run cleanup on component mount and when data retention setting changes
-        cleanupOldData();
+        // Only run cleanup if dataRetention is a valid value
+        if (dataRetention && (dataRetention === '0' || !isNaN(parseInt(dataRetention)))) {
+            cleanupOldData();
+        }
         
-        // Set up periodic cleanup (every hour)
-        const cleanupInterval = setInterval(cleanupOldData, 60 * 60 * 1000);
-        
-        return () => clearInterval(cleanupInterval);
+        // Set up periodic cleanup (every hour) - only if data retention is enabled
+        if (dataRetention && dataRetention !== '0') {
+            const cleanupInterval = setInterval(() => {
+                if (dataRetention && (dataRetention === '0' || !isNaN(parseInt(dataRetention)))) {
+                    cleanupOldData();
+                }
+            }, 60 * 60 * 1000);
+            
+            return () => clearInterval(cleanupInterval);
+        }
     }, [dataRetention, currentUser]);
 
     // Handle force modal opening
@@ -1090,7 +1098,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     };
 
     const loadChatSessions = async () => {
-        if (!currentUser) return;
+        if (!currentUser) return [];
         
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -1100,12 +1108,16 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             
             if (response.ok) {
                 const data = await response.json();
-                setChatSessions(data.sessions || []);
+                const sessions = data.sessions || [];
+                setChatSessions(sessions);
+                return sessions;
             } else {
                 console.error('Failed to load chat sessions:', response.status);
+                return [];
             }
         } catch (error) {
             console.error('Error loading chat sessions:', error);
+            return [];
         }
     };
 
@@ -1884,31 +1896,71 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
     // Data retention cleanup function
     const cleanupOldData = () => {
-        if (dataRetention === '0') return; // Forever - no cleanup
-        
-        const retentionDays = parseInt(dataRetention);
-        const cutoffDate = new Date();
-        cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
-        
-        // Clean up old chat sessions
-        if (currentUser) {
-            loadChatSessions().then(sessions => {
-                const sessionsToDelete = sessions.filter(session => {
-                    const sessionDate = new Date(session.createdAt || session.timestamp);
-                    return sessionDate < cutoffDate;
+        try {
+            if (dataRetention === '0') return; // Forever - no cleanup
+            
+            const retentionDays = parseInt(dataRetention);
+            if (isNaN(retentionDays) || retentionDays <= 0) return; // Invalid retention days
+            
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
+            
+            console.log(`Data retention cleanup: removing data older than ${retentionDays} days (${cutoffDate.toISOString()})`);
+            
+            // Clean up old chat sessions
+            if (currentUser) {
+                loadChatSessions().then(sessions => {
+                    // Check if sessions is an array before filtering
+                    if (Array.isArray(sessions) && sessions.length > 0) {
+                        const sessionsToDelete = sessions.filter(session => {
+                            try {
+                                const sessionDate = new Date(session.createdAt || session.timestamp);
+                                return sessionDate < cutoffDate;
+                            } catch (error) {
+                                console.warn('Invalid session date:', session, error);
+                                return false;
+                            }
+                        });
+                        
+                        console.log(`Found ${sessionsToDelete.length} old sessions to delete`);
+                        
+                        sessionsToDelete.forEach(session => {
+                            try {
+                                deleteChatSession(session._id || session.id);
+                            } catch (error) {
+                                console.error('Error deleting session:', session, error);
+                            }
+                        });
+                    }
+                }).catch(error => {
+                    console.error('Error loading chat sessions for cleanup:', error);
                 });
-                
-                sessionsToDelete.forEach(session => {
-                    deleteChatSession(session._id || session.id);
-                });
+            }
+            
+            // Clean up old messages from current session
+            setMessages(prev => {
+                if (Array.isArray(prev) && prev.length > 0) {
+                    const filteredMessages = prev.filter(message => {
+                        try {
+                            const messageDate = new Date(message.timestamp);
+                            return messageDate >= cutoffDate;
+                        } catch (error) {
+                            console.warn('Invalid message date:', message, error);
+                            return true; // Keep message if date is invalid
+                        }
+                    });
+                    
+                    if (filteredMessages.length !== prev.length) {
+                        console.log(`Cleaned up ${prev.length - filteredMessages.length} old messages from current session`);
+                    }
+                    
+                    return filteredMessages;
+                }
+                return prev;
             });
+        } catch (error) {
+            console.error('Error in data retention cleanup:', error);
         }
-        
-        // Clean up old messages from current session
-        setMessages(prev => prev.filter(message => {
-            const messageDate = new Date(message.timestamp);
-            return messageDate >= cutoffDate;
-        }));
     };
 
     const handleSmartSuggestion = (suggestion) => {
