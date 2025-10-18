@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaCheck, FaDownload, FaUpload, FaCog, FaLightbulb, FaHistory, FaBookmark, FaShare, FaThumbsUp, FaThumbsDown, FaRegBookmark, FaBookmark as FaBookmarkSolid, FaMicrophone, FaStop, FaImage, FaFileAlt, FaMagic, FaStar, FaMoon, FaSun, FaPalette, FaVolumeUp, FaVolumeMute, FaExpand, FaCompress, FaSearch, FaFilter, FaSort, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaCheck, FaDownload, FaUpload, FaCog, FaLightbulb, FaHistory, FaBookmark, FaShare, FaThumbsUp, FaThumbsDown, FaRegBookmark, FaBookmark as FaBookmarkSolid, FaMicrophone, FaStop, FaImage, FaFileAlt, FaMagic, FaStar, FaMoon, FaSun, FaPalette, FaVolumeUp, FaVolumeMute, FaExpand, FaCompress, FaSearch, FaFilter, FaSort, FaEye, FaEyeSlash, FaEdit, FaCheck as FaCheckCircle, FaTimes as FaTimesCircle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { formatLinksInText } from '../utils/linkFormatter.jsx';
 import { useSelector } from 'react-redux';
@@ -112,6 +112,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [recordingDuration, setRecordingDuration] = useState(0);
     const [recordedAudioType, setRecordedAudioType] = useState('audio/webm');
     const recordingChunksRef = useRef([]);
+    const [editingMessageIndex, setEditingMessageIndex] = useState(null);
+    const [editingMessageContent, setEditingMessageContent] = useState('');
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -851,6 +853,61 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             }
         } else {
             copyToClipboard(message.content);
+        }
+    };
+
+    // Edit message functions
+    const startEditingMessage = (messageIndex, messageContent) => {
+        setEditingMessageIndex(messageIndex);
+        setEditingMessageContent(messageContent);
+    };
+
+    const cancelEditingMessage = () => {
+        setEditingMessageIndex(null);
+        setEditingMessageContent('');
+    };
+
+    const submitEditedMessage = async (messageIndex) => {
+        if (!editingMessageContent.trim()) {
+            toast.error('Message cannot be empty');
+            return;
+        }
+
+        try {
+            // Update the user message in the messages array
+            const updatedMessages = [...messages];
+            updatedMessages[messageIndex] = {
+                ...updatedMessages[messageIndex],
+                content: editingMessageContent.trim()
+            };
+            setMessages(updatedMessages);
+
+            // Remove the assistant's response that came after this user message
+            const messagesToKeep = updatedMessages.slice(0, messageIndex + 1);
+            setMessages(messagesToKeep);
+
+            // Send the edited message to get a new response
+            await sendMessage(editingMessageContent.trim());
+
+            // Clear editing state
+            setEditingMessageIndex(null);
+            setEditingMessageContent('');
+
+            toast.success('Message updated and sent');
+        } catch (error) {
+            console.error('Error submitting edited message:', error);
+            toast.error('Failed to send edited message');
+        }
+    };
+
+    // Handle keyboard shortcuts for editing
+    const handleEditKeyDown = (e, messageIndex) => {
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            submitEditedMessage(messageIndex);
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            cancelEditingMessage();
         }
     };
 
@@ -2341,7 +2398,39 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     </div>
                                                 )}
                                                 
-                                                <p className="text-sm whitespace-pre-wrap leading-relaxed">{formatLinksInText(message.content, message.role === 'user')}</p>
+                                                {/* Message content - editable for user messages */}
+                                                {editingMessageIndex === index ? (
+                                                    <div className="space-y-2">
+                                                        <textarea
+                                                            value={editingMessageContent}
+                                                            onChange={(e) => setEditingMessageContent(e.target.value)}
+                                                            onKeyDown={(e) => handleEditKeyDown(e, index)}
+                                                            className="w-full p-2 text-sm border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                            rows={3}
+                                                            placeholder="Edit your message... (Ctrl+Enter to send, Esc to cancel)"
+                                                            autoFocus
+                                                        />
+                                                        <div className="flex gap-2 justify-end">
+                                                            <button
+                                                                onClick={() => cancelEditingMessage()}
+                                                                className="px-3 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+                                                            >
+                                                                <FaTimesCircle size={10} className="inline mr-1" />
+                                                                Cancel
+                                                            </button>
+                                                            <button
+                                                                onClick={() => submitEditedMessage(index)}
+                                                                disabled={!editingMessageContent.trim() || isLoading}
+                                                                className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                                            >
+                                                                <FaCheckCircle size={10} className="inline mr-1" />
+                                                                Send
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-sm whitespace-pre-wrap leading-relaxed">{formatLinksInText(message.content, message.role === 'user')}</p>
+                                                )}
                                                 
                                                 {/* Message footer with timestamp and actions */}
                                                 <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-200/20">
@@ -2351,8 +2440,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                         </div>
                                                     )}
                                                     
-                                                    {/* Action buttons */}
-                                                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                                                    {/* Action buttons - hidden when editing */}
+                                                    {editingMessageIndex !== index && (
+                                                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
                                                         {/* Copy icon for all messages */}
                                                         <button
                                                             onClick={() => copyToClipboard(message.content)}
@@ -2362,6 +2452,18 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                         >
                                                             <FaCopy size={10} />
                                                         </button>
+                                                        
+                                                        {/* Edit button for user messages */}
+                                                        {message.role === 'user' && (
+                                                            <button
+                                                                onClick={() => startEditingMessage(index, message.content)}
+                                                                className="p-1 text-gray-500 hover:text-blue-600 hover:bg-blue-100 rounded transition-all duration-200"
+                                                                title="Edit message"
+                                                                aria-label="Edit message"
+                                                            >
+                                                                <FaEdit size={10} />
+                                                            </button>
+                                                        )}
                                                         
                                                         {/* Bookmark button for assistant messages */}
                                                         {message.role === 'assistant' && !message.isError && currentUser && (
@@ -2446,6 +2548,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                             </button>
                                                         )}
                                                     </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
