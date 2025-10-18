@@ -917,13 +917,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const currentSessionId = getOrCreateSessionId();
 
-            // Add the user message to the messages array
-            const userMessage = {
-                role: 'user',
-                content: messageContent,
-                timestamp: new Date().toISOString()
-            };
-            setMessages(prev => [...prev, userMessage]);
+            // Note: User message is already added in submitEditedMessage
+            // We don't need to add it again here
 
             // Create abort controller for this request
             const abortController = new AbortController();
@@ -961,7 +956,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 timestamp: new Date().toISOString()
             };
 
-            setMessages(prev => [...prev, assistantMessage]);
+            // Add the assistant message placeholder first
+            setMessages(prev => {
+                const newMessages = [...prev, assistantMessage];
+                console.log('Added assistant message placeholder:', newMessages.length);
+                return newMessages;
+            });
 
             while (true) {
                 const { done, value } = await reader.read();
@@ -976,9 +976,16 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             const data = JSON.parse(line.slice(6));
                             if (data.content) {
                                 assistantMessage.content += data.content;
+                                console.log('Streaming content:', data.content, 'Total:', assistantMessage.content.length);
+                                // Update the last message (assistant response) with new content
                                 setMessages(prev => {
                                     const newMessages = [...prev];
-                                    newMessages[newMessages.length - 1] = { ...assistantMessage };
+                                    if (newMessages.length > 0) {
+                                        newMessages[newMessages.length - 1] = { 
+                                            ...assistantMessage,
+                                            content: assistantMessage.content 
+                                        };
+                                    }
                                     return newMessages;
                                 });
                             }
@@ -989,8 +996,25 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 }
             }
 
+            // Ensure the final message is properly set
+            setMessages(prev => {
+                const newMessages = [...prev];
+                if (newMessages.length > 0) {
+                    newMessages[newMessages.length - 1] = { 
+                        ...assistantMessage,
+                        content: assistantMessage.content 
+                    };
+                }
+                return newMessages;
+            });
+
             // Update rate limit info
             await fetchRateLimitStatus();
+            
+            // Scroll to bottom to show the new response
+            setTimeout(() => {
+                scrollToBottom();
+            }, 100);
 
         } catch (error) {
             if (error.name === 'AbortError') {
@@ -2560,7 +2584,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                         {/* Copy icon for all messages */}
                                                         <button
                                                             onClick={() => copyToClipboard(message.content)}
-                                                            className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-all duration-200"
+                                                            className={`p-1 rounded transition-all duration-200 ${
+                                                                message.role === 'user' 
+                                                                    ? 'text-white/80 hover:text-white hover:bg-white/20' 
+                                                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
+                                                            }`}
                                                             title="Copy message"
                                                             aria-label="Copy message"
                                                         >
@@ -2571,7 +2599,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                         {message.role === 'user' && (
                                                             <button
                                                                 onClick={() => startEditingMessage(index, message.content)}
-                                                                className="p-1 text-gray-500 hover:text-blue-600 hover:bg-blue-100 rounded transition-all duration-200"
+                                                                className="p-1 text-white/80 hover:text-white hover:bg-white/20 rounded transition-all duration-200"
                                                                 title="Edit message"
                                                                 aria-label="Edit message"
                                                             >
