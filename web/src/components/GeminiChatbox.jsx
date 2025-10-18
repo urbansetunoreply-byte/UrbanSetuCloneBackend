@@ -131,6 +131,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const recordingChunksRef = useRef([]);
     const [editingMessageIndex, setEditingMessageIndex] = useState(null);
     const [editingMessageContent, setEditingMessageContent] = useState('');
+    const typingTimeoutRef = useRef(null);
 
     const scrollToBottom = () => {
         if (autoScroll) {
@@ -339,6 +340,17 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             fetchRateLimitStatus();
         }
     }, [currentUser]);
+
+    // Data retention cleanup effect
+    useEffect(() => {
+        // Run cleanup on component mount and when data retention setting changes
+        cleanupOldData();
+        
+        // Set up periodic cleanup (every hour)
+        const cleanupInterval = setInterval(cleanupOldData, 60 * 60 * 1000);
+        
+        return () => clearInterval(cleanupInterval);
+    }, [dataRetention, currentUser]);
 
     // Handle force modal opening
     useEffect(() => {
@@ -590,6 +602,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         setMessages(prev => [...prev, { role: 'user', content: userMessage, timestamp: new Date().toISOString() }]);
         lastUserMessageRef.current = userMessage;
         setIsLoading(true);
+        
+        // Play sound when message is sent
+        playSound('message-sent.mp3');
 
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -609,7 +624,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     message: userMessage,
                     history: messages.slice(-10), // Send last 10 messages for context
                     sessionId: currentSessionId,
-                    tone: tone // Send current tone setting
+                    tone: tone, // Send current tone setting
+                    responseLength: aiResponseLength, // Send response length setting
+                    creativity: aiCreativity // Send creativity level setting
                 }),
                 signal: abortControllerRef.current.signal
             });
@@ -634,6 +651,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 if (!isOpen) {
                     setUnreadCount(count => count + 1);
                 }
+                
+                // Play sound when message is received
+                playSound('message-received.mp3');
 
                 // Update session ID if provided in response
                 if (data.sessionId && data.sessionId !== sessionId) {
@@ -743,7 +763,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     message: originalMessage,
                     history: messages.slice(-10), // Send last 10 messages for context
                     sessionId: currentSessionId,
-                    tone: tone // Send current tone setting
+                    tone: tone, // Send current tone setting
+                    responseLength: aiResponseLength, // Send response length setting
+                    creativity: aiCreativity // Send creativity level setting
                 }),
                 signal: abortControllerRef.current.signal
             });
@@ -974,7 +996,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     message: messageContent,
                     history: messages.slice(-10), // Send last 10 messages for context
                     sessionId: currentSessionId,
-                    tone: tone // Send current tone setting
+                    tone: tone, // Send current tone setting
+                    responseLength: aiResponseLength, // Send response length setting
+                    creativity: aiCreativity // Send creativity level setting
                 }),
                 signal: abortControllerRef.current.signal
             });
@@ -1002,6 +1026,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     console.log('Last message:', newMessages[newMessages.length - 1]);
                     return newMessages;
                 });
+                
+                // Play sound when edited message response is received
+                playSound('message-received.mp3');
                 
                 // Update session ID if provided in response
                 if (data.sessionId && data.sessionId !== sessionId) {
@@ -1810,6 +1837,78 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         localStorage.setItem('gemini_custom_theme', JSON.stringify(customThemeData));
         setSelectedTheme('custom');
         localStorage.setItem('gemini_theme', 'custom');
+    };
+
+    // Sound playing functions
+    const playSound = (soundFile) => {
+        if (!soundEnabled) return;
+        try {
+            const audio = new Audio(`/sounds/${soundFile}`);
+            audio.volume = 0.3; // Lower volume to not be intrusive
+            audio.play().catch(error => {
+                console.warn('Could not play sound:', error);
+            });
+        } catch (error) {
+            console.warn('Sound file not found or error playing sound:', error);
+        }
+    };
+
+    const playTypingSound = () => {
+        if (!soundEnabled || !typingSounds) return;
+        try {
+            const audio = new Audio('/sounds/typing.mp3');
+            audio.volume = 0.2; // Even lower volume for typing
+            audio.play().catch(error => {
+                console.warn('Could not play typing sound:', error);
+            });
+        } catch (error) {
+            console.warn('Typing sound file not found or error playing sound:', error);
+        }
+    };
+
+    // Debounced typing sound function
+    const handleTyping = () => {
+        // Clear existing timeout
+        if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+        }
+        
+        // Play typing sound immediately
+        playTypingSound();
+        
+        // Set timeout to play sound again after 500ms of no typing
+        typingTimeoutRef.current = setTimeout(() => {
+            // This will be called if user stops typing for 500ms
+        }, 500);
+    };
+
+    // Data retention cleanup function
+    const cleanupOldData = () => {
+        if (dataRetention === '0') return; // Forever - no cleanup
+        
+        const retentionDays = parseInt(dataRetention);
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
+        
+        // Clean up old chat sessions
+        if (currentUser) {
+            loadChatSessions().then(sessions => {
+                const sessionsToDelete = sessions.filter(session => {
+                    const sessionDate = new Date(session.createdAt || session.timestamp);
+                    return sessionDate < cutoffDate;
+                });
+                
+                sessionsToDelete.forEach(session => {
+                    deleteChatSession(session._id || session.id);
+                });
+            });
+        }
+        
+        // Clean up old messages from current session
+        setMessages(prev => prev.filter(message => {
+            const messageDate = new Date(message.timestamp);
+            return messageDate >= cutoffDate;
+        }));
     };
 
     const handleSmartSuggestion = (suggestion) => {
@@ -3018,7 +3117,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         ref={inputRef}
                                         type="text"
                                         value={inputMessage}
-                                        onChange={(e) => setInputMessage(e.target.value)}
+                                        onChange={(e) => {
+                                            setInputMessage(e.target.value);
+                                            handleTyping();
+                                        }}
                                         onKeyPress={handleKeyPress}
                                         placeholder={(rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin') ? "Sign in to continue chatting..." : "Ask me anything about real estate..."}
                                         className={`w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} focus:border-transparent text-sm ${
