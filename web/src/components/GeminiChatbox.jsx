@@ -2801,38 +2801,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 </div>
                             )}
 
-                            {/* Smart Suggestions */}
-                            {(() => {
-                                const shouldShow = showSmartSuggestions && messages.length <= 3;
-                                console.log('Smart suggestions check:', { 
-                                    showSmartSuggestions, 
-                                    messageCount: messages.length, 
-                                    shouldShow 
-                                });
-                                return shouldShow;
-                            })() && (
-                                <div className="mb-3">
-                                    <div className="text-xs text-gray-500 mb-2 flex items-center gap-2">
-                                        <FaLightbulb size={10} />
-                                        Try asking:
-                                    </div>
-                                    <div className="flex flex-wrap gap-2">
-                                        {smartSuggestions.map((suggestion, index) => (
-                                            <button
-                                                key={index}
-                                                onClick={() => handleSmartSuggestion(suggestion)}
-                                                className={`text-xs px-3 py-1.5 rounded-full border transition-all duration-200 hover:scale-105 ${
-                                                    isDarkMode 
-                                                        ? 'bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700' 
-                                                        : 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100'
-                                                }`}
-                                            >
-                                                {suggestion}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
 
                             {/* Uploaded Files Display */}
                             {uploadedFiles.length > 0 && (
@@ -2852,6 +2820,39 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     <FaTimes size={10} />
                                                 </button>
                                             </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Smart Suggestions - Above Footer */}
+                            {(() => {
+                                const shouldShow = showSmartSuggestions && messages.length <= 3;
+                                console.log('Smart suggestions check:', { 
+                                    showSmartSuggestions, 
+                                    messageCount: messages.length, 
+                                    shouldShow 
+                                });
+                                return shouldShow;
+                            })() && (
+                                <div className="mb-3 px-2">
+                                    <div className="text-xs text-gray-500 mb-2 flex items-center gap-2">
+                                        <FaLightbulb size={10} />
+                                        Try asking:
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {smartSuggestions.map((suggestion, index) => (
+                                            <button
+                                                key={index}
+                                                onClick={() => handleSmartSuggestion(suggestion)}
+                                                className={`text-xs px-3 py-1.5 rounded-full border transition-all duration-200 hover:scale-105 ${
+                                                    isDarkMode 
+                                                        ? 'bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700' 
+                                                        : 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100'
+                                                }`}
+                                            >
+                                                {suggestion}
+                                            </button>
                                         ))}
                                     </div>
                                 </div>
