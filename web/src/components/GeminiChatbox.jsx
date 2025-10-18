@@ -2136,16 +2136,45 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                             onClick={async (e) => {
                                                                 e.stopPropagation();
                                                                 try {
+                                                                    console.log('Starting download for URL:', message.documentUrl);
+                                                                    
                                                                     const response = await fetch(message.documentUrl, { mode: 'cors' });
                                                                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
                                                                     
                                                                     // Get the actual file type from response headers
                                                                     const contentType = response.headers.get('content-type') || 'application/octet-stream';
-                                                                    const blob = await response.blob();
-                                                                    const blobUrl = window.URL.createObjectURL(blob);
+                                                                    console.log('Response content-type:', contentType);
                                                                     
-                                                                    // Determine file extension from content type
-                                                                    const getFileExtension = (contentType) => {
+                                                                    // Detect file type from URL if content-type is generic
+                                                                    const detectFileTypeFromUrl = (url) => {
+                                                                        const urlLower = url.toLowerCase();
+                                                                        if (urlLower.includes('.pdf')) return { mime: 'application/pdf', ext: 'pdf' };
+                                                                        if (urlLower.includes('.doc')) return { mime: 'application/msword', ext: 'doc' };
+                                                                        if (urlLower.includes('.docx')) return { mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', ext: 'docx' };
+                                                                        if (urlLower.includes('.xls')) return { mime: 'application/vnd.ms-excel', ext: 'xls' };
+                                                                        if (urlLower.includes('.xlsx')) return { mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', ext: 'xlsx' };
+                                                                        if (urlLower.includes('.ppt')) return { mime: 'application/vnd.ms-powerpoint', ext: 'ppt' };
+                                                                        if (urlLower.includes('.pptx')) return { mime: 'application/vnd.openxmlformats-officedocument.presentationml.presentation', ext: 'pptx' };
+                                                                        if (urlLower.includes('.txt')) return { mime: 'text/plain', ext: 'txt' };
+                                                                        if (urlLower.includes('.csv')) return { mime: 'text/csv', ext: 'csv' };
+                                                                        if (urlLower.includes('.zip')) return { mime: 'application/zip', ext: 'zip' };
+                                                                        if (urlLower.includes('.rar')) return { mime: 'application/x-rar-compressed', ext: 'rar' };
+                                                                        return null;
+                                                                    };
+                                                                    
+                                                                    // Use URL detection if content-type is generic
+                                                                    let finalContentType = contentType;
+                                                                    let fileExtension = 'bin';
+                                                                    
+                                                                    if (contentType === 'application/octet-stream' || contentType === 'binary/octet-stream') {
+                                                                        const urlDetection = detectFileTypeFromUrl(message.documentUrl);
+                                                                        if (urlDetection) {
+                                                                            finalContentType = urlDetection.mime;
+                                                                            fileExtension = urlDetection.ext;
+                                                                            console.log('Detected from URL:', finalContentType, fileExtension);
+                                                                        }
+                                                                    } else {
+                                                                        // Use content-type mapping
                                                                         const mimeToExt = {
                                                                             'application/pdf': 'pdf',
                                                                             'application/msword': 'doc',
@@ -2157,17 +2186,17 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                             'text/plain': 'txt',
                                                                             'text/csv': 'csv',
                                                                             'application/zip': 'zip',
-                                                                            'application/x-rar-compressed': 'rar',
-                                                                            'image/jpeg': 'jpg',
-                                                                            'image/png': 'png',
-                                                                            'image/gif': 'gif',
-                                                                            'audio/mpeg': 'mp3',
-                                                                            'audio/wav': 'wav',
-                                                                            'video/mp4': 'mp4',
-                                                                            'video/avi': 'avi'
+                                                                            'application/x-rar-compressed': 'rar'
                                                                         };
-                                                                        return mimeToExt[contentType] || 'bin';
-                                                                    };
+                                                                        fileExtension = mimeToExt[contentType] || 'bin';
+                                                                    }
+                                                                    
+                                                                    const blob = await response.blob();
+                                                                    console.log('Blob size:', blob.size, 'Blob type:', blob.type);
+                                                                    
+                                                                    // Create blob with correct MIME type
+                                                                    const correctedBlob = new Blob([blob], { type: finalContentType });
+                                                                    const blobUrl = window.URL.createObjectURL(correctedBlob);
                                                                     
                                                                     // Extract filename from URL or use document name
                                                                     let fileName = message.documentName;
@@ -2179,10 +2208,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                             fileName = lastPart;
                                                                         } else {
                                                                             // Generate filename with correct extension
-                                                                            const extension = getFileExtension(contentType);
-                                                                            fileName = `document-${Date.now()}.${extension}`;
+                                                                            fileName = `document-${Date.now()}.${fileExtension}`;
                                                                         }
+                                                                    } else if (!fileName.includes('.')) {
+                                                                        // Add extension if filename doesn't have one
+                                                                        fileName = `${fileName}.${fileExtension}`;
                                                                     }
+                                                                    
+                                                                    console.log('Final filename:', fileName, 'Final MIME type:', finalContentType);
                                                                     
                                                                     const a = document.createElement('a');
                                                                     a.href = blobUrl;
@@ -2192,7 +2225,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                     document.body.removeChild(a);
                                                                     window.URL.revokeObjectURL(blobUrl);
                                                                     
-                                                                    console.log('Downloaded file:', fileName, 'Type:', contentType);
+                                                                    console.log('Download completed successfully');
                                                                 } catch (error) {
                                                                     console.error('Download failed:', error);
                                                                     // Fallback to direct link
