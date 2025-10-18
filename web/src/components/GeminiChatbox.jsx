@@ -1112,17 +1112,23 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
             recorder.ondataavailable = (event) => {
                 console.log('Data available:', event.data.size, 'bytes');
+                console.log('Current chunks count before push:', recordingChunksRef.current.length);
                 if (event.data && event.data.size > 0) {
                     recordingChunksRef.current.push(event.data);
+                    console.log('Chunk pushed, new count:', recordingChunksRef.current.length);
                 }
             };
 
             recorder.onstop = async () => {
                 try {
-                    const chunks = recordingChunksRef.current;
+                    // Get the current chunks from ref
+                    const chunks = [...recordingChunksRef.current]; // Create a copy
                     console.log('Recording stopped, chunks:', chunks.length);
+                    console.log('Chunks array:', chunks);
+                    console.log('Ref current:', recordingChunksRef.current);
                     
                     if (chunks.length === 0) {
+                        console.error('No chunks found in recordingChunksRef.current');
                         throw new Error('No audio data recorded');
                     }
                     
@@ -1187,7 +1193,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             recorder.start(100);
             setMediaRecorder(recorder);
             setIsRecording(true);
-            setAudioChunks(recordingChunksRef.current);
+            setAudioChunks([]);
             
             // Start recording timer
             setRecordingStartTime(Date.now());
@@ -1206,7 +1212,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             setIsRecording(false);
             setRecordingStartTime(null);
             setRecordingDuration(0);
-            // Don't clear chunks here - let onstop handle it
+            // Clear chunks after a short delay to allow onstop to process
+            setTimeout(() => {
+                recordingChunksRef.current = [];
+            }, 100);
         }
     };
 
@@ -1907,20 +1916,76 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 {/* Media Display */}
                                                 {message.imageUrl && (
                                                     <div className="mb-2">
-                                                        <img
-                                                            src={message.imageUrl}
-                                                            alt="Shared image"
-                                                            className="max-w-full max-h-64 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                // Open image in new tab
-                                                                window.open(message.imageUrl, '_blank');
-                                                            }}
-                                                            onError={(e) => {
-                                                                e.target.src = "https://via.placeholder.com/300x200?text=Image+Not+Found";
-                                                                e.target.className = "max-w-full max-h-64 rounded-lg opacity-50";
-                                                            }}
-                                                        />
+                                                        <div className="relative">
+                                                            <img
+                                                                src={message.imageUrl}
+                                                                alt="Shared image"
+                                                                className="max-w-full max-h-64 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    // Open image in new tab
+                                                                    window.open(message.imageUrl, '_blank');
+                                                                }}
+                                                                onError={(e) => {
+                                                                    e.target.src = "https://via.placeholder.com/300x200?text=Image+Not+Found";
+                                                                    e.target.className = "max-w-full max-h-64 rounded-lg opacity-50";
+                                                                }}
+                                                            />
+                                                            <button
+                                                                className="absolute top-2 right-2 bg-white/90 hover:bg-white text-gray-700 p-1 rounded-full shadow-md transition-colors"
+                                                                onClick={async (e) => {
+                                                                    e.stopPropagation();
+                                                                    try {
+                                                                        const response = await fetch(message.imageUrl, { mode: 'cors' });
+                                                                        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                                                        
+                                                                        const contentType = response.headers.get('content-type') || 'image/jpeg';
+                                                                        const blob = await response.blob();
+                                                                        const blobUrl = window.URL.createObjectURL(blob);
+                                                                        
+                                                                        const getFileExtension = (contentType) => {
+                                                                            const mimeToExt = {
+                                                                                'image/jpeg': 'jpg',
+                                                                                'image/jpg': 'jpg',
+                                                                                'image/png': 'png',
+                                                                                'image/gif': 'gif',
+                                                                                'image/webp': 'webp',
+                                                                                'image/svg+xml': 'svg',
+                                                                                'image/bmp': 'bmp',
+                                                                                'image/tiff': 'tiff'
+                                                                            };
+                                                                            return mimeToExt[contentType] || 'jpg';
+                                                                        };
+                                                                        
+                                                                        const extension = getFileExtension(contentType);
+                                                                        const fileName = `image-${Date.now()}.${extension}`;
+                                                                        
+                                                                        const a = document.createElement('a');
+                                                                        a.href = blobUrl;
+                                                                        a.download = fileName;
+                                                                        document.body.appendChild(a);
+                                                                        a.click();
+                                                                        document.body.removeChild(a);
+                                                                        window.URL.revokeObjectURL(blobUrl);
+                                                                        
+                                                                        console.log('Downloaded image:', fileName, 'Type:', contentType);
+                                                                    } catch (error) {
+                                                                        console.error('Image download failed:', error);
+                                                                        // Fallback to direct link
+                                                                        const a = document.createElement('a');
+                                                                        a.href = message.imageUrl;
+                                                                        a.download = `image-${Date.now()}.jpg`;
+                                                                        a.target = '_blank';
+                                                                        document.body.appendChild(a);
+                                                                        a.click();
+                                                                        document.body.removeChild(a);
+                                                                    }
+                                                                }}
+                                                                title="Download Image"
+                                                            >
+                                                                <FaDownload className="text-xs" />
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 )}
                                                 
@@ -1936,6 +2001,58 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                     onClick={(e) => e.stopPropagation()}
                                                                 />
                                                             </div>
+                                                            <button
+                                                                className="absolute top-2 right-2 bg-white/90 hover:bg-white text-gray-700 p-1 rounded-full shadow-md transition-colors"
+                                                                onClick={async (e) => {
+                                                                    e.stopPropagation();
+                                                                    try {
+                                                                        const response = await fetch(message.audioUrl, { mode: 'cors' });
+                                                                        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                                                        
+                                                                        const contentType = response.headers.get('content-type') || 'audio/mpeg';
+                                                                        const blob = await response.blob();
+                                                                        const blobUrl = window.URL.createObjectURL(blob);
+                                                                        
+                                                                        const getFileExtension = (contentType) => {
+                                                                            const mimeToExt = {
+                                                                                'audio/mpeg': 'mp3',
+                                                                                'audio/wav': 'wav',
+                                                                                'audio/webm': 'webm',
+                                                                                'audio/ogg': 'ogg',
+                                                                                'audio/mp4': 'm4a',
+                                                                                'audio/aac': 'aac'
+                                                                            };
+                                                                            return mimeToExt[contentType] || 'mp3';
+                                                                        };
+                                                                        
+                                                                        const extension = getFileExtension(contentType);
+                                                                        const fileName = `audio-${Date.now()}.${extension}`;
+                                                                        
+                                                                        const a = document.createElement('a');
+                                                                        a.href = blobUrl;
+                                                                        a.download = fileName;
+                                                                        document.body.appendChild(a);
+                                                                        a.click();
+                                                                        document.body.removeChild(a);
+                                                                        window.URL.revokeObjectURL(blobUrl);
+                                                                        
+                                                                        console.log('Downloaded audio:', fileName, 'Type:', contentType);
+                                                                    } catch (error) {
+                                                                        console.error('Audio download failed:', error);
+                                                                        // Fallback to direct link
+                                                                        const a = document.createElement('a');
+                                                                        a.href = message.audioUrl;
+                                                                        a.download = `audio-${Date.now()}.mp3`;
+                                                                        a.target = '_blank';
+                                                                        document.body.appendChild(a);
+                                                                        a.click();
+                                                                        document.body.removeChild(a);
+                                                                    }
+                                                                }}
+                                                                title="Download Audio"
+                                                            >
+                                                                <FaDownload className="text-xs" />
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 )}
@@ -1955,6 +2072,59 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                     }
                                                                 }}
                                                             />
+                                                            <button
+                                                                className="absolute top-2 right-2 bg-white/90 hover:bg-white text-gray-700 p-1 rounded-full shadow-md transition-colors"
+                                                                onClick={async (e) => {
+                                                                    e.stopPropagation();
+                                                                    try {
+                                                                        const response = await fetch(message.videoUrl, { mode: 'cors' });
+                                                                        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                                                        
+                                                                        const contentType = response.headers.get('content-type') || 'video/mp4';
+                                                                        const blob = await response.blob();
+                                                                        const blobUrl = window.URL.createObjectURL(blob);
+                                                                        
+                                                                        const getFileExtension = (contentType) => {
+                                                                            const mimeToExt = {
+                                                                                'video/mp4': 'mp4',
+                                                                                'video/avi': 'avi',
+                                                                                'video/mov': 'mov',
+                                                                                'video/wmv': 'wmv',
+                                                                                'video/flv': 'flv',
+                                                                                'video/webm': 'webm',
+                                                                                'video/ogg': 'ogv'
+                                                                            };
+                                                                            return mimeToExt[contentType] || 'mp4';
+                                                                        };
+                                                                        
+                                                                        const extension = getFileExtension(contentType);
+                                                                        const fileName = `video-${Date.now()}.${extension}`;
+                                                                        
+                                                                        const a = document.createElement('a');
+                                                                        a.href = blobUrl;
+                                                                        a.download = fileName;
+                                                                        document.body.appendChild(a);
+                                                                        a.click();
+                                                                        document.body.removeChild(a);
+                                                                        window.URL.revokeObjectURL(blobUrl);
+                                                                        
+                                                                        console.log('Downloaded video:', fileName, 'Type:', contentType);
+                                                                    } catch (error) {
+                                                                        console.error('Video download failed:', error);
+                                                                        // Fallback to direct link
+                                                                        const a = document.createElement('a');
+                                                                        a.href = message.videoUrl;
+                                                                        a.download = `video-${Date.now()}.mp4`;
+                                                                        a.target = '_blank';
+                                                                        document.body.appendChild(a);
+                                                                        a.click();
+                                                                        document.body.removeChild(a);
+                                                                    }
+                                                                }}
+                                                                title="Download Video"
+                                                            >
+                                                                <FaDownload className="text-xs" />
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 )}
@@ -1968,15 +2138,61 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                 try {
                                                                     const response = await fetch(message.documentUrl, { mode: 'cors' });
                                                                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                                                    
+                                                                    // Get the actual file type from response headers
+                                                                    const contentType = response.headers.get('content-type') || 'application/octet-stream';
                                                                     const blob = await response.blob();
                                                                     const blobUrl = window.URL.createObjectURL(blob);
+                                                                    
+                                                                    // Determine file extension from content type
+                                                                    const getFileExtension = (contentType) => {
+                                                                        const mimeToExt = {
+                                                                            'application/pdf': 'pdf',
+                                                                            'application/msword': 'doc',
+                                                                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+                                                                            'application/vnd.ms-excel': 'xls',
+                                                                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+                                                                            'application/vnd.ms-powerpoint': 'ppt',
+                                                                            'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
+                                                                            'text/plain': 'txt',
+                                                                            'text/csv': 'csv',
+                                                                            'application/zip': 'zip',
+                                                                            'application/x-rar-compressed': 'rar',
+                                                                            'image/jpeg': 'jpg',
+                                                                            'image/png': 'png',
+                                                                            'image/gif': 'gif',
+                                                                            'audio/mpeg': 'mp3',
+                                                                            'audio/wav': 'wav',
+                                                                            'video/mp4': 'mp4',
+                                                                            'video/avi': 'avi'
+                                                                        };
+                                                                        return mimeToExt[contentType] || 'bin';
+                                                                    };
+                                                                    
+                                                                    // Extract filename from URL or use document name
+                                                                    let fileName = message.documentName;
+                                                                    if (!fileName) {
+                                                                        // Try to extract filename from URL
+                                                                        const urlParts = message.documentUrl.split('/');
+                                                                        const lastPart = urlParts[urlParts.length - 1];
+                                                                        if (lastPart && lastPart.includes('.')) {
+                                                                            fileName = lastPart;
+                                                                        } else {
+                                                                            // Generate filename with correct extension
+                                                                            const extension = getFileExtension(contentType);
+                                                                            fileName = `document-${Date.now()}.${extension}`;
+                                                                        }
+                                                                    }
+                                                                    
                                                                     const a = document.createElement('a');
                                                                     a.href = blobUrl;
-                                                                    a.download = message.documentName || `document-${Date.now()}.pdf`;
+                                                                    a.download = fileName;
                                                                     document.body.appendChild(a);
                                                                     a.click();
                                                                     document.body.removeChild(a);
                                                                     window.URL.revokeObjectURL(blobUrl);
+                                                                    
+                                                                    console.log('Downloaded file:', fileName, 'Type:', contentType);
                                                                 } catch (error) {
                                                                     console.error('Download failed:', error);
                                                                     // Fallback to direct link
