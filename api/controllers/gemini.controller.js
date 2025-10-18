@@ -8,7 +8,7 @@ const ai = new GoogleGenAI({
 
 export const chatWithGemini = async (req, res) => {
     try {
-        const { message, history = [], sessionId, tone = 'neutral', audioUrl, imageUrl, videoUrl, documentUrl } = req.body;
+        const { message, history = [], sessionId, tone = 'neutral', responseLength = 'medium', creativity = 'balanced', audioUrl, imageUrl, videoUrl, documentUrl } = req.body;
         const userId = req.user?.id;
 
         if (!message) {
@@ -89,10 +89,29 @@ export const chatWithGemini = async (req, res) => {
         const conversationContext = filteredHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n');
         const fullPrompt = `${getSystemPrompt(tone)}\n\nPrevious conversation:\n${conversationContext}\n\nCurrent user message: ${sanitizedMessage}`;
 
-        console.log('Calling Gemini API with model: gemini-2.0-flash-exp, tone:', tone);
+        console.log('Calling Gemini API with model: gemini-2.0-flash-exp, tone:', tone, 'responseLength:', responseLength, 'creativity:', creativity);
         
         // Dynamic model selection based on complexity
         const messageComplexity = sanitizedMessage.length > 500 ? 'complex' : 'simple';
+        
+        // Helper functions for AI settings
+        const getMaxTokens = (responseLength, complexity) => {
+            const baseTokens = complexity === 'complex' ? 4096 : 2048;
+            switch (responseLength) {
+                case 'short': return Math.min(baseTokens, 1024);
+                case 'long': return Math.min(baseTokens * 2, 8192);
+                default: return baseTokens; // medium
+            }
+        };
+
+        const getTemperature = (creativity, tone) => {
+            const baseTemp = tone === 'concise' ? 0.3 : (tone === 'formal' ? 0.5 : 0.7);
+            switch (creativity) {
+                case 'conservative': return Math.max(baseTemp - 0.2, 0.1);
+                case 'creative': return Math.min(baseTemp + 0.2, 1.0);
+                default: return baseTemp; // balanced
+            }
+        };
         
         // Build parts array with text and media
         const parts = [{ text: fullPrompt }];
@@ -132,8 +151,8 @@ export const chatWithGemini = async (req, res) => {
                 parts: parts
             }],
             config: {
-                maxOutputTokens: messageComplexity === 'complex' ? 4096 : 2048,
-                temperature: tone === 'concise' ? 0.3 : (tone === 'formal' ? 0.5 : 0.7),
+                maxOutputTokens: getMaxTokens(responseLength, messageComplexity),
+                temperature: getTemperature(creativity, tone),
                 topP: 0.8,
                 topK: 40,
             }

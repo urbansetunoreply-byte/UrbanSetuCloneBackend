@@ -2,6 +2,7 @@ import express from 'express';
 import { chatWithGemini, getUserChatSessions, rateMessage, getMessageRatings, createNewSession, deleteSession, deleteAllSessions } from '../controllers/gemini.controller.js';
 import { optionalAuth, verifyToken } from '../utils/verify.js';
 import { aiChatRateLimit, getRateLimitStatus } from '../middleware/aiRateLimiter.js';
+import { cleanupOldChatData, getDataRetentionStats, cleanupUserData } from '../services/dataRetentionService.js';
 
 const router = express.Router();
 
@@ -38,6 +39,89 @@ router.get('/rate-limit-status', optionalAuth, (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Failed to get rate limit status'
+        });
+    }
+});
+
+// Data retention cleanup endpoints (admin only)
+router.post('/cleanup-data', verifyToken, async (req, res) => {
+    try {
+        // Check if user is admin or rootadmin
+        if (req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Only admins can run data cleanup'
+            });
+        }
+
+        const { retentionDays = 30 } = req.body;
+        const result = await cleanupOldChatData(retentionDays);
+        
+        res.json({
+            success: true,
+            message: 'Data cleanup completed successfully',
+            result
+        });
+    } catch (error) {
+        console.error('Data cleanup error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Data cleanup failed'
+        });
+    }
+});
+
+// Get data retention statistics (admin only)
+router.get('/data-stats', verifyToken, async (req, res) => {
+    try {
+        // Check if user is admin or rootadmin
+        if (req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Only admins can view data statistics'
+            });
+        }
+
+        const stats = await getDataRetentionStats();
+        
+        res.json({
+            success: true,
+            stats
+        });
+    } catch (error) {
+        console.error('Data stats error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to get data statistics'
+        });
+    }
+});
+
+// Clean up specific user's data (admin only)
+router.post('/cleanup-user-data/:userId', verifyToken, async (req, res) => {
+    try {
+        // Check if user is admin or rootadmin
+        if (req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Only admins can run user data cleanup'
+            });
+        }
+
+        const { userId } = req.params;
+        const { retentionDays = 30 } = req.body;
+        const result = await cleanupUserData(userId, retentionDays);
+        
+        res.json({
+            success: true,
+            message: 'User data cleanup completed successfully',
+            result
+        });
+    } catch (error) {
+        console.error('User data cleanup error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'User data cleanup failed'
         });
     }
 });

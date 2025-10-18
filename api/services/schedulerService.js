@@ -4,6 +4,7 @@ import { checkAndSendOutdatedAppointmentEmails } from './outdatedAppointmentServ
 import { autoPurgeSoftbannedAccounts } from './autoPurgeService.js';
 import { sendAccountDeletionReminders } from './accountReminderService.js';
 import { checkEmailServiceStatus } from './emailMonitoringService.js';
+import { cleanupOldChatData } from './dataRetentionService.js';
 
 // Schedule appointment reminders to run every day at 9:00 AM
 const scheduleAppointmentReminders = () => {
@@ -115,6 +116,28 @@ const scheduleEmailMonitoring = (app) => {
   console.log('📋 Schedule: Every 24 hours at 11:00 PM (Asia/Kolkata timezone)');
 };
 
+// Schedule data retention cleanup to run every day at 3:00 AM
+const scheduleDataRetentionCleanup = () => {
+  console.log('🗑️ Setting up data retention cleanup scheduler...');
+  
+  // Run every day at 3:00 AM
+  cron.schedule('0 3 * * *', async () => {
+    console.log('⏰ Running scheduled data retention cleanup...');
+    try {
+      const result = await cleanupOldChatData(30); // Default 30 days retention
+      console.log('✅ Scheduled data retention cleanup completed:', result);
+    } catch (error) {
+      console.error('❌ Error in scheduled data retention cleanup:', error);
+    }
+  }, {
+    scheduled: true,
+    timezone: "Asia/Kolkata" // Adjust timezone as needed
+  });
+  
+  console.log('✅ Data retention cleanup scheduler set up successfully');
+  console.log('📋 Schedule: Every day at 3:00 AM (Asia/Kolkata timezone)');
+};
+
 // Start the scheduler
 export const startScheduler = (app) => {
   console.log('🚀 Starting scheduler service...');
@@ -123,6 +146,7 @@ export const startScheduler = (app) => {
   scheduleAutoPurge();
   scheduleAccountReminders();
   scheduleEmailMonitoring(app);
+  scheduleDataRetentionCleanup();
   console.log('✅ Scheduler service started successfully');
 };
 
