@@ -483,6 +483,21 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
     }, [dataRetention, currentUser]);
 
+    // Auto-save effect
+    useEffect(() => {
+        if (autoSave && messages.length > 0 && currentUser) {
+            const currentSessionId = getOrCreateSessionId();
+            if (currentSessionId) {
+                // Auto-save every 30 seconds
+                const autoSaveInterval = setInterval(() => {
+                    saveCurrentSession();
+                }, 30000);
+                
+                return () => clearInterval(autoSaveInterval);
+            }
+        }
+    }, [autoSave, messages, currentUser]);
+
     // Handle force modal opening
     useEffect(() => {
         if (forceModalOpen) {
@@ -713,6 +728,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         e.preventDefault();
         if (!inputMessage.trim() || isLoading) return;
 
+        // Check message limit
+        const messageLimitNum = parseInt(messageLimit);
+        if (messages.length >= messageLimitNum) {
+            toast.error(`Message limit reached (${messageLimitNum} messages). Please start a new chat session.`);
+            return;
+        }
+
         // Check rate limit
         console.log('Frontend - Rate limit check:', { remaining: rateLimitInfo.remaining, role: rateLimitInfo.role, limit: rateLimitInfo.limit });
         if (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin') {
@@ -737,6 +759,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         
         // Play sound when message is sent
         playSound('message-sent.mp3');
+
+        // Track message sent event
+        trackEvent('message_sent', { 
+            messageLength: userMessage.length,
+            sessionId: getOrCreateSessionId(),
+            tone: currentUser ? tone : 'neutral'
+        });
 
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -2559,6 +2588,76 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
     const themeColors = getThemeColors();
 
+    // Apply accessibility settings
+    const getAccessibilityClasses = () => {
+        let classes = '';
+        if (highContrast) classes += ' high-contrast';
+        if (reducedMotion) classes += ' reduced-motion';
+        if (largeText) classes += ' large-text';
+        if (screenReaderSupport) classes += ' screen-reader-support';
+        return classes;
+    };
+
+    // Markdown rendering function
+    const renderMarkdown = (text) => {
+        if (!enableMarkdown) return text;
+        
+        // Simple markdown rendering
+        return text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
+            .replace(/\*(.*?)\*/g, '<em>$1</em>') // Italic
+            .replace(/`(.*?)`/g, '<code class="bg-gray-100 px-1 py-0.5 rounded text-sm">$1</code>') // Inline code
+            .replace(/```([\s\S]*?)```/g, '<pre class="bg-gray-100 p-3 rounded-lg overflow-x-auto"><code>$1</code></pre>') // Code blocks
+            .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>') // H3
+            .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold mt-4 mb-2">$1</h2>') // H2
+            .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mt-4 mb-2">$1</h1>') // H1
+            .replace(/^\* (.*$)/gim, '<li class="ml-4">• $1</li>') // Bullet points
+            .replace(/^\d+\. (.*$)/gim, '<li class="ml-4">$1</li>') // Numbered lists
+            .replace(/\n/g, '<br>'); // Line breaks
+    };
+
+    // Analytics tracking
+    const trackEvent = (eventName, data = {}) => {
+        if (!enableAnalytics) return;
+        
+        // Simple analytics tracking
+        const event = {
+            event: eventName,
+            timestamp: new Date().toISOString(),
+            userId: currentUser?.id || 'anonymous',
+            sessionId: getOrCreateSessionId(),
+            data: data
+        };
+        
+        // Store in localStorage for now (in production, send to analytics service)
+        const analytics = JSON.parse(localStorage.getItem('gemini_analytics') || '[]');
+        analytics.push(event);
+        localStorage.setItem('gemini_analytics', JSON.stringify(analytics.slice(-100))); // Keep last 100 events
+    };
+
+    // Error reporting
+    const reportError = (error, context = {}) => {
+        if (!enableErrorReporting) return;
+        
+        const errorReport = {
+            error: error.message || error,
+            stack: error.stack,
+            timestamp: new Date().toISOString(),
+            userId: currentUser?.id || 'anonymous',
+            sessionId: getOrCreateSessionId(),
+            context: context,
+            userAgent: navigator.userAgent,
+            url: window.location.href
+        };
+        
+        // Store in localStorage for now (in production, send to error reporting service)
+        const errors = JSON.parse(localStorage.getItem('gemini_errors') || '[]');
+        errors.push(errorReport);
+        localStorage.setItem('gemini_errors', JSON.stringify(errors.slice(-50))); // Keep last 50 errors
+        
+        console.error('Error reported:', errorReport);
+    };
+
     // Get dynamic classes based on settings
     const getFontSizeClass = () => {
         switch (fontSize) {
@@ -2673,7 +2772,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
             {/* Chat Window */}
             {isOpen && (
-                <div className={`fixed inset-0 ${isDarkMode ? 'bg-black bg-opacity-70' : 'bg-black bg-opacity-50'} backdrop-blur-sm flex items-center justify-center z-50 p-4 md:p-0 md:items-end md:justify-end gemini-chatbox-modal animate-fadeIn`}>
+                <div className={`fixed inset-0 ${isDarkMode ? 'bg-black bg-opacity-70' : 'bg-black bg-opacity-50'} backdrop-blur-sm flex items-center justify-center z-50 p-4 md:p-0 md:items-end md:justify-end gemini-chatbox-modal animate-fadeIn${getAccessibilityClasses()}`}>
                     <div className={`${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} rounded-2xl shadow-2xl border flex flex-col relative ${
                         isFullscreen ? 'w-full h-full max-w-none max-h-none rounded-none' :
                         isExpanded ? 'w-full max-w-4xl h-[85vh] md:mb-12 md:mr-12' : 
@@ -3305,7 +3404,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <p className={`${getFontSizeClass()} whitespace-pre-wrap leading-relaxed`}>{formatLinksInText(message.content, message.role === 'user')}</p>
+                                                    <div 
+                                                        className={`${getFontSizeClass()} whitespace-pre-wrap leading-relaxed`}
+                                                        dangerouslySetInnerHTML={{ 
+                                                            __html: formatLinksInText(renderMarkdown(message.content), message.role === 'user') 
+                                                        }}
+                                                    />
                                                 )}
                                                 
                                                 {/* Message footer with timestamp and actions */}
@@ -5182,6 +5286,33 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 }
                 .send-icon.animate-sent {
                   animation: sentSuccess 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                }
+                
+                /* Accessibility Styles */
+                .high-contrast {
+                    filter: contrast(150%) brightness(1.2);
+                }
+                .reduced-motion * {
+                    animation-duration: 0.01ms !important;
+                    animation-iteration-count: 1 !important;
+                    transition-duration: 0.01ms !important;
+                }
+                .large-text {
+                    font-size: 1.2em !important;
+                }
+                .large-text .text-sm {
+                    font-size: 1em !important;
+                }
+                .large-text .text-base {
+                    font-size: 1.3em !important;
+                }
+                .screen-reader-support [role="button"] {
+                    outline: 2px solid #0066cc !important;
+                    outline-offset: 2px !important;
+                }
+                .screen-reader-support [role="button"]:focus {
+                    outline: 3px solid #0066cc !important;
+                    outline-offset: 3px !important;
                 }
                 `}
             </style>
