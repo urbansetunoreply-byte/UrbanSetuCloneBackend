@@ -8,6 +8,40 @@ dotenv.config();
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const OPENAI_WHISPER_URL = 'https://api.openai.com/v1/audio/transcriptions';
 
+// Retry function with exponential backoff for rate limiting
+const callWhisperAPIWithRetry = async (formData, maxRetries = 3) => {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            const response = await axios.post(
+                OPENAI_WHISPER_URL,
+                formData,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+                        ...formData.getHeaders()
+                    },
+                    timeout: 30000 // 30 second timeout
+                }
+            );
+            return response;
+        } catch (error) {
+            console.log(`Whisper API attempt ${attempt} failed:`, error.response?.status, error.response?.data);
+            
+            // If it's a rate limit error (429), wait and retry
+            if (error.response?.status === 429 && attempt < maxRetries) {
+                const retryAfter = error.response.headers['retry-after'] || Math.pow(2, attempt);
+                const waitTime = parseInt(retryAfter) * 1000; // Convert to milliseconds
+                console.log(`Rate limited. Waiting ${waitTime}ms before retry ${attempt + 1}`);
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+                continue;
+            }
+            
+            // If it's not a rate limit error or we've exhausted retries, throw the error
+            throw error;
+        }
+    }
+};
+
 export const transcribeAudio = async (req, res) => {
     try {
         const { audioUrl } = req.body;
@@ -41,17 +75,8 @@ export const transcribeAudio = async (req, res) => {
         formData.append('response_format', 'verbose_json');
         formData.append('language', 'en');
 
-        // Call OpenAI Whisper API
-        const whisperResponse = await axios.post(
-            OPENAI_WHISPER_URL,
-            formData,
-            {
-                headers: {
-                    'Authorization': `Bearer ${OPENAI_API_KEY}`,
-                    ...formData.getHeaders()
-                }
-            }
-        );
+        // Call OpenAI Whisper API with retry logic
+        const whisperResponse = await callWhisperAPIWithRetry(formData, 3);
 
         // Extract transcription from response
         const { text, language, duration, segments } = whisperResponse.data;
@@ -98,9 +123,11 @@ export const transcribeAudio = async (req, res) => {
         }
 
         if (error.response?.status === 429) {
+            const retryAfter = error.response.headers['retry-after'] || 60;
             return res.status(429).json({
                 success: false,
-                message: 'Rate limit exceeded. Please wait before trying again.'
+                message: `Rate limit exceeded. Please wait ${retryAfter} seconds before trying again.`,
+                retryAfter: parseInt(retryAfter)
             });
         }
 

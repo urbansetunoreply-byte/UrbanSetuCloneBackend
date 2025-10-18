@@ -1308,6 +1308,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
                 if (!transcriptionResponse.ok) {
                     const errorData = await transcriptionResponse.json();
+                    
+                    // Handle rate limiting with specific user feedback
+                    if (transcriptionResponse.status === 429) {
+                        const retryAfter = errorData.retryAfter || 60;
+                        throw new Error(`Rate limit exceeded. Please wait ${retryAfter} seconds before trying again.`);
+                    }
+                    
                     throw new Error(errorData.message || 'Transcription failed');
                 }
 
@@ -1326,6 +1333,15 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 }
             } catch (transcriptionError) {
                 console.error('Speech-to-text error:', transcriptionError);
+                
+                // Check if it's a rate limit error
+                if (transcriptionError.message.includes('Rate limit exceeded')) {
+                    return {
+                        audioUrl,
+                        transcription: 'I\'ve uploaded your audio recording, but the transcription service is currently experiencing high demand. Please describe what you said in the audio or what you need help with, and I\'ll assist you accordingly.'
+                    };
+                }
+                
                 // Fallback to asking user to describe their audio
                 return {
                     audioUrl,
@@ -3224,6 +3240,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         </p>
                         <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                             Powered by OpenAI Whisper AI
+                        </p>
+                        <p className={`text-xs ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
+                            Note: Rate limits may apply for frequent use
                         </p>
                     </div>
                     
