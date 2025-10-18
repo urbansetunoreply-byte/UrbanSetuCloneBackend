@@ -1078,6 +1078,15 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     // Enhanced Features Functions
     const startVoiceRecording = async () => {
         try {
+            // Cleanup any existing recording state
+            if (recordedAudioUrl && recordedAudioUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(recordedAudioUrl);
+            }
+            setRecordedAudioUrl(null);
+            setRecordedAudioFile(null);
+            setAudioChunks([]);
+            recordingChunksRef.current = [];
+            
             const stream = await navigator.mediaDevices.getUserMedia({ 
                 audio: {
                     echoCancellation: true,
@@ -1111,11 +1120,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             console.log('Starting new recording, chunks reset');
 
             recorder.ondataavailable = (event) => {
-                console.log('Data available:', event.data.size, 'bytes');
-                console.log('Current chunks count before push:', recordingChunksRef.current.length);
                 if (event.data && event.data.size > 0) {
                     recordingChunksRef.current.push(event.data);
-                    console.log('Chunk pushed, new count:', recordingChunksRef.current.length);
+                    // Only log every 5th chunk to reduce console spam
+                    if (recordingChunksRef.current.length % 5 === 0) {
+                        console.log('Recording progress:', recordingChunksRef.current.length, 'chunks');
+                    }
                 }
             };
 
@@ -1145,18 +1155,22 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         throw new Error('Empty audio blob');
                     }
                     
-                    // Test if the blob can be read
+                    // Test if the blob can be read (simplified test)
                     try {
                         const testUrl = URL.createObjectURL(audioBlob);
                         const testAudio = new Audio(testUrl);
                         testAudio.onerror = () => {
-                            console.warn('Audio blob test failed, trying fallback');
+                            console.warn('Audio blob test failed, but continuing with recording');
                             URL.revokeObjectURL(testUrl);
                         };
                         testAudio.onloadedmetadata = () => {
                             console.log('Audio blob test successful');
                             URL.revokeObjectURL(testUrl);
                         };
+                        // Set a timeout to clean up test URL
+                        setTimeout(() => {
+                            URL.revokeObjectURL(testUrl);
+                        }, 1000);
                     } catch (testError) {
                         console.warn('Audio blob test error:', testError);
                     }
@@ -1212,10 +1226,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             setIsRecording(false);
             setRecordingStartTime(null);
             setRecordingDuration(0);
-            // Clear chunks after a short delay to allow onstop to process
-            setTimeout(() => {
-                recordingChunksRef.current = [];
-            }, 100);
+            // Don't clear chunks here - let onstop handle it
         }
     };
 
@@ -1310,13 +1321,19 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             // Add the transcribed message to input
             setInputMessage(transcription);
             
-            // Close audio preview and cleanup
+            // Close audio preview and cleanup immediately
+            setShowAudioPreview(false);
+            
+            // Cleanup blob URL
             if (recordedAudioUrl && recordedAudioUrl.startsWith('blob:')) {
                 URL.revokeObjectURL(recordedAudioUrl);
             }
-            setShowAudioPreview(false);
+            
+            // Clear all audio-related state
             setRecordedAudioUrl(null);
             setRecordedAudioFile(null);
+            setAudioChunks([]);
+            recordingChunksRef.current = [];
             
             // Auto-submit the transcribed message
             setTimeout(() => {
@@ -1325,6 +1342,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
         } catch (error) {
             console.error('Error sending recorded audio:', error);
+            toast.error('Failed to send audio: ' + error.message);
         }
     };
 
@@ -3255,6 +3273,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     setRecordedAudioUrl(null);
                                     setRecordedAudioFile(null);
                                     setAudioChunks([]);
+                                    recordingChunksRef.current = [];
                                 }}
                                 disabled={uploadingAudio}
                                 className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 text-gray-700 rounded-lg transition-colors"
