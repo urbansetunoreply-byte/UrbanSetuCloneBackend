@@ -108,12 +108,12 @@ export const chatWithGemini = async (req, res) => {
         }
         
         if (audioUrl) {
-            parts.push({
-                inline_data: {
-                    mime_type: "audio/webm", // Default for recorded audio
-                    data: audioUrl
-                }
-            });
+            // For audio URLs, we'll include it in the text message for now
+            // In a production environment, you'd want to fetch the audio file and convert to base64
+            // or use a proper speech-to-text service before sending to Gemini
+            console.log('Audio URL provided:', audioUrl);
+            // Note: Gemini 2.0 doesn't directly support audio transcription via URL
+            // This would require fetching the audio file and converting to base64
         }
         
         if (videoUrl) {

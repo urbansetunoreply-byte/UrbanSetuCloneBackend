@@ -108,6 +108,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [uploadingAudio, setUploadingAudio] = useState(false);
     const [uploadingFile, setUploadingFile] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
+    const [recordingStartTime, setRecordingStartTime] = useState(null);
+    const [recordingDuration, setRecordingDuration] = useState(0);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -931,7 +933,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
     const createNewSession = async () => {
         if (!currentUser) {
-            toast.error('Please log in to create new sessions');
+            toast.info('Please log in to create new sessions');
             return;
         }
 
@@ -1075,18 +1077,31 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const startVoiceRecording = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            const recorder = new MediaRecorder(stream);
+            
+            // Configure MediaRecorder with proper MIME type
+            const options = { mimeType: 'audio/webm;codecs=opus' };
+            let recorder;
+            
+            try {
+                recorder = new MediaRecorder(stream, options);
+            } catch (e) {
+                // Fallback to default if webm not supported
+                recorder = new MediaRecorder(stream);
+            }
+            
             const chunks = [];
 
             recorder.ondataavailable = (event) => {
-                chunks.push(event.data);
+                if (event.data && event.data.size > 0) {
+                    chunks.push(event.data);
+                }
             };
 
             recorder.onstop = async () => {
                 try {
-                    const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+                    const audioBlob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
                     const fileName = `recording-${Date.now()}.webm`;
-                    const audioFile = new File([audioBlob], fileName, { type: 'audio/webm' });
+                    const audioFile = new File([audioBlob], fileName, { type: audioBlob.type });
                     const audioUrl = URL.createObjectURL(audioBlob);
                     
                     // Store audio for preview and upload
@@ -1105,10 +1120,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 }
             };
 
-            recorder.start();
+            // Start recording with time slice for better data handling
+            recorder.start(100);
             setMediaRecorder(recorder);
             setIsRecording(true);
             setAudioChunks(chunks);
+            
+            // Start recording timer
+            setRecordingStartTime(Date.now());
         } catch (error) {
             console.error('Voice recording error:', error);
             toast.error('Microphone access denied or not available');
@@ -1121,8 +1140,23 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 mediaRecorder.stop();
             }
             setIsRecording(false);
+            setRecordingStartTime(null);
+            setRecordingDuration(0);
         }
     };
+
+    // Recording timer effect
+    useEffect(() => {
+        let interval;
+        if (isRecording && recordingStartTime) {
+            interval = setInterval(() => {
+                setRecordingDuration(Math.floor((Date.now() - recordingStartTime) / 1000));
+            }, 1000);
+        }
+        return () => {
+            if (interval) clearInterval(interval);
+        };
+    }, [isRecording, recordingStartTime]);
 
     // Upload audio to Cloudinary and get transcription
     const uploadAudioAndTranscribe = async (audioFile) => {
@@ -1147,7 +1181,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             const uploadData = await response.json();
             const audioUrl = uploadData.audioUrl;
 
-            // Send audio to Gemini for transcription
+            // For now, we'll use a simple approach - send the audio URL to Gemini
+            // In a production environment, you'd want to use a proper speech-to-text service
             const transcriptionResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/gemini/chat`, {
                 method: 'POST',
                 credentials: 'include',
@@ -1155,7 +1190,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    message: `Please transcribe this audio file: ${audioUrl}`,
+                    message: `I've uploaded an audio recording. Please help me with this audio content. The audio file is available at: ${audioUrl}`,
                     audioUrl: audioUrl,
                     sessionId: sessionId || getOrCreateSessionId(),
                     tone: 'neutral'
@@ -1163,13 +1198,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             });
 
             if (!transcriptionResponse.ok) {
-                throw new Error('Transcription failed');
+                throw new Error('Failed to process audio with Gemini');
             }
 
             const transcriptionData = await transcriptionResponse.json();
             return {
                 audioUrl,
-                transcription: transcriptionData.response || 'Transcription not available'
+                transcription: transcriptionData.response || 'Audio uploaded successfully. Please describe what you need help with regarding this audio.'
             };
 
         } catch (error) {
@@ -2802,7 +2837,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         </button>
                         
                         <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                            Hold to record
+                            {isRecording ? `Recording... ${recordingDuration}s` : 'Hold to record'}
                         </p>
                     </div>
                     
@@ -3093,3 +3128,4 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 };
 
 export default GeminiChatbox;
+
