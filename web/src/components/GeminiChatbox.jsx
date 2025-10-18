@@ -1145,6 +1145,15 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
     };
 
+    // Cleanup audio blob URL when component unmounts or when new recording starts
+    useEffect(() => {
+        return () => {
+            if (recordedAudioUrl && recordedAudioUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(recordedAudioUrl);
+            }
+        };
+    }, [recordedAudioUrl]);
+
     // Recording timer effect
     useEffect(() => {
         let interval;
@@ -1227,7 +1236,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             // Add the transcribed message to input
             setInputMessage(transcription);
             
-            // Close audio preview
+            // Close audio preview and cleanup
+            if (recordedAudioUrl && recordedAudioUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(recordedAudioUrl);
+            }
             setShowAudioPreview(false);
             setRecordedAudioUrl(null);
             setRecordedAudioFile(null);
@@ -2866,7 +2878,17 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     </div>
                     
                     <div className="space-y-3">
-                        <audio controls className="w-full">
+                        <audio 
+                            controls 
+                            className="w-full"
+                            onError={(e) => {
+                                console.error('Audio playback error:', e);
+                                toast.error('Failed to play audio. Please try recording again.');
+                            }}
+                            onLoadStart={() => console.log('Audio loading started')}
+                            onCanPlay={() => console.log('Audio can play')}
+                        >
+                            <source src={recordedAudioUrl} type="audio/webm" />
                             <source src={recordedAudioUrl} type="audio/wav" />
                             Your browser does not support the audio element.
                         </audio>
@@ -2906,6 +2928,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             </button>
                             <button
                                 onClick={() => {
+                                    // Cleanup blob URL before clearing state
+                                    if (recordedAudioUrl && recordedAudioUrl.startsWith('blob:')) {
+                                        URL.revokeObjectURL(recordedAudioUrl);
+                                    }
                                     setShowAudioPreview(false);
                                     setRecordedAudioUrl(null);
                                     setRecordedAudioFile(null);
