@@ -1453,6 +1453,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         <div className="absolute bottom-16 right-0 flex flex-col gap-2 opacity-0 hover:opacity-100 transition-all duration-300">
                             <button
                                 onClick={() => {
+                                    if (!currentUser) {
+                                        toast.info('Please login to use voice input');
+                                        return;
+                                    }
                                     setIsOpen(true);
                                     setTimeout(() => setShowVoiceInput(true), 100);
                                 }}
@@ -1463,6 +1467,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             </button>
                             <button
                                 onClick={() => {
+                                    if (!currentUser) {
+                                        toast.info('Please login to upload files');
+                                        return;
+                                    }
                                     setIsOpen(true);
                                     setTimeout(() => setShowFileUpload(true), 100);
                                 }}
@@ -2188,7 +2196,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 {/* Voice Input Button */}
                                 <button
                                     type="button"
-                                    onClick={() => setShowVoiceInput(true)}
+                                    onClick={() => {
+                                        if (!currentUser) {
+                                            toast.info('Please login to use voice input');
+                                            return;
+                                        }
+                                        setShowVoiceInput(true);
+                                    }}
                                     className="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full transition-all duration-200 flex items-center justify-center"
                                     title="Voice Input"
                                 >
@@ -2198,7 +2212,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 {/* File Upload Button */}
                                 <button
                                     type="button"
-                                    onClick={() => setShowFileUpload(true)}
+                                    onClick={() => {
+                                        if (!currentUser) {
+                                            toast.info('Please login to upload files');
+                                            return;
+                                        }
+                                        setShowFileUpload(true);
+                                    }}
                                     className="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full transition-all duration-200 flex items-center justify-center"
                                     title="Upload files (Images, PDF, Documents)"
                                 >
