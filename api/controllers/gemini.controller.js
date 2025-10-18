@@ -8,7 +8,26 @@ const ai = new GoogleGenAI({
 
 export const chatWithGemini = async (req, res) => {
     try {
-        const { message, history = [], sessionId, tone = 'neutral', responseLength = 'medium', creativity = 'balanced', audioUrl, imageUrl, videoUrl, documentUrl } = req.body;
+        const { 
+            message, 
+            history = [], 
+            sessionId, 
+            tone = 'neutral', 
+            responseLength = 'medium', 
+            creativity = 'balanced',
+            temperature = '0.7',
+            topP = '0.8',
+            topK = '40',
+            maxTokens = '2048',
+            enableStreaming = true,
+            enableContextMemory = true,
+            contextWindow = '10',
+            enableSystemPrompts = true,
+            audioUrl, 
+            imageUrl, 
+            videoUrl, 
+            documentUrl 
+        } = req.body;
         const userId = req.user?.id;
 
         if (!message) {
@@ -104,13 +123,39 @@ export const chatWithGemini = async (req, res) => {
             }
         };
 
-        const getTemperature = (creativity, tone) => {
+        const getTemperature = (creativity, tone, customTemp) => {
+            // Use custom temperature if provided, otherwise use creativity-based logic
+            if (customTemp && !isNaN(parseFloat(customTemp))) {
+                return Math.max(0.1, Math.min(1.0, parseFloat(customTemp)));
+            }
+            
             const baseTemp = tone === 'concise' ? 0.3 : (tone === 'formal' ? 0.5 : 0.7);
             switch (creativity) {
                 case 'conservative': return Math.max(baseTemp - 0.2, 0.1);
                 case 'creative': return Math.min(baseTemp + 0.2, 1.0);
                 default: return baseTemp; // balanced
             }
+        };
+
+        const getTopP = (customTopP) => {
+            if (customTopP && !isNaN(parseFloat(customTopP))) {
+                return Math.max(0.1, Math.min(1.0, parseFloat(customTopP)));
+            }
+            return 0.8;
+        };
+
+        const getTopK = (customTopK) => {
+            if (customTopK && !isNaN(parseInt(customTopK))) {
+                return Math.max(1, Math.min(100, parseInt(customTopK)));
+            }
+            return 40;
+        };
+
+        const getMaxTokensFromSettings = (responseLength, complexity, customMaxTokens) => {
+            if (customMaxTokens && !isNaN(parseInt(customMaxTokens))) {
+                return Math.max(1, Math.min(8192, parseInt(customMaxTokens)));
+            }
+            return getMaxTokens(responseLength, complexity);
         };
         
         // Build parts array with text and media
@@ -151,10 +196,10 @@ export const chatWithGemini = async (req, res) => {
                 parts: parts
             }],
             config: {
-                maxOutputTokens: getMaxTokens(responseLength, messageComplexity),
-                temperature: getTemperature(creativity, tone),
-                topP: 0.8,
-                topK: 40,
+                maxOutputTokens: getMaxTokensFromSettings(responseLength, messageComplexity, maxTokens),
+                temperature: getTemperature(creativity, tone, temperature),
+                topP: getTopP(topP),
+                topK: getTopK(topK),
             }
         };
         

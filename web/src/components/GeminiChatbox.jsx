@@ -114,6 +114,66 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [typingSounds, setTypingSounds] = useState(() => localStorage.getItem('gemini_typing_sounds') !== 'false');
     const [dataRetention, setDataRetention] = useState(() => localStorage.getItem('gemini_data_retention') || '30');
     const [showCustomThemePicker, setShowCustomThemePicker] = useState(false);
+    
+    // Advanced Settings
+    const [autoSave, setAutoSave] = useState(() => localStorage.getItem('gemini_auto_save') !== 'false');
+    const [messageLimit, setMessageLimit] = useState(() => localStorage.getItem('gemini_message_limit') || '100');
+    const [sessionTimeout, setSessionTimeout] = useState(() => localStorage.getItem('gemini_session_timeout') || '30');
+    const [enableMarkdown, setEnableMarkdown] = useState(() => localStorage.getItem('gemini_enable_markdown') !== 'false');
+    const [enableCodeHighlighting, setEnableCodeHighlighting] = useState(() => localStorage.getItem('gemini_code_highlighting') !== 'false');
+    const [enableEmojiReactions, setEnableEmojiReactions] = useState(() => localStorage.getItem('gemini_emoji_reactions') !== 'false');
+    const [enableMessageSearch, setEnableMessageSearch] = useState(() => localStorage.getItem('gemini_message_search') !== 'false');
+    const [enableQuickActions, setEnableQuickActions] = useState(() => localStorage.getItem('gemini_quick_actions') !== 'false');
+    const [enableSmartSuggestions, setEnableSmartSuggestions] = useState(() => localStorage.getItem('gemini_smart_suggestions') !== 'false');
+    const [enableTypingIndicator, setEnableTypingIndicator] = useState(() => localStorage.getItem('gemini_typing_indicator') !== 'false');
+    
+    // Accessibility Settings
+    const [highContrast, setHighContrast] = useState(() => localStorage.getItem('gemini_high_contrast') === 'true');
+    const [reducedMotion, setReducedMotion] = useState(() => localStorage.getItem('gemini_reduced_motion') === 'true');
+    const [screenReaderSupport, setScreenReaderSupport] = useState(() => localStorage.getItem('gemini_screen_reader') === 'true');
+    const [largeText, setLargeText] = useState(() => localStorage.getItem('gemini_large_text') === 'true');
+    const [keyboardNavigation, setKeyboardNavigation] = useState(() => localStorage.getItem('gemini_keyboard_nav') !== 'false');
+    
+    // Performance Settings
+    const [messageCaching, setMessageCaching] = useState(() => localStorage.getItem('gemini_message_caching') !== 'false');
+    const [lazyLoading, setLazyLoading] = useState(() => localStorage.getItem('gemini_lazy_loading') !== 'false');
+    const [imageOptimization, setImageOptimization] = useState(() => localStorage.getItem('gemini_image_optimization') !== 'false');
+    const [preloadMessages, setPreloadMessages] = useState(() => localStorage.getItem('gemini_preload_messages') !== 'false');
+    const [batchOperations, setBatchOperations] = useState(() => localStorage.getItem('gemini_batch_operations') !== 'false');
+    
+    // Privacy Settings
+    const [enableAnalytics, setEnableAnalytics] = useState(() => localStorage.getItem('gemini_analytics') !== 'false');
+    const [enableErrorReporting, setEnableErrorReporting] = useState(() => localStorage.getItem('gemini_error_reporting') !== 'false');
+    const [enableUsageTracking, setEnableUsageTracking] = useState(() => localStorage.getItem('gemini_usage_tracking') !== 'false');
+    const [enableCrashReports, setEnableCrashReports] = useState(() => localStorage.getItem('gemini_crash_reports') !== 'false');
+    const [enablePerformanceMonitoring, setEnablePerformanceMonitoring] = useState(() => localStorage.getItem('gemini_performance_monitoring') !== 'false');
+    
+    // Advanced AI Settings
+    const [temperature, setTemperature] = useState(() => localStorage.getItem('gemini_temperature') || '0.7');
+    const [topP, setTopP] = useState(() => localStorage.getItem('gemini_top_p') || '0.8');
+    const [topK, setTopK] = useState(() => localStorage.getItem('gemini_top_k') || '40');
+    const [maxTokens, setMaxTokens] = useState(() => localStorage.getItem('gemini_max_tokens') || '2048');
+    const [enableStreaming, setEnableStreaming] = useState(() => localStorage.getItem('gemini_streaming') !== 'false');
+    const [enableContextMemory, setEnableContextMemory] = useState(() => localStorage.getItem('gemini_context_memory') !== 'false');
+    const [contextWindow, setContextWindow] = useState(() => localStorage.getItem('gemini_context_window') || '10');
+    const [enableSystemPrompts, setEnableSystemPrompts] = useState(() => localStorage.getItem('gemini_system_prompts') !== 'false');
+    
+    // Notification Settings
+    const [enableDesktopNotifications, setEnableDesktopNotifications] = useState(() => localStorage.getItem('gemini_desktop_notifications') !== 'false');
+    const [enableEmailNotifications, setEnableEmailNotifications] = useState(() => localStorage.getItem('gemini_email_notifications') !== 'false');
+    const [enablePushNotifications, setEnablePushNotifications] = useState(() => localStorage.getItem('gemini_push_notifications') !== 'false');
+    const [notificationSound, setNotificationSound] = useState(() => localStorage.getItem('gemini_notification_sound') || 'default');
+    const [notificationFrequency, setNotificationFrequency] = useState(() => localStorage.getItem('gemini_notification_frequency') || 'immediate');
+    
+    // UI/UX Settings
+    const [enableAnimations, setEnableAnimations] = useState(() => localStorage.getItem('gemini_animations') !== 'false');
+    const [enableHoverEffects, setEnableHoverEffects] = useState(() => localStorage.getItem('gemini_hover_effects') !== 'false');
+    const [enableTransitions, setEnableTransitions] = useState(() => localStorage.getItem('gemini_transitions') !== 'false');
+    const [enableTooltips, setEnableTooltips] = useState(() => localStorage.getItem('gemini_tooltips') !== 'false');
+    const [enableKeyboardShortcuts, setEnableKeyboardShortcuts] = useState(() => localStorage.getItem('gemini_keyboard_shortcuts') !== 'false');
+    const [enableDragAndDrop, setEnableDragAndDrop] = useState(() => localStorage.getItem('gemini_drag_drop') !== 'false');
+    const [enableRightClickMenu, setEnableRightClickMenu] = useState(() => localStorage.getItem('gemini_right_click') !== 'false');
+    const [enableContextMenu, setEnableContextMenu] = useState(() => localStorage.getItem('gemini_context_menu') !== 'false');
     const [showTypingIndicator, setShowTypingIndicator] = useState(false);
     const [typingUsers, setTypingUsers] = useState([]);
     const [messageReactions, setMessageReactions] = useState({});
@@ -630,11 +690,19 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 },
                 body: JSON.stringify({
                     message: userMessage,
-                    history: messages.slice(-10), // Send last 10 messages for context
+                    history: enableContextMemory ? messages.slice(-parseInt(contextWindow)) : messages.slice(-10), // Send context window messages
                     sessionId: currentSessionId,
                     tone: tone, // Send current tone setting
                     responseLength: aiResponseLength, // Send response length setting
-                    creativity: aiCreativity // Send creativity level setting
+                    creativity: aiCreativity, // Send creativity level setting
+                    temperature: temperature, // Send custom temperature
+                    topP: topP, // Send custom topP
+                    topK: topK, // Send custom topK
+                    maxTokens: maxTokens, // Send custom max tokens
+                    enableStreaming: enableStreaming, // Send streaming preference
+                    enableContextMemory: enableContextMemory, // Send context memory preference
+                    contextWindow: contextWindow, // Send context window size
+                    enableSystemPrompts: enableSystemPrompts // Send system prompts preference
                 }),
                 signal: abortControllerRef.current.signal
             });
@@ -769,11 +837,19 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 },
                 body: JSON.stringify({
                     message: originalMessage,
-                    history: messages.slice(-10), // Send last 10 messages for context
+                    history: enableContextMemory ? messages.slice(-parseInt(contextWindow)) : messages.slice(-10), // Send context window messages
                     sessionId: currentSessionId,
                     tone: tone, // Send current tone setting
                     responseLength: aiResponseLength, // Send response length setting
-                    creativity: aiCreativity // Send creativity level setting
+                    creativity: aiCreativity, // Send creativity level setting
+                    temperature: temperature, // Send custom temperature
+                    topP: topP, // Send custom topP
+                    topK: topK, // Send custom topK
+                    maxTokens: maxTokens, // Send custom max tokens
+                    enableStreaming: enableStreaming, // Send streaming preference
+                    enableContextMemory: enableContextMemory, // Send context memory preference
+                    contextWindow: contextWindow, // Send context window size
+                    enableSystemPrompts: enableSystemPrompts // Send system prompts preference
                 }),
                 signal: abortControllerRef.current.signal
             });
@@ -1836,6 +1912,243 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const updateDataRetention = (days) => {
         setDataRetention(days);
         localStorage.setItem('gemini_data_retention', days);
+    };
+
+    // Advanced Settings Helper Functions
+    const updateAutoSave = (enabled) => {
+        setAutoSave(enabled);
+        localStorage.setItem('gemini_auto_save', enabled.toString());
+    };
+
+    const updateMessageLimit = (limit) => {
+        setMessageLimit(limit);
+        localStorage.setItem('gemini_message_limit', limit);
+    };
+
+    const updateSessionTimeout = (timeout) => {
+        setSessionTimeout(timeout);
+        localStorage.setItem('gemini_session_timeout', timeout);
+    };
+
+    const updateEnableMarkdown = (enabled) => {
+        setEnableMarkdown(enabled);
+        localStorage.setItem('gemini_enable_markdown', enabled.toString());
+    };
+
+    const updateEnableCodeHighlighting = (enabled) => {
+        setEnableCodeHighlighting(enabled);
+        localStorage.setItem('gemini_code_highlighting', enabled.toString());
+    };
+
+    const updateEnableEmojiReactions = (enabled) => {
+        setEnableEmojiReactions(enabled);
+        localStorage.setItem('gemini_emoji_reactions', enabled.toString());
+    };
+
+    const updateEnableMessageSearch = (enabled) => {
+        setEnableMessageSearch(enabled);
+        localStorage.setItem('gemini_message_search', enabled.toString());
+    };
+
+    const updateEnableQuickActions = (enabled) => {
+        setEnableQuickActions(enabled);
+        localStorage.setItem('gemini_quick_actions', enabled.toString());
+    };
+
+    const updateEnableSmartSuggestions = (enabled) => {
+        setEnableSmartSuggestions(enabled);
+        localStorage.setItem('gemini_smart_suggestions', enabled.toString());
+    };
+
+    const updateEnableTypingIndicator = (enabled) => {
+        setEnableTypingIndicator(enabled);
+        localStorage.setItem('gemini_typing_indicator', enabled.toString());
+    };
+
+    // Accessibility Settings Helper Functions
+    const updateHighContrast = (enabled) => {
+        setHighContrast(enabled);
+        localStorage.setItem('gemini_high_contrast', enabled.toString());
+    };
+
+    const updateReducedMotion = (enabled) => {
+        setReducedMotion(enabled);
+        localStorage.setItem('gemini_reduced_motion', enabled.toString());
+    };
+
+    const updateScreenReaderSupport = (enabled) => {
+        setScreenReaderSupport(enabled);
+        localStorage.setItem('gemini_screen_reader', enabled.toString());
+    };
+
+    const updateLargeText = (enabled) => {
+        setLargeText(enabled);
+        localStorage.setItem('gemini_large_text', enabled.toString());
+    };
+
+    const updateKeyboardNavigation = (enabled) => {
+        setKeyboardNavigation(enabled);
+        localStorage.setItem('gemini_keyboard_nav', enabled.toString());
+    };
+
+    // Performance Settings Helper Functions
+    const updateMessageCaching = (enabled) => {
+        setMessageCaching(enabled);
+        localStorage.setItem('gemini_message_caching', enabled.toString());
+    };
+
+    const updateLazyLoading = (enabled) => {
+        setLazyLoading(enabled);
+        localStorage.setItem('gemini_lazy_loading', enabled.toString());
+    };
+
+    const updateImageOptimization = (enabled) => {
+        setImageOptimization(enabled);
+        localStorage.setItem('gemini_image_optimization', enabled.toString());
+    };
+
+    const updatePreloadMessages = (enabled) => {
+        setPreloadMessages(enabled);
+        localStorage.setItem('gemini_preload_messages', enabled.toString());
+    };
+
+    const updateBatchOperations = (enabled) => {
+        setBatchOperations(enabled);
+        localStorage.setItem('gemini_batch_operations', enabled.toString());
+    };
+
+    // Privacy Settings Helper Functions
+    const updateEnableAnalytics = (enabled) => {
+        setEnableAnalytics(enabled);
+        localStorage.setItem('gemini_analytics', enabled.toString());
+    };
+
+    const updateEnableErrorReporting = (enabled) => {
+        setEnableErrorReporting(enabled);
+        localStorage.setItem('gemini_error_reporting', enabled.toString());
+    };
+
+    const updateEnableUsageTracking = (enabled) => {
+        setEnableUsageTracking(enabled);
+        localStorage.setItem('gemini_usage_tracking', enabled.toString());
+    };
+
+    const updateEnableCrashReports = (enabled) => {
+        setEnableCrashReports(enabled);
+        localStorage.setItem('gemini_crash_reports', enabled.toString());
+    };
+
+    const updateEnablePerformanceMonitoring = (enabled) => {
+        setEnablePerformanceMonitoring(enabled);
+        localStorage.setItem('gemini_performance_monitoring', enabled.toString());
+    };
+
+    // Advanced AI Settings Helper Functions
+    const updateTemperature = (value) => {
+        setTemperature(value);
+        localStorage.setItem('gemini_temperature', value);
+    };
+
+    const updateTopP = (value) => {
+        setTopP(value);
+        localStorage.setItem('gemini_top_p', value);
+    };
+
+    const updateTopK = (value) => {
+        setTopK(value);
+        localStorage.setItem('gemini_top_k', value);
+    };
+
+    const updateMaxTokens = (value) => {
+        setMaxTokens(value);
+        localStorage.setItem('gemini_max_tokens', value);
+    };
+
+    const updateEnableStreaming = (enabled) => {
+        setEnableStreaming(enabled);
+        localStorage.setItem('gemini_streaming', enabled.toString());
+    };
+
+    const updateEnableContextMemory = (enabled) => {
+        setEnableContextMemory(enabled);
+        localStorage.setItem('gemini_context_memory', enabled.toString());
+    };
+
+    const updateContextWindow = (value) => {
+        setContextWindow(value);
+        localStorage.setItem('gemini_context_window', value);
+    };
+
+    const updateEnableSystemPrompts = (enabled) => {
+        setEnableSystemPrompts(enabled);
+        localStorage.setItem('gemini_system_prompts', enabled.toString());
+    };
+
+    // Notification Settings Helper Functions
+    const updateEnableDesktopNotifications = (enabled) => {
+        setEnableDesktopNotifications(enabled);
+        localStorage.setItem('gemini_desktop_notifications', enabled.toString());
+    };
+
+    const updateEnableEmailNotifications = (enabled) => {
+        setEnableEmailNotifications(enabled);
+        localStorage.setItem('gemini_email_notifications', enabled.toString());
+    };
+
+    const updateEnablePushNotifications = (enabled) => {
+        setEnablePushNotifications(enabled);
+        localStorage.setItem('gemini_push_notifications', enabled.toString());
+    };
+
+    const updateNotificationSound = (sound) => {
+        setNotificationSound(sound);
+        localStorage.setItem('gemini_notification_sound', sound);
+    };
+
+    const updateNotificationFrequency = (frequency) => {
+        setNotificationFrequency(frequency);
+        localStorage.setItem('gemini_notification_frequency', frequency);
+    };
+
+    // UI/UX Settings Helper Functions
+    const updateEnableAnimations = (enabled) => {
+        setEnableAnimations(enabled);
+        localStorage.setItem('gemini_animations', enabled.toString());
+    };
+
+    const updateEnableHoverEffects = (enabled) => {
+        setEnableHoverEffects(enabled);
+        localStorage.setItem('gemini_hover_effects', enabled.toString());
+    };
+
+    const updateEnableTransitions = (enabled) => {
+        setEnableTransitions(enabled);
+        localStorage.setItem('gemini_transitions', enabled.toString());
+    };
+
+    const updateEnableTooltips = (enabled) => {
+        setEnableTooltips(enabled);
+        localStorage.setItem('gemini_tooltips', enabled.toString());
+    };
+
+    const updateEnableKeyboardShortcuts = (enabled) => {
+        setEnableKeyboardShortcuts(enabled);
+        localStorage.setItem('gemini_keyboard_shortcuts', enabled.toString());
+    };
+
+    const updateEnableDragAndDrop = (enabled) => {
+        setEnableDragAndDrop(enabled);
+        localStorage.setItem('gemini_drag_drop', enabled.toString());
+    };
+
+    const updateEnableRightClickMenu = (enabled) => {
+        setEnableRightClickMenu(enabled);
+        localStorage.setItem('gemini_right_click', enabled.toString());
+    };
+
+    const updateEnableContextMenu = (enabled) => {
+        setEnableContextMenu(enabled);
+        localStorage.setItem('gemini_context_menu', enabled.toString());
     };
 
     const createCustomTheme = (primaryColor, secondaryColor) => {
@@ -3995,6 +4308,272 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         <option value="365">1 year</option>
                                         <option value="0">Forever</option>
                                     </select>
+                                </div>
+
+                                {/* Analytics */}
+                                <div className="flex items-center justify-between">
+                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        Analytics
+                                    </span>
+                                    <button
+                                        onClick={() => updateEnableAnalytics(!enableAnalytics)}
+                                        className={`w-12 h-6 rounded-full transition-colors ${
+                                            enableAnalytics ? 'bg-blue-600' : 'bg-gray-300'
+                                        }`}
+                                    >
+                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                                            enableAnalytics ? 'translate-x-6' : 'translate-x-0.5'
+                                        }`} />
+                                    </button>
+                                </div>
+
+                                {/* Error Reporting */}
+                                <div className="flex items-center justify-between">
+                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        Error Reporting
+                                    </span>
+                                    <button
+                                        onClick={() => updateEnableErrorReporting(!enableErrorReporting)}
+                                        className={`w-12 h-6 rounded-full transition-colors ${
+                                            enableErrorReporting ? 'bg-blue-600' : 'bg-gray-300'
+                                        }`}
+                                    >
+                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                                            enableErrorReporting ? 'translate-x-6' : 'translate-x-0.5'
+                                        }`} />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Advanced Settings */}
+                        <div>
+                            <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                Advanced Settings
+                            </h4>
+                            <div className="space-y-4">
+                                {/* Auto Save */}
+                                <div className="flex items-center justify-between">
+                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        Auto Save
+                                    </span>
+                                    <button
+                                        onClick={() => updateAutoSave(!autoSave)}
+                                        className={`w-12 h-6 rounded-full transition-colors ${
+                                            autoSave ? 'bg-blue-600' : 'bg-gray-300'
+                                        }`}
+                                    >
+                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                                            autoSave ? 'translate-x-6' : 'translate-x-0.5'
+                                        }`} />
+                                    </button>
+                                </div>
+
+                                {/* Message Limit */}
+                                <div className="flex items-center justify-between">
+                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        Message Limit
+                                    </span>
+                                    <select
+                                        value={messageLimit}
+                                        onChange={(e) => updateMessageLimit(e.target.value)}
+                                        className={`px-3 py-1 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                                    >
+                                        <option value="50">50 messages</option>
+                                        <option value="100">100 messages</option>
+                                        <option value="200">200 messages</option>
+                                        <option value="500">500 messages</option>
+                                        <option value="unlimited">Unlimited</option>
+                                    </select>
+                                </div>
+
+                                {/* Enable Markdown */}
+                                <div className="flex items-center justify-between">
+                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        Enable Markdown
+                                    </span>
+                                    <button
+                                        onClick={() => updateEnableMarkdown(!enableMarkdown)}
+                                        className={`w-12 h-6 rounded-full transition-colors ${
+                                            enableMarkdown ? 'bg-blue-600' : 'bg-gray-300'
+                                        }`}
+                                    >
+                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                                            enableMarkdown ? 'translate-x-6' : 'translate-x-0.5'
+                                        }`} />
+                                    </button>
+                                </div>
+
+                                {/* Code Highlighting */}
+                                <div className="flex items-center justify-between">
+                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        Code Highlighting
+                                    </span>
+                                    <button
+                                        onClick={() => updateEnableCodeHighlighting(!enableCodeHighlighting)}
+                                        className={`w-12 h-6 rounded-full transition-colors ${
+                                            enableCodeHighlighting ? 'bg-blue-600' : 'bg-gray-300'
+                                        }`}
+                                    >
+                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                                            enableCodeHighlighting ? 'translate-x-6' : 'translate-x-0.5'
+                                        }`} />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Accessibility Settings */}
+                        <div>
+                            <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                Accessibility
+                            </h4>
+                            <div className="space-y-4">
+                                {/* High Contrast */}
+                                <div className="flex items-center justify-between">
+                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        High Contrast
+                                    </span>
+                                    <button
+                                        onClick={() => updateHighContrast(!highContrast)}
+                                        className={`w-12 h-6 rounded-full transition-colors ${
+                                            highContrast ? 'bg-blue-600' : 'bg-gray-300'
+                                        }`}
+                                    >
+                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                                            highContrast ? 'translate-x-6' : 'translate-x-0.5'
+                                        }`} />
+                                    </button>
+                                </div>
+
+                                {/* Reduced Motion */}
+                                <div className="flex items-center justify-between">
+                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        Reduced Motion
+                                    </span>
+                                    <button
+                                        onClick={() => updateReducedMotion(!reducedMotion)}
+                                        className={`w-12 h-6 rounded-full transition-colors ${
+                                            reducedMotion ? 'bg-blue-600' : 'bg-gray-300'
+                                        }`}
+                                    >
+                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                                            reducedMotion ? 'translate-x-6' : 'translate-x-0.5'
+                                        }`} />
+                                    </button>
+                                </div>
+
+                                {/* Screen Reader Support */}
+                                <div className="flex items-center justify-between">
+                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        Screen Reader Support
+                                    </span>
+                                    <button
+                                        onClick={() => updateScreenReaderSupport(!screenReaderSupport)}
+                                        className={`w-12 h-6 rounded-full transition-colors ${
+                                            screenReaderSupport ? 'bg-blue-600' : 'bg-gray-300'
+                                        }`}
+                                    >
+                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                                            screenReaderSupport ? 'translate-x-6' : 'translate-x-0.5'
+                                        }`} />
+                                    </button>
+                                </div>
+
+                                {/* Large Text */}
+                                <div className="flex items-center justify-between">
+                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        Large Text
+                                    </span>
+                                    <button
+                                        onClick={() => updateLargeText(!largeText)}
+                                        className={`w-12 h-6 rounded-full transition-colors ${
+                                            largeText ? 'bg-blue-600' : 'bg-gray-300'
+                                        }`}
+                                    >
+                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                                            largeText ? 'translate-x-6' : 'translate-x-0.5'
+                                        }`} />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Advanced AI Settings */}
+                        <div>
+                            <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                Advanced AI Settings
+                            </h4>
+                            <div className="space-y-4">
+                                {/* Temperature */}
+                                <div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                            Temperature: {temperature}
+                                        </span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="0.1"
+                                        max="1.0"
+                                        step="0.1"
+                                        value={temperature}
+                                        onChange={(e) => updateTemperature(e.target.value)}
+                                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                    />
+                                </div>
+
+                                {/* Top P */}
+                                <div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                            Top P: {topP}
+                                        </span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="0.1"
+                                        max="1.0"
+                                        step="0.1"
+                                        value={topP}
+                                        onChange={(e) => updateTopP(e.target.value)}
+                                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                    />
+                                </div>
+
+                                {/* Context Window */}
+                                <div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                            Context Window: {contextWindow} messages
+                                        </span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="5"
+                                        max="50"
+                                        step="5"
+                                        value={contextWindow}
+                                        onChange={(e) => updateContextWindow(e.target.value)}
+                                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                    />
+                                </div>
+
+                                {/* Enable Streaming */}
+                                <div className="flex items-center justify-between">
+                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        Enable Streaming
+                                    </span>
+                                    <button
+                                        onClick={() => updateEnableStreaming(!enableStreaming)}
+                                        className={`w-12 h-6 rounded-full transition-colors ${
+                                            enableStreaming ? 'bg-blue-600' : 'bg-gray-300'
+                                        }`}
+                                    >
+                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                                            enableStreaming ? 'translate-x-6' : 'translate-x-0.5'
+                                        }`} />
+                                    </button>
                                 </div>
                             </div>
                         </div>
