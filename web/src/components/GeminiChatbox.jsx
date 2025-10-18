@@ -1924,13 +1924,21 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         
                         console.log(`Found ${sessionsToDelete.length} old sessions to delete`);
                         
-                        sessionsToDelete.forEach(session => {
+                        // Delete sessions with a small delay between each to avoid overwhelming the server
+                        for (let i = 0; i < sessionsToDelete.length; i++) {
+                            const session = sessionsToDelete[i];
                             try {
-                                deleteChatSession(session._id || session.id);
+                                console.log(`Deleting session ${i + 1}/${sessionsToDelete.length}:`, session.sessionId);
+                                await deleteSession(session.sessionId);
+                                
+                                // Small delay between deletions
+                                if (i < sessionsToDelete.length - 1) {
+                                    await new Promise(resolve => setTimeout(resolve, 100));
+                                }
                             } catch (error) {
                                 console.error('Error deleting session:', session, error);
                             }
-                        });
+                        }
                     }
                 }).catch(error => {
                     console.error('Error loading chat sessions for cleanup:', error);
