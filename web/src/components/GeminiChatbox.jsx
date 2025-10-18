@@ -2684,7 +2684,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                             value={editingMessageContent}
                                                             onChange={(e) => setEditingMessageContent(e.target.value)}
                                                             onKeyDown={(e) => handleEditKeyDown(e, index)}
-                                                            className={`w-full p-2 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-${selectedTheme === 'blue' ? 'blue' : selectedTheme === 'green' ? 'green' : selectedTheme === 'purple' ? 'purple' : 'orange'}-500 placeholder-gray-500`}
+                                                            className={`w-full p-2 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} placeholder-gray-500`}
                                                             rows={3}
                                                             placeholder="Edit your message... (Ctrl+Enter to send, Esc to cancel)"
                                                             autoFocus
@@ -3021,7 +3021,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         onChange={(e) => setInputMessage(e.target.value)}
                                         onKeyPress={handleKeyPress}
                                         placeholder={(rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin') ? "Sign in to continue chatting..." : "Ask me anything about real estate..."}
-                                        className={`w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-${selectedTheme === 'blue' ? 'blue' : selectedTheme === 'green' ? 'green' : selectedTheme === 'purple' ? 'purple' : 'orange'}-500 focus:border-transparent text-sm ${
+                                        className={`w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} focus:border-transparent text-sm ${
                                             isDarkMode 
                                                 ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' 
                                                 : 'bg-white border-gray-300 text-gray-900'
@@ -4116,7 +4116,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 searchInMessages(e.target.value);
                             }}
                             placeholder="Search messages..."
-                            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-${selectedTheme === 'blue' ? 'blue' : selectedTheme === 'green' ? 'green' : selectedTheme === 'purple' ? 'purple' : 'orange'}-500 ${
+                            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} ${
                                 isDarkMode 
                                     ? 'bg-gray-800 border-gray-600 text-white' 
                                     : 'bg-white border-gray-300 text-gray-900'
