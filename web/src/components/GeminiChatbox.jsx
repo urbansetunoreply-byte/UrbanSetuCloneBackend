@@ -2522,7 +2522,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                             value={editingMessageContent}
                                                             onChange={(e) => setEditingMessageContent(e.target.value)}
                                                             onKeyDown={(e) => handleEditKeyDown(e, index)}
-                                                            className="w-full p-2 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
+                                                            className={`w-full p-2 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-${selectedTheme === 'blue' ? 'blue' : selectedTheme === 'green' ? 'green' : selectedTheme === 'purple' ? 'purple' : 'orange'}-500 placeholder-gray-500`}
                                                             rows={3}
                                                             placeholder="Edit your message... (Ctrl+Enter to send, Esc to cancel)"
                                                             autoFocus
@@ -2538,7 +2538,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                             <button
                                                                 onClick={() => submitEditedMessage(index)}
                                                                 disabled={!editingMessageContent.trim() || isLoading}
-                                                                className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                                                className={`px-3 py-1 text-xs bg-gradient-to-r ${themeColors.primary} text-white rounded hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
                                                             >
                                                                 <FaCheckCircle size={10} className="inline mr-1" />
                                                                 Send
@@ -2659,7 +2659,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                     if (previousUserMessage) retryMessage(previousUserMessage, index);
                                                                 }}
                                                                 disabled={isLoading || (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin')}
-                                                                className="p-1 text-blue-600 hover:text-blue-700 hover:bg-blue-100 rounded transition-all duration-200 disabled:opacity-50"
+                                                                className={`p-1 ${themeColors.accent} hover:opacity-80 hover:${themeColors.secondary} rounded transition-all duration-200 disabled:opacity-50`}
                                                                 title="Try Again"
                                                                 aria-label="Try Again"
                                                             >
@@ -2699,7 +2699,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             <div className="absolute bottom-20 right-4 z-30">
                                 <button
                                     onClick={() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })}
-                                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-full p-3 shadow-xl transition-all duration-200 hover:scale-110 relative transform hover:shadow-2xl"
+                                    className={`bg-gradient-to-r ${themeColors.primary} hover:opacity-90 text-white rounded-full p-3 shadow-xl transition-all duration-200 hover:scale-110 relative transform hover:shadow-2xl`}
                                     title="Jump to latest"
                                     aria-label="Jump to latest"
                                 >
@@ -2779,7 +2779,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             {/* Rate Limit Counter */}
                             {rateLimitInfo.role === 'public' && (
                                 <div className="mb-3 text-center">
-                                    <div className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                                    <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium ${themeColors.secondary} ${themeColors.accent} border ${themeColors.border}`}>
                                         <span className="mr-1">💬</span>
                                         <span>
                                             {rateLimitInfo.remaining > 0 
@@ -2840,7 +2840,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 className={`text-xs px-3 py-1.5 rounded-full border transition-all duration-200 hover:scale-105 ${
                                                     isDarkMode 
                                                         ? 'bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700' 
-                                                        : 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100'
+                                                        : `${themeColors.secondary} ${themeColors.border} ${themeColors.accent} hover:opacity-80`
                                                 }`}
                                             >
                                                 {suggestion}
@@ -2859,7 +2859,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         onChange={(e) => setInputMessage(e.target.value)}
                                         onKeyPress={handleKeyPress}
                                         placeholder={(rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin') ? "Sign in to continue chatting..." : "Ask me anything about real estate..."}
-                                        className={`w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm ${
+                                        className={`w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-${selectedTheme === 'blue' ? 'blue' : selectedTheme === 'green' ? 'green' : selectedTheme === 'purple' ? 'purple' : 'orange'}-500 focus:border-transparent text-sm ${
                                             isDarkMode 
                                                 ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' 
                                                 : 'bg-white border-gray-300 text-gray-900'
