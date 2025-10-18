@@ -2091,7 +2091,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 </button>
                                             </li>
                                             
-                                            {/* Share current chat */}
+                                            {/* Save current chat */}
                                             <li>
                                                 <button
                                                     onClick={() => {
@@ -2108,7 +2108,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                             URL.revokeObjectURL(url);
                                                             setIsHeaderMenuOpen(false);
                                                         } catch (e) {
-                                                            toast.error('Failed to share chat');
+                                                            toast.error('Failed to save chat');
                                                         }
                                                     }}
                                                     className="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2"
@@ -3145,12 +3145,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                             URL.revokeObjectURL(url);
                                                                             setOpenHistoryMenuSessionId(null);
                                                                         } catch {
-                                                                            toast.error('Failed to share chat');
+                                                                            toast.error('Failed to save chat');
                                                                         }
                                                                     }}
                                                                     className={`block w-full text-left px-3 py-2 text-sm ${isDarkMode ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-800 hover:bg-gray-100'}`}
                                                                 >
-                                                                    Share chat
+                                                                    Save chat
                                                                 </button>
                                                                 <button
                                                                     onClick={(e) => {
@@ -3233,11 +3233,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         {/* Delete Selected Chats Modal */}
         {showDeleteSelectedModal && (
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
-                <div className="bg-white rounded-xl shadow-xl p-5 w-80">
-                    <h4 className="font-semibold mb-2">Delete selected chats?</h4>
-                    <p className="text-sm text-gray-600 mb-4">This cannot be undone.</p>
+                <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl p-5 w-80`}>
+                    <h4 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Delete selected chats?</h4>
+                    <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-4`}>This cannot be undone.</p>
                     <div className="flex justify-end gap-2">
-                        <button onClick={() => setShowDeleteSelectedModal(false)} className="px-3 py-1.5 text-sm rounded border border-gray-300 text-gray-700">Cancel</button>
+                        <button onClick={() => setShowDeleteSelectedModal(false)} className={`px-3 py-1.5 text-sm rounded border ${isDarkMode ? 'border-gray-600 text-gray-300' : 'border-gray-300 text-gray-700'}`}>Cancel</button>
                         <button onClick={async () => {
                             try {
                                 for (const id of selectedHistoryIds) { await deleteSession(id); }
@@ -3258,11 +3258,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         {/* Delete Single Chat Modal */}
         {showDeleteSingleModal && (
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
-                <div className="bg-white rounded-xl shadow-xl p-5 w-80">
-                    <h4 className="font-semibold mb-2">Delete this chat?</h4>
-                    <p className="text-sm text-gray-600 mb-4">This cannot be undone.</p>
+                <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl p-5 w-80`}>
+                    <h4 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Delete this chat?</h4>
+                    <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-4`}>This cannot be undone.</p>
                     <div className="flex justify-end gap-2">
-                        <button onClick={() => setShowDeleteSingleModal(false)} className="px-3 py-1.5 text-sm rounded border border-gray-300 text-gray-700">Cancel</button>
+                        <button onClick={() => setShowDeleteSingleModal(false)} className={`px-3 py-1.5 text-sm rounded border ${isDarkMode ? 'border-gray-600 text-gray-300' : 'border-gray-300 text-gray-700'}`}>Cancel</button>
                         <button onClick={async () => {
                             try {
                                 if (deleteTargetSessionId) { await deleteSession(deleteTargetSessionId); }
@@ -3709,7 +3709,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 searchInMessages(e.target.value);
                             }}
                             placeholder="Search messages..."
-                            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-${selectedTheme === 'blue' ? 'blue' : selectedTheme === 'green' ? 'green' : selectedTheme === 'purple' ? 'purple' : 'orange'}-500 ${
                                 isDarkMode 
                                     ? 'bg-gray-800 border-gray-600 text-white' 
                                     : 'bg-white border-gray-300 text-gray-900'
