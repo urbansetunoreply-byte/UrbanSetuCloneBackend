@@ -70,8 +70,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [renameInput, setRenameInput] = useState('');
     // Floating date label like WhatsApp
     const [floatingDateLabel, setFloatingDateLabel] = useState('');
-    const [showFloatingDate, setShowFloatingDate] = useState(false);
-    const floatingHideTimeoutRef = useRef(null);
+    const [isScrolling, setIsScrolling] = useState(false);
+    const scrollTimeoutRef = useRef(null);
     
     // Enhanced UI and Feature States
     const [isRecording, setIsRecording] = useState(false);
@@ -705,22 +705,24 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         compute();
         const onScroll = () => {
             compute();
-            // Show floating date while actively scrolling when not at bottom, hide after inactivity
-            const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
-            if (distanceFromBottom > 80) {
-                setShowFloatingDate(true);
-                if (floatingHideTimeoutRef.current) clearTimeout(floatingHideTimeoutRef.current);
-                floatingHideTimeoutRef.current = setTimeout(() => {
-                    setShowFloatingDate(false);
-                }, 1000);
-            } else {
-                setShowFloatingDate(false);
+            
+            // Show floating date when scrolling starts
+            setIsScrolling(true);
+            
+            // Clear existing timeout
+            if (scrollTimeoutRef.current) {
+                clearTimeout(scrollTimeoutRef.current);
             }
+            
+            // Hide floating date after scrolling stops (1 second of inactivity)
+            scrollTimeoutRef.current = setTimeout(() => {
+                setIsScrolling(false);
+            }, 1000);
         };
         el.addEventListener('scroll', onScroll);
         return () => {
             el.removeEventListener('scroll', onScroll);
-            if (floatingHideTimeoutRef.current) clearTimeout(floatingHideTimeoutRef.current);
+            if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
         };
     }, [isOpen, messages]);
 
@@ -3028,8 +3030,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         {/* Messages with date dividers */}
                         <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 relative">
                             {/* Floating Date Indicator (sticky below header) */}
-                            {showFloatingDate && floatingDateLabel && (
-                                <div className={`sticky top-0 left-0 right-0 z-30 pointer-events-none`}>
+                            {floatingDateLabel && (
+                                <div className={`sticky top-0 left-0 right-0 z-30 pointer-events-none transition-all duration-300 ease-in-out ${
+                                    isScrolling ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                                }`}>
                                     <div className="w-full flex justify-center py-2">
                                         <div className={`bg-gradient-to-r ${themeColors.primary} text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white`}>
                                             {floatingDateLabel}
