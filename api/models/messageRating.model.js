@@ -21,8 +21,13 @@ const messageRatingSchema = new mongoose.Schema({
   },
   rating: {
     type: String,
-    enum: ["up", "down"],
+    enum: ["up", "down", "bookmarked"],
     required: true
+  },
+  type: {
+    type: String,
+    enum: ["rating", "bookmark"],
+    default: "rating"
   },
   messageContent: {
     type: String,

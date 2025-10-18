@@ -548,3 +548,147 @@ export const deleteAllSessions = async (req, res) => {
         });
     }
 };
+
+// Bookmark a message
+export const bookmarkMessage = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        const { sessionId, messageIndex, messageTimestamp, messageContent, messageRole } = req.body;
+        
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required'
+            });
+        }
+
+        if (!sessionId || messageIndex === undefined || !messageTimestamp || !messageContent) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields'
+            });
+        }
+
+        // Check if bookmark already exists
+        const existingBookmark = await MessageRating.findOne({
+            userId,
+            sessionId,
+            messageIndex,
+            messageTimestamp,
+            type: 'bookmark'
+        });
+
+        if (existingBookmark) {
+            return res.status(400).json({
+                success: false,
+                message: 'Message already bookmarked'
+            });
+        }
+
+        // Create new bookmark
+        const bookmark = new MessageRating({
+            userId,
+            sessionId,
+            messageIndex,
+            messageTimestamp,
+            messageContent,
+            messageRole,
+            type: 'bookmark',
+            rating: 'bookmarked'
+        });
+
+        await bookmark.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Message bookmarked successfully'
+        });
+    } catch (error) {
+        console.error('Error bookmarking message:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to bookmark message'
+        });
+    }
+};
+
+// Remove bookmark from a message
+export const removeBookmark = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        const { sessionId, messageIndex, messageTimestamp } = req.body;
+        
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required'
+            });
+        }
+
+        if (!sessionId || messageIndex === undefined || !messageTimestamp) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields'
+            });
+        }
+
+        // Remove bookmark
+        const result = await MessageRating.findOneAndDelete({
+            userId,
+            sessionId,
+            messageIndex,
+            messageTimestamp,
+            type: 'bookmark'
+        });
+
+        if (!result) {
+            return res.status(404).json({
+                success: false,
+                message: 'Bookmark not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Bookmark removed successfully'
+        });
+    } catch (error) {
+        console.error('Error removing bookmark:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to remove bookmark'
+        });
+    }
+};
+
+// Get bookmarked messages for a session
+export const getBookmarkedMessages = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        const { sessionId } = req.params;
+        
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required'
+            });
+        }
+
+        const bookmarks = await MessageRating.find({
+            userId,
+            sessionId,
+            type: 'bookmark'
+        }).sort({ messageTimestamp: -1 });
+
+        res.status(200).json({
+            success: true,
+            bookmarks: bookmarks
+        });
+    } catch (error) {
+        console.error('Error getting bookmarked messages:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to get bookmarked messages'
+        });
+    }
+};

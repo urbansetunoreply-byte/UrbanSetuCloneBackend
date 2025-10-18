@@ -976,7 +976,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     };
 
     // Enhanced features helper functions
-    const toggleBookmark = (messageIndex, message) => {
+    const toggleBookmark = async (messageIndex, message) => {
         // Check if user is logged in
         if (!currentUser) {
             toast.error('Please sign in to bookmark messages');
@@ -987,23 +987,69 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         const bookmarkKey = `${currentSessionId}_${messageIndex}_${message.timestamp}`;
         const isBookmarked = bookmarkedMessages.some(bm => bm.key === bookmarkKey);
         
-        let newBookmarks;
-        if (isBookmarked) {
-            newBookmarks = bookmarkedMessages.filter(bm => bm.key !== bookmarkKey);
-            toast.success('Bookmark removed');
-        } else {
-            newBookmarks = [...bookmarkedMessages, {
-                key: bookmarkKey,
-                content: message.content,
-                timestamp: message.timestamp,
-                role: message.role,
-                sessionId: currentSessionId
-            }];
-            toast.success('Message bookmarked');
+        try {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+            
+            if (isBookmarked) {
+                // Remove bookmark
+                const response = await fetch(`${API_BASE_URL}/api/gemini/bookmark`, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        sessionId: currentSessionId,
+                        messageIndex,
+                        messageTimestamp: message.timestamp
+                    })
+                });
+
+                if (response.ok) {
+                    const newBookmarks = bookmarkedMessages.filter(bm => bm.key !== bookmarkKey);
+                    setBookmarkedMessages(newBookmarks);
+                    localStorage.setItem('gemini_bookmarks', JSON.stringify(newBookmarks));
+                    toast.success('Bookmark removed');
+                } else {
+                    toast.error('Failed to remove bookmark');
+                }
+            } else {
+                // Add bookmark
+                const response = await fetch(`${API_BASE_URL}/api/gemini/bookmark`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        sessionId: currentSessionId,
+                        messageIndex,
+                        messageTimestamp: message.timestamp,
+                        messageContent: message.content,
+                        messageRole: message.role
+                    })
+                });
+
+                if (response.ok) {
+                    const newBookmark = {
+                        key: bookmarkKey,
+                        content: message.content,
+                        timestamp: message.timestamp,
+                        role: message.role,
+                        sessionId: currentSessionId
+                    };
+                    const newBookmarks = [...bookmarkedMessages, newBookmark];
+                    setBookmarkedMessages(newBookmarks);
+                    localStorage.setItem('gemini_bookmarks', JSON.stringify(newBookmarks));
+                    toast.success('Message bookmarked');
+                } else {
+                    toast.error('Failed to bookmark message');
+                }
+            }
+        } catch (error) {
+            console.error('Error toggling bookmark:', error);
+            toast.error('Failed to bookmark message');
         }
-        
-        setBookmarkedMessages(newBookmarks);
-        localStorage.setItem('gemini_bookmarks', JSON.stringify(newBookmarks));
     };
 
     const rateMessage = async (messageIndex, rating) => {
