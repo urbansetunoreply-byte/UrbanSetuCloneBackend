@@ -111,6 +111,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [recordingStartTime, setRecordingStartTime] = useState(null);
     const [recordingDuration, setRecordingDuration] = useState(0);
     const [recordedAudioType, setRecordedAudioType] = useState('audio/webm');
+    const recordingChunksRef = useRef([]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -1104,17 +1105,21 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             console.log('Selected audio type:', selectedType);
             
             const recorder = new MediaRecorder(stream, { mimeType: selectedType });
-            const chunks = [];
+            
+            // Reset chunks array for new recording
+            recordingChunksRef.current = [];
+            console.log('Starting new recording, chunks reset');
 
             recorder.ondataavailable = (event) => {
                 console.log('Data available:', event.data.size, 'bytes');
                 if (event.data && event.data.size > 0) {
-                    chunks.push(event.data);
+                    recordingChunksRef.current.push(event.data);
                 }
             };
 
             recorder.onstop = async () => {
                 try {
+                    const chunks = recordingChunksRef.current;
                     console.log('Recording stopped, chunks:', chunks.length);
                     
                     if (chunks.length === 0) {
@@ -1182,7 +1187,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             recorder.start(100);
             setMediaRecorder(recorder);
             setIsRecording(true);
-            setAudioChunks(chunks);
+            setAudioChunks(recordingChunksRef.current);
             
             // Start recording timer
             setRecordingStartTime(Date.now());
@@ -1201,6 +1206,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             setIsRecording(false);
             setRecordingStartTime(null);
             setRecordingDuration(0);
+            // Don't clear chunks here - let onstop handle it
         }
     };
 
