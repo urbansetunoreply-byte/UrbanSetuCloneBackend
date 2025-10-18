@@ -3730,10 +3730,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                         : 'bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-gray-300'
                                                 }`}
                                             >
-                                                <div className="text-xs text-gray-500 mb-1">
+                                                <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mb-1`}>
                                                     {message.role === 'user' ? 'You' : 'Gemini'} • {new Date(message.timestamp).toLocaleString()}
                                                 </div>
-                                                <div className="text-sm">{message.content.substring(0, 100)}...</div>
+                                                <div className={`text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>{message.content.substring(0, 100)}...</div>
                                             </div>
                                         ))}
                                     </div>
