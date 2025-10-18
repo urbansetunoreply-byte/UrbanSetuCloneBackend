@@ -3328,55 +3328,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 </div>
                             )}
                             
-                            {/* Sign-in prompt for public users when prompts reach zero */}
-                            {!currentUser && rateLimitInfo.remaining <= 0 && (
-                                <div className="flex justify-center my-6">
-                                    <div className={`max-w-md mx-4 p-4 rounded-xl border-2 border-dashed ${isDarkMode ? 'bg-gray-800/50 border-gray-600' : 'bg-blue-50 border-blue-200'} transition-all duration-300 hover:shadow-lg`}>
-                                        <div className="text-center">
-                                            <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full mb-3 ${isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100'}`}>
-                                                <svg className={`w-6 h-6 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                                </svg>
-                                            </div>
-                                            <h3 className={`text-lg font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-                                                Sign in to unlock full chatbot features
-                                            </h3>
-                                            <p className={`text-sm mb-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                                Get access to advanced AI settings, voice input, file uploads, chat history, and much more!
-                                            </p>
-                                            <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                                                <button
-                                                    onClick={() => {
-                                                        // Close chatbot and redirect to sign-in
-                                                        setIsOpen(false);
-                                                        navigate('/sign-in');
-                                                    }}
-                                                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${isDarkMode 
-                                                        ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                                                        : 'bg-blue-600 hover:bg-blue-700 text-white'
-                                                    } hover:shadow-md`}
-                                                >
-                                                    Sign In
-                                                </button>
-                                                <button
-                                                    onClick={() => {
-                                                        // Close chatbot and redirect to sign-up
-                                                        setIsOpen(false);
-                                                        navigate('/sign-up');
-                                                    }}
-                                                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${isDarkMode 
-                                                        ? 'bg-gray-700 hover:bg-gray-600 text-white border border-gray-600' 
-                                                        : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300'
-                                                    } hover:shadow-md`}
-                                                >
-                                                    Create Account
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                            
                             <div ref={messagesEndRef} />
                             {/* scroll button moved to container-level absolute positioning */}
                         </div>
@@ -4052,6 +4003,63 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             <button
                                 onClick={() => setShowSignInModal(false)}
                                 className="w-full text-gray-500 hover:text-gray-700 text-sm py-2"
+                            >
+                                Maybe Later
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {/* Sign-in Overlay for Public Users when Prompts Reach Zero */}
+        {!currentUser && rateLimitInfo.remaining <= 0 && (
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 rounded-2xl">
+                <div className={`max-w-md mx-4 p-6 rounded-2xl shadow-2xl border-2 border-dashed ${isDarkMode ? 'bg-gray-800/95 border-gray-600' : 'bg-white/95 border-blue-200'} transition-all duration-300`}>
+                    <div className="text-center">
+                        <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 ${isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100'}`}>
+                            <svg className={`w-8 h-8 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </div>
+                        <h3 className={`text-xl font-bold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                            Sign in to unlock full chatbot features
+                        </h3>
+                        <p className={`text-sm mb-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                            Get access to advanced AI settings, voice input, file uploads, chat history, and much more!
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                            <button
+                                onClick={() => {
+                                    // Close chatbot and redirect to sign-in
+                                    setIsOpen(false);
+                                    navigate('/sign-in');
+                                }}
+                                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${isDarkMode 
+                                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                                } hover:shadow-lg hover:scale-105`}
+                            >
+                                Sign In
+                            </button>
+                            <button
+                                onClick={() => {
+                                    // Close chatbot and redirect to sign-up
+                                    setIsOpen(false);
+                                    navigate('/sign-up');
+                                }}
+                                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${isDarkMode 
+                                    ? 'bg-gray-700 hover:bg-gray-600 text-white border border-gray-600' 
+                                    : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300'
+                                } hover:shadow-lg hover:scale-105`}
+                            >
+                                Create Account
+                            </button>
+                        </div>
+                        <div className="mt-4">
+                            <button
+                                onClick={() => setIsOpen(false)}
+                                className={`text-xs ${isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'} transition-colors`}
                             >
                                 Maybe Later
                             </button>
