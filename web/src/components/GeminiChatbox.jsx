@@ -2935,8 +2935,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         {/* Quick Actions Modal */}
                         {showQuickActions && (
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
-                                <div className="bg-white rounded-xl shadow-xl p-5 w-96 max-w-full">
-                                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                                <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl p-5 w-96 max-w-full`}>
+                                    <h4 className={`font-semibold mb-3 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                                         <FaLightbulb className="text-yellow-500" />
                                         Quick Actions
                                     </h4>
@@ -2956,15 +2956,15 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     setShowQuickActions(false);
                                                     setTimeout(() => handleSubmit(new Event('submit')), 0);
                                                 }}
-                                                className="p-3 text-left border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-blue-300 transition-all duration-200"
+                                                className={`p-3 text-left border ${isDarkMode ? 'border-gray-600' : 'border-gray-200'} rounded-lg ${isDarkMode ? 'hover:bg-gray-700 hover:border-gray-500' : 'hover:bg-gray-50 hover:border-blue-300'} transition-all duration-200`}
                                             >
                                                 <div className="text-lg mb-1">{action.icon}</div>
-                                                <div className="text-sm font-medium text-gray-800">{action.text}</div>
+                                                <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>{action.text}</div>
                                             </button>
                                         ))}
                                     </div>
                                     <div className="flex justify-end mt-4">
-                                        <button onClick={() => setShowQuickActions(false)} className="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-700">Close</button>
+                                        <button onClick={() => setShowQuickActions(false)} className={`px-3 py-1.5 text-sm rounded bg-gradient-to-r ${themeColors.primary} text-white hover:opacity-90`}>Close</button>
                                     </div>
                                 </div>
                             </div>
@@ -2973,8 +2973,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         {/* Bookmarks Modal */}
                         {showBookmarks && (
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
-                                <div className="bg-white rounded-xl shadow-xl p-5 w-96 max-w-full max-h-[80vh] overflow-y-auto">
-                                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                                <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl p-5 w-96 max-w-full max-h-[80vh] overflow-y-auto`}>
+                                    <h4 className={`font-semibold mb-3 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                                         <FaBookmark className="text-yellow-500" />
                                         Bookmarked Messages
                                     </h4>
@@ -2982,15 +2982,15 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         const currentSessionId = getOrCreateSessionId();
                                         const sessionBookmarks = bookmarkedMessages.filter(bm => bm.sessionId === currentSessionId);
                                         return sessionBookmarks.length === 0 ? (
-                                            <p className="text-gray-500 text-center py-8">No bookmarked messages in this session</p>
+                                            <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'} text-center py-8`}>No bookmarked messages in this session</p>
                                         ) : (
                                             <div className="space-y-3">
                                                 {sessionBookmarks.map((bookmark, idx) => (
-                                                <div key={idx} className="p-3 border border-gray-200 rounded-lg">
-                                                    <div className="text-sm text-gray-600 mb-2">
+                                                <div key={idx} className={`p-3 border ${isDarkMode ? 'border-gray-600' : 'border-gray-200'} rounded-lg`}>
+                                                    <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mb-2`}>
                                                         {new Date(bookmark.timestamp).toLocaleString()}
                                                     </div>
-                                                    <div className="text-sm text-gray-800 mb-2 line-clamp-3">
+                                                    <div className={`text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-2 line-clamp-3`}>
                                                         {bookmark.content}
                                                     </div>
                                                     <div className="flex gap-2">
@@ -3035,9 +3035,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         {/* Chat History Modal */}
                         {showHistory && (
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
-                                <div className="bg-white rounded-xl shadow-xl p-5 w-96 max-w-full max-h-[80vh] overflow-y-auto">
+                                <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl p-5 w-96 max-w-full max-h-[80vh] overflow-y-auto`}>
                                     <div className="flex items-center justify-between mb-3">
-                                        <h4 className="font-semibold flex items-center gap-2">
+                                        <h4 className={`font-semibold flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                                             <FaHistory className="text-blue-500" />
                                             Chat History
                                         </h4>
@@ -3192,11 +3192,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         {/* Clear confirmation modal */}
                         {showConfirmClear && (
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
-                                <div className="bg-white rounded-xl shadow-xl p-5 w-80">
-                                    <h4 className="font-semibold mb-2">Clear chat?</h4>
-                                    <p className="text-sm text-gray-600 mb-4">This will remove your conversation here. This action cannot be undone.</p>
+                                <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl p-5 w-80`}>
+                                    <h4 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Clear chat?</h4>
+                                    <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-4`}>This will remove your conversation here. This action cannot be undone.</p>
                                     <div className="flex justify-end gap-2">
-                                        <button onClick={() => setShowConfirmClear(false)} className="px-3 py-1.5 text-sm rounded border border-gray-300 text-gray-700">Cancel</button>
+                                        <button onClick={() => setShowConfirmClear(false)} className={`px-3 py-1.5 text-sm rounded border ${isDarkMode ? 'border-gray-600 text-gray-300' : 'border-gray-300 text-gray-700'}`}>Cancel</button>
                                         <button onClick={() => { setShowConfirmClear(false); handleClearChatHistory(); }} className="px-3 py-1.5 text-sm rounded bg-red-600 text-white hover:bg-red-700">Clear</button>
                                     </div>
                                 </div>
@@ -3206,11 +3206,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         {/* Delete All Chats Modal */}
         {showDeleteAllModal && (
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
-                <div className="bg-white rounded-xl shadow-xl p-5 w-80">
-                    <h4 className="font-semibold mb-2">Delete all chats?</h4>
-                    <p className="text-sm text-gray-600 mb-4">This cannot be undone.</p>
+                <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl p-5 w-80`}>
+                    <h4 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Delete all chats?</h4>
+                    <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-4`}>This cannot be undone.</p>
                     <div className="flex justify-end gap-2">
-                        <button onClick={() => setShowDeleteAllModal(false)} className="px-3 py-1.5 text-sm rounded border border-gray-300 text-gray-700">Cancel</button>
+                        <button onClick={() => setShowDeleteAllModal(false)} className={`px-3 py-1.5 text-sm rounded border ${isDarkMode ? 'border-gray-600 text-gray-300' : 'border-gray-300 text-gray-700'}`}>Cancel</button>
                         <button onClick={async () => {
                             try {
                                 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
