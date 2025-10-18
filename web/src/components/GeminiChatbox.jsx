@@ -886,22 +886,131 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             const messagesToKeep = updatedMessages.slice(0, messageIndex + 1);
             setMessages(messagesToKeep);
 
-            // Set the input message and trigger handleSubmit
-            setInputMessage(editingMessageContent.trim());
-            
             // Clear editing state first
             setEditingMessageIndex(null);
             setEditingMessageContent('');
 
-            // Trigger the submit after a short delay to ensure state is updated
-            setTimeout(() => {
-                handleSubmit(new Event('submit'));
-            }, 100);
+            // Send the edited message directly to API without using input field
+            await sendEditedMessageToAPI(editingMessageContent.trim());
 
             toast.success('Message updated and sent');
         } catch (error) {
             console.error('Error submitting edited message:', error);
             toast.error('Failed to send edited message');
+        }
+    };
+
+    // Send edited message directly to API
+    const sendEditedMessageToAPI = async (messageContent) => {
+        if (!messageContent.trim() || isLoading) return;
+
+        // Check rate limit
+        if (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin') {
+            toast.error('Rate limit exceeded. Please wait before sending more messages.');
+            return;
+        }
+
+        setIsLoading(true);
+        setShowTypingIndicator(true);
+
+        try {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+            const currentSessionId = getOrCreateSessionId();
+
+            // Add the user message to the messages array
+            const userMessage = {
+                role: 'user',
+                content: messageContent,
+                timestamp: new Date().toISOString()
+            };
+            setMessages(prev => [...prev, userMessage]);
+
+            // Create abort controller for this request
+            const abortController = new AbortController();
+            abortControllerRef.current = abortController;
+
+            const response = await fetch(`${API_BASE_URL}/api/gemini/chat`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                signal: abortController.signal,
+                body: JSON.stringify({
+                    message: messageContent,
+                    sessionId: currentSessionId,
+                    tone: tone,
+                    isNewSession: false
+                })
+            });
+
+            if (!response.ok) {
+                if (response.status === 429) {
+                    const errorData = await response.json();
+                    toast.error(errorData.message || 'Rate limit exceeded. Please wait before sending more messages.');
+                    return;
+                }
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let assistantMessage = {
+                role: 'assistant',
+                content: '',
+                timestamp: new Date().toISOString()
+            };
+
+            setMessages(prev => [...prev, assistantMessage]);
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value);
+                const lines = chunk.split('\n');
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        try {
+                            const data = JSON.parse(line.slice(6));
+                            if (data.content) {
+                                assistantMessage.content += data.content;
+                                setMessages(prev => {
+                                    const newMessages = [...prev];
+                                    newMessages[newMessages.length - 1] = { ...assistantMessage };
+                                    return newMessages;
+                                });
+                            }
+                        } catch (e) {
+                            // Ignore parsing errors for incomplete JSON
+                        }
+                    }
+                }
+            }
+
+            // Update rate limit info
+            await fetchRateLimitStatus();
+
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                console.log('Request was aborted');
+                return;
+            }
+            console.error('Error in sendEditedMessageToAPI:', error);
+            
+            // Add error message
+            const errorMessage = {
+                role: 'assistant',
+                content: 'Sorry, I\'m having trouble connecting right now. Please try again later.',
+                isError: true,
+                timestamp: new Date().toISOString()
+            };
+            setMessages(prev => [...prev, errorMessage]);
+        } finally {
+            setIsLoading(false);
+            setShowTypingIndicator(false);
+            abortControllerRef.current = null;
         }
     };
 
