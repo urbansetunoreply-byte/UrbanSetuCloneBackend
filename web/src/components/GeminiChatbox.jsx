@@ -900,7 +900,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
     };
 
-    // Send edited message directly to API
+    // Send edited message directly to API (using same format as handleSubmit)
     const sendEditedMessageToAPI = async (messageContent) => {
         if (!messageContent.trim() || isLoading) return;
 
@@ -911,149 +911,99 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
 
         setIsLoading(true);
-        setShowTypingIndicator(true);
 
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const currentSessionId = getOrCreateSessionId();
-
-            // Note: User message is already added in submitEditedMessage
-            // We don't need to add it again here
-
-            // Create abort controller for this request
-            const abortController = new AbortController();
-            abortControllerRef.current = abortController;
-
+            console.log('Sending edited message to Gemini:', messageContent, 'Session:', currentSessionId);
+            
+            // Support cancelling with AbortController
+            abortControllerRef.current?.abort();
+            abortControllerRef.current = new AbortController();
+            
             const response = await fetch(`${API_BASE_URL}/api/gemini/chat`, {
                 method: 'POST',
+                credentials: 'include', // Include cookies for authentication
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                credentials: 'include',
-                signal: abortController.signal,
                 body: JSON.stringify({
                     message: messageContent,
+                    history: messages.slice(-10), // Send last 10 messages for context
                     sessionId: currentSessionId,
-                    tone: tone,
-                    isNewSession: false
-                })
+                    tone: tone // Send current tone setting
+                }),
+                signal: abortControllerRef.current.signal
             });
+
+            console.log('Edited message response status:', response.status);
+            console.log('Edited message response ok:', response.ok);
 
             if (!response.ok) {
-                if (response.status === 429) {
-                    const errorData = await response.json();
-                    toast.error(errorData.message || 'Rate limit exceeded. Please wait before sending more messages.');
-                    return;
-                }
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const errorData = await response.json();
+                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
             }
 
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let assistantMessage = {
-                role: 'assistant',
-                content: '',
-                timestamp: new Date().toISOString()
-            };
-
-            // Add the assistant message placeholder first with loading indicator
-            const loadingMessage = {
-                ...assistantMessage,
-                content: 'Thinking...',
-                isLoading: true
-            };
+            const data = await response.json();
+            console.log('Edited message response data received:', data);
+            console.log('Edited message response content length:', data.response ? data.response.length : 0);
             
-            setMessages(prev => {
-                const newMessages = [...prev, loadingMessage];
-                console.log('Added assistant message placeholder:', newMessages.length);
-                return newMessages;
-            });
-            
-            // Force a re-render to ensure the placeholder is visible
-            setTimeout(() => {
+            // Validate response structure
+            if (data && data.response && typeof data.response === 'string') {
+                const trimmedResponse = data.response.trim();
+                console.log('Setting edited message with response length:', trimmedResponse.length);
+                console.log('Edited message response content:', trimmedResponse);
                 setMessages(prev => {
-                    const newMessages = [...prev];
-                    if (newMessages.length > 0 && newMessages[newMessages.length - 1].role === 'assistant') {
-                        newMessages[newMessages.length - 1] = { ...assistantMessage };
-                    }
+                    const newMessages = [...prev, { role: 'assistant', content: trimmedResponse, timestamp: new Date().toISOString() }];
+                    console.log('Updated messages array length:', newMessages.length);
+                    console.log('Last message:', newMessages[newMessages.length - 1]);
                     return newMessages;
                 });
-            }, 50);
-
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-
-                const chunk = decoder.decode(value);
-                const lines = chunk.split('\n');
-
-                for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        try {
-                            const data = JSON.parse(line.slice(6));
-                            if (data.content) {
-                                assistantMessage.content += data.content;
-                                console.log('Streaming content:', data.content, 'Total:', assistantMessage.content.length);
-                                // Update the last message (assistant response) with new content
-                                setMessages(prev => {
-                                    const newMessages = [...prev];
-                                    if (newMessages.length > 0 && newMessages[newMessages.length - 1].role === 'assistant') {
-                                        newMessages[newMessages.length - 1] = { 
-                                            ...assistantMessage,
-                                            content: assistantMessage.content,
-                                            timestamp: assistantMessage.timestamp,
-                                            isLoading: false // Remove loading indicator when content starts streaming
-                                        };
-                                    }
-                                    return newMessages;
-                                });
-                            }
-                        } catch (e) {
-                            // Ignore parsing errors for incomplete JSON
-                        }
-                    }
+                
+                // Update session ID if provided in response
+                if (data.sessionId && data.sessionId !== sessionId) {
+                    setSessionId(data.sessionId);
+                    localStorage.setItem('gemini_session_id', data.sessionId);
                 }
+
+                // Refresh rate limit status after successful request
+                fetchRateLimitStatus();
+                
+                // Scroll to bottom to show the new response
+                setTimeout(() => {
+                    scrollToBottom();
+                }, 100);
+            } else {
+                console.error('Invalid response structure for edited message:', data);
+                throw new Error('Invalid response structure from server');
             }
-
-            // Ensure the final message is properly set
-            setMessages(prev => {
-                const newMessages = [...prev];
-                if (newMessages.length > 0 && newMessages[newMessages.length - 1].role === 'assistant') {
-                    newMessages[newMessages.length - 1] = { 
-                        ...assistantMessage,
-                        content: assistantMessage.content,
-                        isLoading: false // Ensure loading is false
-                    };
-                }
-                return newMessages;
-            });
-
-            // Update rate limit info
-            await fetchRateLimitStatus();
-            
-            // Scroll to bottom to show the new response
-            setTimeout(() => {
-                scrollToBottom();
-            }, 100);
-
         } catch (error) {
             if (error.name === 'AbortError') {
-                console.log('Request was aborted');
+                console.log('Edited message request was aborted');
                 return;
             }
             console.error('Error in sendEditedMessageToAPI:', error);
             
-            // Add error message
-            const errorMessage = {
-                role: 'assistant',
-                content: 'Sorry, I\'m having trouble connecting right now. Please try again later.',
-                isError: true,
-                timestamp: new Date().toISOString()
-            };
-            setMessages(prev => [...prev, errorMessage]);
+            let errorMessage = 'Sorry, I\'m having trouble connecting right now. Please try again later.';
+            
+            if (error.message.includes('timeout')) {
+                errorMessage = 'Request timed out. The response is taking longer than expected. Please try again.';
+            } else if (error.message.includes('HTTP error')) {
+                errorMessage = 'Server error. Please try again later.';
+            } else if (error.message.includes('Invalid response structure')) {
+                errorMessage = 'I received an invalid response. Please try again.';
+            } else if (error.message.includes('Failed to fetch')) {
+                errorMessage = 'Network error. Please check your connection and try again.';
+            }
+            
+            setMessages(prev => [...prev, { 
+                role: 'assistant', 
+                content: errorMessage,
+                timestamp: new Date().toISOString(),
+                isError: true
+            }]);
         } finally {
             setIsLoading(false);
-            setShowTypingIndicator(false);
             abortControllerRef.current = null;
         }
     };
