@@ -81,7 +81,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [showVoiceInput, setShowVoiceInput] = useState(false);
     const [showFileUpload, setShowFileUpload] = useState(false);
     const [uploadedFiles, setUploadedFiles] = useState([]);
-    const [showSmartSuggestions, setShowSmartSuggestions] = useState(true);
+    const [showSmartSuggestions, setShowSmartSuggestions] = useState(() => {
+        const saved = localStorage.getItem('gemini_smart_suggestions');
+        return saved !== null ? saved === 'true' : true;
+    });
     const [smartSuggestions, setSmartSuggestions] = useState([
         "Find properties under ₹50L in Bangalore",
         "What are the best areas for investment?",
@@ -295,6 +298,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         const draftKey = `gemini_draft_${currentSessionId}`;
         const savedDraft = localStorage.getItem(draftKey);
         if (savedDraft) setInputMessage(savedDraft);
+        
+        // Initialize smart suggestions from localStorage
+        const savedSmartSuggestions = localStorage.getItem('gemini_smart_suggestions');
+        if (savedSmartSuggestions !== null) {
+            setShowSmartSuggestions(savedSmartSuggestions === 'true');
+        }
         
         // Fetch rate limit status
         fetchRateLimitStatus();
@@ -1712,7 +1721,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
     const handleSmartSuggestion = (suggestion) => {
         setInputMessage(suggestion);
-        setShowSmartSuggestions(false);
+        // Don't permanently disable smart suggestions - they should be controlled by message count
         inputRef.current?.focus();
     };
 
@@ -2793,7 +2802,15 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             )}
 
                             {/* Smart Suggestions */}
-                            {showSmartSuggestions && messages.length <= 2 && (
+                            {(() => {
+                                const shouldShow = showSmartSuggestions && messages.length <= 3;
+                                console.log('Smart suggestions check:', { 
+                                    showSmartSuggestions, 
+                                    messageCount: messages.length, 
+                                    shouldShow 
+                                });
+                                return shouldShow;
+                            })() && (
                                 <div className="mb-3">
                                     <div className="text-xs text-gray-500 mb-2 flex items-center gap-2">
                                         <FaLightbulb size={10} />
@@ -3426,7 +3443,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 Smart Suggestions
                             </span>
                             <button
-                                onClick={() => setShowSmartSuggestions(!showSmartSuggestions)}
+                                onClick={() => {
+                                    const newValue = !showSmartSuggestions;
+                                    setShowSmartSuggestions(newValue);
+                                    localStorage.setItem('gemini_smart_suggestions', newValue.toString());
+                                }}
                                 className={`w-12 h-6 rounded-full transition-colors ${
                                     showSmartSuggestions ? 'bg-blue-600' : 'bg-gray-300'
                                 }`}
