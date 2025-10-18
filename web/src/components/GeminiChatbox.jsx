@@ -100,6 +100,20 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [showWelcomeScreen, setShowWelcomeScreen] = useState(true);
     const [selectedTheme, setSelectedTheme] = useState(() => localStorage.getItem('gemini_theme') || 'blue');
+    const [customTheme, setCustomTheme] = useState(() => {
+        const saved = localStorage.getItem('gemini_custom_theme');
+        return saved ? JSON.parse(saved) : null;
+    });
+    const [fontSize, setFontSize] = useState(() => localStorage.getItem('gemini_font_size') || 'medium');
+    const [messageDensity, setMessageDensity] = useState(() => localStorage.getItem('gemini_message_density') || 'comfortable');
+    const [autoScroll, setAutoScroll] = useState(() => localStorage.getItem('gemini_auto_scroll') !== 'false');
+    const [showTimestamps, setShowTimestamps] = useState(() => localStorage.getItem('gemini_show_timestamps') !== 'false');
+    const [aiResponseLength, setAiResponseLength] = useState(() => localStorage.getItem('gemini_response_length') || 'medium');
+    const [aiCreativity, setAiCreativity] = useState(() => localStorage.getItem('gemini_creativity') || 'balanced');
+    const [soundEnabled, setSoundEnabled] = useState(() => localStorage.getItem('gemini_sound_enabled') !== 'false');
+    const [typingSounds, setTypingSounds] = useState(() => localStorage.getItem('gemini_typing_sounds') !== 'false');
+    const [dataRetention, setDataRetention] = useState(() => localStorage.getItem('gemini_data_retention') || '30');
+    const [showCustomThemePicker, setShowCustomThemePicker] = useState(false);
     const [showTypingIndicator, setShowTypingIndicator] = useState(false);
     const [typingUsers, setTypingUsers] = useState([]);
     const [messageReactions, setMessageReactions] = useState({});
@@ -119,7 +133,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [editingMessageContent, setEditingMessageContent] = useState('');
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        if (autoScroll) {
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }
     };
     const scrollToBottomInstant = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
@@ -1737,6 +1753,65 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         localStorage.setItem('gemini_dark_mode', newDarkMode.toString());
     };
 
+    // Helper functions for new settings
+    const updateFontSize = (size) => {
+        setFontSize(size);
+        localStorage.setItem('gemini_font_size', size);
+    };
+
+    const updateMessageDensity = (density) => {
+        setMessageDensity(density);
+        localStorage.setItem('gemini_message_density', density);
+    };
+
+    const updateAutoScroll = (enabled) => {
+        setAutoScroll(enabled);
+        localStorage.setItem('gemini_auto_scroll', enabled.toString());
+    };
+
+    const updateShowTimestamps = (enabled) => {
+        setShowTimestamps(enabled);
+        localStorage.setItem('gemini_show_timestamps', enabled.toString());
+    };
+
+    const updateAiResponseLength = (length) => {
+        setAiResponseLength(length);
+        localStorage.setItem('gemini_response_length', length);
+    };
+
+    const updateAiCreativity = (creativity) => {
+        setAiCreativity(creativity);
+        localStorage.setItem('gemini_creativity', creativity);
+    };
+
+    const updateSoundEnabled = (enabled) => {
+        setSoundEnabled(enabled);
+        localStorage.setItem('gemini_sound_enabled', enabled.toString());
+    };
+
+    const updateTypingSounds = (enabled) => {
+        setTypingSounds(enabled);
+        localStorage.setItem('gemini_typing_sounds', enabled.toString());
+    };
+
+    const updateDataRetention = (days) => {
+        setDataRetention(days);
+        localStorage.setItem('gemini_data_retention', days);
+    };
+
+    const createCustomTheme = (primaryColor, secondaryColor) => {
+        const customThemeData = {
+            primary: `from-${primaryColor}-600 to-${secondaryColor}-600`,
+            secondary: `bg-${primaryColor}-50`,
+            accent: `text-${primaryColor}-600`,
+            border: `border-${primaryColor}-200`
+        };
+        setCustomTheme(customThemeData);
+        localStorage.setItem('gemini_custom_theme', JSON.stringify(customThemeData));
+        setSelectedTheme('custom');
+        localStorage.setItem('gemini_theme', 'custom');
+    };
+
     const handleSmartSuggestion = (suggestion) => {
         setInputMessage(suggestion);
         // Don't permanently disable smart suggestions - they should be controlled by message count
@@ -1819,6 +1894,16 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     };
 
     const getThemeColors = () => {
+        // If custom theme is selected and exists, use it
+        if (selectedTheme === 'custom' && customTheme) {
+            return {
+                primary: customTheme.primary,
+                secondary: customTheme.secondary,
+                accent: customTheme.accent,
+                border: customTheme.border
+            };
+        }
+
         const themes = {
             blue: {
                 primary: 'from-blue-600 to-purple-600',
@@ -1843,12 +1928,71 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 secondary: 'bg-orange-50',
                 accent: 'text-orange-600',
                 border: 'border-orange-200'
+            },
+            red: {
+                primary: 'from-red-600 to-pink-600',
+                secondary: 'bg-red-50',
+                accent: 'text-red-600',
+                border: 'border-red-200'
+            },
+            indigo: {
+                primary: 'from-indigo-600 to-blue-600',
+                secondary: 'bg-indigo-50',
+                accent: 'text-indigo-600',
+                border: 'border-indigo-200'
+            },
+            teal: {
+                primary: 'from-teal-600 to-cyan-600',
+                secondary: 'bg-teal-50',
+                accent: 'text-teal-600',
+                border: 'border-teal-200'
+            },
+            pink: {
+                primary: 'from-pink-600 to-rose-600',
+                secondary: 'bg-pink-50',
+                accent: 'text-pink-600',
+                border: 'border-pink-200'
+            },
+            yellow: {
+                primary: 'from-yellow-500 to-orange-500',
+                secondary: 'bg-yellow-50',
+                accent: 'text-yellow-600',
+                border: 'border-yellow-200'
+            },
+            cyan: {
+                primary: 'from-cyan-600 to-blue-600',
+                secondary: 'bg-cyan-50',
+                accent: 'text-cyan-600',
+                border: 'border-cyan-200'
+            },
+            custom: {
+                primary: customTheme?.primary || 'from-blue-600 to-purple-600',
+                secondary: customTheme?.secondary || 'bg-blue-50',
+                accent: customTheme?.accent || 'text-blue-600',
+                border: customTheme?.border || 'border-blue-200'
             }
         };
         return themes[selectedTheme] || themes.blue;
     };
 
     const themeColors = getThemeColors();
+
+    // Get dynamic classes based on settings
+    const getFontSizeClass = () => {
+        switch (fontSize) {
+            case 'small': return 'text-sm';
+            case 'large': return 'text-lg';
+            default: return 'text-base';
+        }
+    };
+
+    const getMessageDensityClass = () => {
+        switch (messageDensity) {
+            case 'compact': return 'py-2 px-3';
+            case 'spacious': return 'py-6 px-4';
+            default: return 'py-4 px-3';
+        }
+    };
 
     return (
         <>
@@ -2187,7 +2331,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             }`}
                                         >
                                             <div
-                                                className={`max-w-[85%] p-3 rounded-2xl break-words relative group ${
+                                                className={`max-w-[85%] ${getMessageDensityClass()} rounded-2xl break-words relative group ${
                                                     message.role === 'user'
                                                         ? `bg-gradient-to-r ${themeColors.primary} text-white`
                                                         : message.isError 
@@ -2564,12 +2708,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <p className="text-sm whitespace-pre-wrap leading-relaxed">{formatLinksInText(message.content, message.role === 'user')}</p>
+                                                    <p className={`${getFontSizeClass()} whitespace-pre-wrap leading-relaxed`}>{formatLinksInText(message.content, message.role === 'user')}</p>
                                                 )}
                                                 
                                                 {/* Message footer with timestamp and actions */}
                                                 <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-200/20">
-                                                    {message.timestamp && (
+                                                    {message.timestamp && showTimestamps && (
                                                         <div className={`${message.role === 'user' ? 'text-white/80' : message.isError ? 'text-red-600' : 'text-gray-500'} text-[10px]`}>
                                                             {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                         </div>
@@ -3392,61 +3536,305 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         {/* Enhanced Settings Modal */}
         {showSettings && (
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
-                <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-xl shadow-xl p-6 w-96 max-w-full`}>
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-xl shadow-xl p-6 w-[500px] max-w-full max-h-[80vh] overflow-y-auto`}>
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                             Settings & Themes
                         </h3>
                         <button
                             onClick={() => setShowSettings(false)}
-                            className="text-gray-500 hover:text-gray-700"
+                            className={`text-gray-500 hover:text-gray-700 ${isDarkMode ? 'hover:text-gray-300' : ''}`}
                         >
-                            <FaTimes size={16} />
+                            <FaTimes size={20} />
                         </button>
                     </div>
                     
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         {/* Theme Selection */}
                         <div>
-                            <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            <label className={`block text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                 Theme Color
                             </label>
-                            <div className="grid grid-cols-4 gap-2">
-                                {['blue', 'green', 'purple', 'orange'].map((theme) => (
+                            <div className="grid grid-cols-5 gap-3">
+                                {['blue', 'green', 'purple', 'orange', 'red', 'indigo', 'teal', 'pink', 'yellow', 'cyan'].map((theme) => (
                                     <button
                                         key={theme}
                                         onClick={() => {
                                             setSelectedTheme(theme);
                                             localStorage.setItem('gemini_theme', theme);
                                         }}
-                                        className={`w-8 h-8 rounded-full border-2 ${
-                                            selectedTheme === theme ? 'border-gray-400' : 'border-gray-200'
+                                        className={`w-10 h-10 rounded-full border-2 transition-all duration-200 ${
+                                            selectedTheme === theme ? 'border-gray-400 scale-110' : 'border-gray-200 hover:scale-105'
                                         } ${
                                             theme === 'blue' ? 'bg-gradient-to-br from-blue-500 to-purple-500' :
                                             theme === 'green' ? 'bg-gradient-to-br from-green-500 to-emerald-500' :
                                             theme === 'purple' ? 'bg-gradient-to-br from-purple-500 to-pink-500' :
-                                            'bg-gradient-to-br from-orange-500 to-red-500'
+                                            theme === 'orange' ? 'bg-gradient-to-br from-orange-500 to-red-500' :
+                                            theme === 'red' ? 'bg-gradient-to-br from-red-500 to-pink-500' :
+                                            theme === 'indigo' ? 'bg-gradient-to-br from-indigo-500 to-blue-500' :
+                                            theme === 'teal' ? 'bg-gradient-to-br from-teal-500 to-cyan-500' :
+                                            theme === 'pink' ? 'bg-gradient-to-br from-pink-500 to-rose-500' :
+                                            theme === 'yellow' ? 'bg-gradient-to-br from-yellow-400 to-orange-500' :
+                                            'bg-gradient-to-br from-cyan-500 to-blue-500'
                                         }`}
+                                        title={theme.charAt(0).toUpperCase() + theme.slice(1)}
                                     />
                                 ))}
+                                {/* Custom Theme Button */}
+                                <button
+                                    onClick={() => setShowCustomThemePicker(!showCustomThemePicker)}
+                                    className={`w-10 h-10 rounded-full border-2 transition-all duration-200 ${
+                                        selectedTheme === 'custom' ? 'border-gray-400 scale-110' : 'border-gray-200 hover:scale-105'
+                                    } ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} flex items-center justify-center`}
+                                    title="Custom Theme"
+                                >
+                                    <FaPalette size={16} className={isDarkMode ? 'text-gray-300' : 'text-gray-600'} />
+                                </button>
+                            </div>
+                            
+                            {/* Custom Theme Picker */}
+                            {showCustomThemePicker && (
+                                <div className={`mt-4 p-4 rounded-lg border ${isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-gray-50 border-gray-200'}`}>
+                                    <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        Create Custom Theme
+                                    </h4>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className={`block text-xs mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                Primary Color
+                                            </label>
+                                            <select 
+                                                className={`w-full p-2 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                                                onChange={(e) => {
+                                                    const primary = e.target.value;
+                                                    const secondary = customTheme?.secondaryColor || 'purple';
+                                                    createCustomTheme(primary, secondary);
+                                                }}
+                                            >
+                                                {['blue', 'green', 'purple', 'orange', 'red', 'indigo', 'teal', 'pink', 'yellow', 'cyan'].map(color => (
+                                                    <option key={color} value={color}>{color.charAt(0).toUpperCase() + color.slice(1)}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className={`block text-xs mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                Secondary Color
+                                            </label>
+                                            <select 
+                                                className={`w-full p-2 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                                                onChange={(e) => {
+                                                    const secondary = e.target.value;
+                                                    const primary = customTheme?.primaryColor || 'blue';
+                                                    createCustomTheme(primary, secondary);
+                                                }}
+                                            >
+                                                {['blue', 'green', 'purple', 'orange', 'red', 'indigo', 'teal', 'pink', 'yellow', 'cyan'].map(color => (
+                                                    <option key={color} value={color}>{color.charAt(0).toUpperCase() + color.slice(1)}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Display Settings */}
+                        <div>
+                            <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                Display Settings
+                            </h4>
+                            <div className="space-y-4">
+                                {/* Dark Mode Toggle */}
+                                <div className="flex items-center justify-between">
+                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        Dark Mode
+                                    </span>
+                                    <button
+                                        onClick={toggleDarkMode}
+                                        className={`w-12 h-6 rounded-full transition-colors ${
+                                            isDarkMode ? 'bg-blue-600' : 'bg-gray-300'
+                                        }`}
+                                    >
+                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                                            isDarkMode ? 'translate-x-6' : 'translate-x-0.5'
+                                        }`} />
+                                    </button>
+                                </div>
+
+                                {/* Font Size */}
+                                <div className="flex items-center justify-between">
+                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        Font Size
+                                    </span>
+                                    <select
+                                        value={fontSize}
+                                        onChange={(e) => updateFontSize(e.target.value)}
+                                        className={`px-3 py-1 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                                    >
+                                        <option value="small">Small</option>
+                                        <option value="medium">Medium</option>
+                                        <option value="large">Large</option>
+                                    </select>
+                                </div>
+
+                                {/* Message Density */}
+                                <div className="flex items-center justify-between">
+                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        Message Density
+                                    </span>
+                                    <select
+                                        value={messageDensity}
+                                        onChange={(e) => updateMessageDensity(e.target.value)}
+                                        className={`px-3 py-1 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                                    >
+                                        <option value="compact">Compact</option>
+                                        <option value="comfortable">Comfortable</option>
+                                        <option value="spacious">Spacious</option>
+                                    </select>
+                                </div>
+
+                                {/* Auto Scroll */}
+                                <div className="flex items-center justify-between">
+                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        Auto Scroll to New Messages
+                                    </span>
+                                    <button
+                                        onClick={() => updateAutoScroll(!autoScroll)}
+                                        className={`w-12 h-6 rounded-full transition-colors ${
+                                            autoScroll ? 'bg-blue-600' : 'bg-gray-300'
+                                        }`}
+                                    >
+                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                                            autoScroll ? 'translate-x-6' : 'translate-x-0.5'
+                                        }`} />
+                                    </button>
+                                </div>
+
+                                {/* Show Timestamps */}
+                                <div className="flex items-center justify-between">
+                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        Show Message Timestamps
+                                    </span>
+                                    <button
+                                        onClick={() => updateShowTimestamps(!showTimestamps)}
+                                        className={`w-12 h-6 rounded-full transition-colors ${
+                                            showTimestamps ? 'bg-blue-600' : 'bg-gray-300'
+                                        }`}
+                                    >
+                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                                            showTimestamps ? 'translate-x-6' : 'translate-x-0.5'
+                                        }`} />
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
-                        {/* Dark Mode Toggle */}
-                        <div className="flex items-center justify-between">
-                            <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                Dark Mode
-                            </span>
-                            <button
-                                onClick={toggleDarkMode}
-                                className={`w-12 h-6 rounded-full transition-colors ${
-                                    isDarkMode ? 'bg-blue-600' : 'bg-gray-300'
-                                }`}
-                            >
-                                <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                                    isDarkMode ? 'translate-x-6' : 'translate-x-0.5'
-                                }`} />
-                            </button>
+                        {/* AI Settings */}
+                        <div>
+                            <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                AI Response Settings
+                            </h4>
+                            <div className="space-y-4">
+                                {/* Response Length */}
+                                <div className="flex items-center justify-between">
+                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        Response Length
+                                    </span>
+                                    <select
+                                        value={aiResponseLength}
+                                        onChange={(e) => updateAiResponseLength(e.target.value)}
+                                        className={`px-3 py-1 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                                    >
+                                        <option value="short">Short</option>
+                                        <option value="medium">Medium</option>
+                                        <option value="long">Long</option>
+                                    </select>
+                                </div>
+
+                                {/* Creativity Level */}
+                                <div className="flex items-center justify-between">
+                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        Creativity Level
+                                    </span>
+                                    <select
+                                        value={aiCreativity}
+                                        onChange={(e) => updateAiCreativity(e.target.value)}
+                                        className={`px-3 py-1 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                                    >
+                                        <option value="conservative">Conservative</option>
+                                        <option value="balanced">Balanced</option>
+                                        <option value="creative">Creative</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Notification Settings */}
+                        <div>
+                            <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                Notifications & Sounds
+                            </h4>
+                            <div className="space-y-4">
+                                {/* Sound Enabled */}
+                                <div className="flex items-center justify-between">
+                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        Enable Sounds
+                                    </span>
+                                    <button
+                                        onClick={() => updateSoundEnabled(!soundEnabled)}
+                                        className={`w-12 h-6 rounded-full transition-colors ${
+                                            soundEnabled ? 'bg-blue-600' : 'bg-gray-300'
+                                        }`}
+                                    >
+                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                                            soundEnabled ? 'translate-x-6' : 'translate-x-0.5'
+                                        }`} />
+                                    </button>
+                                </div>
+
+                                {/* Typing Sounds */}
+                                <div className="flex items-center justify-between">
+                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        Typing Sounds
+                                    </span>
+                                    <button
+                                        onClick={() => updateTypingSounds(!typingSounds)}
+                                        className={`w-12 h-6 rounded-full transition-colors ${
+                                            typingSounds ? 'bg-blue-600' : 'bg-gray-300'
+                                        }`}
+                                    >
+                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                                            typingSounds ? 'translate-x-6' : 'translate-x-0.5'
+                                        }`} />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Privacy Settings */}
+                        <div>
+                            <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                Privacy & Data
+                            </h4>
+                            <div className="space-y-4">
+                                {/* Data Retention */}
+                                <div className="flex items-center justify-between">
+                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        Data Retention (days)
+                                    </span>
+                                    <select
+                                        value={dataRetention}
+                                        onChange={(e) => updateDataRetention(e.target.value)}
+                                        className={`px-3 py-1 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                                    >
+                                        <option value="7">7 days</option>
+                                        <option value="30">30 days</option>
+                                        <option value="90">90 days</option>
+                                        <option value="365">1 year</option>
+                                        <option value="0">Forever</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Smart Suggestions Toggle */}
