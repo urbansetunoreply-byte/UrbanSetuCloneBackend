@@ -2011,26 +2011,26 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
                                 {/* Dropdown menu */}
                                 {isHeaderMenuOpen && (
-                                    <div ref={headerMenuRef} className="absolute right-0 top-full mt-2 bg-white text-gray-800 rounded shadow-lg border border-gray-200 w-64 z-50">
+                                    <div ref={headerMenuRef} className={`absolute right-0 top-full mt-2 ${isDarkMode ? 'bg-gray-800 text-gray-200 border-gray-600' : 'bg-white text-gray-800 border-gray-200'} rounded shadow-lg border w-64 z-50`}>
                                         <ul className="py-1 text-sm">
                                             {/* New Chat */}
                                             <li>
                                                 <button
                                                     onClick={() => { createNewSession(); setIsHeaderMenuOpen(false); }}
-                                                    className="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2"
+                                                    className={`w-full text-left px-3 py-2 ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} flex items-center gap-2`}
                                                 >
                                                     <FaComments size={12} className="text-blue-500" />
                                                     New Chat
                                                 </button>
                                             </li>
                                             
-                                            <li className="border-t border-gray-200 my-1"></li>
+                                            <li className={`border-t ${isDarkMode ? 'border-gray-600' : 'border-gray-200'} my-1`}></li>
                                             
                                             {/* Theme & Settings */}
                                             <li>
                                                 <button
                                                     onClick={() => { setShowSettings(true); setIsHeaderMenuOpen(false); }}
-                                                    className="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2"
+                                                    className={`w-full text-left px-3 py-2 ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} flex items-center gap-2`}
                                                 >
                                                     <FaPalette size={12} className="text-purple-600" />
                                                     Theme & Settings
@@ -2041,7 +2041,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             <li>
                                                 <button
                                                     onClick={() => { setShowSearchInChat(true); setIsHeaderMenuOpen(false); }}
-                                                    className="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2"
+                                                    className={`w-full text-left px-3 py-2 ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} flex items-center gap-2`}
                                                 >
                                                     <FaSearch size={12} className="text-blue-600" />
                                                     Search in Chat
@@ -2052,20 +2052,20 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             <li>
                                                 <button
                                                     onClick={() => { setIsFullscreen(!isFullscreen); setIsHeaderMenuOpen(false); }}
-                                                    className="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2"
+                                                    className={`w-full text-left px-3 py-2 ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} flex items-center gap-2`}
                                                 >
                                                     {isFullscreen ? <FaCompress size={12} className="text-gray-700" /> : <FaExpand size={12} className="text-gray-700" />}
                                                     {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
                                                 </button>
                                             </li>
 
-                                            <li className="border-t border-gray-200 my-1"></li>
+                                            <li className={`border-t ${isDarkMode ? 'border-gray-600' : 'border-gray-200'} my-1`}></li>
                                             
                                             {/* Quick Actions */}
                                             <li>
                                                 <button
                                                     onClick={() => { setShowQuickActions(true); setIsHeaderMenuOpen(false); }}
-                                                    className="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2"
+                                                    className={`w-full text-left px-3 py-2 ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} flex items-center gap-2`}
                                                 >
                                                     <FaLightbulb size={12} className="text-yellow-500" />
                                                     Quick Actions
@@ -2077,7 +2077,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 <li>
                                                     <button
                                                         onClick={() => { setShowBookmarks(true); loadChatSessions(); setIsHeaderMenuOpen(false); }}
-                                                        className="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2"
+                                                        className={`w-full text-left px-3 py-2 ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} flex items-center gap-2`}
                                                     >
                                                         <FaBookmark size={12} className="text-yellow-500" />
                                                         Bookmarks
@@ -2089,20 +2089,20 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             <li>
                                                 <button
                                                     onClick={() => { setShowHistory(true); loadChatSessions(); setIsHeaderMenuOpen(false); }}
-                                                    className="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2"
+                                                    className={`w-full text-left px-3 py-2 ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} flex items-center gap-2`}
                                                 >
                                                     <FaHistory size={12} className="text-blue-500" />
                                                     Chat History
                                                 </button>
                                             </li>
                                             
-                                            <li className="border-t border-gray-200 my-1"></li>
+                                            <li className={`border-t ${isDarkMode ? 'border-gray-600' : 'border-gray-200'} my-1`}></li>
                                             
                                             {/* Expand/Collapse only on desktop */}
                                             <li className="hidden md:block">
                                                 <button
                                                     onClick={() => { setIsExpanded(expanded => !expanded); setIsHeaderMenuOpen(false); }}
-                                                    className="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2"
+                                                    className={`w-full text-left px-3 py-2 ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} flex items-center gap-2`}
                                                 >
                                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h7v2H6v5H4V4zm10 0h6v6h-2V6h-4V4zM4 14h2v4h4v2H4v-6zm14 0h2v6h-6v-2h4v-4z"/></svg>
                                                     {isExpanded ? 'Collapse' : 'Expand'}
@@ -2129,7 +2129,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                             toast.error('Failed to save chat');
                                                         }
                                                     }}
-                                                    className="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2"
+                                                    className={`w-full text-left px-3 py-2 ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} flex items-center gap-2`}
                                                 >
                                                     <FaShare size={12} className="text-green-500" />
                                                     Share Chat
