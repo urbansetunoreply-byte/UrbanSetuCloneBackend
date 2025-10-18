@@ -2836,21 +2836,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
                             {/* Enhanced Right controls */}
                             <div className="flex items-center gap-1 relative flex-shrink-0">
-                                {/* Response Tone dropdown - Only for logged-in users */}
-                                {currentUser && (
-                                    <select
-                                        value={tone}
-                                        onChange={(e) => { setTone(e.target.value); localStorage.setItem('gemini_tone', e.target.value); }}
-                                        className="text-white/90 bg-white/10 hover:bg-white/20 border border-white/30 text-[10px] md:text-xs px-2 py-1 rounded outline-none max-w-[100px] md:max-w-[120px]"
-                                        title="Response Tone"
-                                        aria-label="Response Tone"
-                                    >
-                                        <option className="text-gray-800" value="neutral">Neutral</option>
-                                        <option className="text-gray-800" value="friendly">Friendly</option>
-                                        <option className="text-gray-800" value="formal">Formal</option>
-                                        <option className="text-gray-800" value="concise">Concise</option>
-                                    </select>
-                                )}
                                 
                                 <button
                                     ref={headerMenuButtonRef}
@@ -4568,6 +4553,23 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         <option value="conservative">Conservative</option>
                                         <option value="balanced">Balanced</option>
                                         <option value="creative">Creative</option>
+                                    </select>
+                                </div>
+
+                                {/* Response Tone */}
+                                <div className="flex items-center justify-between">
+                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        Response Tone
+                                    </span>
+                                    <select
+                                        value={tone}
+                                        onChange={(e) => { setTone(e.target.value); localStorage.setItem('gemini_tone', e.target.value); }}
+                                        className={`px-3 py-1 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                                    >
+                                        <option value="neutral">Neutral</option>
+                                        <option value="friendly">Friendly</option>
+                                        <option value="formal">Formal</option>
+                                        <option value="concise">Concise</option>
                                     </select>
                                 </div>
                             </div>
