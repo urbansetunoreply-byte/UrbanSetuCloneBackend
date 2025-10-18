@@ -2142,7 +2142,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             {showFloatingDate && floatingDateLabel && (
                                 <div className={`sticky top-0 left-0 right-0 z-30 pointer-events-none`}>
                                     <div className="w-full flex justify-center py-2">
-                                        <div className="bg-blue-600 text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white">
+                                        <div className={`bg-gradient-to-r ${themeColors.primary} text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white`}>
                                             {floatingDateLabel}
                                         </div>
                                     </div>
@@ -2156,7 +2156,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         {showDivider && (
                                             <div className="flex items-center my-2">
                                                 <div className="flex-1 h-px bg-gray-200" />
-                                                <span className="mx-3 text-xs text-gray-600 bg-white px-3 py-1 rounded-full border border-gray-200 shadow-sm">
+                                                <span className={`mx-3 text-xs ${themeColors.accent} ${themeColors.secondary} px-3 py-1 rounded-full border ${themeColors.border} shadow-sm`}>
                                                     {dividerLabel}
                                                 </span>
                                                 <div className="flex-1 h-px bg-gray-200" />
