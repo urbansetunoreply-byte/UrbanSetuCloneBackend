@@ -2826,15 +2826,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             )}
 
                             {/* Smart Suggestions - Above Footer */}
-                            {(() => {
-                                const shouldShow = showSmartSuggestions && messages.length <= 3;
-                                console.log('Smart suggestions check:', { 
-                                    showSmartSuggestions, 
-                                    messageCount: messages.length, 
-                                    shouldShow 
-                                });
-                                return shouldShow;
-                            })() && (
+                            {showSmartSuggestions && (
                                 <div className="mb-3 px-2">
                                     <div className="text-xs text-gray-500 mb-2 flex items-center gap-2">
                                         <FaLightbulb size={10} />
