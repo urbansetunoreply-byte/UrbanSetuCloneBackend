@@ -289,7 +289,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
             if (response.ok) {
                 const data = await response.json();
-                if (data.success && data.data.messages && data.data.messages.length > 0) {
+                if (data.success && data.data.messages && Array.isArray(data.data.messages) && data.data.messages.length > 0) {
                     setMessages(data.data.messages);
                     console.log('Chat history loaded:', data.data.messages.length, 'messages');
                 }
@@ -767,7 +767,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             userMessage = `[Tone: ${currentTone}] ${userMessage}`;
         }
         setInputMessage('');
-        setMessages(prev => [...prev, { role: 'user', content: userMessage, timestamp: new Date().toISOString() }]);
+        setMessages(prev => {
+            const currentMessages = Array.isArray(prev) ? prev : [];
+            return [...currentMessages, { role: 'user', content: userMessage, timestamp: new Date().toISOString() }];
+        });
         lastUserMessageRef.current = userMessage;
         setIsLoading(true);
         
@@ -830,7 +833,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             if (data && data.response && typeof data.response === 'string') {
                 const trimmedResponse = data.response.trim();
                 console.log('Setting message with response length:', trimmedResponse.length);
-                setMessages(prev => [...prev, { role: 'assistant', content: trimmedResponse, timestamp: new Date().toISOString() }]);
+                setMessages(prev => {
+                    const currentMessages = Array.isArray(prev) ? prev : [];
+                    return [...currentMessages, { role: 'assistant', content: trimmedResponse, timestamp: new Date().toISOString() }];
+                });
                 if (!isOpen) {
                     setUnreadCount(count => count + 1);
                 }
@@ -874,13 +880,16 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 errorMessage = 'Network error. Please check your connection and try again.';
             }
             
-            setMessages(prev => [...prev, { 
-                role: 'assistant', 
-                content: errorMessage,
-                timestamp: new Date().toISOString(),
-                isError: true,
-                originalUserMessage: lastUserMessageRef.current
-            }]);
+            setMessages(prev => {
+                const currentMessages = Array.isArray(prev) ? prev : [];
+                return [...currentMessages, { 
+                    role: 'assistant', 
+                    content: errorMessage,
+                    timestamp: new Date().toISOString(),
+                    isError: true,
+                    originalUserMessage: lastUserMessageRef.current
+                }];
+            });
             if (!isOpen) {
                 setUnreadCount(count => count + 1);
             }
@@ -1350,7 +1359,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             
             if (response.ok) {
                 const data = await response.json();
-                if (data.success && data.data.messages) {
+                if (data.success && data.data.messages && Array.isArray(data.data.messages)) {
                     // Ensure the first message is always the default welcome message
                     const defaultMessage = {
                         role: 'assistant',
