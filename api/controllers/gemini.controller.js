@@ -224,23 +224,38 @@ export const chatWithGemini = async (req, res) => {
                 await chatHistory.addMessage('assistant', responseText);
 
                 // Auto-title: if no name yet and at least two messages, generate a short title
+                // Only generate title once per session to avoid overriding manual names
                 if (!chatHistory.name && chatHistory.messages && chatHistory.messages.length >= 2) {
                     try {
+                        console.log('Generating auto-title for session:', currentSessionId);
                         const convoForTitle = chatHistory.messages.slice(0, 8).map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n');
-                        const titlePrompt = `${getSystemPrompt('concise')}\n\nSummarize the chat into a short 4-7 word descriptive title without quotes.\n\nChat:\n${convoForTitle}`;
-                        const titleResult = await ai.models.generateContent({
-                            model: 'gemini-2.0-flash-exp',
-                            contents: [{ role: 'user', parts: [{ text: titlePrompt }] }],
-                            config: { maxOutputTokens: 16, temperature: 0.3 }
-                        });
-                        const titleRaw = titleResult.text || '';
-                        const title = titleRaw.replace(/[\n\r]+/g, ' ').slice(0, 80).trim();
-                        if (title) {
+                        const titlePrompt = `Summarize this conversation into a short 4-7 word descriptive title without quotes. Just return the title, nothing else.\n\nChat:\n${convoForTitle}`;
+                        
+                        const model = ai.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+                        const titleResult = await model.generateContent(titlePrompt);
+                        const titleRaw = titleResult.response.text() || '';
+                        const title = titleRaw.replace(/[\n\r"']+/g, ' ').slice(0, 80).trim();
+                        
+                        console.log('Generated title:', title);
+                        if (title && title.length > 0) {
                             chatHistory.name = title;
                             await chatHistory.save();
+                            console.log('Auto-title saved successfully:', title);
+                        } else {
+                            console.warn('Generated title is empty or invalid');
                         }
                     } catch (e) {
-                        console.warn('Auto-title generation failed:', e?.message || e);
+                        console.error('Auto-title generation failed:', e?.message || e);
+                        // Fallback: use first user message as title
+                        const firstUserMessage = chatHistory.messages.find(m => m.role === 'user');
+                        if (firstUserMessage) {
+                            const fallbackTitle = firstUserMessage.content.slice(0, 50).trim();
+                            if (fallbackTitle) {
+                                chatHistory.name = fallbackTitle;
+                                await chatHistory.save();
+                                console.log('Fallback title saved:', fallbackTitle);
+                            }
+                        }
                     }
                 }
 
