@@ -212,7 +212,17 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
     const scrollToBottom = () => {
         if (autoScroll) {
-            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+            // Check if user is already at the bottom before scrolling
+            const messagesContainer = messagesEndRef.current?.parentElement;
+            if (messagesContainer) {
+                const isAtBottom = messagesContainer.scrollTop + messagesContainer.clientHeight >= messagesContainer.scrollHeight - 10; // 10px tolerance
+                if (!isAtBottom) {
+                    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+                }
+            } else {
+                // Fallback if container not found
+                messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+            }
         }
     };
     const scrollToBottomInstant = () => {
