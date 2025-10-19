@@ -5936,70 +5936,82 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             border: none;
         }
         
-        /* Enhanced code block styling for better visibility */
-        .code-block pre {
+        /* Enhanced code block styling for better visibility - only when code highlighting is enabled */
+        .code-block pre.bg-gray-900 {
             background: #1a1a1a !important;
             color: #e5e5e5 !important;
         }
         
-        .dark .code-block pre {
+        .dark .code-block pre.bg-gray-800 {
             background: #1a1a1a !important;
             color: #e5e5e5 !important;
         }
         
-        /* Prism.js syntax highlighting overrides for better contrast */
-        .code-block .token.comment,
-        .code-block .token.prolog,
-        .code-block .token.doctype,
-        .code-block .token.cdata {
+        /* Light mode code blocks without highlighting should use light background */
+        .code-block pre.bg-gray-100 {
+            background: #f3f4f6 !important; /* bg-gray-100 */
+            color: #1f2937 !important; /* text-gray-800 */
+        }
+        
+        /* Dark mode code blocks without highlighting should use dark background */
+        .code-block pre.bg-gray-800 {
+            background: #1f2937 !important; /* bg-gray-800 */
+            color: #f3f4f6 !important; /* text-gray-100 */
+        }
+        
+        /* Prism.js syntax highlighting overrides for better contrast - only when highlighting is enabled */
+        .code-block pre.bg-gray-900 .token.comment,
+        .code-block pre.bg-gray-900 .token.prolog,
+        .code-block pre.bg-gray-900 .token.doctype,
+        .code-block pre.bg-gray-900 .token.cdata {
             color: #6a9955 !important;
         }
         
-        .code-block .token.punctuation {
+        .code-block pre.bg-gray-900 .token.punctuation {
             color: #d4d4d4 !important;
         }
         
-        .code-block .token.property,
-        .code-block .token.tag,
-        .code-block .token.boolean,
-        .code-block .token.number,
-        .code-block .token.constant,
-        .code-block .token.symbol,
-        .code-block .token.deleted {
+        .code-block pre.bg-gray-900 .token.property,
+        .code-block pre.bg-gray-900 .token.tag,
+        .code-block pre.bg-gray-900 .token.boolean,
+        .code-block pre.bg-gray-900 .token.number,
+        .code-block pre.bg-gray-900 .token.constant,
+        .code-block pre.bg-gray-900 .token.symbol,
+        .code-block pre.bg-gray-900 .token.deleted {
             color: #b5cea8 !important;
         }
         
-        .code-block .token.selector,
-        .code-block .token.attr-name,
-        .code-block .token.string,
-        .code-block .token.char,
-        .code-block .token.builtin,
-        .code-block .token.inserted {
+        .code-block pre.bg-gray-900 .token.selector,
+        .code-block pre.bg-gray-900 .token.attr-name,
+        .code-block pre.bg-gray-900 .token.string,
+        .code-block pre.bg-gray-900 .token.char,
+        .code-block pre.bg-gray-900 .token.builtin,
+        .code-block pre.bg-gray-900 .token.inserted {
             color: #ce9178 !important;
         }
         
-        .code-block .token.operator,
-        .code-block .token.entity,
-        .code-block .token.url,
-        .code-block .language-css .token.string,
-        .code-block .style .token.string {
+        .code-block pre.bg-gray-900 .token.operator,
+        .code-block pre.bg-gray-900 .token.entity,
+        .code-block pre.bg-gray-900 .token.url,
+        .code-block pre.bg-gray-900 .language-css .token.string,
+        .code-block pre.bg-gray-900 .style .token.string {
             color: #d4d4d4 !important;
         }
         
-        .code-block .token.atrule,
-        .code-block .token.attr-value,
-        .code-block .token.keyword {
+        .code-block pre.bg-gray-900 .token.atrule,
+        .code-block pre.bg-gray-900 .token.attr-value,
+        .code-block pre.bg-gray-900 .token.keyword {
             color: #569cd6 !important;
         }
         
-        .code-block .token.function,
-        .code-block .token.class-name {
+        .code-block pre.bg-gray-900 .token.function,
+        .code-block pre.bg-gray-900 .token.class-name {
             color: #dcdcaa !important;
         }
         
-        .code-block .token.regex,
-        .code-block .token.important,
-        .code-block .token.variable {
+        .code-block pre.bg-gray-900 .token.regex,
+        .code-block pre.bg-gray-900 .token.important,
+        .code-block pre.bg-gray-900 .token.variable {
             color: #d16969 !important;
         }
                 `}
