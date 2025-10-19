@@ -5968,12 +5968,43 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             display: none !important;
         }
         
-        /* Remove any additional visual artifacts */
+        /* Remove any additional visual artifacts and hover effects */
         .code-block pre:hover,
         .code-block code:hover,
+        .code-block .token:hover,
+        .code-block:hover,
+        .code-block pre:hover *,
+        .code-block code:hover *,
+        .code-block .token:hover * {
+            background: transparent !important;
+            background-color: transparent !important;
+            box-shadow: none !important;
+            text-shadow: none !important;
+            border: none !important;
+            outline: none !important;
+            transform: none !important;
+            transition: none !important;
+            animation: none !important;
+        }
+        
+        /* Disable any Prism.js hover effects */
+        .code-block pre:hover .token,
+        .code-block code:hover .token,
         .code-block .token:hover {
             background: transparent !important;
             background-color: transparent !important;
+            color: inherit !important;
+        }
+        
+        /* Disable any pseudo-element hover effects */
+        .code-block pre:hover::before,
+        .code-block pre:hover::after,
+        .code-block code:hover::before,
+        .code-block code:hover::after,
+        .code-block .token:hover::before,
+        .code-block .token:hover::after {
+            display: none !important;
+            content: none !important;
         }
         
         /* Ensure no line numbers or line highlighting */
@@ -5989,10 +6020,84 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         .code-block .token:focus,
         .code-block pre:active,
         .code-block code:active,
-        .code-block .token:active {
+        .code-block .token:active,
+        .code-block pre:focus:hover,
+        .code-block code:focus:hover,
+        .code-block .token:focus:hover,
+        .code-block pre:active:hover,
+        .code-block code:active:hover,
+        .code-block .token:active:hover {
             background: transparent !important;
             background-color: transparent !important;
             outline: none !important;
+            box-shadow: none !important;
+            text-shadow: none !important;
+            border: none !important;
+            transform: none !important;
+            transition: none !important;
+            animation: none !important;
+        }
+        
+        /* Disable any mouse event related effects */
+        .code-block pre:focus-within,
+        .code-block code:focus-within,
+        .code-block .token:focus-within {
+            background: transparent !important;
+            background-color: transparent !important;
+            outline: none !important;
+        }
+        
+        /* Disable any potential overlay effects */
+        .code-block pre::selection,
+        .code-block code::selection,
+        .code-block .token::selection,
+        .code-block pre::-moz-selection,
+        .code-block code::-moz-selection,
+        .code-block .token::-moz-selection {
+            background: transparent !important;
+            color: inherit !important;
+        }
+        
+        /* Disable any potential highlighting from parent elements */
+        .code-block:hover pre,
+        .code-block:hover code,
+        .code-block:hover .token {
+            background: transparent !important;
+            background-color: transparent !important;
+        }
+        
+        /* Completely disable any white strip or overlay effects */
+        .code-block * {
+            background: transparent !important;
+            background-color: transparent !important;
+        }
+        
+        .code-block pre.bg-gray-900 * {
+            background: transparent !important;
+            background-color: transparent !important;
+        }
+        
+        .code-block pre.bg-gray-800 * {
+            background: transparent !important;
+            background-color: transparent !important;
+        }
+        
+        .code-block pre.bg-gray-100 * {
+            background: transparent !important;
+            background-color: transparent !important;
+        }
+        
+        /* Disable any potential white overlay from Prism.js */
+        .code-block .token::before,
+        .code-block .token::after,
+        .code-block pre::before,
+        .code-block pre::after,
+        .code-block code::before,
+        .code-block code::after {
+            display: none !important;
+            content: none !important;
+            background: transparent !important;
+            background-color: transparent !important;
         }
         
         /* Enhanced code block styling for better visibility - only when code highlighting is enabled */
