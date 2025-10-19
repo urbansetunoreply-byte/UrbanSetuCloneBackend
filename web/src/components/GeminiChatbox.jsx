@@ -2806,12 +2806,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         // Process other markdown elements
         processedText = processedText
             .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-gray-900 dark:text-gray-100">$1</strong>') // Bold
-            .replace(/\*(.*?)\*/g, '<em class="italic text-gray-800 dark:text-gray-200">$1</em>') // Italic
-            .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-4 mb-2 text-gray-800 dark:text-gray-200">$1</h3>') // H3
-            .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold mt-4 mb-2 text-gray-800 dark:text-gray-200">$1</h2>') // H2
-            .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mt-4 mb-2 text-gray-800 dark:text-gray-200">$1</h1>') // H1
-            .replace(/^\* (.*$)/gim, '<li class="ml-4 list-disc text-gray-800 dark:text-gray-200">$1</li>') // Bullet points
-            .replace(/^\d+\. (.*$)/gim, '<li class="ml-4 list-decimal text-gray-800 dark:text-gray-200">$1</li>') // Numbered lists
+            .replace(/\*(.*?)\*/g, '<em class="italic text-gray-900 dark:text-gray-100">$1</em>') // Italic
+            .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-4 mb-2 text-gray-900 dark:text-gray-100">$1</h3>') // H3
+            .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold mt-4 mb-2 text-gray-900 dark:text-gray-100">$1</h2>') // H2
+            .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mt-4 mb-2 text-gray-900 dark:text-gray-100">$1</h1>') // H1
+            .replace(/^\* (.*$)/gim, '<li class="ml-4 list-disc text-gray-900 dark:text-gray-100">$1</li>') // Bullet points
+            .replace(/^\d+\. (.*$)/gim, '<li class="ml-4 list-decimal text-gray-900 dark:text-gray-100">$1</li>') // Numbered lists
             .replace(/\n/g, '<br>'); // Line breaks
         
         return processedText;
@@ -3399,7 +3399,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                         ? `bg-gradient-to-r ${themeColors.primary} text-white`
                                                         : message.isError 
                                                             ? 'bg-red-100 text-red-800 border border-red-200'
-                                                            : 'bg-gray-100 text-gray-800'
+                                                            : `${isDarkMode ? 'bg-gray-800 text-gray-100' : 'bg-gray-100 text-gray-800'}`
                                                 } ${
                                                     highlightedMessage === index 
                                                         ? 'ring-4 ring-yellow-400 ring-opacity-50 shadow-lg transform scale-105' 
