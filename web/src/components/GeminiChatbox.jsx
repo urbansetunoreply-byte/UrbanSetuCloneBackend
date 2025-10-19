@@ -5874,17 +5874,45 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             outline-offset: 3px !important;
             box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.3) !important;
         }
-        .screen-reader-support .sr-only {
-            position: absolute !important;
-            width: 1px !important;
-            height: 1px !important;
-            padding: 0 !important;
-            margin: -1px !important;
-            overflow: hidden !important;
-            clip: rect(0, 0, 0, 0) !important;
-            white-space: nowrap !important;
-            border: 0 !important;
-        }
+                .screen-reader-support .sr-only {
+                    position: absolute !important;
+                    width: 1px !important;
+                    height: 1px !important;
+                    padding: 0 !important;
+                    margin: -1px !important;
+                    overflow: hidden !important;
+                    clip: rect(0, 0, 0, 0) !important;
+                    white-space: nowrap !important;
+                    border: 0 !important;
+                }
+                
+                /* Ensure proper text color inheritance in message bubbles */
+                .bg-gray-100.text-gray-800 * {
+                    color: inherit !important;
+                }
+                .bg-gray-100.text-gray-800 span {
+                    color: #1f2937 !important; /* text-gray-800 */
+                }
+                .bg-gray-100.text-gray-800 p {
+                    color: #1f2937 !important; /* text-gray-800 */
+                }
+                .bg-gray-100.text-gray-800 div {
+                    color: #1f2937 !important; /* text-gray-800 */
+                }
+                
+                /* Dark mode text color inheritance */
+                .bg-gray-800.text-gray-100 * {
+                    color: inherit !important;
+                }
+                .bg-gray-800.text-gray-100 span {
+                    color: #f3f4f6 !important; /* text-gray-100 */
+                }
+                .bg-gray-800.text-gray-100 p {
+                    color: #f3f4f6 !important; /* text-gray-100 */
+                }
+                .bg-gray-800.text-gray-100 div {
+                    color: #f3f4f6 !important; /* text-gray-100 */
+                }
         
         /* Code highlighting styles */
         .code-block {
