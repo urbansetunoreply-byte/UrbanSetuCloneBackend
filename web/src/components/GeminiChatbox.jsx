@@ -5959,6 +5959,51 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             color: #f3f4f6 !important; /* text-gray-100 */
         }
         
+        /* Ensure inline code elements have proper contrast in all scenarios */
+        code.bg-gray-100 {
+            background: #f3f4f6 !important; /* bg-gray-100 */
+            color: #1f2937 !important; /* text-gray-800 */
+        }
+        
+        code.bg-gray-800 {
+            background: #1f2937 !important; /* bg-gray-800 */
+            color: #f3f4f6 !important; /* text-gray-100 */
+        }
+        
+        /* Override any Prism.js or other CSS that might affect inline code */
+        .bg-gray-100 code {
+            background: #f3f4f6 !important; /* bg-gray-100 */
+            color: #1f2937 !important; /* text-gray-800 */
+        }
+        
+        .bg-gray-800 code {
+            background: #1f2937 !important; /* bg-gray-800 */
+            color: #f3f4f6 !important; /* text-gray-100 */
+        }
+        
+        /* Ensure all inline code elements have proper contrast regardless of context */
+        code {
+            background: #f3f4f6 !important; /* bg-gray-100 for light mode */
+            color: #1f2937 !important; /* text-gray-800 for light mode */
+        }
+        
+        /* Dark mode inline code */
+        .dark code {
+            background: #1f2937 !important; /* bg-gray-800 for dark mode */
+            color: #f3f4f6 !important; /* text-gray-100 for dark mode */
+        }
+        
+        /* Override any Prism.js token styling that might affect inline code */
+        code.token {
+            background: #f3f4f6 !important; /* bg-gray-100 for light mode */
+            color: #1f2937 !important; /* text-gray-800 for light mode */
+        }
+        
+        .dark code.token {
+            background: #1f2937 !important; /* bg-gray-800 for dark mode */
+            color: #f3f4f6 !important; /* text-gray-100 for dark mode */
+        }
+        
         /* Prism.js syntax highlighting overrides for better contrast - only when highlighting is enabled */
         .code-block pre.bg-gray-900 .token.comment,
         .code-block pre.bg-gray-900 .token.prolog,
