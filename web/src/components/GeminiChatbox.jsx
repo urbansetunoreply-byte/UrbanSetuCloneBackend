@@ -474,6 +474,52 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
     }, [messages, enableCodeHighlighting]);
 
+    // Screen reader announcements for new messages
+    useEffect(() => {
+        if (screenReaderSupport && messages.length > 0) {
+            const lastMessage = messages[messages.length - 1];
+            const announcementElement = document.getElementById('screen-reader-announcements');
+            
+            if (announcementElement && lastMessage) {
+                const messageType = lastMessage.role === 'user' ? 'You said' : 'AI responded';
+                const content = lastMessage.content.length > 100 
+                    ? lastMessage.content.substring(0, 100) + '...' 
+                    : lastMessage.content;
+                
+                // Clear first, then set new content to ensure announcement
+                announcementElement.textContent = '';
+                setTimeout(() => {
+                    announcementElement.textContent = `${messageType}: ${content}`;
+                }, 100);
+                
+                // Clear the announcement after a longer delay to allow screen readers to process
+                setTimeout(() => {
+                    announcementElement.textContent = '';
+                }, 3000);
+            }
+        }
+    }, [messages, screenReaderSupport]);
+
+    // Screen reader announcements for loading states
+    useEffect(() => {
+        if (screenReaderSupport) {
+            const announcementElement = document.getElementById('screen-reader-announcements');
+            
+            if (announcementElement) {
+                if (isLoading) {
+                    announcementElement.textContent = 'AI is typing a response...';
+                } else if (isTyping) {
+                    announcementElement.textContent = 'AI is typing...';
+                } else {
+                    // Clear loading announcements when not loading
+                    if (announcementElement.textContent.includes('typing')) {
+                        announcementElement.textContent = '';
+                    }
+                }
+            }
+        }
+    }, [isLoading, isTyping, screenReaderSupport]);
+
     // Persist draft input per session
     useEffect(() => {
         const currentSessionId = sessionId || localStorage.getItem('gemini_session_id');
@@ -3099,6 +3145,16 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 <div id="chat-description" className="sr-only">
                                     Interactive chat interface with Gemini AI assistant. You can send messages, receive responses, and access various features like voice input, file upload, and settings.
                                 </div>
+                                <div 
+                                    id="screen-reader-announcements" 
+                                    className="sr-only" 
+                                    aria-live="polite" 
+                                    aria-atomic="true"
+                                    role="status"
+                                    aria-label="New message announcements"
+                                >
+                                    {/* This will be updated to announce new messages */}
+                                </div>
                             </>
                         )}
                         {/* Enhanced Header */}
@@ -3354,7 +3410,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             ref={messagesContainerRef} 
                             className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 relative"
                             role="log"
-                            aria-live="polite"
+                            aria-live={screenReaderSupport ? "polite" : "off"}
                             aria-label="Chat messages"
                         >
                             {/* Floating Date Indicator (sticky below header) */}
@@ -5720,6 +5776,15 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     animation-iteration-count: 1 !important;
                     transition-duration: 0.01ms !important;
                     transform: none !important;
+                }
+                .reduced-motion .w-12.h-6.rounded-full {
+                    transition-duration: 0.2s !important; /* Allow toggle color transitions */
+                }
+                .reduced-motion .w-12.h-6.rounded-full.bg-gray-300 {
+                    background-color: #d1d5db !important; /* Ensure disabled toggles stay gray in reduced motion */
+                }
+                .reduced-motion .w-12.h-6.rounded-full.bg-gray-600 {
+                    background-color: #4b5563 !important; /* Ensure disabled toggles stay dark gray in reduced motion + high contrast */
                 }
                 .reduced-motion .animate-pulse,
                 .reduced-motion .animate-spin,
