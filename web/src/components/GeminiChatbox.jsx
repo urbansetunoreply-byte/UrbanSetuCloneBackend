@@ -2790,28 +2790,28 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 try {
                     // Highlight the code with Prism.js
                     const highlightedCode = Prism.highlight(cleanCode, Prism.languages[lang] || Prism.languages.text, lang);
-                    return `<div class="code-block"><pre class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto my-4 border border-gray-700"><code class="language-${lang}">${highlightedCode}</code></pre></div>`;
+                    return `<div class="code-block"><pre class="bg-gray-900 dark:bg-gray-800 text-gray-100 dark:text-gray-200 p-4 rounded-lg overflow-x-auto my-4 border border-gray-700 dark:border-gray-600"><code class="language-${lang}">${highlightedCode}</code></pre></div>`;
                 } catch (error) {
                     console.warn('Code highlighting failed:', error);
-                    return `<div class="code-block"><pre class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto my-4 border"><code class="language-${lang}">${cleanCode}</code></pre></div>`;
+                    return `<div class="code-block"><pre class="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 p-4 rounded-lg overflow-x-auto my-4 border border-gray-300 dark:border-gray-600"><code class="language-${lang}">${cleanCode}</code></pre></div>`;
                 }
             } else {
-                return `<div class="code-block"><pre class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto my-4 border"><code class="language-${lang}">${cleanCode}</code></pre></div>`;
+                return `<div class="code-block"><pre class="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 p-4 rounded-lg overflow-x-auto my-4 border border-gray-300 dark:border-gray-600"><code class="language-${lang}">${cleanCode}</code></pre></div>`;
             }
         });
         
         // Process inline code
-        processedText = processedText.replace(/`([^`]+)`/g, '<code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm font-mono border">$1</code>');
+        processedText = processedText.replace(/`([^`]+)`/g, '<code class="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 px-2 py-1 rounded text-sm font-mono border border-gray-300 dark:border-gray-600">$1</code>');
         
         // Process other markdown elements
         processedText = processedText
-            .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold">$1</strong>') // Bold
-            .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>') // Italic
+            .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-gray-900 dark:text-gray-100">$1</strong>') // Bold
+            .replace(/\*(.*?)\*/g, '<em class="italic text-gray-800 dark:text-gray-200">$1</em>') // Italic
             .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-4 mb-2 text-gray-800 dark:text-gray-200">$1</h3>') // H3
             .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold mt-4 mb-2 text-gray-800 dark:text-gray-200">$1</h2>') // H2
             .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mt-4 mb-2 text-gray-800 dark:text-gray-200">$1</h1>') // H1
-            .replace(/^\* (.*$)/gim, '<li class="ml-4 list-disc">$1</li>') // Bullet points
-            .replace(/^\d+\. (.*$)/gim, '<li class="ml-4 list-decimal">$1</li>') // Numbered lists
+            .replace(/^\* (.*$)/gim, '<li class="ml-4 list-disc text-gray-800 dark:text-gray-200">$1</li>') // Bullet points
+            .replace(/^\d+\. (.*$)/gim, '<li class="ml-4 list-decimal text-gray-800 dark:text-gray-200">$1</li>') // Numbered lists
             .replace(/\n/g, '<br>'); // Line breaks
         
         return processedText;
@@ -5789,6 +5789,73 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             background: transparent;
             padding: 0;
             border: none;
+        }
+        
+        /* Enhanced code block styling for better visibility */
+        .code-block pre {
+            background: #1a1a1a !important;
+            color: #e5e5e5 !important;
+        }
+        
+        .dark .code-block pre {
+            background: #1a1a1a !important;
+            color: #e5e5e5 !important;
+        }
+        
+        /* Prism.js syntax highlighting overrides for better contrast */
+        .code-block .token.comment,
+        .code-block .token.prolog,
+        .code-block .token.doctype,
+        .code-block .token.cdata {
+            color: #6a9955 !important;
+        }
+        
+        .code-block .token.punctuation {
+            color: #d4d4d4 !important;
+        }
+        
+        .code-block .token.property,
+        .code-block .token.tag,
+        .code-block .token.boolean,
+        .code-block .token.number,
+        .code-block .token.constant,
+        .code-block .token.symbol,
+        .code-block .token.deleted {
+            color: #b5cea8 !important;
+        }
+        
+        .code-block .token.selector,
+        .code-block .token.attr-name,
+        .code-block .token.string,
+        .code-block .token.char,
+        .code-block .token.builtin,
+        .code-block .token.inserted {
+            color: #ce9178 !important;
+        }
+        
+        .code-block .token.operator,
+        .code-block .token.entity,
+        .code-block .token.url,
+        .code-block .language-css .token.string,
+        .code-block .style .token.string {
+            color: #d4d4d4 !important;
+        }
+        
+        .code-block .token.atrule,
+        .code-block .token.attr-value,
+        .code-block .token.keyword {
+            color: #569cd6 !important;
+        }
+        
+        .code-block .token.function,
+        .code-block .token.class-name {
+            color: #dcdcaa !important;
+        }
+        
+        .code-block .token.regex,
+        .code-block .token.important,
+        .code-block .token.variable {
+            color: #d16969 !important;
         }
                 `}
             </style>
