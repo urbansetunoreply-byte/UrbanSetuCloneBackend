@@ -3719,7 +3719,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     message.role === 'user'
                                                         ? `bg-gradient-to-r ${themeColors.primary} text-white`
                                                         : message.isError 
-                                                            ? 'bg-red-100 text-red-800 border border-red-200'
+                                                            ? `${isDarkMode ? 'bg-red-900/20 text-red-300 border border-red-700' : 'bg-red-100 text-red-800 border border-red-200'}`
                                                             : `${isDarkMode ? 'bg-gray-800 text-gray-100' : 'bg-gray-100 text-gray-800'}`
                                                 } ${
                                                     highlightedMessage === index 
@@ -4103,7 +4103,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 {/* Message footer with timestamp and actions */}
                                                 <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-200/20">
                                                     {message.timestamp && showTimestamps && (
-                                                        <div className={`${message.role === 'user' ? 'text-white/80' : message.isError ? 'text-red-600' : 'text-gray-500'} text-[10px]`}>
+                                                        <div className={`${message.role === 'user' ? 'text-white/80' : message.isError ? (isDarkMode ? 'text-red-400' : 'text-red-600') : 'text-gray-500'} text-[10px]`}>
                                                             {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                         </div>
                                                     )}
