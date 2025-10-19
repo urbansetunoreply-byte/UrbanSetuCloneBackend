@@ -128,7 +128,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [enableTypingIndicator, setEnableTypingIndicator] = useState(() => localStorage.getItem('gemini_typing_indicator') !== 'false');
     
     // Accessibility Settings
-    const [highContrast, setHighContrast] = useState(() => localStorage.getItem('gemini_high_contrast') === 'true');
+    const [highContrast, setHighContrast] = useState(() => {
+        // For public users (no currentUser), default to false
+        if (!currentUser) return false;
+        return localStorage.getItem('gemini_high_contrast') === 'true';
+    });
     const [reducedMotion, setReducedMotion] = useState(() => localStorage.getItem('gemini_reduced_motion') === 'true');
     const [screenReaderSupport, setScreenReaderSupport] = useState(() => localStorage.getItem('gemini_screen_reader') === 'true');
     const [largeText, setLargeText] = useState(() => localStorage.getItem('gemini_large_text') === 'true');
@@ -485,12 +489,17 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
     }, [dataRetention, currentUser]);
 
-    // Disable auto-save for public users
+    // Disable auto-save and high contrast for public users
     useEffect(() => {
-        if (!currentUser && autoSave) {
-            setAutoSave(false);
+        if (!currentUser) {
+            if (autoSave) {
+                setAutoSave(false);
+            }
+            if (highContrast) {
+                setHighContrast(false);
+            }
         }
-    }, [currentUser, autoSave]);
+    }, [currentUser, autoSave, highContrast]);
 
     // Auto-save effect
     useEffect(() => {
