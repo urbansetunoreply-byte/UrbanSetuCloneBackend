@@ -5965,6 +5965,38 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 .bg-gray-800.text-gray-100 a:hover {
                     color: #1d4ed8 !important; /* text-blue-800 */
                 }
+                
+                /* Ensure rating buttons maintain their colors in light mode */
+                .bg-gray-100.text-gray-800 button.text-green-600,
+                .bg-gray-100.text-gray-800 button.text-red-600,
+                .bg-gray-100.text-gray-800 button.text-gray-500 {
+                    color: inherit !important;
+                }
+                .bg-gray-100.text-gray-800 button.text-green-600 {
+                    color: #16a34a !important; /* text-green-600 */
+                }
+                .bg-gray-100.text-gray-800 button.text-red-600 {
+                    color: #dc2626 !important; /* text-red-600 */
+                }
+                .bg-gray-100.text-gray-800 button.text-gray-500 {
+                    color: #6b7280 !important; /* text-gray-500 */
+                }
+                
+                /* Ensure rating buttons maintain their colors in dark mode */
+                .bg-gray-800.text-gray-100 button.text-green-600,
+                .bg-gray-800.text-gray-100 button.text-red-600,
+                .bg-gray-800.text-gray-100 button.text-gray-500 {
+                    color: inherit !important;
+                }
+                .bg-gray-800.text-gray-100 button.text-green-600 {
+                    color: #16a34a !important; /* text-green-600 */
+                }
+                .bg-gray-800.text-gray-100 button.text-red-600 {
+                    color: #dc2626 !important; /* text-red-600 */
+                }
+                .bg-gray-800.text-gray-100 button.text-gray-500 {
+                    color: #6b7280 !important; /* text-gray-500 */
+                }
         
         /* Code highlighting styles */
         .code-block {
