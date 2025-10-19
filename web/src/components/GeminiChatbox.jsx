@@ -3983,7 +3983,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 {isLoading ? (
                                     <button
                                         type="button"
-                                        onClick={() => { abortControllerRef.current?.abort(); toast.info('Generation stopped'); }}
+                                        onClick={() => { abortControllerRef.current?.abort(); toast.info('Generating stopped.'); }}
                                         className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-full text-xs font-medium shadow flex items-center justify-center"
                                         title="Stop generating"
                                         aria-label="Stop generating"
