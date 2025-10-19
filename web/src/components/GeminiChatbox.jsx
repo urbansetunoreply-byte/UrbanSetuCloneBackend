@@ -486,16 +486,33 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     ? lastMessage.content.substring(0, 100) + '...' 
                     : lastMessage.content;
                 
+                const announcementText = `${messageType}: ${content}`;
+                
+                // Debug logging
+                console.log('Screen Reader Announcement:', announcementText);
+                
                 // Clear first, then set new content to ensure announcement
                 announcementElement.textContent = '';
+                announcementElement.setAttribute('aria-live', 'off');
+                
                 setTimeout(() => {
-                    announcementElement.textContent = `${messageType}: ${content}`;
+                    announcementElement.setAttribute('aria-live', 'polite');
+                    announcementElement.textContent = announcementText;
+                    
+                    // Force a re-render by briefly changing and restoring the content
+                    setTimeout(() => {
+                        const currentText = announcementElement.textContent;
+                        announcementElement.textContent = '';
+                        setTimeout(() => {
+                            announcementElement.textContent = currentText;
+                        }, 50);
+                    }, 100);
                 }, 100);
                 
                 // Clear the announcement after a longer delay to allow screen readers to process
                 setTimeout(() => {
                     announcementElement.textContent = '';
-                }, 3000);
+                }, 5000);
             }
         }
     }, [messages, screenReaderSupport]);
@@ -504,21 +521,41 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     useEffect(() => {
         if (screenReaderSupport) {
             const announcementElement = document.getElementById('screen-reader-announcements');
+            const statusElement = document.getElementById('screen-reader-status');
             
-            if (announcementElement) {
+            if (announcementElement && statusElement) {
                 if (isLoading) {
-                    announcementElement.textContent = 'AI is typing a response...';
+                    const loadingText = 'AI is typing a response...';
+                    console.log('Screen Reader Loading Announcement:', loadingText);
+                    statusElement.textContent = loadingText;
                 } else if (isTyping) {
-                    announcementElement.textContent = 'AI is typing...';
+                    const typingText = 'AI is typing...';
+                    console.log('Screen Reader Typing Announcement:', typingText);
+                    statusElement.textContent = typingText;
                 } else {
                     // Clear loading announcements when not loading
-                    if (announcementElement.textContent.includes('typing')) {
-                        announcementElement.textContent = '';
+                    if (statusElement.textContent.includes('typing')) {
+                        console.log('Screen Reader: Clearing loading announcements');
+                        statusElement.textContent = '';
                     }
                 }
             }
         }
     }, [isLoading, isTyping, screenReaderSupport]);
+
+    // Test screen reader support when enabled
+    useEffect(() => {
+        if (screenReaderSupport) {
+            const statusElement = document.getElementById('screen-reader-status');
+            if (statusElement) {
+                console.log('Screen Reader Support enabled - testing announcement');
+                statusElement.textContent = 'Screen Reader Support is now active';
+                setTimeout(() => {
+                    statusElement.textContent = '';
+                }, 2000);
+            }
+        }
+    }, [screenReaderSupport]);
 
     // Persist draft input per session
     useEffect(() => {
@@ -3152,8 +3189,19 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     aria-atomic="true"
                                     role="status"
                                     aria-label="New message announcements"
+                                    aria-relevant="additions text"
                                 >
                                     {/* This will be updated to announce new messages */}
+                                </div>
+                                <div 
+                                    id="screen-reader-status" 
+                                    className="sr-only" 
+                                    aria-live="assertive" 
+                                    aria-atomic="true"
+                                    role="status"
+                                    aria-label="Status announcements"
+                                >
+                                    {/* This will be updated to announce status changes */}
                                 </div>
                             </>
                         )}
@@ -3448,6 +3496,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             }`}
                                             role="article"
                                             aria-label={`${message.role === 'user' ? 'Your message' : 'AI response'}`}
+                                            aria-describedby={screenReaderSupport ? `message-${index}-content` : undefined}
                                         >
                                             <div
                                                 className={`max-w-[85%] ${getMessageDensityClass()} rounded-2xl break-words relative group ${
@@ -3827,7 +3876,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div className={`${getFontSizeClass()} whitespace-pre-wrap leading-relaxed`}>
+                                                    <div 
+                                                        className={`${getFontSizeClass()} whitespace-pre-wrap leading-relaxed`}
+                                                        id={screenReaderSupport ? `message-${index}-content` : undefined}
+                                                    >
                                                         {renderTextWithMarkdownAndLinks(message.content, message.role === 'user')}
                                                     </div>
                                                 )}
