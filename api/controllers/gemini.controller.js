@@ -225,11 +225,17 @@ export const chatWithGemini = async (req, res) => {
 
                 // Auto-title: if no name yet and at least two messages, generate a short title
                 // Only generate title once per session to avoid overriding manual names
-                if (!chatHistory.name && chatHistory.messages && chatHistory.messages.length >= 2) {
+                // Refresh the chatHistory to get the latest message count
+                await chatHistory.save();
+                const updatedChatHistory = await ChatHistory.findById(chatHistory._id);
+                
+                console.log('Chat history check - Name:', updatedChatHistory.name, 'Message count:', updatedChatHistory.messages?.length);
+                
+                if (!updatedChatHistory.name && updatedChatHistory.messages && updatedChatHistory.messages.length >= 2) {
                     try {
                         console.log('Generating auto-title for session:', currentSessionId);
-                        const convoForTitle = chatHistory.messages.slice(0, 8).map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n');
-                        const titlePrompt = `Summarize this conversation into a short 4-7 word descriptive title without quotes. Just return the title, nothing else.\n\nChat:\n${convoForTitle}`;
+                        const convoForTitle = updatedChatHistory.messages.slice(0, 8).map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n');
+                        const titlePrompt = `Create a short, descriptive title (4-7 words) for this real estate conversation. Focus on the main topic or question. Do not include quotes, just return the title.\n\nConversation:\n${convoForTitle}\n\nTitle:`;
                         
                         const model = ai.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
                         const titleResult = await model.generateContent(titlePrompt);
@@ -238,18 +244,18 @@ export const chatWithGemini = async (req, res) => {
                         
                         console.log('Generated title:', title);
                         if (title && title.length > 0) {
-                            chatHistory.name = title;
-                            await chatHistory.save();
+                            updatedChatHistory.name = title;
+                            await updatedChatHistory.save();
                             console.log('Auto-title saved successfully:', title);
                         } else {
                             console.warn('Generated title is empty or invalid, using fallback');
                             // Fallback: use first user message as title
-                            const firstUserMessage = chatHistory.messages.find(m => m.role === 'user');
+                            const firstUserMessage = updatedChatHistory.messages.find(m => m.role === 'user');
                             if (firstUserMessage) {
                                 const fallbackTitle = firstUserMessage.content.slice(0, 50).trim();
                                 if (fallbackTitle) {
-                                    chatHistory.name = fallbackTitle;
-                                    await chatHistory.save();
+                                    updatedChatHistory.name = fallbackTitle;
+                                    await updatedChatHistory.save();
                                     console.log('Fallback title saved:', fallbackTitle);
                                 }
                             }
@@ -257,12 +263,12 @@ export const chatWithGemini = async (req, res) => {
                     } catch (e) {
                         console.error('Auto-title generation failed:', e?.message || e);
                         // Fallback: use first user message as title
-                        const firstUserMessage = chatHistory.messages.find(m => m.role === 'user');
+                        const firstUserMessage = updatedChatHistory.messages.find(m => m.role === 'user');
                         if (firstUserMessage) {
                             const fallbackTitle = firstUserMessage.content.slice(0, 50).trim();
                             if (fallbackTitle) {
-                                chatHistory.name = fallbackTitle;
-                                await chatHistory.save();
+                                updatedChatHistory.name = fallbackTitle;
+                                await updatedChatHistory.save();
                                 console.log('Fallback title saved:', fallbackTitle);
                             }
                         }
