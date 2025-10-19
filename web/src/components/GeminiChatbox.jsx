@@ -4500,10 +4500,16 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         </div>
                                     ) : (
                                         <div className="space-y-2">
-                                            {chatSessions.map((session, idx) => (
+                                            {chatSessions.map((session, idx) => {
+                                                const isActiveSession = session.sessionId === getOrCreateSessionId();
+                                                return (
                                                 <div
                                                     key={session.sessionId || idx}
-                                                    className={`p-3 border ${isDarkMode ? 'border-gray-600' : 'border-gray-200'} rounded-lg ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition-all duration-200`}
+                                                    className={`p-3 border rounded-lg transition-all duration-300 ${
+                                                        isActiveSession 
+                                                            ? `${isDarkMode ? 'bg-blue-900/30 border-blue-500 shadow-lg' : 'bg-blue-50 border-blue-400 shadow-md'} ring-2 ring-blue-400/50 animate-pulse` 
+                                                            : `${isDarkMode ? 'border-gray-600 hover:bg-gray-700' : 'border-gray-200 hover:bg-gray-50'}`
+                                                    }`}
                                                 >
                                                     <div className="flex items-center justify-between gap-2">
                                                         <input
@@ -4523,7 +4529,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                             }}
                                                             className="flex-1 text-left"
                                                         >
-                                                            <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                                                            <div className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                                                                {isActiveSession && (
+                                                                    <span className={`px-2 py-0.5 text-xs rounded-full ${isDarkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'} font-medium`}>
+                                                                        Active
+                                                                    </span>
+                                                                )}
                                                                 {session.name?.trim() ? session.name : `New chat ${idx + 1}`}
                                                             </div>
                                                             <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -4601,7 +4612,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                         </div>
                                                     </div>
                                                 </div>
-                                            ))}
+                                                );
+                                            })}
                                             {selectedHistoryIds.length > 0 && (
                                                 <div className="flex justify-end">
                                                     <button
