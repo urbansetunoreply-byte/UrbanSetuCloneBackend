@@ -910,7 +910,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             return [...currentMessages, { role: 'user', content: userMessage, timestamp: new Date().toISOString() }];
         });
         lastUserMessageRef.current = userMessage;
-        setIsLoading(true);
+        
+        // Only show loading state for non-streaming responses
+        if (!enableStreaming || enableStreaming === 'false') {
+            setIsLoading(true);
+        }
         
         // Play sound when message is sent
         playSound('message-sent.mp3');
@@ -1027,6 +1031,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             }
                                             return updatedMessages;
                                         });
+                                        
+                                        // Clear loading state for streaming
+                                        setIsLoading(false);
                                     } else if (streamData.type === 'error') {
                                         throw new Error(streamData.content);
                                     }
@@ -1079,36 +1086,62 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             console.log('Response data received:', data);
             console.log('Response content length:', data.response ? data.response.length : 0);
             
-            // Validate response structure
-            if (data && data.response && typeof data.response === 'string') {
-                const trimmedResponse = data.response.trim();
-                console.log('Setting message with response length:', trimmedResponse.length);
-                setMessages(prev => {
-                    const currentMessages = Array.isArray(prev) ? prev : [];
-                    return [...currentMessages, { role: 'assistant', content: trimmedResponse, timestamp: new Date().toISOString() }];
-                });
-                if (!isOpen) {
-                    setUnreadCount(count => count + 1);
+            // Only handle non-streaming responses here (streaming is handled above)
+            if (!enableStreaming || enableStreaming === 'false') {
+                // Validate response structure
+                if (data && data.response && typeof data.response === 'string') {
+                    const trimmedResponse = data.response.trim();
+                    console.log('Setting message with response length:', trimmedResponse.length);
+                    setMessages(prev => {
+                        const currentMessages = Array.isArray(prev) ? prev : [];
+                        return [...currentMessages, { role: 'assistant', content: trimmedResponse, timestamp: new Date().toISOString() }];
+                    });
+                    if (!isOpen) {
+                        setUnreadCount(count => count + 1);
+                    }
+                    
+                    // Play sound when message is received
+                    playSound('message-received.mp3');
+
+                    // Update session ID if provided in response
+                    if (data.sessionId && data.sessionId !== sessionId) {
+                        setSessionId(data.sessionId);
+                        localStorage.setItem('gemini_session_id', data.sessionId);
+                    }
+
+                    // Refresh rate limit status after successful request
+                    fetchRateLimitStatus();
+
+                    // Show sent success check briefly
+                    setSendIconSent(true);
+                    setTimeout(() => setSendIconSent(false), 600);
+                } else {
+                    console.error('Invalid response structure:', data);
+                    throw new Error('Invalid response structure from server');
                 }
-                
-                // Play sound when message is received
-                playSound('message-received.mp3');
-
-                // Update session ID if provided in response
-                if (data.sessionId && data.sessionId !== sessionId) {
-                    setSessionId(data.sessionId);
-                    localStorage.setItem('gemini_session_id', data.sessionId);
-                }
-
-                // Refresh rate limit status after successful request
-                fetchRateLimitStatus();
-
-                // Show sent success check briefly
-                setSendIconSent(true);
-                setTimeout(() => setSendIconSent(false), 600);
             } else {
-                console.error('Invalid response structure:', data);
-                throw new Error('Invalid response structure from server');
+                // For streaming responses, handle final processing
+                if (data && data.response && typeof data.response === 'string') {
+                    if (!isOpen) {
+                        setUnreadCount(count => count + 1);
+                    }
+                    
+                    // Play sound when streaming is complete
+                    playSound('message-received.mp3');
+
+                    // Update session ID if provided in response
+                    if (data.sessionId && data.sessionId !== sessionId) {
+                        setSessionId(data.sessionId);
+                        localStorage.setItem('gemini_session_id', data.sessionId);
+                    }
+
+                    // Refresh rate limit status after successful request
+                    fetchRateLimitStatus();
+
+                    // Show sent success check briefly
+                    setSendIconSent(true);
+                    setTimeout(() => setSendIconSent(false), 600);
+                }
             }
         } catch (error) {
             console.error('Error in handleSubmit:', error);
