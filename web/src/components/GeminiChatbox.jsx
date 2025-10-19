@@ -323,6 +323,32 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
     };
 
+    // Fetch current session name from backend
+    const fetchSessionName = async (sessionId) => {
+        if (!currentUser || !sessionId) return null;
+
+        try {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+            const response = await fetch(`${API_BASE_URL}/api/chat-history/session/${sessionId}`, {
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.data.name) {
+                    return data.data.name;
+                }
+            }
+            return null;
+        } catch (error) {
+            console.error('Error fetching session name:', error);
+            return null;
+        }
+    };
+
     // Clear chat history locally
     const clearLocalChatHistory = () => {
         setMessages([
@@ -4599,11 +4625,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                     Save chat
                                                                 </button>
                                                                 <button
-                                                                    onClick={(e) => {
+                                                                    onClick={async (e) => {
                                                                         e.stopPropagation();
                                                                         setRenameTargetSessionId(session.sessionId);
-                                                                        const currentName = session.name?.trim() || '';
-                                                                        setRenameInput(currentName);
+                                                                        // Fetch current name from backend to ensure it's up-to-date
+                                                                        const currentName = await fetchSessionName(session.sessionId);
+                                                                        setRenameInput(currentName || '');
                                                                         setShowRenameModal(true);
                                                                     }}
                                                                     className={`block w-full text-left px-3 py-2 text-sm ${isDarkMode ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-800 hover:bg-gray-100'}`}

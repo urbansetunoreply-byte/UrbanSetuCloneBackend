@@ -75,6 +75,7 @@ export const getChatHistory = async (req, res) => {
             success: true,
             data: {
                 sessionId: chatHistory.sessionId,
+                name: chatHistory.name,
                 messages: chatHistory.messages,
                 totalMessages: chatHistory.totalMessages,
                 lastActivity: chatHistory.lastActivity,
