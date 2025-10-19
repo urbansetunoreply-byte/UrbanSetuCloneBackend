@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaCheck, FaDownload, FaUpload, FaCog, FaLightbulb, FaHistory, FaBookmark, FaShare, FaThumbsUp, FaThumbsDown, FaRegBookmark, FaBookmark as FaBookmarkSolid, FaMicrophone, FaStop, FaImage, FaFileAlt, FaMagic, FaStar, FaMoon, FaSun, FaPalette, FaVolumeUp, FaVolumeMute, FaExpand, FaCompress, FaSearch, FaFilter, FaSort, FaEye, FaEyeSlash, FaEdit, FaCheck as FaCheckCircle, FaTimes as FaTimesCircle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import { FormattedTextWithLinks } from '../utils/linkFormatter.jsx';
+// import { FormattedTextWithLinks } from '../utils/linkFormatter.jsx';
 import { useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -2670,6 +2670,47 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
     };
 
+    // Simple link formatting function
+    const formatTextWithLinks = (text, isSentMessage = false) => {
+        if (!text || typeof text !== 'string') return text;
+
+        // Simple URL regex pattern
+        const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
+        
+        const parts = text.split(urlRegex);
+        
+        return parts.map((part, index) => {
+            // Check if this part is a URL
+            if (urlRegex.test(part)) {
+                // Ensure URL has protocol
+                let url = part;
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    url = 'https://' + url;
+                }
+                
+                // Different styling for sent vs received messages
+                const linkClasses = isSentMessage 
+                    ? "text-white hover:text-blue-200 underline transition-colors duration-200 cursor-pointer" 
+                    : "text-blue-600 hover:text-blue-800 underline transition-colors duration-200 cursor-pointer";
+                
+                return (
+                    <a
+                        key={index}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={linkClasses}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {part}
+                    </a>
+                );
+            }
+            
+            return part;
+        });
+    };
+
     // Markdown rendering function
     const renderMarkdown = (text) => {
         if (!enableMarkdown) return text;
@@ -3575,10 +3616,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     </div>
                                                 ) : (
                                                     <div className={`${getFontSizeClass()} whitespace-pre-wrap leading-relaxed`}>
-                                                        <FormattedTextWithLinks 
-                                                            text={message.content} 
-                                                            isSentMessage={message.role === 'user'}
-                                                        />
+                                                        {formatTextWithLinks(message.content, message.role === 'user')}
                                                     </div>
                                                 )}
                                                 
