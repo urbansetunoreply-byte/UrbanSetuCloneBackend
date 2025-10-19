@@ -3958,8 +3958,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                     onClick={() => rateMessage(index, 'up')}
                                                                     className={`p-1 rounded transition-all duration-200 ${
                                                                         messageRatings[`${index}_${message.timestamp}`] === 'up' 
-                                                                            ? 'text-green-600 bg-green-100' 
-                                                                            : 'text-gray-500 hover:text-green-600 hover:bg-green-100'
+                                                                            ? 'text-green-600 hover:text-green-700' 
+                                                                            : 'text-gray-500 hover:text-green-600'
                                                                     }`}
                                                                     title="Good response"
                                                                     aria-label="Good response"
@@ -3970,8 +3970,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                     onClick={() => rateMessage(index, 'down')}
                                                                     className={`p-1 rounded transition-all duration-200 ${
                                                                         messageRatings[`${index}_${message.timestamp}`] === 'down' 
-                                                                            ? 'text-red-600 bg-red-100' 
-                                                                            : 'text-gray-500 hover:text-red-600 hover:bg-red-100'
+                                                                            ? 'text-red-600 hover:text-red-700' 
+                                                                            : 'text-gray-500 hover:text-red-600'
                                                                     }`}
                                                                     title="Poor response"
                                                                     aria-label="Poor response"
