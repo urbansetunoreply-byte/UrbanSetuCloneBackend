@@ -2660,6 +2660,16 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         return classes;
     };
 
+    // Helper function for toggle switch styling that considers high contrast mode
+    const getToggleSwitchClasses = (isEnabled) => {
+        if (isEnabled) {
+            return 'w-12 h-6 rounded-full transition-colors bg-blue-600';
+        } else {
+            // Use darker gray for disabled state when high contrast is enabled
+            return `w-12 h-6 rounded-full transition-colors ${highContrast ? 'bg-gray-600' : 'bg-gray-300'}`;
+        }
+    };
+
     // Markdown rendering function
     const renderMarkdown = (text) => {
         if (!enableMarkdown) return text;
@@ -4572,9 +4582,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     </span>
                                     <button
                                         onClick={toggleDarkMode}
-                                        className={`w-12 h-6 rounded-full transition-colors ${
-                                            isDarkMode ? 'bg-blue-600' : 'bg-gray-300'
-                                        }`}
+                                        className={getToggleSwitchClasses(isDarkMode)}
                                     >
                                         <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
                                             isDarkMode ? 'translate-x-6' : 'translate-x-0.5'
@@ -4621,9 +4629,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     </span>
                                     <button
                                         onClick={() => updateAutoScroll(!autoScroll)}
-                                        className={`w-12 h-6 rounded-full transition-colors ${
-                                            autoScroll ? 'bg-blue-600' : 'bg-gray-300'
-                                        }`}
+                                        className={getToggleSwitchClasses(autoScroll)}
                                     >
                                         <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
                                             autoScroll ? 'translate-x-6' : 'translate-x-0.5'
@@ -4638,9 +4644,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     </span>
                                     <button
                                         onClick={() => updateShowTimestamps(!showTimestamps)}
-                                        className={`w-12 h-6 rounded-full transition-colors ${
-                                            showTimestamps ? 'bg-blue-600' : 'bg-gray-300'
-                                        }`}
+                                        className={getToggleSwitchClasses(showTimestamps)}
                                     >
                                         <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
                                             showTimestamps ? 'translate-x-6' : 'translate-x-0.5'
@@ -4908,9 +4912,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     </span>
                                     <button
                                         onClick={() => updateHighContrast(!highContrast)}
-                                        className={`w-12 h-6 rounded-full transition-colors ${
-                                            highContrast ? 'bg-blue-600' : 'bg-gray-300'
-                                        }`}
+                                        className={getToggleSwitchClasses(highContrast)}
                                     >
                                         <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
                                             highContrast ? 'translate-x-6' : 'translate-x-0.5'
@@ -4925,9 +4927,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     </span>
                                     <button
                                         onClick={() => updateReducedMotion(!reducedMotion)}
-                                        className={`w-12 h-6 rounded-full transition-colors ${
-                                            reducedMotion ? 'bg-blue-600' : 'bg-gray-300'
-                                        }`}
+                                        className={getToggleSwitchClasses(reducedMotion)}
                                     >
                                         <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
                                             reducedMotion ? 'translate-x-6' : 'translate-x-0.5'
@@ -4942,9 +4942,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     </span>
                                     <button
                                         onClick={() => updateScreenReaderSupport(!screenReaderSupport)}
-                                        className={`w-12 h-6 rounded-full transition-colors ${
-                                            screenReaderSupport ? 'bg-blue-600' : 'bg-gray-300'
-                                        }`}
+                                        className={getToggleSwitchClasses(screenReaderSupport)}
                                     >
                                         <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
                                             screenReaderSupport ? 'translate-x-6' : 'translate-x-0.5'
@@ -4959,9 +4957,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     </span>
                                     <button
                                         onClick={() => updateLargeText(!largeText)}
-                                        className={`w-12 h-6 rounded-full transition-colors ${
-                                            largeText ? 'bg-blue-600' : 'bg-gray-300'
-                                        }`}
+                                        className={getToggleSwitchClasses(largeText)}
                                     >
                                         <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
                                             largeText ? 'translate-x-6' : 'translate-x-0.5'
@@ -5065,9 +5061,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     setShowSmartSuggestions(newValue);
                                     localStorage.setItem('gemini_smart_suggestions', newValue.toString());
                                 }}
-                                className={`w-12 h-6 rounded-full transition-colors ${
-                                    showSmartSuggestions ? 'bg-blue-600' : 'bg-gray-300'
-                                }`}
+                                className={getToggleSwitchClasses(showSmartSuggestions)}
                             >
                                 <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
                                     showSmartSuggestions ? 'translate-x-6' : 'translate-x-0.5'
@@ -5509,6 +5503,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 /* Accessibility Styles */
                 .high-contrast {
                     filter: contrast(150%) brightness(1.2);
+                }
+                .high-contrast .w-12.h-6.rounded-full {
+                    background-color: #6b7280 !important; /* Use darker gray for disabled toggles in high contrast */
+                }
+                .high-contrast .w-12.h-6.rounded-full.bg-blue-600 {
+                    background-color: #1d4ed8 !important; /* Ensure enabled toggles remain blue */
                 }
                 .reduced-motion * {
                     animation-duration: 0.01ms !important;
