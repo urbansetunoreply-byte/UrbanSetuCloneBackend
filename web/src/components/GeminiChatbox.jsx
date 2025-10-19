@@ -901,6 +901,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             const currentSessionId = getOrCreateSessionId();
             console.log('Sending message to Gemini:', userMessage, 'Session:', currentSessionId);
             
+            // Generate session name based on first user message if this is the first message
+            if (messages.length === 0) {
+                const sessionName = generateSessionName(userMessage);
+                await updateSessionName(currentSessionId, sessionName);
+            }
+            
             // Support cancelling with AbortController
             abortControllerRef.current?.abort();
             abortControllerRef.current = new AbortController();
@@ -1435,6 +1441,50 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         } else if (e.key === 'Escape') {
             e.preventDefault();
             cancelEditingMessage();
+        }
+    };
+
+    // Generate session name based on first user message
+    const generateSessionName = (message) => {
+        // Remove tone prefix if present
+        const cleanMessage = message.replace(/^\[Tone: \w+\]\s*/, '');
+        
+        // Truncate to reasonable length (max 50 characters)
+        let sessionName = cleanMessage.trim();
+        if (sessionName.length > 50) {
+            sessionName = sessionName.substring(0, 47) + '...';
+        }
+        
+        // If message is too short or empty, use a default name
+        if (sessionName.length < 3) {
+            sessionName = 'New Chat';
+        }
+        
+        return sessionName;
+    };
+
+    // Update session name via API
+    const updateSessionName = async (sessionId, name) => {
+        if (!currentUser || !sessionId || !name) return;
+        
+        try {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+            const response = await fetch(`${API_BASE_URL}/api/chat-history/session/${sessionId}`, {
+                method: 'PUT',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            });
+            
+            if (response.ok) {
+                console.log('Session name updated successfully:', name);
+                // Refresh chat sessions to show updated name
+                await loadChatSessions();
+            } else {
+                console.error('Failed to update session name:', response.status);
+            }
+        } catch (error) {
+            console.error('Error updating session name:', error);
         }
     };
 
