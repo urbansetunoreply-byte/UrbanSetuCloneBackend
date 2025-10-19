@@ -4507,7 +4507,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     key={session.sessionId || idx}
                                                     className={`p-3 border rounded-lg transition-all duration-300 ${
                                                         isActiveSession 
-                                                            ? `${isDarkMode ? 'bg-blue-900/30 border-blue-500 shadow-lg' : 'bg-blue-50 border-blue-400 shadow-md'} ring-2 ring-blue-400/50 animate-pulse` 
+                                                            ? `${isDarkMode ? 'bg-blue-900/30 border-blue-500' : 'bg-blue-50 border-blue-400'}` 
                                                             : `${isDarkMode ? 'border-gray-600 hover:bg-gray-700' : 'border-gray-200 hover:bg-gray-50'}`
                                                     }`}
                                                 >
