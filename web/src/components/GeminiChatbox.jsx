@@ -2805,13 +2805,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         
         // Process other markdown elements
         processedText = processedText
-            .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-gray-900 dark:text-gray-100">$1</strong>') // Bold
-            .replace(/\*(.*?)\*/g, '<em class="italic text-gray-900 dark:text-gray-100">$1</em>') // Italic
-            .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-4 mb-2 text-gray-900 dark:text-gray-100">$1</h3>') // H3
-            .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold mt-4 mb-2 text-gray-900 dark:text-gray-100">$1</h2>') // H2
-            .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mt-4 mb-2 text-gray-900 dark:text-gray-100">$1</h1>') // H1
-            .replace(/^\* (.*$)/gim, '<li class="ml-4 list-disc text-gray-900 dark:text-gray-100">$1</li>') // Bullet points
-            .replace(/^\d+\. (.*$)/gim, '<li class="ml-4 list-decimal text-gray-900 dark:text-gray-100">$1</li>') // Numbered lists
+            .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-black dark:text-white">$1</strong>') // Bold
+            .replace(/\*(.*?)\*/g, '<em class="italic text-black dark:text-white">$1</em>') // Italic
+            .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-4 mb-2 text-black dark:text-white">$1</h3>') // H3
+            .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold mt-4 mb-2 text-black dark:text-white">$1</h2>') // H2
+            .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mt-4 mb-2 text-black dark:text-white">$1</h1>') // H1
+            .replace(/^\* (.*$)/gim, '<li class="ml-4 list-disc text-black dark:text-white">$1</li>') // Bullet points
+            .replace(/^\d+\. (.*$)/gim, '<li class="ml-4 list-decimal text-black dark:text-white">$1</li>') // Numbered lists
             .replace(/\n/g, '<br>'); // Line breaks
         
         return processedText;
