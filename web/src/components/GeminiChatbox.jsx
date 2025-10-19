@@ -4514,7 +4514,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     <div className="flex items-center justify-between gap-2">
                                                         <input
                                                             type="checkbox"
-                                                            className="mt-1"
+                                                            className={`mt-1 w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 ${
+                                                                isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-100 border-gray-300'
+                                                            }`}
                                                             checked={selectedHistoryIds.includes(session.sessionId)}
                                                             onChange={(e) => {
                                                                 const id = session.sessionId;
