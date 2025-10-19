@@ -99,8 +99,9 @@ export const chatWithGemini = async (req, res) => {
             return `${basePrompt}\n\nTone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
         };
 
-        // Prepare conversation history with security filtering
-        const filteredHistory = history.slice(-10).map(msg => ({
+        // Prepare conversation history with security filtering using contextWindow
+        const contextWindowSize = parseInt(contextWindow) || 10;
+        const filteredHistory = history.slice(-contextWindowSize).map(msg => ({
             role: msg.role,
             content: msg.content?.substring(0, 1000) // Limit history message length
         }));
@@ -203,9 +204,132 @@ export const chatWithGemini = async (req, res) => {
             }
         };
         
-        // Add timeout to ensure we get complete responses
+        // Handle streaming vs non-streaming responses
+        if (enableStreaming === true || enableStreaming === 'true') {
+            console.log('Streaming enabled - setting up streaming response');
+            
+            // Set up streaming response
+            res.writeHead(200, {
+                'Content-Type': 'text/plain; charset=utf-8',
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS'
+            });
+
+            try {
+                // Use generateContentStream for streaming
+                const stream = await ai.models.generateContentStream(modelConfig);
+                let fullResponse = '';
+                
+                for await (const chunk of stream) {
+                    const chunkText = chunk.text();
+                    if (chunkText) {
+                        fullResponse += chunkText;
+                        // Send chunk to client
+                        res.write(`data: ${JSON.stringify({ 
+                            type: 'chunk', 
+                            content: chunkText,
+                            done: false 
+                        })}\n\n`);
+                    }
+                }
+                
+                // Send completion signal
+                res.write(`data: ${JSON.stringify({ 
+                    type: 'done', 
+                    content: fullResponse,
+                    done: true 
+                })}\n\n`);
+                
+                console.log('Streaming completed, total length:', fullResponse.length);
+                
+                // Save chat history with full response
+                if (userId) {
+                    try {
+                        const chatHistory = await ChatHistory.findOrCreateSession(userId, currentSessionId);
+                        await chatHistory.addMessage('user', message);
+                        await chatHistory.addMessage('assistant', fullResponse);
+                        // Auto-title logic here (same as non-streaming)
+                        await chatHistory.save();
+                        const updatedChatHistory = await ChatHistory.findById(chatHistory._id);
+                        
+                        console.log('Chat history check - Name:', updatedChatHistory.name, 'Message count:', updatedChatHistory.messages?.length);
+                        
+                        const isFallbackTitle = updatedChatHistory.name && (
+                            updatedChatHistory.name.match(/^Chat \d{1,2}\/\d{1,2}\/\d{4}$/) || 
+                            updatedChatHistory.name.match(/^New chat \d+$/)
+                        );
+                        
+                        if ((!updatedChatHistory.name || isFallbackTitle) && updatedChatHistory.messages && updatedChatHistory.messages.length >= 2) {
+                            try {
+                                console.log('Generating auto-title for session:', currentSessionId);
+                                const convoForTitle = updatedChatHistory.messages.slice(0, 8).map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n');
+                                const titlePrompt = `Create a short, descriptive title (4-7 words) for this real estate conversation. Focus on the main topic or question. Do not include quotes, just return the title.\n\nConversation:\n${convoForTitle}\n\nTitle:`;
+                                
+                                const titleResult = await ai.models.generateContent({
+                                    model: 'gemini-2.0-flash-exp',
+                                    contents: [{ role: 'user', parts: [{ text: titlePrompt }] }]
+                                });
+                                
+                                const titleRaw = titleResult.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                                const title = titleRaw.replace(/[\n\r"']+/g, ' ').slice(0, 80).trim();
+                                
+                                if (title && title.length > 0) {
+                                    updatedChatHistory.name = title;
+                                    await updatedChatHistory.save();
+                                    console.log('Auto-title saved successfully:', title);
+                                } else {
+                                    console.warn('Generated title is empty or invalid, using fallback');
+                                    const firstUserMessage = updatedChatHistory.messages.find(m => m.role === 'user');
+                                    if (firstUserMessage) {
+                                        const fallbackTitle = firstUserMessage.content.slice(0, 50).trim();
+                                        if (fallbackTitle) {
+                                            updatedChatHistory.name = fallbackTitle;
+                                            await updatedChatHistory.save();
+                                            console.log('Fallback title saved:', fallbackTitle);
+                                        }
+                                    }
+                                }
+                            } catch (e) {
+                                console.error('Auto-title generation failed:', e?.message || e);
+                                const firstUserMessage = updatedChatHistory.messages.find(m => m.role === 'user');
+                                if (firstUserMessage) {
+                                    const fallbackTitle = firstUserMessage.content.slice(0, 50).trim();
+                                    if (fallbackTitle) {
+                                        updatedChatHistory.name = fallbackTitle;
+                                        await updatedChatHistory.save();
+                                        console.log('Fallback title saved:', fallbackTitle);
+                                    }
+                                }
+                            }
+                        }
+                        
+                        console.log('Chat history saved successfully');
+                    } catch (historyError) {
+                        console.error('Error saving chat history:', historyError);
+                    }
+                }
+                
+                res.end();
+                return;
+                
+            } catch (streamError) {
+                console.error('Streaming error:', streamError);
+                res.write(`data: ${JSON.stringify({ 
+                    type: 'error', 
+                    content: 'Streaming failed, falling back to regular response',
+                    done: true 
+                })}\n\n`);
+                res.end();
+                return;
+            }
+        }
+
+        // Non-streaming response (original logic)
         const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Request timeout - response taking too long')), 90000); // Increased to 90 seconds
+            setTimeout(() => reject(new Error('Request timeout - response taking too long')), 90000);
         });
         
         const apiCallPromise = ai.models.generateContent(modelConfig);

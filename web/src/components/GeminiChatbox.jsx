@@ -933,40 +933,149 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             // Support cancelling with AbortController
             abortControllerRef.current?.abort();
             abortControllerRef.current = new AbortController();
-            const response = await fetch(`${API_BASE_URL}/api/gemini/chat`, {
-                method: 'POST',
-                credentials: 'include', // Include cookies for authentication
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    message: userMessage,
-                    history: enableContextMemory ? messages.slice(-parseInt(contextWindow)) : messages.slice(-10), // Send context window messages
-                    sessionId: currentSessionId,
-                    tone: currentUser ? tone : 'neutral', // Send current tone setting or default for public users
-                    responseLength: aiResponseLength, // Send response length setting
-                    creativity: aiCreativity, // Send creativity level setting
-                    temperature: temperature, // Send custom temperature
-                    topP: topP, // Send custom topP
-                    topK: topK, // Send custom topK
-                    maxTokens: maxTokens, // Send custom max tokens
-                    enableStreaming: enableStreaming, // Send streaming preference
-                    enableContextMemory: enableContextMemory, // Send context memory preference
-                    contextWindow: contextWindow, // Send context window size
-                    enableSystemPrompts: enableSystemPrompts // Send system prompts preference
-                }),
-                signal: abortControllerRef.current.signal
-            });
+            // Handle streaming vs non-streaming responses
+            let data;
+            if (enableStreaming === true || enableStreaming === 'true') {
+                console.log('Streaming enabled - setting up streaming request');
+                
+                const response = await fetch(`${API_BASE_URL}/api/gemini/chat`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: userMessage,
+                        history: enableContextMemory ? messages.slice(-parseInt(contextWindow)) : messages.slice(-10),
+                        sessionId: currentSessionId,
+                        tone: currentUser ? tone : 'neutral',
+                        responseLength: aiResponseLength,
+                        creativity: aiCreativity,
+                        temperature: temperature,
+                        topP: topP,
+                        topK: topK,
+                        maxTokens: maxTokens,
+                        enableStreaming: enableStreaming,
+                        enableContextMemory: enableContextMemory,
+                        contextWindow: contextWindow,
+                        enableSystemPrompts: enableSystemPrompts
+                    }),
+                    signal: abortControllerRef.current.signal
+                });
 
-            console.log('Response status:', response.status);
-            console.log('Response ok:', response.ok);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                // Handle streaming response
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let streamingResponse = '';
+                let isStreamingComplete = false;
+
+                // Add streaming message to UI
+                setMessages(prev => {
+                    const currentMessages = Array.isArray(prev) ? prev : [];
+                    return [...currentMessages, { 
+                        role: 'assistant', 
+                        content: '', 
+                        timestamp: new Date().toISOString(),
+                        isStreaming: true
+                    }];
+                });
+
+                try {
+                    while (!isStreamingComplete) {
+                        const { done, value } = await reader.read();
+                        
+                        if (done) break;
+                        
+                        const chunk = decoder.decode(value);
+                        const lines = chunk.split('\n');
+                        
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                try {
+                                    const streamData = JSON.parse(line.slice(6));
+                                    
+                                    if (streamData.type === 'chunk') {
+                                        streamingResponse += streamData.content;
+                                        
+                                        // Update the streaming message in real-time
+                                        setMessages(prev => {
+                                            const currentMessages = Array.isArray(prev) ? prev : [];
+                                            const updatedMessages = [...currentMessages];
+                                            const lastMessage = updatedMessages[updatedMessages.length - 1];
+                                            if (lastMessage && lastMessage.isStreaming) {
+                                                lastMessage.content = streamingResponse;
+                                            }
+                                            return updatedMessages;
+                                        });
+                                    } else if (streamData.type === 'done') {
+                                        isStreamingComplete = true;
+                                        streamingResponse = streamData.content;
+                                        
+                                        // Finalize the streaming message
+                                        setMessages(prev => {
+                                            const currentMessages = Array.isArray(prev) ? prev : [];
+                                            const updatedMessages = [...currentMessages];
+                                            const lastMessage = updatedMessages[updatedMessages.length - 1];
+                                            if (lastMessage && lastMessage.isStreaming) {
+                                                lastMessage.content = streamingResponse;
+                                                delete lastMessage.isStreaming;
+                                            }
+                                            return updatedMessages;
+                                        });
+                                    } else if (streamData.type === 'error') {
+                                        throw new Error(streamData.content);
+                                    }
+                                } catch (parseError) {
+                                    console.warn('Failed to parse streaming chunk:', parseError);
+                                }
+                            }
+                        }
+                    }
+                } finally {
+                    reader.releaseLock();
+                }
+
+                // Use streamingResponse as the final response
+                data = { success: true, response: streamingResponse, sessionId: currentSessionId };
+            } else {
+                // Non-streaming response (original logic)
+                const response = await fetch(`${API_BASE_URL}/api/gemini/chat`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: userMessage,
+                        history: enableContextMemory ? messages.slice(-parseInt(contextWindow)) : messages.slice(-10),
+                        sessionId: currentSessionId,
+                        tone: currentUser ? tone : 'neutral',
+                        responseLength: aiResponseLength,
+                        creativity: aiCreativity,
+                        temperature: temperature,
+                        topP: topP,
+                        topK: topK,
+                        maxTokens: maxTokens,
+                        enableStreaming: enableStreaming,
+                        enableContextMemory: enableContextMemory,
+                        contextWindow: contextWindow,
+                        enableSystemPrompts: enableSystemPrompts
+                    }),
+                    signal: abortControllerRef.current.signal
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+
+                data = await response.json();
             }
-
-            const data = await response.json();
             console.log('Response data received:', data);
             console.log('Response content length:', data.response ? data.response.length : 0);
             
