@@ -10,7 +10,7 @@ import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-python';
 import 'prismjs/components/prism-java';
 import 'prismjs/components/prism-css';
-import 'prismjs/components/prism-html';
+import 'prismjs/components/prism-markup';
 import 'prismjs/components/prism-json';
 import 'prismjs/components/prism-sql';
 import 'prismjs/components/prism-bash';
@@ -2769,21 +2769,35 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         
         // Process code blocks first (before other markdown)
         processedText = processedText.replace(/```(\w+)?\n?([\s\S]*?)```/g, (match, language, code) => {
-            const lang = language || 'text';
+            let lang = language || 'text';
             const cleanCode = code.trim();
             
-                if (enableCodeHighlighting) {
-                    try {
-                        // Highlight the code with Prism.js
-                        const highlightedCode = Prism.highlight(cleanCode, Prism.languages[lang] || Prism.languages.text, lang);
-                        return `<div class="code-block"><pre class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto my-4 border border-gray-700"><code class="language-${lang}">${highlightedCode}</code></pre></div>`;
-                    } catch (error) {
-                        console.warn('Code highlighting failed:', error);
-                        return `<div class="code-block"><pre class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto my-4 border"><code class="language-${lang}">${cleanCode}</code></pre></div>`;
-                    }
-                } else {
+            // Map common language aliases to Prism.js language names
+            const languageMap = {
+                'html': 'markup',
+                'xml': 'markup',
+                'svg': 'markup',
+                'js': 'javascript',
+                'py': 'python',
+                'sh': 'bash',
+                'shell': 'bash',
+                'md': 'markdown'
+            };
+            
+            lang = languageMap[lang] || lang;
+            
+            if (enableCodeHighlighting) {
+                try {
+                    // Highlight the code with Prism.js
+                    const highlightedCode = Prism.highlight(cleanCode, Prism.languages[lang] || Prism.languages.text, lang);
+                    return `<div class="code-block"><pre class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto my-4 border border-gray-700"><code class="language-${lang}">${highlightedCode}</code></pre></div>`;
+                } catch (error) {
+                    console.warn('Code highlighting failed:', error);
                     return `<div class="code-block"><pre class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto my-4 border"><code class="language-${lang}">${cleanCode}</code></pre></div>`;
                 }
+            } else {
+                return `<div class="code-block"><pre class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto my-4 border"><code class="language-${lang}">${cleanCode}</code></pre></div>`;
+            }
         });
         
         // Process inline code
