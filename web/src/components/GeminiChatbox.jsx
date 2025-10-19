@@ -2941,7 +2941,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     />
                 );
             }
-            return <span key={index} dangerouslySetInnerHTML={{ __html: part }} />;
+            return <span key={index} className={isSentMessage ? "text-white" : "text-gray-800 dark:text-gray-100"} dangerouslySetInnerHTML={{ __html: part }} />;
         });
     };
 
@@ -3877,7 +3877,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     </div>
                                                 ) : (
                                                     <div 
-                                                        className={`${getFontSizeClass()} whitespace-pre-wrap leading-relaxed`}
+                                                        className={`${getFontSizeClass()} whitespace-pre-wrap leading-relaxed ${message.role === 'user' ? 'text-white' : 'text-gray-800 dark:text-gray-100'}`}
                                                         id={screenReaderSupport ? `message-${index}-content` : undefined}
                                                     >
                                                         {renderTextWithMarkdownAndLinks(message.content, message.role === 'user')}
