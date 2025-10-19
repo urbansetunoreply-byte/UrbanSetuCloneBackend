@@ -4617,22 +4617,22 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 </div>
                                                 );
                                             })}
-                                            {selectedHistoryIds.length > 0 && (
-                                                <div className="flex justify-end">
-                                                    <button
-                                                        onClick={() => setShowDeleteSelectedModal(true)}
-                                                        className="px-3 py-1.5 text-xs rounded bg-red-600 text-white hover:bg-red-700"
-                                                    >
-                                                        Delete Selected
-                                                    </button>
-                                                </div>
-                                            )}
                                         </div>
                                     )}
                                     </div>
                                     
                                     {/* Fixed Footer */}
-                                    <div className="flex justify-end p-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+                                    <div className="flex justify-between items-center p-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+                                        <div>
+                                            {selectedHistoryIds.length > 0 && (
+                                                <button
+                                                    onClick={() => setShowDeleteSelectedModal(true)}
+                                                    className="px-3 py-1.5 text-xs rounded bg-red-600 text-white hover:bg-red-700 transition-all duration-200"
+                                                >
+                                                    Delete Selected ({selectedHistoryIds.length})
+                                                </button>
+                                            )}
+                                        </div>
                                         <button 
                                             onClick={() => { setShowHistory(false); setOpenHistoryMenuSessionId(null); }} 
                                             className={`px-4 py-2 text-sm rounded bg-gradient-to-r ${themeColors.primary} text-white hover:opacity-90 transition-all duration-200`}
@@ -5412,6 +5412,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         value={temperature}
                                         onChange={(e) => updateTemperature(e.target.value)}
                                         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                        style={{
+                                            accentColor: '#2563eb' // Blue color for the range slider
+                                        }}
                                     />
                                 </div>
 
@@ -5430,6 +5433,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         value={topP}
                                         onChange={(e) => updateTopP(e.target.value)}
                                         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                        style={{
+                                            accentColor: '#2563eb' // Blue color for the range slider
+                                        }}
                                     />
                                 </div>
 
@@ -5448,6 +5454,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         value={contextWindow}
                                         onChange={(e) => updateContextWindow(e.target.value)}
                                         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                        style={{
+                                            accentColor: '#2563eb' // Blue color for the range slider
+                                        }}
                                     />
                                 </div>
 
