@@ -5936,6 +5936,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     color: #1f2937 !important; /* text-gray-800 */
                 }
                 
+                /* Ensure links maintain their blue color in light mode */
+                .bg-gray-100.text-gray-800 a {
+                    color: #2563eb !important; /* text-blue-600 */
+                }
+                .bg-gray-100.text-gray-800 a:hover {
+                    color: #1d4ed8 !important; /* text-blue-800 */
+                }
+                
                 /* Dark mode text color inheritance */
                 .bg-gray-800.text-gray-100 * {
                     color: inherit !important;
@@ -5948,6 +5956,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 }
                 .bg-gray-800.text-gray-100 div {
                     color: #f3f4f6 !important; /* text-gray-100 */
+                }
+                
+                /* Ensure links maintain their blue color in dark mode */
+                .bg-gray-800.text-gray-100 a {
+                    color: #2563eb !important; /* text-blue-600 */
+                }
+                .bg-gray-800.text-gray-100 a:hover {
+                    color: #1d4ed8 !important; /* text-blue-800 */
                 }
         
         /* Code highlighting styles */
