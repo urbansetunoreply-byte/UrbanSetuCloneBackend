@@ -231,9 +231,18 @@ export const chatWithGemini = async (req, res) => {
                 
                 console.log('Chat history check - Name:', updatedChatHistory.name, 'Message count:', updatedChatHistory.messages?.length);
                 
-                if (!updatedChatHistory.name && updatedChatHistory.messages && updatedChatHistory.messages.length >= 2) {
+                // Check if we should generate auto-title:
+                // 1. No name yet, OR
+                // 2. Name is a fallback pattern (Chat MM/DD/YYYY or New chat X)
+                const isFallbackTitle = updatedChatHistory.name && (
+                    updatedChatHistory.name.match(/^Chat \d{1,2}\/\d{1,2}\/\d{4}$/) || // Chat MM/DD/YYYY pattern
+                    updatedChatHistory.name.match(/^New chat \d+$/) // New chat X pattern
+                );
+                
+                if ((!updatedChatHistory.name || isFallbackTitle) && updatedChatHistory.messages && updatedChatHistory.messages.length >= 2) {
                     try {
                         console.log('Generating auto-title for session:', currentSessionId);
+                        console.log('Current name:', updatedChatHistory.name, 'Is fallback:', isFallbackTitle);
                         const convoForTitle = updatedChatHistory.messages.slice(0, 8).map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n');
                         const titlePrompt = `Create a short, descriptive title (4-7 words) for this real estate conversation. Focus on the main topic or question. Do not include quotes, just return the title.\n\nConversation:\n${convoForTitle}\n\nTitle:`;
                         
