@@ -5997,6 +5997,22 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 .bg-gray-800.text-gray-100 button.text-gray-500 {
                     color: #6b7280 !important; /* text-gray-500 */
                 }
+                
+                /* Ensure bookmark icons maintain their colors in light mode */
+                .bg-gray-100.text-gray-800 button .text-yellow-500 {
+                    color: #eab308 !important; /* text-yellow-500 */
+                }
+                .bg-gray-100.text-gray-800 button .text-gray-500 {
+                    color: #6b7280 !important; /* text-gray-500 */
+                }
+                
+                /* Ensure bookmark icons maintain their colors in dark mode */
+                .bg-gray-800.text-gray-100 button .text-yellow-500 {
+                    color: #eab308 !important; /* text-yellow-500 */
+                }
+                .bg-gray-800.text-gray-100 button .text-gray-500 {
+                    color: #6b7280 !important; /* text-gray-500 */
+                }
         
         /* Code highlighting styles */
         .code-block {
