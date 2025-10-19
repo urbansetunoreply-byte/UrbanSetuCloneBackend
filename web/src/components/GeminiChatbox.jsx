@@ -80,6 +80,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [showRenameModal, setShowRenameModal] = useState(false);
     const [renameTargetSessionId, setRenameTargetSessionId] = useState(null);
     const [renameInput, setRenameInput] = useState('');
+    const [refreshingBookmarks, setRefreshingBookmarks] = useState(false);
     // Floating date label like WhatsApp
     const [floatingDateLabel, setFloatingDateLabel] = useState('');
     const [isScrolling, setIsScrolling] = useState(false);
@@ -4323,10 +4324,45 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         {showBookmarks && (
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
                                 <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl p-5 w-96 max-w-full max-h-[80vh] overflow-y-auto`}>
-                                    <h4 className={`font-semibold mb-3 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                                        <FaBookmark className="text-yellow-500" />
-                                        Bookmarked Messages
-                                    </h4>
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h4 className={`font-semibold flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                            <FaBookmark className="text-yellow-500" />
+                                            Bookmarked Messages
+                                        </h4>
+                                        <button
+                                            onClick={async () => {
+                                                if (refreshingBookmarks) return; // Prevent multiple clicks
+                                                setRefreshingBookmarks(true);
+                                                try {
+                                                    const currentSessionId = getOrCreateSessionId();
+                                                    await loadBookmarkedMessages(currentSessionId);
+                                                    toast.success('Bookmarks refreshed successfully');
+                                                } catch (error) {
+                                                    toast.error('Failed to refresh bookmarks');
+                                                } finally {
+                                                    setRefreshingBookmarks(false);
+                                                }
+                                            }}
+                                            disabled={refreshingBookmarks}
+                                            className={`p-2 rounded-lg transition-all duration-200 ${
+                                                refreshingBookmarks
+                                                    ? 'opacity-50 cursor-not-allowed'
+                                                    : isDarkMode 
+                                                        ? 'bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white' 
+                                                        : 'bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800'
+                                            }`}
+                                            title={refreshingBookmarks ? "Refreshing..." : "Refresh bookmarks"}
+                                            aria-label={refreshingBookmarks ? "Refreshing bookmarks" : "Refresh bookmarks"}
+                                        >
+                                            {refreshingBookmarks ? (
+                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                                            ) : (
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                </svg>
+                                            )}
+                                        </button>
+                                    </div>
                                     {bookmarkedMessages.length === 0 ? (
                                         <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'} text-center py-8`}>No bookmarked messages in this session</p>
                                     ) : (
