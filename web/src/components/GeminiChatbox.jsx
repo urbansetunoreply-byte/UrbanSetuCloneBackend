@@ -6253,6 +6253,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     color: #6b7280 !important; /* text-gray-500 */
                 }
                 
+                /* Ensure error messages maintain their red color in light mode */
+                .bg-red-50.text-red-900,
+                .bg-red-50.text-red-900 p,
+                .bg-red-50.text-red-900 div,
+                .bg-red-50.text-red-900 span {
+                    color: #7f1d1d !important; /* text-red-900 */
+                }
+                
                 /* Ensure rating buttons maintain their colors in dark mode */
                 .bg-gray-800.text-gray-100 button.text-green-600,
                 .bg-gray-800.text-gray-100 button.text-red-600,
@@ -6267,6 +6275,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 }
                 .bg-gray-800.text-gray-100 button.text-gray-500 {
                     color: #6b7280 !important; /* text-gray-500 */
+                }
+                
+                /* Ensure error messages maintain their red color in dark mode */
+                .bg-red-900\/20.text-red-300,
+                .bg-red-900\/20.text-red-300 p,
+                .bg-red-900\/20.text-red-300 div,
+                .bg-red-900\/20.text-red-300 span {
+                    color: #fca5a5 !important; /* text-red-300 */
                 }
                 
                 /* Ensure bookmark icons maintain their colors in light mode */
