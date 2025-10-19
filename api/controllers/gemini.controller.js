@@ -237,12 +237,20 @@ export const chatWithGemini = async (req, res) => {
                         const convoForTitle = updatedChatHistory.messages.slice(0, 8).map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n');
                         const titlePrompt = `Create a short, descriptive title (4-7 words) for this real estate conversation. Focus on the main topic or question. Do not include quotes, just return the title.\n\nConversation:\n${convoForTitle}\n\nTitle:`;
                         
-                        const model = ai.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
-                        const titleResult = await model.generateContent(titlePrompt);
-                        const titleRaw = titleResult.response.text() || '';
-                        const title = titleRaw.replace(/[\n\r"']+/g, ' ').slice(0, 80).trim();
+                        console.log('Title prompt:', titlePrompt);
+                        console.log('AI model call starting...');
                         
-                        console.log('Generated title:', title);
+                        const titleResult = await ai.models.generateContent({
+                            model: 'gemini-2.0-flash-exp',
+                            contents: [{ role: 'user', parts: [{ text: titlePrompt }] }]
+                        });
+                        console.log('AI model call completed');
+                        
+                        const titleRaw = titleResult.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                        console.log('Raw title response:', titleRaw);
+                        
+                        const title = titleRaw.replace(/[\n\r"']+/g, ' ').slice(0, 80).trim();
+                        console.log('Processed title:', title);
                         if (title && title.length > 0) {
                             updatedChatHistory.name = title;
                             await updatedChatHistory.save();
