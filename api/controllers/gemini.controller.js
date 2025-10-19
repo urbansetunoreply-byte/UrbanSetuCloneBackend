@@ -209,13 +209,15 @@ export const chatWithGemini = async (req, res) => {
             console.log('Streaming enabled - setting up streaming response');
             
             // Set up streaming response
+            const origin = req.headers.origin || 'https://urbansetu.vercel.app';
             res.writeHead(200, {
                 'Content-Type': 'text/plain; charset=utf-8',
                 'Cache-Control': 'no-cache',
                 'Connection': 'keep-alive',
-                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Origin': origin,
                 'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS'
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                'Access-Control-Allow-Credentials': 'true'
             });
 
             try {
@@ -224,7 +226,17 @@ export const chatWithGemini = async (req, res) => {
                 let fullResponse = '';
                 
                 for await (const chunk of stream) {
-                    const chunkText = chunk.text();
+                    let chunkText = '';
+                    
+                    // Handle different chunk formats
+                    if (typeof chunk.text === 'function') {
+                        chunkText = chunk.text();
+                    } else if (chunk.text) {
+                        chunkText = chunk.text;
+                    } else if (chunk.candidates && chunk.candidates[0] && chunk.candidates[0].content && chunk.candidates[0].content.parts && chunk.candidates[0].content.parts[0] && chunk.candidates[0].content.parts[0].text) {
+                        chunkText = chunk.candidates[0].content.parts[0].text;
+                    }
+                    
                     if (chunkText) {
                         fullResponse += chunkText;
                         // Send chunk to client
@@ -317,11 +329,41 @@ export const chatWithGemini = async (req, res) => {
                 
             } catch (streamError) {
                 console.error('Streaming error:', streamError);
-                res.write(`data: ${JSON.stringify({ 
-                    type: 'error', 
-                    content: 'Streaming failed, falling back to regular response',
-                    done: true 
-                })}\n\n`);
+                
+                // Fallback to non-streaming response
+                try {
+                    console.log('Falling back to non-streaming response');
+                    const fallbackResult = await ai.models.generateContent(modelConfig);
+                    const fallbackText = fallbackResult.text;
+                    
+                    res.write(`data: ${JSON.stringify({ 
+                        type: 'done', 
+                        content: fallbackText,
+                        done: true 
+                    })}\n\n`);
+                    
+                    // Save chat history with fallback response
+                    if (userId) {
+                        try {
+                            const chatHistory = await ChatHistory.findOrCreateSession(userId, currentSessionId);
+                            await chatHistory.addMessage('user', message);
+                            await chatHistory.addMessage('assistant', fallbackText);
+                            await chatHistory.save();
+                            console.log('Fallback response saved to chat history');
+                        } catch (historyError) {
+                            console.error('Error saving fallback chat history:', historyError);
+                        }
+                    }
+                    
+                } catch (fallbackError) {
+                    console.error('Fallback also failed:', fallbackError);
+                    res.write(`data: ${JSON.stringify({ 
+                        type: 'error', 
+                        content: 'AI service temporarily unavailable. Please try again.',
+                        done: true 
+                    })}\n\n`);
+                }
+                
                 res.end();
                 return;
             }
