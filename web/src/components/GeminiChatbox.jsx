@@ -3398,7 +3398,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             {/* Chat Window */}
             {isOpen && (
                 <div 
-                    className={`fixed inset-0 ${isDarkMode ? 'bg-black bg-opacity-70' : 'bg-black bg-opacity-50'} backdrop-blur-sm flex items-center justify-center z-50 p-4 md:p-0 md:items-end md:justify-end gemini-chatbox-modal animate-fadeIn${getAccessibilityClasses()}`}
+                    className={`fixed inset-0 ${isDarkMode ? 'bg-black bg-opacity-70' : 'bg-black bg-opacity-50'} flex items-center justify-center z-50 p-4 md:p-0 md:items-end md:justify-end gemini-chatbox-modal animate-fadeIn${getAccessibilityClasses()}`}
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby="chat-title"
