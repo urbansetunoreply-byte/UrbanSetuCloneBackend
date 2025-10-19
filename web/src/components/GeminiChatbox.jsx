@@ -4,6 +4,17 @@ import { toast } from 'react-toastify';
 // import { FormattedTextWithLinks } from '../utils/linkFormatter.jsx';
 import { useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
+import Prism from 'prismjs';
+import 'prismjs/themes/prism-tomorrow.css';
+import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-python';
+import 'prismjs/components/prism-java';
+import 'prismjs/components/prism-css';
+import 'prismjs/components/prism-html';
+import 'prismjs/components/prism-json';
+import 'prismjs/components/prism-sql';
+import 'prismjs/components/prism-bash';
+import 'prismjs/components/prism-markdown';
 
 const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const { currentUser } = useSelector((state) => state.user);
@@ -29,6 +40,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [isScrolledUp, setIsScrolledUp] = useState(false);
     const [showConfirmClear, setShowConfirmClear] = useState(false);
     const abortControllerRef = useRef(null);
+    const audioUploadAbortControllerRef = useRef(null);
     const [unreadCount, setUnreadCount] = useState(0);
     const [isExpanded, setIsExpanded] = useState(false);
     const lastUserMessageRef = useRef('');
@@ -454,6 +466,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         // Fetch rate limit status
         fetchRateLimitStatus();
     }, [currentUser, isHistoryLoaded]);
+
+    // Initialize Prism.js highlighting
+    useEffect(() => {
+        if (enableCodeHighlighting) {
+            Prism.highlightAll();
+        }
+    }, [messages, enableCodeHighlighting]);
 
     // Persist draft input per session
     useEffect(() => {
@@ -1798,6 +1817,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             setUploadingAudio(true);
             setUploadProgress(0);
 
+            // Create new AbortController for this upload
+            audioUploadAbortControllerRef.current = new AbortController();
+
             // Upload audio to Cloudinary
             const formData = new FormData();
             formData.append('audio', audioFile);
@@ -1806,6 +1828,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 method: 'POST',
                 credentials: 'include',
                 body: formData,
+                signal: audioUploadAbortControllerRef.current.signal,
             });
 
             if (!response.ok) {
@@ -1828,6 +1851,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     body: JSON.stringify({
                         audioUrl: audioUrl
                     }),
+                    signal: audioUploadAbortControllerRef.current.signal,
                 });
 
                 if (!transcriptionResponse.ok) {
@@ -1875,12 +1899,31 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
         } catch (error) {
             console.error('Audio upload/transcription error:', error);
+            
+            // Handle cancellation
+            if (error.name === 'AbortError') {
+                console.log('Audio upload/transcription cancelled by user');
+                toast.info('Audio upload cancelled');
+                return null; // Return null to indicate cancellation
+            }
+            
             toast.error('Failed to upload and transcribe audio with Whisper AI');
             throw error;
         } finally {
             setUploadingAudio(false);
             setUploadProgress(0);
+            audioUploadAbortControllerRef.current = null;
         }
+    };
+
+    // Cancel audio upload/transcription
+    const cancelAudioUpload = () => {
+        if (audioUploadAbortControllerRef.current) {
+            audioUploadAbortControllerRef.current.abort();
+            audioUploadAbortControllerRef.current = null;
+        }
+        setUploadingAudio(false);
+        setUploadProgress(0);
     };
 
     // Handle sending recorded audio
@@ -1888,7 +1931,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         if (!recordedAudioFile) return;
 
         try {
-            const { audioUrl, transcription } = await uploadAudioAndTranscribe(recordedAudioFile);
+            const result = await uploadAudioAndTranscribe(recordedAudioFile);
+            
+            // Check if upload was cancelled
+            if (result === null) {
+                return; // Upload was cancelled, do nothing
+            }
+            
+            const { audioUrl, transcription } = result;
             
             // Add the transcribed message to input
             setInputMessage(transcription);
@@ -2711,22 +2761,91 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         });
     };
 
-    // Markdown rendering function
+    // Enhanced markdown rendering function with code highlighting
     const renderMarkdown = (text) => {
         if (!enableMarkdown) return text;
         
-        // Simple markdown rendering
-        return text
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
-            .replace(/\*(.*?)\*/g, '<em>$1</em>') // Italic
-            .replace(/`(.*?)`/g, '<code class="bg-gray-100 px-1 py-0.5 rounded text-sm">$1</code>') // Inline code
-            .replace(/```([\s\S]*?)```/g, '<pre class="bg-gray-100 p-3 rounded-lg overflow-x-auto"><code>$1</code></pre>') // Code blocks
-            .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>') // H3
-            .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold mt-4 mb-2">$1</h2>') // H2
-            .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mt-4 mb-2">$1</h1>') // H1
-            .replace(/^\* (.*$)/gim, '<li class="ml-4">• $1</li>') // Bullet points
-            .replace(/^\d+\. (.*$)/gim, '<li class="ml-4">$1</li>') // Numbered lists
+        let processedText = text;
+        
+        // Process code blocks first (before other markdown)
+        processedText = processedText.replace(/```(\w+)?\n?([\s\S]*?)```/g, (match, language, code) => {
+            const lang = language || 'text';
+            const cleanCode = code.trim();
+            
+                if (enableCodeHighlighting) {
+                    try {
+                        // Highlight the code with Prism.js
+                        const highlightedCode = Prism.highlight(cleanCode, Prism.languages[lang] || Prism.languages.text, lang);
+                        return `<div class="code-block"><pre class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto my-4 border border-gray-700"><code class="language-${lang}">${highlightedCode}</code></pre></div>`;
+                    } catch (error) {
+                        console.warn('Code highlighting failed:', error);
+                        return `<div class="code-block"><pre class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto my-4 border"><code class="language-${lang}">${cleanCode}</code></pre></div>`;
+                    }
+                } else {
+                    return `<div class="code-block"><pre class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto my-4 border"><code class="language-${lang}">${cleanCode}</code></pre></div>`;
+                }
+        });
+        
+        // Process inline code
+        processedText = processedText.replace(/`([^`]+)`/g, '<code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm font-mono border">$1</code>');
+        
+        // Process other markdown elements
+        processedText = processedText
+            .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold">$1</strong>') // Bold
+            .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>') // Italic
+            .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-4 mb-2 text-gray-800 dark:text-gray-200">$1</h3>') // H3
+            .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold mt-4 mb-2 text-gray-800 dark:text-gray-200">$1</h2>') // H2
+            .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mt-4 mb-2 text-gray-800 dark:text-gray-200">$1</h1>') // H1
+            .replace(/^\* (.*$)/gim, '<li class="ml-4 list-disc">$1</li>') // Bullet points
+            .replace(/^\d+\. (.*$)/gim, '<li class="ml-4 list-decimal">$1</li>') // Numbered lists
             .replace(/\n/g, '<br>'); // Line breaks
+        
+        return processedText;
+    };
+
+    // Combined function to render text with both links and markdown
+    const renderTextWithMarkdownAndLinks = (text, isSentMessage = false) => {
+        if (!text || typeof text !== 'string') return text;
+
+        // If markdown is disabled, just use link formatting
+        if (!enableMarkdown) {
+            return formatTextWithLinks(text, isSentMessage);
+        }
+
+        // First process markdown
+        const markdownProcessed = renderMarkdown(text);
+        
+        // Then process links in the markdown-processed text
+        const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
+        
+        // Split by URLs and process each part
+        const parts = markdownProcessed.split(urlRegex);
+        
+        return parts.map((part, index) => {
+            if (urlRegex.test(part)) {
+                let url = part;
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    url = 'https://' + url;
+                }
+                
+                const linkClasses = isSentMessage 
+                    ? "text-white hover:text-blue-200 underline transition-colors duration-200 cursor-pointer" 
+                    : "text-blue-600 hover:text-blue-800 underline transition-colors duration-200 cursor-pointer";
+                
+                return (
+                    <a
+                        key={index}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={linkClasses}
+                        onClick={(e) => e.stopPropagation()}
+                        dangerouslySetInnerHTML={{ __html: part }}
+                    />
+                );
+            }
+            return <span key={index} dangerouslySetInnerHTML={{ __html: part }} />;
+        });
     };
 
     // Analytics tracking
@@ -2947,12 +3066,27 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
             {/* Chat Window */}
             {isOpen && (
-                <div className={`fixed inset-0 ${isDarkMode ? 'bg-black bg-opacity-70' : 'bg-black bg-opacity-50'} backdrop-blur-sm flex items-center justify-center z-50 p-4 md:p-0 md:items-end md:justify-end gemini-chatbox-modal animate-fadeIn${getAccessibilityClasses()}`}>
+                <div 
+                    className={`fixed inset-0 ${isDarkMode ? 'bg-black bg-opacity-70' : 'bg-black bg-opacity-50'} backdrop-blur-sm flex items-center justify-center z-50 p-4 md:p-0 md:items-end md:justify-end gemini-chatbox-modal animate-fadeIn${getAccessibilityClasses()}`}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="chat-title"
+                    aria-describedby="chat-description"
+                >
                     <div className={`${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} rounded-2xl shadow-2xl border flex flex-col relative ${
                         isFullscreen ? 'w-full h-full max-w-none max-h-none rounded-none' :
                         isExpanded ? 'w-full max-w-4xl h-[85vh] md:mb-12 md:mr-12' : 
                         'w-full max-w-md h-full max-h-[90vh] md:w-96 md:h-[500px] md:mb-32 md:mr-6 md:max-h-[500px]'
                     } animate-slideUp`}>
+                        {/* Screen reader only elements */}
+                        {screenReaderSupport && (
+                            <>
+                                <h1 id="chat-title" className="sr-only">Gemini AI Chat Assistant</h1>
+                                <div id="chat-description" className="sr-only">
+                                    Interactive chat interface with Gemini AI assistant. You can send messages, receive responses, and access various features like voice input, file upload, and settings.
+                                </div>
+                            </>
+                        )}
                         {/* Enhanced Header */}
                         <div className={`bg-gradient-to-r ${themeColors.primary} text-white p-3 md:p-4 ${isFullscreen ? 'rounded-none' : 'rounded-t-2xl'} flex items-center justify-between flex-shrink-0 relative`}>
                             {/* Left: assistant identity with status */}
@@ -3202,7 +3336,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         </div>
 
                         {/* Messages with date dividers */}
-                        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 relative">
+                        <div 
+                            ref={messagesContainerRef} 
+                            className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 relative"
+                            role="log"
+                            aria-live="polite"
+                            aria-label="Chat messages"
+                        >
                             {/* Floating Date Indicator (sticky below header) */}
                             {floatingDateLabel && (
                                 <div className={`sticky top-0 left-0 right-0 z-30 pointer-events-none transition-all duration-500 ease-out ${
@@ -3236,6 +3376,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} ${
                                                 highlightedMessage === index ? 'animate-pulse' : ''
                                             }`}
+                                            role="article"
+                                            aria-label={`${message.role === 'user' ? 'Your message' : 'AI response'}`}
                                         >
                                             <div
                                                 className={`max-w-[85%] ${getMessageDensityClass()} rounded-2xl break-words relative group ${
@@ -3616,7 +3758,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     </div>
                                                 ) : (
                                                     <div className={`${getFontSizeClass()} whitespace-pre-wrap leading-relaxed`}>
-                                                        {formatTextWithLinks(message.content, message.role === 'user')}
+                                                        {renderTextWithMarkdownAndLinks(message.content, message.role === 'user')}
                                                     </div>
                                                 )}
                                                 
@@ -3934,6 +4076,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         }}
                                         onKeyPress={handleKeyPress}
                                         placeholder={(rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin') ? "Sign in to continue chatting..." : "Ask me anything about real estate..."}
+                                        aria-label="Type your message"
+                                        aria-describedby="input-help"
+                                        role="textbox"
                                         className={`w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} focus:border-transparent text-sm ${
                                             isDarkMode 
                                                 ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' 
@@ -3944,6 +4089,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     {inputMessage.length > 1800 && (
                                         <div className="absolute -top-6 right-0 text-xs text-orange-600">
                                             {inputMessage.length}/2000
+                                        </div>
+                                    )}
+                                    {screenReaderSupport && (
+                                        <div id="input-help" className="sr-only">
+                                            Press Enter to send your message, or use the voice input and file upload buttons for additional options.
                                         </div>
                                     )}
                                 </div>
@@ -3995,6 +4145,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         type="submit"
                                         disabled={!inputMessage.trim() || (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin')}
                                         className={`bg-gradient-to-r ${themeColors.primary} text-white p-2 rounded-full hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-110 flex-shrink-0 flex items-center justify-center w-10 h-10 group hover:shadow-xl active:scale-95`}
+                                        aria-label="Send message"
+                                        title="Send message"
                                     >
                                         <div className="relative">
                                             {sendIconSent ? (
@@ -5232,14 +5384,15 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         
                         <div className="flex gap-2 justify-center flex-wrap">
                             <button
-                                onClick={handleSendRecordedAudio}
-                                disabled={uploadingAudio}
-                                className={`px-4 py-2 ${uploadingAudio ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'} text-white rounded-lg transition-colors flex items-center gap-2`}
+                                onClick={uploadingAudio ? cancelAudioUpload : handleSendRecordedAudio}
+                                className={`px-4 py-2 ${uploadingAudio ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} text-white rounded-lg transition-colors flex items-center gap-2`}
                             >
                                 {uploadingAudio ? (
                                     <>
-                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                        Processing...
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                        Cancel
                                     </>
                                 ) : (
                                     <>
@@ -5552,6 +5705,17 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     animation-duration: 0.01ms !important;
                     animation-iteration-count: 1 !important;
                     transition-duration: 0.01ms !important;
+                    transform: none !important;
+                }
+                .reduced-motion .animate-pulse,
+                .reduced-motion .animate-spin,
+                .reduced-motion .animate-fadeIn,
+                .reduced-motion .animate-slideDown,
+                .reduced-motion .animate-slideUp {
+                    animation: none !important;
+                }
+                .reduced-motion .hover\\:scale-110:hover {
+                    transform: none !important;
                 }
                 .large-text {
                     font-size: 1.2em !important;
@@ -5562,14 +5726,56 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 .large-text .text-base {
                     font-size: 1.3em !important;
                 }
-                .screen-reader-support [role="button"] {
-                    outline: 2px solid #0066cc !important;
-                    outline-offset: 2px !important;
-                }
-                .screen-reader-support [role="button"]:focus {
-                    outline: 3px solid #0066cc !important;
-                    outline-offset: 3px !important;
-                }
+        .screen-reader-support [role="button"],
+        .screen-reader-support button,
+        .screen-reader-support input,
+        .screen-reader-support select,
+        .screen-reader-support textarea {
+            outline: 2px solid #0066cc !important;
+            outline-offset: 2px !important;
+        }
+        .screen-reader-support [role="button"]:focus,
+        .screen-reader-support button:focus,
+        .screen-reader-support input:focus,
+        .screen-reader-support select:focus,
+        .screen-reader-support textarea:focus {
+            outline: 3px solid #0066cc !important;
+            outline-offset: 3px !important;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.3) !important;
+        }
+        .screen-reader-support .sr-only {
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            padding: 0 !important;
+            margin: -1px !important;
+            overflow: hidden !important;
+            clip: rect(0, 0, 0, 0) !important;
+            white-space: nowrap !important;
+            border: 0 !important;
+        }
+        
+        /* Code highlighting styles */
+        .code-block {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+        
+        .code-block pre {
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            border: none;
+        }
+        
+        .code-block code {
+            font-family: inherit;
+            font-size: inherit;
+            background: transparent;
+            padding: 0;
+            border: none;
+        }
                 `}
             </style>
         </>
