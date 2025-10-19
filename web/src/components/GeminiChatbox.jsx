@@ -5234,7 +5234,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             <button
                                 onClick={handleSendRecordedAudio}
                                 disabled={uploadingAudio}
-                                className={`px-4 py-2 ${uploadingAudio ? 'bg-gray-400' : `bg-gradient-to-r ${themeColors.primary} hover:opacity-90`} text-white rounded-lg transition-colors flex items-center gap-2`}
+                                className={`px-4 py-2 ${uploadingAudio ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'} text-white rounded-lg transition-colors flex items-center gap-2`}
                             >
                                 {uploadingAudio ? (
                                     <>
