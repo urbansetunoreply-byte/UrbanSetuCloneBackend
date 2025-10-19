@@ -5936,6 +5936,65 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             border: none;
         }
         
+        /* Disable line highlighting effects from Prism.js */
+        .code-block pre,
+        .code-block code,
+        .code-block .token {
+            background: transparent !important;
+            background-color: transparent !important;
+            box-shadow: none !important;
+            text-shadow: none !important;
+            border: none !important;
+            outline: none !important;
+        }
+        
+        /* Remove any line highlighting or selection effects */
+        .code-block pre::selection,
+        .code-block code::selection,
+        .code-block .token::selection {
+            background: transparent !important;
+        }
+        
+        .code-block pre::-moz-selection,
+        .code-block code::-moz-selection,
+        .code-block .token::-moz-selection {
+            background: transparent !important;
+        }
+        
+        /* Disable any Prism.js line highlighting */
+        .code-block .line-highlight,
+        .code-block .line-numbers .line-highlight,
+        .code-block pre[data-line] .line-highlight {
+            display: none !important;
+        }
+        
+        /* Remove any additional visual artifacts */
+        .code-block pre:hover,
+        .code-block code:hover,
+        .code-block .token:hover {
+            background: transparent !important;
+            background-color: transparent !important;
+        }
+        
+        /* Ensure no line numbers or line highlighting */
+        .code-block .line-numbers,
+        .code-block .line-numbers-rows,
+        .code-block .line-numbers-rows > span {
+            display: none !important;
+        }
+        
+        /* Remove any focus or active states that might cause highlighting */
+        .code-block pre:focus,
+        .code-block code:focus,
+        .code-block .token:focus,
+        .code-block pre:active,
+        .code-block code:active,
+        .code-block .token:active {
+            background: transparent !important;
+            background-color: transparent !important;
+            outline: none !important;
+        }
+        
         /* Enhanced code block styling for better visibility - only when code highlighting is enabled */
         .code-block pre.bg-gray-900 {
             background: #1a1a1a !important;
