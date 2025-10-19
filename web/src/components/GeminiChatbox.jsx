@@ -4530,12 +4530,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                             className="flex-1 text-left"
                                                         >
                                                             <div className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                                                                {session.name?.trim() ? session.name : `New chat ${idx + 1}`}
                                                                 {isActiveSession && (
                                                                     <span className={`px-2 py-0.5 text-xs rounded-full ${isDarkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'} font-medium`}>
                                                                         Active
                                                                     </span>
                                                                 )}
-                                                                {session.name?.trim() ? session.name : `New chat ${idx + 1}`}
                                                             </div>
                                                             <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                                                 {new Date(session.lastMessageAt).toLocaleString()}
