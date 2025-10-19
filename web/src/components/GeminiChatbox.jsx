@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaCheck, FaDownload, FaUpload, FaCog, FaLightbulb, FaHistory, FaBookmark, FaShare, FaThumbsUp, FaThumbsDown, FaRegBookmark, FaBookmark as FaBookmarkSolid, FaMicrophone, FaStop, FaImage, FaFileAlt, FaMagic, FaStar, FaMoon, FaSun, FaPalette, FaVolumeUp, FaVolumeMute, FaExpand, FaCompress, FaSearch, FaFilter, FaSort, FaEye, FaEyeSlash, FaEdit, FaCheck as FaCheckCircle, FaTimes as FaTimesCircle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import { formatLinksInText } from '../utils/linkFormatter.jsx';
+import { FormattedTextWithLinks } from '../utils/linkFormatter.jsx';
 import { useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -3574,12 +3574,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div 
-                                                        className={`${getFontSizeClass()} whitespace-pre-wrap leading-relaxed`}
-                                                        dangerouslySetInnerHTML={{ 
-                                                            __html: formatLinksInText(renderMarkdown(message.content), message.role === 'user') 
-                                                        }}
-                                                    />
+                                                    <div className={`${getFontSizeClass()} whitespace-pre-wrap leading-relaxed`}>
+                                                        <FormattedTextWithLinks 
+                                                            text={message.content} 
+                                                            isSentMessage={message.role === 'user'}
+                                                        />
+                                                    </div>
                                                 )}
                                                 
                                                 {/* Message footer with timestamp and actions */}
