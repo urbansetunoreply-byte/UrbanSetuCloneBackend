@@ -3,7 +3,7 @@ import ChatHistory from '../models/chatHistory.model.js';
 import MessageRating from '../models/messageRating.model.js';
 
 const ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY
+    apiKey: process.env.GEMINI_API_KEY || "AIzaSyBg9wSoffCi3RfbaQV6zwH78xoULd2jG0A"
 });
 
 export const chatWithGemini = async (req, res) => {
@@ -242,7 +242,17 @@ export const chatWithGemini = async (req, res) => {
                             await chatHistory.save();
                             console.log('Auto-title saved successfully:', title);
                         } else {
-                            console.warn('Generated title is empty or invalid');
+                            console.warn('Generated title is empty or invalid, using fallback');
+                            // Fallback: use first user message as title
+                            const firstUserMessage = chatHistory.messages.find(m => m.role === 'user');
+                            if (firstUserMessage) {
+                                const fallbackTitle = firstUserMessage.content.slice(0, 50).trim();
+                                if (fallbackTitle) {
+                                    chatHistory.name = fallbackTitle;
+                                    await chatHistory.save();
+                                    console.log('Fallback title saved:', fallbackTitle);
+                                }
+                            }
                         }
                     } catch (e) {
                         console.error('Auto-title generation failed:', e?.message || e);
