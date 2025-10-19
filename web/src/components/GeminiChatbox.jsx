@@ -4462,8 +4462,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         {/* Chat History Modal */}
                         {showHistory && (
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
-                                <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl p-5 w-96 max-w-full max-h-[80vh] overflow-y-auto`}>
-                                    <div className="flex items-center justify-between mb-3">
+                                <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl w-96 max-w-full max-h-[80vh] flex flex-col`}>
+                                    {/* Fixed Header */}
+                                    <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
                                         <h4 className={`font-semibold flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                                             <FaHistory className="text-blue-500" />
                                             Chat History
@@ -4484,6 +4485,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             </button>
                                         </div>
                                     </div>
+                                    
+                                    {/* Scrollable Content */}
+                                    <div className="flex-1 overflow-y-auto p-4">
                                     {chatSessions.length === 0 ? (
                                         <div className="text-center py-8 space-y-3">
                                             <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>No chats yet</p>
@@ -4610,8 +4614,16 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             )}
                                         </div>
                                     )}
-                                    <div className="flex justify-end mt-4">
-                                        <button onClick={() => { setShowHistory(false); setOpenHistoryMenuSessionId(null); }} className={`px-3 py-1.5 text-sm rounded bg-gradient-to-r ${themeColors.primary} text-white hover:opacity-90`}>Close</button>
+                                    </div>
+                                    
+                                    {/* Fixed Footer */}
+                                    <div className="flex justify-end p-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+                                        <button 
+                                            onClick={() => { setShowHistory(false); setOpenHistoryMenuSessionId(null); }} 
+                                            className={`px-4 py-2 text-sm rounded bg-gradient-to-r ${themeColors.primary} text-white hover:opacity-90 transition-all duration-200`}
+                                        >
+                                            Close
+                                        </button>
                                     </div>
                                 </div>
                             </div>
