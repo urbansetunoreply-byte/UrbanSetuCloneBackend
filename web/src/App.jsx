@@ -36,6 +36,11 @@ const PublicHome = lazy(() => import('./pages/PublicHome'));
 const Home = lazy(() => import('./pages/Home'));
 const PublicAbout = lazy(() => import('./pages/PublicAbout'));
 const About = lazy(() => import('./pages/About'));
+const PublicBlogs = lazy(() => import('./pages/PublicBlogs'));
+const PublicBlogDetail = lazy(() => import('./pages/PublicBlogDetail'));
+const PublicFAQs = lazy(() => import('./pages/PublicFAQs'));
+const AdminBlogs = lazy(() => import('./pages/AdminBlogs'));
+const AdminFAQs = lazy(() => import('./pages/AdminFAQs'));
 const PublicSearch = lazy(() => import('./pages/PublicSearch'));
 const Search = lazy(() => import('./pages/Search'));
 const Profile = lazy(() => import('./pages/Profile'));
@@ -649,6 +654,9 @@ function AppRoutes({ bootstrapped }) {
           <Route path="/" element={currentUser ? <NotFound /> : <PublicHome bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
           <Route path="/home" element={currentUser ? <NotFound /> : <PublicHome bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
           <Route path="/about" element={currentUser ? <Navigate to="/user/about" /> : <PublicAbout bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+          <Route path="/blogs" element={currentUser ? <Navigate to="/user/blogs" /> : <PublicBlogs bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+          <Route path="/blog/:slug" element={currentUser ? <Navigate to="/user/blog/:slug" /> : <PublicBlogDetail bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+          <Route path="/faqs" element={currentUser ? <Navigate to="/user/faqs" /> : <PublicFAQs bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
           <Route path="/search" element={currentUser ? <Navigate to="/user/search" /> : <PublicSearch bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
           <Route path="/listing/:listingId" element={currentUser ? <NotFound /> : <Listing />} />
           <Route path="/sign-in" element={<SignIn bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
@@ -667,6 +675,9 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/user" element={<Home />} />
             <Route path="/user/home" element={<Home />} />
             <Route path="/user/about" element={<About />} />
+            <Route path="/user/blogs" element={<PublicBlogs bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+            <Route path="/user/blog/:slug" element={<PublicBlogDetail bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+            <Route path="/user/faqs" element={<PublicFAQs bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
             <Route path="/user/search" element={<Search />} />
             <Route path="/user/profile" element={<Profile />} />
             <Route path="/user/create-listing" element={<CreateListing />} />
@@ -697,6 +708,8 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/appointments" element={<AdminAppointments />} />
             <Route path="/admin/about" element={<AdminAbout />} />
+            <Route path="/admin/blogs" element={<AdminBlogs />} />
+            <Route path="/admin/faqs" element={<AdminFAQs />} />
             <Route path="/admin/explore" element={<AdminExplore />} />
             <Route path="/admin/create-listing" element={<AdminCreateListing />} />
             <Route path="/admin/listings" element={<AdminListings />} />

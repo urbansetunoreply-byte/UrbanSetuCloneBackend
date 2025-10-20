@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { FaEdit, FaUser, FaEnvelope, FaPhone, FaKey, FaTrash, FaSignOutAlt, FaHome, FaCalendarAlt, FaHeart, FaEye, FaCrown, FaTimes, FaCheck, FaStar, FaRoute, FaCreditCard, FaShieldAlt, FaTools, FaTruck, FaExclamationTriangle, FaCloudUploadAlt, FaClipboardList, FaMobileAlt } from "react-icons/fa";
+import { FaEdit, FaUser, FaEnvelope, FaPhone, FaKey, FaTrash, FaSignOutAlt, FaHome, FaCalendarAlt, FaHeart, FaEye, FaCrown, FaTimes, FaCheck, FaStar, FaRoute, FaCreditCard, FaShieldAlt, FaTools, FaTruck, FaExclamationTriangle, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaBookOpen, FaQuestionCircle } from "react-icons/fa";
 import UserAvatar from "../components/UserAvatar";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import RecaptchaWidget from "../components/RecaptchaWidget";
@@ -2482,6 +2482,20 @@ export default function Profile() {
                   <FaShieldAlt className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
                   <span className="font-medium text-xs sm:text-sm">Security Moderation</span>
                 </Link>
+                <Link
+                  to="/admin/blogs"
+                  className={`bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1300`}
+                >
+                  <FaBookOpen className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
+                  <span className="font-medium text-xs sm:text-sm">Manage Blogs</span>
+                </Link>
+                <Link
+                  to="/admin/faqs"
+                  className={`bg-orange-500 text-white p-3 rounded-lg hover:bg-orange-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1350`}
+                >
+                  <FaQuestionCircle className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
+                  <span className="font-medium text-xs sm:text-sm">Manage FAQs</span>
+                </Link>
               </>
             ) : null}
 
@@ -2508,6 +2522,20 @@ export default function Profile() {
                 >
                   <FaCreditCard className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
                   <span className="font-medium text-xs sm:text-sm">My Payments</span>
+                </Link>
+                <Link
+                  to="/user/blogs"
+                  className={`bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1200`}
+                >
+                  <FaBookOpen className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
+                  <span className="font-medium text-xs sm:text-sm">Blogs</span>
+                </Link>
+                <Link
+                  to="/user/faqs"
+                  className={`bg-orange-500 text-white p-3 rounded-lg hover:bg-orange-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1350`}
+                >
+                  <FaQuestionCircle className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
+                  <span className="font-medium text-xs sm:text-sm">FAQs</span>
                 </Link>
               </>
             )}
