@@ -1,4 +1,5 @@
 import Listing from '../models/listing.model.js';
+import { searchCachedProperties, needsReindexing, indexAllProperties } from '../services/dataSyncService.js';
 
 /**
  * Search properties for @ suggestions
@@ -7,65 +8,19 @@ export const searchPropertiesForSuggestions = async (req, res) => {
     try {
         const { query, limit = 10 } = req.query;
         
-        // If no query provided, return recent properties
-        if (!query || query.trim().length === 0) {
-            const recentProperties = await Listing.find({})
-                .select('name city district state regularPrice discountPrice type bedrooms bathrooms area imageUrls')
-                .sort({ createdAt: -1 })
-                .limit(parseInt(limit))
-                .lean();
-
-            const suggestions = recentProperties.map(prop => ({
-                id: prop._id,
-                name: prop.name,
-                location: `${prop.city}, ${prop.state}`,
-                price: prop.discountPrice || prop.regularPrice,
-                originalPrice: prop.regularPrice,
-                type: prop.type,
-                bedrooms: prop.bedrooms,
-                bathrooms: prop.bathrooms,
-                area: prop.area,
-                image: prop.imageUrls?.[0] || null,
-                displayText: `${prop.name} - ${prop.city} (₹${(prop.discountPrice || prop.regularPrice).toLocaleString()})`
-            }));
-
-            return res.status(200).json({
-                success: true,
-                data: suggestions,
-                count: suggestions.length
-            });
+        // Check if data needs re-indexing
+        if (needsReindexing()) {
+            console.log('🔄 Property search: Data needs re-indexing, updating cache...');
+            try {
+                await indexAllProperties();
+                console.log('✅ Property cache updated');
+            } catch (error) {
+                console.error('❌ Error updating property cache:', error);
+            }
         }
-
-        // Search properties by name, city, type, or description
-        const searchQuery = {
-            $or: [
-                { name: { $regex: query, $options: 'i' } },
-                { city: { $regex: query, $options: 'i' } },
-                { district: { $regex: query, $options: 'i' } },
-                { type: { $regex: query, $options: 'i' } },
-                { description: { $regex: query, $options: 'i' } }
-            ]
-        };
-
-        const properties = await Listing.find(searchQuery)
-            .select('name city district state regularPrice discountPrice type bedrooms bathrooms area imageUrls')
-            .limit(parseInt(limit))
-            .lean();
-
-        // Format properties for suggestions
-        const suggestions = properties.map(prop => ({
-            id: prop._id,
-            name: prop.name,
-            location: `${prop.city}, ${prop.state}`,
-            price: prop.discountPrice || prop.regularPrice,
-            originalPrice: prop.regularPrice,
-            type: prop.type,
-            bedrooms: prop.bedrooms,
-            bathrooms: prop.bathrooms,
-            area: prop.area,
-            image: prop.imageUrls?.[0] || null,
-            displayText: `${prop.name} - ${prop.city} (₹${(prop.discountPrice || prop.regularPrice).toLocaleString()})`
-        }));
+        
+        // Search cached properties (much faster)
+        const suggestions = searchCachedProperties(query || '', parseInt(limit));
 
         res.status(200).json({
             success: true,

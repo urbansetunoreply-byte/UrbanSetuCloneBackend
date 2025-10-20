@@ -28,6 +28,7 @@ import fraudRouter from "./routes/fraud.route.js";
 import emailMonitorRouter from "./routes/emailMonitor.route.js";
 import accountRevocationRouter from "./routes/accountRevocation.route.js";
 import propertySearchRouter from "./routes/propertySearch.route.js";
+import dataSyncRouter from "./routes/dataSync.route.js";
 import appointmentReminderRouter from "./routes/appointmentReminder.route.js";
 import priceDropAlertRouter from "./routes/priceDropAlert.route.js";
 import statisticsRouter from "./routes/statistics.route.js";
@@ -53,6 +54,9 @@ try {
   deploymentRouter = (await import("./routes/deployment.route.js")).default;
 }
 import { startScheduler } from "./services/schedulerService.js";
+import { indexAllWebsiteData } from "./services/dataSyncService.js";
+import { setupAllHooks } from "./middleware/dataSyncHooks.js";
+import { startScheduledSync } from "./services/scheduledSyncService.js";
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import http from 'http';
@@ -510,6 +514,7 @@ app.use("/api/search", searchRouter);
 app.use("/api/property-restoration", propertyRestorationRouter);
 app.use("/api/deployment", deploymentRouter);
 app.use("/api/property-search", propertySearchRouter);
+app.use("/api/data-sync", dataSyncRouter);
 console.log('All API routes registered successfully');
 
 // Catch-all route for 404s - must be after all other routes
@@ -523,11 +528,37 @@ app.use('*', (req, res) => {
 });
 
 const startServer = () => {
-  server.listen(PORT, () => {
+  server.listen(PORT, async () => {
     console.log(`Server is running on port ${PORT}!!!`);
     
     // Start the appointment reminder scheduler
     startScheduler(app);
+    
+    // Initialize data synchronization
+    console.log('🚀 Initializing data synchronization...');
+    
+    try {
+      // Setup database change hooks
+      setupAllHooks();
+      
+      // Initial data indexing
+      console.log('📊 Performing initial data indexing...');
+      const result = await indexAllWebsiteData();
+      
+      if (result.success) {
+        console.log(`✅ Initial indexing completed: ${result.totalIndexed} items indexed`);
+        console.log(`📊 Breakdown: ${result.breakdown.properties} properties, ${result.breakdown.blogs} blogs, ${result.breakdown.faqs} FAQs`);
+      } else {
+        console.error('❌ Initial indexing failed:', result.error);
+      }
+      
+      // Start scheduled synchronization
+      startScheduledSync();
+      
+      console.log('🎉 Data synchronization system initialized successfully!');
+    } catch (error) {
+      console.error('❌ Error initializing data synchronization:', error);
+    }
   }).on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
       console.log(`Port ${PORT} is busy, trying ${PORT + 1}...`);

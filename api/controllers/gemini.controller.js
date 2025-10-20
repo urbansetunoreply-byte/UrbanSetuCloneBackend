@@ -2,6 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import ChatHistory from '../models/chatHistory.model.js';
 import MessageRating from '../models/messageRating.model.js';
 import { getRelevantWebsiteData } from '../services/websiteDataService.js';
+import { getRelevantCachedData, needsReindexing, indexAllWebsiteData } from '../services/dataSyncService.js';
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY || "AIzaSyAcqc4JRzSG5pdYDWxbk3UZRn0IhrWhV7k"
@@ -100,8 +101,19 @@ export const chatWithGemini = async (req, res) => {
             // Get selected properties from request body
             const selectedProperties = req.body.selectedProperties || [];
             
-            // Get relevant website data
-            const websiteData = await getRelevantWebsiteData(userMessage, selectedProperties);
+            // Check if data needs re-indexing and do it if necessary
+            if (needsReindexing()) {
+                console.log('🔄 Data needs re-indexing, updating cache...');
+                try {
+                    await indexAllWebsiteData();
+                    console.log('✅ Data cache updated');
+                } catch (error) {
+                    console.error('❌ Error updating data cache:', error);
+                }
+            }
+            
+            // Get relevant website data from cache (faster)
+            const websiteData = getRelevantCachedData(userMessage, selectedProperties);
             
             return `${basePrompt}
 
