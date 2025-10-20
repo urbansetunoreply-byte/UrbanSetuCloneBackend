@@ -34,6 +34,48 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         const userKey = getUserKey(key);
         localStorage.setItem(userKey, value);
     };
+    
+    // Helper function to get theme color as hex value for the ring
+    const getThemeRingColor = () => {
+        const theme = getThemeColors();
+        const accentClass = theme.accent;
+        
+        // Map Tailwind color classes to hex values
+        const colorMap = {
+            'text-blue-400': '#60a5fa',
+            'text-blue-500': '#3b82f6',
+            'text-blue-600': '#2563eb',
+            'text-green-400': '#4ade80',
+            'text-green-500': '#22c55e',
+            'text-green-600': '#16a34a',
+            'text-purple-400': '#a78bfa',
+            'text-purple-500': '#8b5cf6',
+            'text-purple-600': '#7c3aed',
+            'text-pink-400': '#f472b6',
+            'text-pink-500': '#ec4899',
+            'text-pink-600': '#db2777',
+            'text-red-400': '#f87171',
+            'text-red-500': '#ef4444',
+            'text-red-600': '#dc2626',
+            'text-orange-400': '#fb923c',
+            'text-orange-500': '#f97316',
+            'text-orange-600': '#ea580c',
+            'text-yellow-400': '#facc15',
+            'text-yellow-500': '#eab308',
+            'text-yellow-600': '#ca8a04',
+            'text-indigo-400': '#818cf8',
+            'text-indigo-500': '#6366f1',
+            'text-indigo-600': '#4f46e5',
+            'text-cyan-400': '#22d3ee',
+            'text-cyan-500': '#06b6d4',
+            'text-cyan-600': '#0891b2',
+            'text-teal-400': '#2dd4bf',
+            'text-teal-500': '#14b8a6',
+            'text-teal-600': '#0d9488',
+        };
+        
+        return colorMap[accentClass] || '#60a5fa'; // Default to blue if not found
+    };
     const navigate = useNavigate();
     const location = useLocation();
     const [isOpen, setIsOpen] = useState(forceModalOpen);
@@ -111,6 +153,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [showFileUpload, setShowFileUpload] = useState(false);
     const [uploadedFiles, setUploadedFiles] = useState([]);
     const [showSmartSuggestions, setShowSmartSuggestions] = useState(() => {
+        // Disable smart suggestions by default for public users
+        if (!currentUser) return false;
         return getUserSetting('gemini_smart_suggestions', 'true') === 'true';
     });
     const [smartSuggestions, setSmartSuggestions] = useState([
@@ -735,7 +779,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
     }, [dataRetention, currentUser]);
 
-    // Disable auto-save and high contrast for public users
+    // Disable auto-save, high contrast, and smart suggestions for public users
     useEffect(() => {
         if (!currentUser) {
             if (autoSave) {
@@ -744,8 +788,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             if (highContrast) {
                 setHighContrast(false);
             }
+            if (showSmartSuggestions) {
+                setShowSmartSuggestions(false);
+            }
         }
-    }, [currentUser, autoSave, highContrast]);
+    }, [currentUser, autoSave, highContrast, showSmartSuggestions]);
 
     // Auto-save effect
     useEffect(() => {
@@ -3442,18 +3489,16 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             isDarkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900' : `bg-gradient-to-br ${themeColors.primary}`
                         }`}
                         style={{ 
-                            boxShadow: isDarkMode ? '0 10px 25px rgba(0,0,0,0.3)' : `0 10px 25px ${selectedTheme === 'blue' ? '#6366f140' : '#10b98140'}`
+                            boxShadow: isDarkMode ? '0 10px 25px rgba(0,0,0,0.3)' : `0 10px 25px ${getThemeRingColor()}40`
                         }}
                         aria-label="Open AI Chat"
                         title="Chat with Gemini AI Assistant!"
                     >
                         {/* Animated background ring */}
                         <div
-                            className={`absolute inset-0 rounded-full animate-ping ${
-                                isDarkMode ? 'border-gray-600' : 'border-blue-400'
-                            }`}
+                            className={`absolute inset-0 rounded-full animate-ping`}
                             style={{
-                                border: `3px solid ${isDarkMode ? '#4b5563' : '#60a5fa'}`,
+                                border: `3px solid ${isDarkMode ? '#4b5563' : getThemeRingColor()}`,
                             }}
                         ></div>
                         
@@ -5118,7 +5163,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
         {/* Sign-in Overlay for Public Users when Prompts Reach Zero */}
         {!currentUser && rateLimitInfo.remaining <= 0 && (
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 rounded-2xl">
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
                 <div className={`max-w-md mx-4 p-6 rounded-2xl shadow-2xl border-2 border-dashed ${isDarkMode ? 'bg-gray-800/95 border-gray-600' : 'bg-white/95 border-blue-200'} transition-all duration-300`}>
                     <div className="text-center">
                         <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 ${isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100'}`}>
