@@ -4782,12 +4782,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     
                                     {/* Property Suggestions Dropdown */}
                                     {showPropertySuggestions && (
-                                        <div ref={suggestionsRef} className={"absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-gray-800 border-2 border-blue-300 dark:border-blue-600 rounded-lg shadow-2xl z-50 max-h-60 overflow-y-auto animate-fadeIn"}
+                                        <div ref={suggestionsRef} className={`absolute bottom-full left-0 right-0 mb-2 ${isDarkMode ? 'bg-gray-800 border-blue-600' : 'bg-white border-blue-300'} border-2 rounded-lg shadow-2xl z-50 max-h-60 overflow-y-auto animate-fadeIn`}
                                         style={{
                                             boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
                                             minWidth: '300px'
                                         }}>
-                                            <div className="p-3 text-sm font-medium text-blue-600 dark:text-blue-400 border-b border-gray-200 dark:border-gray-600 bg-blue-50 dark:bg-blue-900/20">
+                                            <div className={`p-3 text-sm font-medium ${isDarkMode ? 'text-blue-400 border-gray-600 bg-blue-900/20' : 'text-blue-600 border-gray-200 bg-blue-50'} border-b`}>
                                                 <div className="flex items-center gap-2">
                                                     {isLoadingSuggestions ? (
                                                         <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
@@ -4803,8 +4803,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     type="button"
                                                     key={property.id}
                                                     onMouseDown={(e) => { e.preventDefault(); handleSuggestionSelect(property); }}
-                                                    className={`w-full text-left p-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
-                                                        index === selectedSuggestionIndex ? 'bg-gray-100 dark:bg-gray-700' : ''
+                                                    className={`w-full text-left p-3 ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition-colors ${
+                                                        index === selectedSuggestionIndex ? (isDarkMode ? 'bg-gray-700' : 'bg-gray-100') : ''
                                                     }`}
                                                 >
                                                     <div className="flex items-center space-x-3">
@@ -4816,23 +4816,23 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                             />
                                                         )}
                                                         <div className="flex-1 min-w-0">
-                                                            <div className="font-medium text-gray-900 dark:text-white truncate">
+                                                            <div className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'} truncate`}>
                                                                 {property.name}
                                                             </div>
-                                                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                            <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                                                 {property.location}
                                                             </div>
-                                                            <div className="text-sm font-semibold text-green-600 dark:text-green-400">
+                                                            <div className={`text-sm font-semibold ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>
                                                                 ₹{property.price.toLocaleString()}
                                                             </div>
-                                                            <div className="text-xs text-gray-400 dark:text-gray-500">
+                                                            <div className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
                                                                 {property.bedrooms}BHK • {property.area} sq ft • {property.type}
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </button>
                                             )) : (
-                                                <div className="p-3 text-sm text-gray-500 dark:text-gray-400 text-center">
+                                                <div className={`p-3 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} text-center`}>
                                                     No properties found. Try typing more characters.
                                                 </div>
                                             )}
