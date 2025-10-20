@@ -292,6 +292,11 @@ export const migrateAbout = async (req, res, next) => {
             year: "2024",
             title: "Mobile App Launch",
             description: "Launched our comprehensive mobile application and PWA"
+          },
+          {
+            year: "2025",
+            title: "AI-Powered Future",
+            description: "Expanding AI capabilities with advanced property analytics and automated transactions"
           }
         ]
       };
