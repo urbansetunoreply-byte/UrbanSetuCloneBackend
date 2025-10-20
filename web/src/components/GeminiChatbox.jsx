@@ -518,13 +518,15 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     // Search properties for @ suggestions
     const searchProperties = async (query) => {
         try {
-            if (!query || query.trim().length < 2) {
-                setPropertySuggestions([]);
-                return;
-            }
+            // Show suggestions even for empty query (to show all properties)
+            const searchQuery = query ? query.trim() : '';
+            console.log('Searching properties with query:', searchQuery);
 
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-            const response = await fetch(`${API_BASE_URL}/api/property-search/search?query=${encodeURIComponent(query)}&limit=5`, {
+            const url = `${API_BASE_URL}/api/property-search/search?query=${encodeURIComponent(searchQuery)}&limit=5`;
+            console.log('API URL:', url);
+            
+            const response = await fetch(url, {
                 method: 'GET',
                 credentials: 'include',
                 headers: {
@@ -532,11 +534,16 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 },
             });
 
+            console.log('Response status:', response.status);
+            
             if (response.ok) {
                 const data = await response.json();
+                console.log('Property suggestions received:', data);
                 setPropertySuggestions(data.data || []);
             } else {
-                console.error('Failed to search properties');
+                console.error('Failed to search properties, status:', response.status);
+                const errorText = await response.text();
+                console.error('Error response:', errorText);
                 setPropertySuggestions([]);
             }
         } catch (error) {
@@ -560,8 +567,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
             const hasSpaceAfterAt = textAfterAt.includes(' ');
             
+            console.log('@ detected:', { textAfterAt, hasSpaceAfterAt, lastAtIndex });
+            
             if (!hasSpaceAfterAt) {
                 // Show suggestions
+                console.log('Showing property suggestions for:', textAfterAt);
                 setShowPropertySuggestions(true);
                 setSuggestionQuery(textAfterAt);
                 setSuggestionStartPos(lastAtIndex);
@@ -570,6 +580,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 // Search properties
                 searchProperties(textAfterAt);
             } else {
+                console.log('Hiding suggestions - space after @');
                 setShowPropertySuggestions(false);
             }
         } else {
@@ -633,6 +644,23 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 break;
         }
     };
+
+    // Close suggestions when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (showPropertySuggestions && inputRef.current && !inputRef.current.contains(event.target)) {
+                setShowPropertySuggestions(false);
+                setSuggestionQuery('');
+                setSuggestionStartPos(-1);
+                setSelectedSuggestionIndex(-1);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showPropertySuggestions]);
 
     // Clear chat history (server + local) from within the chatbox header
     const handleClearChatHistory = async () => {
@@ -4791,12 +4819,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 )}
                                 
                                 {/* Property Suggestions Dropdown */}
-                                {showPropertySuggestions && propertySuggestions.length > 0 && (
+                                {console.log('Rendering suggestions:', { showPropertySuggestions, suggestionsCount: propertySuggestions.length })}
+                                {showPropertySuggestions && (
                                     <div className="absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
                                         <div className="p-2 text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
-                                            Select a property to reference:
+                                            {propertySuggestions.length > 0 ? 'Select a property to reference:' : 'No properties found'}
                                         </div>
-                                        {propertySuggestions.map((property, index) => (
+                                        {propertySuggestions.length > 0 ? propertySuggestions.map((property, index) => (
                                             <button
                                                 key={property.id}
                                                 onClick={() => handleSuggestionSelect(property)}
@@ -4828,7 +4857,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     </div>
                                                 </div>
                                             </button>
-                                        ))}
+                                        )) : (
+                                            <div className="p-3 text-sm text-gray-500 dark:text-gray-400 text-center">
+                                                No properties found. Try typing more characters.
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </form>

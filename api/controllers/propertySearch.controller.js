@@ -7,10 +7,32 @@ export const searchPropertiesForSuggestions = async (req, res) => {
     try {
         const { query, limit = 10 } = req.query;
         
-        if (!query || query.trim().length < 2) {
-            return res.status(400).json({
-                success: false,
-                message: 'Query must be at least 2 characters long'
+        // If no query provided, return recent properties
+        if (!query || query.trim().length === 0) {
+            const recentProperties = await Listing.find({})
+                .select('name city district state regularPrice discountPrice type bedrooms bathrooms area imageUrls')
+                .sort({ createdAt: -1 })
+                .limit(parseInt(limit))
+                .lean();
+
+            const suggestions = recentProperties.map(prop => ({
+                id: prop._id,
+                name: prop.name,
+                location: `${prop.city}, ${prop.state}`,
+                price: prop.discountPrice || prop.regularPrice,
+                originalPrice: prop.regularPrice,
+                type: prop.type,
+                bedrooms: prop.bedrooms,
+                bathrooms: prop.bathrooms,
+                area: prop.area,
+                image: prop.imageUrls?.[0] || null,
+                displayText: `${prop.name} - ${prop.city} (₹${(prop.discountPrice || prop.regularPrice).toLocaleString()})`
+            }));
+
+            return res.status(200).json({
+                success: true,
+                data: suggestions,
+                count: suggestions.length
             });
         }
 
