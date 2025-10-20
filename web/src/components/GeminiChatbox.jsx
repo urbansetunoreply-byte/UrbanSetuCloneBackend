@@ -666,36 +666,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         };
     }, [showPropertySuggestions]);
 
-    // State for dropdown positioning
-    const [dropdownPosition, setDropdownPosition] = useState('bottom');
-
-    // Calculate dropdown position based on available space
-    useEffect(() => {
-        if (showPropertySuggestions && inputRef.current) {
-            const inputRect = inputRef.current.getBoundingClientRect();
-            const viewportHeight = window.innerHeight;
-            const spaceBelow = viewportHeight - inputRect.bottom;
-            const spaceAbove = inputRect.top;
-            
-            // If there's not enough space below (less than 200px) and more space above, show above
-            if (spaceBelow < 200 && spaceAbove > spaceBelow) {
-                setDropdownPosition('top');
-            } else {
-                setDropdownPosition('bottom');
-            }
-            
-            // Scroll the input into view if needed
-            setTimeout(() => {
-                if (inputRef.current) {
-                    inputRef.current.scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'center',
-                        inline: 'nearest'
-                    });
-                }
-            }, 100);
-        }
-    }, [showPropertySuggestions]);
+    // Force suggestions to appear above the message input (fixed placement)
+    // We intentionally avoid dynamic positioning to keep the dropdown anchored above the footer input
 
     // Clear chat history (server + local) from within the chatbox header
     const handleClearChatHistory = async () => {
@@ -4854,13 +4826,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 )}
                                 
                                 {/* Property Suggestions Dropdown */}
-                                {console.log('Rendering suggestions:', { showPropertySuggestions, suggestionsCount: propertySuggestions.length })}
                                 {showPropertySuggestions && (
-                                    <div className={`absolute left-0 right-0 bg-white dark:bg-gray-800 border-2 border-blue-300 dark:border-blue-600 rounded-lg shadow-2xl z-50 max-h-60 overflow-y-auto animate-fadeIn ${
-                                        dropdownPosition === 'top' 
-                                            ? 'bottom-full mb-2' 
-                                            : 'top-full mt-2'
-                                    }`}
+                                    <div className={"absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-gray-800 border-2 border-blue-300 dark:border-blue-600 rounded-lg shadow-2xl z-50 max-h-60 overflow-y-auto animate-fadeIn"}
                                     style={{
                                         boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
                                         minWidth: '300px'
