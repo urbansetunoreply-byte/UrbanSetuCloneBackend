@@ -1,6 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import ChatHistory from '../models/chatHistory.model.js';
 import MessageRating from '../models/messageRating.model.js';
+import { getRelevantWebsiteData } from '../services/websiteDataService.js';
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY || "AIzaSyAcqc4JRzSG5pdYDWxbk3UZRn0IhrWhV7k"
@@ -54,7 +55,7 @@ export const chatWithGemini = async (req, res) => {
         const currentSessionId = sessionId || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
         // Enhanced system prompt with more comprehensive real estate knowledge
-        const getSystemPrompt = (tone) => {
+        const getSystemPrompt = async (tone, userMessage) => {
             const basePrompt = `You are Gemini, an advanced AI assistant specializing in real estate. You provide comprehensive help with:
 
             PROPERTY SEARCH & RECOMMENDATIONS:
@@ -96,7 +97,25 @@ export const chatWithGemini = async (req, res) => {
                 'neutral': 'Maintain a balanced, professional tone that is neither too casual nor too formal. Provide comprehensive information in a clear, organized manner.'
             };
             
-            return `${basePrompt}\n\nTone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
+            // Get selected properties from request body
+            const selectedProperties = req.body.selectedProperties || [];
+            
+            // Get relevant website data
+            const websiteData = await getRelevantWebsiteData(userMessage, selectedProperties);
+            
+            return `${basePrompt}
+
+CURRENT WEBSITE DATA (UrbanSetu):
+${websiteData}
+
+IMPORTANT INSTRUCTIONS:
+- Always reference specific properties, articles, or FAQs from the website data when relevant
+- Provide exact property details (prices, locations, amenities) from the data
+- If user asks about properties, show them the actual listings from our website
+- If user asks general real estate questions, provide general advice but also mention relevant content from our website
+- Always maintain a professional tone and encourage users to contact us for more details
+
+Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
         };
 
         // Prepare conversation history with security filtering using contextWindow
@@ -107,7 +126,8 @@ export const chatWithGemini = async (req, res) => {
         }));
 
         const conversationContext = filteredHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n');
-        const fullPrompt = `${getSystemPrompt(tone)}\n\nPrevious conversation:\n${conversationContext}\n\nCurrent user message: ${sanitizedMessage}`;
+        const systemPrompt = await getSystemPrompt(tone, sanitizedMessage);
+        const fullPrompt = `${systemPrompt}\n\nPrevious conversation:\n${conversationContext}\n\nCurrent user message: ${sanitizedMessage}`;
 
         console.log('Calling Gemini API with model: gemini-2.0-flash-exp, tone:', tone, 'responseLength:', responseLength, 'creativity:', creativity);
         

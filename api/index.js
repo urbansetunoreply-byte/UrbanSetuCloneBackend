@@ -27,6 +27,7 @@ import sessionManagementRouter from "./routes/sessionManagement.route.js";
 import fraudRouter from "./routes/fraud.route.js";
 import emailMonitorRouter from "./routes/emailMonitor.route.js";
 import accountRevocationRouter from "./routes/accountRevocation.route.js";
+import propertySearchRouter from "./routes/propertySearch.route.js";
 import appointmentReminderRouter from "./routes/appointmentReminder.route.js";
 import priceDropAlertRouter from "./routes/priceDropAlert.route.js";
 import statisticsRouter from "./routes/statistics.route.js";
@@ -508,6 +509,7 @@ app.use("/api/properties", propertiesRouter);
 app.use("/api/search", searchRouter);
 app.use("/api/property-restoration", propertyRestorationRouter);
 app.use("/api/deployment", deploymentRouter);
+app.use("/api/property-search", propertySearchRouter);
 console.log('All API routes registered successfully');
 
 // Catch-all route for 404s - must be after all other routes

@@ -107,6 +107,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const headerMenuButtonRef = useRef(null);
     const headerMenuRef = useRef(null);
     const [showFeatures, setShowFeatures] = useState(false);
+    
+    // Property suggestion states
+    const [showPropertySuggestions, setShowPropertySuggestions] = useState(false);
+    const [propertySuggestions, setPropertySuggestions] = useState([]);
+    const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
+    const [suggestionQuery, setSuggestionQuery] = useState('');
+    const [suggestionStartPos, setSuggestionStartPos] = useState(-1);
+    const [selectedProperties, setSelectedProperties] = useState([]);
     const [bookmarkedMessages, setBookmarkedMessages] = useState([]);
     const [messageRatings, setMessageRatings] = useState(() => JSON.parse(localStorage.getItem('gemini_ratings') || '{}'));
     const [showSettings, setShowSettings] = useState(false);
@@ -504,6 +512,125 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         } catch (error) {
             console.error('Error refreshing messages:', error);
             toast.error('Failed to refresh messages');
+        }
+    };
+
+    // Search properties for @ suggestions
+    const searchProperties = async (query) => {
+        try {
+            if (!query || query.trim().length < 2) {
+                setPropertySuggestions([]);
+                return;
+            }
+
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+            const response = await fetch(`${API_BASE_URL}/api/property-search/search?query=${encodeURIComponent(query)}&limit=5`, {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setPropertySuggestions(data.data || []);
+            } else {
+                console.error('Failed to search properties');
+                setPropertySuggestions([]);
+            }
+        } catch (error) {
+            console.error('Error searching properties:', error);
+            setPropertySuggestions([]);
+        }
+    };
+
+    // Handle @ input for property suggestions
+    const handleInputChange = (e) => {
+        const value = e.target.value;
+        setInputMessage(value);
+        handleTyping(); // Call the existing typing handler
+
+        // Check for @ symbol
+        const cursorPos = e.target.selectionStart;
+        const textBeforeCursor = value.substring(0, cursorPos);
+        const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+        
+        if (lastAtIndex !== -1) {
+            const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
+            const hasSpaceAfterAt = textAfterAt.includes(' ');
+            
+            if (!hasSpaceAfterAt) {
+                // Show suggestions
+                setShowPropertySuggestions(true);
+                setSuggestionQuery(textAfterAt);
+                setSuggestionStartPos(lastAtIndex);
+                setSelectedSuggestionIndex(-1);
+                
+                // Search properties
+                searchProperties(textAfterAt);
+            } else {
+                setShowPropertySuggestions(false);
+            }
+        } else {
+            setShowPropertySuggestions(false);
+        }
+    };
+
+    // Handle suggestion selection
+    const handleSuggestionSelect = (property) => {
+        const beforeAt = inputMessage.substring(0, suggestionStartPos);
+        const afterAt = inputMessage.substring(suggestionStartPos + suggestionQuery.length + 1);
+        
+        const newMessage = `${beforeAt}@${property.name}${afterAt}`;
+        setInputMessage(newMessage);
+        
+        // Add property to selected properties
+        setSelectedProperties(prev => [...prev, property]);
+        
+        // Hide suggestions
+        setShowPropertySuggestions(false);
+        setSuggestionQuery('');
+        setSuggestionStartPos(-1);
+        setSelectedSuggestionIndex(-1);
+        
+        // Focus back to input
+        setTimeout(() => {
+            if (inputRef.current) {
+                inputRef.current.focus();
+            }
+        }, 100);
+    };
+
+    // Handle keyboard navigation for suggestions
+    const handleKeyDown = (e) => {
+        if (!showPropertySuggestions) return;
+
+        switch (e.key) {
+            case 'ArrowDown':
+                e.preventDefault();
+                setSelectedSuggestionIndex(prev => 
+                    prev < propertySuggestions.length - 1 ? prev + 1 : 0
+                );
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                setSelectedSuggestionIndex(prev => 
+                    prev > 0 ? prev - 1 : propertySuggestions.length - 1
+                );
+                break;
+            case 'Enter':
+                e.preventDefault();
+                if (selectedSuggestionIndex >= 0 && propertySuggestions[selectedSuggestionIndex]) {
+                    handleSuggestionSelect(propertySuggestions[selectedSuggestionIndex]);
+                }
+                break;
+            case 'Escape':
+                setShowPropertySuggestions(false);
+                setSuggestionQuery('');
+                setSuggestionStartPos(-1);
+                setSelectedSuggestionIndex(-1);
+                break;
         }
     };
 
@@ -1069,6 +1196,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             userMessage = `[Tone: ${currentTone}] ${userMessage}`;
         }
         setInputMessage('');
+        setSelectedProperties([]); // Clear selected properties after sending
         setMessages(prev => {
             const currentMessages = Array.isArray(prev) ? prev : [];
             return [...currentMessages, { role: 'user', content: userMessage, timestamp: new Date().toISOString() }];
@@ -1124,7 +1252,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         enableStreaming: enableStreaming,
                         enableContextMemory: enableContextMemory,
                         contextWindow: contextWindow,
-                        enableSystemPrompts: enableSystemPrompts
+                        enableSystemPrompts: enableSystemPrompts,
+                        selectedProperties: selectedProperties
                 }),
                 signal: abortControllerRef.current.signal
             });
@@ -1233,7 +1362,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         enableStreaming: enableStreaming,
                         enableContextMemory: enableContextMemory,
                         contextWindow: contextWindow,
-                        enableSystemPrompts: enableSystemPrompts
+                        enableSystemPrompts: enableSystemPrompts,
+                        selectedProperties: selectedProperties
                     }),
                     signal: abortControllerRef.current.signal
                 });
@@ -4568,11 +4698,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         ref={inputRef}
                                         type="text"
                                         value={inputMessage}
-                                        onChange={(e) => {
-                                            setInputMessage(e.target.value);
-                                            handleTyping();
-                                        }}
+                                        onChange={handleInputChange}
                                         onKeyPress={handleKeyPress}
+                                        onKeyDown={handleKeyDown}
                                         placeholder={(rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin') ? "Sign in to continue chatting..." : "Ask me anything about real estate..."}
                                         aria-label="Type your message"
                                         aria-describedby="input-help"
@@ -4660,6 +4788,48 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             )}
                                         </div>
                                     </button>
+                                )}
+                                
+                                {/* Property Suggestions Dropdown */}
+                                {showPropertySuggestions && propertySuggestions.length > 0 && (
+                                    <div className="absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                                        <div className="p-2 text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
+                                            Select a property to reference:
+                                        </div>
+                                        {propertySuggestions.map((property, index) => (
+                                            <button
+                                                key={property.id}
+                                                onClick={() => handleSuggestionSelect(property)}
+                                                className={`w-full text-left p-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                                                    index === selectedSuggestionIndex ? 'bg-gray-100 dark:bg-gray-700' : ''
+                                                }`}
+                                            >
+                                                <div className="flex items-center space-x-3">
+                                                    {property.image && (
+                                                        <img
+                                                            src={property.image}
+                                                            alt={property.name}
+                                                            className="w-12 h-12 object-cover rounded-lg flex-shrink-0"
+                                                        />
+                                                    )}
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="font-medium text-gray-900 dark:text-white truncate">
+                                                            {property.name}
+                                                        </div>
+                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                            {property.location}
+                                                        </div>
+                                                        <div className="text-sm font-semibold text-green-600 dark:text-green-400">
+                                                            ₹{property.price.toLocaleString()}
+                                                        </div>
+                                                        <div className="text-xs text-gray-400 dark:text-gray-500">
+                                                            {property.bedrooms}BHK • {property.area} sq ft • {property.type}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
                                 )}
                             </form>
                         </div>
