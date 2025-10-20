@@ -973,7 +973,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             }
             if (showSmartSuggestions) {
                 setShowSmartSuggestions(false);
-            }
+        }
         }
     }, [currentUser, autoSave, highContrast, showSmartSuggestions]);
 

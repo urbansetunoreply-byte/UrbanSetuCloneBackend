@@ -1387,14 +1387,14 @@ export default function MyAppointments() {
 
       {/* Export Chat Modal */}
       {showExportModal && createPortal((
-        <ExportChatModal
-          isOpen={showExportModal}
-          onClose={() => {
-            setShowExportModal(false);
-            setExportAppointment(null);
-            setExportComments([]);
-          }}
-          onExport={async (includeMedia) => {
+      <ExportChatModal
+        isOpen={showExportModal}
+        onClose={() => {
+          setShowExportModal(false);
+          setExportAppointment(null);
+          setExportComments([]);
+        }}
+        onExport={async (includeMedia) => {
           try {
             toast.info('Generating PDF...', { autoClose: 2000 });
             // Determine the other party based on the export appointment
@@ -1417,11 +1417,11 @@ export default function MyAppointments() {
             toast.error('Failed to export chat transcript');
             console.error('Export error:', error);
           }
-          }}
-          appointment={exportAppointment}
-          messageCount={exportComments.filter(msg => !msg.deleted && (msg.message?.trim() || msg.imageUrl || msg.audioUrl || msg.videoUrl || msg.documentUrl)).length}
-          imageCount={exportComments.filter(msg => msg.imageUrl && !msg.deleted).length}
-        />
+        }}
+        appointment={exportAppointment}
+        messageCount={exportComments.filter(msg => !msg.deleted && (msg.message?.trim() || msg.imageUrl || msg.audioUrl || msg.videoUrl || msg.documentUrl)).length}
+        imageCount={exportComments.filter(msg => msg.imageUrl && !msg.deleted).length}
+      />
       ), document.body)}
     </div>
   );

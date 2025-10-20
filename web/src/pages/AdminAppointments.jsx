@@ -1805,7 +1805,7 @@ export default function AdminAppointments() {
         )}
 
   {/* Reports Modal - Admin-wide */}
-  {showReportsModal && createPortal((
+  {typeof showReportsModal !== 'undefined' && showReportsModal && createPortal((
     <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
