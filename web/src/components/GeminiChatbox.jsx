@@ -500,6 +500,90 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         scrollToBottom();
     }, [messages]);
 
+    // Load user-specific settings when currentUser changes
+    useEffect(() => {
+        if (currentUser) {
+            // Reload all user-specific settings
+            setSelectedTheme(getUserSetting('gemini_theme', 'blue'));
+            
+            const savedCustomTheme = getUserSetting('gemini_custom_theme', null);
+            setCustomTheme(savedCustomTheme ? JSON.parse(savedCustomTheme) : null);
+            
+            setFontSize(getUserSetting('gemini_font_size', 'medium'));
+            setMessageDensity(getUserSetting('gemini_message_density', 'comfortable'));
+            setAutoScroll(getUserSetting('gemini_auto_scroll', 'true') !== 'false');
+            setShowTimestamps(getUserSetting('gemini_show_timestamps', 'true') !== 'false');
+            setAiResponseLength(getUserSetting('gemini_response_length', 'medium'));
+            setAiCreativity(getUserSetting('gemini_creativity', 'balanced'));
+            setSoundEnabled(getUserSetting('gemini_sound_enabled', 'true') !== 'false');
+            setTypingSounds(getUserSetting('gemini_typing_sounds', 'true') !== 'false');
+            setDataRetention(getUserSetting('gemini_data_retention', '30'));
+            
+            // Advanced Settings
+            setAutoSave(getUserSetting('gemini_auto_save', 'true') !== 'false');
+            setMessageLimit(getUserSetting('gemini_message_limit', '100'));
+            setSessionTimeout(getUserSetting('gemini_session_timeout', '30'));
+            setEnableMarkdown(getUserSetting('gemini_enable_markdown', 'true') !== 'false');
+            setEnableCodeHighlighting(getUserSetting('gemini_code_highlighting', 'true') !== 'false');
+            setEnableEmojiReactions(getUserSetting('gemini_emoji_reactions', 'true') !== 'false');
+            setEnableMessageSearch(getUserSetting('gemini_message_search', 'true') !== 'false');
+            setEnableQuickActions(getUserSetting('gemini_quick_actions', 'true') !== 'false');
+            setEnableSmartSuggestions(getUserSetting('gemini_smart_suggestions', 'true') !== 'false');
+            setEnableTypingIndicator(getUserSetting('gemini_typing_indicator', 'true') !== 'false');
+            
+            // Accessibility Settings
+            setHighContrast(getUserSetting('gemini_high_contrast', 'false') === 'true');
+            setReducedMotion(getUserSetting('gemini_reduced_motion', 'false') === 'true');
+            setScreenReaderSupport(getUserSetting('gemini_screen_reader', 'false') === 'true');
+            setLargeText(getUserSetting('gemini_large_text', 'false') === 'true');
+            setKeyboardNavigation(getUserSetting('gemini_keyboard_nav', 'true') !== 'false');
+            
+            // Performance Settings
+            setMessageCaching(getUserSetting('gemini_message_caching', 'true') !== 'false');
+            setLazyLoading(getUserSetting('gemini_lazy_loading', 'true') !== 'false');
+            setImageOptimization(getUserSetting('gemini_image_optimization', 'true') !== 'false');
+            setPreloadMessages(getUserSetting('gemini_preload_messages', 'true') !== 'false');
+            setBatchOperations(getUserSetting('gemini_batch_operations', 'true') !== 'false');
+            
+            // Privacy Settings
+            setEnableAnalytics(getUserSetting('gemini_analytics', 'true') !== 'false');
+            setEnableErrorReporting(getUserSetting('gemini_error_reporting', 'true') !== 'false');
+            setEnableUsageTracking(getUserSetting('gemini_usage_tracking', 'true') !== 'false');
+            setEnableCrashReports(getUserSetting('gemini_crash_reports', 'true') !== 'false');
+            setEnablePerformanceMonitoring(getUserSetting('gemini_performance_monitoring', 'true') !== 'false');
+            
+            // Advanced AI Settings
+            setTemperature(getUserSetting('gemini_temperature', '0.7'));
+            setTopP(getUserSetting('gemini_top_p', '0.9'));
+            setTopK(getUserSetting('gemini_top_k', '40'));
+            setMaxTokens(getUserSetting('gemini_max_tokens', '2048'));
+            setEnableStreaming(getUserSetting('gemini_streaming', 'true') !== 'false');
+            setEnableContextMemory(getUserSetting('gemini_context_memory', 'true') !== 'false');
+            setContextWindow(getUserSetting('gemini_context_window', '4'));
+            setEnableSystemPrompts(getUserSetting('gemini_system_prompts', 'true') !== 'false');
+            
+            // Notification Settings
+            setEnableDesktopNotifications(getUserSetting('gemini_desktop_notifications', 'true') !== 'false');
+            setEnableEmailNotifications(getUserSetting('gemini_email_notifications', 'false') !== 'false');
+            setEnablePushNotifications(getUserSetting('gemini_push_notifications', 'true') !== 'false');
+            setNotificationSound(getUserSetting('gemini_notification_sound', 'default'));
+            setNotificationFrequency(getUserSetting('gemini_notification_frequency', 'immediate'));
+            
+            // UI/UX Settings
+            setEnableAnimations(getUserSetting('gemini_animations', 'true') !== 'false');
+            setEnableHoverEffects(getUserSetting('gemini_hover_effects', 'true') !== 'false');
+            setEnableTransitions(getUserSetting('gemini_transitions', 'true') !== 'false');
+            setEnableTooltips(getUserSetting('gemini_tooltips', 'true') !== 'false');
+            setEnableKeyboardShortcuts(getUserSetting('gemini_keyboard_shortcuts', 'true') !== 'false');
+            setEnableDragAndDrop(getUserSetting('gemini_drag_drop', 'true') !== 'false');
+            setEnableRightClickMenu(getUserSetting('gemini_right_click', 'true') !== 'false');
+            setEnableContextMenu(getUserSetting('gemini_context_menu', 'true') !== 'false');
+            
+            // Dark mode
+            setIsDarkMode(getUserSetting('gemini_dark_mode', 'false') === 'true');
+        }
+    }, [currentUser]);
+
     // Initialize session and load history when component mounts or user changes
     useEffect(() => {
         const currentSessionId = getOrCreateSessionId();
