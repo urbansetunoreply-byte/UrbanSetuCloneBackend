@@ -18,6 +18,22 @@ import 'prismjs/components/prism-markdown';
 
 const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const { currentUser } = useSelector((state) => state.user);
+    
+    // Helper functions for user-specific localStorage
+    const getUserKey = (key) => {
+        if (!currentUser) return key; // For public users, use global keys
+        return `user_${currentUser._id}_${key}`;
+    };
+    
+    const getUserSetting = (key, defaultValue) => {
+        const userKey = getUserKey(key);
+        return localStorage.getItem(userKey) || defaultValue;
+    };
+    
+    const setUserSetting = (key, value) => {
+        const userKey = getUserKey(key);
+        localStorage.setItem(userKey, value);
+    };
     const navigate = useNavigate();
     const location = useLocation();
     const [isOpen, setIsOpen] = useState(forceModalOpen);
@@ -90,13 +106,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [isRecording, setIsRecording] = useState(false);
     const [mediaRecorder, setMediaRecorder] = useState(null);
     const [audioChunks, setAudioChunks] = useState([]);
-    const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('gemini_dark_mode') === 'true');
+    const [isDarkMode, setIsDarkMode] = useState(() => getUserSetting('gemini_dark_mode', 'false') === 'true');
     const [showVoiceInput, setShowVoiceInput] = useState(false);
     const [showFileUpload, setShowFileUpload] = useState(false);
     const [uploadedFiles, setUploadedFiles] = useState([]);
     const [showSmartSuggestions, setShowSmartSuggestions] = useState(() => {
-        const saved = localStorage.getItem('gemini_smart_suggestions');
-        return saved !== null ? saved === 'true' : true;
+        return getUserSetting('gemini_smart_suggestions', 'true') === 'true';
     });
     const [smartSuggestions, setSmartSuggestions] = useState([
         "Find properties under ₹50L in Bangalore",
@@ -112,85 +127,85 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [messageFilter, setMessageFilter] = useState('all'); // all, user, assistant, bookmarked
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [showWelcomeScreen, setShowWelcomeScreen] = useState(true);
-    const [selectedTheme, setSelectedTheme] = useState(() => localStorage.getItem('gemini_theme') || 'blue');
+    const [selectedTheme, setSelectedTheme] = useState(() => getUserSetting('gemini_theme', 'blue'));
     const [customTheme, setCustomTheme] = useState(() => {
-        const saved = localStorage.getItem('gemini_custom_theme');
+        const saved = getUserSetting('gemini_custom_theme', null);
         return saved ? JSON.parse(saved) : null;
     });
-    const [fontSize, setFontSize] = useState(() => localStorage.getItem('gemini_font_size') || 'medium');
-    const [messageDensity, setMessageDensity] = useState(() => localStorage.getItem('gemini_message_density') || 'comfortable');
-    const [autoScroll, setAutoScroll] = useState(() => localStorage.getItem('gemini_auto_scroll') !== 'false');
-    const [showTimestamps, setShowTimestamps] = useState(() => localStorage.getItem('gemini_show_timestamps') !== 'false');
-    const [aiResponseLength, setAiResponseLength] = useState(() => localStorage.getItem('gemini_response_length') || 'medium');
-    const [aiCreativity, setAiCreativity] = useState(() => localStorage.getItem('gemini_creativity') || 'balanced');
-    const [soundEnabled, setSoundEnabled] = useState(() => localStorage.getItem('gemini_sound_enabled') !== 'false');
-    const [typingSounds, setTypingSounds] = useState(() => localStorage.getItem('gemini_typing_sounds') !== 'false');
-    const [dataRetention, setDataRetention] = useState(() => localStorage.getItem('gemini_data_retention') || '30');
+    const [fontSize, setFontSize] = useState(() => getUserSetting('gemini_font_size', 'medium'));
+    const [messageDensity, setMessageDensity] = useState(() => getUserSetting('gemini_message_density', 'comfortable'));
+    const [autoScroll, setAutoScroll] = useState(() => getUserSetting('gemini_auto_scroll', 'true') !== 'false');
+    const [showTimestamps, setShowTimestamps] = useState(() => getUserSetting('gemini_show_timestamps', 'true') !== 'false');
+    const [aiResponseLength, setAiResponseLength] = useState(() => getUserSetting('gemini_response_length', 'medium'));
+    const [aiCreativity, setAiCreativity] = useState(() => getUserSetting('gemini_creativity', 'balanced'));
+    const [soundEnabled, setSoundEnabled] = useState(() => getUserSetting('gemini_sound_enabled', 'true') !== 'false');
+    const [typingSounds, setTypingSounds] = useState(() => getUserSetting('gemini_typing_sounds', 'true') !== 'false');
+    const [dataRetention, setDataRetention] = useState(() => getUserSetting('gemini_data_retention', '30'));
     const [showCustomThemePicker, setShowCustomThemePicker] = useState(false);
     
     // Advanced Settings
-    const [autoSave, setAutoSave] = useState(() => localStorage.getItem('gemini_auto_save') !== 'false');
-    const [messageLimit, setMessageLimit] = useState(() => localStorage.getItem('gemini_message_limit') || '100');
-    const [sessionTimeout, setSessionTimeout] = useState(() => localStorage.getItem('gemini_session_timeout') || '30');
-    const [enableMarkdown, setEnableMarkdown] = useState(() => localStorage.getItem('gemini_enable_markdown') !== 'false');
-    const [enableCodeHighlighting, setEnableCodeHighlighting] = useState(() => localStorage.getItem('gemini_code_highlighting') !== 'false');
-    const [enableEmojiReactions, setEnableEmojiReactions] = useState(() => localStorage.getItem('gemini_emoji_reactions') !== 'false');
-    const [enableMessageSearch, setEnableMessageSearch] = useState(() => localStorage.getItem('gemini_message_search') !== 'false');
-    const [enableQuickActions, setEnableQuickActions] = useState(() => localStorage.getItem('gemini_quick_actions') !== 'false');
-    const [enableSmartSuggestions, setEnableSmartSuggestions] = useState(() => localStorage.getItem('gemini_smart_suggestions') !== 'false');
-    const [enableTypingIndicator, setEnableTypingIndicator] = useState(() => localStorage.getItem('gemini_typing_indicator') !== 'false');
+    const [autoSave, setAutoSave] = useState(() => getUserSetting('gemini_auto_save', 'true') !== 'false');
+    const [messageLimit, setMessageLimit] = useState(() => getUserSetting('gemini_message_limit', '100'));
+    const [sessionTimeout, setSessionTimeout] = useState(() => getUserSetting('gemini_session_timeout', '30'));
+    const [enableMarkdown, setEnableMarkdown] = useState(() => getUserSetting('gemini_enable_markdown', 'true') !== 'false');
+    const [enableCodeHighlighting, setEnableCodeHighlighting] = useState(() => getUserSetting('gemini_code_highlighting', 'true') !== 'false');
+    const [enableEmojiReactions, setEnableEmojiReactions] = useState(() => getUserSetting('gemini_emoji_reactions', 'true') !== 'false');
+    const [enableMessageSearch, setEnableMessageSearch] = useState(() => getUserSetting('gemini_message_search', 'true') !== 'false');
+    const [enableQuickActions, setEnableQuickActions] = useState(() => getUserSetting('gemini_quick_actions', 'true') !== 'false');
+    const [enableSmartSuggestions, setEnableSmartSuggestions] = useState(() => getUserSetting('gemini_smart_suggestions', 'true') !== 'false');
+    const [enableTypingIndicator, setEnableTypingIndicator] = useState(() => getUserSetting('gemini_typing_indicator', 'true') !== 'false');
     
     // Accessibility Settings
     const [highContrast, setHighContrast] = useState(() => {
         // For public users (no currentUser), default to false
         if (!currentUser) return false;
-        return localStorage.getItem('gemini_high_contrast') === 'true';
+        return getUserSetting('gemini_high_contrast', 'false') === 'true';
     });
-    const [reducedMotion, setReducedMotion] = useState(() => localStorage.getItem('gemini_reduced_motion') === 'true');
-    const [screenReaderSupport, setScreenReaderSupport] = useState(() => localStorage.getItem('gemini_screen_reader') === 'true');
-    const [largeText, setLargeText] = useState(() => localStorage.getItem('gemini_large_text') === 'true');
-    const [keyboardNavigation, setKeyboardNavigation] = useState(() => localStorage.getItem('gemini_keyboard_nav') !== 'false');
+    const [reducedMotion, setReducedMotion] = useState(() => getUserSetting('gemini_reduced_motion', 'false') === 'true');
+    const [screenReaderSupport, setScreenReaderSupport] = useState(() => getUserSetting('gemini_screen_reader', 'false') === 'true');
+    const [largeText, setLargeText] = useState(() => getUserSetting('gemini_large_text', 'false') === 'true');
+    const [keyboardNavigation, setKeyboardNavigation] = useState(() => getUserSetting('gemini_keyboard_nav', 'true') !== 'false');
     
     // Performance Settings
-    const [messageCaching, setMessageCaching] = useState(() => localStorage.getItem('gemini_message_caching') !== 'false');
-    const [lazyLoading, setLazyLoading] = useState(() => localStorage.getItem('gemini_lazy_loading') !== 'false');
-    const [imageOptimization, setImageOptimization] = useState(() => localStorage.getItem('gemini_image_optimization') !== 'false');
-    const [preloadMessages, setPreloadMessages] = useState(() => localStorage.getItem('gemini_preload_messages') !== 'false');
-    const [batchOperations, setBatchOperations] = useState(() => localStorage.getItem('gemini_batch_operations') !== 'false');
+    const [messageCaching, setMessageCaching] = useState(() => getUserSetting('gemini_message_caching', 'true') !== 'false');
+    const [lazyLoading, setLazyLoading] = useState(() => getUserSetting('gemini_lazy_loading', 'true') !== 'false');
+    const [imageOptimization, setImageOptimization] = useState(() => getUserSetting('gemini_image_optimization', 'true') !== 'false');
+    const [preloadMessages, setPreloadMessages] = useState(() => getUserSetting('gemini_preload_messages', 'true') !== 'false');
+    const [batchOperations, setBatchOperations] = useState(() => getUserSetting('gemini_batch_operations', 'true') !== 'false');
     
     // Privacy Settings
-    const [enableAnalytics, setEnableAnalytics] = useState(() => localStorage.getItem('gemini_analytics') !== 'false');
-    const [enableErrorReporting, setEnableErrorReporting] = useState(() => localStorage.getItem('gemini_error_reporting') !== 'false');
-    const [enableUsageTracking, setEnableUsageTracking] = useState(() => localStorage.getItem('gemini_usage_tracking') !== 'false');
-    const [enableCrashReports, setEnableCrashReports] = useState(() => localStorage.getItem('gemini_crash_reports') !== 'false');
-    const [enablePerformanceMonitoring, setEnablePerformanceMonitoring] = useState(() => localStorage.getItem('gemini_performance_monitoring') !== 'false');
+    const [enableAnalytics, setEnableAnalytics] = useState(() => getUserSetting('gemini_analytics', 'true') !== 'false');
+    const [enableErrorReporting, setEnableErrorReporting] = useState(() => getUserSetting('gemini_error_reporting', 'true') !== 'false');
+    const [enableUsageTracking, setEnableUsageTracking] = useState(() => getUserSetting('gemini_usage_tracking', 'true') !== 'false');
+    const [enableCrashReports, setEnableCrashReports] = useState(() => getUserSetting('gemini_crash_reports', 'true') !== 'false');
+    const [enablePerformanceMonitoring, setEnablePerformanceMonitoring] = useState(() => getUserSetting('gemini_performance_monitoring', 'true') !== 'false');
     
     // Advanced AI Settings
-    const [temperature, setTemperature] = useState(() => localStorage.getItem('gemini_temperature') || '0.7');
-    const [topP, setTopP] = useState(() => localStorage.getItem('gemini_top_p') || '0.8');
-    const [topK, setTopK] = useState(() => localStorage.getItem('gemini_top_k') || '40');
-    const [maxTokens, setMaxTokens] = useState(() => localStorage.getItem('gemini_max_tokens') || '2048');
-    const [enableStreaming, setEnableStreaming] = useState(() => localStorage.getItem('gemini_streaming') !== 'false');
-    const [enableContextMemory, setEnableContextMemory] = useState(() => localStorage.getItem('gemini_context_memory') !== 'false');
-    const [contextWindow, setContextWindow] = useState(() => localStorage.getItem('gemini_context_window') || '10');
-    const [enableSystemPrompts, setEnableSystemPrompts] = useState(() => localStorage.getItem('gemini_system_prompts') !== 'false');
+    const [temperature, setTemperature] = useState(() => getUserSetting('gemini_temperature', '0.7'));
+    const [topP, setTopP] = useState(() => getUserSetting('gemini_top_p', '0.8'));
+    const [topK, setTopK] = useState(() => getUserSetting('gemini_top_k', '40'));
+    const [maxTokens, setMaxTokens] = useState(() => getUserSetting('gemini_max_tokens', '2048'));
+    const [enableStreaming, setEnableStreaming] = useState(() => getUserSetting('gemini_streaming', 'true') !== 'false');
+    const [enableContextMemory, setEnableContextMemory] = useState(() => getUserSetting('gemini_context_memory', 'true') !== 'false');
+    const [contextWindow, setContextWindow] = useState(() => getUserSetting('gemini_context_window', '10'));
+    const [enableSystemPrompts, setEnableSystemPrompts] = useState(() => getUserSetting('gemini_system_prompts', 'true') !== 'false');
     
     // Notification Settings
-    const [enableDesktopNotifications, setEnableDesktopNotifications] = useState(() => localStorage.getItem('gemini_desktop_notifications') !== 'false');
-    const [enableEmailNotifications, setEnableEmailNotifications] = useState(() => localStorage.getItem('gemini_email_notifications') !== 'false');
-    const [enablePushNotifications, setEnablePushNotifications] = useState(() => localStorage.getItem('gemini_push_notifications') !== 'false');
-    const [notificationSound, setNotificationSound] = useState(() => localStorage.getItem('gemini_notification_sound') || 'default');
-    const [notificationFrequency, setNotificationFrequency] = useState(() => localStorage.getItem('gemini_notification_frequency') || 'immediate');
+    const [enableDesktopNotifications, setEnableDesktopNotifications] = useState(() => getUserSetting('gemini_desktop_notifications', 'true') !== 'false');
+    const [enableEmailNotifications, setEnableEmailNotifications] = useState(() => getUserSetting('gemini_email_notifications', 'true') !== 'false');
+    const [enablePushNotifications, setEnablePushNotifications] = useState(() => getUserSetting('gemini_push_notifications', 'true') !== 'false');
+    const [notificationSound, setNotificationSound] = useState(() => getUserSetting('gemini_notification_sound', 'default'));
+    const [notificationFrequency, setNotificationFrequency] = useState(() => getUserSetting('gemini_notification_frequency', 'immediate'));
     
     // UI/UX Settings
-    const [enableAnimations, setEnableAnimations] = useState(() => localStorage.getItem('gemini_animations') !== 'false');
-    const [enableHoverEffects, setEnableHoverEffects] = useState(() => localStorage.getItem('gemini_hover_effects') !== 'false');
-    const [enableTransitions, setEnableTransitions] = useState(() => localStorage.getItem('gemini_transitions') !== 'false');
-    const [enableTooltips, setEnableTooltips] = useState(() => localStorage.getItem('gemini_tooltips') !== 'false');
-    const [enableKeyboardShortcuts, setEnableKeyboardShortcuts] = useState(() => localStorage.getItem('gemini_keyboard_shortcuts') !== 'false');
-    const [enableDragAndDrop, setEnableDragAndDrop] = useState(() => localStorage.getItem('gemini_drag_drop') !== 'false');
-    const [enableRightClickMenu, setEnableRightClickMenu] = useState(() => localStorage.getItem('gemini_right_click') !== 'false');
-    const [enableContextMenu, setEnableContextMenu] = useState(() => localStorage.getItem('gemini_context_menu') !== 'false');
+    const [enableAnimations, setEnableAnimations] = useState(() => getUserSetting('gemini_animations', 'true') !== 'false');
+    const [enableHoverEffects, setEnableHoverEffects] = useState(() => getUserSetting('gemini_hover_effects', 'true') !== 'false');
+    const [enableTransitions, setEnableTransitions] = useState(() => getUserSetting('gemini_transitions', 'true') !== 'false');
+    const [enableTooltips, setEnableTooltips] = useState(() => getUserSetting('gemini_tooltips', 'true') !== 'false');
+    const [enableKeyboardShortcuts, setEnableKeyboardShortcuts] = useState(() => getUserSetting('gemini_keyboard_shortcuts', 'true') !== 'false');
+    const [enableDragAndDrop, setEnableDragAndDrop] = useState(() => getUserSetting('gemini_drag_drop', 'true') !== 'false');
+    const [enableRightClickMenu, setEnableRightClickMenu] = useState(() => getUserSetting('gemini_right_click', 'true') !== 'false');
+    const [enableContextMenu, setEnableContextMenu] = useState(() => getUserSetting('gemini_context_menu', 'true') !== 'false');
     const [showTypingIndicator, setShowTypingIndicator] = useState(false);
     const [typingUsers, setTypingUsers] = useState([]);
     const [messageReactions, setMessageReactions] = useState({});
@@ -224,7 +239,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     console.log('Scroll check:', { scrollTop, scrollHeight, clientHeight, isAtBottom });
                     
                     if (!isAtBottom) {
-                        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
                     }
                 } else {
                     // Fallback if container not found
@@ -931,7 +946,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         
         // Only show loading state for non-streaming responses
         if (!enableStreaming || enableStreaming === 'false') {
-            setIsLoading(true);
+        setIsLoading(true);
         }
         
         // Play sound when message is sent
@@ -960,16 +975,16 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             if (enableStreaming === true || enableStreaming === 'true') {
                 console.log('Streaming enabled - setting up streaming request');
                 
-                const response = await fetch(`${API_BASE_URL}/api/gemini/chat`, {
-                    method: 'POST',
+            const response = await fetch(`${API_BASE_URL}/api/gemini/chat`, {
+                method: 'POST',
                     credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        message: userMessage,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: userMessage,
                         history: enableContextMemory ? messages.slice(-parseInt(contextWindow)) : messages.slice(-10),
-                        sessionId: currentSessionId,
+                    sessionId: currentSessionId,
                         tone: currentUser ? tone : 'neutral',
                         responseLength: aiResponseLength,
                         creativity: aiCreativity,
@@ -981,9 +996,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         enableContextMemory: enableContextMemory,
                         contextWindow: contextWindow,
                         enableSystemPrompts: enableSystemPrompts
-                    }),
-                    signal: abortControllerRef.current.signal
-                });
+                }),
+                signal: abortControllerRef.current.signal
+            });
 
                 if (!response.ok) {
                     const errorData = await response.json();
@@ -1094,10 +1109,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     signal: abortControllerRef.current.signal
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-                }
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            }
 
                 data = await response.json();
             }
@@ -1106,36 +1121,36 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             
             // Only handle non-streaming responses here (streaming is handled above)
             if (!enableStreaming || enableStreaming === 'false') {
-                // Validate response structure
-                if (data && data.response && typeof data.response === 'string') {
-                    const trimmedResponse = data.response.trim();
-                    console.log('Setting message with response length:', trimmedResponse.length);
-                    setMessages(prev => {
-                        const currentMessages = Array.isArray(prev) ? prev : [];
-                        return [...currentMessages, { role: 'assistant', content: trimmedResponse, timestamp: new Date().toISOString() }];
-                    });
-                    if (!isOpen) {
-                        setUnreadCount(count => count + 1);
-                    }
-                    
-                    // Play sound when message is received
-                    playSound('message-received.mp3');
+            // Validate response structure
+            if (data && data.response && typeof data.response === 'string') {
+                const trimmedResponse = data.response.trim();
+                console.log('Setting message with response length:', trimmedResponse.length);
+                setMessages(prev => {
+                    const currentMessages = Array.isArray(prev) ? prev : [];
+                    return [...currentMessages, { role: 'assistant', content: trimmedResponse, timestamp: new Date().toISOString() }];
+                });
+                if (!isOpen) {
+                    setUnreadCount(count => count + 1);
+                }
+                
+                // Play sound when message is received
+                playSound('message-received.mp3');
 
-                    // Update session ID if provided in response
-                    if (data.sessionId && data.sessionId !== sessionId) {
-                        setSessionId(data.sessionId);
-                        localStorage.setItem('gemini_session_id', data.sessionId);
-                    }
+                // Update session ID if provided in response
+                if (data.sessionId && data.sessionId !== sessionId) {
+                    setSessionId(data.sessionId);
+                    localStorage.setItem('gemini_session_id', data.sessionId);
+                }
 
-                    // Refresh rate limit status after successful request
-                    fetchRateLimitStatus();
+                // Refresh rate limit status after successful request
+                fetchRateLimitStatus();
 
-                    // Show sent success check briefly
-                    setSendIconSent(true);
-                    setTimeout(() => setSendIconSent(false), 600);
-                } else {
-                    console.error('Invalid response structure:', data);
-                    throw new Error('Invalid response structure from server');
+                // Show sent success check briefly
+                setSendIconSent(true);
+                setTimeout(() => setSendIconSent(false), 600);
+            } else {
+                console.error('Invalid response structure:', data);
+                throw new Error('Invalid response structure from server');
                 }
             } else {
                 // For streaming responses, handle final processing
@@ -2433,290 +2448,290 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const toggleDarkMode = () => {
         const newDarkMode = !isDarkMode;
         setIsDarkMode(newDarkMode);
-        localStorage.setItem('gemini_dark_mode', newDarkMode.toString());
+        setUserSetting('gemini_dark_mode', newDarkMode.toString());
     };
 
     // Helper functions for new settings
     const updateFontSize = (size) => {
         setFontSize(size);
-        localStorage.setItem('gemini_font_size', size);
+        setUserSetting('gemini_font_size', size);
     };
 
     const updateMessageDensity = (density) => {
         setMessageDensity(density);
-        localStorage.setItem('gemini_message_density', density);
+        setUserSetting('gemini_message_density', density);
     };
 
     const updateAutoScroll = (enabled) => {
         setAutoScroll(enabled);
-        localStorage.setItem('gemini_auto_scroll', enabled.toString());
+        setUserSetting('gemini_auto_scroll', enabled.toString());
     };
 
     const updateShowTimestamps = (enabled) => {
         setShowTimestamps(enabled);
-        localStorage.setItem('gemini_show_timestamps', enabled.toString());
+        setUserSetting('gemini_show_timestamps', enabled.toString());
     };
 
     const updateAiResponseLength = (length) => {
         setAiResponseLength(length);
-        localStorage.setItem('gemini_response_length', length);
+        setUserSetting('gemini_response_length', length);
     };
 
     const updateAiCreativity = (creativity) => {
         setAiCreativity(creativity);
-        localStorage.setItem('gemini_creativity', creativity);
+        setUserSetting('gemini_creativity', creativity);
     };
 
     const updateSoundEnabled = (enabled) => {
         setSoundEnabled(enabled);
-        localStorage.setItem('gemini_sound_enabled', enabled.toString());
+        setUserSetting('gemini_sound_enabled', enabled.toString());
     };
 
     const updateTypingSounds = (enabled) => {
         setTypingSounds(enabled);
-        localStorage.setItem('gemini_typing_sounds', enabled.toString());
+        setUserSetting('gemini_typing_sounds', enabled.toString());
     };
 
     const updateDataRetention = (days) => {
         setDataRetention(days);
-        localStorage.setItem('gemini_data_retention', days);
+        setUserSetting('gemini_data_retention', days);
     };
 
     // Advanced Settings Helper Functions
     const updateAutoSave = (enabled) => {
         setAutoSave(enabled);
-        localStorage.setItem('gemini_auto_save', enabled.toString());
+        setUserSetting('gemini_auto_save', enabled.toString());
     };
 
     const updateMessageLimit = (limit) => {
         setMessageLimit(limit);
-        localStorage.setItem('gemini_message_limit', limit);
+        setUserSetting('gemini_message_limit', limit);
     };
 
     const updateSessionTimeout = (timeout) => {
         setSessionTimeout(timeout);
-        localStorage.setItem('gemini_session_timeout', timeout);
+        setUserSetting('gemini_session_timeout', timeout);
     };
 
     const updateEnableMarkdown = (enabled) => {
         setEnableMarkdown(enabled);
-        localStorage.setItem('gemini_enable_markdown', enabled.toString());
+        setUserSetting('gemini_enable_markdown', enabled.toString());
     };
 
     const updateEnableCodeHighlighting = (enabled) => {
         setEnableCodeHighlighting(enabled);
-        localStorage.setItem('gemini_code_highlighting', enabled.toString());
+        setUserSetting('gemini_code_highlighting', enabled.toString());
     };
 
     const updateEnableEmojiReactions = (enabled) => {
         setEnableEmojiReactions(enabled);
-        localStorage.setItem('gemini_emoji_reactions', enabled.toString());
+        setUserSetting('gemini_emoji_reactions', enabled.toString());
     };
 
     const updateEnableMessageSearch = (enabled) => {
         setEnableMessageSearch(enabled);
-        localStorage.setItem('gemini_message_search', enabled.toString());
+        setUserSetting('gemini_message_search', enabled.toString());
     };
 
     const updateEnableQuickActions = (enabled) => {
         setEnableQuickActions(enabled);
-        localStorage.setItem('gemini_quick_actions', enabled.toString());
+        setUserSetting('gemini_quick_actions', enabled.toString());
     };
 
     const updateEnableSmartSuggestions = (enabled) => {
         setEnableSmartSuggestions(enabled);
-        localStorage.setItem('gemini_smart_suggestions', enabled.toString());
+        setUserSetting('gemini_smart_suggestions', enabled.toString());
     };
 
     const updateEnableTypingIndicator = (enabled) => {
         setEnableTypingIndicator(enabled);
-        localStorage.setItem('gemini_typing_indicator', enabled.toString());
+        setUserSetting('gemini_typing_indicator', enabled.toString());
     };
 
     // Accessibility Settings Helper Functions
     const updateHighContrast = (enabled) => {
         setHighContrast(enabled);
-        localStorage.setItem('gemini_high_contrast', enabled.toString());
+        setUserSetting('gemini_high_contrast', enabled.toString());
     };
 
     const updateReducedMotion = (enabled) => {
         setReducedMotion(enabled);
-        localStorage.setItem('gemini_reduced_motion', enabled.toString());
+        setUserSetting('gemini_reduced_motion', enabled.toString());
     };
 
     const updateScreenReaderSupport = (enabled) => {
         setScreenReaderSupport(enabled);
-        localStorage.setItem('gemini_screen_reader', enabled.toString());
+        setUserSetting('gemini_screen_reader', enabled.toString());
     };
 
     const updateLargeText = (enabled) => {
         setLargeText(enabled);
-        localStorage.setItem('gemini_large_text', enabled.toString());
+        setUserSetting('gemini_large_text', enabled.toString());
     };
 
     const updateKeyboardNavigation = (enabled) => {
         setKeyboardNavigation(enabled);
-        localStorage.setItem('gemini_keyboard_nav', enabled.toString());
+        setUserSetting('gemini_keyboard_nav', enabled.toString());
     };
 
     // Performance Settings Helper Functions
     const updateMessageCaching = (enabled) => {
         setMessageCaching(enabled);
-        localStorage.setItem('gemini_message_caching', enabled.toString());
+        setUserSetting('gemini_message_caching', enabled.toString());
     };
 
     const updateLazyLoading = (enabled) => {
         setLazyLoading(enabled);
-        localStorage.setItem('gemini_lazy_loading', enabled.toString());
+        setUserSetting('gemini_lazy_loading', enabled.toString());
     };
 
     const updateImageOptimization = (enabled) => {
         setImageOptimization(enabled);
-        localStorage.setItem('gemini_image_optimization', enabled.toString());
+        setUserSetting('gemini_image_optimization', enabled.toString());
     };
 
     const updatePreloadMessages = (enabled) => {
         setPreloadMessages(enabled);
-        localStorage.setItem('gemini_preload_messages', enabled.toString());
+        setUserSetting('gemini_preload_messages', enabled.toString());
     };
 
     const updateBatchOperations = (enabled) => {
         setBatchOperations(enabled);
-        localStorage.setItem('gemini_batch_operations', enabled.toString());
+        setUserSetting('gemini_batch_operations', enabled.toString());
     };
 
     // Privacy Settings Helper Functions
     const updateEnableAnalytics = (enabled) => {
         setEnableAnalytics(enabled);
-        localStorage.setItem('gemini_analytics', enabled.toString());
+        setUserSetting('gemini_analytics', enabled.toString());
     };
 
     const updateEnableErrorReporting = (enabled) => {
         setEnableErrorReporting(enabled);
-        localStorage.setItem('gemini_error_reporting', enabled.toString());
+        setUserSetting('gemini_error_reporting', enabled.toString());
     };
 
     const updateEnableUsageTracking = (enabled) => {
         setEnableUsageTracking(enabled);
-        localStorage.setItem('gemini_usage_tracking', enabled.toString());
+        setUserSetting('gemini_usage_tracking', enabled.toString());
     };
 
     const updateEnableCrashReports = (enabled) => {
         setEnableCrashReports(enabled);
-        localStorage.setItem('gemini_crash_reports', enabled.toString());
+        setUserSetting('gemini_crash_reports', enabled.toString());
     };
 
     const updateEnablePerformanceMonitoring = (enabled) => {
         setEnablePerformanceMonitoring(enabled);
-        localStorage.setItem('gemini_performance_monitoring', enabled.toString());
+        setUserSetting('gemini_performance_monitoring', enabled.toString());
     };
 
     // Advanced AI Settings Helper Functions
     const updateTemperature = (value) => {
         setTemperature(value);
-        localStorage.setItem('gemini_temperature', value);
+        setUserSetting('gemini_temperature', value);
     };
 
     const updateTopP = (value) => {
         setTopP(value);
-        localStorage.setItem('gemini_top_p', value);
+        setUserSetting('gemini_top_p', value);
     };
 
     const updateTopK = (value) => {
         setTopK(value);
-        localStorage.setItem('gemini_top_k', value);
+        setUserSetting('gemini_top_k', value);
     };
 
     const updateMaxTokens = (value) => {
         setMaxTokens(value);
-        localStorage.setItem('gemini_max_tokens', value);
+        setUserSetting('gemini_max_tokens', value);
     };
 
     const updateEnableStreaming = (enabled) => {
         setEnableStreaming(enabled);
-        localStorage.setItem('gemini_streaming', enabled.toString());
+        setUserSetting('gemini_streaming', enabled.toString());
     };
 
     const updateEnableContextMemory = (enabled) => {
         setEnableContextMemory(enabled);
-        localStorage.setItem('gemini_context_memory', enabled.toString());
+        setUserSetting('gemini_context_memory', enabled.toString());
     };
 
     const updateContextWindow = (value) => {
         setContextWindow(value);
-        localStorage.setItem('gemini_context_window', value);
+        setUserSetting('gemini_context_window', value);
     };
 
     const updateEnableSystemPrompts = (enabled) => {
         setEnableSystemPrompts(enabled);
-        localStorage.setItem('gemini_system_prompts', enabled.toString());
+        setUserSetting('gemini_system_prompts', enabled.toString());
     };
 
     // Notification Settings Helper Functions
     const updateEnableDesktopNotifications = (enabled) => {
         setEnableDesktopNotifications(enabled);
-        localStorage.setItem('gemini_desktop_notifications', enabled.toString());
+        setUserSetting('gemini_desktop_notifications', enabled.toString());
     };
 
     const updateEnableEmailNotifications = (enabled) => {
         setEnableEmailNotifications(enabled);
-        localStorage.setItem('gemini_email_notifications', enabled.toString());
+        setUserSetting('gemini_email_notifications', enabled.toString());
     };
 
     const updateEnablePushNotifications = (enabled) => {
         setEnablePushNotifications(enabled);
-        localStorage.setItem('gemini_push_notifications', enabled.toString());
+        setUserSetting('gemini_push_notifications', enabled.toString());
     };
 
     const updateNotificationSound = (sound) => {
         setNotificationSound(sound);
-        localStorage.setItem('gemini_notification_sound', sound);
+        setUserSetting('gemini_notification_sound', sound);
     };
 
     const updateNotificationFrequency = (frequency) => {
         setNotificationFrequency(frequency);
-        localStorage.setItem('gemini_notification_frequency', frequency);
+        setUserSetting('gemini_notification_frequency', frequency);
     };
 
     // UI/UX Settings Helper Functions
     const updateEnableAnimations = (enabled) => {
         setEnableAnimations(enabled);
-        localStorage.setItem('gemini_animations', enabled.toString());
+        setUserSetting('gemini_animations', enabled.toString());
     };
 
     const updateEnableHoverEffects = (enabled) => {
         setEnableHoverEffects(enabled);
-        localStorage.setItem('gemini_hover_effects', enabled.toString());
+        setUserSetting('gemini_hover_effects', enabled.toString());
     };
 
     const updateEnableTransitions = (enabled) => {
         setEnableTransitions(enabled);
-        localStorage.setItem('gemini_transitions', enabled.toString());
+        setUserSetting('gemini_transitions', enabled.toString());
     };
 
     const updateEnableTooltips = (enabled) => {
         setEnableTooltips(enabled);
-        localStorage.setItem('gemini_tooltips', enabled.toString());
+        setUserSetting('gemini_tooltips', enabled.toString());
     };
 
     const updateEnableKeyboardShortcuts = (enabled) => {
         setEnableKeyboardShortcuts(enabled);
-        localStorage.setItem('gemini_keyboard_shortcuts', enabled.toString());
+        setUserSetting('gemini_keyboard_shortcuts', enabled.toString());
     };
 
     const updateEnableDragAndDrop = (enabled) => {
         setEnableDragAndDrop(enabled);
-        localStorage.setItem('gemini_drag_drop', enabled.toString());
+        setUserSetting('gemini_drag_drop', enabled.toString());
     };
 
     const updateEnableRightClickMenu = (enabled) => {
         setEnableRightClickMenu(enabled);
-        localStorage.setItem('gemini_right_click', enabled.toString());
+        setUserSetting('gemini_right_click', enabled.toString());
     };
 
     const updateEnableContextMenu = (enabled) => {
         setEnableContextMenu(enabled);
-        localStorage.setItem('gemini_context_menu', enabled.toString());
+        setUserSetting('gemini_context_menu', enabled.toString());
     };
 
     const createCustomTheme = (primaryColor, secondaryColor) => {
@@ -2727,9 +2742,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             border: `border-${primaryColor}-200`
         };
         setCustomTheme(customThemeData);
-        localStorage.setItem('gemini_custom_theme', JSON.stringify(customThemeData));
+        setUserSetting('gemini_custom_theme', JSON.stringify(customThemeData));
         setSelectedTheme('custom');
-        localStorage.setItem('gemini_theme', 'custom');
+        setUserSetting('gemini_theme', 'custom');
     };
 
     // Sound playing functions
@@ -4559,9 +4574,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl p-5 w-96 max-w-full max-h-[80vh] overflow-y-auto`}>
                                     <div className="flex items-center justify-between mb-3">
                                         <h4 className={`font-semibold flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                                            <FaBookmark className="text-yellow-500" />
-                                            Bookmarked Messages
-                                        </h4>
+                                        <FaBookmark className="text-yellow-500" />
+                                        Bookmarked Messages
+                                    </h4>
                                         <button
                                             onClick={async () => {
                                                 if (refreshingBookmarks) return; // Prevent multiple clicks
@@ -4813,12 +4828,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     <div className="flex justify-between items-center p-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
                                         <div>
                                             {selectedHistoryIds.length > 0 && (
-                                                <button
-                                                    onClick={() => setShowDeleteSelectedModal(true)}
+                                                    <button
+                                                        onClick={() => setShowDeleteSelectedModal(true)}
                                                     className="px-3 py-1.5 text-xs rounded bg-red-600 text-white hover:bg-red-700 transition-all duration-200"
-                                                >
+                                                    >
                                                     Delete Selected ({selectedHistoryIds.length})
-                                                </button>
+                                                    </button>
                                             )}
                                         </div>
                                         <button 
@@ -5102,7 +5117,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         key={theme}
                                         onClick={() => {
                                             setSelectedTheme(theme);
-                                            localStorage.setItem('gemini_theme', theme);
+                                            setUserSetting('gemini_theme', theme);
                                         }}
                                         className={`w-10 h-10 rounded-full border-2 transition-all duration-200 ${
                                             selectedTheme === theme ? 'border-gray-400 scale-110' : 'border-gray-200 hover:scale-105'
@@ -6169,16 +6184,16 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         .screen-reader-support input,
         .screen-reader-support select,
         .screen-reader-support textarea {
-            outline: 2px solid #0066cc !important;
-            outline-offset: 2px !important;
-        }
+                    outline: 2px solid #0066cc !important;
+                    outline-offset: 2px !important;
+                }
         .screen-reader-support [role="button"]:focus,
         .screen-reader-support button:focus,
         .screen-reader-support input:focus,
         .screen-reader-support select:focus,
         .screen-reader-support textarea:focus {
-            outline: 3px solid #0066cc !important;
-            outline-offset: 3px !important;
+                    outline: 3px solid #0066cc !important;
+                    outline-offset: 3px !important;
             box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.3) !important;
         }
                 .screen-reader-support .sr-only {
@@ -6609,7 +6624,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         .code-block pre.bg-gray-900 .token.important,
         .code-block pre.bg-gray-900 .token.variable {
             color: #d16969 !important;
-        }
+                }
                 `}
             </style>
         </>
