@@ -345,3 +345,10 @@ export const getSyncStatus = () => {
         needsReindexing: needsReindexing()
     };
 };
+
+/**
+ * Force immediate sync (alias for indexAllWebsiteData)
+ */
+export const forceSync = async () => {
+    return await indexAllWebsiteData();
+};

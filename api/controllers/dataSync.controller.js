@@ -1,7 +1,7 @@
 import { 
     indexAllWebsiteData, 
     getSyncStatus, 
-    forceSync, 
+    forceSync as forceDataSync, 
     getCachedData 
 } from '../services/dataSyncService.js';
 import { 
