@@ -1495,20 +1495,22 @@ export default function AdminAppointments() {
     sortOrder: 'desc' // 'asc', 'desc'
   });
 
-  const fetchAdminReports = useCallback(async () => {
+  const fetchAdminReports = useCallback(async (filters = adminReportsFilters, showLoading = true) => {
     try {
-      setAdminReportsLoading(true);
+      if (showLoading) {
+        setAdminReportsLoading(true);
+      }
       setAdminReportsError('');
       
       // Build query parameters
       const params = new URLSearchParams();
-      if (adminReportsFilters.dateFrom) params.append('dateFrom', adminReportsFilters.dateFrom);
-      if (adminReportsFilters.dateTo) params.append('dateTo', adminReportsFilters.dateTo);
-      if (adminReportsFilters.reporter) params.append('reporter', adminReportsFilters.reporter);
-      if (adminReportsFilters.status !== 'all') params.append('status', adminReportsFilters.status);
-      if (adminReportsFilters.search) params.append('search', adminReportsFilters.search);
-      params.append('sortBy', adminReportsFilters.sortBy);
-      params.append('sortOrder', adminReportsFilters.sortOrder);
+      if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
+      if (filters.dateTo) params.append('dateTo', filters.dateTo);
+      if (filters.reporter) params.append('reporter', filters.reporter);
+      if (filters.status !== 'all') params.append('status', filters.status);
+      if (filters.search) params.append('search', filters.search);
+      params.append('sortBy', filters.sortBy);
+      params.append('sortOrder', filters.sortOrder);
       
       const res = await fetch(`${API_BASE_URL}/api/notifications/reports?${params.toString()}`, { 
         credentials: 'include' 
@@ -1519,13 +1521,26 @@ export default function AdminAppointments() {
     } catch (_) {
       setAdminReportsError('Network error while loading reports');
     } finally {
-      setAdminReportsLoading(false);
+      if (showLoading) {
+        setAdminReportsLoading(false);
+      }
     }
-  }, [adminReportsFilters]);
+  }, []);
 
   useEffect(() => {
     if (showAdminReportsModal) fetchAdminReports();
   }, [showAdminReportsModal, fetchAdminReports]);
+
+  // Debounced filter application for admin reports
+  useEffect(() => {
+    if (!showAdminReportsModal) return;
+    
+    const timeoutId = setTimeout(() => {
+      fetchAdminReports(adminReportsFilters, false); // Don't show loading for debounced calls
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(timeoutId);
+  }, [adminReportsFilters, showAdminReportsModal, fetchAdminReports]);
 
   // Prevent background scroll when any Reports modal is open
   useEffect(() => {
@@ -1882,30 +1897,30 @@ export default function AdminAppointments() {
 
   {/* Reports Modal - Admin-wide (styled like Starred Messages) */}
   {showAdminReportsModal && createPortal((
-    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[95vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[95vh] sm:h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-red-50 to-rose-50">
-          <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 bg-gradient-to-r from-red-50 to-rose-50 flex-shrink-0">
+          <h3 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
             <FaFlag className="text-red-500" /> Reported Items
           </h3>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center bg-white border border-red-200 rounded-lg overflow-hidden mr-2">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <div className="flex items-center bg-white border border-red-200 rounded-lg overflow-hidden mr-1 sm:mr-2">
               <button
-                className={`px-3 py-1.5 text-xs font-medium ${adminReportsFilter === 'message' ? 'bg-red-500 text-white' : 'text-red-600 hover:bg-red-50'}`}
+                className={`px-2 sm:px-3 py-1.5 text-xs font-medium ${adminReportsFilter === 'message' ? 'bg-red-500 text-white' : 'text-red-600 hover:bg-red-50'}`}
                 onClick={() => setAdminReportsFilter('message')}
               >
                 Message Reports
               </button>
               <button
-                className={`px-3 py-1.5 text-xs font-medium border-l border-red-200 ${adminReportsFilter === 'chat' ? 'bg-red-500 text-white' : 'text-red-600 hover:bg-red-50'}`}
+                className={`px-2 sm:px-3 py-1.5 text-xs font-medium border-l border-red-200 ${adminReportsFilter === 'chat' ? 'bg-red-500 text-white' : 'text-red-600 hover:bg-red-50'}`}
                 onClick={() => setAdminReportsFilter('chat')}
               >
                 Chat Reports
               </button>
             </div>
             <button
-              onClick={fetchAdminReports}
+              onClick={() => fetchAdminReports(adminReportsFilters, true)}
               disabled={adminReportsLoading}
               className="p-2 text-red-600 hover:text-red-700 bg-red-100 hover:bg-red-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               title="Refresh reports"
@@ -1918,15 +1933,15 @@ export default function AdminAppointments() {
             </button>
             <button
               onClick={() => setShowAdminReportsModal(false)}
-              className="px-3 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium text-xs sm:text-sm"
+              className="px-2 sm:px-3 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium text-xs sm:text-sm"
             >
               Close
             </button>
           </div>
         </div>
 
-        {/* Filters Section */}
-        <div className="p-4 border-b border-gray-200 bg-gray-50">
+        {/* Filters Section - Sticky for mobile */}
+        <div className="p-3 sm:p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0 sticky top-0 z-10">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Date Range */}
             <div className="space-y-2">
@@ -2035,7 +2050,7 @@ export default function AdminAppointments() {
                 Clear Filters
               </button>
               <button
-                onClick={fetchAdminReports}
+                onClick={() => fetchAdminReports(adminReportsFilters, true)}
                 className="px-3 py-1.5 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
               >
                 Apply Filters
@@ -2045,7 +2060,7 @@ export default function AdminAppointments() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-6">
           {adminReportsLoading ? (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
@@ -2612,21 +2627,23 @@ function AdminAppointmentRow({
     position: { x: 0, y: 0 }
   });
 
-  const fetchAllReports = useCallback(async (appointmentId) => {
+  const fetchAllReports = useCallback(async (appointmentId, filters = reportsFilters, showLoading = true) => {
     try {
-      setReportsLoading(true);
+      if (showLoading) {
+        setReportsLoading(true);
+      }
       setReportsError('');
       
       // Build query parameters
       const params = new URLSearchParams();
       if (appointmentId) params.append('appointmentId', appointmentId);
-      if (reportsFilters.dateFrom) params.append('dateFrom', reportsFilters.dateFrom);
-      if (reportsFilters.dateTo) params.append('dateTo', reportsFilters.dateTo);
-      if (reportsFilters.reporter) params.append('reporter', reportsFilters.reporter);
-      if (reportsFilters.messageType !== 'all') params.append('messageType', reportsFilters.messageType);
-      if (reportsFilters.search) params.append('search', reportsFilters.search);
-      params.append('sortBy', reportsFilters.sortBy);
-      params.append('sortOrder', reportsFilters.sortOrder);
+      if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
+      if (filters.dateTo) params.append('dateTo', filters.dateTo);
+      if (filters.reporter) params.append('reporter', filters.reporter);
+      if (filters.messageType !== 'all') params.append('messageType', filters.messageType);
+      if (filters.search) params.append('search', filters.search);
+      params.append('sortBy', filters.sortBy);
+      params.append('sortOrder', filters.sortOrder);
       
       const res = await fetch(`${API_BASE_URL}/api/notifications/reports?${params.toString()}`, { 
         credentials: 'include' 
@@ -2637,9 +2654,11 @@ function AdminAppointmentRow({
     } catch (e) {
       setReportsError('Network error while loading reports');
     } finally {
-      setReportsLoading(false);
+      if (showLoading) {
+        setReportsLoading(false);
+      }
     }
-  }, [reportsFilters]);
+  }, []);
 
   // Load appointment-scoped reports when its modal opens
   useEffect(() => {
@@ -2647,6 +2666,17 @@ function AdminAppointmentRow({
       fetchAllReports(appt._id);
     }
   }, [showReportsModal, fetchAllReports, appt._id]);
+
+  // Debounced filter application for appointment reports
+  useEffect(() => {
+    if (!showReportsModal) return;
+    
+    const timeoutId = setTimeout(() => {
+      fetchAllReports(appt._id, reportsFilters, false); // Don't show loading for debounced calls
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(timeoutId);
+  }, [reportsFilters, showReportsModal, fetchAllReports, appt._id]);
 
   // Prevent background scroll when appointment-scoped reports modal is open
   useEffect(() => {
@@ -6637,7 +6667,7 @@ function AdminAppointmentRow({
                           } ${isSelectionMode && selectedMessages.some(msg => msg._id === (c && c._id)) ? 'ring-2 ring-blue-400' : ''}`}
                         >
       
-                            {/* Reply preview above message if this is a reply */}
+                                                    {/* Reply preview above message if this is a reply */}
                             {c && c.replyTo && (
                               <div className="border-l-4 border-purple-400 pl-3 mb-2 text-xs bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 rounded-lg w-full max-w-full break-words cursor-pointer transition-all duration-200 hover:shadow-sm" onClick={() => {
                                   if (c && c.replyTo && messageRefs.current[c.replyTo]) {
@@ -9692,30 +9722,30 @@ function AdminAppointmentRow({
 
         {/* Appointment-scoped Reports Modal (styled like Starred Messages) */}
         {showReportsModal && createPortal((
-          <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[95vh] sm:h-[90vh] overflow-hidden flex flex-col">
               {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-red-50 to-rose-50">
-                <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 bg-gradient-to-r from-red-50 to-rose-50 flex-shrink-0">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
                   <FaFlag className="text-red-500" /> Appointment Reports
                 </h3>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center bg-white border border-red-200 rounded-lg overflow-hidden mr-2">
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <div className="flex items-center bg-white border border-red-200 rounded-lg overflow-hidden mr-1 sm:mr-2">
                     <button
-                      className={`px-3 py-1.5 text-xs font-medium ${reportsFilter === 'message' ? 'bg-red-500 text-white' : 'text-red-600 hover:bg-red-50'}`}
+                      className={`px-2 sm:px-3 py-1.5 text-xs font-medium ${reportsFilter === 'message' ? 'bg-red-500 text-white' : 'text-red-600 hover:bg-red-50'}`}
                       onClick={() => setReportsFilter('message')}
                     >
                       Message Reports
                     </button>
                     <button
-                      className={`px-3 py-1.5 text-xs font-medium border-l border-red-200 ${reportsFilter === 'chat' ? 'bg-red-500 text-white' : 'text-red-600 hover:bg-red-50'}`}
+                      className={`px-2 sm:px-3 py-1.5 text-xs font-medium border-l border-red-200 ${reportsFilter === 'chat' ? 'bg-red-500 text-white' : 'text-red-600 hover:bg-red-50'}`}
                       onClick={() => setReportsFilter('chat')}
                     >
                       Chat Reports
                     </button>
                   </div>
                   <button
-                    onClick={() => fetchAllReports(appt._id)}
+                    onClick={() => fetchAllReports(appt._id, reportsFilters, true)}
                     disabled={reportsLoading}
                     className="p-2 text-red-600 hover:text-red-700 bg-red-100 hover:bg-red-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Refresh reports"
@@ -9728,15 +9758,15 @@ function AdminAppointmentRow({
                   </button>
                   <button
                     onClick={() => setShowReportsModal(false)}
-                    className="px-3 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium text-xs sm:text-sm"
+                    className="px-2 sm:px-3 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium text-xs sm:text-sm"
                   >
                     Close
                   </button>
                 </div>
               </div>
 
-              {/* Filters Section */}
-              <div className="p-4 border-b border-gray-200 bg-gray-50">
+              {/* Filters Section - Sticky for mobile */}
+              <div className="p-3 sm:p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0 sticky top-0 z-10">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {/* Date Range */}
                   <div className="space-y-2">
@@ -9848,7 +9878,7 @@ function AdminAppointmentRow({
                       Clear Filters
                     </button>
                     <button
-                      onClick={() => fetchAllReports(appt._id)}
+                      onClick={() => fetchAllReports(appt._id, reportsFilters, true)}
                       className="px-3 py-1.5 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
                     >
                       Apply Filters
@@ -9858,7 +9888,7 @@ function AdminAppointmentRow({
               </div>
 
               {/* Content */}
-              <div className="flex-1 overflow-y-auto p-6">
+              <div className="flex-1 overflow-y-auto p-3 sm:p-6">
                 {reportsLoading ? (
                   <div className="flex items-center justify-center py-12">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
