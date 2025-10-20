@@ -1,5 +1,5 @@
 import express from 'express';
-import { searchPropertiesForSuggestions, getPropertyById } from '../controllers/propertySearch.controller.js';
+import { searchPropertiesForSuggestions, getPropertyById, resolvePropertyFromUrl } from '../controllers/propertySearch.controller.js';
 
 const router = express.Router();
 
@@ -8,5 +8,6 @@ router.get('/search', searchPropertiesForSuggestions);
 
 // Get property details by ID
 router.get('/:id', getPropertyById);
+router.get('/resolve/url', resolvePropertyFromUrl);
 
 export default router;

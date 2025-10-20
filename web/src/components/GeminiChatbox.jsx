@@ -522,11 +522,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             setIsLoadingSuggestions(true);
             // Show suggestions even for empty query (to show all properties)
             const searchQuery = query ? query.trim() : '';
-            console.log('Searching properties with query:', searchQuery);
 
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const url = `${API_BASE_URL}/api/property-search/search?query=${encodeURIComponent(searchQuery)}&limit=5`;
-            console.log('API URL:', url);
             
             const response = await fetch(url, {
                 method: 'GET',
@@ -535,24 +533,45 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     'Content-Type': 'application/json',
                 },
             });
-
-            console.log('Response status:', response.status);
             
             if (response.ok) {
                 const data = await response.json();
-                console.log('Property suggestions received:', data);
                 setPropertySuggestions(data.data || []);
             } else {
-                console.error('Failed to search properties, status:', response.status);
                 const errorText = await response.text();
-                console.error('Error response:', errorText);
                 setPropertySuggestions([]);
             }
         } catch (error) {
-            console.error('Error searching properties:', error);
             setPropertySuggestions([]);
         } finally {
             setIsLoadingSuggestions(false);
+        }
+    };
+
+    // Detect UrbanSetu listing links in input and resolve to property
+    const resolvePropertyFromInput = async (text) => {
+        try {
+            const urlMatch = text.match(/https?:\/\/[^\s]*\/listing\/(\w{24})/i);
+            const idMatch = text.match(/(?:^|\s)@?(\w{24})(?:\s|$)/); // fallback if only id typed after @
+            const listingId = urlMatch?.[1] || idMatch?.[1];
+            if (!listingId) return;
+
+            // Avoid duplicates
+            if (selectedProperties.some(p => (p.id || p._id) === listingId)) return;
+
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+            const url = `${API_BASE_URL}/api/property-search/${listingId}`;
+            const response = await fetch(url, { credentials: 'include' });
+            if (!response.ok) return;
+            const data = await response.json();
+            if (data?.success && data.data) {
+                setSelectedProperties(prev => {
+                    const exists = prev.some(p => (p.id || p._id) === (data.data.id || data.data._id));
+                    return exists ? prev : [...prev, data.data];
+                });
+            }
+        } catch (_) {
+            // silent fail
         }
     };
 
@@ -561,6 +580,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         const value = e.target.value;
         setInputMessage(value);
         handleTyping(); // Call the existing typing handler
+
+        // Check for UrbanSetu listing URL or 24-char id to auto-resolve
+        resolvePropertyFromInput(value);
 
         // Check for @ symbol
         const cursorPos = e.target.selectionStart;
@@ -571,11 +593,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
             const hasSpaceAfterAt = textAfterAt.includes(' ');
             
-            console.log('@ detected:', { textAfterAt, hasSpaceAfterAt, lastAtIndex });
-            
             if (!hasSpaceAfterAt) {
                 // Show suggestions
-                console.log('Showing property suggestions for:', textAfterAt);
                 setShowPropertySuggestions(true);
                 setSuggestionQuery(textAfterAt);
                 setSuggestionStartPos(lastAtIndex);
@@ -584,7 +603,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 // Search properties
                 searchProperties(textAfterAt);
             } else {
-                console.log('Hiding suggestions - space after @');
                 setShowPropertySuggestions(false);
             }
         } else {
@@ -4757,6 +4775,64 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             Press Enter to send your message, or use the voice input and file upload buttons for additional options.
                                         </div>
                                     )}
+                                    
+                                    {/* Property Suggestions Dropdown */}
+                                    {showPropertySuggestions && (
+                                        <div className={"absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-gray-800 border-2 border-blue-300 dark:border-blue-600 rounded-lg shadow-2xl z-50 max-h-60 overflow-y-auto animate-fadeIn"}
+                                        style={{
+                                            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                            minWidth: '300px'
+                                        }}>
+                                            <div className="p-3 text-sm font-medium text-blue-600 dark:text-blue-400 border-b border-gray-200 dark:border-gray-600 bg-blue-50 dark:bg-blue-900/20">
+                                                <div className="flex items-center gap-2">
+                                                    {isLoadingSuggestions ? (
+                                                        <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                                                    ) : (
+                                                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                                                    )}
+                                                    {isLoadingSuggestions ? 'Loading properties...' : 
+                                                     propertySuggestions.length > 0 ? 'Select a property to reference:' : 'No properties found'}
+                                                </div>
+                                            </div>
+                                            {propertySuggestions.length > 0 ? propertySuggestions.map((property, index) => (
+                                                <button
+                                                    key={property.id}
+                                                    onClick={() => handleSuggestionSelect(property)}
+                                                    className={`w-full text-left p-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                                                        index === selectedSuggestionIndex ? 'bg-gray-100 dark:bg-gray-700' : ''
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center space-x-3">
+                                                        {property.image && (
+                                                            <img
+                                                                src={property.image}
+                                                                alt={property.name}
+                                                                className="w-12 h-12 object-cover rounded-lg flex-shrink-0"
+                                                            />
+                                                        )}
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="font-medium text-gray-900 dark:text-white truncate">
+                                                                {property.name}
+                                                            </div>
+                                                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                                {property.location}
+                                                            </div>
+                                                            <div className="text-sm font-semibold text-green-600 dark:text-green-400">
+                                                                ₹{property.price.toLocaleString()}
+                                                            </div>
+                                                            <div className="text-xs text-gray-400 dark:text-gray-500">
+                                                                {property.bedrooms}BHK • {property.area} sq ft • {property.type}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                            )) : (
+                                                <div className="p-3 text-sm text-gray-500 dark:text-gray-400 text-center">
+                                                    No properties found. Try typing more characters.
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                                 
                                 {/* Voice Input Button */}
@@ -4823,64 +4899,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             )}
                                         </div>
                                     </button>
-                                )}
-                                
-                                {/* Property Suggestions Dropdown */}
-                                {showPropertySuggestions && (
-                                    <div className={"absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-gray-800 border-2 border-blue-300 dark:border-blue-600 rounded-lg shadow-2xl z-50 max-h-60 overflow-y-auto animate-fadeIn"}
-                                    style={{
-                                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-                                        minWidth: '300px'
-                                    }}>
-                                        <div className="p-3 text-sm font-medium text-blue-600 dark:text-blue-400 border-b border-gray-200 dark:border-gray-600 bg-blue-50 dark:bg-blue-900/20">
-                                            <div className="flex items-center gap-2">
-                                                {isLoadingSuggestions ? (
-                                                    <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                                                ) : (
-                                                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                                                )}
-                                                {isLoadingSuggestions ? 'Loading properties...' : 
-                                                 propertySuggestions.length > 0 ? 'Select a property to reference:' : 'No properties found'}
-                                            </div>
-                                        </div>
-                                        {propertySuggestions.length > 0 ? propertySuggestions.map((property, index) => (
-                                            <button
-                                                key={property.id}
-                                                onClick={() => handleSuggestionSelect(property)}
-                                                className={`w-full text-left p-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
-                                                    index === selectedSuggestionIndex ? 'bg-gray-100 dark:bg-gray-700' : ''
-                                                }`}
-                                            >
-                                                <div className="flex items-center space-x-3">
-                                                    {property.image && (
-                                                        <img
-                                                            src={property.image}
-                                                            alt={property.name}
-                                                            className="w-12 h-12 object-cover rounded-lg flex-shrink-0"
-                                                        />
-                                                    )}
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="font-medium text-gray-900 dark:text-white truncate">
-                                                            {property.name}
-                                                        </div>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            {property.location}
-                                                        </div>
-                                                        <div className="text-sm font-semibold text-green-600 dark:text-green-400">
-                                                            ₹{property.price.toLocaleString()}
-                                                        </div>
-                                                        <div className="text-xs text-gray-400 dark:text-gray-500">
-                                                            {property.bedrooms}BHK • {property.area} sq ft • {property.type}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </button>
-                                        )) : (
-                                            <div className="p-3 text-sm text-gray-500 dark:text-gray-400 text-center">
-                                                No properties found. Try typing more characters.
-                                            </div>
-                                        )}
-                                    </div>
                                 )}
                             </form>
                         </div>

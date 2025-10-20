@@ -39,6 +39,48 @@ export const searchPropertiesForSuggestions = async (req, res) => {
 };
 
 /**
+ * Resolve a public listing URL to property data
+ */
+export const resolvePropertyFromUrl = async (req, res) => {
+    try {
+        const { url } = req.query;
+        if (!url) return res.status(400).json({ success: false, message: 'url is required' });
+
+        // Expect formats like:
+        // https://urbansetu.vercel.app/user/listing/<id>
+        // or your deployment host variants
+        const match = url.match(/\/listing\/(\w{24})/);
+        const id = match?.[1];
+        if (!id) return res.status(400).json({ success: false, message: 'Could not parse listing id from url' });
+
+        const prop = await Listing.findById(id)
+            .select('name city district state regularPrice discountPrice type bedrooms bathrooms area description imageUrls')
+            .lean();
+
+        if (!prop) return res.status(404).json({ success: false, message: 'Property not found' });
+
+        const property = {
+            id: prop._id,
+            name: prop.name,
+            location: `${prop.city}, ${prop.state}`,
+            price: prop.discountPrice || prop.regularPrice,
+            originalPrice: prop.regularPrice,
+            type: prop.type,
+            bedrooms: prop.bedrooms,
+            bathrooms: prop.bathrooms,
+            area: prop.area,
+            description: prop.description,
+            image: prop.imageUrls?.[0] || null
+        };
+
+        res.status(200).json({ success: true, data: property });
+    } catch (error) {
+        console.error('Error resolving property from url:', error);
+        res.status(500).json({ success: false, message: 'Error resolving property from url', error: error.message });
+    }
+};
+
+/**
  * Get property details by ID for reference
  */
 export const getPropertyById = async (req, res) => {
