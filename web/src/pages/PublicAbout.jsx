@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import { downloadAndroidApp, getDownloadButtonText } from '../utils/androidDownload';
 
 import { usePageTitle } from '../hooks/usePageTitle';
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com';
 
 export default function PublicAbout() {
   // Set page title
@@ -40,6 +40,11 @@ export default function PublicAbout() {
         const response = await fetch(`${API_BASE_URL}/api/about`);
         if (response.ok) {
           const data = await response.json();
+          console.log('About data received:', data);
+          console.log('Core Values:', data.coreValues);
+          console.log('How It Works:', data.howItWorks);
+          console.log('Journey:', data.journey);
+          console.log('FAQs:', data.faqs);
           setAboutData(data);
         }
       } catch (error) {
