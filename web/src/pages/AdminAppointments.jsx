@@ -1526,6 +1526,19 @@ export default function AdminAppointments() {
               : `All Appointments (${appointmentsWithComments.length})`}
           </h3>
           <div className="flex flex-row w-full sm:w-auto gap-2 sm:gap-4 justify-center sm:justify-end mt-2 sm:mt-0">
+            {/* Reports icon (admin-wide) */}
+            <button
+              onClick={() => {
+                fetchAllReports();
+                setShowReportsModal(true);
+              }}
+              className="bg-white text-red-600 px-3 py-2 rounded-md hover:bg-red-50 transition-all font-semibold shadow-md flex items-center justify-center gap-2 text-xs sm:text-base sm:px-4 sm:py-2 sm:rounded-lg w-1/2 sm:w-auto"
+              title="View all reports"
+              aria-label="View all reports"
+            >
+              <FaFlag className="text-red-600" />
+              <span className="hidden sm:inline">Reports</span>
+            </button>
             <button
               onClick={handleManualRefresh}
               className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-2.5 py-1.5 rounded-md hover:from-blue-600 hover:to-purple-600 transition-all font-semibold shadow-md text-xs sm:text-base sm:px-4 sm:py-2 sm:rounded-lg w-1/2 sm:w-auto"
@@ -5868,6 +5881,18 @@ function AdminAppointmentRow({
                         </button>
                         {showChatOptionsMenu && (
                           <div className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-20 min-w-[180px] chat-options-menu">
+                            {/* Reports option (appointment-scoped) */}
+                            <button
+                              className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                              onClick={() => {
+                                fetchAllReports(appt._id);
+                                setShowReportsModal(true);
+                                setShowChatOptionsMenu(false);
+                              }}
+                            >
+                              <FaFlag className="text-sm" />
+                              Reports
+                            </button>
                             {/* Refresh option */}
                             <button
                               className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
