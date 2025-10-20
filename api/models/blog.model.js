@@ -6,6 +6,12 @@ const blogSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    slug: {
+        type: String,
+        unique: true,
+        lowercase: true,
+        trim: true
+    },
     content: {
         type: String,
         required: true
@@ -14,9 +20,18 @@ const blogSchema = new mongoose.Schema({
         type: String,
         maxlength: 500
     },
+    thumbnail: {
+        type: String // Cloudinary image URL
+    },
+    propertyId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Listing',
+        default: null // null = global blog
+    },
     author: {
-        type: String,
-        default: 'UrbanSetu Team'
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
     },
     tags: [{
         type: String,
@@ -24,20 +39,16 @@ const blogSchema = new mongoose.Schema({
     }],
     category: {
         type: String,
-        enum: ['Real Estate Tips', 'Market Updates', 'Investment Guide', 'Home Buying', 'Home Selling', 'Property Management', 'Legal', 'Finance'],
+        enum: ['Real Estate Tips', 'Market Updates', 'Investment Guide', 'Home Buying', 'Home Selling', 'Property Management', 'Legal', 'Finance', 'Rent', 'Investment'],
         default: 'Real Estate Tips'
     },
-    featuredImage: {
-        type: String
+    published: {
+        type: Boolean,
+        default: false
     },
     publishedAt: {
         type: Date,
-        default: Date.now
-    },
-    status: {
-        type: String,
-        enum: ['draft', 'published', 'archived'],
-        default: 'published'
+        default: null
     },
     views: {
         type: Number,
@@ -46,7 +57,22 @@ const blogSchema = new mongoose.Schema({
     likes: {
         type: Number,
         default: 0
-    }
+    },
+    comments: [{
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        },
+        content: String,
+        createdAt: {
+            type: Date,
+            default: Date.now
+        },
+        isApproved: {
+            type: Boolean,
+            default: false
+        }
+    }]
 }, {
     timestamps: true
 });
@@ -55,5 +81,21 @@ const blogSchema = new mongoose.Schema({
 blogSchema.index({ title: 'text', content: 'text', tags: 'text' });
 blogSchema.index({ publishedAt: -1 });
 blogSchema.index({ category: 1 });
+blogSchema.index({ propertyId: 1, published: 1 });
+blogSchema.index({ published: 1, publishedAt: -1 });
+blogSchema.index({ slug: 1 });
+
+// Generate slug from title before saving
+blogSchema.pre('save', function(next) {
+    if (this.isModified('title') && !this.slug) {
+        this.slug = this.title
+            .toLowerCase()
+            .replace(/[^a-z0-9 -]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .trim('-');
+    }
+    next();
+});
 
 export default mongoose.model('Blog', blogSchema);

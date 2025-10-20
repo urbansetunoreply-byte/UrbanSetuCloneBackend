@@ -30,6 +30,8 @@ import accountRevocationRouter from "./routes/accountRevocation.route.js";
 import propertySearchRouter from "./routes/propertySearch.route.js";
 import dataSyncRouter from "./routes/dataSync.route.js";
 import appointmentReminderRouter from "./routes/appointmentReminder.route.js";
+import faqRouter from "./routes/faq.route.js";
+import blogRouter from "./routes/blog.route.js";
 import priceDropAlertRouter from "./routes/priceDropAlert.route.js";
 import statisticsRouter from "./routes/statistics.route.js";
 import configRouter from "./routes/config.route.js";
@@ -515,6 +517,8 @@ app.use("/api/property-restoration", propertyRestorationRouter);
 app.use("/api/deployment", deploymentRouter);
 app.use("/api/property-search", propertySearchRouter);
 app.use("/api/data-sync", dataSyncRouter);
+app.use("/api/faqs", faqRouter);
+app.use("/api/blogs", blogRouter);
 console.log('All API routes registered successfully');
 
 // Catch-all route for 404s - must be after all other routes
