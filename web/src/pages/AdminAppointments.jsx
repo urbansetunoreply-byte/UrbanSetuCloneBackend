@@ -1477,6 +1477,46 @@ export default function AdminAppointments() {
     setShowReactionsEmojiPicker(prev => !prev);
   }, []);
 
+  // Admin-wide Reports (top-bar)
+  const [showAdminReportsModal, setShowAdminReportsModal] = useState(false);
+  const [adminReports, setAdminReports] = useState([]);
+  const [adminReportsLoading, setAdminReportsLoading] = useState(false);
+  const [adminReportsError, setAdminReportsError] = useState('');
+  const [adminReportsFilter, setAdminReportsFilter] = useState('message'); // 'message' | 'chat'
+
+  const fetchAdminReports = useCallback(async () => {
+    try {
+      setAdminReportsLoading(true);
+      setAdminReportsError('');
+      const res = await fetch(`${API_BASE_URL}/api/notifications/reports`, { credentials: 'include' });
+      const data = await res.json();
+      if (data?.success) setAdminReports(data.reports || []);
+      else setAdminReportsError(data?.message || 'Failed to load reports');
+    } catch (_) {
+      setAdminReportsError('Network error while loading reports');
+    } finally {
+      setAdminReportsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (showAdminReportsModal) fetchAdminReports();
+  }, [showAdminReportsModal, fetchAdminReports]);
+
+  // Prevent background scroll when any Reports modal is open
+  useEffect(() => {
+    const shouldLock = showAdminReportsModal || false; // appointment-scoped handled in row component
+    const previousOverflow = document.body.style.overflow;
+    if (shouldLock) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = previousOverflow || '';
+    }
+    return () => {
+      document.body.style.overflow = previousOverflow || '';
+    };
+  }, [showAdminReportsModal]);
+
 
 
   if (loading) return (
@@ -1526,11 +1566,10 @@ export default function AdminAppointments() {
               : `All Appointments (${appointmentsWithComments.length})`}
           </h3>
           <div className="flex flex-row w-full sm:w-auto gap-2 sm:gap-4 justify-center sm:justify-end mt-2 sm:mt-0">
-            {/* Reports icon (admin-wide) */}
+            {/* Reports icon (admin-wide, top bar) */}
             <button
               onClick={() => {
-                fetchAllReports();
-                setShowReportsModal(true);
+                setShowAdminReportsModal(true);
               }}
               className="bg-white text-red-600 px-3 py-2 rounded-md hover:bg-red-50 transition-all font-semibold shadow-md flex items-center justify-center gap-2 text-xs sm:text-base sm:px-4 sm:py-2 sm:rounded-lg w-1/2 sm:w-auto"
               title="View all reports"
@@ -1817,39 +1856,88 @@ export default function AdminAppointments() {
           </div>
         )}
 
-  {/* Reports Modal - Admin-wide */}
-  {typeof showReportsModal !== 'undefined' && showReportsModal && createPortal((
-    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2"><FaFlag className="text-red-500" /> Reported Items</h3>
-          <button className="text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-2" onClick={() => setShowReportsModal(false)}><FaTimes /></button>
+  {/* Reports Modal - Admin-wide (styled like Starred Messages) */}
+  {showAdminReportsModal && createPortal((
+    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-red-50 to-rose-50">
+          <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+            <FaFlag className="text-red-500" /> Reported Items
+          </h3>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center bg-white border border-red-200 rounded-lg overflow-hidden mr-2">
+              <button
+                className={`px-3 py-1.5 text-xs font-medium ${adminReportsFilter === 'message' ? 'bg-red-500 text-white' : 'text-red-600 hover:bg-red-50'}`}
+                onClick={() => setAdminReportsFilter('message')}
+              >
+                Message Reports
+              </button>
+              <button
+                className={`px-3 py-1.5 text-xs font-medium border-l border-red-200 ${adminReportsFilter === 'chat' ? 'bg-red-500 text-white' : 'text-red-600 hover:bg-red-50'}`}
+                onClick={() => setAdminReportsFilter('chat')}
+              >
+                Chat Reports
+              </button>
+            </div>
+            <button
+              onClick={fetchAdminReports}
+              disabled={adminReportsLoading}
+              className="p-2 text-red-600 hover:text-red-700 bg-red-100 hover:bg-red-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Refresh reports"
+            >
+              {adminReportsLoading ? (
+                <div className="w-4 h-4 border-2 border-red-600 border-top-transparent rounded-full animate-spin"></div>
+              ) : (
+                <FaSync className="w-4 h-4" />
+              )}
+            </button>
+            <button
+              onClick={() => setShowAdminReportsModal(false)}
+              className="px-3 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium text-xs sm:text-sm"
+            >
+              Close
+            </button>
+          </div>
         </div>
-        <div className="p-4">
-          {reportsLoading ? (
-            <div className="text-sm text-gray-500">Loading reports…</div>
-          ) : reportsError ? (
-            <div className="text-sm text-red-600">{reportsError}</div>
-          ) : (reports || []).length === 0 ? (
-            <div className="text-sm text-gray-500">No reports found.</div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {adminReportsLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+              <span className="ml-3 text-gray-600">Loading reports...</span>
+            </div>
+          ) : adminReportsError ? (
+            <div className="text-sm text-red-600">{adminReportsError}</div>
+          ) : (adminReports || []).length === 0 ? (
+            <div className="text-center py-12">
+              <FaFlag className="mx-auto text-6xl text-gray-300 mb-4" />
+              <h4 className="text-xl font-semibold text-gray-600 mb-2">No Reports</h4>
+              <p className="text-gray-500">There are no reports yet.</p>
+            </div>
           ) : (
-            <div className="space-y-3">
-              {(reports || []).map((r, idx) => (
-                <div key={r.notificationId || idx} className="border border-gray-200 rounded-lg p-3">
+            <div className="space-y-4">
+              {(adminReports || []).filter(r => adminReportsFilter === 'message' ? r.type === 'message' : r.type !== 'message').map((r, idx) => (
+                <div key={r.notificationId || idx} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                   <div className="flex items-center justify-between">
-                    <div className="text-sm font-semibold text-gray-800">
-                      {r.type === 'message' ? 'Message Report' : 'Chat Report'}
+                    <div className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                      <FaFlag className="text-red-500" /> {r.type === 'message' ? 'Message Report' : 'Chat Report'}
                     </div>
                     <div className="text-xs text-gray-500">{new Date(r.createdAt).toLocaleString()}</div>
                   </div>
-                  <div className="mt-2 text-sm text-gray-700">
+                  <div className="mt-2 text-sm text-gray-700 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
                     {r.reporter && (<div><span className="font-medium">Reporter:</span> {r.reporter}</div>)}
                     {r.appointmentRef && (<div><span className="font-medium">Appointment:</span> {r.appointmentRef}</div>)}
                     {r.between && (<div><span className="font-medium">Between:</span> {r.between}</div>)}
                     {r.reason && (<div><span className="font-medium">Reason:</span> {r.reason}</div>)}
-                    {r.details && (<div><span className="font-medium">Details:</span> {r.details}</div>)}
+                    {r.details && (<div className="md:col-span-2"><span className="font-medium">Details:</span> {r.details}</div>)}
                     {r.messageId && (<div><span className="font-medium">Message ID:</span> {r.messageId}</div>)}
-                    {r.messageExcerpt && (<div className="italic text-gray-600"><span className="font-medium not-italic">Excerpt:</span> “{r.messageExcerpt}”</div>)}
+                    {r.messageExcerpt && (
+                      <div className="md:col-span-2 italic text-gray-600">
+                        <span className="font-medium not-italic">Excerpt:</span> “{r.messageExcerpt}”
+                      </div>
+                    )}
                     {r.totalMessages != null && (<div><span className="font-medium">Total Messages:</span> {r.totalMessages}</div>)}
                     {r.appointmentDate && (<div><span className="font-medium">Appointment Date:</span> {r.appointmentDate}</div>)}
                     {r.property && (<div><span className="font-medium">Property:</span> {r.property}</div>)}
@@ -1862,6 +1950,8 @@ export default function AdminAppointments() {
       </div>
     </div>
   ), document.body)}
+
+  
 
         {/* Pagination for archived appointments */}
         {showArchived && archivedTotalPages > 1 && (
@@ -2355,6 +2445,7 @@ function AdminAppointmentRow({
   const [reports, setReports] = useLocalState([]);
   const [reportsLoading, setReportsLoading] = useLocalState(false);
   const [reportsError, setReportsError] = useLocalState('');
+  const [reportsFilter, setReportsFilter] = useLocalState('message'); // 'message' | 'chat'
 
   // Reported message IDs for current appointment (to flag in UI)
   const [reportedMessageIds, setReportedMessageIds] = useLocalState([]);
@@ -2374,6 +2465,21 @@ function AdminAppointmentRow({
       setReportsLoading(false);
     }
   }, []);
+
+  // Load appointment-scoped reports when its modal opens
+  useEffect(() => {
+    if (showReportsModal) {
+      fetchAllReports(appt._id);
+    }
+  }, [showReportsModal, fetchAllReports, appt._id]);
+
+  // Prevent background scroll when appointment-scoped reports modal is open
+  useEffect(() => {
+    if (!showReportsModal) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previousOverflow || ''; };
+  }, [showReportsModal]);
 
   const fetchReportedMessageIds = useCallback(async (appointmentId) => {
     if (!appointmentId) return;
@@ -5081,16 +5187,6 @@ function AdminAppointmentRow({
           <FaCommentDots size={22} className="group-hover:animate-pulse" />
           <div className="absolute inset-0 bg-white rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
         </button>
-        {/* Floating Reports icon (admin-wide) */}
-        {!showChatModal && (
-          <button
-            className="absolute -top-3 -right-3 bg-red-100 hover:bg-red-200 text-red-600 rounded-full p-2 shadow focus:outline-none"
-            title="View reported chats/messages"
-            onClick={() => { setShowReportsModal(true); fetchAllReports(); }}
-          >
-            <FaFlag className="w-4 h-4" />
-          </button>
-        )}
         {showPasswordModal && (
           <div className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs relative flex flex-col items-center">
@@ -5885,7 +5981,6 @@ function AdminAppointmentRow({
                             <button
                               className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                               onClick={() => {
-                                fetchAllReports(appt._id);
                                 setShowReportsModal(true);
                                 setShowChatOptionsMenu(false);
                               }}
@@ -6322,7 +6417,8 @@ function AdminAppointmentRow({
                               : 'bg-white hover:bg-gray-100 text-gray-800 border border-gray-200 shadow-gray-200 hover:shadow-lg hover:border-gray-300 hover:shadow-xl'
                           } ${isSelectionMode && selectedMessages.some(msg => msg._id === (c && c._id)) ? 'ring-2 ring-blue-400' : ''}`}
                         >
-                                                    {/* Reply preview above message if this is a reply */}
+      
+                            {/* Reply preview above message if this is a reply */}
                             {c && c.replyTo && (
                               <div className="border-l-4 border-purple-400 pl-3 mb-2 text-xs bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 rounded-lg w-full max-w-full break-words cursor-pointer transition-all duration-200 hover:shadow-sm" onClick={() => {
                                   if (c && c.replyTo && messageRefs.current[c.replyTo]) {
@@ -7096,6 +7192,10 @@ function AdminAppointmentRow({
                           <span className={`${isMe ? 'text-blue-200' : 'text-gray-500'} text-[10px]`}>
                             {new Date(c && c.timestamp ? c.timestamp : Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
                           </span>
+                          {/* Report flag right after time and before three dots */}
+                          {reportedMessageIds?.includes(c && c._id) && (
+                            <FaFlag className="text-red-500 w-3.5 h-3.5 mx-1" title="Reported message" />
+                          )}
                           {/* Options icon - visible for all messages (including deleted) */}
                           <button
                             className={`${(c && c.senderEmail) === currentUser.email ? 'text-blue-200 hover:text-white' : 'text-gray-500 hover:text-gray-700'} transition-all duration-200 hover:scale-110 p-1 rounded-full hover:bg-white hover:bg-opacity-20 ml-1`}
@@ -7252,13 +7352,7 @@ function AdminAppointmentRow({
                               >
                                 ➕
                               </button>
-                              {/* Appointment Reports */}
-                              <button
-                                className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                                onClick={() => { setShowHeaderMoreMenu(false); setShowReportsModal(true); fetchAllReports(appt._id); }}
-                              >
-                                <FaFlag className="text-sm" /> Reports
-                              </button>
+                              {/* Appointment Reports removed from quick actions bar */}
                             </div>
                           )}
                           
@@ -9070,12 +9164,7 @@ function AdminAppointmentRow({
                                 }
                               }}
                             >
-                              {/* Flag icon if reported */}
-                              {reportedMessageIds?.includes(message._id) && (
-                                <div className="absolute -top-2 -left-2 bg-red-500 text-white rounded-full p-1 shadow" title="Reported message">
-                                  <FaFlag className="w-3 h-3" />
-                                </div>
-                              )}
+                          {/* Removed in-message corner flag; now shown near three-dots in live chat */}
                               <div className="whitespace-pre-wrap break-words">
                                 {/* Image Message - Always show if exists, even for deleted messages */}
                                 {(message.originalImageUrl || message.imageUrl) && (
@@ -9376,6 +9465,120 @@ function AdminAppointmentRow({
             </div>
           </div>
         )}
+
+        {/* Appointment-scoped Reports Modal (styled like Starred Messages) */}
+        {showReportsModal && createPortal((
+          <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-red-50 to-rose-50">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                  <FaFlag className="text-red-500" /> Appointment Reports
+                </h3>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center bg-white border border-red-200 rounded-lg overflow-hidden mr-2">
+                    <button
+                      className={`px-3 py-1.5 text-xs font-medium ${reportsFilter === 'message' ? 'bg-red-500 text-white' : 'text-red-600 hover:bg-red-50'}`}
+                      onClick={() => setReportsFilter('message')}
+                    >
+                      Message Reports
+                    </button>
+                    <button
+                      className={`px-3 py-1.5 text-xs font-medium border-l border-red-200 ${reportsFilter === 'chat' ? 'bg-red-500 text-white' : 'text-red-600 hover:bg-red-50'}`}
+                      onClick={() => setReportsFilter('chat')}
+                    >
+                      Chat Reports
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => fetchAllReports(appt._id)}
+                    disabled={reportsLoading}
+                    className="p-2 text-red-600 hover:text-red-700 bg-red-100 hover:bg-red-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Refresh reports"
+                  >
+                    {reportsLoading ? (
+                      <div className="w-4 h-4 border-2 border-red-600 border-top-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <FaSync className="w-4 h-4" />
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setShowReportsModal(false)}
+                    className="px-3 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium text-xs sm:text-sm"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-6">
+                {reportsLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+                    <span className="ml-3 text-gray-600">Loading reports...</span>
+                  </div>
+                ) : reportsError ? (
+                  <div className="text-sm text-red-600">{reportsError}</div>
+                ) : (reports || []).length === 0 ? (
+                  <div className="text-center py-12">
+                    <FaFlag className="mx-auto text-6xl text-gray-300 mb-4" />
+                    <h4 className="text-xl font-semibold text-gray-600 mb-2">No Reports</h4>
+                    <p className="text-gray-500">There are no reports for this appointment.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {(reports || []).filter(r => reportsFilter === 'message' ? r.type === 'message' : r.type !== 'message').map((r, idx) => (
+                      <div
+                        key={r.notificationId || idx}
+                        className={`border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow ${r.messageId ? 'cursor-pointer hover:bg-gray-50' : ''}`}
+                        onClick={() => {
+                          if (!r.messageId) return;
+                          setShowReportsModal(false);
+                          setTimeout(() => {
+                            try {
+                              const messageElement = document.querySelector(`[data-message-id="${r.messageId}"]`);
+                              if (messageElement) {
+                                messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                const prevOutline = messageElement.style.outline;
+                                const prevBoxShadow = messageElement.style.boxShadow;
+                                messageElement.style.outline = '2px solid rgba(239,68,68,0.75)';
+                                messageElement.style.boxShadow = '0 0 0 4px rgba(239,68,68,0.25)';
+                                setTimeout(() => {
+                                  messageElement.style.outline = prevOutline || '';
+                                  messageElement.style.boxShadow = prevBoxShadow || '';
+                                }, 1600);
+                              }
+                            } catch (_) {}
+                          }, 0);
+                        }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                            <FaFlag className="text-red-500" /> {r.type === 'message' ? 'Message Report' : 'Chat Report'}
+                          </div>
+                          <div className="text-xs text-gray-500">{new Date(r.createdAt).toLocaleString()}</div>
+                        </div>
+                        <div className="mt-2 text-sm text-gray-700 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
+                          {r.reporter && (<div><span className="font-medium">Reporter:</span> {r.reporter}</div>)}
+                          {r.between && (<div><span className="font-medium">Between:</span> {r.between}</div>)}
+                          {r.reason && (<div><span className="font-medium">Reason:</span> {r.reason}</div>)}
+                          {r.details && (<div className="md:col-span-2"><span className="font-medium">Details:</span> {r.details}</div>)}
+                          {r.messageId && (<div><span className="font-medium">Message ID:</span> {r.messageId}</div>)}
+                          {r.messageExcerpt && (
+                            <div className="md:col-span-2 italic text-gray-600">
+                              <span className="font-medium not-italic">Excerpt:</span> “{r.messageExcerpt}”
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ), document.body)}
 
         {/* Message Info Modal */}
         {showMessageInfoModal && selectedMessageForInfo && (

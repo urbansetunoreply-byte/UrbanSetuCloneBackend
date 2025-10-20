@@ -3,6 +3,7 @@ import User from '../models/user.model.js';
 import Listing from '../models/listing.model.js';
 import { errorHandler } from '../utils/error.js';
 import Booking from '../models/booking.model.js';
+import ReportAudit from '../models/reportAudit.model.js';
 
 // Helper to parse a structured report from notification title+message
 const parseReportFromNotification = (n) => {
@@ -129,6 +130,20 @@ export const reportChatMessage = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'appointmentId, commentId and reason are required' });
     }
 
+    // Rate limit: 10/day per user per appointment for message reports
+    const userId = req.user?.id;
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const countToday = await ReportAudit.countDocuments({
+      userId,
+      appointmentId,
+      kind: 'message',
+      createdAt: { $gte: startOfDay },
+    });
+    if (countToday >= 10) {
+      return res.status(429).json({ success: false, message: 'Daily report limit reached (10/day) for this chat.' });
+    }
+
     // Load appointment and related data
     const appointment = await Booking.findById(appointmentId)
       .populate('buyerId', 'username email')
@@ -188,6 +203,9 @@ export const reportChatMessage = async (req, res, next) => {
 
     const created = await Notification.insertMany(notifications);
 
+    // Audit success
+    await ReportAudit.create({ userId, appointmentId, kind: 'message' });
+
     // Emit socket event to each admin for real-time updates
     const io = req.app.get('io');
     if (io) {
@@ -208,6 +226,19 @@ export const reportChatConversation = async (req, res, next) => {
     const { appointmentId, reason, details } = req.body;
     if (!appointmentId || !reason) {
       return res.status(400).json({ success: false, message: 'appointmentId and reason are required' });
+    }
+
+    // Rate limit: 5/hour per user per appointment for chat reports
+    const userId = req.user?.id;
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const countHour = await ReportAudit.countDocuments({
+      userId,
+      appointmentId,
+      kind: 'chat',
+      createdAt: { $gte: oneHourAgo },
+    });
+    if (countHour >= 5) {
+      return res.status(429).json({ success: false, message: 'Hourly chat report limit reached (5/hour) for this chat.' });
     }
 
     // Load appointment and related data
@@ -266,6 +297,9 @@ export const reportChatConversation = async (req, res, next) => {
     }));
 
     const created = await Notification.insertMany(notifications);
+
+    // Audit success
+    await ReportAudit.create({ userId, appointmentId, kind: 'chat' });
 
     // Emit socket event to each admin for real-time updates
     const io = req.app.get('io');
