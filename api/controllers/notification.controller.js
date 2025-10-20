@@ -47,19 +47,102 @@ export const getReportedNotifications = async (req, res, next) => {
       return res.status(403).json({ success: false, message: 'Admins only' });
     }
 
-    const { appointmentId } = req.query;
+    const { 
+      appointmentId, 
+      dateFrom, 
+      dateTo, 
+      reporter, 
+      status, 
+      search, 
+      sortBy = 'date', 
+      sortOrder = 'desc',
+      messageType,
+      messageId 
+    } = req.query;
 
-    // Fetch this admin's notifications, newest first
-    const query = { userId: req.user.id, title: { $in: ['Chat message reported', 'Chat conversation reported'] } };
+    // Build date filter
+    const dateFilter = {};
+    if (dateFrom) {
+      dateFilter.$gte = new Date(dateFrom);
+    }
+    if (dateTo) {
+      const endDate = new Date(dateTo);
+      endDate.setHours(23, 59, 59, 999);
+      dateFilter.$lte = endDate;
+    }
+
+    // Fetch this admin's notifications with date filter
+    const query = { 
+      userId: req.user.id, 
+      title: { $in: ['Chat message reported', 'Chat conversation reported'] },
+      ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter })
+    };
+    
     const notifications = await Notification.find(query).sort({ createdAt: -1 });
 
     // Parse to structured reports
     let reports = notifications.map(parseReportFromNotification);
 
-    // Optional filter by appointmentId (match in appointmentRef line)
+    // Apply filters
     if (appointmentId) {
       reports = reports.filter(r => r.appointmentRef && r.appointmentRef.includes(appointmentId));
     }
+
+    if (messageId) {
+      reports = reports.filter(r => r.messageId === messageId);
+    }
+
+    if (reporter) {
+      reports = reports.filter(r => r.reporter && r.reporter.toLowerCase().includes(reporter.toLowerCase()));
+    }
+
+    if (status && status !== 'all') {
+      // For now, we don't have status field in reports, so we'll skip this filter
+      // In the future, you could add a status field to the notification model
+    }
+
+    if (search) {
+      const searchLower = search.toLowerCase();
+      reports = reports.filter(r => 
+        (r.reason && r.reason.toLowerCase().includes(searchLower)) ||
+        (r.details && r.details.toLowerCase().includes(searchLower)) ||
+        (r.messageExcerpt && r.messageExcerpt.toLowerCase().includes(searchLower)) ||
+        (r.reporter && r.reporter.toLowerCase().includes(searchLower)) ||
+        (r.appointmentRef && r.appointmentRef.toLowerCase().includes(searchLower))
+      );
+    }
+
+    if (messageType && messageType !== 'all') {
+      // Filter by message type - this would require additional data in the notification
+      // For now, we'll skip this filter as we don't have message type info
+    }
+
+    // Apply sorting
+    reports.sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (sortBy) {
+        case 'user':
+          aValue = a.reporter || '';
+          bValue = b.reporter || '';
+          break;
+        case 'type':
+          aValue = a.type || '';
+          bValue = b.type || '';
+          break;
+        case 'date':
+        default:
+          aValue = new Date(a.createdAt);
+          bValue = new Date(b.createdAt);
+          break;
+      }
+
+      if (sortOrder === 'asc') {
+        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+      } else {
+        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+      }
+    });
 
     res.status(200).json({ success: true, count: reports.length, reports });
   } catch (error) {

@@ -190,8 +190,16 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [messageDensity, setMessageDensity] = useState(() => getUserSetting('gemini_message_density', 'comfortable'));
     const [autoScroll, setAutoScroll] = useState(() => getUserSetting('gemini_auto_scroll', 'true') !== 'false');
     const [showTimestamps, setShowTimestamps] = useState(() => getUserSetting('gemini_show_timestamps', 'true') !== 'false');
-    const [aiResponseLength, setAiResponseLength] = useState(() => getUserSetting('gemini_response_length', 'medium'));
-    const [aiCreativity, setAiCreativity] = useState(() => getUserSetting('gemini_creativity', 'balanced'));
+    const [aiResponseLength, setAiResponseLength] = useState(() => {
+        // For public users, default to 'small', for logged-in users use saved setting or 'medium'
+        if (!currentUser) return 'small';
+        return getUserSetting('gemini_response_length', 'medium');
+    });
+    const [aiCreativity, setAiCreativity] = useState(() => {
+        // For public users, default to 'conservative', for logged-in users use saved setting or 'balanced'
+        if (!currentUser) return 'conservative';
+        return getUserSetting('gemini_creativity', 'balanced');
+    });
     const [soundEnabled, setSoundEnabled] = useState(() => getUserSetting('gemini_sound_enabled', 'true') !== 'false');
     const [typingSounds, setTypingSounds] = useState(() => getUserSetting('gemini_typing_sounds', 'true') !== 'false');
     const [dataRetention, setDataRetention] = useState(() => getUserSetting('gemini_data_retention', '30'));
@@ -239,7 +247,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [topP, setTopP] = useState(() => getUserSetting('gemini_top_p', '0.8'));
     const [topK, setTopK] = useState(() => getUserSetting('gemini_top_k', '40'));
     const [maxTokens, setMaxTokens] = useState(() => getUserSetting('gemini_max_tokens', '2048'));
-    const [enableStreaming, setEnableStreaming] = useState(() => getUserSetting('gemini_streaming', 'true') !== 'false');
+    const [enableStreaming, setEnableStreaming] = useState(() => {
+        // For public users, default to 'false', for logged-in users use saved setting or 'true'
+        if (!currentUser) return false;
+        return getUserSetting('gemini_streaming', 'true') !== 'false';
+    });
     const [enableContextMemory, setEnableContextMemory] = useState(() => getUserSetting('gemini_context_memory', 'true') !== 'false');
     const [contextWindow, setContextWindow] = useState(() => getUserSetting('gemini_context_window', '10'));
     const [enableSystemPrompts, setEnableSystemPrompts] = useState(() => getUserSetting('gemini_system_prompts', 'true') !== 'false');
@@ -740,8 +752,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             setMessageDensity(getUserSetting('gemini_message_density', 'comfortable'));
             setAutoScroll(getUserSetting('gemini_auto_scroll', 'true') !== 'false');
             setShowTimestamps(getUserSetting('gemini_show_timestamps', 'true') !== 'false');
-            setAiResponseLength(getUserSetting('gemini_response_length', 'medium'));
-            setAiCreativity(getUserSetting('gemini_creativity', 'balanced'));
+            setAiResponseLength(getUserSetting('gemini_response_length', currentUser ? 'medium' : 'small'));
+            setAiCreativity(getUserSetting('gemini_creativity', currentUser ? 'balanced' : 'conservative'));
             setSoundEnabled(getUserSetting('gemini_sound_enabled', 'true') !== 'false');
             setTypingSounds(getUserSetting('gemini_typing_sounds', 'true') !== 'false');
             setDataRetention(getUserSetting('gemini_data_retention', '30'));
@@ -784,7 +796,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             setTopP(getUserSetting('gemini_top_p', '0.9'));
             setTopK(getUserSetting('gemini_top_k', '40'));
             setMaxTokens(getUserSetting('gemini_max_tokens', '2048'));
-            setEnableStreaming(getUserSetting('gemini_streaming', 'true') !== 'false');
+            setEnableStreaming(getUserSetting('gemini_streaming', currentUser ? 'true' : 'false') !== 'false');
             setEnableContextMemory(getUserSetting('gemini_context_memory', 'true') !== 'false');
             setContextWindow(getUserSetting('gemini_context_window', '4'));
             setEnableSystemPrompts(getUserSetting('gemini_system_prompts', 'true') !== 'false');
@@ -963,6 +975,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     }, [dataRetention, currentUser]);
 
     // Disable auto-save, high contrast, and smart suggestions for public users
+    // Also set default AI settings for public users
     useEffect(() => {
         if (!currentUser) {
             if (autoSave) {
@@ -973,9 +986,20 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             }
             if (showSmartSuggestions) {
                 setShowSmartSuggestions(false);
+            }
+            // Set default AI settings for public users
+            if (aiResponseLength !== 'small') {
+                setAiResponseLength('small');
+            }
+            if (aiCreativity !== 'conservative') {
+                setAiCreativity('conservative');
+            }
+            if (enableStreaming !== false) {
+                setEnableStreaming(false);
+            }
+            // Tone is already set to 'neutral' by default, so no need to change it
         }
-        }
-    }, [currentUser, autoSave, highContrast, showSmartSuggestions]);
+    }, [currentUser, autoSave, highContrast, showSmartSuggestions, aiResponseLength, aiCreativity, enableStreaming]);
 
     // Auto-save effect
     useEffect(() => {

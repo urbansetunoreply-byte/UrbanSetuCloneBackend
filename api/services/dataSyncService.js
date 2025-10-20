@@ -2,6 +2,11 @@ import mongoose from 'mongoose';
 import Listing from '../models/listing.model.js';
 import Blog from '../models/blog.model.js';
 import FAQ from '../models/faq.model.js';
+import Review from '../models/review.model.js';
+import About from '../models/about.model.js';
+import Contact from '../models/contact.model.js';
+import Booking from '../models/booking.model.js';
+import User from '../models/user.model.js';
 
 /**
  * Data Synchronization Service
@@ -13,10 +18,19 @@ let dataCache = {
     properties: new Map(),
     blogs: new Map(),
     faqs: new Map(),
+    reviews: new Map(),
+    about: new Map(),
+    contacts: new Map(),
+    bookings: new Map(),
+    users: new Map(),
     lastSync: null,
     totalProperties: 0,
     totalBlogs: 0,
-    totalFAQs: 0
+    totalFAQs: 0,
+    totalReviews: 0,
+    totalContacts: 0,
+    totalBookings: 0,
+    totalUsers: 0
 };
 
 /**
@@ -154,22 +168,267 @@ export const indexAllFAQs = async () => {
 };
 
 /**
+ * Index all reviews for chatbot
+ */
+export const indexAllReviews = async () => {
+    try {
+        console.log('🔄 Indexing all reviews for chatbot...');
+        
+        const reviews = await Review.find({ status: 'approved' })
+            .populate('listingId', 'name city state')
+            .populate('userId', 'username')
+            .select('listingId userId rating comment userName userAvatar isVerified helpfulCount dislikeCount ownerResponse createdAt')
+            .lean();
+
+        // Clear existing reviews cache
+        dataCache.reviews.clear();
+        
+        // Index reviews
+        reviews.forEach(review => {
+            const reviewData = {
+                id: review._id.toString(),
+                listingId: review.listingId?._id?.toString(),
+                listingName: review.listingId?.name,
+                listingLocation: review.listingId ? `${review.listingId.city}, ${review.listingId.state}` : 'Unknown',
+                userId: review.userId?._id?.toString(),
+                userName: review.userName,
+                userAvatar: review.userAvatar,
+                rating: review.rating,
+                comment: review.comment,
+                isVerified: review.isVerified,
+                helpfulCount: review.helpfulCount,
+                dislikeCount: review.dislikeCount,
+                ownerResponse: review.ownerResponse,
+                createdAt: review.createdAt,
+                indexedAt: new Date()
+            };
+            
+            dataCache.reviews.set(review._id.toString(), reviewData);
+        });
+
+        dataCache.totalReviews = reviews.length;
+        dataCache.lastSync = new Date();
+        
+        console.log(`✅ Indexed ${reviews.length} reviews for chatbot`);
+        return { success: true, count: reviews.length };
+    } catch (error) {
+        console.error('❌ Error indexing reviews:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+/**
+ * Index about page content for chatbot
+ */
+export const indexAboutContent = async () => {
+    try {
+        console.log('🔄 Indexing about content for chatbot...');
+        
+        const aboutContent = await About.findOne()
+            .select('heroTitle heroText mission features whoWeServe trust team contact customFields lastUpdated')
+            .lean();
+
+        // Clear existing about cache
+        dataCache.about.clear();
+        
+        if (aboutContent) {
+            const aboutData = {
+                id: aboutContent._id.toString(),
+                heroTitle: aboutContent.heroTitle,
+                heroText: aboutContent.heroText,
+                mission: aboutContent.mission,
+                features: aboutContent.features || [],
+                whoWeServe: aboutContent.whoWeServe || [],
+                trust: aboutContent.trust,
+                team: aboutContent.team,
+                contact: aboutContent.contact,
+                customFields: aboutContent.customFields || [],
+                lastUpdated: aboutContent.lastUpdated,
+                indexedAt: new Date()
+            };
+            
+            dataCache.about.set(aboutContent._id.toString(), aboutData);
+        }
+
+        dataCache.lastSync = new Date();
+        
+        console.log(`✅ Indexed about content for chatbot`);
+        return { success: true, count: aboutContent ? 1 : 0 };
+    } catch (error) {
+        console.error('❌ Error indexing about content:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+/**
+ * Index contact messages for chatbot (for admin insights)
+ */
+export const indexContactMessages = async () => {
+    try {
+        console.log('🔄 Indexing contact messages for chatbot...');
+        
+        const contacts = await Contact.find({ status: { $in: ['read', 'replied'] } })
+            .select('email subject message status adminReply adminReplyAt createdAt')
+            .sort({ createdAt: -1 })
+            .limit(100) // Limit to recent 100 messages
+            .lean();
+
+        // Clear existing contacts cache
+        dataCache.contacts.clear();
+        
+        // Index contacts
+        contacts.forEach(contact => {
+            const contactData = {
+                id: contact._id.toString(),
+                email: contact.email,
+                subject: contact.subject,
+                message: contact.message,
+                status: contact.status,
+                adminReply: contact.adminReply,
+                adminReplyAt: contact.adminReplyAt,
+                createdAt: contact.createdAt,
+                indexedAt: new Date()
+            };
+            
+            dataCache.contacts.set(contact._id.toString(), contactData);
+        });
+
+        dataCache.totalContacts = contacts.length;
+        dataCache.lastSync = new Date();
+        
+        console.log(`✅ Indexed ${contacts.length} contact messages for chatbot`);
+        return { success: true, count: contacts.length };
+    } catch (error) {
+        console.error('❌ Error indexing contact messages:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+/**
+ * Index booking data for chatbot (for market insights)
+ */
+export const indexBookingData = async () => {
+    try {
+        console.log('🔄 Indexing booking data for chatbot...');
+        
+        const bookings = await Booking.find({ status: { $in: ['accepted', 'completed'] } })
+            .populate('listingId', 'name city state type regularPrice')
+            .populate('buyerId', 'username')
+            .populate('sellerId', 'username')
+            .select('listingId buyerId sellerId purpose propertyName propertyDescription status date createdAt')
+            .sort({ createdAt: -1 })
+            .limit(200) // Limit to recent 200 bookings
+            .lean();
+
+        // Clear existing bookings cache
+        dataCache.bookings.clear();
+        
+        // Index bookings
+        bookings.forEach(booking => {
+            const bookingData = {
+                id: booking._id.toString(),
+                listingId: booking.listingId?._id?.toString(),
+                listingName: booking.listingId?.name,
+                listingLocation: booking.listingId ? `${booking.listingId.city}, ${booking.listingId.state}` : 'Unknown',
+                listingType: booking.listingId?.type,
+                listingPrice: booking.listingId?.regularPrice,
+                buyerId: booking.buyerId?._id?.toString(),
+                buyerName: booking.buyerId?.username,
+                sellerId: booking.sellerId?._id?.toString(),
+                sellerName: booking.sellerId?.username,
+                purpose: booking.purpose,
+                propertyName: booking.propertyName,
+                propertyDescription: booking.propertyDescription,
+                status: booking.status,
+                date: booking.date,
+                createdAt: booking.createdAt,
+                indexedAt: new Date()
+            };
+            
+            dataCache.bookings.set(booking._id.toString(), bookingData);
+        });
+
+        dataCache.totalBookings = bookings.length;
+        dataCache.lastSync = new Date();
+        
+        console.log(`✅ Indexed ${bookings.length} bookings for chatbot`);
+        return { success: true, count: bookings.length };
+    } catch (error) {
+        console.error('❌ Error indexing booking data:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+/**
+ * Index user data for chatbot (for market insights)
+ */
+export const indexUserData = async () => {
+    try {
+        console.log('🔄 Indexing user data for chatbot...');
+        
+        const users = await User.find({ 
+            status: { $ne: 'suspended' },
+            role: { $in: ['user', 'seller'] }
+        })
+            .select('username email mobileNumber address gender role status createdAt')
+            .sort({ createdAt: -1 })
+            .limit(500) // Limit to recent 500 users
+            .lean();
+
+        // Clear existing users cache
+        dataCache.users.clear();
+        
+        // Index users (anonymized for privacy)
+        users.forEach(user => {
+            const userData = {
+                id: user._id.toString(),
+                username: user.username,
+                email: user.email ? user.email.replace(/(.{2}).*(@.*)/, '$1***$2') : null, // Anonymize email
+                mobileNumber: user.mobileNumber ? user.mobileNumber.replace(/(\d{2})\d{6}(\d{2})/, '$1******$2') : null, // Anonymize mobile
+                address: user.address ? user.address.split(' ').slice(0, 2).join(' ') + '...' : null, // Partial address
+                gender: user.gender,
+                role: user.role,
+                status: user.status,
+                createdAt: user.createdAt,
+                indexedAt: new Date()
+            };
+            
+            dataCache.users.set(user._id.toString(), userData);
+        });
+
+        dataCache.totalUsers = users.length;
+        dataCache.lastSync = new Date();
+        
+        console.log(`✅ Indexed ${users.length} users for chatbot`);
+        return { success: true, count: users.length };
+    } catch (error) {
+        console.error('❌ Error indexing user data:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+/**
  * Index all website data
  */
 export const indexAllWebsiteData = async () => {
     try {
         console.log('🚀 Starting full website data indexing...');
         
-        const [propertiesResult, blogsResult, faqsResult] = await Promise.all([
+        const [propertiesResult, blogsResult, faqsResult, reviewsResult, aboutResult, contactsResult, bookingsResult, usersResult] = await Promise.all([
             indexAllProperties(),
             indexAllBlogs(),
-            indexAllFAQs()
+            indexAllFAQs(),
+            indexAllReviews(),
+            indexAboutContent(),
+            indexContactMessages(),
+            indexBookingData(),
+            indexUserData()
         ]);
 
-        const totalIndexed = propertiesResult.count + blogsResult.count + faqsResult.count;
+        const totalIndexed = propertiesResult.count + blogsResult.count + faqsResult.count + reviewsResult.count + aboutResult.count + contactsResult.count + bookingsResult.count + usersResult.count;
         
         console.log(`🎉 Full indexing completed: ${totalIndexed} items indexed`);
-        console.log(`📊 Breakdown: ${propertiesResult.count} properties, ${blogsResult.count} blogs, ${faqsResult.count} FAQs`);
+        console.log(`📊 Breakdown: ${propertiesResult.count} properties, ${blogsResult.count} blogs, ${faqsResult.count} FAQs, ${reviewsResult.count} reviews, ${aboutResult.count} about content, ${contactsResult.count} contacts, ${bookingsResult.count} bookings, ${usersResult.count} users`);
         
         return {
             success: true,
@@ -177,7 +436,12 @@ export const indexAllWebsiteData = async () => {
             breakdown: {
                 properties: propertiesResult.count,
                 blogs: blogsResult.count,
-                faqs: faqsResult.count
+                faqs: faqsResult.count,
+                reviews: reviewsResult.count,
+                about: aboutResult.count,
+                contacts: contactsResult.count,
+                bookings: bookingsResult.count,
+                users: usersResult.count
             },
             lastSync: dataCache.lastSync
         };
@@ -195,10 +459,19 @@ export const getCachedData = () => {
         properties: Array.from(dataCache.properties.values()),
         blogs: Array.from(dataCache.blogs.values()),
         faqs: Array.from(dataCache.faqs.values()),
+        reviews: Array.from(dataCache.reviews.values()),
+        about: Array.from(dataCache.about.values()),
+        contacts: Array.from(dataCache.contacts.values()),
+        bookings: Array.from(dataCache.bookings.values()),
+        users: Array.from(dataCache.users.values()),
         stats: {
             totalProperties: dataCache.totalProperties,
             totalBlogs: dataCache.totalBlogs,
             totalFAQs: dataCache.totalFAQs,
+            totalReviews: dataCache.totalReviews,
+            totalContacts: dataCache.totalContacts,
+            totalBookings: dataCache.totalBookings,
+            totalUsers: dataCache.totalUsers,
             lastSync: dataCache.lastSync
         }
     };
@@ -239,6 +512,10 @@ export const getRelevantCachedData = (userMessage, selectedProperties = []) => {
     contextData += `TOTAL PROPERTIES: ${cachedData.stats.totalProperties}\n`;
     contextData += `TOTAL BLOGS: ${cachedData.stats.totalBlogs}\n`;
     contextData += `TOTAL FAQs: ${cachedData.stats.totalFAQs}\n`;
+    contextData += `TOTAL REVIEWS: ${cachedData.stats.totalReviews}\n`;
+    contextData += `TOTAL CONTACTS: ${cachedData.stats.totalContacts}\n`;
+    contextData += `TOTAL BOOKINGS: ${cachedData.stats.totalBookings}\n`;
+    contextData += `TOTAL USERS: ${cachedData.stats.totalUsers}\n`;
     contextData += `LAST SYNC: ${cachedData.stats.lastSync?.toISOString() || 'Never'}\n`;
     contextData += `SERVICES: Property Search, Home Buying, Investment Guidance, Property Management, Legal & Documentation Support\n\n`;
 
@@ -305,6 +582,50 @@ export const getRelevantCachedData = (userMessage, selectedProperties = []) => {
         });
     }
 
+    // Add relevant reviews from cache
+    const relevantReviews = searchCachedReviews(keywords.join(' '), 3);
+    if (relevantReviews.length > 0) {
+        contextData += 'CUSTOMER REVIEWS:\n';
+        relevantReviews.forEach((review, index) => {
+            contextData += `${index + 1}. ${review.listingName} (${review.listingLocation})\n`;
+            contextData += `   Rating: ${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)} (${review.rating}/5)\n`;
+            contextData += `   Review: "${review.comment.slice(0, 150)}..."\n`;
+            contextData += `   By: ${review.userName}${review.isVerified ? ' (Verified)' : ''}\n`;
+            if (review.ownerResponse) {
+                contextData += `   Owner Response: "${review.ownerResponse.slice(0, 100)}..."\n`;
+            }
+            contextData += `   Helpful: ${review.helpfulCount} | ${new Date(review.createdAt).toLocaleDateString()}\n\n`;
+        });
+    }
+
+    // Add about content from cache
+    const aboutContent = searchCachedAbout(keywords.join(' '), 1);
+    if (aboutContent.length > 0) {
+        const about = aboutContent[0];
+        contextData += 'ABOUT URBANSETU:\n';
+        contextData += `Mission: ${about.mission}\n`;
+        contextData += `Trust: ${about.trust}\n`;
+        if (about.features && about.features.length > 0) {
+            contextData += `Key Features: ${about.features.join(', ')}\n`;
+        }
+        if (about.whoWeServe && about.whoWeServe.length > 0) {
+            contextData += `Who We Serve: ${about.whoWeServe.join(', ')}\n`;
+        }
+        contextData += '\n';
+    }
+
+    // Add market insights from bookings
+    const relevantBookings = searchCachedBookings(keywords.join(' '), 2);
+    if (relevantBookings.length > 0) {
+        contextData += 'MARKET INSIGHTS (Recent Bookings):\n';
+        relevantBookings.forEach((booking, index) => {
+            contextData += `${index + 1}. ${booking.propertyName} - ${booking.listingLocation}\n`;
+            contextData += `   Purpose: ${booking.purpose} | Status: ${booking.status}\n`;
+            contextData += `   Price: ₹${booking.listingPrice?.toLocaleString() || 'N/A'}\n`;
+            contextData += `   Booked: ${new Date(booking.createdAt).toLocaleDateString()}\n\n`;
+        });
+    }
+
     return contextData;
 };
 
@@ -344,6 +665,109 @@ export const getSyncStatus = () => {
         totalFAQs: dataCache.totalFAQs,
         needsReindexing: needsReindexing()
     };
+};
+
+/**
+ * Search cached reviews
+ */
+export const searchCachedReviews = (query, limit = 5) => {
+    const keywords = extractKeywords(query);
+    const reviews = Array.from(dataCache.reviews.values());
+    
+    const results = reviews.filter(review => 
+        keywords.some(keyword => 
+            review.comment.toLowerCase().includes(keyword) ||
+            review.listingName?.toLowerCase().includes(keyword) ||
+            review.listingLocation?.toLowerCase().includes(keyword) ||
+            review.userName?.toLowerCase().includes(keyword) ||
+            review.ownerResponse?.toLowerCase().includes(keyword)
+        )
+    ).sort((a, b) => b.helpfulCount - a.helpfulCount || new Date(b.createdAt) - new Date(a.createdAt));
+    
+    return results.slice(0, limit);
+};
+
+/**
+ * Search cached about content
+ */
+export const searchCachedAbout = (query, limit = 1) => {
+    const keywords = extractKeywords(query);
+    const aboutContent = Array.from(dataCache.about.values());
+    
+    const results = aboutContent.filter(about => 
+        keywords.some(keyword => 
+            about.heroTitle?.toLowerCase().includes(keyword) ||
+            about.heroText?.toLowerCase().includes(keyword) ||
+            about.mission?.toLowerCase().includes(keyword) ||
+            about.features?.some(feature => feature.toLowerCase().includes(keyword)) ||
+            about.whoWeServe?.some(serve => serve.toLowerCase().includes(keyword)) ||
+            about.trust?.toLowerCase().includes(keyword) ||
+            about.team?.toLowerCase().includes(keyword) ||
+            about.contact?.toLowerCase().includes(keyword)
+        )
+    );
+    
+    return results.slice(0, limit);
+};
+
+/**
+ * Search cached contacts
+ */
+export const searchCachedContacts = (query, limit = 5) => {
+    const keywords = extractKeywords(query);
+    const contacts = Array.from(dataCache.contacts.values());
+    
+    const results = contacts.filter(contact => 
+        keywords.some(keyword => 
+            contact.subject?.toLowerCase().includes(keyword) ||
+            contact.message?.toLowerCase().includes(keyword) ||
+            contact.adminReply?.toLowerCase().includes(keyword) ||
+            contact.email?.toLowerCase().includes(keyword)
+        )
+    ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
+    return results.slice(0, limit);
+};
+
+/**
+ * Search cached bookings
+ */
+export const searchCachedBookings = (query, limit = 5) => {
+    const keywords = extractKeywords(query);
+    const bookings = Array.from(dataCache.bookings.values());
+    
+    const results = bookings.filter(booking => 
+        keywords.some(keyword => 
+            booking.listingName?.toLowerCase().includes(keyword) ||
+            booking.listingLocation?.toLowerCase().includes(keyword) ||
+            booking.propertyName?.toLowerCase().includes(keyword) ||
+            booking.propertyDescription?.toLowerCase().includes(keyword) ||
+            booking.purpose?.toLowerCase().includes(keyword) ||
+            booking.buyerName?.toLowerCase().includes(keyword) ||
+            booking.sellerName?.toLowerCase().includes(keyword)
+        )
+    ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
+    return results.slice(0, limit);
+};
+
+/**
+ * Search cached users
+ */
+export const searchCachedUsers = (query, limit = 5) => {
+    const keywords = extractKeywords(query);
+    const users = Array.from(dataCache.users.values());
+    
+    const results = users.filter(user => 
+        keywords.some(keyword => 
+            user.username?.toLowerCase().includes(keyword) ||
+            user.role?.toLowerCase().includes(keyword) ||
+            user.gender?.toLowerCase().includes(keyword) ||
+            user.address?.toLowerCase().includes(keyword)
+        )
+    ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
+    return results.slice(0, limit);
 };
 
 /**

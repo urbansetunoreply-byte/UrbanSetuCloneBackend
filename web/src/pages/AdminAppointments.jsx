@@ -1483,12 +1483,36 @@ export default function AdminAppointments() {
   const [adminReportsLoading, setAdminReportsLoading] = useState(false);
   const [adminReportsError, setAdminReportsError] = useState('');
   const [adminReportsFilter, setAdminReportsFilter] = useState('message'); // 'message' | 'chat'
+  
+  // Admin Reports Filters
+  const [adminReportsFilters, setAdminReportsFilters] = useState({
+    dateFrom: '',
+    dateTo: '',
+    reporter: '',
+    status: 'all', // 'all', 'pending', 'resolved'
+    search: '',
+    sortBy: 'date', // 'date', 'user', 'type'
+    sortOrder: 'desc' // 'asc', 'desc'
+  });
 
   const fetchAdminReports = useCallback(async () => {
     try {
       setAdminReportsLoading(true);
       setAdminReportsError('');
-      const res = await fetch(`${API_BASE_URL}/api/notifications/reports`, { credentials: 'include' });
+      
+      // Build query parameters
+      const params = new URLSearchParams();
+      if (adminReportsFilters.dateFrom) params.append('dateFrom', adminReportsFilters.dateFrom);
+      if (adminReportsFilters.dateTo) params.append('dateTo', adminReportsFilters.dateTo);
+      if (adminReportsFilters.reporter) params.append('reporter', adminReportsFilters.reporter);
+      if (adminReportsFilters.status !== 'all') params.append('status', adminReportsFilters.status);
+      if (adminReportsFilters.search) params.append('search', adminReportsFilters.search);
+      params.append('sortBy', adminReportsFilters.sortBy);
+      params.append('sortOrder', adminReportsFilters.sortOrder);
+      
+      const res = await fetch(`${API_BASE_URL}/api/notifications/reports?${params.toString()}`, { 
+        credentials: 'include' 
+      });
       const data = await res.json();
       if (data?.success) setAdminReports(data.reports || []);
       else setAdminReportsError(data?.message || 'Failed to load reports');
@@ -1497,7 +1521,7 @@ export default function AdminAppointments() {
     } finally {
       setAdminReportsLoading(false);
     }
-  }, []);
+  }, [adminReportsFilters]);
 
   useEffect(() => {
     if (showAdminReportsModal) fetchAdminReports();
@@ -1859,7 +1883,7 @@ export default function AdminAppointments() {
   {/* Reports Modal - Admin-wide (styled like Starred Messages) */}
   {showAdminReportsModal && createPortal((
     <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[95vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-red-50 to-rose-50">
           <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
@@ -1901,6 +1925,125 @@ export default function AdminAppointments() {
           </div>
         </div>
 
+        {/* Filters Section */}
+        <div className="p-4 border-b border-gray-200 bg-gray-50">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Date Range */}
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-gray-700">Date From</label>
+              <input
+                type="date"
+                value={adminReportsFilters.dateFrom}
+                onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-gray-700">Date To</label>
+              <input
+                type="date"
+                value={adminReportsFilters.dateTo}
+                onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, dateTo: e.target.value }))}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              />
+            </div>
+            
+            {/* Reporter Filter */}
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-gray-700">Reporter</label>
+              <input
+                type="text"
+                placeholder="Search reporter..."
+                value={adminReportsFilters.reporter}
+                onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, reporter: e.target.value }))}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              />
+            </div>
+            
+            {/* Status Filter */}
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-gray-700">Status</label>
+              <select
+                value={adminReportsFilters.status}
+                onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, status: e.target.value }))}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              >
+                <option value="all">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="resolved">Resolved</option>
+              </select>
+            </div>
+          </div>
+          
+          {/* Search and Sort Row */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-gray-700">Search</label>
+              <input
+                type="text"
+                placeholder="Search reports..."
+                value={adminReportsFilters.search}
+                onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, search: e.target.value }))}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-gray-700">Sort By</label>
+              <select
+                value={adminReportsFilters.sortBy}
+                onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, sortBy: e.target.value }))}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              >
+                <option value="date">Date</option>
+                <option value="user">User</option>
+                <option value="type">Type</option>
+              </select>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-gray-700">Order</label>
+              <select
+                value={adminReportsFilters.sortOrder}
+                onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, sortOrder: e.target.value }))}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              >
+                <option value="desc">Newest First</option>
+                <option value="asc">Oldest First</option>
+              </select>
+            </div>
+          </div>
+          
+          {/* Filter Actions */}
+          <div className="flex items-center justify-between mt-4">
+            <div className="text-xs text-gray-600">
+              Showing {adminReports.length} reports
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setAdminReportsFilters({
+                  dateFrom: '',
+                  dateTo: '',
+                  reporter: '',
+                  status: 'all',
+                  search: '',
+                  sortBy: 'date',
+                  sortOrder: 'desc'
+                })}
+                className="px-3 py-1.5 text-xs bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                Clear Filters
+              </button>
+              <button
+                onClick={fetchAdminReports}
+                className="px-3 py-1.5 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              >
+                Apply Filters
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
           {adminReportsLoading ? (
@@ -1914,7 +2057,7 @@ export default function AdminAppointments() {
             <div className="text-center py-12">
               <FaFlag className="mx-auto text-6xl text-gray-300 mb-4" />
               <h4 className="text-xl font-semibold text-gray-600 mb-2">No Reports</h4>
-              <p className="text-gray-500">There are no reports yet.</p>
+              <p className="text-gray-500">There are no reports matching your filters.</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -1935,7 +2078,7 @@ export default function AdminAppointments() {
                     {r.messageId && (<div><span className="font-medium">Message ID:</span> {r.messageId}</div>)}
                     {r.messageExcerpt && (
                       <div className="md:col-span-2 italic text-gray-600">
-                        <span className="font-medium not-italic">Excerpt:</span> “{r.messageExcerpt}”
+                        <span className="font-medium not-italic">Excerpt:</span> "{r.messageExcerpt}"
                       </div>
                     )}
                     {r.totalMessages != null && (<div><span className="font-medium">Total Messages:</span> {r.totalMessages}</div>)}
@@ -2446,16 +2589,48 @@ function AdminAppointmentRow({
   const [reportsLoading, setReportsLoading] = useLocalState(false);
   const [reportsError, setReportsError] = useLocalState('');
   const [reportsFilter, setReportsFilter] = useLocalState('message'); // 'message' | 'chat'
+  
+  // Appointment Reports Filters
+  const [reportsFilters, setReportsFilters] = useLocalState({
+    dateFrom: '',
+    dateTo: '',
+    reporter: '',
+    messageType: 'all', // 'all', 'text', 'image', 'video', 'audio', 'document'
+    search: '',
+    sortBy: 'date', // 'date', 'user', 'type'
+    sortOrder: 'desc' // 'asc', 'desc'
+  });
 
   // Reported message IDs for current appointment (to flag in UI)
   const [reportedMessageIds, setReportedMessageIds] = useLocalState([]);
+  
+  // Report details tooltip state
+  const [reportTooltip, setReportTooltip] = useLocalState({
+    show: false,
+    messageId: null,
+    details: null,
+    position: { x: 0, y: 0 }
+  });
 
   const fetchAllReports = useCallback(async (appointmentId) => {
     try {
       setReportsLoading(true);
       setReportsError('');
-      const url = appointmentId ? `${API_BASE_URL}/api/notifications/reports?appointmentId=${appointmentId}` : `${API_BASE_URL}/api/notifications/reports`;
-      const res = await fetch(url, { credentials: 'include' });
+      
+      // Build query parameters
+      const params = new URLSearchParams();
+      if (appointmentId) params.append('appointmentId', appointmentId);
+      if (reportsFilters.dateFrom) params.append('dateFrom', reportsFilters.dateFrom);
+      if (reportsFilters.dateTo) params.append('dateTo', reportsFilters.dateTo);
+      if (reportsFilters.reporter) params.append('reporter', reportsFilters.reporter);
+      if (reportsFilters.messageType !== 'all') params.append('messageType', reportsFilters.messageType);
+      if (reportsFilters.search) params.append('search', reportsFilters.search);
+      params.append('sortBy', reportsFilters.sortBy);
+      params.append('sortOrder', reportsFilters.sortOrder);
+      
+      const res = await fetch(`${API_BASE_URL}/api/notifications/reports?${params.toString()}`, { 
+        credentials: 'include' 
+      });
       const data = await res.json();
       if (data?.success) setReports(data.reports || []);
       else setReportsError(data?.message || 'Failed to load reports');
@@ -2464,7 +2639,7 @@ function AdminAppointmentRow({
     } finally {
       setReportsLoading(false);
     }
-  }, []);
+  }, [reportsFilters]);
 
   // Load appointment-scoped reports when its modal opens
   useEffect(() => {
@@ -2488,6 +2663,50 @@ function AdminAppointmentRow({
       const data = await res.json();
       if (data?.success) setReportedMessageIds(data.messageIds || []);
     } catch (_) {}
+  }, []);
+
+  // Fetch report details for a specific message
+  const fetchReportDetails = useCallback(async (messageId) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/notifications/reports?messageId=${messageId}`, { credentials: 'include' });
+      const data = await res.json();
+      if (data?.success && data.reports && data.reports.length > 0) {
+        return data.reports[0]; // Return the first (most recent) report
+      }
+    } catch (_) {
+      // Handle error silently
+    }
+    return null;
+  }, []);
+
+  // Handle flag hover to show report details
+  const handleFlagHover = useCallback(async (messageId, event) => {
+    if (reportTooltip.show && reportTooltip.messageId === messageId) return;
+    
+    const rect = event.target.getBoundingClientRect();
+    const details = await fetchReportDetails(messageId);
+    
+    if (details) {
+      setReportTooltip({
+        show: true,
+        messageId,
+        details,
+        position: {
+          x: rect.right + 10,
+          y: rect.top - 10
+        }
+      });
+    }
+  }, [reportTooltip.show, reportTooltip.messageId, fetchReportDetails]);
+
+  // Handle flag mouse leave to hide tooltip
+  const handleFlagLeave = useCallback(() => {
+    setReportTooltip({
+      show: false,
+      messageId: null,
+      details: null,
+      position: { x: 0, y: 0 }
+    });
   }, []);
   const [deleteChatPassword, setDeleteChatPassword] = useLocalState("");
   const [deleteChatLoading, setDeleteChatLoading] = useLocalState(false);
@@ -7194,7 +7413,12 @@ function AdminAppointmentRow({
                           </span>
                           {/* Report flag right after time and before three dots */}
                           {reportedMessageIds?.includes(c && c._id) && (
-                            <FaFlag className="text-red-500 w-3.5 h-3.5 mx-1" title="Reported message" />
+                            <FaFlag 
+                              className="text-red-500 w-3.5 h-3.5 mx-1 cursor-pointer hover:text-red-600 transition-colors" 
+                              title="Reported message - hover for details"
+                              onMouseEnter={(e) => handleFlagHover(c._id, e)}
+                              onMouseLeave={handleFlagLeave}
+                            />
                           )}
                           {/* Options icon - visible for all messages (including deleted) */}
                           <button
@@ -9511,6 +9735,128 @@ function AdminAppointmentRow({
                 </div>
               </div>
 
+              {/* Filters Section */}
+              <div className="p-4 border-b border-gray-200 bg-gray-50">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* Date Range */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-gray-700">Date From</label>
+                    <input
+                      type="date"
+                      value={reportsFilters.dateFrom}
+                      onChange={(e) => setReportsFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-gray-700">Date To</label>
+                    <input
+                      type="date"
+                      value={reportsFilters.dateTo}
+                      onChange={(e) => setReportsFilters(prev => ({ ...prev, dateTo: e.target.value }))}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    />
+                  </div>
+                  
+                  {/* Reporter Filter */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-gray-700">Reporter</label>
+                    <input
+                      type="text"
+                      placeholder="Search reporter..."
+                      value={reportsFilters.reporter}
+                      onChange={(e) => setReportsFilters(prev => ({ ...prev, reporter: e.target.value }))}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    />
+                  </div>
+                  
+                  {/* Message Type Filter */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-gray-700">Message Type</label>
+                    <select
+                      value={reportsFilters.messageType}
+                      onChange={(e) => setReportsFilters(prev => ({ ...prev, messageType: e.target.value }))}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    >
+                      <option value="all">All Types</option>
+                      <option value="text">Text</option>
+                      <option value="image">Image</option>
+                      <option value="video">Video</option>
+                      <option value="audio">Audio</option>
+                      <option value="document">Document</option>
+                    </select>
+                  </div>
+                </div>
+                
+                {/* Search and Sort Row */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-gray-700">Search</label>
+                    <input
+                      type="text"
+                      placeholder="Search reports..."
+                      value={reportsFilters.search}
+                      onChange={(e) => setReportsFilters(prev => ({ ...prev, search: e.target.value }))}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-gray-700">Sort By</label>
+                    <select
+                      value={reportsFilters.sortBy}
+                      onChange={(e) => setReportsFilters(prev => ({ ...prev, sortBy: e.target.value }))}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    >
+                      <option value="date">Date</option>
+                      <option value="user">User</option>
+                      <option value="type">Type</option>
+                    </select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-gray-700">Order</label>
+                    <select
+                      value={reportsFilters.sortOrder}
+                      onChange={(e) => setReportsFilters(prev => ({ ...prev, sortOrder: e.target.value }))}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    >
+                      <option value="desc">Newest First</option>
+                      <option value="asc">Oldest First</option>
+                    </select>
+                  </div>
+                </div>
+                
+                {/* Filter Actions */}
+                <div className="flex items-center justify-between mt-4">
+                  <div className="text-xs text-gray-600">
+                    Showing {reports.length} reports for this appointment
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setReportsFilters({
+                        dateFrom: '',
+                        dateTo: '',
+                        reporter: '',
+                        messageType: 'all',
+                        search: '',
+                        sortBy: 'date',
+                        sortOrder: 'desc'
+                      })}
+                      className="px-3 py-1.5 text-xs bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                    >
+                      Clear Filters
+                    </button>
+                    <button
+                      onClick={() => fetchAllReports(appt._id)}
+                      className="px-3 py-1.5 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                    >
+                      Apply Filters
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               {/* Content */}
               <div className="flex-1 overflow-y-auto p-6">
                 {reportsLoading ? (
@@ -9575,6 +9921,42 @@ function AdminAppointmentRow({
                     ))}
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        ), document.body)}
+
+        {/* Report Details Tooltip */}
+        {reportTooltip.show && reportTooltip.details && createPortal((
+          <div 
+            className="fixed bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-[60] max-w-sm"
+            style={{
+              left: `${reportTooltip.position.x}px`,
+              top: `${reportTooltip.position.y}px`,
+              transform: 'translateY(-50%)'
+            }}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <FaFlag className="text-red-500 text-sm" />
+              <span className="font-semibold text-gray-800 text-sm">Report Details</span>
+            </div>
+            <div className="space-y-1 text-xs text-gray-700">
+              {reportTooltip.details.reporter && (
+                <div><span className="font-medium">Reporter:</span> {reportTooltip.details.reporter}</div>
+              )}
+              {reportTooltip.details.reason && (
+                <div><span className="font-medium">Reason:</span> {reportTooltip.details.reason}</div>
+              )}
+              {reportTooltip.details.details && (
+                <div><span className="font-medium">Details:</span> {reportTooltip.details.details}</div>
+              )}
+              {reportTooltip.details.messageExcerpt && (
+                <div className="mt-2 p-2 bg-gray-50 rounded text-xs italic">
+                  <span className="font-medium not-italic">Excerpt:</span> "{reportTooltip.details.messageExcerpt}"
+                </div>
+              )}
+              <div className="text-gray-500 text-xs mt-2">
+                {new Date(reportTooltip.details.createdAt).toLocaleString()}
               </div>
             </div>
           </div>
