@@ -1502,7 +1502,20 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       try {
         const res = await fetch(`${API_BASE_URL}/api/listing/get?limit=300`, { credentials: 'include' });
         const data = await res.json();
-        const mapped = Array.isArray(data) ? data.map(l => ({ id: l._id, name: l.name || 'Property' })) : [];
+        const mapped = Array.isArray(data) ? data.map(l => ({
+          id: l._id,
+          name: l.name || 'Property',
+          city: l.city,
+          state: l.state,
+          price: l.discountPrice || l.regularPrice || l.price || 0,
+          bedrooms: l.bedrooms || 0,
+          bathrooms: l.bathrooms || 0,
+          area: l.area || 0,
+          imageUrls: l.imageUrls || [],
+          imageUrl: l.imageUrl,
+          image: l.image,
+          thumbnail: l.thumbnail
+        })) : [];
         setAllProperties(mapped);
         setPropertiesLoaded(true);
       } catch (_) {
@@ -5654,6 +5667,16 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
               }
             }}
           >
+            {/* Animated circular ring when there are unread messages */}
+            {unreadNewMessages > 0 && !isOtherPartyTyping && !((chatLocked || chatLockStatusLoading) && !chatAccessGranted) && !isStatusHidden && (
+              <div
+                className="absolute inset-0 rounded-full animate-ping"
+                style={{
+                  border: '3px solid #ef4444', // Red color for unread messages
+                }}
+              ></div>
+            )}
+            
             <FaCommentDots size={22} className={"group-hover:animate-pulse"} />
             {
               <div className="absolute inset-0 bg-white rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
@@ -8410,40 +8433,54 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                             return {
                               id: a?.listingId?._id || a?.listingId,
                               name: a?.propertyName || l?.name || 'Property',
-                              city: l?.city,
-                              state: l?.state,
-                              price: (l?.discountPrice ?? l?.regularPrice),
-                              bedrooms: l?.bedrooms,
-                              bathrooms: l?.bathrooms,
-                              area: l?.area,
-                              image: Array.isArray(l?.imageUrls) ? l.imageUrls[0] : (l?.imageUrl || l?.image)
+                              city: l?.city || 'City',
+                              state: l?.state || 'State',
+                              price: (l?.discountPrice ?? l?.regularPrice) || 0,
+                              bedrooms: l?.bedrooms || 0,
+                              bathrooms: l?.bathrooms || 0,
+                              area: l?.area || 0,
+                              image: Array.isArray(l?.imageUrls) ? l.imageUrls[0] : (l?.imageUrl || l?.image || null)
                             };
                           });
                           const propList = Array.isArray(allProperties) ? allProperties : [];
-                          const allPropsDetailed = propList.map(p => ({
-                            id: p?._id || p?.id,
-                            name: p?.name,
-                            city: p?.city,
-                            state: p?.state,
-                            price: (p?.discountPrice ?? p?.regularPrice),
-                            bedrooms: p?.bedrooms,
-                            bathrooms: p?.bathrooms,
-                            area: p?.area,
-                            image: Array.isArray(p?.imageUrls) ? p.imageUrls[0] : (p?.imageUrl || p?.image)
-                          }));
+                          const allPropsDetailed = propList.map(p => {
+                            return {
+                              id: p?.id,
+                              name: p?.name || 'Property',
+                              city: p?.city || 'City',
+                              state: p?.state || 'State',
+                              price: p?.price || 0,
+                              bedrooms: p?.bedrooms || 0,
+                              bathrooms: p?.bathrooms || 0,
+                              area: p?.area || 0,
+                              image: Array.isArray(p?.imageUrls) ? p.imageUrls[0] : (p?.imageUrl || p?.image || p?.thumbnail || null)
+                            };
+                          });
+                          // Combine and deduplicate by ID
                           const combined = [...apptProps, ...allPropsDetailed];
-                          const uniqueProps = Array.from(new Set(combined.filter(p => p.id && p.name).map(p => JSON.stringify(p))))
-                            .map(s => JSON.parse(s))
+                          const uniquePropsMap = new Map();
+                          
+                          // Add appointment properties first (they have more complete data)
+                          apptProps.forEach(prop => {
+                            if (prop.id && prop.name) {
+                              uniquePropsMap.set(prop.id, prop);
+                            }
+                          });
+                          
+                          // Add all properties, but don't override existing ones
+                          allPropsDetailed.forEach(prop => {
+                            if (prop.id && prop.name && !uniquePropsMap.has(prop.id)) {
+                              uniquePropsMap.set(prop.id, prop);
+                            }
+                          });
+                          
+                          const uniqueProps = Array.from(uniquePropsMap.values())
                             .filter(p => p.name && p.name.toLowerCase().includes(query));
                           
-                          // Debug: Log the first property to see its structure
-                          if (uniqueProps.length > 0) {
-                            console.log('First property data:', uniqueProps[0]);
-                          }
                           
                           if (uniqueProps.length === 0) return <div className="p-3 text-sm text-gray-500 text-center">No properties found. Try typing more characters.</div>;
-                          return uniqueProps.slice(0,8).map((p) => (
-                            <button key={p.id} type="button" className="w-full text-left p-3 text-sm hover:bg-gray-100 transition-colors" onClick={() => {
+                          return uniqueProps.slice(0,8).map((p, index) => (
+                            <button key={`${p.id}-${index}`} type="button" className="w-full text-left p-3 text-sm hover:bg-gray-100 transition-colors" onClick={() => {
                               const el = inputRef.current; const base = comment || ''; const m = base.match(/@([^\s]*)$/); if (!m) return; const start = base.lastIndexOf('@');
                               const token = `@[${p.name}](${p.id})`;
                               const next = base.slice(0,start) + token + ' ' + base.slice(start + m[0].length);
@@ -8462,12 +8499,16 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="font-medium text-gray-900 truncate">{p.name}</div>
-                                  <div className="text-sm text-gray-500">{[p.city, p.state].filter(Boolean).join(', ')}</div>
-                                  {p.price ? (
+                                  <div className="text-sm text-gray-500">
+                                    {p.city && p.state ? `${p.city}, ${p.state}` : (p.city || p.state || 'Location not available')}
+                                  </div>
+                                  {p.price && p.price > 0 ? (
                                     <div className="text-sm font-semibold text-green-600">₹{Number(p.price).toLocaleString()}</div>
-                                  ) : null}
+                                  ) : (
+                                    <div className="text-sm text-gray-400">Price not available</div>
+                                  )}
                                   <div className="text-xs text-gray-400">
-                                    {[p.bedrooms && `${p.bedrooms}BHK`, p.area && `${p.area} sq ft`].filter(Boolean).join(' • ')}
+                                    {[p.bedrooms > 0 && `${p.bedrooms}BHK`, p.area > 0 && `${p.area} sq ft`].filter(Boolean).join(' • ') || 'Details not available'}
                                   </div>
                                 </div>
                               </div>
