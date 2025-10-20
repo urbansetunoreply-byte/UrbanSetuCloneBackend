@@ -292,11 +292,6 @@ export const migrateAbout = async (req, res, next) => {
             year: "2024",
             title: "Mobile App Launch",
             description: "Launched our comprehensive mobile application and PWA"
-          },
-          {
-            year: "2025",
-            title: "AI-Powered Future",
-            description: "Expanding AI capabilities with advanced property analytics and automated transactions"
           }
         ]
       };
@@ -305,7 +300,7 @@ export const migrateAbout = async (req, res, next) => {
     if (!about.teamMembers || about.teamMembers.length === 0) {
       updateData.teamMembers = [
         {
-          name: "Bhavith Tungena",
+          name: "Bahvith Tungena",
           role: "CEO & Founder",
           description: "Visionary leader with 15+ years in real estate technology",
           image: null
