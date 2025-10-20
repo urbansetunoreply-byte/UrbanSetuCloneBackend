@@ -4,6 +4,96 @@ import Listing from '../models/listing.model.js';
 import { errorHandler } from '../utils/error.js';
 import Booking from '../models/booking.model.js';
 
+// Helper to parse a structured report from notification title+message
+const parseReportFromNotification = (n) => {
+  // Our titles: "Chat message reported" | "Chat conversation reported"
+  const type = n.title?.toLowerCase().includes('message') ? 'message' : 'chat';
+  const lines = (n.message || '').split('\n');
+  const get = (prefix) => (lines.find(l => l.startsWith(prefix + ':')) || '').split(':').slice(1).join(':').trim();
+  const reason = get('Reason');
+  const reporter = get('Reporter');
+  const appointmentLine = get('Appointment');
+  const between = get('Between');
+  const messageId = get('Message ID') || null;
+  const messageExcerptLine = get('Message excerpt') || '';
+  const details = get('Additional details') || '';
+  const totalMessages = Number(get('Total Messages')) || null;
+  const appointmentDate = get('Appointment Date') || null;
+  const propertyLine = get('Property') || null;
+
+  return {
+    notificationId: n._id,
+    type, // 'message' | 'chat'
+    reason,
+    reporter,
+    appointmentRef: appointmentLine || null,
+    between,
+    messageId,
+    messageExcerpt: messageExcerptLine.replace(/^"|"$/g, ''),
+    details: details || null,
+    totalMessages,
+    appointmentDate,
+    property: propertyLine,
+    createdAt: n.createdAt,
+    isRead: n.isRead,
+  };
+};
+
+// GET structured reported notifications for admins
+export const getReportedNotifications = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
+      return res.status(403).json({ success: false, message: 'Admins only' });
+    }
+
+    const { appointmentId } = req.query;
+
+    // Fetch this admin's notifications, newest first
+    const query = { userId: req.user.id, title: { $in: ['Chat message reported', 'Chat conversation reported'] } };
+    const notifications = await Notification.find(query).sort({ createdAt: -1 });
+
+    // Parse to structured reports
+    let reports = notifications.map(parseReportFromNotification);
+
+    // Optional filter by appointmentId (match in appointmentRef line)
+    if (appointmentId) {
+      reports = reports.filter(r => r.appointmentRef && r.appointmentRef.includes(appointmentId));
+    }
+
+    res.status(200).json({ success: true, count: reports.length, reports });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET reported message IDs for an appointment (to flag in UI)
+export const getReportedMessageIds = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
+      return res.status(403).json({ success: false, message: 'Admins only' });
+    }
+    const { appointmentId } = req.query;
+    if (!appointmentId) {
+      return res.status(400).json({ success: false, message: 'appointmentId is required' });
+    }
+
+    const notifications = await Notification.find({
+      userId: req.user.id,
+      title: 'Chat message reported',
+    }).sort({ createdAt: -1 });
+
+    const ids = notifications
+      .map(parseReportFromNotification)
+      .filter(r => r.appointmentRef && r.appointmentRef.includes(appointmentId) && r.messageId)
+      .map(r => r.messageId);
+
+    // Unique preserve order
+    const uniqueIds = Array.from(new Set(ids));
+    res.status(200).json({ success: true, appointmentId, messageIds: uniqueIds });
+  } catch (error) {
+    next(error);
+  }
+};
 // Create notification
 export const createNotification = async (req, res, next) => {
   try {

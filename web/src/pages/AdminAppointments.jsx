@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
+import { createPortal } from 'react-dom';
 import { FaTrash, FaSearch, FaPen, FaPaperPlane, FaUser, FaEnvelope, FaCalendar, FaPhone, FaUserShield, FaArchive, FaUndo, FaCommentDots, FaCheck, FaCheckDouble, FaBan, FaTimes, FaLightbulb, FaCopy, FaEllipsisV, FaInfoCircle, FaSync, FaStar, FaRegStar, FaFlag, FaCalendarAlt, FaCheckSquare, FaDownload, FaSpinner, FaDollarSign } from "react-icons/fa";
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
 import UserAvatar from '../components/UserAvatar';
@@ -1803,6 +1804,52 @@ export default function AdminAppointments() {
           </div>
         )}
 
+  {/* Reports Modal - Admin-wide */}
+  {showReportsModal && createPortal((
+    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2"><FaFlag className="text-red-500" /> Reported Items</h3>
+          <button className="text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-2" onClick={() => setShowReportsModal(false)}><FaTimes /></button>
+        </div>
+        <div className="p-4">
+          {reportsLoading ? (
+            <div className="text-sm text-gray-500">Loading reports…</div>
+          ) : reportsError ? (
+            <div className="text-sm text-red-600">{reportsError}</div>
+          ) : (reports || []).length === 0 ? (
+            <div className="text-sm text-gray-500">No reports found.</div>
+          ) : (
+            <div className="space-y-3">
+              {(reports || []).map((r, idx) => (
+                <div key={r.notificationId || idx} className="border border-gray-200 rounded-lg p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm font-semibold text-gray-800">
+                      {r.type === 'message' ? 'Message Report' : 'Chat Report'}
+                    </div>
+                    <div className="text-xs text-gray-500">{new Date(r.createdAt).toLocaleString()}</div>
+                  </div>
+                  <div className="mt-2 text-sm text-gray-700">
+                    {r.reporter && (<div><span className="font-medium">Reporter:</span> {r.reporter}</div>)}
+                    {r.appointmentRef && (<div><span className="font-medium">Appointment:</span> {r.appointmentRef}</div>)}
+                    {r.between && (<div><span className="font-medium">Between:</span> {r.between}</div>)}
+                    {r.reason && (<div><span className="font-medium">Reason:</span> {r.reason}</div>)}
+                    {r.details && (<div><span className="font-medium">Details:</span> {r.details}</div>)}
+                    {r.messageId && (<div><span className="font-medium">Message ID:</span> {r.messageId}</div>)}
+                    {r.messageExcerpt && (<div className="italic text-gray-600"><span className="font-medium not-italic">Excerpt:</span> “{r.messageExcerpt}”</div>)}
+                    {r.totalMessages != null && (<div><span className="font-medium">Total Messages:</span> {r.totalMessages}</div>)}
+                    {r.appointmentDate && (<div><span className="font-medium">Appointment Date:</span> {r.appointmentDate}</div>)}
+                    {r.property && (<div><span className="font-medium">Property:</span> {r.property}</div>)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  ), document.body)}
+
         {/* Pagination for archived appointments */}
         {showArchived && archivedTotalPages > 1 && (
           <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
@@ -2290,6 +2337,39 @@ function AdminAppointmentRow({
   const [showHeaderMoreMenu, setShowHeaderMoreMenu] = useLocalState(false);
   const scrollTimeoutRef = React.useRef(null);
   const [showDeleteChatModal, setShowDeleteChatModal] = useLocalState(false);
+  // Reports modal state (admin-wide)
+  const [showReportsModal, setShowReportsModal] = useLocalState(false);
+  const [reports, setReports] = useLocalState([]);
+  const [reportsLoading, setReportsLoading] = useLocalState(false);
+  const [reportsError, setReportsError] = useLocalState('');
+
+  // Reported message IDs for current appointment (to flag in UI)
+  const [reportedMessageIds, setReportedMessageIds] = useLocalState([]);
+
+  const fetchAllReports = useCallback(async (appointmentId) => {
+    try {
+      setReportsLoading(true);
+      setReportsError('');
+      const url = appointmentId ? `${API_BASE_URL}/api/notifications/reports?appointmentId=${appointmentId}` : `${API_BASE_URL}/api/notifications/reports`;
+      const res = await fetch(url, { credentials: 'include' });
+      const data = await res.json();
+      if (data?.success) setReports(data.reports || []);
+      else setReportsError(data?.message || 'Failed to load reports');
+    } catch (e) {
+      setReportsError('Network error while loading reports');
+    } finally {
+      setReportsLoading(false);
+    }
+  }, []);
+
+  const fetchReportedMessageIds = useCallback(async (appointmentId) => {
+    if (!appointmentId) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/notifications/reports/message-ids?appointmentId=${appointmentId}`, { credentials: 'include' });
+      const data = await res.json();
+      if (data?.success) setReportedMessageIds(data.messageIds || []);
+    } catch (_) {}
+  }, []);
   const [deleteChatPassword, setDeleteChatPassword] = useLocalState("");
   const [deleteChatLoading, setDeleteChatLoading] = useLocalState(false);
   
@@ -2975,6 +3055,13 @@ function AdminAppointmentRow({
       prevServerCommentsLengthRef.current = serverComments.length;
     }
   }, [showChatModal, appt._id]);
+
+  // Load reported ids when chat opens for this appointment
+  React.useEffect(() => {
+    if (showChatModal && appt?._id) {
+      fetchReportedMessageIds(appt._id);
+    }
+  }, [showChatModal, appt?._id]);
 
   // Auto-scroll to bottom when chat modal opens
   React.useEffect(() => {
@@ -4981,6 +5068,16 @@ function AdminAppointmentRow({
           <FaCommentDots size={22} className="group-hover:animate-pulse" />
           <div className="absolute inset-0 bg-white rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
         </button>
+        {/* Floating Reports icon (admin-wide) */}
+        {!showChatModal && (
+          <button
+            className="absolute -top-3 -right-3 bg-red-100 hover:bg-red-200 text-red-600 rounded-full p-2 shadow focus:outline-none"
+            title="View reported chats/messages"
+            onClick={() => { setShowReportsModal(true); fetchAllReports(); }}
+          >
+            <FaFlag className="w-4 h-4" />
+          </button>
+        )}
         {showPasswordModal && (
           <div className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs relative flex flex-col items-center">
@@ -7130,6 +7227,13 @@ function AdminAppointmentRow({
                               >
                                 ➕
                               </button>
+                              {/* Appointment Reports */}
+                              <button
+                                className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                                onClick={() => { setShowHeaderMoreMenu(false); setShowReportsModal(true); fetchAllReports(appt._id); }}
+                              >
+                                <FaFlag className="text-sm" /> Reports
+                              </button>
                             </div>
                           )}
                           
@@ -8941,6 +9045,12 @@ function AdminAppointmentRow({
                                 }
                               }}
                             >
+                              {/* Flag icon if reported */}
+                              {reportedMessageIds?.includes(message._id) && (
+                                <div className="absolute -top-2 -left-2 bg-red-500 text-white rounded-full p-1 shadow" title="Reported message">
+                                  <FaFlag className="w-3 h-3" />
+                                </div>
+                              )}
                               <div className="whitespace-pre-wrap break-words">
                                 {/* Image Message - Always show if exists, even for deleted messages */}
                                 {(message.originalImageUrl || message.imageUrl) && (

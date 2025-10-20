@@ -14,6 +14,8 @@ import {
   reportChatMessage,
   reportChatConversation,
   notifyAdminsGeneric,
+  getReportedNotifications,
+  getReportedMessageIds,
 } from '../controllers/notification.controller.js';
 import { verifyToken } from '../utils/verify.js';
 
@@ -53,6 +55,12 @@ router.post('/report-chat', verifyToken, reportChatMessage);
 
 // Report entire chat conversation (any authenticated user)
 router.post('/report-chat-conversation', verifyToken, reportChatConversation);
+
+// Admin: fetch structured reported notifications
+router.get('/reports', verifyToken, getReportedNotifications);
+
+// Admin: fetch reported message IDs for appointment
+router.get('/reports/message-ids', verifyToken, getReportedMessageIds);
 
 // Generic: notify all admins (user-initiated requests)
 router.post('/notify-admins', verifyToken, notifyAdminsGeneric);
