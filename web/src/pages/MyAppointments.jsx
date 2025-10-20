@@ -8416,7 +8416,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                               bedrooms: l?.bedrooms,
                               bathrooms: l?.bathrooms,
                               area: l?.area,
-                              image: Array.isArray(l?.imageUrls) ? l.imageUrls[0] : undefined
+                              image: Array.isArray(l?.imageUrls) ? l.imageUrls[0] : (l?.imageUrl || l?.image)
                             };
                           });
                           const propList = Array.isArray(allProperties) ? allProperties : [];
@@ -8429,12 +8429,18 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                             bedrooms: p?.bedrooms,
                             bathrooms: p?.bathrooms,
                             area: p?.area,
-                            image: Array.isArray(p?.imageUrls) ? p.imageUrls[0] : undefined
+                            image: Array.isArray(p?.imageUrls) ? p.imageUrls[0] : (p?.imageUrl || p?.image)
                           }));
                           const combined = [...apptProps, ...allPropsDetailed];
                           const uniqueProps = Array.from(new Set(combined.filter(p => p.id && p.name).map(p => JSON.stringify(p))))
                             .map(s => JSON.parse(s))
                             .filter(p => p.name && p.name.toLowerCase().includes(query));
+                          
+                          // Debug: Log the first property to see its structure
+                          if (uniqueProps.length > 0) {
+                            console.log('First property data:', uniqueProps[0]);
+                          }
+                          
                           if (uniqueProps.length === 0) return <div className="p-3 text-sm text-gray-500 text-center">No properties found. Try typing more characters.</div>;
                           return uniqueProps.slice(0,8).map((p) => (
                             <button key={p.id} type="button" className="w-full text-left p-3 text-sm hover:bg-gray-100 transition-colors" onClick={() => {
@@ -8445,9 +8451,15 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                               setTimeout(()=>{ try{ el?.focus(); el?.setSelectionRange(start+token.length+1, start+token.length+1);}catch(_){}} ,0);
                             }}>
                               <div className="flex items-center space-x-3">
-                                {p.image && (
-                                  <img src={p.image} alt={p.name} className="w-12 h-12 object-cover rounded-lg flex-shrink-0" />
-                                )}
+                                <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-gray-200 flex items-center justify-center">
+                                  {p.image ? (
+                                    <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
+                                  ) : (
+                                    <div className="text-gray-500 text-xs text-center">
+                                      <div className="font-bold">🏠</div>
+                                    </div>
+                                  )}
+                                </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="font-medium text-gray-900 truncate">{p.name}</div>
                                   <div className="text-sm text-gray-500">{[p.city, p.state].filter(Boolean).join(', ')}</div>
