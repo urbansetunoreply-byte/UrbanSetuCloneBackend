@@ -4842,16 +4842,16 @@ function AdminAppointmentRow({
           </div>
           <div className="text-sm text-gray-600">
             {appt.buyerId?.mobileNumber && appt.buyerId?.mobileNumber !== '' ? (
-              <button
+              <span
                 onClick={(e) => {
                   e.stopPropagation();
                   handlePhoneClick(appt.buyerId.mobileNumber);
                 }}
-                className="text-green-600 hover:text-green-800 hover:underline transition-colors duration-200"
+                className="text-green-600 hover:text-green-800 hover:underline transition-colors duration-200 cursor-pointer"
                 title="Click to call or copy phone number"
               >
                 {appt.buyerId.mobileNumber}
-              </button>
+              </span>
             ) : (
               'No phone'
             )}
@@ -4877,16 +4877,16 @@ function AdminAppointmentRow({
           </div>
           <div className="text-sm text-gray-600">
             {appt.sellerId?.mobileNumber && appt.sellerId?.mobileNumber !== '' ? (
-              <button
+              <span
                 onClick={(e) => {
                   e.stopPropagation();
                   handlePhoneClick(appt.sellerId.mobileNumber);
                 }}
-                className="text-green-600 hover:text-green-800 hover:underline transition-colors duration-200"
+                className="text-green-600 hover:text-green-800 hover:underline transition-colors duration-200 cursor-pointer"
                 title="Click to call or copy phone number"
               >
                 {appt.sellerId.mobileNumber}
-              </button>
+              </span>
             ) : (
               'No phone'
             )}
@@ -7559,8 +7559,33 @@ function AdminAppointmentRow({
                       {(() => {
                         const query = (newComment.match(/@([^\s]*)$/)?.[1] || '').toLowerCase();
                         const apptSource = (typeof appointments !== 'undefined' && Array.isArray(appointments) && appointments.length > 0) ? appointments : [appt].filter(Boolean);
-                        const apptProps = apptSource.map(a => ({ id: a?.listingId?._id || a?.listingId, name: a?.propertyName || a?.listingId?.name || 'Property' }));
-                        const combined = [...apptProps, ...allProperties];
+                        const apptProps = apptSource.map(a => {
+                          const l = a?.listingId && typeof a.listingId === 'object' ? a.listingId : {};
+                          return {
+                            id: a?.listingId?._id || a?.listingId,
+                            name: a?.propertyName || l?.name || 'Property',
+                            city: l?.city,
+                            state: l?.state,
+                            price: (l?.discountPrice ?? l?.regularPrice),
+                            bedrooms: l?.bedrooms,
+                            bathrooms: l?.bathrooms,
+                            area: l?.area,
+                            image: Array.isArray(l?.imageUrls) ? l.imageUrls[0] : undefined
+                          };
+                        });
+                        const propList = Array.isArray(allProperties) ? allProperties : [];
+                        const allPropsDetailed = propList.map(p => ({
+                          id: p?._id || p?.id,
+                          name: p?.name,
+                          city: p?.city,
+                          state: p?.state,
+                          price: (p?.discountPrice ?? p?.regularPrice),
+                          bedrooms: p?.bedrooms,
+                          bathrooms: p?.bathrooms,
+                          area: p?.area,
+                          image: Array.isArray(p?.imageUrls) ? p.imageUrls[0] : undefined
+                        }));
+                        const combined = [...apptProps, ...allPropsDetailed];
                         const uniqueProps = Array.from(new Set(combined.filter(p => p.id && p.name).map(p => JSON.stringify(p))))
                           .map(s => JSON.parse(s))
                           .filter(p => p.name && p.name.toLowerCase().includes(query));
@@ -7572,7 +7597,23 @@ function AdminAppointmentRow({
                             const next = base.slice(0,start) + token + ' ' + base.slice(start + m[0].length);
                             setNewComment(next);
                             setTimeout(()=>{ try{ el?.focus(); el?.setSelectionRange(start+token.length+1, start+token.length+1);}catch(_){}} ,0);
-                          }}>{p.name}</button>
+                          }}>
+                            <div className="flex items-center space-x-3">
+                              {p.image && (
+                                <img src={p.image} alt={p.name} className="w-12 h-12 object-cover rounded-lg flex-shrink-0" />
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-gray-900 truncate">{p.name}</div>
+                                <div className="text-sm text-gray-500">{[p.city, p.state].filter(Boolean).join(', ')}</div>
+                                {p.price ? (
+                                  <div className="text-sm font-semibold text-green-600">₹{Number(p.price).toLocaleString()}</div>
+                                ) : null}
+                                <div className="text-xs text-gray-400">
+                                  {[p.bedrooms && `${p.bedrooms}BHK`, p.area && `${p.area} sq ft`].filter(Boolean).join(' • ')}
+                                </div>
+                              </div>
+                            </div>
+                          </button>
                         ));
                       })()}
                     </div>
