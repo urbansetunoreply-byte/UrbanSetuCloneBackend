@@ -1866,7 +1866,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     sessionId: currentSessionId,
                     tone: currentUser ? tone : 'neutral', // Send current tone setting or default for public users
                     responseLength: aiResponseLength, // Send response length setting
-                    creativity: aiCreativity // Send creativity level setting
+                    creativity: aiCreativity, // Send creativity level setting
+                    enableStreaming: false // Force non-streaming to ensure JSON response when editing
                 }),
                 signal: abortControllerRef.current.signal
             });
