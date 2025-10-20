@@ -5,7 +5,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import { Navigation } from "swiper/modules";
-import { FaBath, FaBed, FaChair, FaMapMarkerAlt, FaParking, FaShare, FaEdit, FaTrash, FaArrowLeft, FaStar, FaLock, FaHeart, FaExpand, FaCheckCircle, FaFlag, FaRuler, FaBuilding, FaTree, FaWifi, FaSwimmingPool, FaCar, FaShieldAlt, FaClock, FaPhone, FaEnvelope, FaCalendarAlt, FaEye, FaThumbsUp, FaThumbsDown, FaComments, FaCalculator, FaChartLine, FaHome, FaUtensils, FaHospital, FaSchool, FaShoppingCart, FaPlane, FaUser, FaTimes, FaSearch, FaTable, FaRocket } from "react-icons/fa";
+import { FaBath, FaBed, FaChair, FaMapMarkerAlt, FaParking, FaShare, FaEdit, FaTrash, FaArrowLeft, FaStar, FaLock, FaHeart, FaExpand, FaCheckCircle, FaFlag, FaRuler, FaBuilding, FaTree, FaWifi, FaSwimmingPool, FaCar, FaShieldAlt, FaClock, FaPhone, FaEnvelope, FaCalendarAlt, FaEye, FaThumbsUp, FaThumbsDown, FaComments, FaCalculator, FaChartLine, FaHome, FaUtensils, FaHospital, FaSchool, FaShoppingCart, FaPlane, FaUser, FaTimes, FaSearch, FaTable, FaRocket, FaQuestionCircle, FaChevronDown, FaChevronUp, FaBookOpen, FaTag } from "react-icons/fa";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import ReviewForm from "../components/ReviewForm.jsx";
 import ReviewList from "../components/ReviewList.jsx";
@@ -48,6 +48,11 @@ export default function Listing() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [showVideoPreview, setShowVideoPreview] = useState(false);
   const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
+  const [faqs, setFaqs] = useState([]);
+  const [relatedBlogs, setRelatedBlogs] = useState([]);
+  const [expandedFAQ, setExpandedFAQ] = useState(null);
+  const [faqLoading, setFaqLoading] = useState(false);
+  const [blogLoading, setBlogLoading] = useState(false);
   const [showAssignOwnerModal, setShowAssignOwnerModal] = useState(false);
   const [availableUsers, setAvailableUsers] = useState([]);
   const [assignUserSearch, setAssignUserSearch] = useState("");
@@ -802,6 +807,46 @@ export default function Listing() {
       return () => clearInterval(interval);
     }
   }, [params.listingId]);
+
+  // Fetch FAQs for this property
+  useEffect(() => {
+    const fetchFAQs = async () => {
+      if (!listing?._id) return;
+      setFaqLoading(true);
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/faqs?propertyId=${listing._id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setFaqs(data.data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching FAQs:', error);
+      } finally {
+        setFaqLoading(false);
+      }
+    };
+    fetchFAQs();
+  }, [listing?._id]);
+
+  // Fetch related blogs for this property
+  useEffect(() => {
+    const fetchRelatedBlogs = async () => {
+      if (!listing?._id) return;
+      setBlogLoading(true);
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/blogs?propertyId=${listing._id}&published=true&limit=3`);
+        if (response.ok) {
+          const data = await response.json();
+          setRelatedBlogs(data.data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching related blogs:', error);
+      } finally {
+        setBlogLoading(false);
+      }
+    };
+    fetchRelatedBlogs();
+  }, [listing?._id]);
 
   // Check watchlist status when listing is loaded
   useEffect(() => {
@@ -2109,6 +2154,166 @@ export default function Listing() {
                   }}
                   listingOwnerId={listing.userRef}
                 />
+              </div>
+            </div>
+          )}
+
+          {/* FAQ Section */}
+          {faqs.length > 0 && (
+            <div className="mt-12">
+              <div className="border-t border-gray-200 pt-8">
+                <h3 className="text-2xl font-bold text-gray-800 flex items-center mb-6">
+                  <FaQuestionCircle className="text-blue-500 mr-3" />
+                  Property FAQs
+                </h3>
+                <div className="space-y-4">
+                  {faqLoading ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                      <p className="mt-2 text-gray-600">Loading FAQs...</p>
+                    </div>
+                  ) : (
+                    faqs.map((faq) => (
+                      <div
+                        key={faq._id}
+                        className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+                      >
+                        <button
+                          onClick={() => setExpandedFAQ(expandedFAQ === faq._id ? null : faq._id)}
+                          className="w-full px-6 py-4 text-left hover:bg-gray-50 focus:outline-none focus:bg-gray-50 transition-colors"
+                        >
+                          <div className="flex justify-between items-center">
+                            <h4 className="text-lg font-semibold text-gray-900 pr-4">
+                              {faq.question}
+                            </h4>
+                            <div className="flex-shrink-0">
+                              {expandedFAQ === faq._id ? (
+                                <FaChevronUp className="text-gray-400" />
+                              ) : (
+                                <FaChevronDown className="text-gray-400" />
+                              )}
+                            </div>
+                          </div>
+                        </button>
+                        {expandedFAQ === faq._id && (
+                          <div className="px-6 pb-4 border-t border-gray-100">
+                            <div className="pt-4">
+                              <p className="text-gray-700 leading-relaxed">
+                                {faq.answer}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Related Blogs Section */}
+          {relatedBlogs.length > 0 && (
+            <div className="mt-12">
+              <div className="border-t border-gray-200 pt-8">
+                <h3 className="text-2xl font-bold text-gray-800 flex items-center mb-6">
+                  <FaBookOpen className="text-green-500 mr-3" />
+                  Related Articles
+                </h3>
+                {blogLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+                    <p className="mt-2 text-gray-600">Loading articles...</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {relatedBlogs.map((blog) => (
+                      <article
+                        key={blog._id}
+                        className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+                      >
+                        {blog.thumbnail && (
+                          <div className="aspect-w-16 aspect-h-9">
+                            <img
+                              src={blog.thumbnail}
+                              alt={blog.title}
+                              className="w-full h-48 object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="p-6">
+                          <div className="mb-3">
+                            <span className="inline-block bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                              {blog.category}
+                            </span>
+                          </div>
+                          <h4 className="text-lg font-bold text-gray-900 mb-3 line-clamp-2">
+                            <Link
+                              to={`/blog/${blog.slug || blog._id}`}
+                              className="hover:text-green-600 transition-colors"
+                            >
+                              {blog.title}
+                            </Link>
+                          </h4>
+                          <p className="text-gray-600 mb-4 line-clamp-3">
+                            {blog.excerpt || blog.content.slice(0, 120) + '...'}
+                          </p>
+                          {blog.tags && blog.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mb-4">
+                              {blog.tags.slice(0, 3).map((tag, index) => (
+                                <span
+                                  key={index}
+                                  className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700"
+                                >
+                                  <FaTag className="mr-1" />
+                                  {tag}
+                                </span>
+                              ))}
+                              {blog.tags.length > 3 && (
+                                <span className="text-xs text-gray-500">
+                                  +{blog.tags.length - 3} more
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          <div className="flex items-center justify-between text-sm text-gray-500">
+                            <div className="flex items-center space-x-4">
+                              <div className="flex items-center space-x-1">
+                                <FaUser />
+                                <span>{blog.author?.username || 'UrbanSetu Team'}</span>
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                <FaCalendar />
+                                <span>{new Date(blog.publishedAt || blog.createdAt).toLocaleDateString()}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-3">
+                              <div className="flex items-center space-x-1">
+                                <FaEye />
+                                <span>{blog.views || 0}</span>
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                <FaHeart />
+                                <span>{blog.likes || 0}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="mt-4">
+                            <Link
+                              to={`/blog/${blog.slug || blog._id}`}
+                              className="inline-flex items-center text-green-600 hover:text-green-700 font-medium text-sm"
+                            >
+                              Read More
+                              <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </Link>
+                          </div>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
