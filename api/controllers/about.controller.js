@@ -228,7 +228,7 @@ export const migrateAbout = async (req, res, next) => {
       ];
     }
     
-    if (!about.howItWorks) {
+    if (!about.howItWorks || !about.howItWorks.buyers || about.howItWorks.buyers.steps.length === 0) {
       updateData.howItWorks = {
         buyers: {
           title: "For Buyers & Renters",
@@ -263,7 +263,7 @@ export const migrateAbout = async (req, res, next) => {
       };
     }
     
-    if (!about.journey) {
+    if (!about.journey || !about.journey.milestones || about.journey.milestones.length === 0) {
       updateData.journey = {
         title: "Our Journey",
         story: "The idea of UrbanSetu was born from the need for a smarter, transparent real estate experience. Our team combined technology, data, and user feedback to build a platform that goes beyond listings — one that learns and adapts to user needs.",
