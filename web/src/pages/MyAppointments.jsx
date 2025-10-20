@@ -1094,7 +1094,7 @@ export default function MyAppointments() {
         )}
 
       {/* Other Party Details Modal - Enhanced Design */}
-      {showOtherPartyModal && selectedOtherParty && selectedAppointment && (() => {
+      {showOtherPartyModal && selectedOtherParty && selectedAppointment && createPortal((() => {
         // Determine if contact details should be shown based on appointment status
         const isUpcoming = new Date(selectedAppointment.date) > new Date() || (new Date(selectedAppointment.date).toDateString() === new Date().toDateString() && (!selectedAppointment.time || selectedAppointment.time > new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })));
         const isAdmin = currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin');
@@ -1104,7 +1104,7 @@ export default function MyAppointments() {
           selectedAppointment.status !== 'deletedByAdmin';
         
         return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4" style={{ overflow: 'hidden' }}>
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[100] p-2 sm:p-4" style={{ overflow: 'hidden' }}>
                       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto relative animate-fadeIn">
               {/* Close button */}
               <button
@@ -1282,7 +1282,7 @@ export default function MyAppointments() {
           </div>
         </div>
         );
-      })()}
+      })(), document.body)}
       {/* Reinitiate Modal */}
       {showReinitiateModal && reinitiateData && (
         <div className="modal-backdrop">
@@ -1386,14 +1386,15 @@ export default function MyAppointments() {
       </div>
 
       {/* Export Chat Modal */}
-      <ExportChatModal
-        isOpen={showExportModal}
-        onClose={() => {
-          setShowExportModal(false);
-          setExportAppointment(null);
-          setExportComments([]);
-        }}
-        onExport={async (includeMedia) => {
+      {showExportModal && createPortal((
+        <ExportChatModal
+          isOpen={showExportModal}
+          onClose={() => {
+            setShowExportModal(false);
+            setExportAppointment(null);
+            setExportComments([]);
+          }}
+          onExport={async (includeMedia) => {
           try {
             toast.info('Generating PDF...', { autoClose: 2000 });
             // Determine the other party based on the export appointment
@@ -1416,11 +1417,12 @@ export default function MyAppointments() {
             toast.error('Failed to export chat transcript');
             console.error('Export error:', error);
           }
-        }}
-        appointment={exportAppointment}
-        messageCount={exportComments.filter(msg => !msg.deleted && (msg.message?.trim() || msg.imageUrl || msg.audioUrl || msg.videoUrl || msg.documentUrl)).length}
-        imageCount={exportComments.filter(msg => msg.imageUrl && !msg.deleted).length}
-      />
+          }}
+          appointment={exportAppointment}
+          messageCount={exportComments.filter(msg => !msg.deleted && (msg.message?.trim() || msg.imageUrl || msg.audioUrl || msg.videoUrl || msg.documentUrl)).length}
+          imageCount={exportComments.filter(msg => msg.imageUrl && !msg.deleted).length}
+        />
+      ), document.body)}
     </div>
   );
 }
@@ -9617,8 +9619,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         </div>
       ), document.body)}
       {/* Chat Lock Modal */}
-      {showChatLockModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      {showChatLockModal && createPortal((
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" className="text-blue-600">
@@ -9704,11 +9706,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
 
       {/* Chat Unlock Modal */}
-      {showChatUnlockModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      {showChatUnlockModal && createPortal((
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" className="text-orange-600">
@@ -9787,10 +9789,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
       {/* Forgot Password Modal */}
-      {showForgotPasswordModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      {showForgotPasswordModal && createPortal((
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" className="text-red-600">
@@ -9850,11 +9852,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
 
       {/* Remove Lock Modal */}
-      {showRemoveLockModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      {showRemoveLockModal && createPortal((
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" className="text-red-600">
@@ -9942,11 +9944,11 @@ You can lock this chat again at any time from the options.</p>
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
 
       {/* Delete Message Confirmation Modal */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      {showDeleteModal && createPortal((
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <FaTrash className="text-red-500" />
@@ -10041,11 +10043,11 @@ You can lock this chat again at any time from the options.</p>
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
 
       {/* Clear Chat Confirmation Modal */}
-      {showClearChatModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      {showClearChatModal && createPortal((
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <FaTrash className="text-red-500" />
@@ -10075,7 +10077,7 @@ You can lock this chat again at any time from the options.</p>
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
 
       {/* Delete Appointment Confirmation Modal */}
       {showDeleteAppointmentModal && (
@@ -10229,8 +10231,8 @@ You can lock this chat again at any time from the options.</p>
       )}
 
       {/* Permanent Delete Modal */}
-      {showPermanentDeleteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      {showPermanentDeleteModal && createPortal((
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <FaTrash className="text-red-500" />
@@ -10260,10 +10262,10 @@ You can lock this chat again at any time from the options.</p>
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
       {/* Report Message Modal */}
-      {showReportModal && reportingMessage && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      {showReportModal && reportingMessage && createPortal((
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <FaFlag className="text-red-500" /> Report message
@@ -10347,11 +10349,11 @@ You can lock this chat again at any time from the options.</p>
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
 
       {/* Report Chat Modal */}
-      {showReportChatModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      {showReportChatModal && createPortal((
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
           <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 shadow-xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <FaFlag className="text-red-500" /> Report Chat
@@ -10489,11 +10491,11 @@ You can lock this chat again at any time from the options.</p>
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
 
       {/* Message Info Modal */}
-      {showMessageInfoModal && selectedMessageForInfo && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      {showMessageInfoModal && selectedMessageForInfo && createPortal((
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <FaInfoCircle className="text-blue-500" /> Message Info
@@ -10583,10 +10585,10 @@ You can lock this chat again at any time from the options.</p>
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
       {/* Starred Messages Modal */}
-      {showStarredModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      {showStarredModal && createPortal((
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-yellow-50 to-amber-50">
@@ -10814,10 +10816,10 @@ You can lock this chat again at any time from the options.</p>
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
       {/* Pin Message Modal */}
-      {showPinModal && messageToPin && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      {showPinModal && messageToPin && createPortal((
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
             {/* Header */}
             <div className="flex items-center p-6 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-blue-50">
@@ -11095,7 +11097,7 @@ You can lock this chat again at any time from the options.</p>
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
 
       {/* Image Preview Modal */}
       <ImagePreview
