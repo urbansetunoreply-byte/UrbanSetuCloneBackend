@@ -305,25 +305,25 @@ export const migrateAbout = async (req, res, next) => {
     if (!about.teamMembers || about.teamMembers.length === 0) {
       updateData.teamMembers = [
         {
-          name: "Rajesh Kumar",
+          name: "Bhavith Tungena",
           role: "CEO & Founder",
           description: "Visionary leader with 15+ years in real estate technology",
           image: null
         },
         {
-          name: "Priya Sharma",
+          name: "Akhil Reddy",
           role: "CTO",
           description: "Tech expert specializing in AI and machine learning",
           image: null
         },
         {
-          name: "Amit Patel",
+          name: "Harsha Vardhan",
           role: "Head of Operations",
           description: "Operations specialist ensuring smooth customer experience",
           image: null
         },
         {
-          name: "Sneha Gupta",
+          name: "Vijay",
           role: "Head of Marketing",
           description: "Marketing strategist connecting properties with people",
           image: null
