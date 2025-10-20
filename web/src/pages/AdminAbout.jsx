@@ -49,11 +49,6 @@ export default function AdminAbout() {
         const response = await fetch(`${API_BASE_URL}/api/about`);
         if (response.ok) {
           const data = await response.json();
-          console.log('About data received:', data);
-          console.log('Core Values:', data.coreValues);
-          console.log('How It Works:', data.howItWorks);
-          console.log('Journey:', data.journey);
-          console.log('FAQs:', data.faqs);
           setAboutData(data);
         }
       } catch (err) {
