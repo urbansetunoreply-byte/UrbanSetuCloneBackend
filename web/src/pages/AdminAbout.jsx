@@ -242,7 +242,7 @@ export default function AdminAbout() {
             {/* 2. Mission & Vision */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="bg-white rounded-xl shadow-lg p-8">
-                <h2 className="text-3xl font-bold text-purple-700 flex items-center gap-3 mb-4">
+                <h2 className="text-3xl font-bold text-purple-700 flex items-center justify-center gap-3 mb-4">
                   <FaBullseye className="text-purple-500" /> Our Mission
                 </h2>
                 <p className="text-slate-700 text-lg leading-relaxed">
@@ -250,7 +250,7 @@ export default function AdminAbout() {
                 </p>
               </div>
               <div className="bg-white rounded-xl shadow-lg p-8">
-                <h2 className="text-3xl font-bold text-blue-700 flex items-center gap-3 mb-4">
+                <h2 className="text-3xl font-bold text-blue-700 flex items-center justify-center gap-3 mb-4">
                   <FaEye className="text-blue-500" /> Our Vision
                 </h2>
                 <p className="text-slate-700 text-lg leading-relaxed">
