@@ -105,6 +105,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [tone, setTone] = useState(() => localStorage.getItem('gemini_tone') || 'neutral'); // modes dropdown (tone)
     const [isHeaderMenuOpen, setIsHeaderMenuOpen] = useState(false);
     const headerMenuButtonRef = useRef(null);
+    const suggestionsRef = useRef(null);
     const headerMenuRef = useRef(null);
     const [showFeatures, setShowFeatures] = useState(false);
     
@@ -670,7 +671,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     // Close suggestions when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (showPropertySuggestions && inputRef.current && !inputRef.current.contains(event.target)) {
+            const clickedInsideInput = inputRef.current && inputRef.current.contains(event.target);
+            const clickedInsideSuggestions = suggestionsRef.current && suggestionsRef.current.contains(event.target);
+            if (showPropertySuggestions && !clickedInsideInput && !clickedInsideSuggestions) {
                 setShowPropertySuggestions(false);
                 setSuggestionQuery('');
                 setSuggestionStartPos(-1);
@@ -4778,7 +4781,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     
                                     {/* Property Suggestions Dropdown */}
                                     {showPropertySuggestions && (
-                                        <div className={"absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-gray-800 border-2 border-blue-300 dark:border-blue-600 rounded-lg shadow-2xl z-50 max-h-60 overflow-y-auto animate-fadeIn"}
+                                        <div ref={suggestionsRef} className={"absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-gray-800 border-2 border-blue-300 dark:border-blue-600 rounded-lg shadow-2xl z-50 max-h-60 overflow-y-auto animate-fadeIn"}
                                         style={{
                                             boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
                                             minWidth: '300px'
@@ -4796,8 +4799,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             </div>
                                             {propertySuggestions.length > 0 ? propertySuggestions.map((property, index) => (
                                                 <button
+                                                    type="button"
                                                     key={property.id}
-                                                    onClick={() => handleSuggestionSelect(property)}
+                                                    onMouseDown={(e) => { e.preventDefault(); handleSuggestionSelect(property); }}
                                                     className={`w-full text-left p-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
                                                         index === selectedSuggestionIndex ? 'bg-gray-100 dark:bg-gray-700' : ''
                                                     }`}
