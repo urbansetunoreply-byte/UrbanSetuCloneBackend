@@ -8390,7 +8390,17 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                     )}
                     {/* Property mention suggestions */}
                     {comment && /@[^\s]*$/.test(comment) && (
-                      <div className="absolute bottom-16 left-2 right-2 bg-white border rounded shadow-lg max-h-48 overflow-auto z-30">
+                      <div className="absolute bottom-16 left-2 right-2 bg-white border-2 border-blue-300 rounded-lg shadow-2xl max-h-60 overflow-auto z-30 animate-fadeIn">
+                        <div className="p-3 text-sm font-medium text-blue-600 border-b border-gray-200 bg-blue-50">
+                          <div className="flex items-center gap-2">
+                            {!propertiesLoaded ? (
+                              <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                            )}
+                            {!propertiesLoaded ? 'Loading properties...' : 'Select a property to reference:'}
+                          </div>
+                        </div>
                         {(() => {
                           const query = (comment.match(/@([^\s]*)$/)?.[1] || '').toLowerCase();
                           const apptSource = (typeof appointments !== 'undefined' && Array.isArray(appointments) && appointments.length > 0) ? appointments : [appt].filter(Boolean);
@@ -8399,9 +8409,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           const uniqueProps = Array.from(new Set(combined.filter(p => p.id && p.name).map(p => JSON.stringify(p))))
                             .map(s => JSON.parse(s))
                             .filter(p => p.name && p.name.toLowerCase().includes(query));
-                          if (uniqueProps.length === 0) return <div className="px-3 py-2 text-sm text-gray-500">No matches</div>;
-                          return uniqueProps.slice(0,8).map(p => (
-                            <button key={p.id} type="button" className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100" onClick={() => {
+                          if (uniqueProps.length === 0) return <div className="p-3 text-sm text-gray-500 text-center">No properties found. Try typing more characters.</div>;
+                          return uniqueProps.slice(0,8).map((p) => (
+                            <button key={p.id} type="button" className="w-full text-left p-3 text-sm hover:bg-gray-100 transition-colors" onClick={() => {
                               const el = inputRef.current; const base = comment || ''; const m = base.match(/@([^\s]*)$/); if (!m) return; const start = base.lastIndexOf('@');
                               const token = `@[${p.name}](${p.id})`;
                               const next = base.slice(0,start) + token + ' ' + base.slice(start + m[0].length);
