@@ -944,10 +944,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         });
         lastUserMessageRef.current = userMessage;
         
-        // Only show loading state for non-streaming responses
-        if (!enableStreaming || enableStreaming === 'false') {
+        // Set loading state to show cancel button
         setIsLoading(true);
-        }
         
         // Play sound when message is sent
         playSound('message-sent.mp3');
@@ -4504,12 +4502,18 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 {isLoading ? (
                                     <button
                                         type="button"
-                                        onClick={() => { abortControllerRef.current?.abort(); toast.info('Generating stopped.'); }}
-                                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-full text-xs font-medium shadow flex items-center justify-center"
+                                        onClick={() => { 
+                                            abortControllerRef.current?.abort(); 
+                                            setIsLoading(false);
+                                            toast.info('Generating stopped.'); 
+                                        }}
+                                        className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-full hover:opacity-90 transition-all duration-300 transform hover:scale-110 flex-shrink-0 flex items-center justify-center w-10 h-10 group hover:shadow-xl active:scale-95"
                                         title="Stop generating"
                                         aria-label="Stop generating"
                                     >
-                                        Stop
+                                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 6h12v12H6z" />
+                                        </svg>
                                     </button>
                                 ) : (
                                     <button
