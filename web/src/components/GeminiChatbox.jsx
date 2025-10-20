@@ -115,6 +115,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [suggestionQuery, setSuggestionQuery] = useState('');
     const [suggestionStartPos, setSuggestionStartPos] = useState(-1);
     const [selectedProperties, setSelectedProperties] = useState([]);
+    const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
     const [bookmarkedMessages, setBookmarkedMessages] = useState([]);
     const [messageRatings, setMessageRatings] = useState(() => JSON.parse(localStorage.getItem('gemini_ratings') || '{}'));
     const [showSettings, setShowSettings] = useState(false);
@@ -518,6 +519,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     // Search properties for @ suggestions
     const searchProperties = async (query) => {
         try {
+            setIsLoadingSuggestions(true);
             // Show suggestions even for empty query (to show all properties)
             const searchQuery = query ? query.trim() : '';
             console.log('Searching properties with query:', searchQuery);
@@ -549,6 +551,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         } catch (error) {
             console.error('Error searching properties:', error);
             setPropertySuggestions([]);
+        } finally {
+            setIsLoadingSuggestions(false);
         }
     };
 
@@ -660,6 +664,37 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
+    }, [showPropertySuggestions]);
+
+    // State for dropdown positioning
+    const [dropdownPosition, setDropdownPosition] = useState('bottom');
+
+    // Calculate dropdown position based on available space
+    useEffect(() => {
+        if (showPropertySuggestions && inputRef.current) {
+            const inputRect = inputRef.current.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            const spaceBelow = viewportHeight - inputRect.bottom;
+            const spaceAbove = inputRect.top;
+            
+            // If there's not enough space below (less than 200px) and more space above, show above
+            if (spaceBelow < 200 && spaceAbove > spaceBelow) {
+                setDropdownPosition('top');
+            } else {
+                setDropdownPosition('bottom');
+            }
+            
+            // Scroll the input into view if needed
+            setTimeout(() => {
+                if (inputRef.current) {
+                    inputRef.current.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center',
+                        inline: 'nearest'
+                    });
+                }
+            }, 100);
+        }
     }, [showPropertySuggestions]);
 
     // Clear chat history (server + local) from within the chatbox header
@@ -4821,9 +4856,25 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 {/* Property Suggestions Dropdown */}
                                 {console.log('Rendering suggestions:', { showPropertySuggestions, suggestionsCount: propertySuggestions.length })}
                                 {showPropertySuggestions && (
-                                    <div className="absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
-                                        <div className="p-2 text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
-                                            {propertySuggestions.length > 0 ? 'Select a property to reference:' : 'No properties found'}
+                                    <div className={`absolute left-0 right-0 bg-white dark:bg-gray-800 border-2 border-blue-300 dark:border-blue-600 rounded-lg shadow-2xl z-50 max-h-60 overflow-y-auto animate-fadeIn ${
+                                        dropdownPosition === 'top' 
+                                            ? 'bottom-full mb-2' 
+                                            : 'top-full mt-2'
+                                    }`}
+                                    style={{
+                                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        minWidth: '300px'
+                                    }}>
+                                        <div className="p-3 text-sm font-medium text-blue-600 dark:text-blue-400 border-b border-gray-200 dark:border-gray-600 bg-blue-50 dark:bg-blue-900/20">
+                                            <div className="flex items-center gap-2">
+                                                {isLoadingSuggestions ? (
+                                                    <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                                                ) : (
+                                                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                                                )}
+                                                {isLoadingSuggestions ? 'Loading properties...' : 
+                                                 propertySuggestions.length > 0 ? 'Select a property to reference:' : 'No properties found'}
+                                            </div>
                                         </div>
                                         {propertySuggestions.length > 0 ? propertySuggestions.map((property, index) => (
                                             <button
