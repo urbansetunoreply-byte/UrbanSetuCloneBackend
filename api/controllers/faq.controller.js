@@ -9,7 +9,13 @@ export const getFAQs = async (req, res, next) => {
         const { propertyId, isGlobal, category, search, page = 1, limit = 10 } = req.query;
         
         // Build query
-        const query = { isActive: true };
+        const query = {};
+        
+        // Only filter by isActive for non-admin users
+        // Admins should see all FAQs (both active and inactive) for management
+        if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'rootadmin')) {
+            query.isActive = true;
+        }
         
         if (propertyId) {
             if (propertyId === 'null') {
@@ -261,7 +267,12 @@ export const rateFAQ = async (req, res, next) => {
 // Get FAQ categories
 export const getFAQCategories = async (req, res, next) => {
     try {
-        const categories = await FAQ.distinct('category', { isActive: true });
+        // Admins should see all categories (from both active and inactive FAQs)
+        // Non-admin users should only see categories from active FAQs
+        const categoryQuery = (!req.user || (req.user.role !== 'admin' && req.user.role !== 'rootadmin')) 
+            ? { isActive: true } 
+            : {};
+        const categories = await FAQ.distinct('category', categoryQuery);
         
         // If no categories exist, provide default ones
         const defaultCategories = [
