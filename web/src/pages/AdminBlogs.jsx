@@ -73,18 +73,8 @@ const AdminBlogs = () => {
 
   const fetchProperties = async () => {
     try {
-      // Get session ID from cookies
-      const sessionId = document.cookie.split('; ').find(row => row.startsWith('session_id='))?.split('=')[1];
-      const token = localStorage.getItem('token');
-      
-      console.log('Debug Properties - Session ID:', sessionId);
-      console.log('Debug Properties - Token exists:', !!token);
-      
       const response = await fetch(`${API_BASE_URL}/api/listing/get`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          ...(sessionId && { 'x-session-id': sessionId })
-        }
+        credentials: 'include'
       });
       if (response.ok) {
         const data = await response.json();
@@ -166,21 +156,12 @@ const AdminBlogs = () => {
       
       const method = editingBlog ? 'PUT' : 'POST';
       
-      // Get session ID from cookies
-      const sessionId = document.cookie.split('; ').find(row => row.startsWith('session_id='))?.split('=')[1];
-      const token = localStorage.getItem('token');
-      
-      console.log('Debug - Session ID:', sessionId);
-      console.log('Debug - Token exists:', !!token);
-      console.log('Debug - Token preview:', token ? token.substring(0, 20) + '...' : 'No token');
-      
       const response = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          ...(sessionId && { 'x-session-id': sessionId })
+          'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({
           ...formData,
           propertyId: formData.propertyId || null
@@ -207,9 +188,7 @@ const AdminBlogs = () => {
       try {
         const response = await fetch(`${API_BASE_URL}/api/blogs/${id}`, {
           method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
+          credentials: 'include'
         });
 
         if (response.ok) {

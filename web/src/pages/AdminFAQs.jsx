@@ -66,18 +66,8 @@ const AdminFAQs = () => {
 
   const fetchProperties = async () => {
     try {
-      // Get session ID from cookies
-      const sessionId = document.cookie.split('; ').find(row => row.startsWith('session_id='))?.split('=')[1];
-      const token = localStorage.getItem('token');
-      
-      console.log('Debug FAQ Properties - Session ID:', sessionId);
-      console.log('Debug FAQ Properties - Token exists:', !!token);
-      
       const response = await fetch(`${API_BASE_URL}/api/listing/get`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          ...(sessionId && { 'x-session-id': sessionId })
-        }
+        credentials: 'include'
       });
       if (response.ok) {
         const data = await response.json();
@@ -147,21 +137,12 @@ const AdminFAQs = () => {
       
       const method = editingFAQ ? 'PUT' : 'POST';
       
-      // Get session ID from cookies
-      const sessionId = document.cookie.split('; ').find(row => row.startsWith('session_id='))?.split('=')[1];
-      const token = localStorage.getItem('token');
-      
-      console.log('Debug FAQ - Session ID:', sessionId);
-      console.log('Debug FAQ - Token exists:', !!token);
-      console.log('Debug FAQ - Token preview:', token ? token.substring(0, 20) + '...' : 'No token');
-      
       const response = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          ...(sessionId && { 'x-session-id': sessionId })
+          'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({
           ...formData,
           propertyId: formData.propertyId || null
@@ -188,9 +169,7 @@ const AdminFAQs = () => {
       try {
         const response = await fetch(`${API_BASE_URL}/api/faqs/${id}`, {
           method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
+          credentials: 'include'
         });
 
         if (response.ok) {
