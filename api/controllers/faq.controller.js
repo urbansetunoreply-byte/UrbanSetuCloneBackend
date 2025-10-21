@@ -266,7 +266,9 @@ export const getFAQCategories = async (req, res, next) => {
             'Technical Support'
         ];
         
-        const finalCategories = categories.length > 0 ? categories : defaultCategories;
+        // Always return all default categories, plus any additional categories from existing FAQs
+        const allCategories = [...new Set([...defaultCategories, ...categories])];
+        const finalCategories = allCategories;
         
         res.status(200).json({
             success: true,

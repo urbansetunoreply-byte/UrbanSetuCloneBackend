@@ -360,7 +360,9 @@ export const getBlogCategories = async (req, res, next) => {
             'Investment'
         ];
         
-        const finalCategories = categories.length > 0 ? categories : defaultCategories;
+        // Always return all default categories, plus any additional categories from existing blogs
+        const allCategories = [...new Set([...defaultCategories, ...categories])];
+        const finalCategories = allCategories;
         
         res.status(200).json({
             success: true,
