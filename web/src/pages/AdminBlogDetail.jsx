@@ -4,7 +4,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import { Navigation } from 'swiper/modules';
-import { FaCalendar, FaUser, FaEye, FaHeart, FaTag, FaArrowLeft, FaShare, FaComment, FaEdit, FaTrash, FaCheck, FaTimes, FaImage, FaTags, FaGlobe, FaHome, FaExpand, FaVideo } from 'react-icons/fa';
+import { FaCalendar, FaUser, FaEye, FaHeart, FaRegHeart, FaTag, FaArrowLeft, FaShare, FaComment, FaEdit, FaTrash, FaCheck, FaTimes, FaImage, FaTags, FaGlobe, FaHome, FaExpand, FaVideo } from 'react-icons/fa';
 import BlogEditModal from '../components/BlogEditModal';
 import ImagePreview from '../components/ImagePreview';
 import VideoPreview from '../components/VideoPreview';
@@ -624,7 +624,7 @@ const AdminBlogDetail = () => {
                         : 'bg-gray-100 text-gray-700 hover:bg-red-100 hover:text-red-700 border border-gray-200'
                     } ${likeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
-                    <FaHeart className={liked ? 'text-red-500' : 'text-gray-500'} />
+                    {liked ? <FaHeart className="text-red-500" /> : <FaRegHeart className="text-gray-500" />}
                     <span>
                       {likeLoading ? 'Updating...' : (liked ? 'Liked' : 'Like')} ({blog.likes || 0})
                     </span>

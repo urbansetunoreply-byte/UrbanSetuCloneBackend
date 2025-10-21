@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import ListingItem from '../components/ListingItem';
@@ -25,6 +25,7 @@ const WishList = () => {
   const [propertySearchTerm, setPropertySearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
+  const searchInputRef = useRef(null);
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestionLoading, setSuggestionLoading] = useState(false);
@@ -81,11 +82,17 @@ const WishList = () => {
     }
   };
 
-  const searchProperties = async (searchQuery = propertySearchTerm) => {
-    if (!searchQuery.trim()) return;
+  const searchProperties = async (searchQuery = null) => {
+    // Get the current input value from ref if no searchQuery provided
+    const currentValue = searchQuery || (searchInputRef.current ? searchInputRef.current.value : '');
+    const query = typeof currentValue === 'string' ? currentValue.trim() : '';
+    if (!query) {
+      toast.error('Please enter a search term');
+      return;
+    }
     setSearching(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/listing/get?search=${encodeURIComponent(searchQuery)}&limit=20`, { credentials: 'include' });
+      const res = await fetch(`${API_BASE_URL}/api/listing/get?search=${encodeURIComponent(query)}&limit=20`, { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         setSearchResults(data);
@@ -100,14 +107,15 @@ const WishList = () => {
   };
 
   const fetchSearchSuggestions = async (query) => {
-    if (!query.trim() || query.length < 2) {
+    const searchQuery = typeof query === 'string' ? query.trim() : '';
+    if (!searchQuery || searchQuery.length < 2) {
       setSearchSuggestions([]);
       setShowSuggestions(false);
       return;
     }
     setSuggestionLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/listing/get?search=${encodeURIComponent(query)}&limit=5`, { credentials: 'include' });
+      const res = await fetch(`${API_BASE_URL}/api/listing/get?search=${encodeURIComponent(searchQuery)}&limit=5`, { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         setSearchSuggestions(data);
@@ -353,7 +361,7 @@ const WishList = () => {
             <div className="flex gap-2 mb-4">
               <div className="flex-1 relative">
                 <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input type="text" placeholder="Search properties by name, city, or state..." value={propertySearchTerm} onChange={handleSearchInputChange} onKeyPress={(e) => e.key === 'Enter' && searchProperties()} onFocus={() => propertySearchTerm.length >= 2 && setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
+                <input ref={searchInputRef} type="text" placeholder="Search properties by name, city, or state..." value={propertySearchTerm} onChange={handleSearchInputChange} onKeyPress={(e) => e.key === 'Enter' && searchProperties()} onFocus={() => propertySearchTerm.length >= 2 && setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
                 {showSuggestions && (searchSuggestions.length > 0 || suggestionLoading) && (
                   <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
                     {suggestionLoading ? (
@@ -385,7 +393,7 @@ const WishList = () => {
                   </div>
                 )}
               </div>
-              <button onClick={searchProperties} disabled={searching || !propertySearchTerm.trim()} className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+              <button onClick={() => searchProperties()} disabled={searching} className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
                 {searching ? (<><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>Searching...</>) : (<><FaSearch />Search</>)}
               </button>
             </div>

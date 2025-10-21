@@ -101,7 +101,7 @@ export const getFAQ = async (req, res, next) => {
 // Create FAQ (Admin only)
 export const createFAQ = async (req, res, next) => {
     try {
-        const { question, answer, category, propertyId, isGlobal, tags, priority } = req.body;
+        const { question, answer, category, propertyId, isGlobal, tags, priority, isActive } = req.body;
         const createdBy = req.user.id;
         
         // Validate required fields
@@ -131,6 +131,7 @@ export const createFAQ = async (req, res, next) => {
             isGlobal: isGlobal || false,
             tags: tags || [],
             priority: priority || 0,
+            isActive: isActive !== undefined ? isActive : true, // Default to true if not specified
             createdBy
         };
         

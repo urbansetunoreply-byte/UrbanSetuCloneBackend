@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaSearch, FaChevronDown, FaChevronUp, FaThumbsUp, FaThumbsDown, FaFilter } from 'react-icons/fa';
+import { FaSearch, FaChevronDown, FaChevronUp, FaThumbsUp, FaThumbsDown, FaRegThumbsUp, FaRegThumbsDown, FaFilter } from 'react-icons/fa';
 
 const PublicFAQs = () => {
   const [faqs, setFaqs] = useState([]);
@@ -230,12 +230,13 @@ const PublicFAQs = () => {
             </div>
           </form>
 
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            <div className="flex items-center space-x-2">
-              <FaFilter className="text-orange-500 text-lg" />
-              <span className="text-lg font-semibold text-gray-700">🏷️ Filter by category:</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
+          <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
+            <div className="flex flex-col xl:flex-row xl:items-center gap-4">
+              <div className="flex items-center space-x-2 xl:min-w-[220px]">
+                <FaFilter className="text-orange-500 text-lg flex-shrink-0" />
+                <span className="text-lg font-semibold text-gray-700 whitespace-nowrap">🏷️ Filter by category:</span>
+              </div>
+              <div className="flex flex-wrap gap-2 xl:flex-1">
               <button
                 onClick={() => setSelectedCategory('all')}
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 transform hover:scale-105 ${
@@ -259,6 +260,7 @@ const PublicFAQs = () => {
                   {category}
                 </button>
               ))}
+              </div>
             </div>
           </div>
         </div>
@@ -338,7 +340,7 @@ const PublicFAQs = () => {
                                     : 'text-green-600 hover:text-green-700 bg-green-50 hover:bg-green-100 border-green-200'
                                 } ${reactionLoading[faq._id] ? 'opacity-50 cursor-not-allowed' : ''}`}
                               >
-                                <FaThumbsUp />
+                                {userReactions[faq._id] === 'like' ? <FaThumbsUp /> : <FaRegThumbsUp />}
                                 <span>
                                   {reactionLoading[faq._id] ? 'Updating...' : 'Yes'} ({faq.helpful || 0})
                                 </span>
@@ -352,7 +354,7 @@ const PublicFAQs = () => {
                                     : 'text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border-red-200'
                                 } ${reactionLoading[faq._id] ? 'opacity-50 cursor-not-allowed' : ''}`}
                               >
-                                <FaThumbsDown />
+                                {userReactions[faq._id] === 'dislike' ? <FaThumbsDown /> : <FaRegThumbsDown />}
                                 <span>
                                   {reactionLoading[faq._id] ? 'Updating...' : 'No'} ({faq.notHelpful || 0})
                                 </span>
