@@ -1,6 +1,7 @@
 import FAQ from '../models/faq.model.js';
 import Listing from '../models/listing.model.js';
 import User from '../models/user.model.js';
+import FAQLike from '../models/faqLike.model.js';
 
 // Get FAQs with filtering
 export const getFAQs = async (req, res, next) => {
@@ -283,6 +284,130 @@ export const getFAQCategories = async (req, res, next) => {
             success: true,
             data: finalCategories
         });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Check if user has liked/disliked a FAQ
+export const checkUserFAQReaction = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+        
+        const existingReaction = await FAQLike.findOne({ userId, faqId: id });
+        
+        res.status(200).json({
+            success: true,
+            data: {
+                reaction: existingReaction ? existingReaction.type : null
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Like/Dislike FAQ
+export const reactToFAQ = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { type } = req.body; // 'like' or 'dislike'
+        const userId = req.user.id;
+        
+        if (!type || !['like', 'dislike'].includes(type)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid reaction type. Must be "like" or "dislike"'
+            });
+        }
+        
+        const faq = await FAQ.findById(id);
+        if (!faq) {
+            return res.status(404).json({
+                success: false,
+                message: 'FAQ not found'
+            });
+        }
+        
+        // Check if user has already reacted to this FAQ
+        const existingReaction = await FAQLike.findOne({ userId, faqId: id });
+        
+        if (existingReaction) {
+            if (existingReaction.type === type) {
+                // Same reaction - remove it
+                await FAQLike.deleteOne({ userId, faqId: id });
+                
+                if (type === 'like') {
+                    faq.helpful = Math.max(0, faq.helpful - 1);
+                } else {
+                    faq.notHelpful = Math.max(0, faq.notHelpful - 1);
+                }
+                
+                await faq.save();
+                
+                res.status(200).json({
+                    success: true,
+                    message: `FAQ ${type} removed`,
+                    data: {
+                        helpful: faq.helpful,
+                        notHelpful: faq.notHelpful,
+                        reaction: null
+                    }
+                });
+            } else {
+                // Different reaction - update it
+                const oldType = existingReaction.type;
+                existingReaction.type = type;
+                await existingReaction.save();
+                
+                // Update counts
+                if (oldType === 'like') {
+                    faq.helpful = Math.max(0, faq.helpful - 1);
+                } else {
+                    faq.notHelpful = Math.max(0, faq.notHelpful - 1);
+                }
+                
+                if (type === 'like') {
+                    faq.helpful += 1;
+                } else {
+                    faq.notHelpful += 1;
+                }
+                
+                await faq.save();
+                
+                res.status(200).json({
+                    success: true,
+                    message: `FAQ ${type}d`,
+                    data: {
+                        helpful: faq.helpful,
+                        notHelpful: faq.notHelpful,
+                        reaction: type
+                    }
+                });
+            }
+        } else {
+            // New reaction
+            await FAQLike.create({ userId, faqId: id, type });
+            
+            if (type === 'like') {
+                faq.helpful += 1;
+            } else {
+                faq.notHelpful += 1;
+            }
+            
+            await faq.save();
+            
+            res.status(200).json({
+                success: true,
+                message: `FAQ ${type}d`,
+                data: {
+                    helpful: faq.helpful,
+                    notHelpful: faq.notHelpful,
+                    reaction: type
+                }
+            });
+        }
     } catch (error) {
         next(error);
     }

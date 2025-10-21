@@ -9,6 +9,9 @@ const PublicFAQs = () => {
   const [categories, setCategories] = useState([]);
   const [expandedFAQ, setExpandedFAQ] = useState(null);
   const [pagination, setPagination] = useState({ current: 1, pages: 1, total: 0 });
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userReactions, setUserReactions] = useState({});
+  const [reactionLoading, setReactionLoading] = useState({});
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com';
 
@@ -16,7 +19,15 @@ const PublicFAQs = () => {
   useEffect(() => {
     fetchFAQs();
     fetchCategories();
+    checkAuthStatus();
   }, []);
+
+  // Check user reactions when logged in and FAQs are loaded
+  useEffect(() => {
+    if (isLoggedIn && faqs.length > 0) {
+      checkUserReactions();
+    }
+  }, [isLoggedIn, faqs]);
 
   // Debounced search effect
   useEffect(() => {
@@ -87,22 +98,85 @@ const PublicFAQs = () => {
     setExpandedFAQ(expandedFAQ === faqId ? null : faqId);
   };
 
-  const handleRating = async (faqId, helpful) => {
+  const checkAuthStatus = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/faqs/${faqId}/rate`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+        credentials: 'include'
+      });
+      setIsLoggedIn(response.ok);
+    } catch (error) {
+      setIsLoggedIn(false);
+    }
+  };
+
+  const checkUserReactions = async () => {
+    try {
+      const reactions = {};
+      for (const faq of faqs) {
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/faqs/${faq._id}/reaction-status`, {
+            credentials: 'include'
+          });
+          if (response.ok) {
+            const data = await response.json();
+            reactions[faq._id] = data.data.reaction;
+          }
+        } catch (error) {
+          console.error(`Error checking reaction for FAQ ${faq._id}:`, error);
+        }
+      }
+      setUserReactions(reactions);
+    } catch (error) {
+      console.error('Error checking user reactions:', error);
+    }
+  };
+
+  const handleRating = async (faqId, type) => {
+    if (!isLoggedIn) {
+      alert('Please log in to rate this FAQ');
+      return;
+    }
+
+    if (reactionLoading[faqId]) return;
+
+    setReactionLoading(prev => ({ ...prev, [faqId]: true }));
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/faqs/${faqId}/react`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ helpful })
+        credentials: 'include',
+        body: JSON.stringify({ type })
       });
 
       if (response.ok) {
-        // Refresh FAQs to show updated ratings
-        fetchFAQs();
+        const data = await response.json();
+        
+        // Update FAQ in the list
+        setFaqs(prevFaqs => 
+          prevFaqs.map(faq => 
+            faq._id === faqId 
+              ? { ...faq, helpful: data.data.helpful, notHelpful: data.data.notHelpful }
+              : faq
+          )
+        );
+
+        // Update user reactions
+        setUserReactions(prev => ({
+          ...prev,
+          [faqId]: data.data.reaction
+        }));
+      } else {
+        const errorData = await response.json();
+        alert(errorData.message || 'Error rating FAQ');
       }
     } catch (error) {
       console.error('Error rating FAQ:', error);
+      alert('Error rating FAQ');
+    } finally {
+      setReactionLoading(prev => ({ ...prev, [faqId]: false }));
     }
   };
 
@@ -250,18 +324,32 @@ const PublicFAQs = () => {
                             <span className="text-sm text-gray-600">Was this helpful?</span>
                             <div className="flex items-center space-x-2">
                               <button
-                                onClick={() => handleRating(faq._id, true)}
-                                className="flex items-center space-x-1 text-green-600 hover:text-green-700 bg-green-50 hover:bg-green-100 px-3 py-2 rounded-lg transition-all duration-200 border border-green-200 text-sm font-medium"
+                                onClick={() => handleRating(faq._id, 'like')}
+                                disabled={reactionLoading[faq._id]}
+                                className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-all duration-200 border text-sm font-medium ${
+                                  userReactions[faq._id] === 'like'
+                                    ? 'text-green-700 bg-green-100 border-green-300'
+                                    : 'text-green-600 hover:text-green-700 bg-green-50 hover:bg-green-100 border-green-200'
+                                } ${reactionLoading[faq._id] ? 'opacity-50 cursor-not-allowed' : ''}`}
                               >
                                 <FaThumbsUp />
-                                <span>Yes ({faq.helpful || 0})</span>
+                                <span>
+                                  {reactionLoading[faq._id] ? 'Updating...' : 'Yes'} ({faq.helpful || 0})
+                                </span>
                               </button>
                               <button
-                                onClick={() => handleRating(faq._id, false)}
-                                className="flex items-center space-x-1 text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-lg transition-all duration-200 border border-red-200 text-sm font-medium"
+                                onClick={() => handleRating(faq._id, 'dislike')}
+                                disabled={reactionLoading[faq._id]}
+                                className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-all duration-200 border text-sm font-medium ${
+                                  userReactions[faq._id] === 'dislike'
+                                    ? 'text-red-700 bg-red-100 border-red-300'
+                                    : 'text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border-red-200'
+                                } ${reactionLoading[faq._id] ? 'opacity-50 cursor-not-allowed' : ''}`}
                               >
                                 <FaThumbsDown />
-                                <span>No ({faq.notHelpful || 0})</span>
+                                <span>
+                                  {reactionLoading[faq._id] ? 'Updating...' : 'No'} ({faq.notHelpful || 0})
+                                </span>
                               </button>
                             </div>
                           </div>
