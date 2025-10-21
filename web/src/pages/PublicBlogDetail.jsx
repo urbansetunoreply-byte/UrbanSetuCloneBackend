@@ -30,6 +30,8 @@ const PublicBlogDetail = () => {
         setComments(data.data.comments || []);
         fetchRelatedBlogs(data.data.category, data.data._id);
       } else {
+        // Blog not found - redirect to blogs page
+        console.log(`Blog with slug "${slug}" not found`);
         navigate('/blogs');
       }
     } catch (error) {
