@@ -100,6 +100,10 @@ const AdminFAQs = () => {
 
       if (response.ok) {
         const data = await response.json();
+        console.log('Received FAQs from API:', data.data);
+        console.log('FAQ count:', data.data.length);
+        console.log('Active FAQs:', data.data.filter(faq => faq.isActive === true).length);
+        console.log('Inactive FAQs:', data.data.filter(faq => faq.isActive === false).length);
         setFaqs(data.data);
         setPagination(data.pagination);
       }
@@ -190,6 +194,9 @@ const AdminFAQs = () => {
         : `${API_BASE_URL}/api/faqs`;
       
       const method = editingFAQ ? 'PUT' : 'POST';
+      
+      console.log('Submitting FAQ with data:', formData);
+      console.log('isActive value:', formData.isActive);
       
       const response = await fetch(url, {
         method,
@@ -360,7 +367,7 @@ const AdminFAQs = () => {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {faqs.map((faq) => (
-                      <tr key={faq._id} className="hover:bg-gray-50 transition-colors duration-200">
+                      <tr key={faq._id} className={`hover:bg-gray-50 transition-colors duration-200 ${!faq.isActive ? 'bg-red-50' : ''}`}>
                         <td className="px-6 py-4">
                           <div className="text-sm font-medium text-gray-900 max-w-xs truncate">
                             {faq.question}
@@ -455,7 +462,7 @@ const AdminFAQs = () => {
               {/* Mobile Card View */}
               <div className="lg:hidden p-4 space-y-4">
                 {faqs.map((faq) => (
-                  <div key={faq._id} className="bg-gradient-to-r from-white to-orange-50 rounded-xl shadow-lg p-4 border border-orange-100 hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]">
+                  <div key={faq._id} className={`rounded-xl shadow-lg p-4 border hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] ${!faq.isActive ? 'bg-gradient-to-r from-red-50 to-red-100 border-red-200' : 'bg-gradient-to-r from-white to-orange-50 border-orange-100'}`}>
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1 min-w-0">
                         <h3 className="text-sm font-semibold text-gray-900 mb-2 line-clamp-2">
