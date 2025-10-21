@@ -11,7 +11,16 @@ export const getFAQs = async (req, res, next) => {
         const query = { isActive: true };
         
         if (propertyId) {
-            query.propertyId = propertyId;
+            if (propertyId === 'null') {
+                // Filter for global FAQs (no propertyId)
+                query.propertyId = { $exists: false };
+            } else if (propertyId === 'exists') {
+                // Filter for property-specific FAQs (has propertyId)
+                query.propertyId = { $exists: true, $ne: null };
+            } else {
+                // Filter for specific property
+                query.propertyId = propertyId;
+            }
         } else if (isGlobal === 'true') {
             query.isGlobal = true;
         }

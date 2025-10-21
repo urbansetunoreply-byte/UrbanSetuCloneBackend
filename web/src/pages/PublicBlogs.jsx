@@ -25,7 +25,7 @@ const PublicBlogs = () => {
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (pagination.current === 1) {
-        fetchBlogs();
+        fetchBlogs(false); // Don't show loading for search
       } else {
         setPagination(prev => ({ ...prev, current: 1 }));
       }
@@ -119,47 +119,54 @@ const PublicBlogs = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Real Estate Blog
-          </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Stay updated with the latest insights, tips, and trends in real estate
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-6 sm:py-12">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+        {/* Enhanced Header */}
+        <div className="text-center mb-8 sm:mb-12">
+          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 mb-6 transform hover:scale-[1.02] transition-all duration-300">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 animate-fadeIn">
+              📝 Real Estate Blog
+            </h1>
+            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              Stay updated with the latest insights, tips, and trends in real estate
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-2">
+              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">💡 Tips</span>
+              <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">📈 Market Updates</span>
+              <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">🏠 Investment</span>
+            </div>
+          </div>
         </div>
 
-        {/* Search and Filters */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+        {/* Enhanced Search and Filters */}
+        <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8">
           <form onSubmit={handleSearch} className="mb-6">
             <div className="relative">
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
               <input
                 type="text"
                 placeholder="Search blog posts..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-12 pr-4 py-4 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-300 text-lg"
               />
             </div>
           </form>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Categories */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Enhanced Categories */}
             <div>
-              <div className="flex items-center space-x-2 mb-3">
-                <FaFilter className="text-gray-400" />
-                <span className="text-sm font-medium text-gray-700">Categories:</span>
+              <div className="flex items-center space-x-2 mb-4">
+                <FaFilter className="text-blue-500 text-lg" />
+                <span className="text-lg font-semibold text-gray-700">🏷️ Categories</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setSelectedCategory('all')}
-                  className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 transform hover:scale-105 ${
                     selectedCategory === 'all'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md'
                   }`}
                 >
                   All
@@ -168,10 +175,10 @@ const PublicBlogs = () => {
                   <button
                     key={category}
                     onClick={() => setSelectedCategory(category)}
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 transform hover:scale-105 ${
                       selectedCategory === category
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md'
                     }`}
                   >
                     {category}
@@ -180,19 +187,19 @@ const PublicBlogs = () => {
               </div>
             </div>
 
-            {/* Tags */}
+            {/* Enhanced Tags */}
             <div>
-              <div className="flex items-center space-x-2 mb-3">
-                <FaTag className="text-gray-400" />
-                <span className="text-sm font-medium text-gray-700">Tags:</span>
+              <div className="flex items-center space-x-2 mb-4">
+                <FaTag className="text-green-500 text-lg" />
+                <span className="text-lg font-semibold text-gray-700">🏷️ Tags</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setSelectedTag('all')}
-                  className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 transform hover:scale-105 ${
                     selectedTag === 'all'
-                      ? 'bg-green-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-lg'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md'
                   }`}
                 >
                   All
@@ -201,10 +208,10 @@ const PublicBlogs = () => {
                   <button
                     key={tag}
                     onClick={() => setSelectedTag(tag)}
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 transform hover:scale-105 ${
                       selectedTag === tag
-                        ? 'bg-green-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-lg'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md'
                     }`}
                   >
                     {tag}
@@ -215,7 +222,7 @@ const PublicBlogs = () => {
           </div>
         </div>
 
-        {/* Blogs Grid */}
+        {/* Enhanced Blogs Grid */}
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
@@ -233,98 +240,99 @@ const PublicBlogs = () => {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {blogs.map((blog) => (
               <article
                 key={blog._id}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+                className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-1"
               >
-                {/* Thumbnail */}
+                {/* Enhanced Thumbnail */}
                 {blog.thumbnail && (
-                  <div className="aspect-w-16 aspect-h-9">
+                  <div className="relative overflow-hidden">
                     <img
                       src={blog.thumbnail}
                       alt={blog.title}
-                      className="w-full h-48 object-cover"
+                      className="w-full h-48 sm:h-56 object-cover transition-transform duration-300 hover:scale-110"
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                   </div>
                 )}
 
-                <div className="p-6">
-                  {/* Category */}
-                  <div className="mb-3">
-                    <span className="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">
-                      {blog.category}
+                <div className="p-4 sm:p-6">
+                  {/* Enhanced Category */}
+                  <div className="mb-4">
+                    <span className="inline-block bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full border border-blue-300">
+                      🏷️ {blog.category}
                     </span>
                   </div>
 
-                  {/* Title */}
-                  <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
+                  {/* Enhanced Title */}
+                  <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 line-clamp-2">
                     <Link
                       to={`/blog/${blog.slug || blog._id}`}
-                      className="hover:text-blue-600 transition-colors"
+                      className="hover:text-blue-600 transition-colors duration-300"
                     >
                       {blog.title}
                     </Link>
                   </h2>
 
-                  {/* Excerpt */}
-                  <p className="text-gray-600 mb-4 line-clamp-3">
+                  {/* Enhanced Excerpt */}
+                  <p className="text-gray-600 mb-4 line-clamp-3 text-sm sm:text-base">
                     {truncateText(blog.excerpt || blog.content, 120)}
                   </p>
 
-                  {/* Tags */}
+                  {/* Enhanced Tags */}
                   {blog.tags && blog.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-4">
+                    <div className="flex flex-wrap gap-2 mb-4">
                       {blog.tags.slice(0, 3).map((tag, index) => (
                         <span
                           key={index}
-                          className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700"
+                          className="inline-flex items-center px-2 py-1 rounded-lg text-xs font-medium bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 border border-gray-300"
                         >
-                          <FaTag className="mr-1" />
+                          <FaTag className="mr-1 text-green-500" />
                           {tag}
                         </span>
                       ))}
                       {blog.tags.length > 3 && (
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-500 px-2 py-1 bg-gray-50 rounded-lg">
                           +{blog.tags.length - 3} more
                         </span>
                       )}
                     </div>
                   )}
 
-                  {/* Meta Info */}
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center space-x-1">
-                        <FaUser />
-                        <span>{blog.author?.username || 'UrbanSetu Team'}</span>
+                  {/* Enhanced Meta Info */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm text-gray-500 mb-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                      <div className="flex items-center space-x-2">
+                        <FaUser className="text-blue-500" />
+                        <span className="font-medium">{blog.author?.username || 'UrbanSetu Team'}</span>
                       </div>
-                      <div className="flex items-center space-x-1">
-                        <FaCalendar />
+                      <div className="flex items-center space-x-2">
+                        <FaCalendar className="text-green-500" />
                         <span>{formatDate(blog.publishedAt || blog.createdAt)}</span>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="flex items-center space-x-1">
-                        <FaEye />
-                        <span>{blog.views || 0}</span>
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-2 bg-gray-50 px-2 py-1 rounded-lg">
+                        <FaEye className="text-purple-500" />
+                        <span className="font-medium">{blog.views || 0}</span>
                       </div>
-                      <div className="flex items-center space-x-1">
-                        <FaHeart />
-                        <span>{blog.likes || 0}</span>
+                      <div className="flex items-center space-x-2 bg-gray-50 px-2 py-1 rounded-lg">
+                        <FaHeart className="text-red-500" />
+                        <span className="font-medium">{blog.likes || 0}</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Read More Button */}
+                  {/* Enhanced Read More Button */}
                   <div className="mt-4">
                     <Link
                       to={`/blog/${blog.slug || blog._id}`}
-                      className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium text-sm"
+                      className="inline-flex items-center justify-center w-full sm:w-auto bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-blue-800 font-medium text-sm transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
                     >
                       Read More
-                      <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </Link>
@@ -335,69 +343,78 @@ const PublicBlogs = () => {
           </div>
         )}
 
-        {/* Pagination */}
+        {/* Enhanced Pagination */}
         {pagination.pages > 1 && (
           <div className="mt-12 flex justify-center">
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => setPagination(prev => ({ ...prev, current: prev.current - 1 }))}
-                disabled={pagination.current === 1}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Previous
-              </button>
-              
-              <div className="flex items-center space-x-1">
-                {Array.from({ length: Math.min(5, pagination.pages) }, (_, i) => {
-                  const page = i + 1;
-                  return (
-                    <button
-                      key={page}
-                      onClick={() => setPagination(prev => ({ ...prev, current: page }))}
-                      className={`px-3 py-2 text-sm font-medium rounded-lg ${
-                        pagination.current === page
-                          ? 'bg-blue-600 text-white'
-                          : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  );
-                })}
+            <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <div className="text-sm text-gray-600">
+                  Page {pagination.current} of {pagination.pages}
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setPagination(prev => ({ ...prev, current: prev.current - 1 }))}
+                    disabled={pagination.current === 1}
+                    className="px-4 py-2 border-2 border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105"
+                  >
+                    ← Previous
+                  </button>
+                  
+                  <div className="flex items-center space-x-1">
+                    {Array.from({ length: Math.min(5, pagination.pages) }, (_, i) => {
+                      const page = i + 1;
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => setPagination(prev => ({ ...prev, current: page }))}
+                          className={`px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 hover:scale-105 ${
+                            pagination.current === page
+                              ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
+                              : 'text-gray-700 bg-white border-2 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  
+                  <button
+                    onClick={() => setPagination(prev => ({ ...prev, current: prev.current + 1 }))}
+                    disabled={pagination.current === pagination.pages}
+                    className="px-4 py-2 border-2 border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105"
+                  >
+                    Next →
+                  </button>
+                </div>
               </div>
-              
-              <button
-                onClick={() => setPagination(prev => ({ ...prev, current: prev.current + 1 }))}
-                disabled={pagination.current === pagination.pages}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Next
-              </button>
             </div>
           </div>
         )}
 
-        {/* CTA Section */}
-        <div className="mt-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-8 text-center text-white">
-          <h3 className="text-2xl font-bold mb-4">
-            Stay Updated with Real Estate Insights
-          </h3>
-          <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
-            Get the latest property trends, investment tips, and market updates delivered to your inbox.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="/contact"
-              className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
-            >
-              Subscribe to Newsletter
-            </a>
-            <a
-              href="/about"
-              className="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors"
-            >
-              Learn More About Us
-            </a>
+        {/* Enhanced CTA Section */}
+        <div className="mt-16 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-2xl p-6 sm:p-8 lg:p-12 text-center text-white shadow-2xl">
+          <div className="max-w-4xl mx-auto">
+            <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 animate-fadeIn">
+              📈 Stay Updated with Real Estate Insights
+            </h3>
+            <p className="text-blue-100 mb-8 max-w-3xl mx-auto text-lg leading-relaxed">
+              Get the latest property trends, investment tips, and market updates delivered to your inbox.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a
+                href="/contact"
+                className="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                📧 Subscribe to Newsletter
+              </a>
+              <a
+                href="/about"
+                className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-blue-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                🏢 Learn More About Us
+              </a>
+            </div>
           </div>
         </div>
       </div>

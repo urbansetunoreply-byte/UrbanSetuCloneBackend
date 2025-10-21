@@ -46,6 +46,7 @@ const PublicBlogs = lazy(() => import('./pages/PublicBlogs'));
 const PublicBlogDetail = lazy(() => import('./pages/PublicBlogDetail'));
 const PublicFAQs = lazy(() => import('./pages/PublicFAQs'));
 const AdminBlogs = lazy(() => import('./pages/AdminBlogs'));
+const AdminBlogDetail = lazy(() => import('./pages/AdminBlogDetail'));
 const AdminFAQs = lazy(() => import('./pages/AdminFAQs'));
 const PublicSearch = lazy(() => import('./pages/PublicSearch'));
 const Search = lazy(() => import('./pages/Search'));
@@ -715,6 +716,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/admin/appointments" element={<AdminAppointments />} />
             <Route path="/admin/about" element={<AdminAbout />} />
             <Route path="/admin/blogs" element={<AdminBlogs />} />
+            <Route path="/admin/blog/:slug" element={<AdminBlogDetail />} />
             <Route path="/admin/faqs" element={<AdminFAQs />} />
             <Route path="/admin/explore" element={<AdminExplore />} />
             <Route path="/admin/create-listing" element={<AdminCreateListing />} />

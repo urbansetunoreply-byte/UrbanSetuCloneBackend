@@ -5,7 +5,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import { Navigation } from "swiper/modules";
-import { FaBath, FaBed, FaChair, FaMapMarkerAlt, FaParking, FaShare, FaEdit, FaTrash, FaArrowLeft, FaStar, FaLock, FaHeart, FaExpand, FaCheckCircle, FaFlag, FaRuler, FaBuilding, FaTree, FaWifi, FaSwimmingPool, FaCar, FaShieldAlt, FaClock, FaPhone, FaEnvelope, FaCalendarAlt, FaEye, FaThumbsUp, FaThumbsDown, FaComments, FaCalculator, FaChartLine, FaHome, FaUtensils, FaHospital, FaSchool, FaShoppingCart, FaPlane, FaUser, FaTimes, FaSearch, FaTable, FaRocket, FaQuestionCircle, FaChevronDown, FaChevronUp, FaBookOpen, FaTag, FaCompass, FaInfoCircle } from "react-icons/fa";
+import { FaBath, FaBed, FaChair, FaMapMarkerAlt, FaParking, FaShare, FaEdit, FaTrash, FaArrowLeft, FaStar, FaLock, FaHeart, FaExpand, FaCheckCircle, FaFlag, FaRuler, FaBuilding, FaTree, FaWifi, FaSwimmingPool, FaCar, FaShieldAlt, FaClock, FaPhone, FaEnvelope, FaCalendarAlt, FaEye, FaThumbsUp, FaThumbsDown, FaComments, FaCalculator, FaChartLine, FaHome, FaUtensils, FaHospital, FaSchool, FaShoppingCart, FaPlane, FaUser, FaTimes, FaSearch, FaTable, FaRocket, FaQuestionCircle, FaChevronDown, FaChevronUp, FaBookOpen, FaTag, FaCompass, FaInfoCircle, FaCalendar } from "react-icons/fa";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import ReviewForm from "../components/ReviewForm.jsx";
 import ReviewList from "../components/ReviewList.jsx";
@@ -2300,7 +2300,7 @@ export default function Listing() {
                           </div>
                           <div className="mt-4">
                             <Link
-                              to={`/blog/${blog.slug || blog._id}`}
+                              to={isAdmin ? `/admin/blog/${blog.slug || blog._id}` : `/blog/${blog.slug || blog._id}`}
                               className="inline-flex items-center text-green-600 hover:text-green-700 font-medium text-sm"
                             >
                               Read More
@@ -2327,28 +2327,28 @@ export default function Listing() {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Link
-                  to="/blogs"
+                  to={isAdmin ? "/admin/blogs" : "/blogs"}
                   className="bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg p-4 text-center transition-colors group"
                 >
                   <FaBookOpen className="text-blue-600 text-2xl mx-auto mb-2 group-hover:scale-110 transition-transform" />
                   <h4 className="font-semibold text-gray-900 mb-1">Real Estate Blog</h4>
-                  <p className="text-sm text-gray-600">Read latest insights and tips</p>
+                  <p className="text-sm text-gray-600">{isAdmin ? "Manage blog posts" : "Read latest insights and tips"}</p>
                 </Link>
                 <Link
-                  to="/faqs"
+                  to={isAdmin ? "/admin/faqs" : "/faqs"}
                   className="bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-lg p-4 text-center transition-colors group"
                 >
                   <FaQuestionCircle className="text-orange-600 text-2xl mx-auto mb-2 group-hover:scale-110 transition-transform" />
                   <h4 className="font-semibold text-gray-900 mb-1">FAQs</h4>
-                  <p className="text-sm text-gray-600">Find answers to common questions</p>
+                  <p className="text-sm text-gray-600">{isAdmin ? "Manage FAQ content" : "Find answers to common questions"}</p>
                 </Link>
                 <Link
-                  to="/about"
+                  to={isAdmin ? "/admin/about" : "/about"}
                   className="bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg p-4 text-center transition-colors group"
                 >
                   <FaInfoCircle className="text-green-600 text-2xl mx-auto mb-2 group-hover:scale-110 transition-transform" />
                   <h4 className="font-semibold text-gray-900 mb-1">About UrbanSetu</h4>
-                  <p className="text-sm text-gray-600">Learn more about our platform</p>
+                  <p className="text-sm text-gray-600">{isAdmin ? "Manage about page content" : "Learn more about our platform"}</p>
                 </Link>
               </div>
             </div>

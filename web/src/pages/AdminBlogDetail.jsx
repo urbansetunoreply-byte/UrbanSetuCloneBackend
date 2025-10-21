@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { FaCalendar, FaUser, FaEye, FaHeart, FaTag, FaArrowLeft, FaShare, FaComment, FaHome } from 'react-icons/fa';
+import { FaCalendar, FaUser, FaEye, FaHeart, FaTag, FaArrowLeft, FaShare, FaComment, FaEdit, FaTrash, FaCheck, FaTimes, FaImage, FaTags, FaGlobe, FaHome } from 'react-icons/fa';
 
-const PublicBlogDetail = () => {
+const AdminBlogDetail = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const [blog, setBlog] = useState(null);
@@ -12,6 +12,22 @@ const PublicBlogDetail = () => {
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState([]);
   const [showComments, setShowComments] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showUnpublishConfirm, setShowUnpublishConfirm] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    content: '',
+    excerpt: '',
+    thumbnail: '',
+    propertyId: '',
+    tags: [],
+    category: 'Real Estate Tips',
+    published: false
+  });
+  const [properties, setProperties] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [propertySearch, setPropertySearch] = useState('');
   const textareaRef = useRef(null);
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com';
@@ -20,10 +36,19 @@ const PublicBlogDetail = () => {
     fetchBlog();
   }, [slug]);
 
+  useEffect(() => {
+    if (showEditModal) {
+      fetchProperties();
+      fetchCategories();
+    }
+  }, [showEditModal]);
+
   const fetchBlog = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/blogs/${slug}`);
+      const response = await fetch(`${API_BASE_URL}/api/blogs/${slug}`, {
+        credentials: 'include'
+      });
 
       if (response.ok) {
         const data = await response.json();
@@ -31,13 +56,12 @@ const PublicBlogDetail = () => {
         setComments(data.data.comments || []);
         fetchRelatedBlogs(data.data.category, data.data._id);
       } else {
-        // Blog not found - redirect to blogs page
         console.log(`Blog with slug "${slug}" not found`);
-        navigate('/blogs');
+        navigate('/admin/blogs');
       }
     } catch (error) {
       console.error('Error fetching blog:', error);
-      navigate('/blogs');
+      navigate('/admin/blogs');
     } finally {
       setLoading(false);
     }
@@ -45,10 +69,11 @@ const PublicBlogDetail = () => {
 
   const fetchRelatedBlogs = async (category, currentBlogId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/blogs?category=${category}&published=true&limit=3`);
+      const response = await fetch(`${API_BASE_URL}/api/blogs?category=${category}&published=true&limit=3`, {
+        credentials: 'include'
+      });
       if (response.ok) {
         const data = await response.json();
-        // Filter out current blog
         const related = data.data.filter(blog => blog._id !== currentBlogId);
         setRelatedBlogs(related.slice(0, 3));
       }
@@ -62,7 +87,8 @@ const PublicBlogDetail = () => {
     
     try {
       const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}/like`, {
-        method: 'POST'
+        method: 'POST',
+        credentials: 'include'
       });
 
       if (response.ok) {
@@ -106,13 +132,126 @@ const PublicBlogDetail = () => {
         if (textareaRef.current) {
           textareaRef.current.style.height = 'auto';
         }
-        // Refresh comments
         fetchBlog();
       } else {
-        alert('Please log in to comment');
+        alert('Error adding comment');
       }
     } catch (error) {
       console.error('Error adding comment:', error);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        navigate('/admin/blogs');
+      } else {
+        alert('Error deleting blog');
+      }
+    } catch (error) {
+      console.error('Error deleting blog:', error);
+    }
+  };
+
+  const handleTogglePublish = async () => {
+    if (blog.published) {
+      setShowUnpublishConfirm(true);
+    } else {
+      // Direct publish without confirmation
+      await updatePublishStatus(!blog.published);
+    }
+  };
+
+  const updatePublishStatus = async (newStatus) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ published: newStatus })
+      });
+
+      if (response.ok) {
+        setBlog(prev => ({ ...prev, published: newStatus }));
+        setShowUnpublishConfirm(false);
+      } else {
+        alert('Error updating blog status');
+      }
+    } catch (error) {
+      console.error('Error updating blog:', error);
+    }
+  };
+
+  const handleEdit = () => {
+    setFormData({
+      title: blog.title,
+      content: blog.content,
+      excerpt: blog.excerpt,
+      thumbnail: blog.thumbnail,
+      propertyId: blog.propertyId?._id || '',
+      tags: blog.tags || [],
+      category: blog.category,
+      published: blog.published
+    });
+    setShowEditModal(true);
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(formData)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setBlog(data.data);
+        setShowEditModal(false);
+        alert('Blog updated successfully!');
+      } else {
+        alert('Error updating blog');
+      }
+    } catch (error) {
+      console.error('Error updating blog:', error);
+      alert('Error updating blog');
+    }
+  };
+
+  const fetchProperties = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/listing/get?limit=1000&type=all&offer=false&furnished=false&parking=false`, {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setProperties(Array.isArray(data) ? data : []);
+      }
+    } catch (error) {
+      console.error('Error fetching properties:', error);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/blogs/categories`);
+      if (response.ok) {
+        const data = await response.json();
+        setCategories(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
     }
   };
 
@@ -128,7 +267,6 @@ const PublicBlogDetail = () => {
         console.log('Error sharing:', error);
       }
     } else {
-      // Fallback: copy to clipboard
       navigator.clipboard.writeText(window.location.href);
       alert('Link copied to clipboard!');
     }
@@ -166,11 +304,11 @@ const PublicBlogDetail = () => {
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Blog post not found</h1>
           <p className="text-gray-600 mb-6">The blog post you're looking for doesn't exist or has been removed.</p>
           <Link 
-            to="/blogs" 
+            to="/admin/blogs" 
             className="inline-flex items-center space-x-2 bg-orange-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-orange-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
           >
             <FaArrowLeft />
-            <span>Back to all posts</span>
+            <span>Back to admin blogs</span>
           </Link>
         </div>
       </div>
@@ -181,23 +319,14 @@ const PublicBlogDetail = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-orange-50 py-4 sm:py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Enhanced Back Button */}
-        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row gap-3">
+        <div className="mb-6 sm:mb-8">
           <button
-            onClick={() => navigate('/blogs')}
+            onClick={() => navigate('/admin/blogs')}
             className="inline-flex items-center space-x-2 text-gray-600 hover:text-orange-600 transition-all duration-200 bg-white px-4 py-2 rounded-xl shadow-sm hover:shadow-md transform hover:scale-105"
           >
             <FaArrowLeft className="text-sm" />
-            <span className="font-medium">Back to all posts</span>
+            <span className="font-medium">Back to admin blogs</span>
           </button>
-          {blog.propertyId && (
-            <Link
-              to={`/listing/${blog.propertyId._id || blog.propertyId}`}
-              className="inline-flex items-center space-x-2 text-gray-600 hover:text-purple-600 transition-all duration-200 bg-white px-4 py-2 rounded-xl shadow-sm hover:shadow-md transform hover:scale-105"
-            >
-              <FaHome className="text-sm" />
-              <span className="font-medium">View Property</span>
-            </Link>
-          )}
         </div>
 
         {/* Enhanced Blog Article */}
@@ -215,6 +344,50 @@ const PublicBlogDetail = () => {
           )}
 
           <div className="p-4 sm:p-6 lg:p-8">
+            {/* Admin Actions */}
+            <div className="mb-4 sm:mb-6 flex flex-wrap gap-2 sm:gap-3">
+              <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
+                blog.published 
+                  ? 'bg-green-100 text-green-800 border border-green-300' 
+                  : 'bg-yellow-100 text-yellow-800 border border-yellow-300'
+              }`}>
+                {blog.published ? '✅ Published' : '⏳ Draft'}
+              </span>
+              <button
+                onClick={handleTogglePublish}
+                className={`px-3 py-1 rounded-full text-sm font-semibold transition-all duration-200 ${
+                  blog.published
+                    ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 border border-yellow-300'
+                    : 'bg-green-100 text-green-800 hover:bg-green-200 border border-green-300'
+                }`}
+              >
+                {blog.published ? '⏸️ Unpublish' : '🚀 Publish'}
+              </button>
+              <button
+                onClick={handleEdit}
+                className="px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800 hover:bg-blue-200 border border-blue-300 transition-all duration-200 flex items-center space-x-1"
+              >
+                <FaEdit />
+                <span>Edit</span>
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-800 hover:bg-red-200 border border-red-300 transition-all duration-200 flex items-center space-x-1"
+              >
+                <FaTrash />
+                <span>Delete</span>
+              </button>
+              {blog.propertyId && (
+                <Link
+                  to={`/admin/listing/${blog.propertyId._id || blog.propertyId}`}
+                  className="px-3 py-1 rounded-full text-sm font-semibold bg-purple-100 text-purple-800 hover:bg-purple-200 border border-purple-300 transition-all duration-200 flex items-center space-x-1"
+                >
+                  <FaHome />
+                  <span>View Property</span>
+                </Link>
+              )}
+            </div>
+
             {/* Enhanced Category */}
             <div className="mb-4 sm:mb-6">
               <span className="inline-block bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 text-sm font-semibold px-4 py-2 rounded-full border border-orange-300 shadow-sm">
@@ -412,7 +585,7 @@ const PublicBlogDetail = () => {
                   <div className="p-4 sm:p-6">
                     <h3 className="font-semibold text-gray-900 mb-2 sm:mb-3 line-clamp-2 text-sm sm:text-base">
                       <Link
-                        to={`/blog/${relatedBlog.slug || relatedBlog._id}`}
+                        to={`/admin/blog/${relatedBlog.slug || relatedBlog._id}`}
                         className="hover:text-orange-600 transition-colors"
                       >
                         {relatedBlog.title}
@@ -431,9 +604,213 @@ const PublicBlogDetail = () => {
             </div>
           </div>
         )}
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl p-6 sm:p-8 max-w-md mx-4 shadow-2xl">
+              <div className="text-center">
+                <div className="text-6xl mb-4">⚠️</div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Delete Blog Post</h3>
+                <p className="text-gray-600 mb-6">
+                  Are you sure you want to delete "{blog.title}"? This action cannot be undone.
+                </p>
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all duration-200"
+                  >
+                    <FaTimes className="inline mr-2" />
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-all duration-200"
+                  >
+                    <FaTrash className="inline mr-2" />
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Modal */}
+        {showEditModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-y-auto transform animate-slideDown">
+              <div className="sticky top-0 bg-white border-b border-gray-200 p-4 sm:p-6 rounded-t-xl">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                    ✏️ Edit Blog
+                  </h2>
+                  <button
+                    onClick={() => setShowEditModal(false)}
+                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200"
+                  >
+                    <FaTimes className="text-xl" />
+                  </button>
+                </div>
+              </div>
+              
+              <form onSubmit={handleEditSubmit} className="p-4 sm:p-6 space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">📝 Title *</label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-300"
+                    placeholder="Enter blog title..."
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">📄 Content *</label>
+                  <textarea
+                    value={formData.content}
+                    onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+                    rows={8}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-300"
+                    placeholder="Enter blog content..."
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">📋 Excerpt</label>
+                  <textarea
+                    value={formData.excerpt}
+                    onChange={(e) => setFormData(prev => ({ ...prev, excerpt: e.target.value }))}
+                    rows={3}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-300"
+                    placeholder="Enter blog excerpt..."
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">🏷️ Category</label>
+                    <select
+                      value={formData.category}
+                      onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-300"
+                    >
+                      {categories.map(category => (
+                        <option key={category} value={category}>{category}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">🏠 Property (Optional)</label>
+                    <input
+                      type="text"
+                      value={propertySearch}
+                      onChange={(e) => setPropertySearch(e.target.value)}
+                      placeholder="Search properties by name, city, or state..."
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-300 mb-2"
+                    />
+                    <select
+                      value={formData.propertyId}
+                      onChange={(e) => setFormData(prev => ({ ...prev, propertyId: e.target.value }))}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-300"
+                    >
+                      <option value="">Select Property (Leave empty for global blog)</option>
+                      {properties
+                        .filter((property) => {
+                          const searchTerm = propertySearch.trim().toLowerCase();
+                          if (!searchTerm) return true;
+                          
+                          const name = (property.name || "").toLowerCase();
+                          const city = (property.city || "").toLowerCase();
+                          const state = (property.state || "").toLowerCase();
+                          
+                          return (
+                            name.includes(searchTerm) ||
+                            city.includes(searchTerm) ||
+                            state.includes(searchTerm)
+                          );
+                        })
+                        .map(property => (
+                          <option key={property._id} value={property._id}>
+                            {property.name} - {property.city}, {property.state}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200">
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.published}
+                      onChange={(e) => setFormData(prev => ({ ...prev, published: e.target.checked }))}
+                      className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <span className="ml-3 text-sm font-medium text-gray-700">
+                      🚀 Published
+                    </span>
+                  </label>
+                </div>
+
+                <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200">
+                  <button
+                    type="button"
+                    onClick={() => setShowEditModal(false)}
+                    className="w-full sm:w-auto px-6 py-3 border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+                  >
+                    ✏️ Update Blog
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Unpublish Confirmation Modal */}
+        {showUnpublishConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-md transform animate-slideDown">
+              <div className="p-6">
+                <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-yellow-100 rounded-full">
+                  <FaTimes className="text-yellow-600 text-xl" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">
+                  Unpublish Blog
+                </h3>
+                <p className="text-sm text-gray-600 text-center mb-6">
+                  Are you sure you want to unpublish this blog? It will no longer be visible to public users.
+                </p>
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => setShowUnpublishConfirm(false)}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => updatePublishStatus(false)}
+                    className="flex-1 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
+                  >
+                    Unpublish
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-export default PublicBlogDetail;
+export default AdminBlogDetail;

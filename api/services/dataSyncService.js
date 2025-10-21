@@ -87,7 +87,7 @@ export const indexAllBlogs = async () => {
     try {
         console.log('🔄 Indexing all blogs for chatbot...');
         
-        const blogs = await Blog.find({ status: 'published' })
+        const blogs = await Blog.find({ published: true })
             .select('title content excerpt author tags category publishedAt views likes')
             .lean();
 
