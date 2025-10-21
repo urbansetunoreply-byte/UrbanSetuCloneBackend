@@ -32,6 +32,14 @@ const AdminBlogs = () => {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com';
 
   useEffect(() => {
+    // Check if user is authenticated
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Please log in to access this page.');
+      window.location.href = '/login';
+      return;
+    }
+    
     fetchBlogs();
     fetchProperties();
     fetchCategories();
@@ -73,7 +81,7 @@ const AdminBlogs = () => {
 
   const fetchProperties = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/listing`, {
+      const response = await fetch(`${API_BASE_URL}/api/listing/get`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -175,7 +183,13 @@ const AdminBlogs = () => {
         fetchBlogs();
       } else {
         const errorData = await response.json();
-        alert(`Error: ${errorData.message || 'Failed to save blog'}`);
+        if (response.status === 401) {
+          alert('Error: Your session has expired. Please log in again.');
+          // Optionally redirect to login
+          window.location.href = '/login';
+        } else {
+          alert(`Error: ${errorData.message || 'Failed to save blog'}`);
+        }
       }
     } catch (error) {
       console.error('Error saving blog:', error);
