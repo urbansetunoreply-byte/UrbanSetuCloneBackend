@@ -14,11 +14,39 @@ const PublicBlogs = () => {
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com';
 
+  // Separate useEffect for initial load and categories/tags
   useEffect(() => {
     fetchBlogs();
     fetchCategories();
     fetchTags();
-  }, [searchTerm, selectedCategory, selectedTag, pagination.current]);
+  }, []);
+
+  // Debounced search effect
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (pagination.current === 1) {
+        fetchBlogs();
+      } else {
+        setPagination(prev => ({ ...prev, current: 1 }));
+      }
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
+
+  // Immediate filter effects for category and tag changes
+  useEffect(() => {
+    if (pagination.current === 1) {
+      fetchBlogs();
+    } else {
+      setPagination(prev => ({ ...prev, current: 1 }));
+    }
+  }, [selectedCategory, selectedTag]);
+
+  // Pagination effect
+  useEffect(() => {
+    fetchBlogs();
+  }, [pagination.current]);
 
   const fetchBlogs = async () => {
     try {
