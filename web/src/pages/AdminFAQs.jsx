@@ -198,18 +198,27 @@ const AdminFAQs = () => {
       console.log('Submitting FAQ with data:', formData);
       console.log('isActive value:', formData.isActive);
       
+      const requestBody = {
+        ...formData,
+        propertyId: formData.propertyId || null
+      };
+      
+      console.log('Request body being sent:', requestBody);
+      console.log('API URL:', url);
+      console.log('Method:', method);
+      
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json'
         },
         credentials: 'include',
-        body: JSON.stringify({
-          ...formData,
-          propertyId: formData.propertyId || null
-        })
+        body: JSON.stringify(requestBody)
       });
-
+      
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+      
       if (response.ok) {
         const data = await response.json();
         alert(editingFAQ ? 'FAQ updated successfully!' : 'FAQ created successfully!');
@@ -217,6 +226,9 @@ const AdminFAQs = () => {
         fetchFAQs();
       } else {
         const errorData = await response.json();
+        console.error('API Error Response:', errorData);
+        console.error('Response status:', response.status);
+        console.error('Response statusText:', response.statusText);
         alert(`Error: ${errorData.message || 'Failed to save FAQ'}`);
       }
     } catch (error) {
@@ -244,22 +256,33 @@ const AdminFAQs = () => {
 
   const toggleActive = async (faq) => {
     try {
+      console.log('Toggling FAQ active status:', faq._id, 'from', faq.isActive, 'to', !faq.isActive);
+      
       const response = await fetch(`${API_BASE_URL}/api/faqs/${faq._id}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({
           isActive: !faq.isActive
         })
       });
+      
+      console.log('Toggle response status:', response.status);
+      console.log('Toggle response ok:', response.ok);
 
       if (response.ok) {
+        console.log('✅ FAQ status toggled successfully');
         fetchFAQs();
+      } else {
+        const errorData = await response.json();
+        console.error('❌ Toggle failed:', errorData);
+        alert(`Error: ${errorData.message || 'Failed to toggle FAQ status'}`);
       }
     } catch (error) {
-      console.error('Error toggling FAQ status:', error);
+      console.error('❌ Error toggling FAQ status:', error);
+      alert('Error: Failed to toggle FAQ status. Please try again.');
     }
   };
 
