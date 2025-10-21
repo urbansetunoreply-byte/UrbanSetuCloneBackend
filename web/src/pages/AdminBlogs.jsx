@@ -73,9 +73,13 @@ const AdminBlogs = () => {
 
   const fetchProperties = async () => {
     try {
+      // Get session ID from cookies
+      const sessionId = document.cookie.split('; ').find(row => row.startsWith('session_id='))?.split('=')[1];
+      
       const response = await fetch(`${API_BASE_URL}/api/listing/get`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          ...(sessionId && { 'x-session-id': sessionId })
         }
       });
       if (response.ok) {
@@ -156,11 +160,15 @@ const AdminBlogs = () => {
       
       const method = editingBlog ? 'PUT' : 'POST';
       
+      // Get session ID from cookies
+      const sessionId = document.cookie.split('; ').find(row => row.startsWith('session_id='))?.split('=')[1];
+      
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          ...(sessionId && { 'x-session-id': sessionId })
         },
         body: JSON.stringify({
           ...formData,
