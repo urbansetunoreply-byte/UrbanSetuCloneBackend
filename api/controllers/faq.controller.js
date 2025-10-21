@@ -11,19 +11,21 @@ export const getFAQs = async (req, res, next) => {
         // Try to authenticate user if not already set
         if (!req.user) {
             try {
-                const jwt = await import('jsonwebtoken');
-                const User = (await import('../models/user.model.js')).default;
+                const jwt = require('jsonwebtoken');
                 const accessToken = req.cookies.access_token;
                 
                 if (accessToken) {
-                    const decoded = jwt.default.verify(accessToken, process.env.JWT_SECRET);
+                    const decoded = jwt.verify(accessToken, process.env.JWT_TOKEN);
                     const user = await User.findById(decoded.id).select('-password');
                     if (user) {
                         req.user = user;
+                        console.log('  - Authentication successful via cookie:', user.role);
                     }
+                } else {
+                    console.log('  - No access token found in cookies');
                 }
             } catch (error) {
-                // Authentication failed, continue without user
+                console.log('  - Authentication failed:', error.message);
                 req.user = null;
             }
         }
