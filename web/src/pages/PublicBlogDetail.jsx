@@ -5,6 +5,8 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import { Navigation } from 'swiper/modules';
 import { FaCalendar, FaUser, FaEye, FaHeart, FaTag, FaArrowLeft, FaShare, FaComment, FaHome, FaExpand, FaTimes } from 'react-icons/fa';
+import ImagePreview from '../components/ImagePreview';
+import VideoPreview from '../components/VideoPreview';
 
 const PublicBlogDetail = () => {
   const { slug } = useParams();
@@ -580,6 +582,32 @@ const PublicBlogDetail = () => {
               />
             </div>
           </div>
+        )}
+
+        {/* Image Preview Modal */}
+        {blog && blog.imageUrls && blog.imageUrls.length > 0 && (
+          <ImagePreview
+            isOpen={showImagePreview}
+            onClose={() => setShowImagePreview(false)}
+            images={blog.imageUrls}
+            initialIndex={selectedImageIndex}
+            listingId={blog._id}
+            metadata={{
+              addedFrom: 'blog',
+              blogTitle: blog.title,
+              blogCategory: blog.category
+            }}
+          />
+        )}
+
+        {/* Video Preview Modal */}
+        {blog && blog.videoUrls && blog.videoUrls.length > 0 && (
+          <VideoPreview
+            isOpen={showVideoPreview}
+            onClose={() => setShowVideoPreview(false)}
+            videos={blog.videoUrls}
+            initialIndex={selectedVideoIndex}
+          />
         )}
       </div>
     </div>

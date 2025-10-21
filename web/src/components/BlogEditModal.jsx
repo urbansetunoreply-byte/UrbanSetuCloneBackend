@@ -25,7 +25,7 @@ const BlogEditModal = ({
         const formData = new FormData();
         formData.append(type === 'image' ? 'image' : 'video', file);
 
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/upload/${type}`, {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com'}/api/upload/${type}`, {
           method: 'POST',
           body: formData,
           credentials: 'include'
@@ -97,7 +97,7 @@ const BlogEditModal = ({
       const formData = new FormData();
       formData.append('image', file);
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/upload/image`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com'}/api/upload/image`, {
         method: 'POST',
         body: formData,
         credentials: 'include'

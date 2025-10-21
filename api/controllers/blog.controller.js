@@ -176,6 +176,8 @@ export const createBlog = async (req, res, next) => {
             content, 
             excerpt, 
             thumbnail, 
+            imageUrls,
+            videoUrls,
             propertyId, 
             tags, 
             category, 

@@ -302,25 +302,25 @@ const PublicBlogs = () => {
                   )}
 
                   {/* Enhanced Meta Info */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm text-gray-500 mb-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
-                      <div className="flex items-center space-x-2">
-                        <FaUser className="text-blue-500" />
-                        <span className="font-medium">{blog.author?.username || 'UrbanSetu Team'}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
+                  <div className="flex flex-col space-y-2 text-sm text-gray-500 mb-4">
+                    <div className="flex items-center space-x-1">
+                      <FaUser className="text-blue-500" />
+                      <span className="font-medium truncate">{blog.author?.username || 'UrbanSetu Team'}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-1">
                         <FaCalendar className="text-green-500" />
                         <span>{formatDate(blog.publishedAt || blog.createdAt)}</span>
                       </div>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center space-x-2 bg-gray-50 px-2 py-1 rounded-lg">
-                        <FaEye className="text-purple-500" />
-                        <span className="font-medium">{blog.views || 0}</span>
-                      </div>
-                      <div className="flex items-center space-x-2 bg-gray-50 px-2 py-1 rounded-lg">
-                        <FaHeart className="text-red-500" />
-                        <span className="font-medium">{blog.likes || 0}</span>
+                      <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-1">
+                          <FaEye className="text-purple-500" />
+                          <span>{blog.views || 0}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <FaHeart className="text-red-500" />
+                          <span>{blog.likes || 0}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
