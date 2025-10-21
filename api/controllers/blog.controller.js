@@ -1,6 +1,7 @@
 import Blog from '../models/blog.model.js';
 import Listing from '../models/listing.model.js';
 import User from '../models/user.model.js';
+import BlogLike from '../models/blogLike.model.js';
 
 // Get blogs with filtering
 export const getBlogs = async (req, res, next) => {
@@ -334,10 +335,30 @@ export const deleteBlog = async (req, res, next) => {
     }
 };
 
-// Like blog
+// Check if user has liked a blog
+export const checkUserLike = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+        
+        const existingLike = await BlogLike.findOne({ userId, blogId: id });
+        
+        res.status(200).json({
+            success: true,
+            data: {
+                isLiked: !!existingLike
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Like/Unlike blog
 export const likeBlog = async (req, res, next) => {
     try {
         const { id } = req.params;
+        const userId = req.user.id;
         
         const blog = await Blog.findById(id);
         if (!blog) {
@@ -347,16 +368,38 @@ export const likeBlog = async (req, res, next) => {
             });
         }
         
-        blog.likes += 1;
-        await blog.save();
+        // Check if user has already liked this blog
+        const existingLike = await BlogLike.findOne({ userId, blogId: id });
         
-        res.status(200).json({
-            success: true,
-            message: 'Blog liked',
-            data: {
-                likes: blog.likes
-            }
-        });
+        if (existingLike) {
+            // Unlike: Remove the like and decrement count
+            await BlogLike.deleteOne({ userId, blogId: id });
+            blog.likes = Math.max(0, blog.likes - 1);
+            await blog.save();
+            
+            res.status(200).json({
+                success: true,
+                message: 'Blog unliked',
+                data: {
+                    likes: blog.likes,
+                    isLiked: false
+                }
+            });
+        } else {
+            // Like: Add the like and increment count
+            await BlogLike.create({ userId, blogId: id });
+            blog.likes += 1;
+            await blog.save();
+            
+            res.status(200).json({
+                success: true,
+                message: 'Blog liked',
+                data: {
+                    likes: blog.likes,
+                    isLiked: true
+                }
+            });
+        }
     } catch (error) {
         next(error);
     }

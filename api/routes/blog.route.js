@@ -6,6 +6,7 @@ import {
     updateBlog, 
     deleteBlog, 
     likeBlog, 
+    checkUserLike,
     addComment,
     getBlogCategories,
     getBlogTags
@@ -19,9 +20,10 @@ router.get('/', getBlogs); // GET /api/blogs?propertyId=123&category=Real Estate
 router.get('/categories', getBlogCategories); // GET /api/blogs/categories
 router.get('/tags', getBlogTags); // GET /api/blogs/tags
 router.get('/:id', getBlog); // GET /api/blogs/:id (by ID or slug)
-router.post('/:id/like', likeBlog); // POST /api/blogs/:id/like
 
 // Protected routes (require authentication)
+router.get('/:id/like-status', verifyToken, checkUserLike); // GET /api/blogs/:id/like-status
+router.post('/:id/like', verifyToken, likeBlog); // POST /api/blogs/:id/like
 router.post('/:id/comment', verifyToken, addComment); // POST /api/blogs/:id/comment
 
 // Admin routes (protected)

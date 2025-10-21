@@ -15,6 +15,8 @@ const PublicBlogDetail = () => {
   const [relatedBlogs, setRelatedBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
+  const [likeLoading, setLikeLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState([]);
   const [showComments, setShowComments] = useState(false);
@@ -28,7 +30,14 @@ const PublicBlogDetail = () => {
 
   useEffect(() => {
     fetchBlog();
+    checkAuthStatus();
   }, [slug]);
+
+  useEffect(() => {
+    if (blog && isLoggedIn) {
+      checkLikeStatus();
+    }
+  }, [blog, isLoggedIn]);
 
   const fetchBlog = async () => {
     try {
@@ -67,20 +76,60 @@ const PublicBlogDetail = () => {
     }
   };
 
-  const handleLike = async () => {
-    if (liked) return;
-    
+  const checkAuthStatus = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}/like`, {
-        method: 'POST'
+      const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+        credentials: 'include'
+      });
+      setIsLoggedIn(response.ok);
+    } catch (error) {
+      setIsLoggedIn(false);
+    }
+  };
+
+  const checkLikeStatus = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}/like-status`, {
+        credentials: 'include'
       });
 
       if (response.ok) {
-        setLiked(true);
-        setBlog(prev => ({ ...prev, likes: (prev.likes || 0) + 1 }));
+        const data = await response.json();
+        setLiked(data.data.isLiked);
+      }
+    } catch (error) {
+      console.error('Error checking like status:', error);
+    }
+  };
+
+  const handleLike = async () => {
+    if (!isLoggedIn) {
+      alert('Please log in to like this blog');
+      return;
+    }
+
+    if (likeLoading) return;
+    
+    setLikeLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}/like`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setLiked(data.data.isLiked);
+        setBlog(prev => ({ ...prev, likes: data.data.likes }));
+      } else {
+        const errorData = await response.json();
+        alert(errorData.message || 'Error updating like');
       }
     } catch (error) {
       console.error('Error liking blog:', error);
+      alert('Error updating like');
+    } finally {
+      setLikeLoading(false);
     }
   };
 
@@ -111,13 +160,14 @@ const PublicBlogDetail = () => {
       });
 
       if (response.ok) {
+        const responseData = await response.json();
+        // Add the new comment to the existing comments state
+        setComments(prevComments => [...prevComments, responseData.data]);
         setComment('');
         // Reset textarea height
         if (textareaRef.current) {
           textareaRef.current.style.height = 'auto';
         }
-        // Refresh comments
-        fetchBlog();
       } else {
         const errorData = await response.json();
         // Show user-friendly message for authentication errors
@@ -403,15 +453,17 @@ const PublicBlogDetail = () => {
                 <div className="flex flex-wrap items-center gap-3 sm:gap-4">
                   <button
                     onClick={handleLike}
-                    disabled={liked}
+                    disabled={likeLoading}
                     className={`flex items-center space-x-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 ${
                       liked
-                        ? 'bg-red-100 text-red-700 cursor-not-allowed border border-red-200'
+                        ? 'bg-red-100 text-red-700 border border-red-200'
                         : 'bg-gray-100 text-gray-700 hover:bg-red-100 hover:text-red-700 border border-gray-200'
-                    }`}
+                    } ${likeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <FaHeart className={liked ? 'text-red-500' : 'text-gray-500'} />
-                    <span>{liked ? 'Liked' : 'Like'} ({blog.likes || 0})</span>
+                    <span>
+                      {likeLoading ? 'Updating...' : (liked ? 'Liked' : 'Like')} ({blog.likes || 0})
+                    </span>
                   </button>
                   
                   <button
