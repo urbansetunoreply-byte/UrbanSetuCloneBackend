@@ -71,8 +71,9 @@ const AdminFAQs = () => {
       });
       if (response.ok) {
         const data = await response.json();
-        console.log('FAQ Properties fetched:', data.listings);
-        setProperties(data.listings || []);
+        console.log('FAQ Properties fetched:', data);
+        // The API returns listings directly, not in a listings property
+        setProperties(Array.isArray(data) ? data : []);
       } else {
         console.error('Failed to fetch properties for FAQ:', response.status);
         const errorData = await response.text();
