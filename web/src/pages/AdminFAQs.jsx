@@ -68,10 +68,14 @@ const AdminFAQs = () => {
     try {
       // Get session ID from cookies
       const sessionId = document.cookie.split('; ').find(row => row.startsWith('session_id='))?.split('=')[1];
+      const token = localStorage.getItem('token');
+      
+      console.log('Debug FAQ Properties - Session ID:', sessionId);
+      console.log('Debug FAQ Properties - Token exists:', !!token);
       
       const response = await fetch(`${API_BASE_URL}/api/listing/get`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${token}`,
           ...(sessionId && { 'x-session-id': sessionId })
         }
       });
@@ -81,6 +85,8 @@ const AdminFAQs = () => {
         setProperties(data.listings || []);
       } else {
         console.error('Failed to fetch properties for FAQ:', response.status);
+        const errorData = await response.text();
+        console.error('FAQ Error response:', errorData);
       }
     } catch (error) {
       console.error('Error fetching properties for FAQ:', error);
@@ -143,12 +149,17 @@ const AdminFAQs = () => {
       
       // Get session ID from cookies
       const sessionId = document.cookie.split('; ').find(row => row.startsWith('session_id='))?.split('=')[1];
+      const token = localStorage.getItem('token');
+      
+      console.log('Debug FAQ - Session ID:', sessionId);
+      console.log('Debug FAQ - Token exists:', !!token);
+      console.log('Debug FAQ - Token preview:', token ? token.substring(0, 20) + '...' : 'No token');
       
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${token}`,
           ...(sessionId && { 'x-session-id': sessionId })
         },
         body: JSON.stringify({

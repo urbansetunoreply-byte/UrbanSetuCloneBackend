@@ -75,10 +75,14 @@ const AdminBlogs = () => {
     try {
       // Get session ID from cookies
       const sessionId = document.cookie.split('; ').find(row => row.startsWith('session_id='))?.split('=')[1];
+      const token = localStorage.getItem('token');
+      
+      console.log('Debug Properties - Session ID:', sessionId);
+      console.log('Debug Properties - Token exists:', !!token);
       
       const response = await fetch(`${API_BASE_URL}/api/listing/get`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${token}`,
           ...(sessionId && { 'x-session-id': sessionId })
         }
       });
@@ -88,6 +92,8 @@ const AdminBlogs = () => {
         setProperties(data.listings || []);
       } else {
         console.error('Failed to fetch properties:', response.status);
+        const errorData = await response.text();
+        console.error('Error response:', errorData);
       }
     } catch (error) {
       console.error('Error fetching properties:', error);
@@ -162,12 +168,17 @@ const AdminBlogs = () => {
       
       // Get session ID from cookies
       const sessionId = document.cookie.split('; ').find(row => row.startsWith('session_id='))?.split('=')[1];
+      const token = localStorage.getItem('token');
+      
+      console.log('Debug - Session ID:', sessionId);
+      console.log('Debug - Token exists:', !!token);
+      console.log('Debug - Token preview:', token ? token.substring(0, 20) + '...' : 'No token');
       
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${token}`,
           ...(sessionId && { 'x-session-id': sessionId })
         },
         body: JSON.stringify({
