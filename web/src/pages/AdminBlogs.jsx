@@ -54,7 +54,7 @@ const AdminBlogs = () => {
   // Immediate filter effects for type, category, and status changes
   useEffect(() => {
     if (pagination.current === 1) {
-      fetchBlogs();
+      fetchBlogs(false); // Don't show loading for immediate filter changes
     } else {
       setPagination(prev => ({ ...prev, current: 1 }));
     }
@@ -65,9 +65,9 @@ const AdminBlogs = () => {
     fetchBlogs();
   }, [pagination.current]);
 
-  const fetchBlogs = async () => {
+  const fetchBlogs = async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
       const params = new URLSearchParams({
         page: pagination.current,
         limit: 10
@@ -81,9 +81,7 @@ const AdminBlogs = () => {
       if (filterStatus === 'draft') params.append('published', 'false');
 
       const response = await fetch(`${API_BASE_URL}/api/blogs?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+        credentials: 'include'
       });
 
       if (response.ok) {
@@ -94,7 +92,7 @@ const AdminBlogs = () => {
     } catch (error) {
       console.error('Error fetching blogs:', error);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 

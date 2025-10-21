@@ -37,7 +37,7 @@ const PublicBlogs = () => {
   // Immediate filter effects for category and tag changes
   useEffect(() => {
     if (pagination.current === 1) {
-      fetchBlogs();
+      fetchBlogs(false); // Don't show loading for immediate filter changes
     } else {
       setPagination(prev => ({ ...prev, current: 1 }));
     }
@@ -48,9 +48,9 @@ const PublicBlogs = () => {
     fetchBlogs();
   }, [pagination.current]);
 
-  const fetchBlogs = async () => {
+  const fetchBlogs = async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
       const params = new URLSearchParams({
         published: 'true',
         page: pagination.current,
@@ -71,7 +71,7 @@ const PublicBlogs = () => {
     } catch (error) {
       console.error('Error fetching blogs:', error);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 

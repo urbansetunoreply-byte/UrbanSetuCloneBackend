@@ -34,7 +34,7 @@ const PublicFAQs = () => {
   // Immediate filter effect for category changes
   useEffect(() => {
     if (pagination.current === 1) {
-      fetchFAQs();
+      fetchFAQs(false); // Don't show loading for immediate filter changes
     } else {
       setPagination(prev => ({ ...prev, current: 1 }));
     }
@@ -45,9 +45,9 @@ const PublicFAQs = () => {
     fetchFAQs();
   }, [pagination.current]);
 
-  const fetchFAQs = async () => {
+  const fetchFAQs = async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
       const params = new URLSearchParams({
         isGlobal: 'true',
         page: pagination.current,
@@ -67,7 +67,7 @@ const PublicFAQs = () => {
     } catch (error) {
       console.error('Error fetching FAQs:', error);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 

@@ -50,7 +50,7 @@ const AdminFAQs = () => {
   // Immediate filter effects for type and category changes
   useEffect(() => {
     if (pagination.current === 1) {
-      fetchFAQs();
+      fetchFAQs(false); // Don't show loading for immediate filter changes
     } else {
       setPagination(prev => ({ ...prev, current: 1 }));
     }
@@ -61,9 +61,9 @@ const AdminFAQs = () => {
     fetchFAQs();
   }, [pagination.current]);
 
-  const fetchFAQs = async () => {
+  const fetchFAQs = async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
       const params = new URLSearchParams({
         page: pagination.current,
         limit: 10
@@ -75,9 +75,7 @@ const AdminFAQs = () => {
       if (filterCategory !== 'all') params.append('category', filterCategory);
 
       const response = await fetch(`${API_BASE_URL}/api/faqs?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+        credentials: 'include'
       });
 
       if (response.ok) {
@@ -88,7 +86,7 @@ const AdminFAQs = () => {
     } catch (error) {
       console.error('Error fetching FAQs:', error);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 
