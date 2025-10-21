@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useLocation, Navigate, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate, useNavigate, useParams } from "react-router-dom";
 import { useEffect, Suspense, lazy, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { verifyAuthStart, verifyAuthSuccess, verifyAuthFailure, signoutUserSuccess } from "./redux/user/userSlice.js";
@@ -18,6 +18,12 @@ import AccountRevocation from './pages/AccountRevocation';
 import RestoreProperty from './pages/RestoreProperty';
 import NotFound from './pages/NotFound';
 import Terms from "./pages/Terms";
+
+// Blog redirect component for logged-in users
+const BlogRedirect = () => {
+  const { slug } = useParams();
+  return <Navigate to={`/user/blog/${slug}`} replace />;
+};
 import Privacy from "./pages/Privacy";
 import UserTerms from "./pages/UserTerms";
 import AdminTerms from "./pages/AdminTerms";
@@ -655,7 +661,7 @@ function AppRoutes({ bootstrapped }) {
           <Route path="/home" element={currentUser ? <NotFound /> : <PublicHome bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
           <Route path="/about" element={currentUser ? <Navigate to="/user/about" /> : <PublicAbout bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
           <Route path="/blogs" element={currentUser ? <Navigate to="/user/blogs" /> : <PublicBlogs bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
-          <Route path="/blog/:slug" element={currentUser ? <Navigate to="/user/blog/:slug" /> : <PublicBlogDetail bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+          <Route path="/blog/:slug" element={currentUser ? <BlogRedirect /> : <PublicBlogDetail bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
           <Route path="/faqs" element={currentUser ? <Navigate to="/user/faqs" /> : <PublicFAQs bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
           <Route path="/search" element={currentUser ? <Navigate to="/user/search" /> : <PublicSearch bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
           <Route path="/listing/:listingId" element={currentUser ? <NotFound /> : <Listing />} />

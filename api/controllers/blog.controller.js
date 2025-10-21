@@ -72,13 +72,21 @@ export const getBlog = async (req, res, next) => {
     try {
         const { id } = req.params;
         
-        // Try to find by ID first, then by slug
-        let blog = await Blog.findById(id)
-            .populate('propertyId', 'name city state')
-            .populate('author', 'username')
-            .populate('comments.user', 'username');
+        let blog = null;
+        
+        // Check if id is a valid ObjectId (24 hex characters)
+        const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(id);
+        
+        if (isValidObjectId) {
+            // Try to find by ID first
+            blog = await Blog.findById(id)
+                .populate('propertyId', 'name city state')
+                .populate('author', 'username')
+                .populate('comments.user', 'username');
+        }
         
         if (!blog) {
+            // Try to find by slug
             blog = await Blog.findOne({ slug: id })
                 .populate('propertyId', 'name city state')
                 .populate('author', 'username')
