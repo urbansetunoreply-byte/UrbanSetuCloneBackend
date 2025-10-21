@@ -8,6 +8,12 @@ export const getFAQs = async (req, res, next) => {
     try {
         const { propertyId, isGlobal, category, search, page = 1, limit = 10 } = req.query;
         
+        // Debug logging
+        console.log('🔍 getFAQs Debug Info:');
+        console.log('  - req.user:', req.user ? { id: req.user.id, role: req.user.role } : 'null');
+        console.log('  - User role:', req.user?.role);
+        console.log('  - Is admin:', req.user?.role === 'admin' || req.user?.role === 'rootadmin');
+        
         // Build query
         const query = {};
         
@@ -15,6 +21,9 @@ export const getFAQs = async (req, res, next) => {
         // Admins should see all FAQs (both active and inactive) for management
         if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'rootadmin')) {
             query.isActive = true;
+            console.log('  - Filtering by isActive=true (non-admin user)');
+        } else {
+            console.log('  - Showing all FAQs (admin user)');
         }
         
         if (propertyId) {
@@ -43,6 +52,9 @@ export const getFAQs = async (req, res, next) => {
         // Calculate pagination
         const skip = (parseInt(page) - 1) * parseInt(limit);
         
+        console.log('  - Final query:', JSON.stringify(query, null, 2));
+        console.log('  - Pagination: skip=', skip, 'limit=', parseInt(limit));
+        
         // Get FAQs with pagination
         const faqs = await FAQ.find(query)
             .populate('propertyId', 'name city state')
@@ -51,8 +63,12 @@ export const getFAQs = async (req, res, next) => {
             .skip(skip)
             .limit(parseInt(limit));
         
+        console.log('  - Found FAQs:', faqs.length);
+        console.log('  - FAQ statuses:', faqs.map(f => ({ id: f._id, isActive: f.isActive, question: f.question.substring(0, 20) + '...' })));
+        
         // Get total count for pagination
         const total = await FAQ.countDocuments(query);
+        console.log('  - Total count:', total);
         
         res.status(200).json({
             success: true,
@@ -159,13 +175,21 @@ export const updateFAQ = async (req, res, next) => {
         const { id } = req.params;
         const { question, answer, category, propertyId, isGlobal, tags, priority, isActive } = req.body;
         
+        console.log('🔍 updateFAQ Debug Info:');
+        console.log('  - FAQ ID:', id);
+        console.log('  - Update data:', { question, isActive, isGlobal, category });
+        console.log('  - req.user:', req.user ? { id: req.user.id, role: req.user.role } : 'null');
+        
         const faq = await FAQ.findById(id);
         if (!faq) {
+            console.log('  - FAQ not found in database');
             return res.status(404).json({
                 success: false,
                 message: 'FAQ not found'
             });
         }
+        
+        console.log('  - Found FAQ:', { id: faq._id, isActive: faq.isActive, question: faq.question.substring(0, 20) + '...' });
         
         // Validate property exists if propertyId provided
         if (propertyId) {
@@ -179,6 +203,7 @@ export const updateFAQ = async (req, res, next) => {
         }
         
         // Update fields
+        console.log('  - Updating fields...');
         if (question) faq.question = question;
         if (answer) faq.answer = answer;
         if (category) faq.category = category;
@@ -188,7 +213,9 @@ export const updateFAQ = async (req, res, next) => {
         if (priority !== undefined) faq.priority = priority;
         if (isActive !== undefined) faq.isActive = isActive;
         
+        console.log('  - Before save - FAQ isActive:', faq.isActive);
         await faq.save();
+        console.log('  - After save - FAQ isActive:', faq.isActive);
         
         // Populate the updated FAQ
         await faq.populate([
@@ -196,6 +223,7 @@ export const updateFAQ = async (req, res, next) => {
             { path: 'createdBy', select: 'username' }
         ]);
         
+        console.log('  - Sending response - FAQ isActive:', faq.isActive);
         res.status(200).json({
             success: true,
             message: 'FAQ updated successfully',

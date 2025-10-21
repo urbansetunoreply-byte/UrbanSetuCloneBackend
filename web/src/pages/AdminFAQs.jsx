@@ -28,14 +28,46 @@ const AdminFAQs = () => {
   });
 
   const [propertySearch, setPropertySearch] = useState('');
+  const [authWarning, setAuthWarning] = useState(false);
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com';
 
+  // Check authentication status
+  const checkAuthStatus = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/verify`, {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Authentication successful:', data.username, data.role);
+        setAuthWarning(false);
+        return true;
+      } else {
+        console.warn('⚠️ Authentication failed:', response.status);
+        setAuthWarning(true);
+        return false;
+      }
+    } catch (error) {
+      console.error('❌ Auth check error:', error);
+      return false;
+    }
+  };
+
   // Separate useEffect for initial load and static data
   useEffect(() => {
-    fetchFAQs();
-    fetchProperties();
-    fetchCategories();
+    const initializeData = async () => {
+      const isAuthenticated = await checkAuthStatus();
+      if (!isAuthenticated) {
+        console.warn('⚠️ User not authenticated - FAQ filtering may be affected');
+      }
+      fetchFAQs();
+      fetchProperties();
+      fetchCategories();
+    };
+    
+    initializeData();
   }, []);
 
   // Debounced search effect
@@ -104,6 +136,14 @@ const AdminFAQs = () => {
         console.log('FAQ count:', data.data.length);
         console.log('Active FAQs:', data.data.filter(faq => faq.isActive === true).length);
         console.log('Inactive FAQs:', data.data.filter(faq => faq.isActive === false).length);
+        
+        // Check if we're getting filtered results (indicates auth issue)
+        if (data.data.length > 0 && data.data.every(faq => faq.isActive === true)) {
+          console.warn('⚠️ All FAQs are active - this might indicate authentication issue');
+          console.warn('⚠️ Backend might be filtering out inactive FAQs due to auth failure');
+          console.warn('⚠️ This is a known issue - backend changes need to be deployed');
+        }
+        
         setFaqs(data.data);
         setPagination(data.pagination);
       }
@@ -299,6 +339,18 @@ const AdminFAQs = () => {
               <p className="text-gray-600 text-sm sm:text-base">
                 Manage property-specific and global FAQs
               </p>
+              {authWarning && (
+                <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <p className="text-yellow-800 text-sm">
+                    ⚠️ Authentication issue detected. Inactive FAQs may not be visible. Please refresh the page or log in again.
+                  </p>
+                </div>
+              )}
+              <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-blue-800 text-sm">
+                  ℹ️ <strong>Note:</strong> Backend changes are needed to properly show inactive FAQs. Currently, inactive FAQs are filtered out by the server.
+                </p>
+              </div>
             </div>
             <button
               onClick={handleCreate}
