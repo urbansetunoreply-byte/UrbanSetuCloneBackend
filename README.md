@@ -180,9 +180,9 @@ mern-estate/
 
 ## Contributing
 
-1. Eperience tge reality of realestate and encouage us 
+1. Experience the reality of realestate and encouage us 
 
 ## License
 
 Copyright © 2025 UrbanSetu.
-All rights reserved. No part of this software may be copied, modified, or distributed without express permission.
+All rights reserved. No part of this software may be modified, or distributed without express permission.
