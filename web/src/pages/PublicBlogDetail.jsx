@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { FaCalendar, FaUser, FaEye, FaHeart, FaTag, FaArrowLeft, FaShare, FaComment, FaHome } from 'react-icons/fa';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import { Navigation } from 'swiper/modules';
+import { FaCalendar, FaUser, FaEye, FaHeart, FaTag, FaArrowLeft, FaShare, FaComment, FaHome, FaExpand, FaTimes } from 'react-icons/fa';
 
 const PublicBlogDetail = () => {
   const { slug } = useParams();
@@ -12,6 +16,10 @@ const PublicBlogDetail = () => {
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState([]);
   const [showComments, setShowComments] = useState(false);
+  const [showImagePreview, setShowImagePreview] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [showVideoPreview, setShowVideoPreview] = useState(false);
+  const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
   const textareaRef = useRef(null);
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com';
@@ -142,6 +150,11 @@ const PublicBlogDetail = () => {
     });
   };
 
+  const handleImageClick = (index) => {
+    setSelectedImageIndex(index);
+    setShowImagePreview(true);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-orange-50 flex items-center justify-center">
@@ -202,17 +215,103 @@ const PublicBlogDetail = () => {
 
         {/* Enhanced Blog Article */}
         <article className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300">
-          {/* Enhanced Thumbnail */}
-          {blog.thumbnail && (
-            <div className="relative overflow-hidden">
-              <img
-                src={blog.thumbnail}
-                alt={blog.title}
-                className="w-full h-48 sm:h-64 md:h-96 object-cover transition-transform duration-300 hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-            </div>
-          )}
+          {/* Enhanced Media Gallery */}
+          <div className="relative">
+            <Swiper
+              modules={[Navigation]}
+              navigation={true}
+              className="h-48 sm:h-64 md:h-96"
+              onSlideChange={(swiper) => {
+                setSelectedImageIndex(swiper.activeIndex);
+              }}
+            >
+              {(() => {
+                const images = blog.imageUrls || [];
+                const videos = blog.videoUrls || [];
+                const mediaItems = [
+                  ...images.map((u) => ({ type: 'image', url: u })),
+                  ...videos.map((u, vi) => ({ type: 'video', url: u, vIndex: vi })),
+                ];
+                return mediaItems.length > 0 ? mediaItems.map((item, index) => (
+                  <SwiperSlide key={index}>
+                    <div className="relative group">
+                      {item.type === 'image' ? (
+                        <img
+                          src={item.url}
+                          alt={`${blog.title} - Image ${index + 1}`}
+                          className="w-full h-48 sm:h-64 md:h-96 object-cover transition-transform duration-200 group-hover:scale-105"
+                          onError={(e) => {
+                            e.target.src = "https://via.placeholder.com/800x600?text=Image+Not+Available";
+                            e.target.className = "w-full h-48 sm:h-64 md:h-96 object-cover opacity-50";
+                          }}
+                        />
+                      ) : (
+                        <video
+                          src={item.url}
+                          className="w-full h-48 sm:h-64 md:h-96 object-cover bg-black"
+                          onError={(e) => {
+                            e.target.poster = "https://via.placeholder.com/800x600?text=Video+Not+Available";
+                          }}
+                          muted
+                          playsInline
+                        />
+                      )}
+                      {/* Media type badge */}
+                      <div className="absolute top-2 right-2">
+                        <span className="bg-black bg-opacity-60 text-white text-[10px] sm:text-xs px-2 py-1 rounded-md tracking-wide">
+                          {item.type === 'image' ? 'Image' : 'Video'}
+                        </span>
+                      </div>
+                      {/* Expand Button Overlay */}
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
+                        <div className="bg-white bg-opacity-90 rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                          <FaExpand className="text-gray-700" />
+                        </div>
+                      </div>
+                      {/* Click to expand text */}
+                      <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        Click to expand
+                      </div>
+                      {/* Invisible clickable overlay */}
+                      <button
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (item.type === 'image') {
+                            handleImageClick(index);
+                          } else {
+                            setSelectedVideoIndex(item.vIndex || 0);
+                            setShowVideoPreview(true);
+                          }
+                        }}
+                        onTouchEnd={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (item.type === 'image') {
+                            handleImageClick(index);
+                          } else {
+                            setSelectedVideoIndex(item.vIndex || 0);
+                            setShowVideoPreview(true);
+                          }
+                        }}
+                        aria-label={`Expand ${item.type} ${index + 1}`}
+                      />
+                    </div>
+                  </SwiperSlide>
+                )) : (
+                <SwiperSlide>
+                  <div className="w-full h-48 sm:h-64 md:h-96 bg-gray-200 flex items-center justify-center">
+                    <div className="text-center text-gray-500">
+                      <div className="text-6xl mb-4">📝</div>
+                      <p className="text-lg">No media available</p>
+                    </div>
+                  </div>
+                </SwiperSlide>
+              )
+              })()}
+            </Swiper>
+          </div>
 
           <div className="p-4 sm:p-6 lg:p-8">
             {/* Enhanced Category */}
@@ -428,6 +527,57 @@ const PublicBlogDetail = () => {
                   </div>
                 </article>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Image Preview Modal */}
+        {showImagePreview && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="relative max-w-4xl max-h-full">
+              <button
+                onClick={() => setShowImagePreview(false)}
+                className="absolute top-4 right-4 z-10 bg-white bg-opacity-20 text-white rounded-full p-2 hover:bg-opacity-30 transition-all duration-200"
+              >
+                <FaTimes className="text-xl" />
+              </button>
+              <img
+                src={(() => {
+                  const images = blog.imageUrls || [];
+                  return images[selectedImageIndex] || '';
+                })()}
+                alt={`${blog.title} - Image ${selectedImageIndex + 1}`}
+                className="max-w-full max-h-full object-contain rounded-lg"
+                onError={(e) => {
+                  e.target.src = "https://via.placeholder.com/800x600?text=Image+Not+Available";
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Video Preview Modal */}
+        {showVideoPreview && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="relative max-w-4xl max-h-full w-full">
+              <button
+                onClick={() => setShowVideoPreview(false)}
+                className="absolute top-4 right-4 z-10 bg-white bg-opacity-20 text-white rounded-full p-2 hover:bg-opacity-30 transition-all duration-200"
+              >
+                <FaTimes className="text-xl" />
+              </button>
+              <video
+                src={(() => {
+                  const videos = blog.videoUrls || [];
+                  return videos[selectedVideoIndex] || '';
+                })()}
+                controls
+                autoPlay
+                className="w-full h-auto max-h-full rounded-lg"
+                onError={(e) => {
+                  e.target.poster = "https://via.placeholder.com/800x600?text=Video+Not+Available";
+                }}
+              />
             </div>
           </div>
         )}

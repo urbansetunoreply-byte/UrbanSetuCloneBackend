@@ -32,10 +32,13 @@ export const getBlogs = async (req, res, next) => {
         
         if (propertyId) {
             if (propertyId === 'null') {
-                // Filter for global blogs (no propertyId)
-                query.propertyId = { $exists: false };
+                // Filter for global blogs (no propertyId or propertyId is null)
+                query.$or = [
+                    { propertyId: { $exists: false } },
+                    { propertyId: null }
+                ];
             } else if (propertyId === 'exists') {
-                // Filter for property-specific blogs (has propertyId)
+                // Filter for property-specific blogs (has propertyId and not null)
                 query.propertyId = { $exists: true, $ne: null };
             } else {
                 // Filter for specific property

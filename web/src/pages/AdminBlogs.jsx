@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaGlobe, FaHome, FaEye, FaEyeSlash, FaImage, FaTags, FaTimes, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaGlobe, FaHome, FaEye, FaEyeSlash, FaImage, FaTags, FaTimes, FaExternalLinkAlt, FaVideo } from 'react-icons/fa';
+import BlogEditModal from '../components/BlogEditModal';
 
 const AdminBlogs = () => {
   const navigate = useNavigate();
@@ -23,6 +24,8 @@ const AdminBlogs = () => {
     content: '',
     excerpt: '',
     thumbnail: '',
+    imageUrls: [],
+    videoUrls: [],
     propertyId: '',
     tags: [],
     category: 'Real Estate Tips',
@@ -302,6 +305,50 @@ const AdminBlogs = () => {
         setFormData(prev => ({ ...prev, thumbnail: e.target.result }));
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleMediaUpload = async (e, type) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    // For now, we'll use FileReader for preview. In production, upload to Cloudinary
+    const uploadPromises = files.map(file => {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          resolve(e.target.result);
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    const results = await Promise.all(uploadPromises);
+
+    if (type === 'image') {
+      setFormData(prev => ({ 
+        ...prev, 
+        imageUrls: [...(prev.imageUrls || []), ...results] 
+      }));
+    } else {
+      setFormData(prev => ({ 
+        ...prev, 
+        videoUrls: [...(prev.videoUrls || []), ...results] 
+      }));
+    }
+  };
+
+  const removeMedia = (index, type) => {
+    if (type === 'image') {
+      setFormData(prev => ({
+        ...prev,
+        imageUrls: (prev.imageUrls || []).filter((_, i) => i !== index)
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        videoUrls: (prev.videoUrls || []).filter((_, i) => i !== index)
+      }));
     }
   };
 
@@ -663,223 +710,19 @@ const AdminBlogs = () => {
           )}
         </div>
 
-        {/* Enhanced Modal */}
-        {showModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-y-auto transform animate-slideDown">
-              <div className="sticky top-0 bg-white border-b border-gray-200 p-4 sm:p-6 rounded-t-xl">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-                    {editingBlog ? '✏️ Edit Blog' : '📝 Create Blog'}
-                  </h2>
-                  <button
-                    onClick={() => setShowModal(false)}
-                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200"
-                  >
-                    <FaTimes className="text-xl" />
-                  </button>
-                </div>
-              </div>
-              
-              <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="lg:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">📝 Title *</label>
-                    <input
-                      type="text"
-                      value={formData.title}
-                      onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-300"
-                      placeholder="Enter blog title..."
-                      required
-                    />
-                  </div>
-
-                  <div className="lg:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">📄 Excerpt</label>
-                    <textarea
-                      value={formData.excerpt}
-                      onChange={(e) => setFormData(prev => ({ ...prev, excerpt: e.target.value }))}
-                      rows={3}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-300"
-                      placeholder="Brief description of the blog post..."
-                    />
-                  </div>
-
-                  <div className="lg:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">📖 Content *</label>
-                    <textarea
-                      value={formData.content}
-                      onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-                      rows={8}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-300"
-                      placeholder="Write your blog content here..."
-                      required
-                    />
-                  </div>
-
-                  <div className="lg:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">🖼️ Thumbnail Image</label>
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                        id="image-upload"
-                      />
-                      <label
-                        htmlFor="image-upload"
-                        className="flex items-center px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all duration-300 w-full sm:w-auto justify-center"
-                      >
-                        <FaImage className="mr-2 text-blue-600" />
-                        <span className="font-medium">Upload Image</span>
-                      </label>
-                      {formData.thumbnail && (
-                        <div className="relative">
-                          <img 
-                            src={formData.thumbnail} 
-                            alt="Thumbnail preview"
-                            className="w-20 h-20 rounded-xl object-cover shadow-lg"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setFormData(prev => ({ ...prev, thumbnail: '' }))}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors duration-200"
-                          >
-                            <FaTimes />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">🏷️ Category</label>
-                    <select
-                      value={formData.category}
-                      onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-300"
-                    >
-                      {categories.map(category => (
-                        <option key={category} value={category}>{category}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">🏠 Property (Optional)</label>
-                    <input
-                      type="text"
-                      value={propertySearch}
-                      onChange={(e) => setPropertySearch(e.target.value)}
-                      placeholder="Search properties by name, city, or state..."
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-300 mb-2"
-                    />
-                    <select
-                      value={formData.propertyId}
-                      onChange={(e) => setFormData(prev => ({ ...prev, propertyId: e.target.value }))}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-300"
-                    >
-                      <option value="">Select Property (Leave empty for global blog)</option>
-                      {properties
-                        .filter((property) => {
-                          const searchTerm = propertySearch.trim().toLowerCase();
-                          if (!searchTerm) return true;
-                          
-                          const name = (property.name || "").toLowerCase();
-                          const city = (property.city || "").toLowerCase();
-                          const state = (property.state || "").toLowerCase();
-                          
-                          return (
-                            name.includes(searchTerm) ||
-                            city.includes(searchTerm) ||
-                            state.includes(searchTerm)
-                          );
-                        })
-                        .map(property => (
-                          <option key={property._id} value={property._id}>
-                            {property.name} - {property.city}, {property.state}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-
-                  <div className="lg:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">🏷️ Tags</label>
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {formData.tags.map((tag, index) => (
-                        <span
-                          key={index}
-                          className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border border-blue-300"
-                        >
-                          <FaTags className="mr-1 text-xs" />
-                          {tag}
-                          <button
-                            type="button"
-                            onClick={() => removeTag(tag)}
-                            className="ml-2 text-blue-600 hover:text-blue-800 hover:bg-blue-300 rounded-full w-4 h-4 flex items-center justify-center transition-all duration-200"
-                          >
-                            <FaTimes className="text-xs" />
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <input
-                        type="text"
-                        value={tagInput}
-                        onChange={(e) => setTagInput(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                        placeholder="Add a tag..."
-                        className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-300"
-                      />
-                      <button
-                        type="button"
-                        onClick={addTag}
-                        className="px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
-                      >
-                        <FaTags className="mr-2" />
-                        Add Tag
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="lg:col-span-2">
-                    <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200">
-                      <label className="flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={formData.published}
-                          onChange={(e) => setFormData(prev => ({ ...prev, published: e.target.checked }))}
-                          className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                        />
-                        <span className="ml-3 text-sm font-medium text-gray-700">
-                          📢 Publish immediately
-                        </span>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="lg:col-span-2 flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200">
-                    <button
-                      type="button"
-                      onClick={() => setShowModal(false)}
-                      className="w-full sm:w-auto px-6 py-3 border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 font-medium"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
-                    >
-                      {editingBlog ? '✏️ Update Blog' : '📝 Create Blog'}
-                    </button>
-                  </div>
-              </form>
-            </div>
-          </div>
-        )}
+        {/* Shared Blog Edit Modal */}
+        <BlogEditModal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          onSubmit={handleSubmit}
+          formData={formData}
+          setFormData={setFormData}
+          properties={properties}
+          categories={categories}
+          propertySearch={propertySearch}
+          setPropertySearch={setPropertySearch}
+          isEdit={!!editingBlog}
+        />
       </div>
     </div>
   );

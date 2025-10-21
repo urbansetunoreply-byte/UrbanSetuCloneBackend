@@ -2276,25 +2276,25 @@ export default function Listing() {
                               )}
                             </div>
                           )}
-                          <div className="flex items-center justify-between text-sm text-gray-500">
-                            <div className="flex items-center space-x-4">
-                              <div className="flex items-center space-x-1">
-                                <FaUser />
-                                <span>{blog.author?.username || 'UrbanSetu Team'}</span>
-                              </div>
+                          <div className="flex flex-col space-y-2 text-sm text-gray-500">
+                            <div className="flex items-center space-x-1">
+                              <FaUser />
+                              <span>{blog.author?.username || 'UrbanSetu Team'}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
                               <div className="flex items-center space-x-1">
                                 <FaCalendar />
                                 <span>{new Date(blog.publishedAt || blog.createdAt).toLocaleDateString()}</span>
                               </div>
-                            </div>
-                            <div className="flex items-center space-x-3">
-                              <div className="flex items-center space-x-1">
-                                <FaEye />
-                                <span>{blog.views || 0}</span>
-                              </div>
-                              <div className="flex items-center space-x-1">
-                                <FaHeart />
-                                <span>{blog.likes || 0}</span>
+                              <div className="flex items-center space-x-3">
+                                <div className="flex items-center space-x-1">
+                                  <FaEye />
+                                  <span>{blog.views || 0}</span>
+                                </div>
+                                <div className="flex items-center space-x-1">
+                                  <FaHeart />
+                                  <span>{blog.likes || 0}</span>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -2327,7 +2327,7 @@ export default function Listing() {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Link
-                  to={isAdmin ? "/admin/blogs" : "/blogs"}
+                  to={isAdmin ? "/admin/blogs" : currentUser ? "/user/blogs" : "/blogs"}
                   className="bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg p-4 text-center transition-colors group"
                 >
                   <FaBookOpen className="text-blue-600 text-2xl mx-auto mb-2 group-hover:scale-110 transition-transform" />
@@ -2335,7 +2335,7 @@ export default function Listing() {
                   <p className="text-sm text-gray-600">{isAdmin ? "Manage blog posts" : "Read latest insights and tips"}</p>
                 </Link>
                 <Link
-                  to={isAdmin ? "/admin/faqs" : "/faqs"}
+                  to={isAdmin ? "/admin/faqs" : currentUser ? "/user/faqs" : "/faqs"}
                   className="bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-lg p-4 text-center transition-colors group"
                 >
                   <FaQuestionCircle className="text-orange-600 text-2xl mx-auto mb-2 group-hover:scale-110 transition-transform" />
@@ -2343,7 +2343,7 @@ export default function Listing() {
                   <p className="text-sm text-gray-600">{isAdmin ? "Manage FAQ content" : "Find answers to common questions"}</p>
                 </Link>
                 <Link
-                  to={isAdmin ? "/admin/about" : "/about"}
+                  to={isAdmin ? "/admin/about" : currentUser ? "/user/about" : "/about"}
                   className="bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg p-4 text-center transition-colors group"
                 >
                   <FaInfoCircle className="text-green-600 text-2xl mx-auto mb-2 group-hover:scale-110 transition-transform" />

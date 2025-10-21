@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { FaCalendar, FaUser, FaEye, FaHeart, FaTag, FaArrowLeft, FaShare, FaComment, FaEdit, FaTrash, FaCheck, FaTimes, FaImage, FaTags, FaGlobe, FaHome } from 'react-icons/fa';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import { Navigation } from 'swiper/modules';
+import { FaCalendar, FaUser, FaEye, FaHeart, FaTag, FaArrowLeft, FaShare, FaComment, FaEdit, FaTrash, FaCheck, FaTimes, FaImage, FaTags, FaGlobe, FaHome, FaExpand, FaVideo } from 'react-icons/fa';
+import BlogEditModal from '../components/BlogEditModal';
 
 const AdminBlogDetail = () => {
   const { slug } = useParams();
@@ -15,11 +20,17 @@ const AdminBlogDetail = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showUnpublishConfirm, setShowUnpublishConfirm] = useState(false);
+  const [showImagePreview, setShowImagePreview] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [showVideoPreview, setShowVideoPreview] = useState(false);
+  const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
   const [formData, setFormData] = useState({
     title: '',
     content: '',
     excerpt: '',
     thumbnail: '',
+    imageUrls: [],
+    videoUrls: [],
     propertyId: '',
     tags: [],
     category: 'Real Estate Tips',
@@ -195,6 +206,8 @@ const AdminBlogDetail = () => {
       content: blog.content,
       excerpt: blog.excerpt,
       thumbnail: blog.thumbnail,
+      imageUrls: blog.imageUrls || [],
+      videoUrls: blog.videoUrls || [],
       propertyId: blog.propertyId?._id || '',
       tags: blog.tags || [],
       category: blog.category,
@@ -255,6 +268,7 @@ const AdminBlogDetail = () => {
     }
   };
 
+
   const handleShare = async () => {
     if (navigator.share) {
       try {
@@ -278,6 +292,11 @@ const AdminBlogDetail = () => {
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  const handleImageClick = (index) => {
+    setSelectedImageIndex(index);
+    setShowImagePreview(true);
   };
 
   if (loading) {
@@ -331,17 +350,103 @@ const AdminBlogDetail = () => {
 
         {/* Enhanced Blog Article */}
         <article className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300">
-          {/* Enhanced Thumbnail */}
-          {blog.thumbnail && (
-            <div className="relative overflow-hidden">
-              <img
-                src={blog.thumbnail}
-                alt={blog.title}
-                className="w-full h-48 sm:h-64 md:h-96 object-cover transition-transform duration-300 hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-            </div>
-          )}
+          {/* Enhanced Media Gallery */}
+          <div className="relative">
+            <Swiper
+              modules={[Navigation]}
+              navigation={true}
+              className="h-48 sm:h-64 md:h-96"
+              onSlideChange={(swiper) => {
+                setSelectedImageIndex(swiper.activeIndex);
+              }}
+            >
+              {(() => {
+                const images = blog.imageUrls || [];
+                const videos = blog.videoUrls || [];
+                const mediaItems = [
+                  ...images.map((u) => ({ type: 'image', url: u })),
+                  ...videos.map((u, vi) => ({ type: 'video', url: u, vIndex: vi })),
+                ];
+                return mediaItems.length > 0 ? mediaItems.map((item, index) => (
+                  <SwiperSlide key={index}>
+                    <div className="relative group">
+                      {item.type === 'image' ? (
+                        <img
+                          src={item.url}
+                          alt={`${blog.title} - Image ${index + 1}`}
+                          className="w-full h-48 sm:h-64 md:h-96 object-cover transition-transform duration-200 group-hover:scale-105"
+                          onError={(e) => {
+                            e.target.src = "https://via.placeholder.com/800x600?text=Image+Not+Available";
+                            e.target.className = "w-full h-48 sm:h-64 md:h-96 object-cover opacity-50";
+                          }}
+                        />
+                      ) : (
+                        <video
+                          src={item.url}
+                          className="w-full h-48 sm:h-64 md:h-96 object-cover bg-black"
+                          onError={(e) => {
+                            e.target.poster = "https://via.placeholder.com/800x600?text=Video+Not+Available";
+                          }}
+                          muted
+                          playsInline
+                        />
+                      )}
+                      {/* Media type badge */}
+                      <div className="absolute top-2 right-2">
+                        <span className="bg-black bg-opacity-60 text-white text-[10px] sm:text-xs px-2 py-1 rounded-md tracking-wide">
+                          {item.type === 'image' ? 'Image' : 'Video'}
+                        </span>
+                      </div>
+                      {/* Expand Button Overlay */}
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
+                        <div className="bg-white bg-opacity-90 rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                          <FaExpand className="text-gray-700" />
+                        </div>
+                      </div>
+                      {/* Click to expand text */}
+                      <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        Click to expand
+                      </div>
+                      {/* Invisible clickable overlay */}
+                      <button
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (item.type === 'image') {
+                            handleImageClick(index);
+                          } else {
+                            setSelectedVideoIndex(item.vIndex || 0);
+                            setShowVideoPreview(true);
+                          }
+                        }}
+                        onTouchEnd={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (item.type === 'image') {
+                            handleImageClick(index);
+                          } else {
+                            setSelectedVideoIndex(item.vIndex || 0);
+                            setShowVideoPreview(true);
+                          }
+                        }}
+                        aria-label={`Expand ${item.type} ${index + 1}`}
+                      />
+                    </div>
+                  </SwiperSlide>
+                )) : (
+                <SwiperSlide>
+                  <div className="w-full h-48 sm:h-64 md:h-96 bg-gray-200 flex items-center justify-center">
+                    <div className="text-center text-gray-500">
+                      <div className="text-6xl mb-4">📝</div>
+                      <p className="text-lg">No media available</p>
+                    </div>
+                  </div>
+                </SwiperSlide>
+              )
+              })()}
+            </Swiper>
+          </div>
 
           <div className="p-4 sm:p-6 lg:p-8">
             {/* Admin Actions */}
@@ -636,145 +741,19 @@ const AdminBlogDetail = () => {
           </div>
         )}
 
-        {/* Edit Modal */}
-        {showEditModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-y-auto transform animate-slideDown">
-              <div className="sticky top-0 bg-white border-b border-gray-200 p-4 sm:p-6 rounded-t-xl">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-                    ✏️ Edit Blog
-                  </h2>
-                  <button
-                    onClick={() => setShowEditModal(false)}
-                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200"
-                  >
-                    <FaTimes className="text-xl" />
-                  </button>
-                </div>
-              </div>
-              
-              <form onSubmit={handleEditSubmit} className="p-4 sm:p-6 space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">📝 Title *</label>
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-300"
-                    placeholder="Enter blog title..."
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">📄 Content *</label>
-                  <textarea
-                    value={formData.content}
-                    onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-                    rows={8}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-300"
-                    placeholder="Enter blog content..."
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">📋 Excerpt</label>
-                  <textarea
-                    value={formData.excerpt}
-                    onChange={(e) => setFormData(prev => ({ ...prev, excerpt: e.target.value }))}
-                    rows={3}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-300"
-                    placeholder="Enter blog excerpt..."
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">🏷️ Category</label>
-                    <select
-                      value={formData.category}
-                      onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-300"
-                    >
-                      {categories.map(category => (
-                        <option key={category} value={category}>{category}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">🏠 Property (Optional)</label>
-                    <input
-                      type="text"
-                      value={propertySearch}
-                      onChange={(e) => setPropertySearch(e.target.value)}
-                      placeholder="Search properties by name, city, or state..."
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-300 mb-2"
-                    />
-                    <select
-                      value={formData.propertyId}
-                      onChange={(e) => setFormData(prev => ({ ...prev, propertyId: e.target.value }))}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-300"
-                    >
-                      <option value="">Select Property (Leave empty for global blog)</option>
-                      {properties
-                        .filter((property) => {
-                          const searchTerm = propertySearch.trim().toLowerCase();
-                          if (!searchTerm) return true;
-                          
-                          const name = (property.name || "").toLowerCase();
-                          const city = (property.city || "").toLowerCase();
-                          const state = (property.state || "").toLowerCase();
-                          
-                          return (
-                            name.includes(searchTerm) ||
-                            city.includes(searchTerm) ||
-                            state.includes(searchTerm)
-                          );
-                        })
-                        .map(property => (
-                          <option key={property._id} value={property._id}>
-                            {property.name} - {property.city}, {property.state}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200">
-                  <label className="flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formData.published}
-                      onChange={(e) => setFormData(prev => ({ ...prev, published: e.target.checked }))}
-                      className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                    />
-                    <span className="ml-3 text-sm font-medium text-gray-700">
-                      🚀 Published
-                    </span>
-                  </label>
-                </div>
-
-                <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200">
-                  <button
-                    type="button"
-                    onClick={() => setShowEditModal(false)}
-                    className="w-full sm:w-auto px-6 py-3 border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 font-medium"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
-                  >
-                    ✏️ Update Blog
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
+        {/* Shared Blog Edit Modal */}
+        <BlogEditModal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          onSubmit={handleEditSubmit}
+          formData={formData}
+          setFormData={setFormData}
+          properties={properties}
+          categories={categories}
+          propertySearch={propertySearch}
+          setPropertySearch={setPropertySearch}
+          isEdit={true}
+        />
 
         {/* Unpublish Confirmation Modal */}
         {showUnpublishConfirm && (
@@ -805,6 +784,57 @@ const AdminBlogDetail = () => {
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Image Preview Modal */}
+        {showImagePreview && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="relative max-w-4xl max-h-full">
+              <button
+                onClick={() => setShowImagePreview(false)}
+                className="absolute top-4 right-4 z-10 bg-white bg-opacity-20 text-white rounded-full p-2 hover:bg-opacity-30 transition-all duration-200"
+              >
+                <FaTimes className="text-xl" />
+              </button>
+              <img
+                src={(() => {
+                  const images = blog.imageUrls || [];
+                  return images[selectedImageIndex] || '';
+                })()}
+                alt={`${blog.title} - Image ${selectedImageIndex + 1}`}
+                className="max-w-full max-h-full object-contain rounded-lg"
+                onError={(e) => {
+                  e.target.src = "https://via.placeholder.com/800x600?text=Image+Not+Available";
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Video Preview Modal */}
+        {showVideoPreview && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="relative max-w-4xl max-h-full w-full">
+              <button
+                onClick={() => setShowVideoPreview(false)}
+                className="absolute top-4 right-4 z-10 bg-white bg-opacity-20 text-white rounded-full p-2 hover:bg-opacity-30 transition-all duration-200"
+              >
+                <FaTimes className="text-xl" />
+              </button>
+              <video
+                src={(() => {
+                  const videos = blog.videoUrls || [];
+                  return videos[selectedVideoIndex] || '';
+                })()}
+                controls
+                autoPlay
+                className="w-full h-auto max-h-full rounded-lg"
+                onError={(e) => {
+                  e.target.poster = "https://via.placeholder.com/800x600?text=Video+Not+Available";
+                }}
+              />
             </div>
           </div>
         )}
