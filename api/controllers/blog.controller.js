@@ -346,9 +346,25 @@ export const getBlogCategories = async (req, res, next) => {
     try {
         const categories = await Blog.distinct('category', { published: true });
         
+        // If no categories exist, provide default ones
+        const defaultCategories = [
+            'Real Estate Tips',
+            'Market Updates', 
+            'Investment Guide',
+            'Home Buying',
+            'Home Selling',
+            'Property Management',
+            'Legal',
+            'Finance',
+            'Rent',
+            'Investment'
+        ];
+        
+        const finalCategories = categories.length > 0 ? categories : defaultCategories;
+        
         res.status(200).json({
             success: true,
-            data: categories
+            data: finalCategories
         });
     } catch (error) {
         next(error);

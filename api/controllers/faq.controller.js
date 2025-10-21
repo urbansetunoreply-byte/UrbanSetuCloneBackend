@@ -253,9 +253,24 @@ export const getFAQCategories = async (req, res, next) => {
     try {
         const categories = await FAQ.distinct('category', { isActive: true });
         
+        // If no categories exist, provide default ones
+        const defaultCategories = [
+            'General',
+            'Property Search',
+            'Buying Process',
+            'Selling Process',
+            'Investment',
+            'Legal',
+            'Finance',
+            'Property Management',
+            'Technical Support'
+        ];
+        
+        const finalCategories = categories.length > 0 ? categories : defaultCategories;
+        
         res.status(200).json({
             success: true,
-            data: categories
+            data: finalCategories
         });
     } catch (error) {
         next(error);
