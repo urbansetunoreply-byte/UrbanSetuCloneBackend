@@ -8,6 +8,26 @@ export const getFAQs = async (req, res, next) => {
     try {
         const { propertyId, isGlobal, category, search, page = 1, limit = 10 } = req.query;
         
+        // Try to authenticate user if not already set
+        if (!req.user) {
+            try {
+                const jwt = await import('jsonwebtoken');
+                const User = (await import('../models/user.model.js')).default;
+                const accessToken = req.cookies.access_token;
+                
+                if (accessToken) {
+                    const decoded = jwt.default.verify(accessToken, process.env.JWT_SECRET);
+                    const user = await User.findById(decoded.id).select('-password');
+                    if (user) {
+                        req.user = user;
+                    }
+                }
+            } catch (error) {
+                // Authentication failed, continue without user
+                req.user = null;
+            }
+        }
+        
         // Debug logging
         console.log('🔍 getFAQs Debug Info:');
         console.log('  - req.user:', req.user ? { id: req.user.id, role: req.user.role } : 'null');
