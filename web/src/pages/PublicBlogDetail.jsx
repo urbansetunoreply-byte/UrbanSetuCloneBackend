@@ -78,10 +78,19 @@ const PublicBlogDetail = () => {
 
   const checkAuthStatus = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
-        credentials: 'include'
-      });
-      setIsLoggedIn(response.ok);
+      // Try to check like status to determine if user is authenticated
+      if (blog) {
+        const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}/like-status`, {
+          credentials: 'include'
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setLiked(data.data.isLiked);
+          setIsLoggedIn(true);
+        } else if (response.status === 401) {
+          setIsLoggedIn(false);
+        }
+      }
     } catch (error) {
       setIsLoggedIn(false);
     }
@@ -96,18 +105,17 @@ const PublicBlogDetail = () => {
       if (response.ok) {
         const data = await response.json();
         setLiked(data.data.isLiked);
+        setIsLoggedIn(true);
+      } else if (response.status === 401) {
+        setIsLoggedIn(false);
       }
     } catch (error) {
       console.error('Error checking like status:', error);
+      setIsLoggedIn(false);
     }
   };
 
   const handleLike = async () => {
-    if (!isLoggedIn) {
-      alert('Please log in to like this blog');
-      return;
-    }
-
     if (likeLoading) return;
     
     setLikeLoading(true);
@@ -121,9 +129,15 @@ const PublicBlogDetail = () => {
         const data = await response.json();
         setLiked(data.data.isLiked);
         setBlog(prev => ({ ...prev, likes: data.data.likes }));
+        setIsLoggedIn(true); // User is authenticated if like worked
       } else {
-        const errorData = await response.json();
-        alert(errorData.message || 'Error updating like');
+        if (response.status === 401) {
+          alert('Please log in to like this blog');
+          setIsLoggedIn(false);
+        } else {
+          const errorData = await response.json();
+          alert(errorData.message || 'Error updating like');
+        }
       }
     } catch (error) {
       console.error('Error liking blog:', error);

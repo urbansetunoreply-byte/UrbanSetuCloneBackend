@@ -100,10 +100,17 @@ const PublicFAQs = () => {
 
   const checkAuthStatus = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
-        credentials: 'include'
-      });
-      setIsLoggedIn(response.ok);
+      // Try to check reaction status for the first FAQ to determine if user is authenticated
+      if (faqs.length > 0) {
+        const response = await fetch(`${API_BASE_URL}/api/faqs/${faqs[0]._id}/reaction-status`, {
+          credentials: 'include'
+        });
+        if (response.ok) {
+          setIsLoggedIn(true);
+        } else if (response.status === 401) {
+          setIsLoggedIn(false);
+        }
+      }
     } catch (error) {
       setIsLoggedIn(false);
     }
@@ -132,11 +139,6 @@ const PublicFAQs = () => {
   };
 
   const handleRating = async (faqId, type) => {
-    if (!isLoggedIn) {
-      alert('Please log in to rate this FAQ');
-      return;
-    }
-
     if (reactionLoading[faqId]) return;
 
     setReactionLoading(prev => ({ ...prev, [faqId]: true }));
@@ -168,9 +170,16 @@ const PublicFAQs = () => {
           ...prev,
           [faqId]: data.data.reaction
         }));
+
+        setIsLoggedIn(true); // User is authenticated if reaction worked
       } else {
-        const errorData = await response.json();
-        alert(errorData.message || 'Error rating FAQ');
+        if (response.status === 401) {
+          alert('Please log in to rate this FAQ');
+          setIsLoggedIn(false);
+        } else {
+          const errorData = await response.json();
+          alert(errorData.message || 'Error rating FAQ');
+        }
       }
     } catch (error) {
       console.error('Error rating FAQ:', error);
@@ -290,9 +299,6 @@ const PublicFAQs = () => {
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-500">
                         <span className="bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 px-3 py-1 rounded-full font-medium border border-orange-300">
                           🏷️ {faq.category}
-                        </span>
-                        <span className="flex items-center space-x-1">
-                          <span>👁️ {faq.views} views</span>
                         </span>
                       </div>
                     </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaGlobe, FaHome, FaEye, FaEyeSlash, FaTimes, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaGlobe, FaHome, FaEye, FaEyeSlash, FaTimes, FaExternalLinkAlt, FaThumbsUp, FaThumbsDown } from 'react-icons/fa';
 
 const AdminFAQs = () => {
   const navigate = useNavigate();
@@ -353,6 +353,7 @@ const AdminFAQs = () => {
                       <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                       <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
                       <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Property</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ratings</th>
                       <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                       <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -392,6 +393,18 @@ const AdminFAQs = () => {
                           ) : (
                             <span className="text-gray-400">-</span>
                           )}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-1 text-green-600">
+                              <FaThumbsUp className="text-xs" />
+                              <span className="text-sm font-medium">{faq.helpful || 0}</span>
+                            </div>
+                            <div className="flex items-center space-x-1 text-red-600">
+                              <FaThumbsDown className="text-xs" />
+                              <span className="text-sm font-medium">{faq.notHelpful || 0}</span>
+                            </div>
+                          </div>
                         </td>
                         <td className="px-6 py-4">
                           <button
@@ -511,6 +524,23 @@ const AdminFAQs = () => {
                           {faq.isActive ? <FaEye className="mr-1" /> : <FaEyeSlash className="mr-1" />}
                           {faq.isActive ? 'Active' : 'Inactive'}
                         </button>
+                      </div>
+                    </div>
+                    
+                    {/* Ratings Section */}
+                    <div className="mb-3">
+                      <span className="text-xs text-gray-500 block mb-2">User Ratings</span>
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-1 text-green-600">
+                          <FaThumbsUp className="text-sm" />
+                          <span className="text-sm font-medium">{faq.helpful || 0}</span>
+                          <span className="text-xs text-gray-500">Helpful</span>
+                        </div>
+                        <div className="flex items-center space-x-1 text-red-600">
+                          <FaThumbsDown className="text-sm" />
+                          <span className="text-sm font-medium">{faq.notHelpful || 0}</span>
+                          <span className="text-xs text-gray-500">Not Helpful</span>
+                        </div>
                       </div>
                     </div>
                     
