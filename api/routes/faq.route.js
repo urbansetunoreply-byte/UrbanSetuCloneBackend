@@ -11,11 +11,12 @@ import {
     reactToFAQ
 } from '../controllers/faq.controller.js';
 import { verifyToken } from '../utils/verify.js';
+import { optionalAuth } from '../middleware/optionalAuth.js';
 
 const router = express.Router();
 
-// Public routes
-router.get('/', getFAQs); // GET /api/faqs?propertyId=123&isGlobal=true&category=General
+// Public routes (with optional authentication for admin features)
+router.get('/', optionalAuth, getFAQs); // GET /api/faqs?propertyId=123&isGlobal=true&category=General
 router.get('/categories', getFAQCategories); // GET /api/faqs/categories
 router.get('/:id', getFAQ); // GET /api/faqs/:id
 router.post('/:id/rate', rateFAQ); // POST /api/faqs/:id/rate
