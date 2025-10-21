@@ -80,7 +80,10 @@ const AdminBlogs = () => {
       });
       if (response.ok) {
         const data = await response.json();
+        console.log('Properties fetched:', data.listings);
         setProperties(data.listings || []);
+      } else {
+        console.error('Failed to fetch properties:', response.status);
       }
     } catch (error) {
       console.error('Error fetching properties:', error);
@@ -92,7 +95,10 @@ const AdminBlogs = () => {
       const response = await fetch(`${API_BASE_URL}/api/blogs/categories`);
       if (response.ok) {
         const data = await response.json();
+        console.log('Categories fetched:', data.data);
         setCategories(data.data);
+      } else {
+        console.error('Failed to fetch categories:', response.status);
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -163,11 +169,17 @@ const AdminBlogs = () => {
       });
 
       if (response.ok) {
+        const data = await response.json();
+        alert(editingBlog ? 'Blog updated successfully!' : 'Blog created successfully!');
         setShowModal(false);
         fetchBlogs();
+      } else {
+        const errorData = await response.json();
+        alert(`Error: ${errorData.message || 'Failed to save blog'}`);
       }
     } catch (error) {
       console.error('Error saving blog:', error);
+      alert('Error: Failed to save blog. Please try again.');
     }
   };
 

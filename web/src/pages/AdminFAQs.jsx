@@ -73,10 +73,13 @@ const AdminFAQs = () => {
       });
       if (response.ok) {
         const data = await response.json();
+        console.log('FAQ Properties fetched:', data.listings);
         setProperties(data.listings || []);
+      } else {
+        console.error('Failed to fetch properties for FAQ:', response.status);
       }
     } catch (error) {
-      console.error('Error fetching properties:', error);
+      console.error('Error fetching properties for FAQ:', error);
     }
   };
 
@@ -85,10 +88,13 @@ const AdminFAQs = () => {
       const response = await fetch(`${API_BASE_URL}/api/faqs/categories`);
       if (response.ok) {
         const data = await response.json();
+        console.log('FAQ Categories fetched:', data.data);
         setCategories(data.data);
+      } else {
+        console.error('Failed to fetch FAQ categories:', response.status);
       }
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      console.error('Error fetching FAQ categories:', error);
     }
   };
 
@@ -144,11 +150,17 @@ const AdminFAQs = () => {
       });
 
       if (response.ok) {
+        const data = await response.json();
+        alert(editingFAQ ? 'FAQ updated successfully!' : 'FAQ created successfully!');
         setShowModal(false);
         fetchFAQs();
+      } else {
+        const errorData = await response.json();
+        alert(`Error: ${errorData.message || 'Failed to save FAQ'}`);
       }
     } catch (error) {
       console.error('Error saving FAQ:', error);
+      alert('Error: Failed to save FAQ. Please try again.');
     }
   };
 
