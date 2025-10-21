@@ -53,6 +53,9 @@ export default function Listing() {
   const [expandedFAQ, setExpandedFAQ] = useState(null);
   const [faqLoading, setFaqLoading] = useState(false);
   const [blogLoading, setBlogLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userFAQReactions, setUserFAQReactions] = useState({});
+  const [faqReactionLoading, setFaqReactionLoading] = useState({});
   const [showAssignOwnerModal, setShowAssignOwnerModal] = useState(false);
   const [availableUsers, setAvailableUsers] = useState([]);
   const [assignUserSearch, setAssignUserSearch] = useState("");
@@ -131,6 +134,89 @@ export default function Listing() {
       }
     } catch (error) {
       console.error('Error checking watchlist status:', error);
+    }
+  };
+
+  const checkAuthStatus = async () => {
+    // Use currentUser from Redux store to determine authentication status
+    setIsLoggedIn(!!currentUser);
+  };
+
+  const checkUserFAQReactions = async () => {
+    try {
+      const reactions = {};
+      for (const faq of faqs) {
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/faqs/${faq._id}/reaction-status`, {
+            credentials: 'include'
+          });
+          if (response.ok) {
+            const data = await response.json();
+            reactions[faq._id] = data.data.reaction;
+          }
+        } catch (error) {
+          console.error(`Error checking reaction for FAQ ${faq._id}:`, error);
+        }
+      }
+      setUserFAQReactions(reactions);
+    } catch (error) {
+      console.error('Error checking user FAQ reactions:', error);
+    }
+  };
+
+  const handleFAQReaction = async (faqId, type) => {
+    if (!currentUser) {
+      alert('Please log in to rate this FAQ');
+      return;
+    }
+
+    if (faqReactionLoading[faqId]) return;
+
+    setFaqReactionLoading(prev => ({ ...prev, [faqId]: true }));
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/faqs/${faqId}/react`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ type })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Update FAQ in the list
+        setFaqs(prevFaqs => 
+          prevFaqs.map(faq => 
+            faq._id === faqId 
+              ? { ...faq, helpful: data.data.helpful, notHelpful: data.data.notHelpful }
+              : faq
+          )
+        );
+
+        // Update user reactions
+        setUserFAQReactions(prev => ({
+          ...prev,
+          [faqId]: data.data.reaction
+        }));
+
+        // User is authenticated if reaction worked
+      } else {
+        if (response.status === 401) {
+          alert('Please log in to rate this FAQ');
+          setIsLoggedIn(false);
+        } else {
+          const errorData = await response.json();
+          alert(errorData.message || 'Error rating FAQ');
+        }
+      }
+    } catch (error) {
+      console.error('Error rating FAQ:', error);
+      alert('Error rating FAQ');
+    } finally {
+      setFaqReactionLoading(prev => ({ ...prev, [faqId]: false }));
     }
   };
 
@@ -827,6 +913,18 @@ export default function Listing() {
     };
     fetchFAQs();
   }, [listing?._id]);
+
+  // Update authentication status when currentUser changes
+  useEffect(() => {
+    checkAuthStatus();
+  }, [currentUser]);
+
+  // Check user reactions when logged in and FAQs are loaded
+  useEffect(() => {
+    if (isLoggedIn && faqs.length > 0) {
+      checkUserFAQReactions();
+    }
+  }, [isLoggedIn, faqs]);
 
   // Fetch related blogs for this property
   useEffect(() => {
@@ -2198,9 +2296,44 @@ export default function Listing() {
                         {expandedFAQ === faq._id && (
                           <div className="px-6 pb-4 border-t border-gray-100">
                             <div className="pt-4">
-                              <p className="text-gray-700 leading-relaxed">
+                              <p className="text-gray-700 leading-relaxed mb-4">
                                 {faq.answer}
                               </p>
+                              
+                              {/* FAQ Rating Section */}
+                              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                                <span className="text-sm text-gray-600">Was this helpful?</span>
+                                <div className="flex items-center space-x-2">
+                                  <button
+                                    onClick={() => handleFAQReaction(faq._id, 'like')}
+                                    disabled={faqReactionLoading[faq._id]}
+                                    className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-all duration-200 border text-sm font-medium ${
+                                      userFAQReactions[faq._id] === 'like'
+                                        ? 'text-green-700 bg-green-100 border-green-300'
+                                        : 'text-green-600 hover:text-green-700 bg-green-50 hover:bg-green-100 border-green-200'
+                                    } ${faqReactionLoading[faq._id] ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                  >
+                                    <FaThumbsUp />
+                                    <span>
+                                      {faqReactionLoading[faq._id] ? 'Updating...' : 'Yes'} ({faq.helpful || 0})
+                                    </span>
+                                  </button>
+                                  <button
+                                    onClick={() => handleFAQReaction(faq._id, 'dislike')}
+                                    disabled={faqReactionLoading[faq._id]}
+                                    className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-all duration-200 border text-sm font-medium ${
+                                      userFAQReactions[faq._id] === 'dislike'
+                                        ? 'text-red-700 bg-red-100 border-red-300'
+                                        : 'text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border-red-200'
+                                    } ${faqReactionLoading[faq._id] ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                  >
+                                    <FaThumbsDown />
+                                    <span>
+                                      {faqReactionLoading[faq._id] ? 'Updating...' : 'No'} ({faq.notHelpful || 0})
+                                    </span>
+                                  </button>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         )}

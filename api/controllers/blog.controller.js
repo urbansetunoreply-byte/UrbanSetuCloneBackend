@@ -2,6 +2,106 @@ import Blog from '../models/blog.model.js';
 import Listing from '../models/listing.model.js';
 import User from '../models/user.model.js';
 import BlogLike from '../models/blogLike.model.js';
+import BlogView from '../models/blogView.model.js';
+import crypto from 'crypto';
+
+// Helper function to generate fingerprint for public users
+const generateFingerprint = (req) => {
+    const ip = req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
+    const userAgent = req.get('User-Agent') || '';
+    const combined = `${ip}-${userAgent}`;
+    return crypto.createHash('sha256').update(combined).digest('hex');
+};
+
+// Helper function to handle view counting with role-based logic
+const handleViewCount = async (blogId, req) => {
+    try {
+        const user = req.user;
+        const isAdmin = user && (user.role === 'admin' || user.role === 'rootadmin');
+        
+        // Skip view counting for admins
+        if (isAdmin) {
+            console.log(`Admin view ignored for blog ${blogId}`);
+            return { shouldIncrement: false, reason: 'admin_view' };
+        }
+        
+        const now = new Date();
+        const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        
+        if (user) {
+            // Logged-in user: check for existing view
+            const existingView = await BlogView.findOne({
+                blogId,
+                userId: user.id
+            });
+            
+            if (!existingView) {
+                // First time viewing this blog
+                await BlogView.create({
+                    blogId,
+                    userId: user.id,
+                    viewedAt: now
+                });
+                return { shouldIncrement: true, reason: 'first_user_view' };
+            } else if (existingView.viewedAt < twentyFourHoursAgo) {
+                // User viewed before, but more than 24 hours ago - allow recount
+                existingView.viewedAt = now;
+                await existingView.save();
+                return { shouldIncrement: true, reason: 'returning_user_view' };
+            } else {
+                // User viewed within 24 hours - don't count
+                return { shouldIncrement: false, reason: 'recent_user_view' };
+            }
+        } else {
+            // Public user: use fingerprint
+            const fingerprint = generateFingerprint(req);
+            
+            const existingView = await BlogView.findOne({
+                blogId,
+                fingerprint
+            });
+            
+            if (!existingView) {
+                // First time viewing this blog from this device/browser
+                await BlogView.create({
+                    blogId,
+                    fingerprint,
+                    viewedAt: now,
+                    userAgent: req.get('User-Agent'),
+                    ipAddress: req.ip || req.connection.remoteAddress
+                });
+                return { shouldIncrement: true, reason: 'first_public_view' };
+            } else if (existingView.viewedAt < twentyFourHoursAgo) {
+                // Public user viewed before, but more than 24 hours ago - allow recount
+                existingView.viewedAt = now;
+                await existingView.save();
+                return { shouldIncrement: true, reason: 'returning_public_view' };
+            } else {
+                // Public user viewed within 24 hours - don't count
+                return { shouldIncrement: false, reason: 'recent_public_view' };
+            }
+        }
+    } catch (error) {
+        console.error('Error handling view count:', error);
+        // Fallback: don't increment on error
+        return { shouldIncrement: false, reason: 'error' };
+    }
+};
+
+// Helper function to cleanup old view records (optional - can be called periodically)
+const cleanupOldViews = async () => {
+    try {
+        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        const result = await BlogView.deleteMany({
+            viewedAt: { $lt: thirtyDaysAgo }
+        });
+        console.log(`Cleaned up ${result.deletedCount} old view records`);
+        return result.deletedCount;
+    } catch (error) {
+        console.error('Error cleaning up old views:', error);
+        return 0;
+    }
+};
 
 // Get blogs with filtering
 export const getBlogs = async (req, res, next) => {
@@ -140,9 +240,16 @@ export const getBlog = async (req, res, next) => {
             });
         }
         
-        // Increment view count
-        blog.views += 1;
-        await blog.save();
+        // Handle view counting with role-based logic
+        const viewResult = await handleViewCount(blog._id, req);
+        
+        if (viewResult.shouldIncrement) {
+            blog.views += 1;
+            await blog.save();
+            console.log(`View incremented for blog ${blog._id}: ${viewResult.reason}`);
+        } else {
+            console.log(`View not incremented for blog ${blog._id}: ${viewResult.reason}`);
+        }
         
         // Transform author and comment user names for admin/rootadmin users
         const blogObj = blog.toObject();
