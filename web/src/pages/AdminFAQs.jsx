@@ -27,11 +27,39 @@ const AdminFAQs = () => {
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com';
 
+  // Separate useEffect for initial load and static data
   useEffect(() => {
     fetchFAQs();
     fetchProperties();
     fetchCategories();
-  }, [searchTerm, filterType, filterCategory, pagination.current]);
+  }, []);
+
+  // Debounced search effect
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (pagination.current === 1) {
+        fetchFAQs();
+      } else {
+        setPagination(prev => ({ ...prev, current: 1 }));
+      }
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
+
+  // Immediate filter effects for type and category changes
+  useEffect(() => {
+    if (pagination.current === 1) {
+      fetchFAQs();
+    } else {
+      setPagination(prev => ({ ...prev, current: 1 }));
+    }
+  }, [filterType, filterCategory]);
+
+  // Pagination effect
+  useEffect(() => {
+    fetchFAQs();
+  }, [pagination.current]);
 
   const fetchFAQs = async () => {
     try {
