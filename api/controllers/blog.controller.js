@@ -280,7 +280,9 @@ export const updateBlog = async (req, res, next) => {
         if (thumbnail) blog.thumbnail = thumbnail;
         if (imageUrls !== undefined) blog.imageUrls = imageUrls;
         if (videoUrls !== undefined) blog.videoUrls = videoUrls;
-        if (propertyId !== undefined) blog.propertyId = propertyId;
+        if (propertyId !== undefined) {
+            blog.propertyId = propertyId === '' ? null : propertyId;
+        }
         if (tags) blog.tags = tags;
         if (category) blog.category = category;
         if (published !== undefined) {
@@ -380,6 +382,31 @@ export const addComment = async (req, res, next) => {
                 success: false,
                 message: 'Blog not found'
             });
+        }
+
+        // Get user info to check role
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        // Check comment limits for regular users (not admins)
+        if (user.role !== 'admin' && user.role !== 'rootadmin') {
+            const userCommentsOnBlog = blog.comments.filter(comment => 
+                comment.user.toString() === userId.toString()
+            ).length;
+            
+            const maxCommentsPerBlog = 5; // Limit to 5 comments per blog for regular users
+            
+            if (userCommentsOnBlog >= maxCommentsPerBlog) {
+                return res.status(429).json({
+                    success: false,
+                    message: `You have reached the maximum limit of ${maxCommentsPerBlog} comments for this blog.`
+                });
+            }
         }
         
         const newComment = {

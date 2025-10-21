@@ -119,7 +119,13 @@ const PublicBlogDetail = () => {
         // Refresh comments
         fetchBlog();
       } else {
-        alert('Please log in to comment');
+        const errorData = await response.json();
+        // Show user-friendly message for authentication errors
+        if (response.status === 401) {
+          alert('Please log in to comment');
+        } else {
+          alert(errorData.message || 'Error adding comment');
+        }
       }
     } catch (error) {
       console.error('Error adding comment:', error);
@@ -231,6 +237,8 @@ const PublicBlogDetail = () => {
                 const images = blog.imageUrls || [];
                 const videos = blog.videoUrls || [];
                 const mediaItems = [
+                  // Include thumbnail as first image if it exists
+                  ...(blog.thumbnail ? [{ type: 'image', url: blog.thumbnail }] : []),
                   ...images.map((u) => ({ type: 'image', url: u })),
                   ...videos.map((u, vi) => ({ type: 'video', url: u, vIndex: vi })),
                 ];
@@ -462,24 +470,42 @@ const PublicBlogDetail = () => {
                       <p className="text-gray-600 text-lg">No comments yet. Be the first to comment!</p>
                     </div>
                   ) : (
-                    comments.map((comment, index) => (
-                      <div key={index} className="bg-gradient-to-r from-gray-50 to-orange-50 rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100">
-                        <div className="flex items-center space-x-3 mb-3">
-                          <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                            {(comment.user?.username || 'A').charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <span className="font-semibold text-gray-900">
-                              {comment.user?.username || 'Anonymous'}
-                            </span>
-                            <div className="text-sm text-gray-500">
-                              {formatDate(comment.createdAt)}
+                    comments.map((comment, index) => {
+                      const isAdminComment = comment.user?.username === 'UrbanSetuBlogManagement';
+                      return (
+                        <div key={index} className={`rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-all duration-200 border ${
+                          isAdminComment 
+                            ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200' 
+                            : 'bg-gradient-to-r from-gray-50 to-orange-50 border-gray-100'
+                        }`}>
+                          <div className="flex items-center space-x-3 mb-3">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-sm ${
+                              isAdminComment ? 'bg-gradient-to-r from-blue-500 to-indigo-500' : 'bg-orange-500'
+                            }`}>
+                              {(comment.user?.username || 'A').charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <span className={`font-semibold ${
+                                isAdminComment ? 'text-blue-900' : 'text-gray-900'
+                              }`}>
+                                {comment.user?.username || 'Anonymous'}
+                              </span>
+                              {isAdminComment && (
+                                <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                  Official
+                                </span>
+                              )}
+                              <div className="text-sm text-gray-500">
+                                {formatDate(comment.createdAt)}
+                              </div>
                             </div>
                           </div>
+                          <p className={`leading-relaxed ${
+                            isAdminComment ? 'text-blue-800' : 'text-gray-700'
+                          }`}>{comment.content}</p>
                         </div>
-                        <p className="text-gray-700 leading-relaxed">{comment.content}</p>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               </div>
@@ -585,11 +611,14 @@ const PublicBlogDetail = () => {
         )}
 
         {/* Image Preview Modal */}
-        {blog && blog.imageUrls && blog.imageUrls.length > 0 && (
+        {blog && ((blog.thumbnail) || (blog.imageUrls && blog.imageUrls.length > 0)) && (
           <ImagePreview
             isOpen={showImagePreview}
             onClose={() => setShowImagePreview(false)}
-            images={blog.imageUrls}
+            images={[
+              ...(blog.thumbnail ? [blog.thumbnail] : []),
+              ...(blog.imageUrls || [])
+            ]}
             initialIndex={selectedImageIndex}
             listingId={blog._id}
             metadata={{

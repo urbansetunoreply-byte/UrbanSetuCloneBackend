@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaGlobe, FaHome, FaEye, FaEyeSlash, FaTimes } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaGlobe, FaHome, FaEye, FaEyeSlash, FaTimes, FaExternalLinkAlt } from 'react-icons/fa';
 
 const AdminFAQs = () => {
+  const navigate = useNavigate();
   const [faqs, setFaqs] = useState([]);
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -172,6 +174,12 @@ const AdminFAQs = () => {
       isActive: faq.isActive
     });
     setShowModal(true);
+  };
+
+  const handleViewProperty = (faq) => {
+    if (faq.propertyId && faq.propertyId._id) {
+      navigate(`/admin/listing/${faq.propertyId._id}`);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -400,15 +408,26 @@ const AdminFAQs = () => {
                         </td>
                         <td className="px-6 py-4 text-sm font-medium">
                           <div className="flex space-x-2">
+                            {faq.propertyId && faq.propertyId._id && (
+                              <button
+                                onClick={() => handleViewProperty(faq)}
+                                className="text-green-600 hover:text-green-900"
+                                title="View Property"
+                              >
+                                <FaExternalLinkAlt />
+                              </button>
+                            )}
                             <button
                               onClick={() => handleEdit(faq)}
                               className="text-blue-600 hover:text-blue-900"
+                              title="Edit FAQ"
                             >
                               <FaEdit />
                             </button>
                             <button
                               onClick={() => handleDelete(faq._id)}
                               className="text-red-600 hover:text-red-900"
+                              title="Delete FAQ"
                             >
                               <FaTrash />
                             </button>
@@ -434,15 +453,26 @@ const AdminFAQs = () => {
                         </p>
                       </div>
                       <div className="flex space-x-2">
+                        {faq.propertyId && faq.propertyId._id && (
+                          <button
+                            onClick={() => handleViewProperty(faq)}
+                            className="p-2 text-green-600 hover:text-green-800 hover:bg-green-50 rounded-lg transition-all duration-200"
+                            title="View Property"
+                          >
+                            <FaExternalLinkAlt className="text-sm" />
+                          </button>
+                        )}
                         <button
                           onClick={() => handleEdit(faq)}
                           className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200"
+                          title="Edit FAQ"
                         >
                           <FaEdit className="text-sm" />
                         </button>
                         <button
                           onClick={() => handleDelete(faq._id)}
                           className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200"
+                          title="Delete FAQ"
                         >
                           <FaTrash className="text-sm" />
                         </button>
