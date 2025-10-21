@@ -19,29 +19,42 @@ const BlogEditModal = ({
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
-    // For now, we'll use FileReader for preview. In production, upload to Cloudinary
-    const uploadPromises = files.map(file => {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          resolve(e.target.result);
-        };
-        reader.readAsDataURL(file);
+    try {
+      // Upload files to Cloudinary
+      const uploadPromises = files.map(async (file) => {
+        const formData = new FormData();
+        formData.append(type === 'image' ? 'image' : 'video', file);
+
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/upload/${type}`, {
+          method: 'POST',
+          body: formData,
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to upload ${file.name}`);
+        }
+
+        const data = await response.json();
+        return type === 'image' ? data.imageUrl : data.videoUrl;
       });
-    });
 
-    const results = await Promise.all(uploadPromises);
+      const results = await Promise.all(uploadPromises);
 
-    if (type === 'image') {
-      setFormData(prev => ({ 
-        ...prev, 
-        imageUrls: [...(prev.imageUrls || []), ...results] 
-      }));
-    } else {
-      setFormData(prev => ({ 
-        ...prev, 
-        videoUrls: [...(prev.videoUrls || []), ...results] 
-      }));
+      if (type === 'image') {
+        setFormData(prev => ({ 
+          ...prev, 
+          imageUrls: [...(prev.imageUrls || []), ...results] 
+        }));
+      } else {
+        setFormData(prev => ({ 
+          ...prev, 
+          videoUrls: [...(prev.videoUrls || []), ...results] 
+        }));
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert('Failed to upload files. Please try again.');
     }
   };
 
@@ -80,12 +93,26 @@ const BlogEditModal = ({
     const file = e.target.files[0];
     if (!file) return;
 
-    // For now, we'll use FileReader for preview. In production, upload to Cloudinary
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setFormData(prev => ({ ...prev, thumbnail: e.target.result }));
-    };
-    reader.readAsDataURL(file);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/upload/image`, {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload thumbnail');
+      }
+
+      const data = await response.json();
+      setFormData(prev => ({ ...prev, thumbnail: data.imageUrl }));
+    } catch (error) {
+      console.error('Thumbnail upload error:', error);
+      alert('Failed to upload thumbnail. Please try again.');
+    }
   };
 
   // Lock body scroll when modal is open

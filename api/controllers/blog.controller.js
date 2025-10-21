@@ -207,6 +207,8 @@ export const createBlog = async (req, res, next) => {
             content,
             excerpt: excerpt || content.slice(0, 200) + '...',
             thumbnail,
+            imageUrls: imageUrls || [],
+            videoUrls: videoUrls || [],
             propertyId: propertyId || null,
             author,
             tags: tags || [],
@@ -242,6 +244,8 @@ export const updateBlog = async (req, res, next) => {
             content, 
             excerpt, 
             thumbnail, 
+            imageUrls,
+            videoUrls,
             propertyId, 
             tags, 
             category, 
@@ -272,6 +276,8 @@ export const updateBlog = async (req, res, next) => {
         if (content) blog.content = content;
         if (excerpt) blog.excerpt = excerpt;
         if (thumbnail) blog.thumbnail = thumbnail;
+        if (imageUrls !== undefined) blog.imageUrls = imageUrls;
+        if (videoUrls !== undefined) blog.videoUrls = videoUrls;
         if (propertyId !== undefined) blog.propertyId = propertyId;
         if (tags) blog.tags = tags;
         if (category) blog.category = category;

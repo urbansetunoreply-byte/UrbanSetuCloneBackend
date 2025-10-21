@@ -23,6 +23,12 @@ const blogSchema = new mongoose.Schema({
     thumbnail: {
         type: String // Cloudinary image URL
     },
+    imageUrls: [{
+        type: String // Array of Cloudinary image URLs
+    }],
+    videoUrls: [{
+        type: String // Array of Cloudinary video URLs
+    }],
     propertyId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Listing',
