@@ -83,7 +83,7 @@ blogSchema.index({ publishedAt: -1 });
 blogSchema.index({ category: 1 });
 blogSchema.index({ propertyId: 1, published: 1 });
 blogSchema.index({ published: 1, publishedAt: -1 });
-blogSchema.index({ slug: 1 });
+// Note: slug index is automatically created by unique: true
 
 // Generate slug from title before saving
 blogSchema.pre('save', function(next) {
