@@ -232,14 +232,14 @@ export const getAIInsights = async (req, res, next) => {
             },
             topInsights: recommendations.slice(0, 3).map(rec => ({
                 property: {
-                    name: rec.property.name,
-                    price: rec.property.regularPrice,
-                    location: `${rec.property.city}, ${rec.property.state}`
+                    name: rec.property?.name || 'Unknown Property',
+                    price: rec.property?.regularPrice || 0,
+                    location: `${rec.property?.city || 'Unknown'}, ${rec.property?.state || 'Unknown'}`
                 },
-                score: rec.score,
-                confidence: rec.confidence,
-                aiInsights: rec.aiInsights,
-                modelExplanation: rec.modelExplanation
+                score: rec.score || 0,
+                confidence: rec.confidence || 0,
+                aiInsights: rec.aiInsights || [],
+                modelExplanation: rec.modelExplanation || 'AI recommendation'
             })),
             recommendations: {
                 highConfidence: recommendations.filter(rec => rec.confidence > 0.8).length,

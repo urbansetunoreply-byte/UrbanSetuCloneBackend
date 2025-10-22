@@ -315,7 +315,7 @@ const extractSearchPatterns = (chatHistory) => {
     };
     
     chatHistory.forEach(chat => {
-        const message = chat.message.toLowerCase();
+        const message = (chat.message || '').toLowerCase();
         // Extract price mentions, location preferences, etc.
         const priceMatches = message.match(/₹?(\d+(?:,\d{3})*(?:\.\d{2})?)\s*(?:lakh|crore|cr|lk)?/g);
         if (priceMatches) {
@@ -438,6 +438,8 @@ const createUserItemMatrix = async (userId, properties) => {
     
     // Build matrix (simplified)
     allWishlists.forEach(wishlist => {
+        if (!wishlist.userId || !wishlist.listingId) return;
+        
         const user = wishlist.userId.toString();
         const property = wishlist.listingId._id.toString();
         
@@ -446,6 +448,8 @@ const createUserItemMatrix = async (userId, properties) => {
     });
     
     allBookings.forEach(booking => {
+        if (!booking.buyerId || !booking.listingId) return;
+        
         const user = booking.buyerId.toString();
         const property = booking.listingId._id.toString();
         
@@ -763,14 +767,16 @@ const ensembleRecommendations = async (userId, limit = 10) => {
         ]);
         
         // Add advanced insights
-        const finalRecommendations = combinedRecommendations.map(rec => ({
-            ...rec,
-            recommendationScore: rec.score,
-            recommendationType: rec.type,
-            aiInsights: generateAIInsights(rec, userProfile),
-            confidenceLevel: rec.confidence,
-            modelExplanation: generateModelExplanation(rec)
-        }));
+        const finalRecommendations = combinedRecommendations
+            .filter(rec => rec.property && rec.property._id) // Filter out invalid recommendations
+            .map(rec => ({
+                ...rec,
+                recommendationScore: rec.score || 0,
+                recommendationType: rec.type || 'unknown',
+                aiInsights: generateAIInsights(rec, userProfile),
+                confidenceLevel: rec.confidence || 0.5,
+                modelExplanation: generateModelExplanation(rec)
+            }));
         
         return finalRecommendations.slice(0, limit);
         
@@ -919,14 +925,16 @@ const getFallbackRecommendations = async (allProperties, limit = 10) => {
             }
         ]);
         
-        return trendingProperties.map(property => ({
-            ...property,
-            recommendationScore: property.popularityScore / 100, // Normalize score
-            recommendationType: 'trending-fallback',
-            confidence: 0.6, // Medium confidence for fallback
-            aiInsights: ['Popular property', 'Trending in your area', 'Great value'],
-            modelExplanation: 'Recommended based on popularity and trending data - add properties to your wishlist for personalized recommendations!'
-        }));
+        return trendingProperties
+            .filter(property => property && property._id) // Filter out invalid properties
+            .map(property => ({
+                ...property,
+                recommendationScore: (property.popularityScore || 0) / 100, // Normalize score
+                recommendationType: 'trending-fallback',
+                confidence: 0.6, // Medium confidence for fallback
+                aiInsights: ['Popular property', 'Trending in your area', 'Great value'],
+                modelExplanation: 'Recommended based on popularity and trending data - add properties to your wishlist for personalized recommendations!'
+            }));
         
     } catch (error) {
         console.error('Error in fallback recommendations:', error);

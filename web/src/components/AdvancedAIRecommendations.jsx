@@ -51,7 +51,14 @@ const AdvancedAIRecommendations = ({
         const data = await res.json();
 
         if (data.success) {
-          setRecommendations(data.data);
+          // Filter out any recommendations with missing property data
+          const validRecommendations = (data.data || []).filter(rec => rec.property && rec.property._id);
+          setRecommendations(validRecommendations);
+          
+          if (validRecommendations.length === 0 && data.data && data.data.length > 0) {
+            console.warn('All recommendations had missing property data');
+            setError('Recommendations data is incomplete. Please try again.');
+          }
         } else {
           setError(data.message || 'Failed to fetch recommendations.');
           toast.error(data.message || 'Failed to fetch AI recommendations.');
@@ -268,14 +275,20 @@ const AdvancedAIRecommendations = ({
 
       {/* Recommendations Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {recommendations.map((listing) => (
-          <div key={listing.property._id} className="relative">
-            <div 
-              onClick={() => onRecommendationClick && onRecommendationClick(listing.property)} 
-              className="cursor-pointer"
-            >
-              <ListingItem listing={listing.property} />
-            </div>
+        {recommendations.map((listing, index) => (
+          <div key={listing.property?._id || `rec-${index}`} className="relative">
+            {listing.property ? (
+              <div 
+                onClick={() => onRecommendationClick && onRecommendationClick(listing.property)} 
+                className="cursor-pointer"
+              >
+                <ListingItem listing={listing.property} />
+              </div>
+            ) : (
+              <div className="p-4 bg-gray-100 rounded-lg">
+                <p className="text-gray-500">Property data unavailable</p>
+              </div>
+            )}
             
             {/* AI Recommendation Badge */}
             <div className="absolute top-2 right-2 bg-blue-600 text-white px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
@@ -284,11 +297,13 @@ const AdvancedAIRecommendations = ({
             </div>
             
             {/* Match Score */}
-            <div className="absolute top-2 left-2 bg-white bg-opacity-90 px-2 py-1 rounded-full text-xs font-semibold">
-              <span className={getScoreColor(listing.recommendationScore || listing.score)}>
-                {Math.round((listing.recommendationScore || listing.score) * 100)}% match
-              </span>
-            </div>
+            {listing.property && (
+              <div className="absolute top-2 left-2 bg-white bg-opacity-90 px-2 py-1 rounded-full text-xs font-semibold">
+                <span className={getScoreColor(listing.recommendationScore || listing.score)}>
+                  {Math.round((listing.recommendationScore || listing.score) * 100)}% match
+                </span>
+              </div>
+            )}
             
             {/* Model Type Badge */}
             <div className="absolute bottom-2 right-2 bg-gray-800 text-white px-2 py-1 rounded-full text-xs">
@@ -319,7 +334,7 @@ const AdvancedAIRecommendations = ({
                   {index + 1}
                 </div>
                 <div className="flex-1">
-                  <h5 className="font-medium text-gray-800">{rec.property.name}</h5>
+                  <h5 className="font-medium text-gray-800">{rec.property?.name || 'Unknown Property'}</h5>
                   <p className="text-sm text-gray-600 mb-2">
                     {rec.modelExplanation || 'AI-powered recommendation based on your preferences'}
                   </p>
