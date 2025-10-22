@@ -40,7 +40,7 @@ import routePlannerRouter from "./routes/routePlanner.route.js";
 import propertiesRouter from "./routes/properties.route.js";
 import searchRouter from "./routes/search.route.js";
 import propertyRestorationRouter from "./routes/propertyRestoration.route.js";
-import aiRecommendationRouter from "./routes/aiRecommendation.route.js";
+import advancedAIRecommendationRouter from "./routes/advancedAIRecommendation.route.js";
 // Use S3 deployment route if AWS is configured, otherwise fallback to Cloudinary
 let deploymentRouter;
 try {
@@ -520,7 +520,7 @@ app.use("/api/property-search", propertySearchRouter);
 app.use("/api/data-sync", dataSyncRouter);
 app.use("/api/faqs", faqRouter);
 app.use("/api/blogs", blogRouter);
-app.use("/api/ai-recommendations", aiRecommendationRouter);
+app.use("/api/advanced-ai", advancedAIRecommendationRouter);
 console.log('All API routes registered successfully');
 
 // Catch-all route for 404s - must be after all other routes

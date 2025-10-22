@@ -15,7 +15,7 @@ import EMICalculator from "../components/EMICalculator.jsx";
 import SocialSharePanel from "../components/SocialSharePanel.jsx";
 import SmartPriceInsights from "../components/SmartPriceInsights.jsx";
 import EnhancedSmartPriceInsights from "../components/EnhancedSmartPriceInsights.jsx";
-import AIRecommendations from "../components/AIRecommendations";
+import AdvancedAIRecommendations from "../components/AdvancedAIRecommendations";
 import { maskAddress, shouldShowLocationLink, getLocationLinkText } from "../utils/addressMasking";
 import { toast } from 'react-toastify';
 import { useWishlist } from '../WishlistContext';
@@ -1418,7 +1418,7 @@ export default function Listing() {
                 title="AI Property Recommendations"
               >
                 <FaRobot className="text-sm" />
-                <span className="text-sm font-medium">AI Recommendations</span>
+                <span className="text-sm font-medium">Advanced AI</span>
               </button>
             )}
           </div>
@@ -3428,7 +3428,7 @@ export default function Listing() {
             <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
               <div className="flex items-center gap-3">
                 <FaRobot className="text-2xl text-blue-600" />
-                <h2 className="text-2xl font-bold text-gray-800">AI Property Recommendations</h2>
+                <h2 className="text-2xl font-bold text-gray-800">Advanced AI Property Recommendations</h2>
               </div>
               <button
                 onClick={() => setShowAIRecommendations(false)}
@@ -3441,11 +3441,12 @@ export default function Listing() {
             
             {/* Modal Content */}
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-              <AIRecommendations 
+              <AdvancedAIRecommendations 
                 userId={currentUser._id}
                 limit={8}
                 showTitle={false}
                 showInsights={true}
+                showModelInfo={true}
                 onRecommendationClick={(property) => {
                   // Close modal and navigate to property detail page
                   setShowAIRecommendations(false);

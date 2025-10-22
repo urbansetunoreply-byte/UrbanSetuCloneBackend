@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import ListingItem from '../components/ListingItem';
-import AIRecommendations from '../components/AIRecommendations';
+import AdvancedAIRecommendations from '../components/AdvancedAIRecommendations';
 import { toast } from 'react-toastify';
 import { FaEye, FaTrash, FaSearch, FaFilter, FaSort, FaPlus, FaTimes, FaArrowDown, FaArrowUp, FaCheckCircle, FaDownload, FaShare, FaBookmark, FaCalendarAlt, FaChartLine, FaBars, FaCheck, FaTimes as FaX, FaRobot } from 'react-icons/fa';
 
@@ -326,7 +326,7 @@ const WishList = () => {
               {/* AI Recommendations Toggle */}
               <button onClick={() => setShowAIRecommendations(!showAIRecommendations)} className={`px-2 sm:px-3 py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${showAIRecommendations ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
                 <FaRobot className="text-xs sm:text-sm" />
-                <span className="hidden sm:inline">AI Recommendations</span>
+                <span className="hidden sm:inline">Advanced AI</span>
               </button>
               {/* Bulk Actions */}
               {items.length > 0 && (
@@ -469,11 +469,12 @@ const WishList = () => {
         {/* AI Recommendations Section */}
         {showAIRecommendations && currentUser && (
           <div className="mb-6">
-            <AIRecommendations 
+            <AdvancedAIRecommendations 
               userId={currentUser._id}
               limit={8}
               showTitle={true}
               showInsights={true}
+              showModelInfo={true}
               onRecommendationClick={(property) => {
                 // Navigate to property detail page
                 navigate(`/user/listing/${property._id}`);
