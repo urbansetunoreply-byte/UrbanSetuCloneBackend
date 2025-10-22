@@ -836,11 +836,23 @@ const ensembleRecommendations = async (userId, limit = 10) => {
                 modelExplanation: generateModelExplanation(rec)
             }));
         
+        // If no valid recommendations from ensemble, use fallback
+        if (finalRecommendations.length === 0) {
+            console.log('📊 No valid ensemble recommendations, using fallback');
+            return getFallbackRecommendations(allProperties, limit);
+        }
+        
         return finalRecommendations.slice(0, limit);
         
     } catch (error) {
         console.error('Error in ensemble recommendations:', error);
-        return [];
+        // Return fallback recommendations on error
+        try {
+            return getFallbackRecommendations(allProperties, limit);
+        } catch (fallbackError) {
+            console.error('Error in fallback recommendations:', fallbackError);
+            return [];
+        }
     }
 };
 
