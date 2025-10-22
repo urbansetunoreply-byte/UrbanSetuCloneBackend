@@ -150,8 +150,40 @@ const createAdvancedUserProfile = async (userId) => {
             ...reviews.map(review => review.listingId).filter(Boolean)
         ];
         
+        console.log(`📊 User Data Debug for ${userId}:`, {
+            wishlistItems: wishlistItems.length,
+            bookings: bookings.length,
+            reviews: reviews.length,
+            chatHistory: chatHistory.length,
+            allProperties: allProperties.length,
+            hasData: allProperties.length > 0
+        });
+        
         if (allProperties.length === 0) {
-            return null;
+            // Return a basic profile for new users to enable fallback recommendations
+            return {
+                avgPrice: 0,
+                avgBedrooms: 0,
+                avgBathrooms: 0,
+                avgArea: 0,
+                preferredTypes: {},
+                preferredCities: {},
+                preferredStates: {},
+                priceRange: { min: 0, max: 0 },
+                totalInteractions: 0,
+                priceSensitivity: 0.5,
+                locationLoyalty: 0.5,
+                amenityImportance: 0.5,
+                trendFollowing: 0.5,
+                budgetFlexibility: 0.5,
+                riskTolerance: 0.5,
+                searchPatterns: {},
+                timePreferences: {},
+                seasonalPatterns: {},
+                sentimentScore: 0.5,
+                satisfactionLevel: 0.5,
+                isNewUser: true
+            };
         }
         
         // Advanced preference analysis
@@ -183,6 +215,9 @@ const createAdvancedUserProfile = async (userId) => {
             // Sentiment analysis
             sentimentScore: calculateSentimentScore(reviews),
             satisfactionLevel: calculateSatisfactionLevel(reviews),
+            
+            // Mark as existing user with data
+            isNewUser: false
         };
         
         // Calculate basic preferences
@@ -282,7 +317,22 @@ const extractSearchPatterns = (chatHistory) => {
     chatHistory.forEach(chat => {
         const message = chat.message.toLowerCase();
         // Extract price mentions, location preferences, etc.
-        // This would be more sophisticated with NLP
+        const priceMatches = message.match(/₹?(\d+(?:,\d{3})*(?:\.\d{2})?)\s*(?:lakh|crore|cr|lk)?/g);
+        if (priceMatches) {
+            priceMatches.forEach(match => {
+                const price = parseFloat(match.replace(/[₹,]/g, ''));
+                if (price > 0) {
+                    patterns.priceRange.min = Math.min(patterns.priceRange.min, price);
+                    patterns.priceRange.max = Math.max(patterns.priceRange.max, price);
+                }
+            });
+        }
+        
+        // Extract common keywords
+        const keywords = message.split(/\s+/).filter(word => word.length > 2);
+        keywords.forEach(keyword => {
+            patterns.commonKeywords[keyword] = (patterns.commonKeywords[keyword] || 0) + 1;
+        });
     });
     
     return patterns;
@@ -290,20 +340,49 @@ const extractSearchPatterns = (chatHistory) => {
 
 const extractTimePreferences = (bookings) => {
     // Extract time-based preferences
-    return {
+    const preferences = {
         preferredMonths: {},
         preferredDays: {},
         averageBookingTime: 0
     };
+    
+    if (bookings.length === 0) return preferences;
+    
+    bookings.forEach(booking => {
+        const date = new Date(booking.createdAt);
+        const month = date.getMonth();
+        const day = date.getDay();
+        
+        preferences.preferredMonths[month] = (preferences.preferredMonths[month] || 0) + 1;
+        preferences.preferredDays[day] = (preferences.preferredDays[day] || 0) + 1;
+    });
+    
+    return preferences;
 };
 
 const extractSeasonalPatterns = (bookings) => {
     // Extract seasonal patterns
-    return {
+    const patterns = {
         seasonalTrends: {},
         peakMonths: [],
         lowMonths: []
     };
+    
+    if (bookings.length === 0) return patterns;
+    
+    const monthlyCounts = {};
+    bookings.forEach(booking => {
+        const month = new Date(booking.createdAt).getMonth();
+        monthlyCounts[month] = (monthlyCounts[month] || 0) + 1;
+    });
+    
+    const sortedMonths = Object.entries(monthlyCounts)
+        .sort(([,a], [,b]) => b - a);
+    
+    patterns.peakMonths = sortedMonths.slice(0, 3).map(([month]) => parseInt(month));
+    patterns.lowMonths = sortedMonths.slice(-3).map(([month]) => parseInt(month));
+    
+    return patterns;
 };
 
 const calculateSentimentScore = (reviews) => {
@@ -639,9 +718,28 @@ const ensembleRecommendations = async (userId, limit = 10) => {
         const userProfile = await createAdvancedUserProfile(userId);
         const allProperties = await Listing.find({}).limit(1000);
         
-        if (!userProfile || allProperties.length === 0) {
+        console.log(`🔍 User Profile Debug:`, {
+            userId,
+            hasProfile: !!userProfile,
+            isNewUser: userProfile?.isNewUser,
+            totalInteractions: userProfile?.totalInteractions,
+            avgPrice: userProfile?.avgPrice,
+            preferredCities: Object.keys(userProfile?.preferredCities || {}),
+            preferredTypes: Object.keys(userProfile?.preferredTypes || {})
+        });
+        
+        if (allProperties.length === 0) {
             return [];
         }
+        
+        // Handle new users with fallback recommendations
+        if (!userProfile || userProfile.isNewUser) {
+            console.log('📊 Using fallback recommendations for new user');
+            return getFallbackRecommendations(allProperties, limit);
+        }
+        
+        // Log that we're using personalized recommendations for existing user
+        console.log(`🎯 Using personalized AI recommendations for user with ${userProfile.totalInteractions} interactions`);
         
         // Get user's current wishlist to exclude
         const userWishlist = await Wishlist.find({ userId });
@@ -779,11 +877,70 @@ const generateModelExplanation = (recommendation) => {
 // Export the advanced recommendation function
 export const getAdvancedPropertyRecommendations = ensembleRecommendations;
 
+// Fallback recommendations for new users
+const getFallbackRecommendations = async (allProperties, limit = 10) => {
+    try {
+        console.log('🔄 Generating fallback recommendations for new user');
+        
+        // Get trending/popular properties as fallback
+        const trendingProperties = await Listing.aggregate([
+            {
+                $lookup: {
+                    from: 'wishlists',
+                    localField: '_id',
+                    foreignField: 'listingId',
+                    as: 'wishlistCount'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'bookings',
+                    localField: '_id',
+                    foreignField: 'listingId',
+                    as: 'bookingCount'
+                }
+            },
+            {
+                $addFields: {
+                    popularityScore: {
+                        $add: [
+                            { $size: '$wishlistCount' },
+                            { $size: '$bookingCount' },
+                            { $divide: ['$views', 10] }
+                        ]
+                    }
+                }
+            },
+            {
+                $sort: { popularityScore: -1 }
+            },
+            {
+                $limit: limit
+            }
+        ]);
+        
+        return trendingProperties.map(property => ({
+            ...property,
+            recommendationScore: property.popularityScore / 100, // Normalize score
+            recommendationType: 'trending-fallback',
+            confidence: 0.6, // Medium confidence for fallback
+            aiInsights: ['Popular property', 'Trending in your area', 'Great value'],
+            modelExplanation: 'Recommended based on popularity and trending data - add properties to your wishlist for personalized recommendations!'
+        }));
+        
+    } catch (error) {
+        console.error('Error in fallback recommendations:', error);
+        return [];
+    }
+};
+
+
 // Export individual model functions for testing
 export {
     matrixFactorizationRecommendations,
     randomForestRecommendations,
     neuralNetworkRecommendations,
     createAdvancedUserProfile,
-    extractAdvancedFeatures
+    extractAdvancedFeatures,
+    getFallbackRecommendations
 };

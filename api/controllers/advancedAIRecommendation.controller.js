@@ -26,15 +26,19 @@ export const getAdvancedRecommendations = async (req, res, next) => {
 
         switch (model) {
             case 'matrix-factorization':
-                recommendations = await matrixFactorizationRecommendations(userId, [], {});
+                const userProfileMF = await createAdvancedUserProfile(userId);
+                const allPropertiesMF = await Listing.find({}).limit(1000);
+                recommendations = await matrixFactorizationRecommendations(userId, allPropertiesMF, userProfileMF);
                 break;
             case 'random-forest':
-                const userProfile = await createAdvancedUserProfile(userId);
-                recommendations = await randomForestRecommendations(userProfile, []);
+                const userProfileRF = await createAdvancedUserProfile(userId);
+                const allPropertiesRF = await Listing.find({}).limit(1000);
+                recommendations = await randomForestRecommendations(userProfileRF, allPropertiesRF);
                 break;
             case 'neural-network':
                 const userProfileNN = await createAdvancedUserProfile(userId);
-                recommendations = await neuralNetworkRecommendations(userProfileNN, []);
+                const allPropertiesNN = await Listing.find({}).limit(1000);
+                recommendations = await neuralNetworkRecommendations(userProfileNN, allPropertiesNN);
                 break;
             case 'ensemble':
             default:

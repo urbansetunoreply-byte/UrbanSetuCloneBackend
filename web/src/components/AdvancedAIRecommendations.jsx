@@ -143,10 +143,19 @@ const AdvancedAIRecommendations = ({
 
   if (recommendations.length === 0) {
     return (
-      <div className="bg-gray-50 p-8 rounded-lg shadow-md border border-gray-200 text-center">
-        <FaRobot className="text-gray-500 text-4xl mx-auto mb-4" />
-        <p className="text-gray-700 font-semibold text-lg">No AI recommendations available at the moment.</p>
-        <p className="text-gray-500 text-sm mt-2">Try interacting more with properties to help our AI learn your preferences!</p>
+      <div className="bg-gradient-to-br from-blue-50 to-purple-100 p-8 rounded-lg shadow-md border border-blue-200 text-center">
+        <FaRobot className="text-blue-500 text-4xl mx-auto mb-4" />
+        <p className="text-blue-700 font-semibold text-lg">No AI recommendations available at the moment.</p>
+        <p className="text-blue-500 text-sm mt-2">Try interacting more with properties to help our AI learn your preferences!</p>
+        <div className="mt-4 p-4 bg-white rounded-lg border border-blue-200">
+          <h4 className="font-semibold text-gray-800 mb-2">To get personalized recommendations:</h4>
+          <ul className="text-sm text-gray-600 text-left space-y-1">
+            <li>• Add 5+ properties to your wishlist</li>
+            <li>• Write reviews for properties you've seen</li>
+            <li>• Use the chat system to ask about properties</li>
+            <li>• Book properties (if applicable)</li>
+          </ul>
+        </div>
       </div>
     );
   }
@@ -238,6 +247,21 @@ const AdvancedAIRecommendations = ({
               </div>
               <div className="text-sm text-gray-600">AI Confidence</div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Recommendation Type Indicator */}
+      {recommendations.length > 0 && (
+        <div className="mb-4 p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+          <div className="flex items-center gap-2 text-sm">
+            <FaInfoCircle className="text-blue-600" />
+            <span className="font-medium text-gray-800">
+              {recommendations[0]?.recommendationType === 'trending-fallback' 
+                ? 'Showing trending properties - add properties to your wishlist for personalized AI recommendations!'
+                : 'Showing personalized AI recommendations based on your preferences'
+              }
+            </span>
           </div>
         </div>
       )}
