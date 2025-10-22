@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import ListingItem from './ListingItem';
-import { FaRobot, FaBrain, FaChartLine, FaCogs, FaLightbulb, FaSpinner, FaTimesCircle, FaInfoCircle, FaEye, FaThumbsUp, FaTrendingUp, FaShieldAlt, FaRocket } from 'react-icons/fa';
+import { FaRobot, FaBrain, FaChartLine, FaCogs, FaLightbulb, FaSpinner, FaTimesCircle, FaInfoCircle, FaEye, FaThumbsUp, FaArrowUp, FaShieldAlt, FaRocket } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -319,7 +319,7 @@ const AdvancedAIRecommendations = ({
       {modelPerformance && (
         <div className="mt-6 p-4 bg-white rounded-lg border border-blue-200">
           <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-            <FaTrendingUp className="text-green-500" />
+            <FaArrowUp className="text-green-500" />
             Performance Metrics
           </h4>
           <div className="text-sm text-gray-600">
