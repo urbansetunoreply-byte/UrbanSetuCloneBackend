@@ -289,9 +289,9 @@ export default function Listing() {
     closeConfirm();
   };
 
-   // Lock body scroll when deletion/assign/report/calculator/comparison/search modals are open
+   // Lock body scroll when deletion/assign/report/calculator/comparison/search/AI recommendation modals are open
    useEffect(() => {
-     const shouldLock = showReasonModal || showPasswordModal || showAssignOwnerModal || showReportModal || showCalculatorModal || showComparisonModal || showPropertySearch;
+     const shouldLock = showReasonModal || showPasswordModal || showAssignOwnerModal || showReportModal || showCalculatorModal || showComparisonModal || showPropertySearch || showAIRecommendations;
      if (shouldLock) {
        document.body.classList.add('modal-open');
      } else {
@@ -300,7 +300,7 @@ export default function Listing() {
      return () => {
        document.body.classList.remove('modal-open');
      };
-   }, [showReasonModal, showPasswordModal, showAssignOwnerModal, showReportModal, showCalculatorModal, showComparisonModal, showPropertySearch]);
+   }, [showReasonModal, showPasswordModal, showAssignOwnerModal, showReportModal, showCalculatorModal, showComparisonModal, showPropertySearch, showAIRecommendations]);
  
    // Check if user is admin
   const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'rootadmin';
@@ -1413,12 +1413,8 @@ export default function Listing() {
             {/* AI Recommendations Button - Only for logged-in users */}
             {currentUser && (
               <button
-                onClick={() => setShowAIRecommendations(!showAIRecommendations)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                  showAIRecommendations 
-                    ? 'text-white bg-blue-600 hover:bg-blue-700' 
-                    : 'text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100'
-                }`}
+                onClick={() => setShowAIRecommendations(true)}
+                className="flex items-center gap-2 text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg transition-colors"
                 title="AI Property Recommendations"
               >
                 <FaRobot className="text-sm" />
@@ -3424,20 +3420,39 @@ export default function Listing() {
         </div>
       )}
 
-      {/* AI Recommendations Section */}
+      {/* AI Recommendations Modal */}
       {showAIRecommendations && currentUser && (
-        <div className="bg-gradient-to-br from-blue-50 to-purple-100 py-8 px-2 md:px-8">
-          <div className="max-w-4xl mx-auto">
-            <AIRecommendations 
-              userId={currentUser._id}
-              limit={6}
-              showTitle={true}
-              showInsights={true}
-              onRecommendationClick={(property) => {
-                // Navigate to property detail page
-                navigate(`/listing/${property._id}`);
-              }}
-            />
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
+              <div className="flex items-center gap-3">
+                <FaRobot className="text-2xl text-blue-600" />
+                <h2 className="text-2xl font-bold text-gray-800">AI Property Recommendations</h2>
+              </div>
+              <button
+                onClick={() => setShowAIRecommendations(false)}
+                className="text-gray-500 hover:text-gray-700 transition-colors p-2 hover:bg-gray-100 rounded-lg"
+                title="Close"
+              >
+                <FaTimes className="text-xl" />
+              </button>
+            </div>
+            
+            {/* Modal Content */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              <AIRecommendations 
+                userId={currentUser._id}
+                limit={8}
+                showTitle={false}
+                showInsights={true}
+                onRecommendationClick={(property) => {
+                  // Close modal and navigate to property detail page
+                  setShowAIRecommendations(false);
+                  navigate(`/listing/${property._id}`);
+                }}
+              />
+            </div>
           </div>
         </div>
       )}
