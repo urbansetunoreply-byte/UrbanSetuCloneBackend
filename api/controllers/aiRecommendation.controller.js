@@ -125,7 +125,7 @@ export const getHomepage = async (req, res, next) => {
 };
 
 // Get recommendation insights for admin dashboard
-export const getRecommendationInsights = async (req, res, next) => {
+export const getAdminInsights = async (req, res, next) => {
     try {
         const userId = req.user?.id;
         
@@ -173,7 +173,7 @@ export const getRecommendationInsights = async (req, res, next) => {
         });
         
     } catch (error) {
-        console.error('Error in getRecommendationInsights:', error);
+        console.error('Error in getAdminInsights:', error);
         next(error);
     }
 };
