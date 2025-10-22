@@ -810,11 +810,18 @@ const ensembleRecommendations = async (userId, limit = 10) => {
             neuralNetworkRecommendations(userProfile, availableProperties)
         ]);
         
+        // Validate and filter recommendations from each model
+        const validMatrixFactorizationRecs = (matrixFactorizationRecs || []).filter(rec => rec && rec.property && rec.property._id);
+        const validRandomForestRecs = (randomForestRecs || []).filter(rec => rec && rec.property && rec.property._id);
+        const validNeuralNetworkRecs = (neuralNetworkRecs || []).filter(rec => rec && rec.property && rec.property._id);
+        
+        console.log(`🔍 Model Results: Matrix=${validMatrixFactorizationRecs.length}, RandomForest=${validRandomForestRecs.length}, Neural=${validNeuralNetworkRecs.length}`);
+        
         // Combine recommendations using weighted ensemble
         const combinedRecommendations = combineRecommendations([
-            { recs: matrixFactorizationRecs, weight: 0.3, name: 'Collaborative Filtering' },
-            { recs: randomForestRecs, weight: 0.4, name: 'Content-Based ML' },
-            { recs: neuralNetworkRecs, weight: 0.3, name: 'Deep Learning' }
+            { recs: validMatrixFactorizationRecs, weight: 0.3, name: 'Collaborative Filtering' },
+            { recs: validRandomForestRecs, weight: 0.4, name: 'Content-Based ML' },
+            { recs: validNeuralNetworkRecs, weight: 0.3, name: 'Deep Learning' }
         ]);
         
         // Add advanced insights
@@ -842,7 +849,18 @@ const combineRecommendations = (modelResults) => {
     const propertyScores = {};
     
     modelResults.forEach(({ recs, weight, name }) => {
+        if (!recs || !Array.isArray(recs)) {
+            console.warn(`Invalid recommendations from ${name}:`, recs);
+            return;
+        }
+        
         recs.forEach(rec => {
+            // Skip invalid recommendations
+            if (!rec || !rec.property || !rec.property._id) {
+                console.warn(`Invalid recommendation from ${name}:`, rec);
+                return;
+            }
+            
             const propertyId = rec.property._id.toString();
             
             if (!propertyScores[propertyId]) {
@@ -854,13 +872,13 @@ const combineRecommendations = (modelResults) => {
                 };
             }
             
-            propertyScores[propertyId].scores[name] = rec.score * weight;
-            propertyScores[propertyId].totalScore += rec.score * weight;
+            propertyScores[propertyId].scores[name] = (rec.score || 0) * weight;
+            propertyScores[propertyId].totalScore += (rec.score || 0) * weight;
             propertyScores[propertyId].models.push({
                 name,
-                score: rec.score,
-                confidence: rec.confidence,
-                type: rec.type
+                score: rec.score || 0,
+                confidence: rec.confidence || 0.5,
+                type: rec.type || 'unknown'
             });
         });
     });
