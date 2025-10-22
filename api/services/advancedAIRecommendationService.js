@@ -402,6 +402,14 @@ const calculateSatisfactionLevel = (reviews) => {
 // Matrix Factorization (SVD) for Collaborative Filtering
 const matrixFactorizationRecommendations = async (userId, allProperties, userProfile) => {
     try {
+        console.log(`🔍 Matrix Factorization for user: ${userId}, properties: ${allProperties.length}, profile: ${!!userProfile}`);
+        
+        // Handle new users with fallback
+        if (!userProfile || userProfile.isNewUser) {
+            console.log('📊 Using fallback for matrix factorization (new user)');
+            return getFallbackRecommendations(allProperties, 10);
+        }
+        
         // Create user-item matrix
         const userItemMatrix = await createUserItemMatrix(userId, allProperties);
         
@@ -410,6 +418,8 @@ const matrixFactorizationRecommendations = async (userId, allProperties, userPro
         
         // For each property, calculate predicted rating
         for (const property of allProperties) {
+            if (!property || !property._id) continue;
+            
             const predictedRating = predictRating(userItemMatrix, userId, property._id);
             if (predictedRating > 0.6) { // Threshold for recommendation
                 recommendations.push({
@@ -421,10 +431,17 @@ const matrixFactorizationRecommendations = async (userId, allProperties, userPro
             }
         }
         
+        // If no recommendations found, use fallback
+        if (recommendations.length === 0) {
+            console.log('📊 No matrix factorization recommendations found, using fallback');
+            return getFallbackRecommendations(allProperties, 10);
+        }
+        
         return recommendations.sort((a, b) => b.score - a.score);
     } catch (error) {
         console.error('Error in matrix factorization:', error);
-        return [];
+        // Return fallback on error
+        return getFallbackRecommendations(allProperties, 10);
     }
 };
 
@@ -525,9 +542,19 @@ const ensembleLearning = async (userId, limit = 10) => {
 // Random Forest for Content-Based Classification
 const randomForestRecommendations = async (userProfile, allProperties) => {
     try {
+        console.log(`🔍 Random Forest for profile: ${!!userProfile}, properties: ${allProperties.length}`);
+        
+        // Handle new users with fallback
+        if (!userProfile || userProfile.isNewUser) {
+            console.log('📊 Using fallback for random forest (new user)');
+            return getFallbackRecommendations(allProperties, 10);
+        }
+        
         const recommendations = [];
         
         for (const property of allProperties) {
+            if (!property || !property._id) continue;
+            
             const features = extractAdvancedFeatures(property, userProfile);
             
             // Simplified Random Forest prediction
@@ -544,10 +571,17 @@ const randomForestRecommendations = async (userProfile, allProperties) => {
             }
         }
         
+        // If no recommendations found, use fallback
+        if (recommendations.length === 0) {
+            console.log('📊 No random forest recommendations found, using fallback');
+            return getFallbackRecommendations(allProperties, 10);
+        }
+        
         return recommendations.sort((a, b) => b.score - a.score);
     } catch (error) {
         console.error('Error in random forest:', error);
-        return [];
+        // Return fallback on error
+        return getFallbackRecommendations(allProperties, 10);
     }
 };
 
@@ -643,9 +677,19 @@ const calculateMarketCompatibility = (features, userProfile) => {
 // Neural Network (MLP) for Deep Learning Recommendations
 const neuralNetworkRecommendations = async (userProfile, allProperties) => {
     try {
+        console.log(`🔍 Neural Network for profile: ${!!userProfile}, properties: ${allProperties.length}`);
+        
+        // Handle new users with fallback
+        if (!userProfile || userProfile.isNewUser) {
+            console.log('📊 Using fallback for neural network (new user)');
+            return getFallbackRecommendations(allProperties, 10);
+        }
+        
         const recommendations = [];
         
         for (const property of allProperties) {
+            if (!property || !property._id) continue;
+            
             const features = extractAdvancedFeatures(property, userProfile);
             
             // Simplified Neural Network prediction
@@ -662,10 +706,17 @@ const neuralNetworkRecommendations = async (userProfile, allProperties) => {
             }
         }
         
+        // If no recommendations found, use fallback
+        if (recommendations.length === 0) {
+            console.log('📊 No neural network recommendations found, using fallback');
+            return getFallbackRecommendations(allProperties, 10);
+        }
+        
         return recommendations.sort((a, b) => b.score - a.score);
     } catch (error) {
         console.error('Error in neural network:', error);
-        return [];
+        // Return fallback on error
+        return getFallbackRecommendations(allProperties, 10);
     }
 };
 

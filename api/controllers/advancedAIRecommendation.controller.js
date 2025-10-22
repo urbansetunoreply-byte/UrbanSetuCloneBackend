@@ -3,7 +3,8 @@ import {
     matrixFactorizationRecommendations,
     randomForestRecommendations,
     neuralNetworkRecommendations,
-    createAdvancedUserProfile
+    createAdvancedUserProfile,
+    getFallbackRecommendations
 } from '../services/advancedAIRecommendationService.js';
 import { errorHandler } from '../utils/error.js';
 
@@ -24,26 +25,41 @@ export const getAdvancedRecommendations = async (req, res, next) => {
 
         let recommendations = [];
 
-        switch (model) {
-            case 'matrix-factorization':
-                const userProfileMF = await createAdvancedUserProfile(userId);
-                const allPropertiesMF = await Listing.find({}).limit(1000);
-                recommendations = await matrixFactorizationRecommendations(userId, allPropertiesMF, userProfileMF);
-                break;
-            case 'random-forest':
-                const userProfileRF = await createAdvancedUserProfile(userId);
-                const allPropertiesRF = await Listing.find({}).limit(1000);
-                recommendations = await randomForestRecommendations(userProfileRF, allPropertiesRF);
-                break;
-            case 'neural-network':
-                const userProfileNN = await createAdvancedUserProfile(userId);
-                const allPropertiesNN = await Listing.find({}).limit(1000);
-                recommendations = await neuralNetworkRecommendations(userProfileNN, allPropertiesNN);
-                break;
-            case 'ensemble':
-            default:
-                recommendations = await getAdvancedPropertyRecommendations(userId, parseInt(limit));
-                break;
+        try {
+            switch (model) {
+                case 'matrix-factorization':
+                    const userProfileMF = await createAdvancedUserProfile(userId);
+                    const allPropertiesMF = await Listing.find({}).limit(1000);
+                    recommendations = await matrixFactorizationRecommendations(userId, allPropertiesMF, userProfileMF);
+                    break;
+                case 'random-forest':
+                    const userProfileRF = await createAdvancedUserProfile(userId);
+                    const allPropertiesRF = await Listing.find({}).limit(1000);
+                    recommendations = await randomForestRecommendations(userProfileRF, allPropertiesRF);
+                    break;
+                case 'neural-network':
+                    const userProfileNN = await createAdvancedUserProfile(userId);
+                    const allPropertiesNN = await Listing.find({}).limit(1000);
+                    recommendations = await neuralNetworkRecommendations(userProfileNN, allPropertiesNN);
+                    break;
+                case 'ensemble':
+                default:
+                    recommendations = await getAdvancedPropertyRecommendations(userId, parseInt(limit));
+                    break;
+            }
+            
+            // Ensure we have valid recommendations
+            if (!recommendations || !Array.isArray(recommendations)) {
+                console.log('📊 No valid recommendations from model, using fallback');
+                const allProperties = await Listing.find({}).limit(1000);
+                recommendations = await getFallbackRecommendations(allProperties, parseInt(limit));
+            }
+            
+        } catch (modelError) {
+            console.error(`Error in ${model} model:`, modelError);
+            // Fallback to trending properties
+            const allProperties = await Listing.find({}).limit(1000);
+            recommendations = await getFallbackRecommendations(allProperties, parseInt(limit));
         }
 
         res.status(200).json({
