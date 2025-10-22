@@ -5,7 +5,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import { Navigation } from "swiper/modules";
-import { FaBath, FaBed, FaChair, FaMapMarkerAlt, FaParking, FaShare, FaEdit, FaTrash, FaArrowLeft, FaStar, FaLock, FaHeart, FaExpand, FaCheckCircle, FaFlag, FaRuler, FaBuilding, FaTree, FaWifi, FaSwimmingPool, FaCar, FaShieldAlt, FaClock, FaPhone, FaEnvelope, FaCalendarAlt, FaEye, FaThumbsUp, FaThumbsDown, FaRegThumbsUp, FaRegThumbsDown, FaComments, FaCalculator, FaChartLine, FaHome, FaUtensils, FaHospital, FaSchool, FaShoppingCart, FaPlane, FaUser, FaTimes, FaSearch, FaTable, FaRocket, FaQuestionCircle, FaChevronDown, FaChevronUp, FaBookOpen, FaTag, FaCompass, FaInfoCircle, FaCalendar } from "react-icons/fa";
+import { FaBath, FaBed, FaChair, FaMapMarkerAlt, FaParking, FaShare, FaEdit, FaTrash, FaArrowLeft, FaStar, FaLock, FaHeart, FaExpand, FaCheckCircle, FaFlag, FaRuler, FaBuilding, FaTree, FaWifi, FaSwimmingPool, FaCar, FaShieldAlt, FaClock, FaPhone, FaEnvelope, FaCalendarAlt, FaEye, FaThumbsUp, FaThumbsDown, FaRegThumbsUp, FaRegThumbsDown, FaComments, FaCalculator, FaChartLine, FaHome, FaUtensils, FaHospital, FaSchool, FaShoppingCart, FaPlane, FaUser, FaTimes, FaSearch, FaTable, FaRocket, FaQuestionCircle, FaChevronDown, FaChevronUp, FaBookOpen, FaTag, FaCompass, FaInfoCircle, FaCalendar, FaRobot } from "react-icons/fa";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import ReviewForm from "../components/ReviewForm.jsx";
 import ReviewList from "../components/ReviewList.jsx";
@@ -15,6 +15,7 @@ import EMICalculator from "../components/EMICalculator.jsx";
 import SocialSharePanel from "../components/SocialSharePanel.jsx";
 import SmartPriceInsights from "../components/SmartPriceInsights.jsx";
 import EnhancedSmartPriceInsights from "../components/EnhancedSmartPriceInsights.jsx";
+import AIRecommendations from "../components/AIRecommendations";
 import { maskAddress, shouldShowLocationLink, getLocationLinkText } from "../utils/addressMasking";
 import { toast } from 'react-toastify';
 import { useWishlist } from '../WishlistContext';
@@ -104,6 +105,7 @@ export default function Listing() {
   const [isInWatchlist, setIsInWatchlist] = useState(false);
   const [watchlistLoading, setWatchlistLoading] = useState(false);
   const [watchlistCount, setWatchlistCount] = useState(0);
+  const [showAIRecommendations, setShowAIRecommendations] = useState(false);
   const refreshWatchlistCount = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/watchlist/count/${params.listingId}`, { credentials: 'include' });
@@ -1408,6 +1410,21 @@ export default function Listing() {
               <FaShare className="text-sm" />
               <span className="text-sm font-medium">Share</span>
             </button>
+            {/* AI Recommendations Button - Only for logged-in users */}
+            {currentUser && (
+              <button
+                onClick={() => setShowAIRecommendations(!showAIRecommendations)}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                  showAIRecommendations 
+                    ? 'text-white bg-blue-600 hover:bg-blue-700' 
+                    : 'text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100'
+                }`}
+                title="AI Property Recommendations"
+              >
+                <FaRobot className="text-sm" />
+                <span className="text-sm font-medium">AI Recommendations</span>
+              </button>
+            )}
           </div>
           {copied && (
             <div className="flex justify-center mb-4">
@@ -3403,6 +3420,24 @@ export default function Listing() {
             </div>
           </div>
           </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Recommendations Section */}
+      {showAIRecommendations && currentUser && (
+        <div className="bg-gradient-to-br from-blue-50 to-purple-100 py-8 px-2 md:px-8">
+          <div className="max-w-4xl mx-auto">
+            <AIRecommendations 
+              userId={currentUser._id}
+              limit={6}
+              showTitle={true}
+              showInsights={true}
+              onRecommendationClick={(property) => {
+                // Navigate to property detail page
+                navigate(`/listing/${property._id}`);
+              }}
+            />
           </div>
         </div>
       )}
