@@ -7,6 +7,7 @@ import {
     getFallbackRecommendations
 } from '../services/advancedAIRecommendationService.js';
 import { errorHandler } from '../utils/error.js';
+import Listing from '../models/listing.model.js';
 
 /**
  * Advanced AI Recommendation Controller
