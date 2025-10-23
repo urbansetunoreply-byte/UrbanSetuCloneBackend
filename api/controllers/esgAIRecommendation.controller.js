@@ -39,7 +39,7 @@ export const getESGRecommendations = async (req, res, next) => {
             headers: req.headers.authorization
         });
 
-        const { userId } = req.user;
+        const userId = req.user.id; // Use req.user.id instead of destructuring userId
         const { limit = 10, includeExplanation = true } = req.query;
 
         if (!userId) {
@@ -50,13 +50,15 @@ export const getESGRecommendations = async (req, res, next) => {
         console.log(`🌱 Getting ESG-aware recommendations for user: ${userId}`);
 
         // Get ESG-aware recommendations
+        console.log(`🌱 Calling getESGAwareRecommendations for user: ${userId}, limit: ${limit}`);
         const recommendations = await getESGAwareRecommendations(userId, parseInt(limit));
+        console.log(`🌱 ESG Recommendations received: ${recommendations ? recommendations.length : 0} items`);
 
         if (!recommendations || recommendations.length === 0) {
             return res.status(200).json({
                 success: true,
                 data: [],
-                message: 'No ESG-aware recommendations available',
+                message: 'No ESG-aware recommendations available. Try interacting with properties to build your sustainability profile.',
                 esgEnabled: true
             });
         }
@@ -110,7 +112,7 @@ export const getESGRecommendations = async (req, res, next) => {
 // Get User ESG Preferences
 export const getUserESGPreferences = async (req, res, next) => {
     try {
-        const { userId } = req.user;
+        const userId = req.user.id;
 
         if (!userId) {
             return next(errorHandler(401, 'User authentication required'));

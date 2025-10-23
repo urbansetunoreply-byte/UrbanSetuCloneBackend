@@ -1,5 +1,7 @@
 import Listing from '../models/listing.model.js';
 import User from '../models/user.model.js';
+import Booking from '../models/booking.model.js';
+import Review from '../models/review.model.js';
 import { calculateAdvancedESGScore } from './esgAnalyticsService.js';
 
 /**
@@ -275,9 +277,14 @@ const analyzeGovernancePreferences = (wishlist, bookings, reviews) => {
 // ESG-Aware Property Recommendations
 export const getESGAwareRecommendations = async (userId, limit = 10) => {
     try {
+        console.log(`🌱 ESG Service - Getting recommendations for user: ${userId}, limit: ${limit}`);
+        
         // Learn user's ESG preferences
         const esgPreferences = await learnESGPreferences(userId);
+        console.log(`🌱 ESG Service - User preferences learned:`, esgPreferences ? 'Yes' : 'No');
+        
         if (!esgPreferences) {
+            console.log(`🌱 ESG Service - No preferences found, using default recommendations`);
             return getDefaultESGRecommendations(limit);
         }
 
@@ -322,9 +329,11 @@ export const getESGAwareRecommendations = async (userId, limit = 10) => {
                 confidence: calculateESGConfidence(item.esgScore, item.sustainabilityScore)
             }));
 
+        console.log(`🌱 ESG Service - Returning ${recommendations.length} recommendations`);
         return recommendations;
     } catch (error) {
-        console.error('Error getting ESG-aware recommendations:', error);
+        console.error('🌱 ESG Service - Error getting ESG-aware recommendations:', error);
+        console.error('🌱 ESG Service - Error details:', error.message);
         return getDefaultESGRecommendations(limit);
     }
 };
