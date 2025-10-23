@@ -38,6 +38,25 @@ const AdvancedESGRecommendations = ({
     }
   }, [currentUser, userId]);
 
+  const testESGAuth = async () => {
+    try {
+      console.log('🌱 Testing ESG authentication...');
+      const response = await fetch(`${API_BASE_URL}/api/esg-ai/test-auth`, {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      const data = await response.json();
+      console.log('🌱 ESG Auth Test Result:', data);
+      return data;
+    } catch (error) {
+      console.error('🌱 ESG Auth Test Error:', error);
+      return null;
+    }
+  };
+
   const fetchRecommendations = async () => {
     if (!currentUser || !userId) {
       setLoading(false);
@@ -49,7 +68,16 @@ const AdvancedESGRecommendations = ({
     setError(null);
     
     try {
+      // Test authentication first
+      const authTest = await testESGAuth();
+      if (!authTest || !authTest.success) {
+        setError('Authentication failed. Please log in again.');
+        return;
+      }
+
       const timestamp = Date.now();
+      console.log('🌱 Fetching ESG recommendations for user:', userId);
+      
       const response = await fetch(`${API_BASE_URL}/api/esg-ai/recommendations?limit=${limit}&includeExplanation=true&t=${timestamp}`, {
         credentials: 'include',
         headers: {
@@ -57,7 +85,13 @@ const AdvancedESGRecommendations = ({
         }
       });
 
+      console.log('🌱 ESG API Response:', response.status, response.statusText);
+
       if (!response.ok) {
+        if (response.status === 401) {
+          setError('Please log in to access ESG recommendations.');
+          return;
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
@@ -75,13 +109,27 @@ const AdvancedESGRecommendations = ({
       } else {
         setError(data.message || 'Failed to fetch ESG recommendations');
       }
-    } catch (err) {
-      console.error('Error fetching ESG recommendations:', err);
-      setError('Failed to load ESG recommendations. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+      } catch (err) {
+        console.error('Error fetching ESG recommendations:', err);
+        
+        // Fallback: Show a message about ESG features
+        setError('ESG recommendations are temporarily unavailable. Please try again later or contact support if the issue persists.');
+        
+        // Fallback: Show basic ESG information
+        setRecommendations([]);
+        setInsights({
+          totalProperties: 0,
+          esgRatedProperties: 0,
+          averageEsgScore: 0,
+          coverage: 0,
+          environmentalMetrics: {},
+          socialMetrics: {},
+          governanceMetrics: {}
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
 
   const fetchESGPreferences = async () => {
     try {

@@ -1,6 +1,7 @@
 import express from 'express';
 import { verifyToken } from '../utils/verify.js';
 import {
+    testESGAuth,
     getESGRecommendations,
     getUserESGPreferences,
     getESGAnalytics,
@@ -10,22 +11,22 @@ import {
 
 const router = express.Router();
 
-// All routes require authentication
-router.use(verifyToken);
+// Test endpoint for debugging authentication
+router.get('/test-auth', verifyToken, testESGAuth);
 
-// ESG-Aware AI Recommendations
-router.get('/recommendations', getESGRecommendations);
+// ESG-Aware AI Recommendations (requires authentication)
+router.get('/recommendations', verifyToken, getESGRecommendations);
 
-// User ESG Preferences
-router.get('/preferences', getUserESGPreferences);
+// User ESG Preferences (requires authentication)
+router.get('/preferences', verifyToken, getUserESGPreferences);
 
-// ESG Analytics Dashboard
-router.get('/analytics', getESGAnalytics);
+// ESG Analytics Dashboard (requires authentication)
+router.get('/analytics', verifyToken, getESGAnalytics);
 
-// ESG Property Insights
-router.get('/property/:propertyId/insights', getESGPropertyInsights);
+// ESG Property Insights (requires authentication)
+router.get('/property/:propertyId/insights', verifyToken, getESGPropertyInsights);
 
-// ESG Property Comparison
-router.post('/compare', getESGComparison);
+// ESG Property Comparison (requires authentication)
+router.post('/compare', verifyToken, getESGComparison);
 
 export default router;

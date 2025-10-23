@@ -8,13 +8,42 @@ import { errorHandler } from '../utils/error.js';
  * Based on base paper methodology with advanced analytics
  */
 
+// Test endpoint for debugging
+export const testESGAuth = async (req, res, next) => {
+    try {
+        console.log('🌱 ESG Test - Auth check:', {
+            hasUser: !!req.user,
+            userId: req.user?.id,
+            cookies: req.cookies,
+            headers: req.headers.authorization
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: 'ESG Auth test successful',
+            user: req.user ? { id: req.user.id, email: req.user.email } : null
+        });
+    } catch (error) {
+        console.error('Error in ESG auth test:', error);
+        next(error);
+    }
+};
+
 // Get ESG-Aware AI Recommendations
 export const getESGRecommendations = async (req, res, next) => {
     try {
+        console.log('🌱 ESG Recommendations - Auth check:', {
+            hasUser: !!req.user,
+            userId: req.user?.id,
+            cookies: req.cookies,
+            headers: req.headers.authorization
+        });
+
         const { userId } = req.user;
         const { limit = 10, includeExplanation = true } = req.query;
 
         if (!userId) {
+            console.log('🌱 ESG Recommendations - No userId found');
             return next(errorHandler(401, 'User authentication required'));
         }
 
