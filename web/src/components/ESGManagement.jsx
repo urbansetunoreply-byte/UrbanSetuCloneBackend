@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaLeaf, FaUsers, FaShieldAlt, FaSave, FaCalculator, FaInfoCircle } from 'react-icons/fa';
 
 const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
+    const [saving, setSaving] = useState(false);
     const [esg, setEsg] = useState({
         environmental: {
             energyRating: 'Not Rated',
@@ -42,6 +43,7 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
     }, [esgData]);
 
     const handleChange = (category, field, value) => {
+        setSaving(true);
         const newEsg = {
             ...esg,
             [category]: {
@@ -52,6 +54,11 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
         setEsg(newEsg);
         calculateESGScore(newEsg);
         onESGChange(newEsg);
+        
+        // Simulate saving delay
+        setTimeout(() => {
+            setSaving(false);
+        }, 500);
     };
 
     const handleArrayChange = (category, field, value, isAdd) => {
@@ -182,6 +189,12 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
                     <h3 className="text-xl font-semibold text-gray-800">ESG Management</h3>
                 </div>
                 <div className="flex items-center gap-2">
+                    {saving && (
+                        <div className="flex items-center gap-2 px-3 py-2 bg-green-100 text-green-700 rounded-lg">
+                            <FaSave className="animate-spin" />
+                            Saving ESG...
+                        </div>
+                    )}
                     <button
                         type="button"
                         onClick={() => setShowCalculator(!showCalculator)}

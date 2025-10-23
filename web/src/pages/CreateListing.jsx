@@ -309,6 +309,7 @@ export default function CreateListing() {
 
     try {
       console.log("Sending form data:", formData);
+      console.log("ESG data being sent:", formData.esg);
 
       const res = await fetch(`${API_BASE_URL}/api/listing/create`, {
         method: "POST",
@@ -744,7 +745,6 @@ export default function CreateListing() {
             </div>
           )}
 
-          {/* Action Buttons */}
           {/* ESG Management Section */}
           <div className="mb-6">
             <ESGManagement 
@@ -754,6 +754,7 @@ export default function CreateListing() {
             />
           </div>
 
+          {/* Action Buttons */}
           <div className="flex gap-4">
             <button
               type="button"

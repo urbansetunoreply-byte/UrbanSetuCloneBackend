@@ -389,6 +389,7 @@ export default function AdminCreateListing() {
 
     try {
       console.log("Sending form data:", formData);
+      console.log("ESG data being sent:", formData.esg);
 
       const res = await fetch(`${API_BASE_URL}/api/listing/create`, {
         method: "POST",

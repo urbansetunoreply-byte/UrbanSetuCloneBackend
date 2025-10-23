@@ -1991,9 +1991,19 @@ export default function Listing() {
           )}
 
           {/* ESG Information Section */}
-          {listing.esg && (
+          {listing.esg ? (
             <div className="p-6 bg-white shadow-md rounded-lg mb-6">
               <ESGDisplay esg={listing.esg} />
+            </div>
+          ) : (
+            <div className="p-6 bg-gray-50 shadow-md rounded-lg mb-6">
+              <div className="text-center py-8">
+                <div className="text-gray-500 text-lg mb-2">🌱 ESG Information</div>
+                <div className="text-gray-400">No ESG data available for this property</div>
+                <div className="text-sm text-gray-400 mt-2">
+                  ESG (Environmental, Social, Governance) information helps assess the sustainability of this property.
+                </div>
+              </div>
             </div>
           )}
 
