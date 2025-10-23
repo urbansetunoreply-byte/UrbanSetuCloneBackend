@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
-import { FaChartLine, FaArrowUp, FaCalculator, FaHome, FaBuilding, FaPercentage, FaClock, FaMapMarkerAlt, FaStar, FaInfoCircle, FaShieldAlt, FaGraduationCap, FaBus, FaCloud, FaArrowUp as FaTrendingUp, FaArrowDown as FaTrendingDown, FaExclamationTriangle, FaCheckCircle, FaTimes, FaSpinner } from 'react-icons/fa';
+import { FaChartLine, FaArrowUp, FaCalculator, FaHome, FaBuilding, FaPercentage, FaClock, FaMapMarkerAlt, FaStar, FaInfoCircle, FaShieldAlt, FaGraduationCap, FaBus, FaCloud, FaArrowDown, FaExclamationTriangle, FaCheckCircle, FaTimes, FaSpinner } from 'react-icons/fa';
 
 const EnhancedSmartPriceInsights = ({ listing, currentUser }) => {
   const [analyticsData, setAnalyticsData] = useState(null);
@@ -128,7 +128,7 @@ const EnhancedSmartPriceInsights = ({ listing, currentUser }) => {
           { id: 'overview', label: 'Overview', icon: FaChartLine },
           { id: 'investment', label: 'Investment', icon: FaCalculator },
           { id: 'location', label: 'Location', icon: FaMapMarkerAlt },
-          { id: 'market', label: 'Market Trends', icon: FaTrendingUp }
+          { id: 'market', label: 'Market Trends', icon: FaArrowUp }
         ].map(tab => (
           <button
             key={tab.id}
@@ -176,7 +176,7 @@ const EnhancedSmartPriceInsights = ({ listing, currentUser }) => {
 
             <div className="bg-gradient-to-r from-orange-50 to-orange-100 p-4 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
-                <FaTrendingUp className="text-orange-600" />
+                <FaArrowUp className="text-orange-600" />
                 <h6 className="font-semibold text-orange-800">Appreciation</h6>
               </div>
               <p className="text-2xl font-bold text-orange-600">
@@ -421,7 +421,7 @@ const EnhancedSmartPriceInsights = ({ listing, currentUser }) => {
           {/* Price Trends Chart */}
           <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl">
             <h5 className="text-base md:text-lg font-semibold text-purple-800 mb-4 flex items-center gap-2 break-words">
-              <FaTrendingUp className="text-purple-600" />
+              <FaArrowUp className="text-purple-600" />
               Market Trends
             </h5>
             <div className="h-64">
@@ -450,7 +450,7 @@ const EnhancedSmartPriceInsights = ({ listing, currentUser }) => {
           {/* Market Sentiment */}
           <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-xl">
             <h5 className="text-lg font-semibold text-orange-800 mb-4 flex items-center gap-2">
-              <FaTrendingUp className="text-orange-600" />
+              <FaArrowUp className="text-orange-600" />
               Market Sentiment
             </h5>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

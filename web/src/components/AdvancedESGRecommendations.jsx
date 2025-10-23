@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import ListingItem from './ListingItem';
-import { FaLeaf, FaUsers, FaShieldAlt, FaChartLine, FaCogs, FaLightbulb, FaSpinner, FaTimesCircle, FaInfoCircle, FaEye, FaThumbsUp, FaArrowUp, FaRecycle, FaGlobe, FaStar, FaTrendingUp } from 'react-icons/fa';
+import { FaLeaf, FaUsers, FaShieldAlt, FaChartLine, FaCogs, FaLightbulb, FaSpinner, FaTimesCircle, FaInfoCircle, FaEye, FaThumbsUp, FaArrowUp, FaRecycle, FaGlobe, FaStar } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -470,7 +470,7 @@ const AdvancedESGRecommendations = ({
                         <p className="text-sm font-medium text-gray-600">Coverage</p>
                         <p className="text-2xl font-bold text-gray-900">{insights.coverage?.toFixed(1)}%</p>
                       </div>
-                      <FaTrendingUp className="text-purple-500 text-2xl" />
+                      <FaArrowUp className="text-purple-500 text-2xl" />
                     </div>
                   </div>
                 </div>

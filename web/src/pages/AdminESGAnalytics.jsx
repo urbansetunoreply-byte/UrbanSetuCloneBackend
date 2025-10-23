@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { FaLeaf, FaUsers, FaShieldAlt, FaChartLine, FaTrendingUp, FaTrendingDown, FaStar, FaGlobe, FaRecycle, FaSolarPanel, FaWater, FaTrash, FaAccessibleIcon, FaHeart, FaBuilding, FaGavel, FaEye, FaInfoCircle } from 'react-icons/fa';
+import { FaLeaf, FaUsers, FaShieldAlt, FaChartLine, FaArrowUp, FaTrendingDown, FaStar, FaGlobe, FaRecycle, FaSolarPanel, FaWater, FaTrash, FaAccessibleIcon, FaHeart, FaBuilding, FaGavel, FaEye, FaInfoCircle } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -53,7 +53,7 @@ export default function AdminESGAnalytics() {
     };
 
     const getTrendIcon = (trend) => {
-        if (trend > 0) return <FaTrendingUp className="text-green-500" />;
+        if (trend > 0) return <FaArrowUp className="text-green-500" />;
         if (trend < 0) return <FaTrendingDown className="text-red-500" />;
         return <FaChartLine className="text-gray-500" />;
     };
