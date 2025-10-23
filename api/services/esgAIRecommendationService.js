@@ -293,7 +293,10 @@ export const getESGAwareRecommendations = async (userId, limit = 10) => {
             'esg.esgScore': { $exists: true, $ne: 0 }
         }).limit(1000);
 
+        console.log(`🌱 ESG Service - Found ${allProperties.length} properties with ESG data`);
+
         if (allProperties.length === 0) {
+            console.log(`🌱 ESG Service - No properties with ESG data, using default recommendations`);
             return getDefaultESGRecommendations(limit);
         }
 
@@ -506,27 +509,48 @@ const calculateESGConfidence = (similarityScore, sustainabilityScore) => {
 // Default ESG Recommendations
 const getDefaultESGRecommendations = async (limit) => {
     try {
-        const properties = await Listing.find({
+        console.log(`🌱 ESG Service - Getting default recommendations, limit: ${limit}`);
+        
+        // First try to get properties with ESG data
+        let properties = await Listing.find({
             'esg.esgScore': { $exists: true, $ne: 0 }
         })
         .sort({ 'esg.esgScore': -1 })
         .limit(limit);
 
-        return properties.map(property => ({
-            property,
-            score: property.esg?.esgScore || 0,
-            match: true,
-            sustainabilityScore: property.esg?.esgScore || 0,
-            breakdown: {
-                environmental: property.esg?.environmental ? 80 : 0,
-                social: property.esg?.social ? 80 : 0,
-                governance: property.esg?.governance ? 80 : 0
-            },
-            explanation: ['High sustainability score based on ESG factors'],
-            confidence: 0.8
-        }));
+        console.log(`🌱 ESG Service - Found ${properties.length} properties with ESG data`);
+
+        // If no properties with ESG data, get any properties and add sample ESG data
+        if (properties.length === 0) {
+            console.log(`🌱 ESG Service - No ESG data found, getting any properties`);
+            properties = await Listing.find({})
+                .sort({ createdAt: -1 })
+                .limit(limit);
+            
+            console.log(`🌱 ESG Service - Found ${properties.length} total properties`);
+        }
+
+        return properties.map(property => {
+            const hasESGData = property.esg && property.esg.esgScore > 0;
+            
+            return {
+                property,
+                score: hasESGData ? property.esg.esgScore : 75, // Default score for properties without ESG data
+                match: true,
+                sustainabilityScore: hasESGData ? property.esg.esgScore : 75,
+                breakdown: {
+                    environmental: hasESGData ? (property.esg.environmental ? 80 : 0) : 75,
+                    social: hasESGData ? (property.esg.social ? 80 : 0) : 75,
+                    governance: hasESGData ? (property.esg.governance ? 80 : 0) : 75
+                },
+                explanation: hasESGData 
+                    ? ['High sustainability score based on ESG factors']
+                    : ['Property with good sustainability potential - ESG data coming soon'],
+                confidence: hasESGData ? 0.8 : 0.6
+            };
+        });
     } catch (error) {
-        console.error('Error getting default ESG recommendations:', error);
+        console.error('🌱 ESG Service - Error getting default ESG recommendations:', error);
         return [];
     }
 };
