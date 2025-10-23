@@ -16,6 +16,7 @@ import SocialSharePanel from "../components/SocialSharePanel.jsx";
 import SmartPriceInsights from "../components/SmartPriceInsights.jsx";
 import EnhancedSmartPriceInsights from "../components/EnhancedSmartPriceInsights.jsx";
 import AdvancedAIRecommendations from "../components/AdvancedAIRecommendations";
+import ESGDisplay from "../components/ESGDisplay";
 import { maskAddress, shouldShowLocationLink, getLocationLinkText } from "../utils/addressMasking";
 import { toast } from 'react-toastify';
 import { useWishlist } from '../WishlistContext';
@@ -1987,6 +1988,13 @@ export default function Listing() {
           {/* Smart Price Insights Section */}
           {showSmartPriceInsights && currentUser && (
             <EnhancedSmartPriceInsights listing={listing} currentUser={currentUser} />
+          )}
+
+          {/* ESG Information Section */}
+          {listing.esg && (
+            <div className="p-6 bg-white shadow-md rounded-lg mb-6">
+              <ESGDisplay esg={listing.esg} />
+            </div>
           )}
 
           {/* Admin Information - Only show for admins */}

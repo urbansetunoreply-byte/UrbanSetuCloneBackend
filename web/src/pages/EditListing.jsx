@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import LocationSelector from "../components/LocationSelector";
+import ESGManagement from "../components/ESGManagement";
 import { toast } from 'react-toastify';
 
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -34,6 +35,8 @@ export default function EditListing() {
     area: "",
     floor: "",
     propertyAge: "",
+    // ESG Data
+    esg: null,
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -759,6 +762,15 @@ export default function EditListing() {
               </label>
             </div>
           )}
+
+          {/* ESG Management Section */}
+          <div className="mb-6">
+            <ESGManagement 
+              esgData={formData.esg}
+              onESGChange={(esgData) => setFormData({...formData, esg: esgData})}
+              isEditing={true}
+            />
+          </div>
 
           {/* Action Buttons */}
           <div className="flex gap-4">

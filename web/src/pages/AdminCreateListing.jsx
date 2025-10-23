@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
 import LocationSelector from "../components/LocationSelector";
+import ESGManagement from "../components/ESGManagement";
 import { toast } from 'react-toastify';
 
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -37,6 +38,8 @@ export default function AdminCreateListing() {
     floor: "",
     propertyAge: "",
     assignToEmail: "", // New field for email assignment
+    // ESG Data
+    esg: null,
   });
 
   const [error, setError] = useState("");
@@ -859,6 +862,15 @@ export default function AdminCreateListing() {
                 Add Video
               </button>
             </div>
+          </div>
+
+          {/* ESG Management Section */}
+          <div className="mb-6">
+            <ESGManagement 
+              esgData={formData.esg}
+              onESGChange={(esgData) => setFormData({...formData, esg: esgData})}
+              isEditing={false}
+            />
           </div>
 
           {/* Action Buttons */}

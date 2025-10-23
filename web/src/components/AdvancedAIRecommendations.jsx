@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import ListingItem from './ListingItem';
-import { FaRobot, FaBrain, FaChartLine, FaCogs, FaLightbulb, FaSpinner, FaTimesCircle, FaInfoCircle, FaEye, FaThumbsUp, FaArrowUp, FaShieldAlt, FaRocket } from 'react-icons/fa';
+import AdvancedESGRecommendations from './AdvancedESGRecommendations';
+import { FaRobot, FaBrain, FaChartLine, FaCogs, FaLightbulb, FaSpinner, FaTimesCircle, FaInfoCircle, FaEye, FaThumbsUp, FaArrowUp, FaShieldAlt, FaRocket, FaLeaf } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -27,6 +28,7 @@ const AdvancedAIRecommendations = ({
 
   const models = [
     { id: 'ensemble', name: 'Ensemble AI', icon: FaBrain, description: 'Combines all models for best accuracy' },
+    { id: 'esg', name: 'ESG-Aware', icon: FaLeaf, description: 'Sustainable properties' },
     { id: 'matrix-factorization', name: 'Collaborative', icon: FaChartLine, description: 'Users with similar preferences' },
     { id: 'random-forest', name: 'Content-Based', icon: FaCogs, description: 'Property features matching' },
     { id: 'neural-network', name: 'Deep Learning', icon: FaRobot, description: 'Complex pattern recognition' }
@@ -273,8 +275,21 @@ const AdvancedAIRecommendations = ({
         </div>
       )}
 
-      {/* Recommendations Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {/* ESG Tab Content */}
+      {activeTab === 'esg' ? (
+        <AdvancedESGRecommendations 
+          userId={userId}
+          limit={limit}
+          showTitle={false}
+          showInsights={showInsights}
+          showModelInfo={showModelInfo}
+          onRecommendationClick={onRecommendationClick}
+          className=""
+        />
+      ) : (
+        <>
+          {/* Recommendations Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {recommendations.map((listing, index) => (
           <div key={listing.property?._id || `rec-${index}`} className="relative">
             {listing.property ? (
@@ -352,6 +367,8 @@ const AdvancedAIRecommendations = ({
             ))}
           </div>
         </div>
+      )}
+        </>
       )}
 
       {/* Performance Metrics */}

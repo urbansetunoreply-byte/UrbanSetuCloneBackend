@@ -30,6 +30,15 @@ export default function Search() {
         state: "",
         bedrooms: "",
         bathrooms: "",
+        // ESG Filters
+        esgRating: "all",
+        energyRating: "all",
+        greenCertification: "all",
+        renewableEnergy: false,
+        affordableHousing: false,
+        accessibility: "all",
+        minEsgScore: "",
+        maxEsgScore: "",
     });
     const [listings, setListings] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -956,6 +965,140 @@ export default function Search() {
                             />{" "}
                             Offer
                         </label>
+                        
+                        {/* ESG Filters */}
+                        <div className="w-full border-t border-gray-200 pt-4 mt-4">
+                            <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                🌱 ESG Filters
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        ESG Rating
+                                    </label>
+                                    <select
+                                        name="esgRating"
+                                        value={formData.esgRating}
+                                        onChange={handleChanges}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    >
+                                        <option value="all">All Ratings</option>
+                                        <option value="AAA">AAA</option>
+                                        <option value="AA">AA</option>
+                                        <option value="A">A</option>
+                                        <option value="BBB">BBB</option>
+                                        <option value="BB">BB</option>
+                                        <option value="B">B</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Energy Rating
+                                    </label>
+                                    <select
+                                        name="energyRating"
+                                        value={formData.energyRating}
+                                        onChange={handleChanges}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    >
+                                        <option value="all">All Ratings</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A">A</option>
+                                        <option value="B">B</option>
+                                        <option value="C">C</option>
+                                        <option value="D">D</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Green Certification
+                                    </label>
+                                    <select
+                                        name="greenCertification"
+                                        value={formData.greenCertification}
+                                        onChange={handleChanges}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    >
+                                        <option value="all">All Certifications</option>
+                                        <option value="LEED">LEED</option>
+                                        <option value="BREEAM">BREEAM</option>
+                                        <option value="GRIHA">GRIHA</option>
+                                        <option value="IGBC">IGBC</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Accessibility
+                                    </label>
+                                    <select
+                                        name="accessibility"
+                                        value={formData.accessibility}
+                                        onChange={handleChanges}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    >
+                                        <option value="all">All Access Levels</option>
+                                        <option value="Fully Accessible">Fully Accessible</option>
+                                        <option value="Partially Accessible">Partially Accessible</option>
+                                    </select>
+                                </div>
+                                
+                                <div className="flex items-center gap-4">
+                                    <label className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            name="renewableEnergy"
+                                            onChange={handleChanges}
+                                            checked={formData.renewableEnergy}
+                                            className="mr-2"
+                                        />
+                                        <span className="text-sm">☀️ Renewable Energy</span>
+                                    </label>
+                                    
+                                    <label className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            name="affordableHousing"
+                                            onChange={handleChanges}
+                                            checked={formData.affordableHousing}
+                                            className="mr-2"
+                                        />
+                                        <span className="text-sm">🏠 Affordable Housing</span>
+                                    </label>
+                                </div>
+                                
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Min ESG Score
+                                        </label>
+                                        <input
+                                            type="number"
+                                            name="minEsgScore"
+                                            value={formData.minEsgScore}
+                                            onChange={handleChanges}
+                                            placeholder="0"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Max ESG Score
+                                        </label>
+                                        <input
+                                            type="number"
+                                            name="maxEsgScore"
+                                            value={formData.maxEsgScore}
+                                            onChange={handleChanges}
+                                            placeholder="100"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Advanced Filters */}

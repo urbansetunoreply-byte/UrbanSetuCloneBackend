@@ -41,6 +41,8 @@ import propertiesRouter from "./routes/properties.route.js";
 import searchRouter from "./routes/search.route.js";
 import propertyRestorationRouter from "./routes/propertyRestoration.route.js";
 import advancedAIRecommendationRouter from "./routes/advancedAIRecommendation.route.js";
+import esgAnalyticsRouter from "./routes/esgAnalytics.route.js";
+import esgAIRecommendationRouter from "./routes/esgAIRecommendation.route.js";
 // Use S3 deployment route if AWS is configured, otherwise fallback to Cloudinary
 let deploymentRouter;
 try {
@@ -511,6 +513,8 @@ app.use("/api/price-drop-alerts", priceDropAlertRouter);
 app.use("/api/statistics", statisticsRouter);
 app.use("/api/config", configRouter);
 app.use("/api/analytics", analyticsRouter);
+app.use("/api/analytics", esgAnalyticsRouter);
+app.use("/api/esg-ai", esgAIRecommendationRouter);
 app.use("/api/route-planner", routePlannerRouter);
 app.use("/api/properties", propertiesRouter);
 app.use("/api/search", searchRouter);

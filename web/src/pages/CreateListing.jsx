@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
 import LocationSelector from "../components/LocationSelector";
+import ESGManagement from "../components/ESGManagement";
 import { toast } from 'react-toastify';
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -35,6 +36,8 @@ export default function CreateListing() {
     area: "",
     floor: "",
     propertyAge: "",
+    // ESG Data
+    esg: null,
   });
 
   const [error, setError] = useState("");
@@ -742,6 +745,15 @@ export default function CreateListing() {
           )}
 
           {/* Action Buttons */}
+          {/* ESG Management Section */}
+          <div className="mb-6">
+            <ESGManagement 
+              esgData={formData.esg}
+              onESGChange={(esgData) => setFormData({...formData, esg: esgData})}
+              isEditing={false}
+            />
+          </div>
+
           <div className="flex gap-4">
             <button
               type="button"
