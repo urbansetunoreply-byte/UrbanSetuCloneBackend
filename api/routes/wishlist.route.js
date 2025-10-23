@@ -4,13 +4,17 @@ import {
     addToWishlist, 
     removeFromWishlist, 
     checkWishlistStatus,
-    getWishlistCount 
+    getWishlistCount,
+    getPropertyWishlistCount
 } from '../controllers/wishlist.controller.js';
 import { verifyToken } from '../utils/verify.js';
 
 const router = express.Router();
 
-// All routes require authentication
+// Get wishlist count for a specific property (public route - no auth required)
+router.get('/property-count/:listingId', getPropertyWishlistCount);
+
+// All other routes require authentication
 router.use(verifyToken);
 
 // Get user's wishlist

@@ -105,6 +105,7 @@ export default function Listing() {
   const [isInWatchlist, setIsInWatchlist] = useState(false);
   const [watchlistLoading, setWatchlistLoading] = useState(false);
   const [watchlistCount, setWatchlistCount] = useState(0);
+  const [wishlistCount, setWishlistCount] = useState(0);
   const [showAIRecommendations, setShowAIRecommendations] = useState(false);
   const refreshWatchlistCount = async () => {
     try {
@@ -112,6 +113,16 @@ export default function Listing() {
       if (res.ok) {
         const data = await res.json();
         setWatchlistCount(data.count || 0);
+      }
+    } catch (e) {}
+  };
+
+  const fetchWishlistCount = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/wishlist/property-count/${params.listingId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setWishlistCount(data.count || 0);
       }
     } catch (e) {}
   };
@@ -888,6 +899,7 @@ export default function Listing() {
       }
     };
     fetchListing();
+    fetchWishlistCount();
     // Refresh watchlist count for admins
     if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
       refreshWatchlistCount();
@@ -1447,8 +1459,12 @@ export default function Listing() {
                       }
                       if (isInWishlist(listing._id)) {
                         removeFromWishlist(listing._id);
+                        // Update wishlist count
+                        setWishlistCount(prev => Math.max(0, prev - 1));
                       } else {
                         addToWishlist(listing);
+                        // Update wishlist count
+                        setWishlistCount(prev => prev + 1);
                         //toast.success('Property added to your wishlist.');
                       }
                     }}
@@ -1634,6 +1650,13 @@ export default function Listing() {
                   <p className="text-xs text-gray-600">Age</p>
                   <p className="font-semibold">
                     {listing.propertyAge ? `${listing.propertyAge} years` : 'Not specified'}
+                  </p>
+                </div>
+                <div className="bg-white p-3 rounded-lg shadow-sm text-center">
+                  <FaHeart className="mx-auto text-red-500 mb-1" />
+                  <p className="text-xs text-gray-600">Wishlisted</p>
+                  <p className="font-semibold">
+                    {wishlistCount} {wishlistCount === 1 ? 'user' : 'users'}
                   </p>
                 </div>
               </div>

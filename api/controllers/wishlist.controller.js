@@ -118,4 +118,20 @@ export const getWishlistCount = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
+};
+
+// Get wishlist count for a specific property
+export const getPropertyWishlistCount = async (req, res, next) => {
+    try {
+        const { listingId } = req.params;
+        
+        const count = await Wishlist.countDocuments({ listingId });
+        
+        res.status(200).json({
+            success: true,
+            count
+        });
+    } catch (error) {
+        next(error);
+    }
 }; 
