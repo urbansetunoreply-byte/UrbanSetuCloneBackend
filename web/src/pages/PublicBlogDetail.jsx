@@ -8,7 +8,11 @@ import { FaCalendar, FaUser, FaEye, FaHeart, FaRegHeart, FaTag, FaArrowLeft, FaS
 import ImagePreview from '../components/ImagePreview';
 import VideoPreview from '../components/VideoPreview';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const PublicBlogDetail = () => {
+  // Set page title
+  usePageTitle("Blog Detail - View Blog");
+
   const { slug } = useParams();
   const navigate = useNavigate();
   const [blog, setBlog] = useState(null);

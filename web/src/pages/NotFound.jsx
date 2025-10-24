@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FaExclamationTriangle } from "react-icons/fa";
+import { FaExclamationTriangle } from "react-icons/fa"; // Not used in this component but kept for future reference (in case we need to add a icon later) 
 import { useSelector } from "react-redux";
 import duckImg from "../assets/duck-go-final.gif";
 

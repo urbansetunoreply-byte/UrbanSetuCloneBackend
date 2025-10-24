@@ -3,7 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaGlobe, FaHome, FaEye, FaEyeSlash, FaImage, FaTags, FaTimes, FaExternalLinkAlt, FaVideo } from 'react-icons/fa';
 import BlogEditModal from '../components/BlogEditModal';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const AdminBlogs = () => {
+  // Set page title
+  usePageTitle("Blogs - Admin Panel");
+
   const navigate = useNavigate();
   const [blogs, setBlogs] = useState([]);
   const [properties, setProperties] = useState([]);

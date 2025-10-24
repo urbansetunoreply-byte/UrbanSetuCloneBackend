@@ -2,7 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaGlobe, FaHome, FaEye, FaEyeSlash, FaTimes, FaExternalLinkAlt, FaThumbsUp, FaThumbsDown } from 'react-icons/fa';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const AdminFAQs = () => {
+  // Set page title
+  usePageTitle("FAQs - Admin Panel");
+
   const navigate = useNavigate();
   const [faqs, setFaqs] = useState([]);
   const [properties, setProperties] = useState([]);

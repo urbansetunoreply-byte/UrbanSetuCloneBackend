@@ -9,7 +9,11 @@ import BlogEditModal from '../components/BlogEditModal';
 import ImagePreview from '../components/ImagePreview';
 import VideoPreview from '../components/VideoPreview';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const AdminBlogDetail = () => {
+  // Set page title
+  usePageTitle("Blog Detail - Admin Panel");
+  
   const { slug } = useParams();
   const navigate = useNavigate();
   const [blog, setBlog] = useState(null);

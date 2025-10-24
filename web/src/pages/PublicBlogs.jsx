@@ -2,7 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FaSearch, FaFilter, FaCalendar, FaUser, FaEye, FaHeart, FaTag } from 'react-icons/fa';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const PublicBlogs = () => {
+  // Set page title
+  usePageTitle("Blogs - Real Estate Blog Portal");
+
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { FaSearch, FaChevronDown, FaChevronUp, FaThumbsUp, FaThumbsDown, FaRegThumbsUp, FaRegThumbsDown, FaFilter } from 'react-icons/fa';
 
+import { usePageTitle } from '../hooks/usePageTitle';
 const PublicFAQs = () => {
+  // Set page title
+  usePageTitle("FAQs - Real Estate FAQ Portal");
+
+
   const [faqs, setFaqs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

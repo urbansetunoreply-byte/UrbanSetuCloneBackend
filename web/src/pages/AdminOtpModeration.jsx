@@ -5,9 +5,9 @@ import { useSelector } from "react-redux";
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export default function AdminSecurityModeration() {
+export default function AdminOtpModeration() {
   // Set page title
-  usePageTitle("OTP Moderation - Security Management");
+  usePageTitle("OTP Moderation - OTP Management");
 
   const { currentUser } = useSelector((state) => state.user);
   const [loading, setLoading] = useState(true);
