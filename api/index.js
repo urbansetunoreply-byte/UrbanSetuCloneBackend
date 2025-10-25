@@ -74,9 +74,9 @@ import bcryptjs from 'bcryptjs';
 
 dotenv.config();
 
-console.log("MongoDB URI:", process.env.MONGO_URI);
+console.log("MongoDB URI:", process.env.MONGO);
 
-if (!process.env.MONGO_URI) {
+if (!process.env.MONGO) {
     console.error("Error: MONGO URI is not defined in .env file!");
     process.exit(1);
 }
@@ -95,7 +95,7 @@ const mongoOptions = {
 const connectToMongoDB = async (retries = 3) => {
     for (let i = 0; i < retries; i++) {
         try {
-            await mongoose.connect(process.env.MONGO_URI, mongoOptions);
+            await mongoose.connect(process.env.MONGO, mongoOptions);
             console.log("Connected to MongoDB!");
             
             // Run migration to fix refundId index
