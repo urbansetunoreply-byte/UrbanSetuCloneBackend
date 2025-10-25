@@ -62,7 +62,10 @@ export default function CreateListing() {
         compliance: 'Not Rated',
         riskManagement: 'Not Rated',
         stakeholderEngagement: 'Not Rated'
-      }
+      },
+      esgScore: 0,
+      esgRating: 'Not Rated',
+      lastEsgUpdate: new Date().toISOString()
     },
   });
 

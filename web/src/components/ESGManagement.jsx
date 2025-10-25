@@ -57,6 +57,7 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
 
     // Ensure initial calculation happens on component mount
     useEffect(() => {
+        console.log('ESGManagement: Initial calculation on mount');
         calculateESGScore(esg);
     }, []);
 
