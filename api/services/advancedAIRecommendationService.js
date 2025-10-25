@@ -421,7 +421,7 @@ const matrixFactorizationRecommendations = async (userId, allProperties, userPro
             if (!property || !property._id) continue;
             
             const predictedRating = predictRating(userItemMatrix, userId, property._id);
-            if (predictedRating > 0.6) { // Threshold for recommendation
+            if (predictedRating > 0.3) { // Lowered threshold for recommendation
                 recommendations.push({
                     property,
                     score: predictedRating,
@@ -434,14 +434,14 @@ const matrixFactorizationRecommendations = async (userId, allProperties, userPro
         // If no recommendations found, use fallback
         if (recommendations.length === 0) {
             console.log('📊 No matrix factorization recommendations found, using fallback');
-            return getFallbackRecommendations(allProperties, 10);
+            return getFallbackRecommendations(allProperties.length > 0 ? allProperties : [], 10);
         }
         
         return recommendations.sort((a, b) => b.score - a.score);
     } catch (error) {
         console.error('Error in matrix factorization:', error);
         // Return fallback on error
-        return getFallbackRecommendations(allProperties, 10);
+        return getFallbackRecommendations(allProperties.length > 0 ? allProperties : [], 10);
     }
 };
 
@@ -477,7 +477,7 @@ const createUserItemMatrix = async (userId, properties) => {
     return matrix;
 };
 
-// Predict rating using simplified matrix factorization
+// Predict rating using simplified matrix factorization (improved)
 const predictRating = (matrix, userId, propertyId) => {
     // Simplified prediction algorithm
     // In production, this would use proper SVD decomposition
@@ -492,6 +492,11 @@ const predictRating = (matrix, userId, propertyId) => {
         }
     });
     
+    // If no similar users, return base score
+    if (Object.keys(propertyInteractions).length === 0) {
+        return 0.4; // Base score for properties with no interaction data
+    }
+    
     // Calculate similarity-based prediction
     let totalSimilarity = 0;
     let weightedSum = 0;
@@ -504,7 +509,9 @@ const predictRating = (matrix, userId, propertyId) => {
         }
     });
     
-    return totalSimilarity > 0 ? weightedSum / totalSimilarity / 2 : 0; // Normalize
+    // Improved normalization with minimum score
+    const prediction = totalSimilarity > 0 ? weightedSum / totalSimilarity / 2 : 0.4;
+    return Math.max(0.3, Math.min(1, prediction));
 };
 
 // Calculate user similarity using cosine similarity
@@ -560,7 +567,7 @@ const randomForestRecommendations = async (userProfile, allProperties) => {
             // Simplified Random Forest prediction
             const prediction = predictWithRandomForest(features, userProfile);
             
-            if (prediction.score > 0.7) {
+            if (prediction.score > 0.4) { // Lowered threshold
                 recommendations.push({
                     property,
                     score: prediction.score,
@@ -574,14 +581,14 @@ const randomForestRecommendations = async (userProfile, allProperties) => {
         // If no recommendations found, use fallback
         if (recommendations.length === 0) {
             console.log('📊 No random forest recommendations found, using fallback');
-            return getFallbackRecommendations(allProperties, 10);
+            return getFallbackRecommendations(allProperties.length > 0 ? allProperties : [], 10);
         }
         
         return recommendations.sort((a, b) => b.score - a.score);
     } catch (error) {
         console.error('Error in random forest:', error);
         // Return fallback on error
-        return getFallbackRecommendations(allProperties, 10);
+        return getFallbackRecommendations(allProperties.length > 0 ? allProperties : [], 10);
     }
 };
 
@@ -593,54 +600,60 @@ const predictWithRandomForest = (features, userProfile) => {
     let confidence = 0;
     const reasons = [];
     
-    // Price compatibility
+    // Price compatibility (improved)
     const priceScore = calculatePriceCompatibility(features, userProfile);
     score += priceScore * 0.3;
     confidence += 0.3;
-    if (priceScore > 0.7) reasons.push('Price matches your budget');
+    if (priceScore > 0.6) reasons.push('Price matches your budget');
     
-    // Location preference
+    // Location preference (improved)
     const locationScore = calculateLocationCompatibility(features, userProfile);
     score += locationScore * 0.25;
     confidence += 0.25;
-    if (locationScore > 0.7) reasons.push('Location matches your preferences');
+    if (locationScore > 0.5) reasons.push('Location matches your preferences');
     
-    // Property type
+    // Property type (improved)
     const typeScore = calculateTypeCompatibility(features, userProfile);
     score += typeScore * 0.2;
     confidence += 0.2;
-    if (typeScore > 0.7) reasons.push('Property type matches your interests');
+    if (typeScore > 0.4) reasons.push('Property type matches your interests');
     
-    // Amenities
+    // Amenities (improved)
     const amenityScore = calculateAmenityCompatibility(features, userProfile);
     score += amenityScore * 0.15;
     confidence += 0.15;
-    if (amenityScore > 0.7) reasons.push('Amenities match your requirements');
+    if (amenityScore > 0.5) reasons.push('Amenities match your requirements');
     
-    // Market factors
+    // Market factors (improved)
     const marketScore = calculateMarketCompatibility(features, userProfile);
     score += marketScore * 0.1;
     confidence += 0.1;
-    if (marketScore > 0.7) reasons.push('Good market value');
+    if (marketScore > 0.5) reasons.push('Good market value');
+    
+    // Ensure minimum score for properties with basic compatibility
+    const finalScore = Math.max(0.3, Math.min(1, score));
+    const finalConfidence = Math.max(0.5, Math.min(1, confidence));
     
     return {
-        score: Math.min(1, score),
-        confidence: Math.min(1, confidence),
-        reasons
+        score: finalScore,
+        confidence: finalConfidence,
+        reasons: reasons.length > 0 ? reasons : ['Property matches your general preferences']
     };
 };
 
-// Compatibility calculation functions
+// Compatibility calculation functions (improved)
 const calculatePriceCompatibility = (features, userProfile) => {
     const userAvgPrice = userProfile.avgPrice || 0;
     const propertyPrice = features.price || 0;
     
-    if (userAvgPrice === 0) return 0.5;
+    if (userAvgPrice === 0) return 0.6; // Higher base score for new users
     
     const priceDiff = Math.abs(propertyPrice - userAvgPrice) / userAvgPrice;
     const priceSensitivity = userProfile.priceSensitivity || 0.5;
     
-    return Math.max(0, 1 - (priceDiff * (1 + priceSensitivity)));
+    // More lenient price matching
+    const compatibility = Math.max(0.2, 1 - (priceDiff * (0.5 + priceSensitivity * 0.5)));
+    return Math.min(1, compatibility);
 };
 
 const calculateLocationCompatibility = (features, userProfile) => {
@@ -650,28 +663,46 @@ const calculateLocationCompatibility = (features, userProfile) => {
     
     const cityPreference = preferredCities[city] ? preferredCities[city] / userProfile.totalInteractions : 0;
     
-    return cityPreference * (1 + locationLoyalty);
+    // Base score for any location, bonus for preferred cities
+    const baseScore = 0.4;
+    const bonusScore = cityPreference * (1 + locationLoyalty);
+    
+    return Math.min(1, baseScore + bonusScore);
 };
 
 const calculateTypeCompatibility = (features, userProfile) => {
     const preferredTypes = userProfile.preferredTypes || {};
     const type = features.type || 'unknown';
     
-    return preferredTypes[type] ? preferredTypes[type] / userProfile.totalInteractions : 0;
+    const typePreference = preferredTypes[type] ? preferredTypes[type] / userProfile.totalInteractions : 0;
+    
+    // Base score for any type, bonus for preferred types
+    const baseScore = 0.3;
+    const bonusScore = typePreference;
+    
+    return Math.min(1, baseScore + bonusScore);
 };
 
 const calculateAmenityCompatibility = (features, userProfile) => {
     const amenityImportance = userProfile.amenityImportance || 0.5;
     const amenitiesScore = features.amenitiesScore || 0;
     
-    return amenitiesScore * (1 + amenityImportance);
+    // Base score for any amenities, bonus based on importance
+    const baseScore = 0.4;
+    const bonusScore = amenitiesScore * (0.5 + amenityImportance * 0.5);
+    
+    return Math.min(1, baseScore + bonusScore);
 };
 
 const calculateMarketCompatibility = (features, userProfile) => {
     const marketDemand = features.marketDemand || 0;
     const priceCompetitiveness = features.priceCompetitiveness || 0;
     
-    return (marketDemand + priceCompetitiveness) / 2;
+    // Base score for market factors
+    const baseScore = 0.5;
+    const marketScore = (marketDemand + priceCompetitiveness) / 2;
+    
+    return Math.min(1, baseScore + marketScore * 0.5);
 };
 
 // Neural Network (MLP) for Deep Learning Recommendations
@@ -695,7 +726,7 @@ const neuralNetworkRecommendations = async (userProfile, allProperties) => {
             // Simplified Neural Network prediction
             const prediction = predictWithNeuralNetwork(features, userProfile);
             
-            if (prediction.score > 0.65) {
+            if (prediction.score > 0.4) { // Lowered threshold
                 recommendations.push({
                     property,
                     score: prediction.score,
@@ -709,53 +740,59 @@ const neuralNetworkRecommendations = async (userProfile, allProperties) => {
         // If no recommendations found, use fallback
         if (recommendations.length === 0) {
             console.log('📊 No neural network recommendations found, using fallback');
-            return getFallbackRecommendations(allProperties, 10);
+            return getFallbackRecommendations(allProperties.length > 0 ? allProperties : [], 10);
         }
         
         return recommendations.sort((a, b) => b.score - a.score);
     } catch (error) {
         console.error('Error in neural network:', error);
         // Return fallback on error
-        return getFallbackRecommendations(allProperties, 10);
+        return getFallbackRecommendations(allProperties.length > 0 ? allProperties : [], 10);
     }
 };
 
-// Simplified Neural Network prediction
+// Simplified Neural Network prediction (improved)
 const predictWithNeuralNetwork = (features, userProfile) => {
     // This is a simplified version - in production, use TensorFlow.js or similar
     
-    // Input layer features
+    // Input layer features (normalized and bounded)
     const inputFeatures = [
-        features.price / 10000000, // Normalize price
-        features.bedrooms / 10,
-        features.bathrooms / 10,
-        features.area / 10000,
-        features.pricePerSqFt / 1000,
-        features.amenitiesScore,
-        features.marketDemand,
-        features.priceCompetitiveness,
-        userProfile.priceSensitivity,
-        userProfile.locationLoyalty,
-        userProfile.amenityImportance,
-        userProfile.budgetFlexibility
+        Math.min(1, Math.max(0, features.price / 10000000)), // Normalize price
+        Math.min(1, Math.max(0, features.bedrooms / 10)),
+        Math.min(1, Math.max(0, features.bathrooms / 10)),
+        Math.min(1, Math.max(0, features.area / 10000)),
+        Math.min(1, Math.max(0, features.pricePerSqFt / 1000)),
+        Math.min(1, Math.max(0, features.amenitiesScore)),
+        Math.min(1, Math.max(0, features.marketDemand)),
+        Math.min(1, Math.max(0, features.priceCompetitiveness)),
+        Math.min(1, Math.max(0, userProfile.priceSensitivity)),
+        Math.min(1, Math.max(0, userProfile.locationLoyalty)),
+        Math.min(1, Math.max(0, userProfile.amenityImportance)),
+        Math.min(1, Math.max(0, userProfile.budgetFlexibility))
     ];
     
-    // Hidden layer 1 (simplified)
+    // Hidden layer 1 (deterministic, no random noise)
     const hidden1 = inputFeatures.map(feature => 
-        Math.max(0, feature * 0.5 + Math.random() * 0.1 - 0.05) // ReLU activation
+        Math.max(0, feature * 0.6 + 0.2) // ReLU activation with bias
     );
     
-    // Hidden layer 2
+    // Hidden layer 2 (deterministic)
     const hidden2 = hidden1.map(feature => 
-        Math.max(0, feature * 0.3 + Math.random() * 0.1 - 0.05)
+        Math.max(0, feature * 0.4 + 0.1)
     );
     
-    // Output layer
-    const output = hidden2.reduce((sum, feature) => sum + feature, 0) / hidden2.length;
+    // Output layer with weighted combination
+    const output = hidden2.reduce((sum, feature, index) => {
+        const weight = 1 / hidden2.length; // Equal weights
+        return sum + feature * weight;
+    }, 0);
+    
+    // Ensure reasonable score range
+    const finalScore = Math.max(0.3, Math.min(1, output));
     
     return {
-        score: Math.min(1, Math.max(0, output)),
-        confidence: 0.8, // Simplified confidence
+        score: finalScore,
+        confidence: Math.max(0.6, Math.min(1, finalScore + 0.2)),
         hiddenFactors: {
             priceWeight: hidden1[0],
             locationWeight: hidden1[1],
