@@ -15,6 +15,9 @@ export const createListing=async (req,res,next)=>{
     try{
         const { assignToEmail, ...listingData } = req.body;
         
+        // Debug ESG data
+        console.log('🔍 CreateListing - ESG data received:', JSON.stringify(listingData.esg, null, 2));
+        
         // Determine the user reference for the listing
         let userRef = req.user.id; // Default to current admin
         
@@ -40,6 +43,9 @@ export const createListing=async (req,res,next)=>{
             ...listingData,
             userRef: userRef
         });
+        
+        // Debug saved ESG data
+        console.log('💾 CreateListing - ESG data saved:', JSON.stringify(listing.esg, null, 2));
         
         // Get the user who will receive the email
         const listingOwner = await User.findById(userRef);
@@ -313,6 +319,9 @@ export const updateListing=async (req,res,next)=>{
     if (!listing){
         return next(errorHandler(404,"Listing not found"))
     }
+    
+    // Debug ESG data in update
+    console.log('🔍 UpdateListing - ESG data received:', JSON.stringify(req.body.esg, null, 2));
 
     // Allow admin, rootadmin, or isDefaultAdmin to edit any listing, regular users can only edit their own
     if (
@@ -339,6 +348,9 @@ export const updateListing=async (req,res,next)=>{
         const oldEffective = (listing.offer && oldDiscount) ? oldDiscount : oldRegular;
 
         const updateListing=await Listing.findByIdAndUpdate(req.params.id, updateData, {new:true})
+        
+        // Debug updated ESG data
+        console.log('💾 UpdateListing - ESG data saved:', JSON.stringify(updateListing.esg, null, 2));
 
         // Notify watchers if price dropped
         try {
@@ -481,6 +493,10 @@ export const getListing =async (req,res,next)=>{
         if (!listing){
             return next(errorHandler(404,"Listing not found"))
         }
+        
+        // Debug ESG data being returned
+        console.log('📤 GetListing - ESG data returned:', JSON.stringify(listing.esg, null, 2));
+        
         res.status(200)
         res.json(listing)
     }

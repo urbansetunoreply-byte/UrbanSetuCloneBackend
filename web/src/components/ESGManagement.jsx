@@ -49,8 +49,16 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
             
             // Ensure parent gets the data with calculated values
             onESGChange(esgData);
+        } else {
+            // If no esgData provided, calculate score for default empty structure
+            calculateESGScore(esg);
         }
     }, [esgData]);
+
+    // Ensure initial calculation happens on component mount
+    useEffect(() => {
+        calculateESGScore(esg);
+    }, []);
 
     const handleChange = (category, field, value) => {
         setSaving(true);
@@ -249,7 +257,7 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
         if (score >= 30) return 'CCC';
         if (score >= 20) return 'CC';
         if (score >= 10) return 'C';
-        return 'D';
+        return 'Not Rated';
     };
 
     const getScoreColor = (score) => {
