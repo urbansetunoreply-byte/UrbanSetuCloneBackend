@@ -1006,6 +1006,17 @@ const getFallbackRecommendations = async (allProperties, limit = 10) => {
     try {
         console.log('🔄 Generating fallback recommendations for new user');
         
+        // If no properties provided, get fresh data
+        if (!allProperties || allProperties.length === 0) {
+            console.log('🔄 No properties provided, fetching fresh data for fallback');
+            allProperties = await Listing.find({}).limit(1000);
+        }
+        
+        if (allProperties.length === 0) {
+            console.log('🔄 No properties available for fallback recommendations');
+            return [];
+        }
+        
         // Get trending/popular properties as fallback
         const trendingProperties = await Listing.aggregate([
             {
