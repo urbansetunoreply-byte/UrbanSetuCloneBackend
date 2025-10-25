@@ -4,6 +4,8 @@ import { FaLeaf, FaUsers, FaShieldAlt, FaStar, FaChartLine, FaInfoCircle, FaChev
 const ESGDisplay = ({ esg, className = "" }) => {
     const [expandedSection, setExpandedSection] = useState(null);
 
+    console.log('ESGDisplay: Received ESG data:', esg);
+
     if (!esg) {
         return (
             <div className={`bg-gray-50 rounded-lg p-4 ${className}`}>

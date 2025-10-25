@@ -46,8 +46,19 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
                 setCalculatedRating(esgData.esgRating);
             }
             calculateESGScore(esgData);
+            
+            // Ensure parent gets the data with calculated values
+            onESGChange(esgData);
+        } else {
+            // If no esgData provided, calculate score for default empty structure
+            calculateESGScore(esg);
         }
     }, [esgData]);
+
+    // Ensure initial calculation happens on component mount
+    useEffect(() => {
+        calculateESGScore(esg);
+    }, []);
 
     const handleChange = (category, field, value) => {
         setSaving(true);
@@ -117,7 +128,7 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
         setCalculatedScore(finalScore);
         setCalculatedRating(finalRating);
         
-        // Include calculated score and rating in the data
+        // Include calculated score and rating inside the esg object
         const esgWithCalculations = {
             ...newEsg,
             esgScore: finalScore,
@@ -196,6 +207,16 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
         const finalRating = getESGRating(finalScore);
         setCalculatedScore(finalScore);
         setCalculatedRating(finalRating);
+        
+        // Update parent with calculated values
+        const esgWithCalculations = {
+            ...esgData,
+            esgScore: finalScore,
+            esgRating: finalRating,
+            lastEsgUpdate: new Date().toISOString()
+        };
+        console.log('ESGManagement: Sending calculated values:', { esgScore: finalScore, esgRating: finalRating });
+        onESGChange(esgWithCalculations);
     };
 
     const getEnergyRatingScore = (rating) => {
@@ -236,7 +257,7 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
         if (score >= 30) return 'CCC';
         if (score >= 20) return 'CC';
         if (score >= 10) return 'C';
-        return 'D';
+        return 'Not Rated';
     };
 
     const getScoreColor = (score) => {
@@ -590,6 +611,7 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
                             esgRating: calculatedRating,
                             lastEsgUpdate: new Date().toISOString()
                         };
+                        console.log('ESGManagement: Save button clicked, sending:', { esgScore: calculatedScore, esgRating: calculatedRating });
                         onESGChange(esgWithCalculations);
                     }}
                     className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"

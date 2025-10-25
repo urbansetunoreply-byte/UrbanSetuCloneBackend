@@ -37,7 +37,33 @@ export default function CreateListing() {
     floor: "",
     propertyAge: "",
     // ESG Data
-    esg: null,
+    esg: {
+      environmental: {
+        energyRating: 'Not Rated',
+        carbonFootprint: 0,
+        renewableEnergy: false,
+        waterEfficiency: 'Not Rated',
+        wasteManagement: 'Not Rated',
+        greenCertification: 'None',
+        solarPanels: false,
+        rainwaterHarvesting: false
+      },
+      social: {
+        accessibility: 'Not Rated',
+        communityImpact: 0,
+        affordableHousing: false,
+        localEmployment: 0,
+        socialAmenities: [],
+        diversityInclusion: 'Not Rated'
+      },
+      governance: {
+        transparency: 'Not Rated',
+        ethicalStandards: 'Not Rated',
+        compliance: 'Not Rated',
+        riskManagement: 'Not Rated',
+        stakeholderEngagement: 'Not Rated'
+      }
+    },
   });
 
   const [error, setError] = useState("");
