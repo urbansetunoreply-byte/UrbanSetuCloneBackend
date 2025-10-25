@@ -8,6 +8,7 @@ import {
 } from '../services/advancedAIRecommendationService.js';
 import { errorHandler } from '../utils/error.js';
 import Listing from '../models/listing.model.js';
+import Wishlist from '../models/wishlist.model.js';
 
 /**
  * Advanced AI Recommendation Controller
@@ -27,21 +28,26 @@ export const getAdvancedRecommendations = async (req, res, next) => {
         let recommendations = [];
 
         try {
+            // Get user profile and properties for individual models
+            const userProfile = await createAdvancedUserProfile(userId);
+            const allProperties = await Listing.find({}).limit(1000);
+            
+            // Get user's current wishlist to exclude from individual model recommendations
+            const userWishlist = await Wishlist.find({ userId });
+            const wishlistPropertyIds = userWishlist.map(item => item.listingId.toString());
+            const availableProperties = allProperties.filter(
+                property => !wishlistPropertyIds.includes(property._id.toString())
+            );
+            
             switch (model) {
                 case 'matrix-factorization':
-                    const userProfileMF = await createAdvancedUserProfile(userId);
-                    const allPropertiesMF = await Listing.find({}).limit(1000);
-                    recommendations = await matrixFactorizationRecommendations(userId, allPropertiesMF, userProfileMF);
+                    recommendations = await matrixFactorizationRecommendations(userId, availableProperties, userProfile);
                     break;
                 case 'random-forest':
-                    const userProfileRF = await createAdvancedUserProfile(userId);
-                    const allPropertiesRF = await Listing.find({}).limit(1000);
-                    recommendations = await randomForestRecommendations(userProfileRF, allPropertiesRF);
+                    recommendations = await randomForestRecommendations(userProfile, availableProperties);
                     break;
                 case 'neural-network':
-                    const userProfileNN = await createAdvancedUserProfile(userId);
-                    const allPropertiesNN = await Listing.find({}).limit(1000);
-                    recommendations = await neuralNetworkRecommendations(userProfileNN, allPropertiesNN);
+                    recommendations = await neuralNetworkRecommendations(userProfile, availableProperties);
                     break;
                 case 'ensemble':
                 default:
