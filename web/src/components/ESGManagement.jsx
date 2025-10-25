@@ -38,6 +38,13 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
     useEffect(() => {
         if (esgData) {
             setEsg(esgData);
+            // If esgData already has calculated values, use them
+            if (esgData.esgScore !== undefined) {
+                setCalculatedScore(esgData.esgScore);
+            }
+            if (esgData.esgRating !== undefined) {
+                setCalculatedRating(esgData.esgRating);
+            }
             calculateESGScore(esgData);
         }
     }, [esgData]);
@@ -52,8 +59,72 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
             }
         };
         setEsg(newEsg);
-        calculateESGScore(newEsg);
-        onESGChange(newEsg);
+        
+        // Calculate score and rating
+        let score = 0;
+        let factors = 0;
+
+        // Environmental factors (40% weight)
+        if (newEsg.environmental?.energyRating && newEsg.environmental.energyRating !== 'Not Rated') {
+            const energyScore = getEnergyRatingScore(newEsg.environmental.energyRating);
+            score += energyScore * 0.4;
+            factors += 0.4;
+        }
+
+        if (newEsg.environmental?.renewableEnergy) {
+            score += 20 * 0.4;
+            factors += 0.4;
+        }
+
+        if (newEsg.environmental?.greenCertification && newEsg.environmental.greenCertification !== 'None') {
+            score += 15 * 0.4;
+            factors += 0.4;
+        }
+
+        // Social factors (30% weight)
+        if (newEsg.social?.communityImpact > 0) {
+            score += Math.min(newEsg.social.communityImpact, 20) * 0.3;
+            factors += 0.3;
+        }
+
+        if (newEsg.social?.affordableHousing) {
+            score += 15 * 0.3;
+            factors += 0.3;
+        }
+
+        if (newEsg.social?.accessibility && newEsg.social.accessibility !== 'Not Rated') {
+            const accessibilityScore = getAccessibilityScore(newEsg.social.accessibility);
+            score += accessibilityScore * 0.3;
+            factors += 0.3;
+        }
+
+        // Governance factors (30% weight)
+        if (newEsg.governance?.transparency && newEsg.governance.transparency !== 'Not Rated') {
+            const transparencyScore = getRatingScore(newEsg.governance.transparency);
+            score += transparencyScore * 0.3;
+            factors += 0.3;
+        }
+
+        if (newEsg.governance?.compliance && newEsg.governance.compliance !== 'Not Rated') {
+            const complianceScore = getComplianceScore(newEsg.governance.compliance);
+            score += complianceScore * 0.3;
+            factors += 0.3;
+        }
+
+        const finalScore = factors > 0 ? Math.min(Math.round(score / factors * 5), 100) : 0;
+        const finalRating = getESGRating(finalScore);
+        
+        setCalculatedScore(finalScore);
+        setCalculatedRating(finalRating);
+        
+        // Include calculated score and rating in the data
+        const esgWithCalculations = {
+            ...newEsg,
+            esgScore: finalScore,
+            esgRating: finalRating,
+            lastEsgUpdate: new Date().toISOString()
+        };
+        onESGChange(esgWithCalculations);
         
         // Simulate saving delay
         setTimeout(() => {
@@ -122,8 +193,9 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
         }
 
         const finalScore = factors > 0 ? Math.min(Math.round(score / factors * 5), 100) : 0;
+        const finalRating = getESGRating(finalScore);
         setCalculatedScore(finalScore);
-        setCalculatedRating(getESGRating(finalScore));
+        setCalculatedRating(finalRating);
     };
 
     const getEnergyRatingScore = (rating) => {
@@ -511,7 +583,15 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
             <div className="mt-6 flex justify-end">
                 <button
                     type="button"
-                    onClick={() => onESGChange(esg)}
+                    onClick={() => {
+                        const esgWithCalculations = {
+                            ...esg,
+                            esgScore: calculatedScore,
+                            esgRating: calculatedRating,
+                            lastEsgUpdate: new Date().toISOString()
+                        };
+                        onESGChange(esgWithCalculations);
+                    }}
                     className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                 >
                     <FaSave />
