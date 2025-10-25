@@ -141,6 +141,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         windowMs: currentUser ? (currentUser.role === 'admin' ? 24 * 60 * 60 * 1000 : 60 * 60 * 1000) : 15 * 60 * 1000
     });
     const [showSignInModal, setShowSignInModal] = useState(false);
+    const [showSignInOverlay, setShowSignInOverlay] = useState(false);
     const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
     const [showDeleteSelectedModal, setShowDeleteSelectedModal] = useState(false);
     const [deleteTargetSessionId, setDeleteTargetSessionId] = useState(null);
@@ -371,6 +372,19 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 if (data.success && data.rateLimit) {
                     console.log('Frontend - Setting rate limit info:', data.rateLimit);
                     setRateLimitInfo(data.rateLimit);
+                    
+                    // Show appropriate modal if rate limit is exceeded
+                    if (data.rateLimit.remaining <= 0 && data.rateLimit.role !== 'rootadmin') {
+                        if (currentUser) {
+                            setShowSignInModal(true);
+                        } else {
+                            setShowSignInOverlay(true);
+                        }
+                    } else {
+                        // Hide modals if rate limit is not exceeded
+                        setShowSignInModal(false);
+                        setShowSignInOverlay(false);
+                    }
                 }
             } else {
                 console.error('Frontend - Rate limit status failed:', response.status, response.statusText);
@@ -387,6 +401,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 resetTime: null,
                 windowMs: currentUser ? (currentUser.role === 'admin' ? 24 * 60 * 60 * 1000 : 60 * 60 * 1000) : 15 * 60 * 1000
             });
+            
+            // Hide modals in fallback case since we're setting full limit
+            setShowSignInModal(false);
+            setShowSignInOverlay(false);
         }
     };
 
@@ -1262,7 +1280,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         console.log('Frontend - Rate limit check:', { remaining: rateLimitInfo.remaining, role: rateLimitInfo.role, limit: rateLimitInfo.limit });
         if (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin') {
             console.log('Frontend - Rate limit exceeded, showing sign-in modal');
-            setShowSignInModal(true);
+            if (currentUser) {
+                setShowSignInModal(true);
+            } else {
+                setShowSignInOverlay(true);
+            }
             return;
         }
 
@@ -1583,7 +1605,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         console.log('Frontend - Retry rate limit check:', { remaining: rateLimitInfo.remaining, role: rateLimitInfo.role, limit: rateLimitInfo.limit });
         if (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin') {
             console.log('Frontend - Retry rate limit exceeded, showing sign-in modal');
-            setShowSignInModal(true);
+            if (currentUser) {
+                setShowSignInModal(true);
+            } else {
+                setShowSignInOverlay(true);
+            }
             return;
         }
         
@@ -5430,7 +5456,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         )}
 
         {/* Sign-in Overlay for Public Users when Prompts Reach Zero */}
-        {!currentUser && rateLimitInfo.remaining <= 0 && (
+        {!currentUser && rateLimitInfo.remaining <= 0 && showSignInOverlay && (
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
                 <div className={`max-w-md mx-4 p-6 rounded-2xl shadow-2xl border-2 border-dashed ${isDarkMode ? 'bg-gray-800/95 border-gray-600' : 'bg-white/95 border-blue-200'} transition-all duration-300`}>
                     <div className="text-center">
@@ -5475,7 +5501,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         </div>
                         <div className="mt-4">
                             <button
-                                onClick={() => setIsOpen(false)}
+                                onClick={() => setShowSignInOverlay(false)}
                                 className={`text-xs ${isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'} transition-colors`}
                             >
                                 Maybe Later
