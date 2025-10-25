@@ -1993,6 +1993,7 @@ export default function Listing() {
           {/* ESG Information Section */}
           {listing.esg ? (
             <div className="p-6 bg-white shadow-md rounded-lg mb-6">
+              {console.log('Listing.jsx: ESG data received:', listing.esg)}
               <ESGDisplay esg={listing.esg} />
             </div>
           ) : (
