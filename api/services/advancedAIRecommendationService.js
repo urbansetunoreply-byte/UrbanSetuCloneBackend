@@ -434,14 +434,23 @@ const matrixFactorizationRecommendations = async (userId, allProperties, userPro
         // If no recommendations found, use fallback
         if (recommendations.length === 0) {
             console.log('📊 No matrix factorization recommendations found, using fallback');
-            return getFallbackRecommendations(allProperties.length > 0 ? allProperties : [], 10);
+            // If allProperties is empty, fetch fresh properties for fallback
+            if (allProperties.length === 0) {
+                const freshProperties = await Listing.find({}).limit(1000);
+                return getFallbackRecommendations(freshProperties, 10);
+            }
+            return getFallbackRecommendations(allProperties, 10);
         }
         
         return recommendations.sort((a, b) => b.score - a.score);
     } catch (error) {
         console.error('Error in matrix factorization:', error);
         // Return fallback on error
-        return getFallbackRecommendations(allProperties.length > 0 ? allProperties : [], 10);
+        if (allProperties.length === 0) {
+            const freshProperties = await Listing.find({}).limit(1000);
+            return getFallbackRecommendations(freshProperties, 10);
+        }
+        return getFallbackRecommendations(allProperties, 10);
     }
 };
 
@@ -567,7 +576,7 @@ const randomForestRecommendations = async (userProfile, allProperties) => {
             // Simplified Random Forest prediction
             const prediction = predictWithRandomForest(features, userProfile);
             
-            if (prediction.score > 0.4) { // Lowered threshold
+            if (prediction.score > 0.25) { // Further lowered threshold for better recommendations
                 recommendations.push({
                     property,
                     score: prediction.score,
@@ -581,14 +590,23 @@ const randomForestRecommendations = async (userProfile, allProperties) => {
         // If no recommendations found, use fallback
         if (recommendations.length === 0) {
             console.log('📊 No random forest recommendations found, using fallback');
-            return getFallbackRecommendations(allProperties.length > 0 ? allProperties : [], 10);
+            // If allProperties is empty, fetch fresh properties for fallback
+            if (allProperties.length === 0) {
+                const freshProperties = await Listing.find({}).limit(1000);
+                return getFallbackRecommendations(freshProperties, 10);
+            }
+            return getFallbackRecommendations(allProperties, 10);
         }
         
         return recommendations.sort((a, b) => b.score - a.score);
     } catch (error) {
         console.error('Error in random forest:', error);
         // Return fallback on error
-        return getFallbackRecommendations(allProperties.length > 0 ? allProperties : [], 10);
+        if (allProperties.length === 0) {
+            const freshProperties = await Listing.find({}).limit(1000);
+            return getFallbackRecommendations(freshProperties, 10);
+        }
+        return getFallbackRecommendations(allProperties, 10);
     }
 };
 
@@ -630,9 +648,9 @@ const predictWithRandomForest = (features, userProfile) => {
     confidence += 0.1;
     if (marketScore > 0.5) reasons.push('Good market value');
     
-    // Ensure minimum score for properties with basic compatibility
-    const finalScore = Math.max(0.3, Math.min(1, score));
-    const finalConfidence = Math.max(0.5, Math.min(1, confidence));
+    // Ensure minimum score for properties with basic compatibility (improved)
+    const finalScore = Math.max(0.2, Math.min(1, score + 0.1)); // Added base score boost
+    const finalConfidence = Math.max(0.4, Math.min(1, confidence + 0.1)); // Improved confidence
     
     return {
         score: finalScore,
@@ -726,7 +744,7 @@ const neuralNetworkRecommendations = async (userProfile, allProperties) => {
             // Simplified Neural Network prediction
             const prediction = predictWithNeuralNetwork(features, userProfile);
             
-            if (prediction.score > 0.4) { // Lowered threshold
+            if (prediction.score > 0.25) { // Further lowered threshold for better recommendations
                 recommendations.push({
                     property,
                     score: prediction.score,
@@ -740,14 +758,23 @@ const neuralNetworkRecommendations = async (userProfile, allProperties) => {
         // If no recommendations found, use fallback
         if (recommendations.length === 0) {
             console.log('📊 No neural network recommendations found, using fallback');
-            return getFallbackRecommendations(allProperties.length > 0 ? allProperties : [], 10);
+            // If allProperties is empty, fetch fresh properties for fallback
+            if (allProperties.length === 0) {
+                const freshProperties = await Listing.find({}).limit(1000);
+                return getFallbackRecommendations(freshProperties, 10);
+            }
+            return getFallbackRecommendations(allProperties, 10);
         }
         
         return recommendations.sort((a, b) => b.score - a.score);
     } catch (error) {
         console.error('Error in neural network:', error);
         // Return fallback on error
-        return getFallbackRecommendations(allProperties.length > 0 ? allProperties : [], 10);
+        if (allProperties.length === 0) {
+            const freshProperties = await Listing.find({}).limit(1000);
+            return getFallbackRecommendations(freshProperties, 10);
+        }
+        return getFallbackRecommendations(allProperties, 10);
     }
 };
 
@@ -771,24 +798,24 @@ const predictWithNeuralNetwork = (features, userProfile) => {
         Math.min(1, Math.max(0, userProfile.budgetFlexibility))
     ];
     
-    // Hidden layer 1 (deterministic, no random noise)
+    // Hidden layer 1 (improved activation)
     const hidden1 = inputFeatures.map(feature => 
-        Math.max(0, feature * 0.6 + 0.2) // ReLU activation with bias
+        Math.max(0, feature * 0.8 + 0.3) // Increased weights and bias for better scores
     );
     
-    // Hidden layer 2 (deterministic)
+    // Hidden layer 2 (improved)
     const hidden2 = hidden1.map(feature => 
-        Math.max(0, feature * 0.4 + 0.1)
+        Math.max(0, feature * 0.6 + 0.2)
     );
     
-    // Output layer with weighted combination
+    // Output layer with weighted combination (improved)
     const output = hidden2.reduce((sum, feature, index) => {
         const weight = 1 / hidden2.length; // Equal weights
         return sum + feature * weight;
     }, 0);
     
-    // Ensure reasonable score range
-    const finalScore = Math.max(0.3, Math.min(1, output));
+    // Ensure reasonable score range with better minimum
+    const finalScore = Math.max(0.2, Math.min(1, output + 0.1)); // Added base score boost
     
     return {
         score: finalScore,
@@ -1068,5 +1095,6 @@ export {
     neuralNetworkRecommendations,
     createAdvancedUserProfile,
     extractAdvancedFeatures,
-    getFallbackRecommendations
+    getFallbackRecommendations,
+    predictWithNeuralNetwork
 };
