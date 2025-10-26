@@ -267,10 +267,14 @@ export const getReviewReports = async (req, res, next) => {
       
       // If no reporterId in meta, try to find the notification and use adminId
       if (!reporterId) {
-        const notification = notifications.find(n => n._id.toString() === report.notificationId);
+        const notification = notifications.find(n => n._id.toString() === report.notificationId.toString());
+        console.log('Looking for notification with ID:', report.notificationId.toString());
+        console.log('Available notification IDs:', notifications.map(n => n._id.toString()));
         if (notification && notification.adminId) {
           reporterId = notification.adminId;
           console.log('Using adminId as reporterId:', reporterId);
+        } else {
+          console.log('No notification found or no adminId for report:', report.notificationId);
         }
       }
       
