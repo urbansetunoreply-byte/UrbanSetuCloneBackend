@@ -261,10 +261,23 @@ export const getReviewReports = async (req, res, next) => {
     // Enhance reports with additional reporter details
     let enhancedReports = await Promise.all(reports.map(async (report) => {
       console.log('Processing report:', report.notificationId, 'reporterId:', report.reporterId);
-      if (report.reporterId) {
+      
+      // Try to get reporter details from multiple sources
+      let reporterId = report.reporterId;
+      
+      // If no reporterId in meta, try to find the notification and use adminId
+      if (!reporterId) {
+        const notification = notifications.find(n => n._id.toString() === report.notificationId);
+        if (notification && notification.adminId) {
+          reporterId = notification.adminId;
+          console.log('Using adminId as reporterId:', reporterId);
+        }
+      }
+      
+      if (reporterId) {
         try {
           const User = (await import('../models/user.model.js')).default;
-          const reporter = await User.findById(report.reporterId).select('email phone role username');
+          const reporter = await User.findById(reporterId).select('email phone role username');
           console.log('Found reporter:', reporter ? { email: reporter.email, phone: reporter.phone, role: reporter.role, username: reporter.username } : 'null');
           if (reporter) {
             const enhanced = {
@@ -280,6 +293,8 @@ export const getReviewReports = async (req, res, next) => {
         } catch (error) {
           console.error('Error fetching reporter details:', error);
         }
+      } else {
+        console.log('No reporterId found for report:', report.notificationId);
       }
       return report;
     }));
