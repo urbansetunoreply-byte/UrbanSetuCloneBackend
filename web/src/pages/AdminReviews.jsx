@@ -676,12 +676,12 @@ export default function AdminReviews() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 py-4 sm:py-10 px-1 sm:px-2 md:px-8 animate-fadeIn">
       <div className="max-w-full sm:max-w-3xl md:max-w-6xl mx-auto bg-white rounded-2xl shadow-2xl p-2 sm:p-4 md:p-8 animate-slideUp">
-        <div className="flex items-center justify-between mb-4 sm:mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-8 gap-4">
           <h1 className="text-2xl sm:text-4xl font-extrabold text-blue-700 drop-shadow animate-fade-in">Review Management</h1>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2">
             <button
               onClick={() => setShowAnalytics(!showAnalytics)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
+              className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg transition text-sm sm:text-base ${
                 showAnalytics 
                   ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' 
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -689,27 +689,27 @@ export default function AdminReviews() {
               title="Toggle Analytics"
             >
               <FaChartLine />
-              Analytics
+              <span className="hidden sm:inline">Analytics</span>
             </button>
             <button
               onClick={() => {
                 setShowReportsModal(true);
                 fetchReports();
               }}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg hover:from-red-600 hover:to-pink-600 transition shadow"
+              className="flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg hover:from-red-600 hover:to-pink-600 transition shadow text-sm sm:text-base"
               title="View Review Reports"
             >
               <FaFlag />
-              Reports
+              <span className="hidden sm:inline">Reports</span>
             </button>
             <button
               onClick={handleRefresh}
               disabled={loading}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition disabled:opacity-50 disabled:cursor-not-allowed shadow"
+              className="flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition disabled:opacity-50 disabled:cursor-not-allowed shadow text-sm sm:text-base"
               title="Refresh reviews"
             >
               <FaSync className={`${loading ? 'animate-spin' : ''}`} />
-              Refresh
+              <span className="hidden sm:inline">Refresh</span>
             </button>
           </div>
         </div>
