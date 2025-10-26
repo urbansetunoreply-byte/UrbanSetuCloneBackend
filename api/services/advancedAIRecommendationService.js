@@ -1025,8 +1025,21 @@ const generateModelExplanation = (recommendation) => {
     return 'AI-powered recommendation based on your preferences';
 };
 
-// Export the advanced recommendation function
-export const getAdvancedPropertyRecommendations = ensembleRecommendations;
+// Import enhanced models
+import { 
+    getEnhancedPropertyRecommendations,
+    enhancedMatrixFactorizationRecommendations,
+    enhancedRandomForestRecommendations,
+    enhancedNeuralNetworkRecommendations,
+    enhancedKMeansRecommendations,
+    enhancedTimeSeriesRecommendations,
+    createEnhancedUserProfile,
+    extractEnhancedFeatures,
+    getEnhancedFallbackRecommendations
+} from './enhancedAIRecommendationService.js';
+
+// Export the advanced recommendation function (now using enhanced models)
+export const getAdvancedPropertyRecommendations = getEnhancedPropertyRecommendations;
 
 // Fallback recommendations for new users
 const getFallbackRecommendations = async (allProperties, limit = 10) => {
