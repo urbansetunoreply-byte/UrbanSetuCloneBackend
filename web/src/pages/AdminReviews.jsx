@@ -1453,110 +1453,121 @@ export default function AdminReviews() {
             </div>
 
             {/* Filters */}
-            <div className="p-4 sm:p-6 border-b border-gray-200 bg-gray-50">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">From Date</label>
-                  <input
-                    type="date"
-                    value={reportsFilters.dateFrom}
-                    onChange={(e) => setReportsFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                  />
+            <div className="p-2 sm:p-4 lg:p-6 border-b border-gray-200 bg-gray-50">
+              {/* Mobile: Collapsible filters, Desktop: Always visible */}
+              <div className="space-y-3">
+                {/* Primary filters - always visible but compact on mobile */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
+                  <div>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">From Date</label>
+                    <input
+                      type="date"
+                      value={reportsFilters.dateFrom}
+                      onChange={(e) => setReportsFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
+                      className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">To Date</label>
+                    <input
+                      type="date"
+                      value={reportsFilters.dateTo}
+                      onChange={(e) => setReportsFilters(prev => ({ ...prev, dateTo: e.target.value }))}
+                      className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Reporter</label>
+                    <input
+                      type="text"
+                      placeholder="Reporter"
+                      value={reportsFilters.reporter}
+                      onChange={(e) => setReportsFilters(prev => ({ ...prev, reporter: e.target.value }))}
+                      className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Search</label>
+                    <input
+                      type="text"
+                      placeholder="Search..."
+                      value={reportsFilters.search}
+                      onChange={(e) => setReportsFilters(prev => ({ ...prev, search: e.target.value }))}
+                      className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">To Date</label>
-                  <input
-                    type="date"
-                    value={reportsFilters.dateTo}
-                    onChange={(e) => setReportsFilters(prev => ({ ...prev, dateTo: e.target.value }))}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Reporter</label>
-                  <input
-                    type="text"
-                    placeholder="Filter by reporter"
-                    value={reportsFilters.reporter}
-                    onChange={(e) => setReportsFilters(prev => ({ ...prev, reporter: e.target.value }))}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
-                  <input
-                    type="text"
-                    placeholder="Search reports..."
-                    value={reportsFilters.search}
-                    onChange={(e) => setReportsFilters(prev => ({ ...prev, search: e.target.value }))}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                  />
-                </div>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-center justify-between">
-                <div className="flex flex-wrap gap-2">
-                  <select
-                    value={reportsFilters.sortBy}
-                    onChange={(e) => setReportsFilters(prev => ({ ...prev, sortBy: e.target.value }))}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                  >
-                    <option value="date">Sort by Date</option>
-                    <option value="reporter">Sort by Reporter</option>
-                    <option value="property">Sort by Property</option>
-                    <option value="category">Sort by Category</option>
-                  </select>
-                  <select
-                    value={reportsFilters.sortOrder}
-                    onChange={(e) => setReportsFilters(prev => ({ ...prev, sortOrder: e.target.value }))}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                  >
-                    <option value="desc">Descending</option>
-                    <option value="asc">Ascending</option>
-                  </select>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      setReportsFilters({
-                        dateFrom: '',
-                        dateTo: '',
-                        reporter: '',
-                        search: '',
-                        sortBy: 'date',
-                        sortOrder: 'desc'
-                      });
-                    }}
-                    className="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
-                  >
-                    Clear Filters
-                  </button>
-                  <button
-                    onClick={fetchReports}
-                    disabled={reportsLoading}
-                    className="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                  >
-                    {reportsLoading ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                        Loading...
-                      </>
-                    ) : (
-                      <>
-                        <FaSync />
-                        Refresh
-                      </>
-                    )}
-                  </button>
+                
+                {/* Secondary controls - compact on mobile */}
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-stretch sm:items-center justify-between">
+                  <div className="flex gap-2">
+                    <select
+                      value={reportsFilters.sortBy}
+                      onChange={(e) => setReportsFilters(prev => ({ ...prev, sortBy: e.target.value }))}
+                      className="flex-1 px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                    >
+                      <option value="date">Date</option>
+                      <option value="reporter">Reporter</option>
+                      <option value="property">Property</option>
+                      <option value="category">Category</option>
+                    </select>
+                    <select
+                      value={reportsFilters.sortOrder}
+                      onChange={(e) => setReportsFilters(prev => ({ ...prev, sortOrder: e.target.value }))}
+                      className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                    >
+                      <option value="desc">↓</option>
+                      <option value="asc">↑</option>
+                    </select>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setReportsFilters({
+                          dateFrom: '',
+                          dateTo: '',
+                          reporter: '',
+                          search: '',
+                          sortBy: 'date',
+                          sortOrder: 'desc'
+                        });
+                      }}
+                      className="px-2 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
+                    >
+                      Clear
+                    </button>
+                    <button
+                      onClick={fetchReports}
+                      disabled={reportsLoading}
+                      className="px-2 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm bg-red-600 text-white rounded-md hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 sm:gap-2"
+                    >
+                      {reportsLoading ? (
+                        <>
+                          <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white"></div>
+                          <span className="hidden sm:inline">Loading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <FaSync className="w-3 h-3 sm:w-4 sm:h-4" />
+                          <span className="hidden sm:inline">Refresh</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Reports List */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+            <div className="flex-1 overflow-y-auto p-2 sm:p-4 lg:p-6 min-h-0">
               {/* Debug info */}
-              <div className="mb-4 p-2 bg-yellow-100 border border-yellow-300 rounded text-xs">
-                Debug: Loading={reportsLoading.toString()}, Error={reportsError}, Total Reports={reports.length}, Filtered={filteredReports.length}
+              <div className="mb-2 sm:mb-4 p-1.5 sm:p-2 bg-yellow-100 border border-yellow-300 rounded text-xs">
+                <div className="hidden sm:block">
+                  Debug: Loading={reportsLoading.toString()}, Error={reportsError}, Total Reports={reports.length}, Filtered={filteredReports.length}
+                </div>
+                <div className="sm:hidden">
+                  L:{reportsLoading.toString()} | T:{reports.length} | F:{filteredReports.length}
+                </div>
               </div>
               {reportsLoading ? (
                 <div className="flex items-center justify-center py-8">
