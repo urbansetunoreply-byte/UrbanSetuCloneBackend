@@ -247,7 +247,67 @@ export const getAIInsights = async (req, res, next) => {
         }
 
         const userId = req.user.id;
-        const recommendations = await getEnhancedPropertyRecommendations(userId, 10);
+        const { model = 'ensemble' } = req.query;
+        
+        let recommendations = [];
+        
+        // Get recommendations based on the specified model
+        switch (model) {
+            case 'matrix-factorization':
+                const userProfile1 = await createEnhancedUserProfile(userId);
+                const allProperties1 = await Listing.find({}).limit(1000);
+                const userWishlist1 = await Wishlist.find({ userId });
+                const wishlistPropertyIds1 = userWishlist1.map(item => item.listingId.toString());
+                const availableProperties1 = allProperties1.filter(
+                    property => !wishlistPropertyIds1.includes(property._id.toString())
+                );
+                recommendations = await enhancedMatrixFactorizationRecommendations(userId, availableProperties1, userProfile1);
+                break;
+            case 'random-forest':
+                const userProfile2 = await createEnhancedUserProfile(userId);
+                const allProperties2 = await Listing.find({}).limit(1000);
+                const userWishlist2 = await Wishlist.find({ userId });
+                const wishlistPropertyIds2 = userWishlist2.map(item => item.listingId.toString());
+                const availableProperties2 = allProperties2.filter(
+                    property => !wishlistPropertyIds2.includes(property._id.toString())
+                );
+                recommendations = await enhancedRandomForestRecommendations(userProfile2, availableProperties2);
+                break;
+            case 'neural-network':
+                const userProfile3 = await createEnhancedUserProfile(userId);
+                const allProperties3 = await Listing.find({}).limit(1000);
+                const userWishlist3 = await Wishlist.find({ userId });
+                const wishlistPropertyIds3 = userWishlist3.map(item => item.listingId.toString());
+                const availableProperties3 = allProperties3.filter(
+                    property => !wishlistPropertyIds3.includes(property._id.toString())
+                );
+                recommendations = await enhancedNeuralNetworkRecommendations(userProfile3, availableProperties3);
+                break;
+            case 'k-means':
+                const userProfile4 = await createEnhancedUserProfile(userId);
+                const allProperties4 = await Listing.find({}).limit(1000);
+                const userWishlist4 = await Wishlist.find({ userId });
+                const wishlistPropertyIds4 = userWishlist4.map(item => item.listingId.toString());
+                const availableProperties4 = allProperties4.filter(
+                    property => !wishlistPropertyIds4.includes(property._id.toString())
+                );
+                recommendations = await enhancedKMeansRecommendations(userId, availableProperties4, userProfile4);
+                break;
+            case 'time-series':
+                const userProfile5 = await createEnhancedUserProfile(userId);
+                const allProperties5 = await Listing.find({}).limit(1000);
+                const userWishlist5 = await Wishlist.find({ userId });
+                const wishlistPropertyIds5 = userWishlist5.map(item => item.listingId.toString());
+                const availableProperties5 = allProperties5.filter(
+                    property => !wishlistPropertyIds5.includes(property._id.toString())
+                );
+                recommendations = await enhancedTimeSeriesRecommendations(userId, availableProperties5, userProfile5);
+                break;
+            case 'ensemble':
+            default:
+                recommendations = await getEnhancedPropertyRecommendations(userId, 10);
+                break;
+        }
 
         const insights = {
             totalRecommendations: recommendations.length,
@@ -256,10 +316,8 @@ export const getAIInsights = async (req, res, next) => {
             averageConfidence: recommendations.length > 0 ? 
                 recommendations.reduce((sum, rec) => sum + rec.confidence, 0) / recommendations.length : 0,
             modelBreakdown: {
-                ensemble: recommendations.filter(rec => rec.type === 'ensemble').length,
-                matrixFactorization: recommendations.filter(rec => rec.type === 'matrix-factorization').length,
-                randomForest: recommendations.filter(rec => rec.type === 'random-forest').length,
-                neuralNetwork: recommendations.filter(rec => rec.type === 'neural-network').length
+                [model]: recommendations.length,
+                total: recommendations.length
             },
             topInsights: recommendations.slice(0, 3).map(rec => ({
                 property: {

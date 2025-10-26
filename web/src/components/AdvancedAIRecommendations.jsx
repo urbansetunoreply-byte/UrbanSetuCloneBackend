@@ -171,7 +171,7 @@ const AdvancedAIRecommendations = ({
 
       try {
         const [insightsRes, performanceRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/advanced-ai/insights`, { credentials: 'include' }),
+          fetch(`${API_BASE_URL}/api/advanced-ai/insights?model=${activeTab}`, { credentials: 'include' }),
           fetch(`${API_BASE_URL}/api/advanced-ai/model-performance`, { credentials: 'include' })
         ]);
 
@@ -194,7 +194,7 @@ const AdvancedAIRecommendations = ({
     };
 
     fetchInsights();
-  }, [userId, currentUser]);
+  }, [userId, currentUser, activeTab]);
 
   const getModelIcon = (modelId) => {
     const model = models.find(m => m.id === modelId);
