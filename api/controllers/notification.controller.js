@@ -316,13 +316,13 @@ export const getReviewReports = async (req, res, next) => {
       if (reporterId) {
         try {
           const User = (await import('../models/user.model.js')).default;
-          const reporter = await User.findById(reporterId).select('email phone role username');
-          console.log('Found reporter:', reporter ? { email: reporter.email, phone: reporter.phone, role: reporter.role, username: reporter.username } : 'null');
+          const reporter = await User.findById(reporterId).select('email mobileNumber role username');
+          console.log('Found reporter:', reporter ? { email: reporter.email, phone: reporter.mobileNumber, role: reporter.role, username: reporter.username } : 'null');
           if (reporter) {
             const enhanced = {
               ...report,
               reporterEmail: report.reporterEmail || reporter.email,
-              reporterPhone: report.reporterPhone || reporter.phone,
+              reporterPhone: report.reporterPhone || reporter.mobileNumber,
               reporterRole: report.reporterRole || reporter.role,
               reporterUsername: reporter.username
             };
@@ -524,13 +524,13 @@ export const getPropertyReports = async (req, res, next) => {
       if (reporterId) {
         try {
           const User = (await import('../models/user.model.js')).default;
-          const reporter = await User.findById(reporterId).select('email phone role username');
-          console.log('Found property reporter:', reporter ? { email: reporter.email, phone: reporter.phone, role: reporter.role, username: reporter.username } : 'null');
+          const reporter = await User.findById(reporterId).select('email mobileNumber role username');
+          console.log('Found property reporter:', reporter ? { email: reporter.email, phone: reporter.mobileNumber, role: reporter.role, username: reporter.username } : 'null');
           if (reporter) {
             const enhanced = {
               ...report,
               reporterEmail: report.reporterEmail || reporter.email,
-              reporterPhone: report.reporterPhone || reporter.phone,
+              reporterPhone: report.reporterPhone || reporter.mobileNumber,
               reporterRole: report.reporterRole || reporter.role,
               reporterUsername: reporter.username
             };

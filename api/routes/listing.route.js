@@ -201,6 +201,9 @@ router.post("/report/:listingId",verifyToken,async (req, res, next) => {
         meta: { 
           listingId: listing._id, 
           reporterId: reporter?._id,
+          reporterEmail: reporter?.email || null,
+          reporterPhone: reporter?.mobileNumber || null,
+          reporterRole: reporter?.role || null,
           category: category,
           details: details || '',
           listingName: listing.name,
