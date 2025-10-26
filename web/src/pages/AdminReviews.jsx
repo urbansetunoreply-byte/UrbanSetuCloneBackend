@@ -66,6 +66,7 @@ export default function AdminReviews() {
   // Review Reports state
   const [showReportsModal, setShowReportsModal] = useState(false);
   const [reports, setReports] = useState([]);
+  const [filteredReports, setFilteredReports] = useState([]);
   const [reportsLoading, setReportsLoading] = useState(false);
   const [reportsError, setReportsError] = useState('');
   const [reportsFilters, setReportsFilters] = useState({
@@ -130,9 +131,9 @@ export default function AdminReviews() {
     } catch {}
   }, []);
 
-  // Scroll lock for modals: lock body scroll when review details modal is open (mobile and desktop)
+  // Scroll lock for modals: lock body scroll when any modal is open (mobile and desktop)
   useEffect(() => {
-    if (selectedReview || (showRemovalModal && reviewToRemove) || (showDeleteModal && reviewToDelete)) {
+    if (selectedReview || (showRemovalModal && reviewToRemove) || (showDeleteModal && reviewToDelete) || showReportsModal) {
       // Prevent background scroll on all devices
       document.body.style.overflow = 'hidden';
       document.body.style.position = 'fixed';
@@ -147,17 +148,92 @@ export default function AdminReviews() {
       document.body.style.position = '';
       document.body.style.width = '';
     };
-  }, [selectedReview, showRemovalModal, reviewToRemove, showDeleteModal, reviewToDelete]);
+  }, [selectedReview, showRemovalModal, reviewToRemove, showDeleteModal, reviewToDelete, showReportsModal]);
 
-  // Auto-fetch reports when filters change
+  // Fetch reports only when modal opens
   useEffect(() => {
     if (showReportsModal) {
-      const timeoutId = setTimeout(() => {
-        fetchReports();
-      }, 500); // Debounce for 500ms
-      return () => clearTimeout(timeoutId);
+      fetchReports();
     }
-  }, [reportsFilters, showReportsModal]);
+  }, [showReportsModal]);
+
+  // Client-side filtering for immediate UI updates
+  useEffect(() => {
+    if (reports.length === 0) {
+      setFilteredReports([]);
+      return;
+    }
+
+    let filtered = [...reports];
+
+    // Apply search filter
+    if (reportsFilters.search) {
+      const searchTerm = reportsFilters.search.toLowerCase();
+      filtered = filtered.filter(report => 
+        report.propertyName?.toLowerCase().includes(searchTerm) ||
+        report.reporter?.toLowerCase().includes(searchTerm) ||
+        report.category?.toLowerCase().includes(searchTerm) ||
+        report.details?.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    // Apply reporter filter
+    if (reportsFilters.reporter) {
+      const reporterTerm = reportsFilters.reporter.toLowerCase();
+      filtered = filtered.filter(report => 
+        report.reporter?.toLowerCase().includes(reporterTerm)
+      );
+    }
+
+    // Apply date filters
+    if (reportsFilters.dateFrom) {
+      const fromDate = new Date(reportsFilters.dateFrom);
+      filtered = filtered.filter(report => 
+        new Date(report.createdAt) >= fromDate
+      );
+    }
+
+    if (reportsFilters.dateTo) {
+      const toDate = new Date(reportsFilters.dateTo);
+      toDate.setHours(23, 59, 59, 999); // Include entire day
+      filtered = filtered.filter(report => 
+        new Date(report.createdAt) <= toDate
+      );
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (reportsFilters.sortBy) {
+        case 'reporter':
+          aValue = a.reporter || '';
+          bValue = b.reporter || '';
+          break;
+        case 'property':
+          aValue = a.propertyName || '';
+          bValue = b.propertyName || '';
+          break;
+        case 'category':
+          aValue = a.category || '';
+          bValue = b.category || '';
+          break;
+        case 'date':
+        default:
+          aValue = new Date(a.createdAt);
+          bValue = new Date(b.createdAt);
+          break;
+      }
+
+      if (reportsFilters.sortOrder === 'asc') {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
+
+    setFilteredReports(filtered);
+  }, [reports, reportsFilters]);
 
   const fetchReviews = async () => {
     try {
@@ -1474,7 +1550,7 @@ export default function AdminReviews() {
             <div className="flex-1 overflow-y-auto p-4 sm:p-6">
               {/* Debug info */}
               <div className="mb-4 p-2 bg-yellow-100 border border-yellow-300 rounded text-xs">
-                Debug: Loading={reportsLoading.toString()}, Error={reportsError}, Reports={reports.length}
+                Debug: Loading={reportsLoading.toString()}, Error={reportsError}, Total Reports={reports.length}, Filtered={filteredReports.length}
               </div>
               {reportsLoading ? (
                 <div className="flex items-center justify-center py-8">
@@ -1491,18 +1567,22 @@ export default function AdminReviews() {
                     Try Again
                   </button>
                 </div>
-              ) : reports.length === 0 ? (
+              ) : filteredReports.length === 0 ? (
                 <div className="text-center py-8">
                   <FaFlag className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg">No review reports found</p>
-                  <p className="text-gray-400 text-sm">Reports will appear here when users report reviews</p>
+                  <p className="text-gray-500 text-lg">
+                    {reports.length === 0 ? 'No review reports found' : 'No reports match your filters'}
+                  </p>
+                  <p className="text-gray-400 text-sm">
+                    {reports.length === 0 ? 'Reports will appear here when users report reviews' : 'Try adjusting your search criteria'}
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   <div className="text-sm text-gray-600 mb-4">
-                    Showing {reports.length} report{reports.length !== 1 ? 's' : ''}
+                    Showing {filteredReports.length} of {reports.length} report{reports.length !== 1 ? 's' : ''}
                   </div>
-                  {reports.map((report, index) => (
+                  {filteredReports.map((report, index) => (
                     <div key={report.notificationId || index} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
                       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                         <div className="flex-1">
