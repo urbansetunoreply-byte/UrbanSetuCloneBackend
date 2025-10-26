@@ -279,6 +279,20 @@ export const getReviewReports = async (req, res, next) => {
       console.log('First notification:', JSON.stringify(notifications[0], null, 2));
     }
 
+    // Deduplicate reports for root admin (same review can be reported multiple times to different admins)
+    if (req.user.role === 'rootadmin') {
+      const uniqueReports = new Map();
+      reports.forEach(report => {
+        // Use reviewId + reporterId + createdAt as unique key to avoid duplicates
+        const uniqueKey = `${report.reviewId || 'no-review'}-${report.reporterId || 'no-reporter'}-${report.createdAt}`;
+        if (!uniqueReports.has(uniqueKey)) {
+          uniqueReports.set(uniqueKey, report);
+        }
+      });
+      reports = Array.from(uniqueReports.values());
+      console.log('Deduplicated reports for root admin:', reports.length, 'from', notifications.length, 'notifications');
+    }
+
     // Enhance reports with additional reporter details
     let enhancedReports = await Promise.all(reports.map(async (report) => {
       console.log('Processing report:', report.notificationId, 'reporterId:', report.reporterId);
