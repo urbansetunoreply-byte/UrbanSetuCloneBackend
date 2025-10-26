@@ -288,14 +288,14 @@ const AdvancedAIRecommendations = ({
 
       {/* Model Selection Tabs */}
       <div className="mb-6">
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap gap-1 sm:gap-2 mb-4">
           {models.map((model) => {
             const IconComponent = model.icon;
             return (
               <div key={model.id} className="relative group">
                 <button
                   onClick={() => setActiveTab(model.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                  className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-lg transition-all text-xs sm:text-sm ${
                     activeTab === model.id
                       ? 'bg-blue-600 text-white shadow-lg'
                       : 'bg-white text-blue-600 hover:bg-blue-50 border border-blue-200'
@@ -303,7 +303,7 @@ const AdvancedAIRecommendations = ({
                 >
                   <IconComponent className="text-sm" />
                   <div className="flex flex-col items-start">
-                    <span className="text-sm font-medium">{model.name}</span>
+                    <span className="text-xs sm:text-sm font-medium">{model.name}</span>
                     <span className="text-xs opacity-75">{model.accuracy}</span>
                   </div>
                 </button>
@@ -326,7 +326,7 @@ const AdvancedAIRecommendations = ({
                 
                 {/* Individual Model Info Tooltip */}
                 {showIndividualModelInfo === model.id && (
-                  <div className="absolute top-full left-0 z-50 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg p-4">
+                  <div className="absolute top-full left-0 z-50 mt-2 w-72 sm:w-80 max-w-[calc(100vw-2rem)] bg-white border border-gray-200 rounded-lg shadow-lg p-4 transform -translate-x-1/2 left-1/2 sm:left-0 sm:transform-none">
                     <div className="flex items-start gap-3 mb-3">
                       <IconComponent className="text-blue-600 mt-1 text-lg" />
                       <div className="flex-1">
@@ -405,11 +405,12 @@ const AdvancedAIRecommendations = ({
 
       {/* AI Model Info Panel */}
       {showInfoPanel && (
-        <div className="mb-6 p-6 bg-white rounded-lg border border-blue-200 shadow-lg">
+        <div className="mb-6 p-4 sm:p-6 bg-white rounded-lg border border-blue-200 shadow-lg">
           <div className="flex items-center justify-between mb-4">
-            <h4 className="text-xl font-bold text-blue-800 flex items-center gap-2">
+            <h4 className="text-lg sm:text-xl font-bold text-blue-800 flex items-center gap-2">
               <FaInfoCircle className="text-blue-600" />
-              How AI Models Work
+              <span className="hidden sm:inline">How AI Models Work</span>
+              <span className="sm:hidden">AI Models</span>
             </h4>
             <button
               onClick={() => setShowInfoPanel(false)}
@@ -423,13 +424,13 @@ const AdvancedAIRecommendations = ({
             {models.map((model) => {
               const IconComponent = model.icon;
               return (
-                <div key={model.id} className="border border-gray-200 rounded-lg p-4">
+                <div key={model.id} className="border border-gray-200 rounded-lg p-3 sm:p-4">
                   <div className="flex items-start gap-3 mb-3">
-                    <IconComponent className="text-blue-600 mt-1 text-xl" />
+                    <IconComponent className="text-blue-600 mt-1 text-lg sm:text-xl" />
                     <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <h5 className="font-bold text-gray-800 text-lg">{model.name}</h5>
-                        <span className="text-sm font-bold text-green-600 bg-green-100 px-2 py-1 rounded">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
+                        <h5 className="font-bold text-gray-800 text-base sm:text-lg">{model.name}</h5>
+                        <span className="text-xs sm:text-sm font-bold text-green-600 bg-green-100 px-2 py-1 rounded self-start">
                           {model.accuracy} accuracy
                         </span>
                       </div>
@@ -437,7 +438,7 @@ const AdvancedAIRecommendations = ({
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
                     <div>
                       <h6 className="font-semibold text-gray-700 mb-1">What it does:</h6>
                       <p className="text-gray-600">{model.info.what}</p>
