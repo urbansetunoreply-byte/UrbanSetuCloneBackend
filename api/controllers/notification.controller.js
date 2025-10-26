@@ -40,6 +40,29 @@ const parseReportFromNotification = (n) => {
   };
 };
 
+// Helper to parse review reports from notification
+const parseReviewReportFromNotification = (n) => {
+  // Parse the message format: "A review for property \"Property Name\" was reported by username for: Category - Details"
+  const message = n.message || '';
+  const propertyMatch = message.match(/property "([^"]+)"/);
+  const reporterMatch = message.match(/reported by ([^\\s]+)/);
+  const categoryMatch = message.match(/for: ([^-]+)/);
+  const detailsMatch = message.match(/- (.+)$/);
+  
+  return {
+    notificationId: n._id,
+    type: 'review',
+    propertyName: propertyMatch ? propertyMatch[1] : 'Unknown Property',
+    reporter: reporterMatch ? reporterMatch[1] : 'Unknown User',
+    category: categoryMatch ? categoryMatch[1].trim() : 'Unknown Category',
+    details: detailsMatch ? detailsMatch[1].trim() : '',
+    reviewId: n.meta?.reviewId || null,
+    listingId: n.listingId || null,
+    createdAt: n.createdAt,
+    isRead: n.isRead,
+  };
+};
+
 // GET structured reported notifications for admins
 export const getReportedNotifications = async (req, res, next) => {
   try {
@@ -74,14 +97,20 @@ export const getReportedNotifications = async (req, res, next) => {
     // Fetch this admin's notifications with date filter
     const query = { 
       userId: req.user.id, 
-      title: { $in: ['Chat message reported', 'Chat conversation reported'] },
+      title: { $in: ['Chat message reported', 'Chat conversation reported', 'Review Reported'] },
       ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter })
     };
     
     const notifications = await Notification.find(query).sort({ createdAt: -1 });
 
     // Parse to structured reports
-    let reports = notifications.map(parseReportFromNotification);
+    let reports = notifications.map(n => {
+      if (n.title === 'Review Reported') {
+        return parseReviewReportFromNotification(n);
+      } else {
+        return parseReportFromNotification(n);
+      }
+    });
 
     // Apply filters
     if (appointmentId) {
@@ -108,7 +137,9 @@ export const getReportedNotifications = async (req, res, next) => {
         (r.details && r.details.toLowerCase().includes(searchLower)) ||
         (r.messageExcerpt && r.messageExcerpt.toLowerCase().includes(searchLower)) ||
         (r.reporter && r.reporter.toLowerCase().includes(searchLower)) ||
-        (r.appointmentRef && r.appointmentRef.toLowerCase().includes(searchLower))
+        (r.appointmentRef && r.appointmentRef.toLowerCase().includes(searchLower)) ||
+        (r.propertyName && r.propertyName.toLowerCase().includes(searchLower)) ||
+        (r.category && r.category.toLowerCase().includes(searchLower))
       );
     }
 
@@ -178,6 +209,102 @@ export const getReportedMessageIds = async (req, res, next) => {
     next(error);
   }
 };
+
+// GET review reports for admins
+export const getReviewReports = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
+      return res.status(403).json({ success: false, message: 'Admins only' });
+    }
+
+    const { 
+      dateFrom, 
+      dateTo, 
+      reporter, 
+      search, 
+      sortBy = 'date', 
+      sortOrder = 'desc'
+    } = req.query;
+
+    // Build date filter
+    const dateFilter = {};
+    if (dateFrom) {
+      dateFilter.$gte = new Date(dateFrom);
+    }
+    if (dateTo) {
+      const endDate = new Date(dateTo);
+      endDate.setHours(23, 59, 59, 999);
+      dateFilter.$lte = endDate;
+    }
+
+    // Fetch review report notifications
+    const query = { 
+      userId: req.user.id, 
+      title: 'Review Reported',
+      ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter })
+    };
+    
+    const notifications = await Notification.find(query).sort({ createdAt: -1 });
+
+    // Parse to structured reports
+    let reports = notifications.map(parseReviewReportFromNotification);
+
+    // Apply filters
+    if (reporter) {
+      reports = reports.filter(r => r.reporter && r.reporter.toLowerCase().includes(reporter.toLowerCase()));
+    }
+
+    if (search) {
+      const searchLower = search.toLowerCase();
+      reports = reports.filter(r => 
+        (r.propertyName && r.propertyName.toLowerCase().includes(searchLower)) ||
+        (r.reporter && r.reporter.toLowerCase().includes(searchLower)) ||
+        (r.category && r.category.toLowerCase().includes(searchLower)) ||
+        (r.details && r.details.toLowerCase().includes(searchLower))
+      );
+    }
+
+    // Apply sorting
+    reports.sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (sortBy) {
+        case 'reporter':
+          aValue = a.reporter || '';
+          bValue = b.reporter || '';
+          break;
+        case 'property':
+          aValue = a.propertyName || '';
+          bValue = b.propertyName || '';
+          break;
+        case 'category':
+          aValue = a.category || '';
+          bValue = b.category || '';
+          break;
+        case 'date':
+        default:
+          aValue = new Date(a.createdAt);
+          bValue = new Date(b.createdAt);
+          break;
+      }
+
+      if (sortOrder === 'asc') {
+        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+      } else {
+        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+      }
+    });
+
+    res.status(200).json({ 
+      success: true, 
+      reports,
+      total: reports.length
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Create notification
 export const createNotification = async (req, res, next) => {
   try {

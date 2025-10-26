@@ -15,6 +15,7 @@ import {
   reportChatConversation,
   notifyAdminsGeneric,
   getReportedNotifications,
+  getReviewReports,
   getReportedMessageIds,
 } from '../controllers/notification.controller.js';
 import { verifyToken } from '../utils/verify.js';
@@ -58,6 +59,9 @@ router.post('/report-chat-conversation', verifyToken, reportChatConversation);
 
 // Admin: fetch structured reported notifications
 router.get('/reports', verifyToken, getReportedNotifications);
+
+// Admin: fetch review reports specifically
+router.get('/reports/reviews', verifyToken, getReviewReports);
 
 // Admin: fetch reported message IDs for appointment
 router.get('/reports/message-ids', verifyToken, getReportedMessageIds);
