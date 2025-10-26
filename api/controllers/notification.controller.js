@@ -396,6 +396,214 @@ export const getReviewReports = async (req, res, next) => {
   }
 };
 
+// Helper to parse property reports from notification
+const parsePropertyReportFromNotification = (n) => {
+  // Parse the message format: "Property \"Property Name\" was reported by username for: Category - Details"
+  const message = n.message || '';
+  const propertyMatch = message.match(/Property "([^"]+)"/);
+  const reporterMatch = message.match(/reported by ([^\\s]+)/);
+  const categoryMatch = message.match(/for: ([^-]+)/);
+  const detailsMatch = message.match(/- (.+)$/);
+  
+  return {
+    notificationId: n._id,
+    type: 'property',
+    propertyName: propertyMatch ? propertyMatch[1] : 'Unknown Property',
+    reporter: reporterMatch ? reporterMatch[1] : 'Unknown User',
+    category: categoryMatch ? categoryMatch[1].trim() : 'Unknown Category',
+    details: detailsMatch ? detailsMatch[1].trim() : '',
+    listingId: n.listingId || null,
+    reporterId: n.meta?.reporterId || null,
+    reporterEmail: n.meta?.reporterEmail || null,
+    reporterPhone: n.meta?.reporterPhone || null,
+    reporterRole: n.meta?.reporterRole || null,
+    createdAt: n.createdAt,
+    isRead: n.isRead,
+  };
+};
+
+// GET property reports for admins
+export const getPropertyReports = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
+      return res.status(403).json({ success: false, message: 'Admins only' });
+    }
+
+    const { 
+      dateFrom, 
+      dateTo, 
+      reporter, 
+      search, 
+      sortBy = 'date', 
+      sortOrder = 'desc'
+    } = req.query;
+
+    // Build date filter
+    const dateFilter = {};
+    if (dateFrom) {
+      dateFilter.$gte = new Date(dateFrom);
+    }
+    if (dateTo) {
+      const endDate = new Date(dateTo);
+      endDate.setHours(23, 59, 59, 999);
+      dateFilter.$lte = endDate;
+    }
+
+    // Fetch property report notifications
+    let query;
+    if (req.user.role === 'rootadmin') {
+      // Root admins see all property reports (notifications sent to any admin)
+      query = { 
+        title: 'Property Reported',
+        ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter })
+      };
+    } else {
+      // Regular admins see only reports assigned to them
+      query = { 
+        userId: req.user.id,
+        title: 'Property Reported',
+        ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter })
+      };
+    }
+    
+    console.log('User role:', req.user.role);
+    console.log('Query for property notifications:', JSON.stringify(query, null, 2));
+    
+    const notifications = await Notification.find(query).sort({ createdAt: -1 });
+    console.log('Found property notifications:', notifications.length);
+    
+    // Additional debugging for root admin
+    if (req.user.role === 'rootadmin') {
+      const totalPropertyReports = await Notification.countDocuments({ title: 'Property Reported' });
+      console.log('Total property reports in system:', totalPropertyReports);
+      console.log('Reports found for root admin:', notifications.length);
+    }
+
+    // Parse to structured reports
+    let reports = notifications.map(parsePropertyReportFromNotification);
+    
+    // Debug: Log first notification to see what's stored
+    if (notifications.length > 0) {
+      console.log('First property notification:', JSON.stringify(notifications[0], null, 2));
+    }
+
+    // Deduplicate reports for root admin (same property can be reported multiple times to different admins)
+    if (req.user.role === 'rootadmin') {
+      const uniqueReports = new Map();
+      reports.forEach(report => {
+        // Use listingId + reporterId + createdAt as unique key to avoid duplicates
+        const uniqueKey = `${report.listingId || 'no-listing'}-${report.reporterId || 'no-reporter'}-${report.createdAt}`;
+        if (!uniqueReports.has(uniqueKey)) {
+          uniqueReports.set(uniqueKey, report);
+        }
+      });
+      reports = Array.from(uniqueReports.values());
+      console.log('Deduplicated property reports for root admin:', reports.length, 'from', notifications.length, 'notifications');
+    }
+
+    // Enhance reports with additional reporter details
+    let enhancedReports = await Promise.all(reports.map(async (report) => {
+      console.log('Processing property report:', report.notificationId, 'reporterId:', report.reporterId);
+      
+      // Try to get reporter details from multiple sources
+      let reporterId = report.reporterId;
+      
+      // If no reporterId in meta, try to find the notification and use adminId
+      if (!reporterId) {
+        const notification = notifications.find(n => n._id.toString() === report.notificationId.toString());
+        console.log('Looking for property notification with ID:', report.notificationId.toString());
+        console.log('Available property notification IDs:', notifications.map(n => n._id.toString()));
+        if (notification && notification.adminId) {
+          reporterId = notification.adminId;
+          console.log('Using adminId as reporterId for property:', reporterId);
+        } else {
+          console.log('No property notification found or no adminId for report:', report.notificationId);
+        }
+      }
+      
+      if (reporterId) {
+        try {
+          const User = (await import('../models/user.model.js')).default;
+          const reporter = await User.findById(reporterId).select('email phone role username');
+          console.log('Found property reporter:', reporter ? { email: reporter.email, phone: reporter.phone, role: reporter.role, username: reporter.username } : 'null');
+          if (reporter) {
+            const enhanced = {
+              ...report,
+              reporterEmail: report.reporterEmail || reporter.email,
+              reporterPhone: report.reporterPhone || reporter.phone,
+              reporterRole: report.reporterRole || reporter.role,
+              reporterUsername: reporter.username
+            };
+            console.log('Enhanced property report:', { reporterEmail: enhanced.reporterEmail, reporterPhone: enhanced.reporterPhone, reporterRole: enhanced.reporterRole });
+            return enhanced;
+          }
+        } catch (error) {
+          console.error('Error fetching property reporter details:', error);
+        }
+      } else {
+        console.log('No reporterId found for property report:', report.notificationId);
+      }
+      return report;
+    }));
+
+    // Apply filters
+    if (reporter) {
+      enhancedReports = enhancedReports.filter(r => r.reporter && r.reporter.toLowerCase().includes(reporter.toLowerCase()));
+    }
+
+    if (search) {
+      const searchLower = search.toLowerCase();
+      enhancedReports = enhancedReports.filter(r => 
+        (r.propertyName && r.propertyName.toLowerCase().includes(searchLower)) ||
+        (r.reporter && r.reporter.toLowerCase().includes(searchLower)) ||
+        (r.reporterEmail && r.reporterEmail.toLowerCase().includes(searchLower)) ||
+        (r.reporterPhone && r.reporterPhone.toLowerCase().includes(searchLower)) ||
+        (r.category && r.category.toLowerCase().includes(searchLower)) ||
+        (r.details && r.details.toLowerCase().includes(searchLower))
+      );
+    }
+
+    // Apply sorting
+    enhancedReports.sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (sortBy) {
+        case 'reporter':
+          aValue = a.reporter || '';
+          bValue = b.reporter || '';
+          break;
+        case 'property':
+          aValue = a.propertyName || '';
+          bValue = b.propertyName || '';
+          break;
+        case 'category':
+          aValue = a.category || '';
+          bValue = b.category || '';
+          break;
+        case 'date':
+        default:
+          aValue = new Date(a.createdAt);
+          bValue = new Date(b.createdAt);
+          break;
+      }
+
+      if (sortOrder === 'asc') {
+        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+      } else {
+        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+      }
+    });
+
+    res.status(200).json({ 
+      success: true, 
+      reports: enhancedReports,
+      total: enhancedReports.length
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Create notification
 export const createNotification = async (req, res, next) => {
   try {

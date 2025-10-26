@@ -16,6 +16,7 @@ import {
   notifyAdminsGeneric,
   getReportedNotifications,
   getReviewReports,
+  getPropertyReports,
   getReportedMessageIds,
 } from '../controllers/notification.controller.js';
 import { verifyToken } from '../utils/verify.js';
@@ -62,6 +63,9 @@ router.get('/reports', verifyToken, getReportedNotifications);
 
 // Admin: fetch review reports specifically
 router.get('/reports/reviews', verifyToken, getReviewReports);
+
+// Admin: fetch property reports specifically
+router.get('/reports/properties', verifyToken, getPropertyReports);
 
 // Admin: fetch reported message IDs for appointment
 router.get('/reports/message-ids', verifyToken, getReportedMessageIds);
