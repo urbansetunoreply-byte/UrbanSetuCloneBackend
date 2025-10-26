@@ -1,10 +1,12 @@
 import { 
     getAdvancedPropertyRecommendations,
-    matrixFactorizationRecommendations,
-    randomForestRecommendations,
-    neuralNetworkRecommendations,
-    createAdvancedUserProfile,
-    getFallbackRecommendations
+    enhancedMatrixFactorizationRecommendations,
+    enhancedRandomForestRecommendations,
+    enhancedNeuralNetworkRecommendations,
+    enhancedKMeansRecommendations,
+    enhancedTimeSeriesRecommendations,
+    createEnhancedUserProfile,
+    getEnhancedFallbackRecommendations
 } from '../services/advancedAIRecommendationService.js';
 import { errorHandler } from '../utils/error.js';
 import Listing from '../models/listing.model.js';
@@ -41,13 +43,19 @@ export const getAdvancedRecommendations = async (req, res, next) => {
             
             switch (model) {
                 case 'matrix-factorization':
-                    recommendations = await matrixFactorizationRecommendations(userId, availableProperties, userProfile);
+                    recommendations = await enhancedMatrixFactorizationRecommendations(userId, availableProperties, userProfile);
                     break;
                 case 'random-forest':
-                    recommendations = await randomForestRecommendations(userProfile, availableProperties);
+                    recommendations = await enhancedRandomForestRecommendations(userProfile, availableProperties);
                     break;
                 case 'neural-network':
-                    recommendations = await neuralNetworkRecommendations(userProfile, availableProperties);
+                    recommendations = await enhancedNeuralNetworkRecommendations(userProfile, availableProperties);
+                    break;
+                case 'k-means':
+                    recommendations = await enhancedKMeansRecommendations(userId, availableProperties, userProfile);
+                    break;
+                case 'time-series':
+                    recommendations = await enhancedTimeSeriesRecommendations(userId, availableProperties, userProfile);
                     break;
                 case 'ensemble':
                 default:
@@ -59,7 +67,7 @@ export const getAdvancedRecommendations = async (req, res, next) => {
             if (!recommendations || !Array.isArray(recommendations)) {
                 console.log('📊 No valid recommendations from model, using fallback');
                 const allProperties = await Listing.find({}).limit(1000);
-                recommendations = await getFallbackRecommendations(allProperties, parseInt(limit));
+                recommendations = await getEnhancedFallbackRecommendations(allProperties, parseInt(limit));
             }
             
         } catch (modelError) {
