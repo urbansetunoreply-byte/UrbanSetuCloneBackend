@@ -326,7 +326,15 @@ const AdvancedAIRecommendations = ({
                 
                 {/* Individual Model Info Tooltip */}
                 {showIndividualModelInfo === model.id && (
-                  <div className="absolute top-full left-0 z-50 mt-2 w-72 sm:w-80 max-w-[calc(100vw-2rem)] bg-white border border-gray-200 rounded-lg shadow-lg p-4 transform -translate-x-1/2 left-1/2 sm:left-0 sm:transform-none">
+                  <>
+                    {/* Mobile backdrop */}
+                    <div 
+                      className="fixed inset-0 bg-black bg-opacity-50 z-40 sm:hidden"
+                      onClick={() => setShowIndividualModelInfo(null)}
+                    />
+                    
+                    {/* Tooltip */}
+                    <div className="fixed sm:absolute top-1/2 sm:top-full left-1/2 sm:left-0 z-50 -translate-x-1/2 sm:translate-x-0 -translate-y-1/2 sm:translate-y-0 mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-sm sm:max-w-none bg-white border border-gray-200 rounded-lg shadow-lg p-4">
                     <div className="flex items-start gap-3 mb-3">
                       <IconComponent className="text-blue-600 mt-1 text-lg" />
                       <div className="flex-1">
@@ -334,7 +342,7 @@ const AdvancedAIRecommendations = ({
                           <h5 className="font-bold text-gray-800">{model.name}</h5>
                           <button
                             onClick={() => setShowIndividualModelInfo(null)}
-                            className="text-gray-500 hover:text-gray-700"
+                            className="text-gray-500 hover:text-gray-700 text-lg sm:text-base"
                           >
                             ✕
                           </button>
@@ -363,14 +371,23 @@ const AdvancedAIRecommendations = ({
                     </div>
                     
                     <div className="mt-3 pt-3 border-t border-gray-200">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between mb-3 sm:mb-0">
                         <span className="text-xs text-gray-500">Accuracy:</span>
                         <span className="text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded">
                           {model.accuracy}
                         </span>
                       </div>
+                      
+                      {/* Mobile close button */}
+                      <button
+                        onClick={() => setShowIndividualModelInfo(null)}
+                        className="w-full sm:hidden bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                      >
+                        Close
+                      </button>
                     </div>
                   </div>
+                  </>
                 )}
               </div>
             );
