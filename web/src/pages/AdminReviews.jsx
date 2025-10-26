@@ -172,6 +172,8 @@ export default function AdminReviews() {
       filtered = filtered.filter(report => 
         report.propertyName?.toLowerCase().includes(searchTerm) ||
         report.reporter?.toLowerCase().includes(searchTerm) ||
+        report.reporterEmail?.toLowerCase().includes(searchTerm) ||
+        report.reporterPhone?.toLowerCase().includes(searchTerm) ||
         report.category?.toLowerCase().includes(searchTerm) ||
         report.details?.toLowerCase().includes(searchTerm)
       );
@@ -1606,9 +1608,31 @@ export default function AdminReviews() {
                               <span className="font-medium text-gray-700">Property: </span>
                               <span className="text-gray-900">{report.propertyName}</span>
                             </div>
-                            <div>
-                              <span className="font-medium text-gray-700">Reporter: </span>
-                              <span className="text-gray-900">{report.reporter}</span>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              <div>
+                                <span className="font-medium text-gray-700">Reporter: </span>
+                                <span className="text-gray-900">{report.reporter || report.reporterUsername || 'Unknown'}</span>
+                              </div>
+                              {report.reporterEmail && (
+                                <div>
+                                  <span className="font-medium text-gray-700">Email: </span>
+                                  <span className="text-gray-900">{report.reporterEmail}</span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              {report.reporterPhone && (
+                                <div>
+                                  <span className="font-medium text-gray-700">Phone: </span>
+                                  <span className="text-gray-900">{report.reporterPhone}</span>
+                                </div>
+                              )}
+                              {report.reporterRole && (
+                                <div>
+                                  <span className="font-medium text-gray-700">Role: </span>
+                                  <span className="text-gray-900 capitalize">{report.reporterRole}</span>
+                                </div>
+                              )}
                             </div>
                             <div>
                               <span className="font-medium text-gray-700">Category: </span>
@@ -1643,6 +1667,22 @@ export default function AdminReviews() {
                             >
                               View Review
                             </button>
+                          )}
+                          {report.reporterEmail && (
+                            <a
+                              href={`mailto:${report.reporterEmail}`}
+                              className="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded-md hover:bg-purple-200 transition text-center"
+                            >
+                              Email Reporter
+                            </a>
+                          )}
+                          {report.reporterPhone && (
+                            <a
+                              href={`tel:${report.reporterPhone}`}
+                              className="px-3 py-1 text-sm bg-orange-100 text-orange-700 rounded-md hover:bg-orange-200 transition text-center"
+                            >
+                              Call Reporter
+                            </a>
                           )}
                         </div>
                       </div>

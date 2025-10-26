@@ -929,6 +929,9 @@ router.post('/report/:reviewId', verifyToken, async (req, res, next) => {
         meta: { 
           reviewId: review._id, 
           reporterId: reporter?._id,
+          reporterEmail: reporter?.email || null,
+          reporterPhone: reporter?.phone || null,
+          reporterRole: reporter?.role || null,
           category: category,
           reason: reason || ''
         }

@@ -58,6 +58,10 @@ const parseReviewReportFromNotification = (n) => {
     details: detailsMatch ? detailsMatch[1].trim() : '',
     reviewId: n.meta?.reviewId || null,
     listingId: n.listingId || null,
+    reporterId: n.meta?.reporterId || null,
+    reporterEmail: n.meta?.reporterEmail || null,
+    reporterPhone: n.meta?.reporterPhone || null,
+    reporterRole: n.meta?.reporterRole || null,
     createdAt: n.createdAt,
     isRead: n.isRead,
   };
@@ -249,16 +253,40 @@ export const getReviewReports = async (req, res, next) => {
     // Parse to structured reports
     let reports = notifications.map(parseReviewReportFromNotification);
 
+    // Enhance reports with additional reporter details
+    let enhancedReports = await Promise.all(reports.map(async (report) => {
+      if (report.reporterId) {
+        try {
+          const User = (await import('../models/user.model.js')).default;
+          const reporter = await User.findById(report.reporterId).select('email phone role username');
+          if (reporter) {
+            return {
+              ...report,
+              reporterEmail: report.reporterEmail || reporter.email,
+              reporterPhone: report.reporterPhone || reporter.phone,
+              reporterRole: report.reporterRole || reporter.role,
+              reporterUsername: reporter.username
+            };
+          }
+        } catch (error) {
+          console.error('Error fetching reporter details:', error);
+        }
+      }
+      return report;
+    }));
+
     // Apply filters
     if (reporter) {
-      reports = reports.filter(r => r.reporter && r.reporter.toLowerCase().includes(reporter.toLowerCase()));
+      enhancedReports = enhancedReports.filter(r => r.reporter && r.reporter.toLowerCase().includes(reporter.toLowerCase()));
     }
 
     if (search) {
       const searchLower = search.toLowerCase();
-      reports = reports.filter(r => 
+      enhancedReports = enhancedReports.filter(r => 
         (r.propertyName && r.propertyName.toLowerCase().includes(searchLower)) ||
         (r.reporter && r.reporter.toLowerCase().includes(searchLower)) ||
+        (r.reporterEmail && r.reporterEmail.toLowerCase().includes(searchLower)) ||
+        (r.reporterPhone && r.reporterPhone.toLowerCase().includes(searchLower)) ||
         (r.category && r.category.toLowerCase().includes(searchLower)) ||
         (r.details && r.details.toLowerCase().includes(searchLower))
       );
@@ -297,8 +325,8 @@ export const getReviewReports = async (req, res, next) => {
 
     res.status(200).json({ 
       success: true, 
-      reports,
-      total: reports.length
+      reports: enhancedReports,
+      total: enhancedReports.length
     });
   } catch (error) {
     next(error);
