@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { FaHome, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCookie, FaShieldAlt, FaFileContract, FaTimes, FaCog, FaCheck } from 'react-icons/fa';
 
 const Footer = () => {
+  const { currentUser } = useSelector((state) => state.user);
   const [showCookieBanner, setShowCookieBanner] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
 
@@ -209,7 +211,16 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/cookie-policy" className="text-gray-300 hover:text-yellow-400 transition-colors flex items-center gap-2">
+                <Link 
+                  to={
+                    currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                      ? "/admin/cookie-policy"
+                      : currentUser
+                      ? "/user/cookie-policy"
+                      : "/cookie-policy"
+                  } 
+                  className="text-gray-300 hover:text-yellow-400 transition-colors flex items-center gap-2"
+                >
                   <FaCookie className="text-xs" />
                   Cookie Policy
                 </Link>

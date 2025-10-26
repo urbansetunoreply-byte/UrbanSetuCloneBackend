@@ -31,6 +31,8 @@ import UserTerms from "./pages/UserTerms";
 import AdminTerms from "./pages/AdminTerms";
 import UserPrivacy from "./pages/UserPrivacy";
 import AdminPrivacy from "./pages/AdminPrivacy";
+import UserCookiePolicy from "./pages/UserCookiePolicy";
+import AdminCookiePolicy from "./pages/AdminCookiePolicy";
 import { FaHome } from "react-icons/fa";
 import AdminManagement from './pages/AdminManagement';
 import { ToastContainer } from 'react-toastify';
@@ -131,7 +133,7 @@ function normalizeRoute(path, role) {
   if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1);
 
   // List of shared base routes (add more as needed)
-  const sharedBases = ["about", "search", "terms", "privacy", "listing", "home", "reviews", "wishlist", "profile", "appointment", "explore", "contact", "ai"];
+  const sharedBases = ["about", "search", "terms", "privacy", "cookie-policy", "listing", "home", "reviews", "wishlist", "profile", "appointment", "explore", "contact", "ai"];
 
   // Helper to extract base and subpath
   function extractBaseAndRest(p) {
@@ -676,9 +678,9 @@ function AppRoutes({ bootstrapped }) {
           <Route path="/oauth" element={<Oauth bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
           <Route path="/terms" element={currentUser ? <NotFound /> : <Terms bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
           <Route path="/privacy" element={currentUser ? <NotFound /> : <Privacy bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+          <Route path="/cookie-policy" element={currentUser ? <NotFound /> : <CookiePolicy />} />
           <Route path="/contact" element={currentUser ? <Navigate to="/user/contact" /> : <Contact />} />
           <Route path="/ai" element={currentUser ? <Navigate to="/user/ai" /> : <PublicAI />} />
-          <Route path="/cookie-policy" element={<CookiePolicy />} />
           <Route path="/restore-account/:token" element={<AccountRevocation />} />
           <Route path="/restore-property" element={<RestoreProperty />} />
 
@@ -706,6 +708,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/user/change-password" element={<UserChangePassword />} />
             <Route path="/user/terms" element={<UserTerms />} />
             <Route path="/user/privacy" element={<UserPrivacy />} />
+            <Route path="/user/cookie-policy" element={<UserCookiePolicy />} />
             <Route path="/user/reviews" element={<UserReviews />} />
             <Route path="/user/device-management" element={<DeviceManagement />} />
             <Route path="/user/contact" element={<UserContact />} />
@@ -737,6 +740,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/admin/appointmentlisting" element={<AdminAppointmentListing />} />
             <Route path="/admin/terms" element={<AdminTerms />} />
             <Route path="/admin/privacy" element={<AdminPrivacy />} />
+            <Route path="/admin/cookie-policy" element={<AdminCookiePolicy />} />
             <Route path="/admin/management" element={<AdminManagement />} />
             <Route path="/admin/reviews" element={<AdminReviews />} />
             <Route path="/admin/services" element={<AdminServices />} />
