@@ -1940,121 +1940,108 @@ export default function AdminAppointments() {
           </div>
         </div>
 
-        {/* Filters Section - Sticky for mobile */}
-        <div className="p-3 sm:p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0 sticky top-0 z-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Date Range */}
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-700">Date From</label>
-              <input
-                type="date"
-                value={adminReportsFilters.dateFrom}
-                onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-700">Date To</label>
-              <input
-                type="date"
-                value={adminReportsFilters.dateTo}
-                onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, dateTo: e.target.value }))}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-              />
-            </div>
-            
-            {/* Reporter Filter */}
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-700">Reporter</label>
-              <input
-                type="text"
-                placeholder="Search reporter..."
-                value={adminReportsFilters.reporter}
-                onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, reporter: e.target.value }))}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-              />
-            </div>
-            
-            {/* Status Filter */}
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-700">Status</label>
-              <select
-                value={adminReportsFilters.status}
-                onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, status: e.target.value }))}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-              >
-                <option value="all">All Status</option>
-                <option value="pending">Pending</option>
-                <option value="resolved">Resolved</option>
-              </select>
-            </div>
-          </div>
-          
-          {/* Search and Sort Row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-700">Search</label>
-              <input
-                type="text"
-                placeholder="Search reports..."
-                value={adminReportsFilters.search}
-                onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, search: e.target.value }))}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-              />
+        {/* Filters Section - Mobile Optimized */}
+        <div className="p-2 sm:p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0 sticky top-0 z-10">
+          <div className="space-y-3">
+            {/* Primary filters - compact on mobile */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">From Date</label>
+                <input
+                  type="date"
+                  value={adminReportsFilters.dateFrom}
+                  onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
+                  className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">To Date</label>
+                <input
+                  type="date"
+                  value={adminReportsFilters.dateTo}
+                  onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, dateTo: e.target.value }))}
+                  className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Reporter</label>
+                <input
+                  type="text"
+                  placeholder="Reporter"
+                  value={adminReportsFilters.reporter}
+                  onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, reporter: e.target.value }))}
+                  className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                <select
+                  value={adminReportsFilters.status}
+                  onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, status: e.target.value }))}
+                  className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                >
+                  <option value="all">All Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="resolved">Resolved</option>
+                </select>
+              </div>
             </div>
             
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-700">Sort By</label>
-              <select
-                value={adminReportsFilters.sortBy}
-                onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, sortBy: e.target.value }))}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-              >
-                <option value="date">Date</option>
-                <option value="user">User</option>
-                <option value="type">Type</option>
-              </select>
+            {/* Secondary controls - compact on mobile */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-stretch sm:items-center justify-between">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={adminReportsFilters.search}
+                  onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, search: e.target.value }))}
+                  className="flex-1 px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                />
+                <select
+                  value={adminReportsFilters.sortBy}
+                  onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, sortBy: e.target.value }))}
+                  className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                >
+                  <option value="date">Date</option>
+                  <option value="user">User</option>
+                  <option value="type">Type</option>
+                </select>
+                <select
+                  value={adminReportsFilters.sortOrder}
+                  onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, sortOrder: e.target.value }))}
+                  className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                >
+                  <option value="desc">↓</option>
+                  <option value="asc">↑</option>
+                </select>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setAdminReportsFilters({
+                    dateFrom: '',
+                    dateTo: '',
+                    reporter: '',
+                    status: 'all',
+                    search: '',
+                    sortBy: 'date',
+                    sortOrder: 'desc'
+                  })}
+                  className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
+                >
+                  Clear
+                </button>
+                <button
+                  onClick={() => fetchAdminReports(adminReportsFilters, true)}
+                  className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm bg-red-500 text-white rounded-md hover:bg-red-600 transition"
+                >
+                  Apply
+                </button>
+              </div>
             </div>
             
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-700">Order</label>
-              <select
-                value={adminReportsFilters.sortOrder}
-                onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, sortOrder: e.target.value }))}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-              >
-                <option value="desc">Newest First</option>
-                <option value="asc">Oldest First</option>
-              </select>
-            </div>
-          </div>
-          
-          {/* Filter Actions */}
-          <div className="flex items-center justify-between mt-4">
-            <div className="text-xs text-gray-600">
+            {/* Report count - compact on mobile */}
+            <div className="text-xs text-gray-600 text-center sm:text-left">
               Showing {adminReports.length} reports
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setAdminReportsFilters({
-                  dateFrom: '',
-                  dateTo: '',
-                  reporter: '',
-                  status: 'all',
-                  search: '',
-                  sortBy: 'date',
-                  sortOrder: 'desc'
-                })}
-                className="px-3 py-1.5 text-xs bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-              >
-                Clear Filters
-              </button>
-              <button
-                onClick={() => fetchAdminReports(adminReportsFilters, true)}
-                className="px-3 py-1.5 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-              >
-                Apply Filters
-              </button>
             </div>
           </div>
         </div>
@@ -9765,124 +9752,111 @@ function AdminAppointmentRow({
                 </div>
               </div>
 
-              {/* Filters Section - Sticky for mobile */}
-              <div className="p-3 sm:p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0 sticky top-0 z-10">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {/* Date Range */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium text-gray-700">Date From</label>
-                    <input
-                      type="date"
-                      value={reportsFilters.dateFrom}
-                      onChange={(e) => setReportsFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium text-gray-700">Date To</label>
-                    <input
-                      type="date"
-                      value={reportsFilters.dateTo}
-                      onChange={(e) => setReportsFilters(prev => ({ ...prev, dateTo: e.target.value }))}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    />
-                  </div>
-                  
-                  {/* Reporter Filter */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium text-gray-700">Reporter</label>
-                    <input
-                      type="text"
-                      placeholder="Search reporter..."
-                      value={reportsFilters.reporter}
-                      onChange={(e) => setReportsFilters(prev => ({ ...prev, reporter: e.target.value }))}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    />
-                  </div>
-                  
-                  {/* Message Type Filter */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium text-gray-700">Message Type</label>
-                    <select
-                      value={reportsFilters.messageType}
-                      onChange={(e) => setReportsFilters(prev => ({ ...prev, messageType: e.target.value }))}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    >
-                      <option value="all">All Types</option>
-                      <option value="text">Text</option>
-                      <option value="image">Image</option>
-                      <option value="video">Video</option>
-                      <option value="audio">Audio</option>
-                      <option value="document">Document</option>
-                    </select>
-                  </div>
-                </div>
-                
-                {/* Search and Sort Row */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium text-gray-700">Search</label>
-                    <input
-                      type="text"
-                      placeholder="Search reports..."
-                      value={reportsFilters.search}
-                      onChange={(e) => setReportsFilters(prev => ({ ...prev, search: e.target.value }))}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    />
+              {/* Filters Section - Mobile Optimized */}
+              <div className="p-2 sm:p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0 sticky top-0 z-10">
+                <div className="space-y-3">
+                  {/* Primary filters - compact on mobile */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">From Date</label>
+                      <input
+                        type="date"
+                        value={reportsFilters.dateFrom}
+                        onChange={(e) => setReportsFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
+                        className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">To Date</label>
+                      <input
+                        type="date"
+                        value={reportsFilters.dateTo}
+                        onChange={(e) => setReportsFilters(prev => ({ ...prev, dateTo: e.target.value }))}
+                        className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Reporter</label>
+                      <input
+                        type="text"
+                        placeholder="Reporter"
+                        value={reportsFilters.reporter}
+                        onChange={(e) => setReportsFilters(prev => ({ ...prev, reporter: e.target.value }))}
+                        className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
+                      <select
+                        value={reportsFilters.messageType}
+                        onChange={(e) => setReportsFilters(prev => ({ ...prev, messageType: e.target.value }))}
+                        className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                      >
+                        <option value="all">All Types</option>
+                        <option value="text">Text</option>
+                        <option value="image">Image</option>
+                        <option value="video">Video</option>
+                        <option value="audio">Audio</option>
+                        <option value="document">Document</option>
+                      </select>
+                    </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium text-gray-700">Sort By</label>
-                    <select
-                      value={reportsFilters.sortBy}
-                      onChange={(e) => setReportsFilters(prev => ({ ...prev, sortBy: e.target.value }))}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    >
-                      <option value="date">Date</option>
-                      <option value="user">User</option>
-                      <option value="type">Type</option>
-                    </select>
+                  {/* Secondary controls - compact on mobile */}
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-stretch sm:items-center justify-between">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Search..."
+                        value={reportsFilters.search}
+                        onChange={(e) => setReportsFilters(prev => ({ ...prev, search: e.target.value }))}
+                        className="flex-1 px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                      />
+                      <select
+                        value={reportsFilters.sortBy}
+                        onChange={(e) => setReportsFilters(prev => ({ ...prev, sortBy: e.target.value }))}
+                        className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                      >
+                        <option value="date">Date</option>
+                        <option value="user">User</option>
+                        <option value="type">Type</option>
+                      </select>
+                      <select
+                        value={reportsFilters.sortOrder}
+                        onChange={(e) => setReportsFilters(prev => ({ ...prev, sortOrder: e.target.value }))}
+                        className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                      >
+                        <option value="desc">↓</option>
+                        <option value="asc">↑</option>
+                      </select>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setReportsFilters({
+                          dateFrom: '',
+                          dateTo: '',
+                          reporter: '',
+                          messageType: 'all',
+                          search: '',
+                          sortBy: 'date',
+                          sortOrder: 'desc'
+                        })}
+                        className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
+                      >
+                        Clear
+                      </button>
+                      <button
+                        onClick={() => fetchAllReports(appt._id, reportsFilters, true)}
+                        className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm bg-red-500 text-white rounded-md hover:bg-red-600 transition"
+                      >
+                        Apply
+                      </button>
+                    </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium text-gray-700">Order</label>
-                    <select
-                      value={reportsFilters.sortOrder}
-                      onChange={(e) => setReportsFilters(prev => ({ ...prev, sortOrder: e.target.value }))}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    >
-                      <option value="desc">Newest First</option>
-                      <option value="asc">Oldest First</option>
-                    </select>
-                  </div>
-                </div>
-                
-                {/* Filter Actions */}
-                <div className="flex items-center justify-between mt-4">
-                  <div className="text-xs text-gray-600">
+                  {/* Report count - compact on mobile */}
+                  <div className="text-xs text-gray-600 text-center sm:text-left">
                     Showing {reports.length} reports for this appointment
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setReportsFilters({
-                        dateFrom: '',
-                        dateTo: '',
-                        reporter: '',
-                        messageType: 'all',
-                        search: '',
-                        sortBy: 'date',
-                        sortOrder: 'desc'
-                      })}
-                      className="px-3 py-1.5 text-xs bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-                    >
-                      Clear Filters
-                    </button>
-                    <button
-                      onClick={() => fetchAllReports(appt._id, reportsFilters, true)}
-                      className="px-3 py-1.5 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                    >
-                      Apply Filters
-                    </button>
                   </div>
                 </div>
               </div>
