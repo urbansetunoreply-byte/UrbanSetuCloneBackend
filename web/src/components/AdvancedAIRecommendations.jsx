@@ -26,6 +26,7 @@ const AdvancedAIRecommendations = ({
   const [activeTab, setActiveTab] = useState('ensemble');
   const [showModelDetails, setShowModelDetails] = useState(false);
   const [showInfoPanel, setShowInfoPanel] = useState(false);
+  const [showModelInfo, setShowModelInfo] = useState(null);
 
   const models = [
     { 
@@ -291,21 +292,87 @@ const AdvancedAIRecommendations = ({
           {models.map((model) => {
             const IconComponent = model.icon;
             return (
-              <button
-                key={model.id}
-                onClick={() => setActiveTab(model.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-                  activeTab === model.id
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'bg-white text-blue-600 hover:bg-blue-50 border border-blue-200'
-                }`}
-              >
-                <IconComponent className="text-sm" />
-                <div className="flex flex-col items-start">
-                  <span className="text-sm font-medium">{model.name}</span>
-                  <span className="text-xs opacity-75">{model.accuracy}</span>
-                </div>
-              </button>
+              <div key={model.id} className="relative group">
+                <button
+                  onClick={() => setActiveTab(model.id)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                    activeTab === model.id
+                      ? 'bg-blue-600 text-white shadow-lg'
+                      : 'bg-white text-blue-600 hover:bg-blue-50 border border-blue-200'
+                  }`}
+                >
+                  <IconComponent className="text-sm" />
+                  <div className="flex flex-col items-start">
+                    <span className="text-sm font-medium">{model.name}</span>
+                    <span className="text-xs opacity-75">{model.accuracy}</span>
+                  </div>
+                </button>
+                
+                {/* Individual Model Info Icon */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowModelInfo(showModelInfo === model.id ? null : model.id);
+                  }}
+                  className={`absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs transition-all ${
+                    activeTab === model.id
+                      ? 'bg-white text-blue-600 hover:bg-blue-50'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
+                  title={`Learn about ${model.name}`}
+                >
+                  ℹ️
+                </button>
+                
+                {/* Individual Model Info Tooltip */}
+                {showModelInfo === model.id && (
+                  <div className="absolute top-full left-0 z-50 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg p-4">
+                    <div className="flex items-start gap-3 mb-3">
+                      <IconComponent className="text-blue-600 mt-1 text-lg" />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <h5 className="font-bold text-gray-800">{model.name}</h5>
+                          <button
+                            onClick={() => setShowModelInfo(null)}
+                            className="text-gray-500 hover:text-gray-700"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-3">{model.description}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-3 text-sm">
+                      <div>
+                        <h6 className="font-semibold text-gray-700 mb-1">What it does:</h6>
+                        <p className="text-gray-600">{model.info.what}</p>
+                      </div>
+                      <div>
+                        <h6 className="font-semibold text-gray-700 mb-1">How it works:</h6>
+                        <p className="text-gray-600">{model.info.how}</p>
+                      </div>
+                      <div>
+                        <h6 className="font-semibold text-gray-700 mb-1">What it shows:</h6>
+                        <p className="text-gray-600">{model.info.shows}</p>
+                      </div>
+                      <div>
+                        <h6 className="font-semibold text-gray-700 mb-1">What you can do:</h6>
+                        <p className="text-gray-600">{model.info.action}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-3 pt-3 border-t border-gray-200">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-500">Accuracy:</span>
+                        <span className="text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded">
+                          {model.accuracy}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>

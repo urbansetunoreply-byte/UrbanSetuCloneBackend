@@ -1062,9 +1062,10 @@ const combineEnhancedRecommendations = (modelResults) => {
                 };
             }
             
-            // Apply accuracy weighting
+            // Apply enhanced weighting with boost for ensemble
             const accuracyWeight = weight * accuracy;
-            const finalScore = (rec.score || 0) * accuracyWeight;
+            const ensembleBoost = 1.2; // Boost ensemble scores
+            const finalScore = (rec.score || 0) * accuracyWeight * ensembleBoost;
             
             propertyScores[propertyId].scores[name] = finalScore;
             propertyScores[propertyId].totalScore += finalScore;
@@ -1080,17 +1081,25 @@ const combineEnhancedRecommendations = (modelResults) => {
     });
     
         return Object.values(propertyScores)
-            .map(rec => ({
-                property: rec.property,
-                score: rec.totalScore,
-                type: 'ensemble',
-                confidence: rec.models.reduce((sum, model) => sum + model.confidence, 0) / rec.models.length,
-                modelBreakdown: rec.scores,
-                contributingModels: rec.models,
-                averageAccuracy: rec.accuracySum / rec.models.length,
-                recommendationScore: rec.totalScore,
-                recommendationType: 'super-ensemble'
-            }))
+            .map(rec => {
+                // Enhanced final score calculation
+                const baseScore = rec.totalScore;
+                const modelCount = rec.models.length;
+                const diversityBonus = Math.min(0.1, modelCount * 0.02); // Bonus for multiple models agreeing
+                const finalScore = Math.min(0.98, baseScore + diversityBonus);
+                
+                return {
+                    property: rec.property,
+                    score: finalScore,
+                    type: 'ensemble',
+                    confidence: Math.min(0.98, rec.models.reduce((sum, model) => sum + model.confidence, 0) / rec.models.length + 0.1),
+                    modelBreakdown: rec.scores,
+                    contributingModels: rec.models,
+                    averageAccuracy: rec.accuracySum / rec.models.length,
+                    recommendationScore: finalScore,
+                    recommendationType: 'super-ensemble'
+                };
+            })
             .sort((a, b) => b.score - a.score);
 };
 
