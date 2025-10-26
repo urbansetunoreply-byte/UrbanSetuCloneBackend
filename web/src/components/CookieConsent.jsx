@@ -52,6 +52,19 @@ const CookieConsent = () => {
     }
   }, [showSettings]);
 
+  // Listen for custom event to open cookie settings from footer
+  useEffect(() => {
+    const handleOpenCookieSettings = () => {
+      setShowSettings(true);
+    };
+
+    window.addEventListener('openCookieSettings', handleOpenCookieSettings);
+    
+    return () => {
+      window.removeEventListener('openCookieSettings', handleOpenCookieSettings);
+    };
+  }, []);
+
   const handleAcceptAll = () => {
     const allAccepted = {
       necessary: true,

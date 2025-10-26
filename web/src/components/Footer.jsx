@@ -1,10 +1,113 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaHome, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCookie, FaShieldAlt, FaFileContract } from 'react-icons/fa';
+import { FaHome, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCookie, FaShieldAlt, FaFileContract, FaTimes, FaCog, FaCheck } from 'react-icons/fa';
 
 const Footer = () => {
+  const [showCookieBanner, setShowCookieBanner] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+
+  useEffect(() => {
+    // Check if user has already made a cookie choice
+    const cookieConsent = localStorage.getItem('cookieConsent');
+    if (!cookieConsent) {
+      // Show cookie banner in footer if no choice has been made
+      setShowCookieBanner(true);
+    }
+  }, []);
+
+  const handleAcceptAll = () => {
+    const allAccepted = {
+      necessary: true,
+      analytics: true,
+      marketing: true,
+      functional: true
+    };
+    localStorage.setItem('cookieConsent', JSON.stringify(allAccepted));
+    closeBanner();
+  };
+
+  const handleRejectAll = () => {
+    const onlyNecessary = {
+      necessary: true,
+      analytics: false,
+      marketing: false,
+      functional: false
+    };
+    localStorage.setItem('cookieConsent', JSON.stringify(onlyNecessary));
+    closeBanner();
+  };
+
+  const handleManage = () => {
+    // Trigger the main cookie consent modal
+    window.dispatchEvent(new CustomEvent('openCookieSettings'));
+    closeBanner();
+  };
+
+  const closeBanner = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setShowCookieBanner(false);
+      setIsClosing(false);
+    }, 300); // Animation duration
+  };
+
   return (
     <footer className="bg-gray-900 text-white">
+      {/* Cookie Banner */}
+      {showCookieBanner && (
+        <div className={`bg-amber-600 border-b border-amber-500 transition-all duration-300 ${isClosing ? 'opacity-0 -translate-y-full' : 'opacity-100 translate-y-0'}`}>
+          <div className="max-w-7xl mx-auto px-4 py-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              {/* Cookie Icon and Message */}
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="p-1 bg-amber-100 rounded-full">
+                  <FaCookie className="text-lg text-amber-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-white">
+                    We use cookies to enhance your experience
+                  </p>
+                  <p className="text-xs text-amber-100">
+                    By continuing to use our site, you agree to our use of cookies.
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap items-center gap-2 ml-auto">
+                <button
+                  onClick={handleManage}
+                  className="px-3 py-1.5 text-xs font-medium text-amber-600 bg-white hover:bg-amber-50 rounded-md transition-colors flex items-center gap-1"
+                >
+                  <FaCog className="text-xs" />
+                  Manage
+                </button>
+                <button
+                  onClick={handleRejectAll}
+                  className="px-3 py-1.5 text-xs font-medium text-amber-600 bg-white hover:bg-amber-50 rounded-md transition-colors"
+                >
+                  Reject All
+                </button>
+                <button
+                  onClick={handleAcceptAll}
+                  className="px-3 py-1.5 text-xs font-medium text-white bg-amber-700 hover:bg-amber-800 rounded-md transition-colors flex items-center gap-1"
+                >
+                  <FaCheck className="text-xs" />
+                  Accept All
+                </button>
+                <button
+                  onClick={closeBanner}
+                  className="p-1.5 text-amber-200 hover:text-white hover:bg-amber-700 rounded-md transition-colors"
+                  title="Close"
+                >
+                  <FaTimes className="text-sm" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
