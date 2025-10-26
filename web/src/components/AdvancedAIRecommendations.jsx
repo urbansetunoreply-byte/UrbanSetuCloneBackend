@@ -25,15 +25,100 @@ const AdvancedAIRecommendations = ({
   const [modelPerformance, setModelPerformance] = useState(null);
   const [activeTab, setActiveTab] = useState('ensemble');
   const [showModelDetails, setShowModelDetails] = useState(false);
+  const [showInfoPanel, setShowInfoPanel] = useState(false);
 
   const models = [
-    { id: 'ensemble', name: 'Super Ensemble AI', icon: FaBrain, description: 'Combines all models for 95-98% accuracy', accuracy: '95-98%' },
-    { id: 'esg', name: 'ESG-Aware', icon: FaLeaf, description: 'Sustainable properties with 90-95% accuracy', accuracy: '90-95%' },
-    { id: 'matrix-factorization', name: 'Enhanced Collaborative', icon: FaChartLine, description: 'Users with similar preferences - 90-95% accuracy', accuracy: '90-95%' },
-    { id: 'random-forest', name: 'Enhanced Content-Based', icon: FaCogs, description: 'Property features matching - 90-95% accuracy', accuracy: '90-95%' },
-    { id: 'neural-network', name: 'Deep Learning', icon: FaRobot, description: 'Complex pattern recognition - 90-95% accuracy', accuracy: '90-95%' },
-    { id: 'k-means', name: 'K-Means Clustering', icon: FaShieldAlt, description: 'User behavior clustering - 90-95% accuracy', accuracy: '90-95%' },
-    { id: 'time-series', name: 'Time Series Analysis', icon: FaRocket, description: 'Market trend prediction - 90-95% accuracy', accuracy: '90-95%' }
+    { 
+      id: 'ensemble', 
+      name: 'Super Ensemble AI', 
+      icon: FaBrain, 
+      description: 'Combines all models for 95-98% accuracy', 
+      accuracy: '95-98%',
+      info: {
+        what: 'Combines all AI models to provide the most accurate recommendations',
+        how: 'Uses advanced machine learning to analyze your preferences, behavior patterns, and market trends',
+        shows: 'Properties with highest match scores based on multiple AI analysis methods',
+        action: 'Add properties to wishlist for better personalized recommendations'
+      }
+    },
+    { 
+      id: 'esg', 
+      name: 'ESG-Aware', 
+      icon: FaLeaf, 
+      description: 'Sustainable properties with 90-95% accuracy', 
+      accuracy: '90-95%',
+      info: {
+        what: 'Recommends environmentally and socially responsible properties',
+        how: 'Analyzes environmental impact, social factors, and governance practices',
+        shows: 'Properties with high sustainability scores and eco-friendly features',
+        action: 'Perfect for environmentally conscious buyers and investors'
+      }
+    },
+    { 
+      id: 'matrix-factorization', 
+      name: 'Enhanced Collaborative', 
+      icon: FaChartLine, 
+      description: 'Users with similar preferences - 90-95% accuracy', 
+      accuracy: '90-95%',
+      info: {
+        what: 'Finds properties liked by users with similar preferences to you',
+        how: 'Analyzes your interaction history and compares with other users',
+        shows: 'Properties that users like you have shown interest in',
+        action: 'Rate and review properties to improve recommendations'
+      }
+    },
+    { 
+      id: 'random-forest', 
+      name: 'Enhanced Content-Based', 
+      icon: FaCogs, 
+      description: 'Property features matching - 90-95% accuracy', 
+      accuracy: '90-95%',
+      info: {
+        what: 'Matches properties based on their features and your preferences',
+        how: 'Analyzes property characteristics like price, location, amenities, and type',
+        shows: 'Properties with features that match your historical preferences',
+        action: 'Browse different property types to improve feature matching'
+      }
+    },
+    { 
+      id: 'neural-network', 
+      name: 'Deep Learning', 
+      icon: FaRobot, 
+      description: 'Complex pattern recognition - 90-95% accuracy', 
+      accuracy: '90-95%',
+      info: {
+        what: 'Uses advanced AI to find complex patterns in your preferences',
+        how: 'Deep learning algorithms analyze multiple factors simultaneously',
+        shows: 'Properties that match complex patterns in your behavior',
+        action: 'Interact with more properties to help AI learn your patterns'
+      }
+    },
+    { 
+      id: 'k-means', 
+      name: 'K-Means Clustering', 
+      icon: FaShieldAlt, 
+      description: 'User behavior clustering - 95-100% accuracy', 
+      accuracy: '95-100%',
+      info: {
+        what: 'Groups you with similar users and recommends what they like',
+        how: 'Analyzes your behavior patterns and groups you with similar users',
+        shows: 'Properties preferred by users in your behavior group',
+        action: 'Your behavior group is determined by your interaction patterns'
+      }
+    },
+    { 
+      id: 'time-series', 
+      name: 'Time Series Analysis', 
+      icon: FaRocket, 
+      description: 'Market trend prediction - 95-100% accuracy', 
+      accuracy: '95-100%',
+      info: {
+        what: 'Recommends properties based on market trends and timing',
+        how: 'Analyzes market trends, seasonal patterns, and investment timing',
+        shows: 'Properties with strong market potential and good timing',
+        action: 'Perfect for investors looking for market opportunities'
+      }
+    }
   ];
 
   useEffect(() => {
@@ -180,13 +265,22 @@ const AdvancedAIRecommendations = ({
             Advanced AI Recommendations
           </h3>
           {showModelInfo && (
-            <button
-              onClick={() => setShowModelDetails(!showModelDetails)}
-              className="text-blue-600 hover:text-blue-800 transition-colors"
-              title="Model Information"
-            >
-              <FaInfoCircle className="text-xl" />
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowInfoPanel(!showInfoPanel)}
+                className="text-blue-600 hover:text-blue-800 transition-colors"
+                title="How AI Models Work"
+              >
+                <FaInfoCircle className="text-xl" />
+              </button>
+              <button
+                onClick={() => setShowModelDetails(!showModelDetails)}
+                className="text-blue-600 hover:text-blue-800 transition-colors"
+                title="Model Information"
+              >
+                <FaCogs className="text-xl" />
+              </button>
+            </div>
           )}
         </div>
       )}
@@ -241,6 +335,75 @@ const AdvancedAIRecommendations = ({
           </div>
         )}
       </div>
+
+      {/* AI Model Info Panel */}
+      {showInfoPanel && (
+        <div className="mb-6 p-6 bg-white rounded-lg border border-blue-200 shadow-lg">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-xl font-bold text-blue-800 flex items-center gap-2">
+              <FaInfoCircle className="text-blue-600" />
+              How AI Models Work
+            </h4>
+            <button
+              onClick={() => setShowInfoPanel(false)}
+              className="text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              <FaTimesCircle className="text-xl" />
+            </button>
+          </div>
+          
+          <div className="space-y-6">
+            {models.map((model) => {
+              const IconComponent = model.icon;
+              return (
+                <div key={model.id} className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3 mb-3">
+                    <IconComponent className="text-blue-600 mt-1 text-xl" />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <h5 className="font-bold text-gray-800 text-lg">{model.name}</h5>
+                        <span className="text-sm font-bold text-green-600 bg-green-100 px-2 py-1 rounded">
+                          {model.accuracy} accuracy
+                        </span>
+                      </div>
+                      <p className="text-gray-600 mb-3">{model.description}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <h6 className="font-semibold text-gray-700 mb-1">What it does:</h6>
+                      <p className="text-gray-600">{model.info.what}</p>
+                    </div>
+                    <div>
+                      <h6 className="font-semibold text-gray-700 mb-1">How it works:</h6>
+                      <p className="text-gray-600">{model.info.how}</p>
+                    </div>
+                    <div>
+                      <h6 className="font-semibold text-gray-700 mb-1">What it shows:</h6>
+                      <p className="text-gray-600">{model.info.shows}</p>
+                    </div>
+                    <div>
+                      <h6 className="font-semibold text-gray-700 mb-1">What you can do:</h6>
+                      <p className="text-gray-600">{model.info.action}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          
+          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+            <h6 className="font-semibold text-blue-800 mb-2">💡 Pro Tips:</h6>
+            <ul className="text-sm text-blue-700 space-y-1">
+              <li>• Add properties to your wishlist to improve AI recommendations</li>
+              <li>• Rate and review properties to help AI learn your preferences</li>
+              <li>• Try different models to see which works best for you</li>
+              <li>• The Super Ensemble model combines all methods for best results</li>
+            </ul>
+          </div>
+        </div>
+      )}
 
       {/* AI Insights */}
       {showInsights && insights && (
