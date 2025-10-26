@@ -84,7 +84,7 @@ const Footer = () => {
   const handleManage = () => {
     // Trigger the main cookie consent modal
     window.dispatchEvent(new CustomEvent('openCookieSettings'));
-    closeBanner();
+    // Don't close footer banner immediately - let it close when user makes a choice
   };
 
   const closeBanner = () => {
