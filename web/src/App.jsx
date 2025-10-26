@@ -12,6 +12,8 @@ import { ImageFavoritesProvider } from "./contexts/ImageFavoritesContext";
 import { HeaderProvider, useHeader } from "./contexts/HeaderContext";
 import ContactSupportWrapper from "./components/ContactSupportWrapper";
 import NetworkStatus from "./components/NetworkStatus";
+import CookieConsent from "./components/CookieConsent";
+import Footer from "./components/Footer";
 import UserChangePassword from './pages/UserChangePassword';
 import AdminChangePassword from './pages/AdminChangePassword';
 import AccountRevocation from './pages/AccountRevocation';
@@ -94,6 +96,7 @@ const AdminSupport = lazy(() => import('./pages/AdminSupport'));
 const PublicAI = lazy(() => import('./pages/PublicAI'));
 const UserAI = lazy(() => import('./pages/UserAI'));
 const AdminAI = lazy(() => import('./pages/AdminAI'));
+const CookiePolicy = lazy(() => import('./pages/CookiePolicy'));
 
 // Loading component
 const LoadingSpinner = () => (
@@ -648,6 +651,7 @@ function AppRoutes({ bootstrapped }) {
   return (
     <>
       <NetworkStatus />
+      <CookieConsent />
       {!hideHeaderRoutes.includes(location.pathname) && isHeaderVisible && (
         currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
           ? <AdminHeader />
@@ -674,6 +678,7 @@ function AppRoutes({ bootstrapped }) {
           <Route path="/privacy" element={currentUser ? <NotFound /> : <Privacy bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
           <Route path="/contact" element={currentUser ? <Navigate to="/user/contact" /> : <Contact />} />
           <Route path="/ai" element={currentUser ? <Navigate to="/user/ai" /> : <PublicAI />} />
+          <Route path="/cookie-policy" element={<CookiePolicy />} />
           <Route path="/restore-account/:token" element={<AccountRevocation />} />
           <Route path="/restore-property" element={<RestoreProperty />} />
 
@@ -756,6 +761,7 @@ function AppRoutes({ bootstrapped }) {
         </Routes>
         </NormalizeRoute>
       </Suspense>
+      <Footer />
       <ToastContainer 
         position="top-center" 
         autoClose={2000} 
