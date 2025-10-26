@@ -277,6 +277,7 @@ export default function Header() {
                   title="Sign Out"
                 >
                   <FaSignOutAlt className="text-xs" />
+                  <span className="text-xs">Sign Out</span>
                 </button>
               )}
             </div>
@@ -635,6 +636,7 @@ function UserNavLinks({ mobile = false, onNavigate, signout }) {
             onClick={() => { handleSignout(); if (onNavigate) onNavigate(); }}
           >
             <FaSignOutAlt className={`${mobile ? 'text-lg text-red-500' : 'text-base text-red-500'}`} /> 
+            <span>Sign Out</span>
           </li>
           
           {/* Profile avatar for desktop/tablet */}
