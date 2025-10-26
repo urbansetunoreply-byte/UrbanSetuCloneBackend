@@ -77,6 +77,11 @@ const CookieConsent = () => {
     localStorage.setItem('cookieConsent', JSON.stringify(allAccepted));
     closeBanner();
     
+    // Notify other components about the consent update
+    window.dispatchEvent(new CustomEvent('cookieConsentUpdated', { 
+      detail: { consent: allAccepted } 
+    }));
+    
     // Initialize analytics and other services
     initializeServices(allAccepted);
   };
@@ -91,11 +96,21 @@ const CookieConsent = () => {
     setPreferences(onlyNecessary);
     localStorage.setItem('cookieConsent', JSON.stringify(onlyNecessary));
     closeBanner();
+    
+    // Notify other components about the consent update
+    window.dispatchEvent(new CustomEvent('cookieConsentUpdated', { 
+      detail: { consent: onlyNecessary } 
+    }));
   };
 
   const handleSavePreferences = () => {
     localStorage.setItem('cookieConsent', JSON.stringify(preferences));
     closeBanner();
+    
+    // Notify other components about the consent update
+    window.dispatchEvent(new CustomEvent('cookieConsentUpdated', { 
+      detail: { consent: preferences } 
+    }));
     
     // Initialize services based on preferences
     initializeServices(preferences);

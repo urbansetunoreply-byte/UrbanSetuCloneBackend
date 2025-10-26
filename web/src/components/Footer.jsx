@@ -10,11 +10,41 @@ const Footer = () => {
 
   useEffect(() => {
     // Check if user has already made a cookie choice
-    const cookieConsent = localStorage.getItem('cookieConsent');
-    if (!cookieConsent) {
-      // Show cookie banner in footer if no choice has been made
-      setShowCookieBanner(true);
-    }
+    const checkCookieConsent = () => {
+      const cookieConsent = localStorage.getItem('cookieConsent');
+      if (!cookieConsent) {
+        // Show cookie banner in footer if no choice has been made
+        setShowCookieBanner(true);
+      } else {
+        // Hide banner if consent has been given
+        setShowCookieBanner(false);
+      }
+    };
+
+    // Initial check
+    checkCookieConsent();
+
+    // Listen for localStorage changes
+    const handleStorageChange = (e) => {
+      if (e.key === 'cookieConsent') {
+        checkCookieConsent();
+      }
+    };
+
+    // Listen for custom events from CookieConsent component
+    const handleCookieConsentUpdated = () => {
+      checkCookieConsent();
+    };
+
+    // Add event listeners
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('cookieConsentUpdated', handleCookieConsentUpdated);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('cookieConsentUpdated', handleCookieConsentUpdated);
+    };
   }, []);
 
   const handleAcceptAll = () => {
@@ -25,6 +55,12 @@ const Footer = () => {
       functional: true
     };
     localStorage.setItem('cookieConsent', JSON.stringify(allAccepted));
+    
+    // Notify other components about the consent update
+    window.dispatchEvent(new CustomEvent('cookieConsentUpdated', { 
+      detail: { consent: allAccepted } 
+    }));
+    
     closeBanner();
   };
 
@@ -36,6 +72,12 @@ const Footer = () => {
       functional: false
     };
     localStorage.setItem('cookieConsent', JSON.stringify(onlyNecessary));
+    
+    // Notify other components about the consent update
+    window.dispatchEvent(new CustomEvent('cookieConsentUpdated', { 
+      detail: { consent: onlyNecessary } 
+    }));
+    
     closeBanner();
   };
 
