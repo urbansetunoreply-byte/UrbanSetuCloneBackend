@@ -609,6 +609,10 @@ export default function AdminReviews() {
       if (data.success) {
         setReports(data.reports || []);
         console.log('Reports set:', data.reports?.length || 0);
+        // Debug: Log first report to see what data is available
+        if (data.reports && data.reports.length > 0) {
+          console.log('First report data:', JSON.stringify(data.reports[0], null, 2));
+        }
       } else {
         setReportsError(data.message || 'Failed to load reports');
         console.error('Reports API error:', data.message);

@@ -252,21 +252,30 @@ export const getReviewReports = async (req, res, next) => {
 
     // Parse to structured reports
     let reports = notifications.map(parseReviewReportFromNotification);
+    
+    // Debug: Log first notification to see what's stored
+    if (notifications.length > 0) {
+      console.log('First notification:', JSON.stringify(notifications[0], null, 2));
+    }
 
     // Enhance reports with additional reporter details
     let enhancedReports = await Promise.all(reports.map(async (report) => {
+      console.log('Processing report:', report.notificationId, 'reporterId:', report.reporterId);
       if (report.reporterId) {
         try {
           const User = (await import('../models/user.model.js')).default;
           const reporter = await User.findById(report.reporterId).select('email phone role username');
+          console.log('Found reporter:', reporter ? { email: reporter.email, phone: reporter.phone, role: reporter.role, username: reporter.username } : 'null');
           if (reporter) {
-            return {
+            const enhanced = {
               ...report,
               reporterEmail: report.reporterEmail || reporter.email,
               reporterPhone: report.reporterPhone || reporter.phone,
               reporterRole: report.reporterRole || reporter.role,
               reporterUsername: reporter.username
             };
+            console.log('Enhanced report:', { reporterEmail: enhanced.reporterEmail, reporterPhone: enhanced.reporterPhone, reporterRole: enhanced.reporterRole });
+            return enhanced;
           }
         } catch (error) {
           console.error('Error fetching reporter details:', error);
