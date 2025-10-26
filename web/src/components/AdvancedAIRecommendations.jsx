@@ -26,7 +26,7 @@ const AdvancedAIRecommendations = ({
   const [activeTab, setActiveTab] = useState('ensemble');
   const [showModelDetails, setShowModelDetails] = useState(false);
   const [showInfoPanel, setShowInfoPanel] = useState(false);
-  const [showModelInfo, setShowModelInfo] = useState(null);
+  const [showIndividualModelInfo, setShowIndividualModelInfo] = useState(null);
 
   const models = [
     { 
@@ -312,7 +312,7 @@ const AdvancedAIRecommendations = ({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    setShowModelInfo(showModelInfo === model.id ? null : model.id);
+                    setShowIndividualModelInfo(showIndividualModelInfo === model.id ? null : model.id);
                   }}
                   className={`absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs transition-all ${
                     activeTab === model.id
@@ -325,7 +325,7 @@ const AdvancedAIRecommendations = ({
                 </button>
                 
                 {/* Individual Model Info Tooltip */}
-                {showModelInfo === model.id && (
+                {showIndividualModelInfo === model.id && (
                   <div className="absolute top-full left-0 z-50 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg p-4">
                     <div className="flex items-start gap-3 mb-3">
                       <IconComponent className="text-blue-600 mt-1 text-lg" />
@@ -333,7 +333,7 @@ const AdvancedAIRecommendations = ({
                         <div className="flex items-center justify-between mb-2">
                           <h5 className="font-bold text-gray-800">{model.name}</h5>
                           <button
-                            onClick={() => setShowModelInfo(null)}
+                            onClick={() => setShowIndividualModelInfo(null)}
                             className="text-gray-500 hover:text-gray-700"
                           >
                             ✕
