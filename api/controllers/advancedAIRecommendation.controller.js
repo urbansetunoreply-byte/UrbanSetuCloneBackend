@@ -1,5 +1,7 @@
 import { 
-    getAdvancedPropertyRecommendations,
+    getAdvancedPropertyRecommendations
+} from '../services/advancedAIRecommendationService.js';
+import { 
     enhancedMatrixFactorizationRecommendations,
     enhancedRandomForestRecommendations,
     enhancedNeuralNetworkRecommendations,
@@ -7,7 +9,7 @@ import {
     enhancedTimeSeriesRecommendations,
     createEnhancedUserProfile,
     getEnhancedFallbackRecommendations
-} from '../services/advancedAIRecommendationService.js';
+} from '../services/enhancedAIRecommendationService.js';
 import { errorHandler } from '../utils/error.js';
 import Listing from '../models/listing.model.js';
 import Wishlist from '../models/wishlist.model.js';
@@ -31,7 +33,7 @@ export const getAdvancedRecommendations = async (req, res, next) => {
 
         try {
             // Get user profile and properties for individual models
-            const userProfile = await createAdvancedUserProfile(userId);
+            const userProfile = await createEnhancedUserProfile(userId);
             const allProperties = await Listing.find({}).limit(1000);
             
             // Get user's current wishlist to exclude from individual model recommendations
@@ -74,7 +76,7 @@ export const getAdvancedRecommendations = async (req, res, next) => {
             console.error(`Error in ${model} model:`, modelError);
             // Fallback to trending properties
             const allProperties = await Listing.find({}).limit(1000);
-            recommendations = await getFallbackRecommendations(allProperties, parseInt(limit));
+                recommendations = await getEnhancedFallbackRecommendations(allProperties, parseInt(limit));
         }
 
         res.status(200).json({
@@ -99,7 +101,7 @@ export const getUserProfileAnalysis = async (req, res, next) => {
         }
 
         const userId = req.user.id;
-        const userProfile = await createAdvancedUserProfile(userId);
+        const userProfile = await createEnhancedUserProfile(userId);
 
         if (!userProfile) {
             return res.status(200).json({
@@ -167,9 +169,9 @@ export const getModelPerformance = async (req, res, next) => {
         // Run all models and compare performance
         const [ensembleRecs, matrixRecs, randomForestRecs, neuralRecs] = await Promise.all([
             getAdvancedPropertyRecommendations(userId, 5),
-            matrixFactorizationRecommendations(userId, [], {}),
-            randomForestRecommendations(await createAdvancedUserProfile(userId), []),
-            neuralNetworkRecommendations(await createAdvancedUserProfile(userId), [])
+            enhancedMatrixFactorizationRecommendations(userId, [], {}),
+            enhancedRandomForestRecommendations(await createEnhancedUserProfile(userId), []),
+            enhancedNeuralNetworkRecommendations(await createEnhancedUserProfile(userId), [])
         ]);
 
         const performanceData = {
