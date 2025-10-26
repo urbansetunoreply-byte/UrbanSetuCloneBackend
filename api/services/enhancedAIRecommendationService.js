@@ -347,11 +347,13 @@ const enhancedMatrixFactorizationRecommendations = async (userId, allProperties,
             const predictedRating = predictEnhancedRating(userItemMatrix, userId, property._id, userProfile);
             if (predictedRating > 0.4) { // Higher threshold for better accuracy
                 recommendations.push({
-                    property,
+                    property: property,
                     score: predictedRating,
-                    type: 'enhanced-matrix-factorization',
+                    type: 'matrix-factorization',
                     confidence: Math.min(predictedRating * 1.2, 1.0),
-                    modelVersion: '2.0'
+                    modelVersion: '2.0',
+                    recommendationScore: predictedRating,
+                    recommendationType: 'enhanced-matrix-factorization'
                 });
             }
         }
@@ -508,12 +510,14 @@ const enhancedRandomForestRecommendations = async (userProfile, allProperties) =
             
             if (prediction.score > 0.35) { // Higher threshold for better accuracy
                 recommendations.push({
-                    property,
+                    property: property,
                     score: prediction.score,
-                    type: 'enhanced-random-forest',
+                    type: 'random-forest',
                     confidence: prediction.confidence,
                     reasons: prediction.reasons,
-                    modelVersion: '2.0'
+                    modelVersion: '2.0',
+                    recommendationScore: prediction.score,
+                    recommendationType: 'enhanced-random-forest'
                 });
             }
         }
@@ -698,12 +702,14 @@ const enhancedNeuralNetworkRecommendations = async (userProfile, allProperties) 
             
             if (prediction.score > 0.35) { // Higher threshold for better accuracy
                 recommendations.push({
-                    property,
+                    property: property,
                     score: prediction.score,
-                    type: 'enhanced-neural-network',
+                    type: 'neural-network',
                     confidence: prediction.confidence,
                     hiddenFactors: prediction.hiddenFactors,
-                    modelVersion: '2.0'
+                    modelVersion: '2.0',
+                    recommendationScore: prediction.score,
+                    recommendationType: 'enhanced-neural-network'
                 });
             }
         }
@@ -810,12 +816,14 @@ const enhancedKMeansRecommendations = async (userId, allProperties, userProfile)
             
             if (clusterScore > 0.4) { // Higher threshold for better accuracy
                 recommendations.push({
-                    property,
+                    property: property, // Ensure property is properly included
                     score: clusterScore,
-                    type: 'enhanced-k-means',
+                    type: 'k-means', // Use frontend-compatible type
                     confidence: Math.min(clusterScore * 1.1, 1.0),
                     clusterId: userCluster.id,
-                    modelVersion: '2.0'
+                    modelVersion: '2.0',
+                    recommendationScore: clusterScore,
+                    recommendationType: 'enhanced-k-means'
                 });
             }
         }
@@ -896,12 +904,14 @@ const enhancedTimeSeriesRecommendations = async (userId, allProperties, userProf
             
             if (trendScore > 0.4) { // Higher threshold for better accuracy
                 recommendations.push({
-                    property,
+                    property: property,
                     score: trendScore,
-                    type: 'enhanced-time-series',
+                    type: 'time-series',
                     confidence: Math.min(trendScore * 1.1, 1.0),
                     trendFactors: calculateTrendFactors(features),
-                    modelVersion: '2.0'
+                    modelVersion: '2.0',
+                    recommendationScore: trendScore,
+                    recommendationType: 'enhanced-time-series'
                 });
             }
         }
@@ -993,6 +1003,7 @@ const superEnsembleRecommendations = async (userId, limit = 10) => {
                 ...rec,
                 recommendationScore: rec.score || 0,
                 recommendationType: 'super-ensemble',
+                type: 'ensemble', // Frontend-compatible type
                 aiInsights: generateEnhancedAIInsights(rec, userProfile),
                 confidenceLevel: rec.confidence || 0.5,
                 modelExplanation: generateEnhancedModelExplanation(rec),
@@ -1051,17 +1062,19 @@ const combineEnhancedRecommendations = (modelResults) => {
         });
     });
     
-    return Object.values(propertyScores)
-        .map(rec => ({
-            property: rec.property,
-            score: rec.totalScore,
-            type: 'super-ensemble',
-            confidence: rec.models.reduce((sum, model) => sum + model.confidence, 0) / rec.models.length,
-            modelBreakdown: rec.scores,
-            contributingModels: rec.models,
-            averageAccuracy: rec.accuracySum / rec.models.length
-        }))
-        .sort((a, b) => b.score - a.score);
+        return Object.values(propertyScores)
+            .map(rec => ({
+                property: rec.property,
+                score: rec.totalScore,
+                type: 'ensemble',
+                confidence: rec.models.reduce((sum, model) => sum + model.confidence, 0) / rec.models.length,
+                modelBreakdown: rec.scores,
+                contributingModels: rec.models,
+                averageAccuracy: rec.accuracySum / rec.models.length,
+                recommendationScore: rec.totalScore,
+                recommendationType: 'super-ensemble'
+            }))
+            .sort((a, b) => b.score - a.score);
 };
 
 // Enhanced AI insights generation
@@ -1359,7 +1372,9 @@ const getEnhancedFallbackRecommendations = async (allProperties, limit = 10) => 
         return trendingProperties
             .filter(property => property && property._id)
             .map(property => ({
-                ...property,
+                property: property, // Ensure property is properly structured
+                score: (property.popularityScore || 0) / 100,
+                type: 'trending-fallback',
                 recommendationScore: (property.popularityScore || 0) / 100,
                 recommendationType: 'enhanced-trending-fallback',
                 confidence: 0.8,
