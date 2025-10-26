@@ -1,5 +1,7 @@
 import { 
-    getAdvancedPropertyRecommendations,
+    getAdvancedPropertyRecommendations
+} from '../services/advancedAIRecommendationService.js';
+import { 
     enhancedMatrixFactorizationRecommendations,
     enhancedRandomForestRecommendations,
     enhancedNeuralNetworkRecommendations,
@@ -7,7 +9,7 @@ import {
     enhancedTimeSeriesRecommendations,
     createEnhancedUserProfile,
     getEnhancedFallbackRecommendations
-} from '../services/advancedAIRecommendationService.js';
+} from '../services/enhancedAIRecommendationService.js';
 import { errorHandler } from '../utils/error.js';
 import Listing from '../models/listing.model.js';
 import Wishlist from '../models/wishlist.model.js';
