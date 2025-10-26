@@ -247,7 +247,7 @@ export const getAIInsights = async (req, res, next) => {
         }
 
         const userId = req.user.id;
-        const recommendations = await getAdvancedPropertyRecommendations(userId, 10);
+        const recommendations = await getEnhancedPropertyRecommendations(userId, 10);
 
         const insights = {
             totalRecommendations: recommendations.length,
