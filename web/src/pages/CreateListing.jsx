@@ -754,6 +754,15 @@ export default function CreateListing() {
             </div>
           </div>
 
+          {/* ESG Management Section */}
+          <div className="mb-6">
+            <ESGManagement 
+              esgData={formData.esg}
+              onESGChange={(esgData) => setFormData({...formData, esg: esgData})}
+              isEditing={false}
+            />
+          </div>
+
           {/* Consent Checkbox for Users */}
           {currentUser.role !== 'admin' && currentUser.role !== 'rootadmin' && (
             <div className="flex items-center gap-2 mt-2">
@@ -770,15 +779,6 @@ export default function CreateListing() {
               </label>
             </div>
           )}
-
-          {/* ESG Management Section */}
-          <div className="mb-6">
-            <ESGManagement 
-              esgData={formData.esg}
-              onESGChange={(esgData) => setFormData({...formData, esg: esgData})}
-              isEditing={false}
-            />
-          </div>
 
           {/* Action Buttons */}
           <div className="flex gap-4">
