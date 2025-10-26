@@ -242,18 +242,34 @@ export const getReviewReports = async (req, res, next) => {
     }
 
     // Fetch review report notifications
-    // Root admins see all reports, regular admins see only their assigned reports
-    const query = { 
-      ...(req.user.role === 'rootadmin' ? {} : { userId: req.user.id }),
-      title: 'Review Reported',
-      ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter })
-    };
+    let query;
+    if (req.user.role === 'rootadmin') {
+      // Root admins see all review reports (notifications sent to any admin)
+      query = { 
+        title: 'Review Reported',
+        ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter })
+      };
+    } else {
+      // Regular admins see only reports assigned to them
+      query = { 
+        userId: req.user.id,
+        title: 'Review Reported',
+        ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter })
+      };
+    }
     
     console.log('User role:', req.user.role);
     console.log('Query for notifications:', JSON.stringify(query, null, 2));
     
     const notifications = await Notification.find(query).sort({ createdAt: -1 });
     console.log('Found notifications:', notifications.length);
+    
+    // Additional debugging for root admin
+    if (req.user.role === 'rootadmin') {
+      const totalReviewReports = await Notification.countDocuments({ title: 'Review Reported' });
+      console.log('Total review reports in system:', totalReviewReports);
+      console.log('Reports found for root admin:', notifications.length);
+    }
 
     // Parse to structured reports
     let reports = notifications.map(parseReviewReportFromNotification);
