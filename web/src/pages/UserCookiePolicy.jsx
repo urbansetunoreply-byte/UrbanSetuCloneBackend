@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaCookie, FaShieldAlt, FaChartBar, FaBullhorn, FaCog } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
+import ContactSupportWrapper from '../components/ContactSupportWrapper';
 
 const UserCookiePolicy = () => {
   // Set page title
@@ -177,6 +178,9 @@ const UserCookiePolicy = () => {
           </section>
         </div>
       </div>
+      
+      {/* Contact Support Wrapper */}
+      <ContactSupportWrapper />
     </div>
   );
 };

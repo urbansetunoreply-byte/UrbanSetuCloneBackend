@@ -1,5 +1,6 @@
 import React from 'react';
 import { FaCookie, FaShieldAlt, FaChartBar, FaBullhorn, FaCog } from 'react-icons/fa';
+import ContactSupportWrapper from '../components/ContactSupportWrapper';
 
 const CookiePolicy = () => {
   return (
@@ -194,6 +195,9 @@ const CookiePolicy = () => {
           </section>
         </div>
       </div>
+      
+      {/* Contact Support Wrapper */}
+      <ContactSupportWrapper />
     </div>
   );
 };
