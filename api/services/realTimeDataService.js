@@ -133,14 +133,68 @@ class RealTimeDataService {
       }
     }
 
-    // Fallback to 0,0 to avoid crashing; downstream will produce mock or empty
-    return { lat: 0, lng: 0 };
+  // Fallback to 0,0 to avoid crashing; downstream will produce mock or empty
+  return { lat: 0, lng: 0 };
+}
+
+  // Mock data generators for when APIs are unavailable
+  getMockAmenities() {
+    return {
+      restaurant: [
+        { name: 'Local Restaurant', rating: 4.2, distance: 0.5, vicinity: 'Nearby area' },
+        { name: 'Cafe Corner', rating: 4.0, distance: 0.8, vicinity: 'Main street' }
+      ],
+      hospital: [
+        { name: 'City Hospital', rating: 4.5, distance: 1.2, vicinity: 'Medical district' }
+      ],
+      school: [
+        { name: 'Public School', rating: 4.0, distance: 0.6, vicinity: 'Education zone' }
+      ],
+      shopping_mall: [
+        { name: 'Shopping Center', rating: 4.1, distance: 1.0, vicinity: 'Commercial area' }
+      ],
+      bank: [
+        { name: 'Local Bank', rating: 4.0, distance: 0.7, vicinity: 'Financial district' }
+      ],
+      pharmacy: [
+        { name: 'Health Pharmacy', rating: 4.3, distance: 0.4, vicinity: 'Health center' }
+      ]
+    };
+  }
+
+  getMockSchoolData() {
+    return {
+      schools: [
+        { name: 'Public Elementary School', rating: 4.2, distance: 0.6, vicinity: 'Education zone' },
+        { name: 'High School', rating: 4.0, distance: 1.2, vicinity: 'School district' },
+        { name: 'Private Academy', rating: 4.5, distance: 1.8, vicinity: 'Upscale area' }
+      ],
+      averageRating: 4.2,
+      totalSchools: 3
+    };
+  }
+
+  getMockTransportData() {
+    return {
+      stations: [
+        { name: 'Central Station', distance: 0.8, vicinity: 'Transport hub' },
+        { name: 'Bus Terminal', distance: 1.2, vicinity: 'Transit center' }
+      ],
+      connectivityScore: 75,
+      totalStations: 2
+    };
   }
 
   // 3. Nearby Amenities (Google Places API / Mapbox fallback)
   async getNearbyAmenities(location) {
-    // Prefer Foursquare if available
-    if (this.apiKeys.foursquare) {
+    // Check if Foursquare API key is valid before attempting
+    let foursquareAvailable = false;
+    if (this.apiKeys.foursquare && this.apiKeys.foursquare.trim() !== '') {
+      foursquareAvailable = true;
+    }
+
+    // Prefer Foursquare if available and valid
+    if (foursquareAvailable) {
       try {
         const lat = location.latitude || 0;
         const lng = location.longitude || 0;
@@ -158,6 +212,8 @@ class RealTimeDataService {
         ];
 
         const amenities = {};
+        let successCount = 0;
+        
         for (const item of amenityQueries) {
           try {
             const url = 'https://api.foursquare.com/v3/places/search';
@@ -171,7 +227,8 @@ class RealTimeDataService {
                 radius: 2000,
                 categories: item.cat,
                 limit: 15
-              }
+              },
+              timeout: 5000 // 5 second timeout
             });
 
             amenities[item.key] = (response.data.results || []).map(place => ({
@@ -180,16 +237,29 @@ class RealTimeDataService {
               distance: place.distance || this.calculateDistance(lat, lng, place.geocodes?.main?.latitude, place.geocodes?.main?.longitude),
               vicinity: place.location?.formatted_address || place.location?.address || ''
             }));
+            successCount++;
           } catch (fsqErr) {
-            console.error(`FSQ fetch error for ${item.key}:`, fsqErr?.response?.status || fsqErr?.message);
+            // Only log if it's not a 401 (authentication error)
+            if (fsqErr?.response?.status !== 401) {
+              console.error(`FSQ fetch error for ${item.key}:`, fsqErr?.response?.status || fsqErr?.message);
+            }
+            // If 401, disable Foursquare for future calls
+            if (fsqErr?.response?.status === 401) {
+              foursquareAvailable = false;
+              this.apiKeys.foursquare = null; // Disable for this session
+              break;
+            }
           }
         }
 
         // If Foursquare yielded any category, return it
         const anyData = Object.values(amenities).some(arr => Array.isArray(arr) && arr.length > 0);
-        if (anyData) return amenities;
+        if (anyData && successCount > 0) return amenities;
       } catch (error) {
         console.error('Error fetching amenities from Foursquare:', error);
+        // Disable Foursquare if there's a general error
+        foursquareAvailable = false;
+        this.apiKeys.foursquare = null;
       }
     }
 
@@ -305,8 +375,8 @@ class RealTimeDataService {
 
   // 5. School Data (Google Places API / Mapbox fallback)
   async getSchoolData(location) {
-    // Try Foursquare Education category first
-    if (this.apiKeys.foursquare) {
+    // Try Foursquare Education category first (only if API key is valid)
+    if (this.apiKeys.foursquare && this.apiKeys.foursquare.trim() !== '') {
       try {
         const lat = location.latitude || 0;
         const lng = location.longitude || 0;
@@ -321,7 +391,8 @@ class RealTimeDataService {
             radius: 5000,
             categories: '12000', // Education
             limit: 20
-          }
+          },
+          timeout: 5000
         });
         const features = response.data.results || [];
         const schools = features.map(school => ({
@@ -336,7 +407,12 @@ class RealTimeDataService {
           totalSchools: schools.length
         };
       } catch (err) {
-        console.error('FSQ school fetch error:', err?.response?.status || err?.message);
+        // If 401, disable Foursquare for future calls
+        if (err?.response?.status === 401) {
+          this.apiKeys.foursquare = null;
+        } else {
+          console.error('FSQ school fetch error:', err?.response?.status || err?.message);
+        }
       }
     }
 
@@ -411,13 +487,15 @@ class RealTimeDataService {
 
   // 6. Transport Data (Google Places API / Mapbox fallback)
   async getTransportData(location) {
-    // Try Foursquare for transit stations
-    if (this.apiKeys.foursquare) {
+    // Try Foursquare for transit stations (only if API key is valid)
+    if (this.apiKeys.foursquare && this.apiKeys.foursquare.trim() !== '') {
       try {
         const lat = location.latitude || 0;
         const lng = location.longitude || 0;
         const queries = ['19046','19047','19048']; // Train, Bus, Metro categories (approx)
         let stationsCombined = [];
+        let hasError = false;
+        
         for (const cat of queries) {
           try {
             const url = 'https://api.foursquare.com/v3/places/search';
@@ -431,7 +509,8 @@ class RealTimeDataService {
                 radius: 3000,
                 categories: cat,
                 limit: 10
-              }
+              },
+              timeout: 5000
             });
             const items = (resp.data.results || []).map(station => ({
               name: station.name,
@@ -440,23 +519,39 @@ class RealTimeDataService {
             }));
             stationsCombined = stationsCombined.concat(items);
           } catch (innerFsq) {
-            console.error('FSQ transport fetch error:', innerFsq?.response?.status || innerFsq?.message);
+            // If 401, disable Foursquare and break
+            if (innerFsq?.response?.status === 401) {
+              this.apiKeys.foursquare = null;
+              hasError = true;
+              break;
+            } else {
+              console.error('FSQ transport fetch error:', innerFsq?.response?.status || innerFsq?.message);
+            }
           }
         }
-        const seen = new Set();
-        const stations = stationsCombined.filter(s => {
-          const key = `${s.name}|${s.vicinity}`;
-          if (seen.has(key)) return false;
-          seen.add(key);
-          return true;
-        }).sort((a, b) => a.distance - b.distance);
-        return {
-          stations: stations.slice(0, 5),
-          connectivityScore: this.calculateConnectivityScore(stations),
-          totalStations: stations.length
-        };
+        
+        // Only return data if no authentication error occurred
+        if (!hasError) {
+          const seen = new Set();
+          const stations = stationsCombined.filter(s => {
+            const key = `${s.name}|${s.vicinity}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          }).sort((a, b) => a.distance - b.distance);
+          return {
+            stations: stations.slice(0, 5),
+            connectivityScore: this.calculateConnectivityScore(stations),
+            totalStations: stations.length
+          };
+        }
       } catch (err) {
-        console.error('Error fetching transport from Foursquare:', err?.response?.status || err?.message);
+        // If 401, disable Foursquare for future calls
+        if (err?.response?.status === 401) {
+          this.apiKeys.foursquare = null;
+        } else {
+          console.error('Error fetching transport from Foursquare:', err?.response?.status || err?.message);
+        }
       }
     }
 
@@ -798,16 +893,6 @@ class RealTimeDataService {
     };
   }
 
-  getMockTransportData() {
-    return {
-      stations: [
-        { name: 'Central Station', distance: 1.5 },
-        { name: 'Metro Station', distance: 2.0 }
-      ],
-      connectivityScore: 15,
-      totalStations: 2
-    };
-  }
 
   getMockWeatherData() {
     return {
