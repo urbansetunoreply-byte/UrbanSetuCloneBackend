@@ -17,7 +17,6 @@ import {
   FaDownload,
   FaSave,
   FaHistory,
-  FaChartLine,
   FaTimes,
 } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
