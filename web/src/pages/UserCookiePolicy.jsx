@@ -152,6 +152,30 @@ const UserCookiePolicy = () => {
             </div>
           </section>
 
+          {/* Related Policies */}
+          <section>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Related Policies</h2>
+            <div className="bg-gray-50 rounded-lg p-6">
+              <p className="text-gray-700 mb-4">
+                For more information about our data practices and terms of service, please review our:
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <a 
+                  href="/user/privacy" 
+                  className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                >
+                  🔒 Privacy Policy
+                </a>
+                <a 
+                  href="/user/terms" 
+                  className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                >
+                  📋 Terms of Service
+                </a>
+              </div>
+            </div>
+          </section>
+
           {/* Contact Information */}
           <section>
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Contact Us</h2>
