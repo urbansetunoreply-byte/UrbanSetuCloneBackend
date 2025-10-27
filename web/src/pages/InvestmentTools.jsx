@@ -18,7 +18,7 @@ import {
   FaSave,
   FaHistory,
   FaChartLine,
-  FaTimes
+  FaTimes,
 } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
