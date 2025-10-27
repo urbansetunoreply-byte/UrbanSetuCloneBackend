@@ -514,7 +514,7 @@ app.use("/api/price-drop-alerts", priceDropAlertRouter);
 app.use("/api/statistics", statisticsRouter);
 app.use("/api/config", configRouter);
 app.use("/api/analytics", analyticsRouter);
-app.use("/api/analytics", esgAnalyticsRouter);
+app.use("/api/esg-analytics", esgAnalyticsRouter);
 app.use("/api/calculations", calculationHistoryRouter);
 app.use("/api/esg-ai", esgAIRecommendationRouter);
 app.use("/api/route-planner", routePlannerRouter);
