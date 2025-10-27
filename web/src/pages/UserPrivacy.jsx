@@ -57,6 +57,17 @@ export default function UserPrivacy() {
           <li>We monitor watchlist prices to send helpful alerts.</li>
         </ul>
 
+        <div className="mt-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">Related Policies</h3>
+          <p className="text-gray-700 mb-3">For information about how we use cookies and similar technologies, please review our:</p>
+          <a 
+            href="/user/cookie-policy" 
+            className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium transition-colors"
+          >
+            🍪 Cookie Policy
+          </a>
+        </div>
+
         <p className="mt-6 text-sm text-gray-600">Last updated: {new Date().toLocaleDateString(`en-IN`, {
           year: 'numeric',
           month: 'long',
