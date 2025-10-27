@@ -99,6 +99,7 @@ const PublicAI = lazy(() => import('./pages/PublicAI'));
 const UserAI = lazy(() => import('./pages/UserAI'));
 const AdminAI = lazy(() => import('./pages/AdminAI'));
 const CookiePolicy = lazy(() => import('./pages/CookiePolicy'));
+const InvestmentTools = lazy(() => import('./pages/InvestmentTools'));
 
 // Loading component
 const LoadingSpinner = () => (
@@ -133,7 +134,7 @@ function normalizeRoute(path, role) {
   if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1);
 
   // List of shared base routes (add more as needed)
-  const sharedBases = ["about", "search", "terms", "privacy", "cookie-policy", "listing", "home", "reviews", "wishlist", "profile", "appointment", "explore", "contact", "ai"];
+  const sharedBases = ["about", "search", "terms", "privacy", "cookie-policy", "listing", "home", "reviews", "wishlist", "profile", "appointment", "explore", "contact", "ai", "investment-tools"];
 
   // Helper to extract base and subpath
   function extractBaseAndRest(p) {
@@ -713,6 +714,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/user/device-management" element={<DeviceManagement />} />
             <Route path="/user/contact" element={<UserContact />} />
             <Route path="/user/ai" element={<UserAI />} />
+            <Route path="/user/investment-tools" element={<InvestmentTools />} />
             <Route path="/contact" element={<Navigate to="/user/contact" />} />
             <Route path="/admin/contact" element={<Navigate to="/user/contact" />} />
             <Route path="/ai" element={<Navigate to="/user/ai" />} />
@@ -753,6 +755,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/admin/session-audit-logs" element={<SessionAuditLogs />} />
             <Route path="/admin/support" element={<AdminSupport />} />
             <Route path="/admin/ai" element={<AdminAI />} />
+            <Route path="/admin/investment-tools" element={<InvestmentTools />} />
             <Route path="/contact" element={<Navigate to="/admin/support" />} />
             <Route path="/support" element={<Navigate to="/admin/support" />} />
             <Route path="/user/contact" element={<Navigate to="/admin/support" />} />

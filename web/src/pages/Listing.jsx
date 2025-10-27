@@ -1836,6 +1836,32 @@ export default function Listing() {
                       <p className="text-xs text-gray-600 mt-1">@ 8.5% for 20 years</p>
                     </div>
                   )}
+
+                  {/* Investment Tools Link - Only for logged-in users */}
+                  {currentUser && (
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <h5 className="font-semibold text-blue-800">Investment Tools</h5>
+                        <Link
+                          to={currentUser.role === 'admin' || currentUser.role === 'rootadmin' ? '/admin/investment-tools' : '/user/investment-tools'}
+                          className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-100 rounded-full transition-colors"
+                          title="Open Investment Tools"
+                        >
+                          <FaChartLine className="text-lg" />
+                        </Link>
+                      </div>
+                      <p className="text-sm text-blue-600 mb-2">
+                        Advanced ROI, Mortgage, Portfolio & Risk Analysis Tools
+                      </p>
+                      <Link
+                        to={currentUser.role === 'admin' || currentUser.role === 'rootadmin' ? '/admin/investment-tools' : '/user/investment-tools'}
+                        className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
+                      >
+                        <FaCalculator className="text-xs" />
+                        Open Investment Tools
+                      </Link>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="space-y-4">
