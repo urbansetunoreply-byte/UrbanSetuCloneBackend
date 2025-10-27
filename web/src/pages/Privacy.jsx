@@ -97,7 +97,11 @@ export default function Privacy() {
           </ul>
         </div>
 
-        <p className="mt-6 text-sm text-gray-600">Last updated: {new Date().toLocaleDateString()}</p>
+        <p className="mt-6 text-sm text-gray-600">Last updated: {new Date().toLocaleDateString(`en-IN`, {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        })}</p>
       </div>
     </div>
   );
