@@ -13,6 +13,16 @@ class RealTimeDataService {
     
     this.cache = new Map();
     this.cacheTimeout = 30 * 60 * 1000; // 30 minutes
+    
+    // Track disabled APIs to prevent repeated attempts
+    this.disabledAPIs = new Set();
+    
+    // Pre-emptively disable Foursquare if we know it's problematic
+    // This can be enabled if Foursquare API is consistently failing
+    if (process.env.DISABLE_FOURSQUARE === 'true') {
+      this.disabledAPIs.add('foursquare');
+      console.log('Foursquare API: Pre-emptively disabled via environment variable');
+    }
   }
 
   // Get cached data or fetch new data
@@ -137,6 +147,25 @@ class RealTimeDataService {
   return { lat: 0, lng: 0 };
 }
 
+  // Check if Foursquare API should be used
+  isFoursquareAvailable() {
+    const hasKey = this.apiKeys.foursquare && this.apiKeys.foursquare.trim() !== '';
+    const notDisabled = !this.disabledAPIs.has('foursquare');
+    
+    if (!hasKey) {
+      console.log('Foursquare API: No API key available');
+      return false;
+    }
+    
+    if (notDisabled) {
+      console.log('Foursquare API: Available and enabled');
+      return true;
+    } else {
+      console.log('Foursquare API: Disabled due to previous errors');
+      return false;
+    }
+  }
+
   // Mock data generators for when APIs are unavailable
   getMockAmenities() {
     return {
@@ -187,11 +216,8 @@ class RealTimeDataService {
 
   // 3. Nearby Amenities (Google Places API / Mapbox fallback)
   async getNearbyAmenities(location) {
-    // Check if Foursquare API key is valid before attempting
-    let foursquareAvailable = false;
-    if (this.apiKeys.foursquare && this.apiKeys.foursquare.trim() !== '') {
-      foursquareAvailable = true;
-    }
+    // Check if Foursquare API should be used
+    const foursquareAvailable = this.isFoursquareAvailable();
 
     // Prefer Foursquare if available and valid
     if (foursquareAvailable) {
@@ -245,7 +271,7 @@ class RealTimeDataService {
             }
             // If 401, disable Foursquare for future calls
             if (fsqErr?.response?.status === 401) {
-              foursquareAvailable = false;
+              this.disabledAPIs.add('foursquare');
               this.apiKeys.foursquare = null; // Disable for this session
               break;
             }
@@ -258,7 +284,7 @@ class RealTimeDataService {
       } catch (error) {
         console.error('Error fetching amenities from Foursquare:', error);
         // Disable Foursquare if there's a general error
-        foursquareAvailable = false;
+        this.disabledAPIs.add('foursquare');
         this.apiKeys.foursquare = null;
       }
     }
@@ -375,8 +401,8 @@ class RealTimeDataService {
 
   // 5. School Data (Google Places API / Mapbox fallback)
   async getSchoolData(location) {
-    // Try Foursquare Education category first (only if API key is valid)
-    if (this.apiKeys.foursquare && this.apiKeys.foursquare.trim() !== '') {
+    // Try Foursquare Education category first (only if API key is valid and not disabled)
+    if (this.isFoursquareAvailable()) {
       try {
         const lat = location.latitude || 0;
         const lng = location.longitude || 0;
@@ -409,6 +435,7 @@ class RealTimeDataService {
       } catch (err) {
         // If 401, disable Foursquare for future calls
         if (err?.response?.status === 401) {
+          this.disabledAPIs.add('foursquare');
           this.apiKeys.foursquare = null;
         } else {
           console.error('FSQ school fetch error:', err?.response?.status || err?.message);
@@ -487,8 +514,8 @@ class RealTimeDataService {
 
   // 6. Transport Data (Google Places API / Mapbox fallback)
   async getTransportData(location) {
-    // Try Foursquare for transit stations (only if API key is valid)
-    if (this.apiKeys.foursquare && this.apiKeys.foursquare.trim() !== '') {
+    // Try Foursquare for transit stations (only if API key is valid and not disabled)
+    if (this.isFoursquareAvailable()) {
       try {
         const lat = location.latitude || 0;
         const lng = location.longitude || 0;
@@ -521,6 +548,7 @@ class RealTimeDataService {
           } catch (innerFsq) {
             // If 401, disable Foursquare and break
             if (innerFsq?.response?.status === 401) {
+              this.disabledAPIs.add('foursquare');
               this.apiKeys.foursquare = null;
               hasError = true;
               break;
@@ -548,6 +576,7 @@ class RealTimeDataService {
       } catch (err) {
         // If 401, disable Foursquare for future calls
         if (err?.response?.status === 401) {
+          this.disabledAPIs.add('foursquare');
           this.apiKeys.foursquare = null;
         } else {
           console.error('Error fetching transport from Foursquare:', err?.response?.status || err?.message);
