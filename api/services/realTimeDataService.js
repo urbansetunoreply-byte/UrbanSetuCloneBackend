@@ -23,6 +23,12 @@ class RealTimeDataService {
       this.disabledAPIs.add('foursquare');
       console.log('Foursquare API: Pre-emptively disabled via environment variable');
     }
+    
+    // Disable Foursquare if no API key is available
+    if (!this.apiKeys.foursquare || this.apiKeys.foursquare.trim() === '') {
+      this.disabledAPIs.add('foursquare');
+      console.log('Foursquare API: Disabled - No API key available');
+    }
   }
 
   // Get cached data or fetch new data
@@ -153,7 +159,7 @@ class RealTimeDataService {
     const notDisabled = !this.disabledAPIs.has('foursquare');
     
     if (!hasKey) {
-      console.log('Foursquare API: No API key available');
+      // Don't log this every time to reduce noise
       return false;
     }
     
@@ -265,16 +271,15 @@ class RealTimeDataService {
             }));
             successCount++;
           } catch (fsqErr) {
-            // Only log if it's not a 401 (authentication error)
-            if (fsqErr?.response?.status !== 401) {
+            // Disable Foursquare for any error (401, stream aborted, etc.)
+            this.disabledAPIs.add('foursquare');
+            this.apiKeys.foursquare = null;
+            
+            // Only log non-authentication errors to reduce noise
+            if (fsqErr?.response?.status !== 401 && !fsqErr?.message?.includes('stream has been aborted')) {
               console.error(`FSQ fetch error for ${item.key}:`, fsqErr?.response?.status || fsqErr?.message);
             }
-            // If 401, disable Foursquare for future calls
-            if (fsqErr?.response?.status === 401) {
-              this.disabledAPIs.add('foursquare');
-              this.apiKeys.foursquare = null; // Disable for this session
-              break;
-            }
+            break; // Stop trying Foursquare for this request
           }
         }
 
@@ -433,11 +438,12 @@ class RealTimeDataService {
           totalSchools: schools.length
         };
       } catch (err) {
-        // If 401, disable Foursquare for future calls
-        if (err?.response?.status === 401) {
-          this.disabledAPIs.add('foursquare');
-          this.apiKeys.foursquare = null;
-        } else {
+        // Disable Foursquare for any error
+        this.disabledAPIs.add('foursquare');
+        this.apiKeys.foursquare = null;
+        
+        // Only log non-authentication errors to reduce noise
+        if (err?.response?.status !== 401 && !err?.message?.includes('stream has been aborted')) {
           console.error('FSQ school fetch error:', err?.response?.status || err?.message);
         }
       }
@@ -546,15 +552,16 @@ class RealTimeDataService {
             }));
             stationsCombined = stationsCombined.concat(items);
           } catch (innerFsq) {
-            // If 401, disable Foursquare and break
-            if (innerFsq?.response?.status === 401) {
-              this.disabledAPIs.add('foursquare');
-              this.apiKeys.foursquare = null;
-              hasError = true;
-              break;
-            } else {
+            // Disable Foursquare for any error and break
+            this.disabledAPIs.add('foursquare');
+            this.apiKeys.foursquare = null;
+            hasError = true;
+            
+            // Only log non-authentication errors to reduce noise
+            if (innerFsq?.response?.status !== 401 && !innerFsq?.message?.includes('stream has been aborted')) {
               console.error('FSQ transport fetch error:', innerFsq?.response?.status || innerFsq?.message);
             }
+            break;
           }
         }
         
@@ -574,11 +581,12 @@ class RealTimeDataService {
           };
         }
       } catch (err) {
-        // If 401, disable Foursquare for future calls
-        if (err?.response?.status === 401) {
-          this.disabledAPIs.add('foursquare');
-          this.apiKeys.foursquare = null;
-        } else {
+        // Disable Foursquare for any error
+        this.disabledAPIs.add('foursquare');
+        this.apiKeys.foursquare = null;
+        
+        // Only log non-authentication errors to reduce noise
+        if (err?.response?.status !== 401 && !err?.message?.includes('stream has been aborted')) {
           console.error('Error fetching transport from Foursquare:', err?.response?.status || err?.message);
         }
       }
