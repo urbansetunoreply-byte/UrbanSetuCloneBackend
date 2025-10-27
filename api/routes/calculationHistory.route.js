@@ -1,6 +1,6 @@
 import express from 'express';
 import CalculationHistory from '../models/calculationHistory.model.js';
-import { verifyToken } from '../middleware/auth.middleware.js';
+import { verifyToken } from '../utils/verify.js';
 
 const router = express.Router();
 
