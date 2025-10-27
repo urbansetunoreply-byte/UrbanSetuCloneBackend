@@ -16,7 +16,9 @@ import {
   FaInfoCircle,
   FaDownload,
   FaSave,
-  FaHistory
+  FaHistory,
+  FaChartLine,
+  FaTimes
 } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
