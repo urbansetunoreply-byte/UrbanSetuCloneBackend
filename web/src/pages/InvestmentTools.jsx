@@ -21,12 +21,16 @@ import {
 } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
+import investmentAnalysisService from '../services/investmentAnalysisService';
 
 const InvestmentTools = () => {
   usePageTitle("Investment Tools - Real Estate Investment Calculator");
 
   const [activeTab, setActiveTab] = useState('roi');
   const [savedCalculations, setSavedCalculations] = useState([]);
+  const [marketAnalysisData, setMarketAnalysisData] = useState(null);
+  const [riskAssessmentData, setRiskAssessmentData] = useState(null);
+  const [loadingAnalysis, setLoadingAnalysis] = useState(false);
 
   // ROI Calculator State
   const [roiData, setRoiData] = useState({
@@ -91,8 +95,72 @@ const InvestmentTools = () => {
     }
   }, []);
 
+  // Fetch market analysis data
+  const fetchMarketAnalysis = async () => {
+    if (!marketData.location || !marketData.propertyType) {
+      alert('Please enter location and select property type');
+      return;
+    }
+
+    setLoadingAnalysis(true);
+    try {
+      const location = {
+        city: marketData.location.split(',')[0]?.trim() || '',
+        state: marketData.location.split(',')[1]?.trim() || '',
+        district: marketData.location.split(',')[2]?.trim() || ''
+      };
+
+      const filters = {
+        propertyType: marketData.propertyType,
+        timeFrame: marketData.timeFrame,
+        analysisType: marketData.analysisType
+      };
+
+      const data = await investmentAnalysisService.getMarketAnalysis(location, filters);
+      setMarketAnalysisData(data);
+    } catch (error) {
+      console.error('Error fetching market analysis:', error);
+      alert('Failed to fetch market analysis data');
+    } finally {
+      setLoadingAnalysis(false);
+    }
+  };
+
+  // Fetch risk assessment data
+  const fetchRiskAssessment = async () => {
+    if (!riskData.propertyValue || !riskData.location) {
+      alert('Please enter property value and location');
+      return;
+    }
+
+    setLoadingAnalysis(true);
+    try {
+      const location = {
+        city: riskData.location.split(',')[0]?.trim() || '',
+        state: riskData.location.split(',')[1]?.trim() || '',
+        district: riskData.location.split(',')[2]?.trim() || ''
+      };
+
+      const propertyData = {
+        propertyValue: parseFloat(riskData.propertyValue),
+        marketVolatility: riskData.marketVolatility,
+        tenantStability: riskData.tenantStability,
+        maintenanceHistory: riskData.maintenanceHistory,
+        neighborhoodGrowth: riskData.neighborhoodGrowth
+      };
+
+      const data = await investmentAnalysisService.getRiskAssessment(propertyData, location);
+      setRiskAssessmentData(data);
+    } catch (error) {
+      console.error('Error fetching risk assessment:', error);
+      alert('Failed to fetch risk assessment data');
+    } finally {
+      setLoadingAnalysis(false);
+    }
+  };
+
   // Save calculations to localStorage
-  const saveCalculation = (type, data, result) => {
+  const saveCalculation = async (type, data, result) => {
     const newCalculation = {
       id: Date.now(),
       type,
@@ -100,9 +168,30 @@ const InvestmentTools = () => {
       result,
       timestamp: new Date().toISOString()
     };
+    
+    // Save to localStorage immediately
     const updated = [...savedCalculations, newCalculation];
     setSavedCalculations(updated);
     localStorage.setItem('investmentCalculations', JSON.stringify(updated));
+    
+    // Try to save to backend
+    try {
+      const calculationData = {
+        calculationType: type,
+        inputData: data,
+        resultData: result,
+        location: {
+          city: data.location?.split(',')[0]?.trim() || '',
+          state: data.location?.split(',')[1]?.trim() || '',
+          district: data.location?.split(',')[2]?.trim() || ''
+        }
+      };
+      
+      await investmentAnalysisService.saveCalculation(calculationData);
+    } catch (error) {
+      console.error('Failed to save to backend:', error);
+      // Continue with localStorage save even if backend fails
+    }
   };
 
   // ROI Calculator Functions
@@ -831,11 +920,12 @@ const InvestmentTools = () => {
               </div>
             </div>
             <button
-              onClick={analyzeMarket}
-              className="w-full bg-orange-600 text-white py-3 px-6 rounded-lg hover:bg-orange-700 transition-colors flex items-center justify-center gap-2"
+              onClick={fetchMarketAnalysis}
+              disabled={loadingAnalysis}
+              className="w-full bg-orange-600 text-white py-3 px-6 rounded-lg hover:bg-orange-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <FaChartBar className="text-sm" />
-              Analyze Market
+              {loadingAnalysis ? 'Analyzing...' : 'Analyze Market'}
             </button>
 
             {/* Market Analysis Results */}
@@ -971,48 +1061,71 @@ const InvestmentTools = () => {
               </div>
             </div>
             <button
-              onClick={assessRisk}
-              className="w-full bg-red-600 text-white py-3 px-6 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+              onClick={fetchRiskAssessment}
+              disabled={loadingAnalysis}
+              className="w-full bg-red-600 text-white py-3 px-6 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <FaShieldAlt className="text-sm" />
-              Assess Risk
+              {loadingAnalysis ? 'Assessing...' : 'Assess Risk'}
             </button>
 
             {/* Risk Assessment Results */}
-            {results.risk && (
+            {riskAssessmentData && (
               <div className="mt-6">
                 <div className="bg-gray-50 p-6 rounded-lg mb-4">
                   <div className="text-center">
                     <h3 className="text-2xl font-bold text-gray-800 mb-2">Risk Assessment Result</h3>
-                    <p className={`text-3xl font-bold mb-2 ${results.risk.riskColor}`}>
-                      {results.risk.riskLevel}
+                    <p className={`text-3xl font-bold mb-2 ${riskAssessmentData.riskColor}`}>
+                      {riskAssessmentData.riskLevel}
                     </p>
-                    <p className="text-lg text-gray-600 mb-4">{results.risk.recommendation}</p>
+                    <p className="text-lg text-gray-600 mb-4">{riskAssessmentData.recommendation}</p>
                     <div className="bg-white p-4 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-2">Risk Score: {results.risk.riskScore}/20</p>
+                      <p className="text-sm text-gray-600 mb-2">Risk Score: {riskAssessmentData.riskScore}/20</p>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div 
                           className={`h-2 rounded-full ${
-                            results.risk.riskScore <= 8 ? 'bg-green-500' : 
-                            results.risk.riskScore <= 12 ? 'bg-yellow-500' : 'bg-red-500'
+                            riskAssessmentData.riskScore <= 5 ? 'bg-green-500' : 
+                            riskAssessmentData.riskScore <= 10 ? 'bg-yellow-500' : 
+                            riskAssessmentData.riskScore <= 15 ? 'bg-orange-500' : 'bg-red-500'
                           }`}
-                          style={{ width: `${(results.risk.riskScore / 20) * 100}%` }}
+                          style={{ width: `${(riskAssessmentData.riskScore / 20) * 100}%` }}
                         ></div>
                       </div>
                     </div>
                   </div>
                 </div>
                 
-                <div className="bg-white p-4 rounded-lg">
-                  <h4 className="font-semibold text-gray-800 mb-3">Risk Factors</h4>
-                  <div className="space-y-2">
-                    {results.risk.riskFactors.map((factor, index) => (
-                      <div key={index} className="flex items-center gap-2 text-sm text-gray-600">
-                        <FaInfoCircle className="text-blue-500" />
-                        {factor}
-                      </div>
-                    ))}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-white p-4 rounded-lg">
+                    <h4 className="font-semibold text-gray-800 mb-3">Risk Factors</h4>
+                    <div className="space-y-2">
+                      {riskAssessmentData.riskFactors.map((factor, index) => (
+                        <div key={index} className="flex items-center gap-2 text-sm text-gray-600">
+                          <FaInfoCircle className="text-blue-500" />
+                          {factor}
+                        </div>
+                      ))}
+                    </div>
                   </div>
+                  
+                  <div className="bg-white p-4 rounded-lg">
+                    <h4 className="font-semibold text-gray-800 mb-3">Mitigation Strategies</h4>
+                    <div className="space-y-2">
+                      {riskAssessmentData.mitigationStrategies.map((strategy, index) => (
+                        <div key={index} className="flex items-center gap-2 text-sm text-gray-600">
+                          <FaShieldAlt className="text-green-500" />
+                          {strategy}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-yellow-50 p-4 rounded-lg mt-4">
+                  <h4 className="font-semibold text-yellow-800 mb-2">Last Updated</h4>
+                  <p className="text-sm text-yellow-700">
+                    {new Date(riskAssessmentData.lastUpdated).toLocaleString()}
+                  </p>
                 </div>
               </div>
             )}
