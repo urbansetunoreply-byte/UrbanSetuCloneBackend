@@ -48,7 +48,11 @@ export default function AdminPrivacy() {
           <li>Despite safeguards, no system is perfect—use admin tools responsibly.</li>
         </ul>
 
-        <p className="mt-6 text-sm text-gray-600">Last updated: {new Date().toLocaleDateString()}</p>
+        <p className="mt-6 text-sm text-gray-600">Last updated: {new Date().toLocaleDateString(`en-IN`, {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        })}</p>
       </div>
     </div>
   );

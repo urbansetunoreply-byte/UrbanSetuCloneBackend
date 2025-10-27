@@ -17,7 +17,11 @@ const CookiePolicy = () => {
             Learn about how UrbanSetu uses cookies to enhance your experience and protect your privacy.
           </p>
           <p className="text-sm text-gray-500 mt-2">
-            Last updated: {new Date().toLocaleDateString()}
+            Last updated: {new Date().toLocaleDateString(`en-IN`, {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
           </p>
         </div>
 
