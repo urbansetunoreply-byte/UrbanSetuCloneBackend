@@ -3500,6 +3500,58 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         
         // Process inline code
         processedText = processedText.replace(/`([^`]+)`/g, '<code class="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 px-2 py-1 rounded text-sm font-mono border border-gray-300 dark:border-gray-600">$1</code>');
+        // Process markdown tables (before processing other markdown elements)
+        // Pattern: | Header | Header |\n|--------|--------|\n| Cell   | Cell   |
+        processedText = processedText.replace(/(\|[^\n]+\|\n\|[-\s|:]+\|\n(?:\|[^\n]+\|\n?)+)/g, (match) => {
+            const lines = match.trim().split('\n');
+            if (lines.length < 2) return match; // Need at least header and separator
+            
+            // Extract header row
+            const headerRow = lines[0].split('|').map(cell => cell.trim()).filter(cell => cell);
+            
+            // Extract data rows (skip separator line at index 1)
+            const dataRows = lines.slice(2).map(line => 
+                line.split('|').map(cell => cell.trim()).filter(cell => cell)
+            );
+            
+            // Build HTML table
+            let tableHtml = '<div class="table-wrapper my-4 overflow-x-auto"><table class="markdown-table border-collapse w-full text-sm">';
+            
+            // Header row
+            tableHtml += '<thead><tr>';
+            headerRow.forEach(cell => {
+                const cellContent = cell.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                tableHtml += `<th class="markdown-table-th border border-gray-300 dark:border-gray-600 px-3 py-2 text-left font-semibold bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100">${cellContent}</th>`;
+            });
+            tableHtml += '</tr></thead>';
+            
+            // Body rows
+            tableHtml += '<tbody>';
+            dataRows.forEach(row => {
+                if (row.length > 0) {
+                    tableHtml += '<tr>';
+                    // Handle rows with fewer cells than headers
+                    headerRow.forEach((_, index) => {
+                        const cellContent = row[index] || '';
+                        const cellContent = (row[index] || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        const cellContent = (row[index] || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        const cellContent = (row[index] || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        const cellContent = (row[index] || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        const cellContent = (row[index] || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        const cellContent = (row[index] || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        const cellContent = (row[index] || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        const cellContent = (row[index] || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        tableHtml += `<td class="markdown-table-td border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-800 dark:text-gray-200">${cellContent}</td>`;
+                    });
+                    tableHtml += '</tr>';
+                }
+            });
+            tableHtml += '</tbody></table></div>';
+            
+            return tableHtml;
+        });
+        
+
         
         // Process other markdown elements
         processedText = processedText
@@ -7051,7 +7103,79 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         .code-block pre.bg-gray-900 .token.important,
         .code-block pre.bg-gray-900 .token.variable {
             color: #d16969 !important;
-                }
+        }
+        
+        /* Markdown Table Styles */
+        .table-wrapper {
+            margin: 1rem 0;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 0.5rem;
+        }
+        
+        .markdown-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+            margin: 0.5rem 0;
+            background-color: transparent;
+        }
+        
+        .markdown-table-th {
+            border: 1px solid rgba(209, 213, 219, 1); /* border-gray-300 */
+            padding: 0.5rem 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            background-color: rgba(243, 244, 246, 1); /* bg-gray-100 */
+            color: rgba(17, 24, 39, 1); /* text-gray-900 */
+        }
+        
+        .dark .markdown-table-th {
+            border-color: rgba(75, 85, 99, 1); /* border-gray-600 */
+            background-color: rgba(55, 65, 81, 1); /* bg-gray-700 */
+            color: rgba(243, 244, 246, 1); /* text-gray-100 */
+        }
+        
+        .markdown-table-td {
+            border: 1px solid rgba(209, 213, 219, 1); /* border-gray-300 */
+            padding: 0.5rem 0.75rem;
+            color: rgba(31, 41, 55, 1); /* text-gray-800 */
+        }
+        
+        .dark .markdown-table-td {
+            border-color: rgba(75, 85, 99, 1); /* border-gray-600 */
+            color: rgba(229, 231, 235, 1); /* text-gray-200 */
+        }
+        
+        .markdown-table tr:nth-child(even) {
+            background-color: rgba(249, 250, 251, 0.5); /* Very light gray for zebra striping */
+        }
+        
+        .dark .markdown-table tr:nth-child(even) {
+            background-color: rgba(55, 65, 81, 0.3); /* Dark gray for zebra striping */
+        }
+        
+        .markdown-table tr:hover {
+            background-color: rgba(243, 244, 246, 0.8);
+        }
+        
+        .dark .markdown-table tr:hover {
+            background-color: rgba(55, 65, 81, 0.5);
+        }
+        
+        /* Ensure tables don't break message bubble layout */
+        .table-wrapper {
+            max-width: 100%;
+            word-wrap: break-word;
+        }
+        
+        /* Responsive table scrolling on mobile */
+        @media (max-width: 640px) {
+            .table-wrapper {
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: thin;
+            }
+        }
                 `}
             </style>
         </>
