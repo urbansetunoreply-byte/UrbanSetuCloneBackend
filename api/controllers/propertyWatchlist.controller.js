@@ -147,7 +147,7 @@ export const notifyWatchersOnChange = async (app, { listing, changeType, oldPric
       const data = {
         userId: w.userId,
         listingId: listing._id,
-        type: changeType === 'price_drop' ? 'watchlist_price_drop' : (changeType === 'removed' ? 'watchlist_removed' : 'watchlist_update'),
+        type: changeType === 'price_drop' ? 'watchlist_price_drop' : (changeType === 'removed' ? 'watchlist_property_removed' : 'watchlist_price_update'),
         title: changeType === 'price_drop' ? 'Price Drop Alert' : (changeType === 'removed' ? 'Property Unavailable' : 'Property Updated'),
         message: changeType === 'price_drop'
           ? `Good news! "${listing.name}" price dropped from ₹${oldPrice?.toLocaleString('en-IN')} to ₹${newPrice?.toLocaleString('en-IN')}.`
