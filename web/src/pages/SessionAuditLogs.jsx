@@ -632,7 +632,10 @@ const SessionAuditLogs = () => {
                       Action
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Device & IP
+                      Browser & Device
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      IP & Location
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Details
@@ -675,11 +678,17 @@ const SessionAuditLogs = () => {
                           {log.action.replace('_', ' ').toUpperCase()}
                         </span>
                       </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        <div className="max-w-xs">
+                          <div className="font-medium text-gray-900 break-words">
+                            {log.device || 'Unknown Device'}
+                          </div>
+                        </div>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <div>
-                          <div className="font-medium">{log.device}</div>
-                          <div className="text-gray-500">{log.ip}</div>
-                          <div className="text-gray-500">{log.location || 'Unknown'}</div>
+                          <div className="font-medium">{log.ip}</div>
+                          <div className="text-gray-500 text-xs">{log.location || 'Unknown'}</div>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900">
@@ -910,7 +919,13 @@ const SessionAuditLogs = () => {
                           Timestamp
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Device
+                          Browser
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Operating System
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Device Type
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           IP Address
@@ -929,8 +944,29 @@ const SessionAuditLogs = () => {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {new Date(visitor.timestamp).toLocaleString()}
                           </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <div className="flex items-center">
+                              <span className="font-medium text-gray-900">
+                                {visitor.browser || 'Unknown'}
+                              </span>
+                              {visitor.browserVersion && (
+                                <span className="ml-1 text-gray-500">
+                                  {visitor.browserVersion}
+                                </span>
+                              )}
+                            </div>
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {visitor.device}
+                            {visitor.os || 'Unknown'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                              visitor.deviceType === 'Mobile' ? 'bg-blue-100 text-blue-800' :
+                              visitor.deviceType === 'Tablet' ? 'bg-purple-100 text-purple-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {visitor.deviceType || 'Unknown'}
+                            </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {visitor.ip}
@@ -939,7 +975,7 @@ const SessionAuditLogs = () => {
                             {visitor.location || 'Unknown'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex gap-1">
+                            <div className="flex gap-1 flex-wrap">
                               {visitor.cookiePreferences?.analytics && (
                                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
                                   Analytics

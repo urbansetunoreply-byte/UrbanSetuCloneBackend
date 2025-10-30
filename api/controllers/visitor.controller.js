@@ -1,6 +1,6 @@
 import VisitorLog from '../models/visitorLog.model.js';
 import crypto from 'crypto';
-import { getDeviceInfo, getLocationFromIP } from '../utils/sessionManager.js';
+import { getDeviceInfo, getBrowserInfo, getOSInfo, getDeviceType, getLocationFromIP } from '../utils/sessionManager.js';
 
 // Generate fingerprint for visitor (IP + User-Agent hash)
 const generateFingerprint = (ip, userAgent) => {
@@ -27,6 +27,9 @@ export const trackVisitor = async (req, res, next) => {
     
     // Get device and location info
     const device = getDeviceInfo(userAgent);
+    const browserInfo = getBrowserInfo(userAgent);
+    const os = getOSInfo(userAgent);
+    const deviceType = getDeviceType(userAgent);
     const location = getLocationFromIP(ip);
     
     // Get today's date (start of day for grouping)
@@ -38,6 +41,10 @@ export const trackVisitor = async (req, res, next) => {
         fingerprint,
         ip,
         device,
+        browser: browserInfo.name,
+        browserVersion: browserInfo.version,
+        os,
+        deviceType,
         location,
         userAgent,
         cookiePreferences: cookiePreferences || {
@@ -61,11 +68,16 @@ export const trackVisitor = async (req, res, next) => {
         }
       });
     } catch (error) {
-      // If duplicate (visitor already tracked today), update preferences
+      // If duplicate (visitor already tracked today), update preferences and device info
       if (error.code === 11000) {
         await VisitorLog.findOneAndUpdate(
           { fingerprint, visitDate },
           {
+            device,
+            browser: browserInfo.name,
+            browserVersion: browserInfo.version,
+            os,
+            deviceType,
             cookiePreferences: cookiePreferences || {
               necessary: true,
               analytics: false,
@@ -284,7 +296,7 @@ export const getAllVisitors = async (req, res, next) => {
       .sort({ timestamp: -1 })
       .skip(skip)
       .limit(parseInt(limit))
-      .select('-userAgent -fingerprint'); // Exclude sensitive data
+      .select('-fingerprint'); // Exclude only fingerprint, keep userAgent for admin debugging
     
     res.status(200).json({
       success: true,

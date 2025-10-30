@@ -144,24 +144,102 @@ const SESSION_LIMITS = {
     rootadmin: 1
 };
 
-// Get device info from user agent
-export const getDeviceInfo = (userAgent) => {
-    if (!userAgent) return 'Unknown Device';
+// Get detailed browser info from user agent
+export const getBrowserInfo = (userAgent) => {
+    if (!userAgent) return { name: 'Unknown', version: '' };
     
-    // Simple device detection
+    let browserName = 'Unknown';
+    let browserVersion = '';
+    
+    // Detect browser (order matters - check specific browsers first)
+    if (userAgent.includes('Edg/')) {
+        browserName = 'Edge';
+        browserVersion = userAgent.match(/Edg\/(\d+)/)?.[1] || '';
+    } else if (userAgent.includes('Chrome/') && !userAgent.includes('Chromium')) {
+        browserName = 'Chrome';
+        browserVersion = userAgent.match(/Chrome\/(\d+)/)?.[1] || '';
+    } else if (userAgent.includes('Firefox/')) {
+        browserName = 'Firefox';
+        browserVersion = userAgent.match(/Firefox\/(\d+)/)?.[1] || '';
+    } else if (userAgent.includes('Safari/') && !userAgent.includes('Chrome')) {
+        browserName = 'Safari';
+        browserVersion = userAgent.match(/Version\/(\d+)/)?.[1] || '';
+    } else if (userAgent.includes('OPR/') || userAgent.includes('Opera/')) {
+        browserName = 'Opera';
+        browserVersion = userAgent.match(/(?:OPR|Opera)\/(\d+)/)?.[1] || '';
+    } else if (userAgent.includes('MSIE') || userAgent.includes('Trident/')) {
+        browserName = 'Internet Explorer';
+        browserVersion = userAgent.match(/(?:MSIE |rv:)(\d+)/)?.[1] || '';
+    }
+    
+    return { name: browserName, version: browserVersion };
+};
+
+// Get operating system from user agent
+export const getOSInfo = (userAgent) => {
+    if (!userAgent) return 'Unknown';
+    
+    if (userAgent.includes('Windows NT 10.0')) return 'Windows 10/11';
+    if (userAgent.includes('Windows NT 6.3')) return 'Windows 8.1';
+    if (userAgent.includes('Windows NT 6.2')) return 'Windows 8';
+    if (userAgent.includes('Windows NT 6.1')) return 'Windows 7';
+    if (userAgent.includes('Windows')) return 'Windows';
+    
+    if (userAgent.includes('Mac OS X')) {
+        const version = userAgent.match(/Mac OS X (\d+[._]\d+)/)?.[1]?.replace('_', '.') || '';
+        return version ? `macOS ${version}` : 'macOS';
+    }
+    
+    if (userAgent.includes('Android')) {
+        const version = userAgent.match(/Android (\d+\.?\d*)/)?.[1] || '';
+        return version ? `Android ${version}` : 'Android';
+    }
+    
+    if (userAgent.includes('iPhone') || userAgent.includes('iPad')) {
+        const version = userAgent.match(/OS (\d+_\d+)/)?.[1]?.replace('_', '.') || '';
+        return version ? `iOS ${version}` : 'iOS';
+    }
+    
+    if (userAgent.includes('Linux')) return 'Linux';
+    if (userAgent.includes('CrOS')) return 'Chrome OS';
+    
+    return 'Unknown';
+};
+
+// Get device type from user agent
+export const getDeviceType = (userAgent) => {
+    if (!userAgent) return 'Unknown';
+    
     if (userAgent.includes('Mobile') || userAgent.includes('Android')) {
-        return 'Mobile Device';
-    } else if (userAgent.includes('iPhone') || userAgent.includes('iPad')) {
-        return 'iOS Device';
-    } else if (userAgent.includes('Windows')) {
-        return 'Windows PC';
-    } else if (userAgent.includes('Mac')) {
-        return 'Mac';
-    } else if (userAgent.includes('Linux')) {
-        return 'Linux PC';
+        return 'Mobile';
+    } else if (userAgent.includes('Tablet') || userAgent.includes('iPad')) {
+        return 'Tablet';
     } else {
         return 'Desktop';
     }
+};
+
+// Get device info from user agent (keeping for backward compatibility)
+export const getDeviceInfo = (userAgent) => {
+    if (!userAgent) return 'Unknown Device';
+    
+    const browser = getBrowserInfo(userAgent);
+    const os = getOSInfo(userAgent);
+    const deviceType = getDeviceType(userAgent);
+    
+    // Format: "Chrome 120 on Windows 10/11 (Desktop)"
+    let deviceInfo = '';
+    if (browser.name !== 'Unknown') {
+        deviceInfo = browser.version ? `${browser.name} ${browser.version}` : browser.name;
+    }
+    if (os !== 'Unknown') {
+        deviceInfo = deviceInfo ? `${deviceInfo} on ${os}` : os;
+    }
+    if (deviceType !== 'Unknown') {
+        deviceInfo = deviceInfo ? `${deviceInfo} (${deviceType})` : deviceType;
+    }
+    
+    return deviceInfo || 'Unknown Device';
 };
 
 // Get location from IP (simplified - in production use a proper geo service)

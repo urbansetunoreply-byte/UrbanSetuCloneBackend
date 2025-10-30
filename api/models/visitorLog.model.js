@@ -15,6 +15,26 @@ const visitorLogSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  browser: {
+    type: String,
+    required: false,
+    default: 'Unknown'
+  },
+  browserVersion: {
+    type: String,
+    required: false,
+    default: ''
+  },
+  os: {
+    type: String,
+    required: false,
+    default: 'Unknown'
+  },
+  deviceType: {
+    type: String,
+    required: false,
+    default: 'Unknown'
+  },
   location: {
     type: String,
     required: false,
