@@ -151,22 +151,75 @@ export const getBrowserInfo = (userAgent) => {
     let browserName = 'Unknown';
     let browserVersion = '';
     
-    // Detect browser (order matters - check specific browsers first)
-    if (userAgent.includes('Edg/')) {
+    // Detect browser (order matters - check specific browsers first, then generic ones)
+    // Check for specific Chromium-based browsers first (before Chrome)
+    if (userAgent.includes('Brave/') || userAgent.includes('Brave')) {
+        browserName = 'Brave';
+        browserVersion = userAgent.match(/Brave\/(\d+)/)?.[1] || userAgent.match(/Chrome\/(\d+)/)?.[1] || '';
+    } else if (userAgent.includes('Vivaldi/')) {
+        browserName = 'Vivaldi';
+        browserVersion = userAgent.match(/Vivaldi\/(\d+)/)?.[1] || '';
+    } else if (userAgent.includes('Arc/')) {
+        browserName = 'Arc';
+        browserVersion = userAgent.match(/Arc\/(\d+)/)?.[1] || userAgent.match(/Chrome\/(\d+)/)?.[1] || '';
+    } else if (userAgent.includes('SamsungBrowser/')) {
+        browserName = 'Samsung Internet';
+        browserVersion = userAgent.match(/SamsungBrowser\/(\d+)/)?.[1] || '';
+    } else if (userAgent.includes('UCBrowser/')) {
+        browserName = 'UC Browser';
+        browserVersion = userAgent.match(/UCBrowser\/(\d+)/)?.[1] || '';
+    } else if (userAgent.includes('YaBrowser/')) {
+        browserName = 'Yandex Browser';
+        browserVersion = userAgent.match(/YaBrowser\/(\d+)/)?.[1] || '';
+    } else if (userAgent.includes('QQBrowser/')) {
+        browserName = 'QQ Browser';
+        browserVersion = userAgent.match(/QQBrowser\/(\d+)/)?.[1] || '';
+    } else if (userAgent.includes('Maxthon/')) {
+        browserName = 'Maxthon';
+        browserVersion = userAgent.match(/Maxthon\/(\d+)/)?.[1] || '';
+    } else if (userAgent.includes('DuckDuckGo/')) {
+        browserName = 'DuckDuckGo';
+        browserVersion = userAgent.match(/DuckDuckGo\/(\d+)/)?.[1] || '';
+    } else if (userAgent.includes('Whale/')) {
+        browserName = 'Naver Whale';
+        browserVersion = userAgent.match(/Whale\/(\d+)/)?.[1] || '';
+    } else if (userAgent.includes('Sleipnir/')) {
+        browserName = 'Sleipnir';
+        browserVersion = userAgent.match(/Sleipnir\/(\d+)/)?.[1] || '';
+    } else if (userAgent.includes('Silk/')) {
+        browserName = 'Amazon Silk';
+        browserVersion = userAgent.match(/Silk\/(\d+)/)?.[1] || '';
+    } else if (userAgent.includes('Puffin/')) {
+        browserName = 'Puffin';
+        browserVersion = userAgent.match(/Puffin\/(\d+)/)?.[1] || '';
+    } else if (userAgent.includes('Chromium/')) {
+        browserName = 'Chromium';
+        browserVersion = userAgent.match(/Chromium\/(\d+)/)?.[1] || '';
+    // Check for mainstream browsers (Microsoft Edge before Chrome)
+    } else if (userAgent.includes('Edg/')) {
         browserName = 'Edge';
         browserVersion = userAgent.match(/Edg\/(\d+)/)?.[1] || '';
-    } else if (userAgent.includes('Chrome/') && !userAgent.includes('Chromium')) {
-        browserName = 'Chrome';
-        browserVersion = userAgent.match(/Chrome\/(\d+)/)?.[1] || '';
-    } else if (userAgent.includes('Firefox/')) {
-        browserName = 'Firefox';
-        browserVersion = userAgent.match(/Firefox\/(\d+)/)?.[1] || '';
-    } else if (userAgent.includes('Safari/') && !userAgent.includes('Chrome')) {
-        browserName = 'Safari';
-        browserVersion = userAgent.match(/Version\/(\d+)/)?.[1] || '';
     } else if (userAgent.includes('OPR/') || userAgent.includes('Opera/')) {
         browserName = 'Opera';
         browserVersion = userAgent.match(/(?:OPR|Opera)\/(\d+)/)?.[1] || '';
+    } else if (userAgent.includes('Firefox/')) {
+        browserName = 'Firefox';
+        browserVersion = userAgent.match(/Firefox\/(\d+)/)?.[1] || '';
+    } else if (userAgent.includes('FxiOS/')) {
+        browserName = 'Firefox iOS';
+        browserVersion = userAgent.match(/FxiOS\/(\d+)/)?.[1] || '';
+    } else if (userAgent.includes('CriOS/')) {
+        browserName = 'Chrome iOS';
+        browserVersion = userAgent.match(/CriOS\/(\d+)/)?.[1] || '';
+    } else if (userAgent.includes('EdgiOS/')) {
+        browserName = 'Edge iOS';
+        browserVersion = userAgent.match(/EdgiOS\/(\d+)/)?.[1] || '';
+    } else if (userAgent.includes('Chrome/') && !userAgent.includes('Chromium')) {
+        browserName = 'Chrome';
+        browserVersion = userAgent.match(/Chrome\/(\d+)/)?.[1] || '';
+    } else if (userAgent.includes('Safari/') && !userAgent.includes('Chrome')) {
+        browserName = 'Safari';
+        browserVersion = userAgent.match(/Version\/(\d+)/)?.[1] || '';
     } else if (userAgent.includes('MSIE') || userAgent.includes('Trident/')) {
         browserName = 'Internet Explorer';
         browserVersion = userAgent.match(/(?:MSIE |rv:)(\d+)/)?.[1] || '';
