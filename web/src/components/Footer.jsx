@@ -1,12 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { FaHome, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCookie, FaShieldAlt, FaFileContract, FaTimes, FaCog, FaCheck } from 'react-icons/fa';
+import { FaHome, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCookie, FaShieldAlt, FaFileContract, FaTimes, FaCog, FaCheck, FaEye } from 'react-icons/fa';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const Footer = () => {
   const { currentUser } = useSelector((state) => state.user);
   const [showCookieBanner, setShowCookieBanner] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [dailyVisitorCount, setDailyVisitorCount] = useState(0);
+
+  // Fetch daily visitor count
+  useEffect(() => {
+    const fetchDailyVisitorCount = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/visitors/count/daily`);
+        const data = await res.json();
+        if (data.success) {
+          setDailyVisitorCount(data.count);
+        }
+      } catch (error) {
+        console.error('Failed to fetch daily visitor count:', error);
+      }
+    };
+
+    fetchDailyVisitorCount();
+
+    // Refresh count every 5 minutes
+    const interval = setInterval(fetchDailyVisitorCount, 5 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     // Check if user has already made a cookie choice
@@ -47,7 +72,32 @@ const Footer = () => {
     };
   }, []);
 
-  const handleAcceptAll = () => {
+  // Track visitor with cookie preferences
+  const trackVisitor = async (preferences) => {
+    try {
+      await fetch(`${API_BASE_URL}/api/visitors/track`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          cookiePreferences: preferences,
+          referrer: document.referrer || 'Direct',
+          page: window.location.pathname
+        })
+      });
+      // Refresh visitor count after tracking
+      const res = await fetch(`${API_BASE_URL}/api/visitors/count/daily`);
+      const data = await res.json();
+      if (data.success) {
+        setDailyVisitorCount(data.count);
+      }
+    } catch (error) {
+      console.error('Failed to track visitor:', error);
+    }
+  };
+
+  const handleAcceptAll = async () => {
     const allAccepted = {
       necessary: true,
       analytics: true,
@@ -55,6 +105,9 @@ const Footer = () => {
       functional: true
     };
     localStorage.setItem('cookieConsent', JSON.stringify(allAccepted));
+    
+    // Track visitor
+    await trackVisitor(allAccepted);
     
     // Notify other components about the consent update
     window.dispatchEvent(new CustomEvent('cookieConsentUpdated', { 
@@ -64,7 +117,7 @@ const Footer = () => {
     closeBanner();
   };
 
-  const handleRejectAll = () => {
+  const handleRejectAll = async () => {
     const onlyNecessary = {
       necessary: true,
       analytics: false,
@@ -72,6 +125,9 @@ const Footer = () => {
       functional: false
     };
     localStorage.setItem('cookieConsent', JSON.stringify(onlyNecessary));
+    
+    // Track visitor
+    await trackVisitor(onlyNecessary);
     
     // Notify other components about the consent update
     window.dispatchEvent(new CustomEvent('cookieConsentUpdated', { 
@@ -277,7 +333,13 @@ const Footer = () => {
             <p className="text-sm text-gray-400">
               © {new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
-            <div className="flex items-center gap-4 text-sm text-gray-400">
+            <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 text-sm text-gray-400">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-800 rounded-lg border border-gray-600">
+                <FaEye className="text-blue-400" />
+                <span className="text-gray-300">
+                  Today's Visitors: <span className="font-semibold text-blue-400">{dailyVisitorCount}</span>
+                </span>
+              </div>
               <span>Made with ❤️ for real estate</span>
             </div>
           </div>

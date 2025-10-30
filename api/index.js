@@ -44,6 +44,7 @@ import propertyRestorationRouter from "./routes/propertyRestoration.route.js";
 import advancedAIRecommendationRouter from "./routes/advancedAIRecommendation.route.js";
 import esgAnalyticsRouter from "./routes/esgAnalytics.route.js";
 import esgAIRecommendationRouter from "./routes/esgAIRecommendation.route.js";
+import visitorRouter from "./routes/visitor.route.js";
 // Use S3 deployment route if AWS is configured, otherwise fallback to Cloudinary
 let deploymentRouter;
 try {
@@ -506,6 +507,7 @@ app.use("/api/ai", aiRouter);
 app.use("/api/payments", paymentRouter);
 app.use("/api/sessions", sessionRouter);
 app.use("/api/session-management", sessionManagementRouter);
+app.use("/api/visitors", visitorRouter);
 app.use("/api/fraud", fraudRouter);
 app.use("/api/email-monitor", emailMonitorRouter);
 app.use("/api/auth", accountRevocationRouter);

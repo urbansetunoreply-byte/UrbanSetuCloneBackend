@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FaCookie, FaTimes, FaCog, FaCheck, FaTimes as FaX } from 'react-icons/fa';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const CookieConsent = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -66,7 +68,27 @@ const CookieConsent = () => {
     };
   }, []);
 
-  const handleAcceptAll = () => {
+  // Track visitor with cookie preferences
+  const trackVisitor = async (preferences) => {
+    try {
+      await fetch(`${API_BASE_URL}/api/visitors/track`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          cookiePreferences: preferences,
+          referrer: document.referrer || 'Direct',
+          page: window.location.pathname
+        })
+      });
+    } catch (error) {
+      console.error('Failed to track visitor:', error);
+      // Don't block user experience if tracking fails
+    }
+  };
+
+  const handleAcceptAll = async () => {
     const allAccepted = {
       necessary: true,
       analytics: true,
@@ -75,6 +97,10 @@ const CookieConsent = () => {
     };
     setPreferences(allAccepted);
     localStorage.setItem('cookieConsent', JSON.stringify(allAccepted));
+    
+    // Track visitor
+    await trackVisitor(allAccepted);
+    
     closeBanner();
     
     // Notify other components about the consent update
@@ -86,7 +112,7 @@ const CookieConsent = () => {
     initializeServices(allAccepted);
   };
 
-  const handleRejectAll = () => {
+  const handleRejectAll = async () => {
     const onlyNecessary = {
       necessary: true,
       analytics: false,
@@ -95,6 +121,10 @@ const CookieConsent = () => {
     };
     setPreferences(onlyNecessary);
     localStorage.setItem('cookieConsent', JSON.stringify(onlyNecessary));
+    
+    // Track visitor
+    await trackVisitor(onlyNecessary);
+    
     closeBanner();
     
     // Notify other components about the consent update
@@ -103,8 +133,12 @@ const CookieConsent = () => {
     }));
   };
 
-  const handleSavePreferences = () => {
+  const handleSavePreferences = async () => {
     localStorage.setItem('cookieConsent', JSON.stringify(preferences));
+    
+    // Track visitor
+    await trackVisitor(preferences);
+    
     closeBanner();
     
     // Notify other components about the consent update

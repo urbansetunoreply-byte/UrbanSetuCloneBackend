@@ -8,6 +8,11 @@ const SessionAuditLogs = () => {
   usePageTitle("Session Audit Logs - Security History");
   
   const { currentUser } = useSelector((state) => state.user);
+  
+  // Tab state
+  const [activeTab, setActiveTab] = useState('audit'); // 'audit' or 'visitors'
+  
+  // Audit logs state
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -27,6 +32,25 @@ const SessionAuditLogs = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [searchTimeout, setSearchTimeout] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
+  
+  // Visitors state
+  const [visitors, setVisitors] = useState([]);
+  const [visitorsLoading, setVisitorsLoading] = useState(false);
+  const [visitorsPage, setVisitorsPage] = useState(1);
+  const [totalVisitors, setTotalVisitors] = useState(0);
+  const [visitorStats, setVisitorStats] = useState({
+    totalVisitors: 0,
+    todayCount: 0,
+    dailyStats: [],
+    deviceStats: [],
+    locationStats: []
+  });
+  const [visitorFilters, setVisitorFilters] = useState({
+    dateRange: 'today',
+    device: 'all',
+    location: 'all',
+    search: ''
+  });
 
   // Debounced search effect
   useEffect(() => {
@@ -97,6 +121,79 @@ const SessionAuditLogs = () => {
       setLoading(false);
     }
   };
+
+  // Fetch visitor statistics
+  const fetchVisitorStats = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/visitors/stats?days=30`, {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        setVisitorStats(data.stats);
+      }
+    } catch (error) {
+      console.error('Error fetching visitor stats:', error);
+    }
+  };
+
+  // Fetch visitors list
+  const fetchVisitors = async () => {
+    setVisitorsLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: visitorsPage,
+        limit: 50,
+        dateRange: visitorFilters.dateRange,
+        device: visitorFilters.device,
+        location: visitorFilters.location,
+        search: visitorFilters.search
+      });
+
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/visitors/all?${params}`, {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        setVisitors(data.visitors);
+        setTotalVisitors(data.total);
+        setLastUpdated(new Date());
+      } else {
+        toast.error(data.message || 'Failed to fetch visitors');
+      }
+    } catch (error) {
+      console.error('Error fetching visitors:', error);
+      toast.error('Failed to fetch visitors');
+    } finally {
+      setVisitorsLoading(false);
+    }
+  };
+
+  // Effect to fetch visitors when tab changes
+  useEffect(() => {
+    if (activeTab === 'visitors') {
+      fetchVisitorStats();
+      fetchVisitors();
+    }
+  }, [activeTab, visitorsPage, visitorFilters]);
 
   const toggleAutoRefresh = () => {
     setAutoRefresh((prev) => {
@@ -186,9 +283,9 @@ const SessionAuditLogs = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
           <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div className="flex-1">
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Session Audit Logs</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Session Monitoring</h1>
               <p className="text-gray-600 mt-1 text-sm sm:text-base">
-                Monitor all session-related activities and security events
+                Monitor session activities and track public visitors
               </p>
             </div>
             <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
@@ -262,6 +359,55 @@ const SessionAuditLogs = () => {
           </div>
         </div>
 
+        {/* Tab Switcher */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-2 mb-6">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setActiveTab('audit')}
+              className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
+                activeTab === 'audit'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Session Audit Logs</span>
+                {activeTab === 'audit' && (
+                  <span className="ml-2 bg-white bg-opacity-20 px-2 py-0.5 rounded-full text-xs">
+                    {totalLogs}
+                  </span>
+                )}
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('visitors')}
+              className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
+                activeTab === 'visitors'
+                  ? 'bg-purple-600 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <span>Public Visitors</span>
+                {activeTab === 'visitors' && (
+                  <span className="ml-2 bg-white bg-opacity-20 px-2 py-0.5 rounded-full text-xs">
+                    {visitorStats.todayCount}
+                  </span>
+                )}
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* Audit Logs Tab Content */}
+        {activeTab === 'audit' && (
+          <>
         {/* Search and Filters */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
           {/* Search Bar */}
@@ -644,6 +790,195 @@ const SessionAuditLogs = () => {
             </div>
           </div>
         </div>
+        </>
+        )}
+
+        {/* Visitors Tab Content */}
+        {activeTab === 'visitors' && (
+          <>
+            {/* Visitor Statistics Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg className="h-8 w-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">Today's Visitors</p>
+                    <p className="text-2xl font-semibold text-gray-900">{visitorStats.todayCount}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg className="h-8 w-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">Total Visitors</p>
+                    <p className="text-2xl font-semibold text-gray-900">{visitorStats.totalVisitors}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg className="h-8 w-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">Device Types</p>
+                    <p className="text-2xl font-semibold text-gray-900">{visitorStats.deviceStats.length}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg className="h-8 w-8 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">Locations</p>
+                    <p className="text-2xl font-semibold text-gray-900">{visitorStats.locationStats.length}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Visitors Table */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h2 className="text-lg font-medium text-gray-900">Visitor Activity</h2>
+              </div>
+
+              {visitorsLoading ? (
+                <div className="px-6 py-12 text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+                  <p className="mt-4 text-gray-600">Loading visitors...</p>
+                </div>
+              ) : visitors.length === 0 ? (
+                <div className="px-6 py-12 text-center">
+                  <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">No visitors found</h3>
+                  <p className="mt-1 text-sm text-gray-500">No visitor data available for the selected period.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Timestamp
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Device
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          IP Address
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Location
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Cookie Consent
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {visitors.map((visitor) => (
+                        <tr key={visitor._id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {new Date(visitor.timestamp).toLocaleString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {visitor.device}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {visitor.ip}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {visitor.location || 'Unknown'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex gap-1">
+                              {visitor.cookiePreferences?.analytics && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                  Analytics
+                                </span>
+                              )}
+                              {visitor.cookiePreferences?.marketing && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                  Marketing
+                                </span>
+                              )}
+                              {visitor.cookiePreferences?.functional && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
+                                  Functional
+                                </span>
+                              )}
+                              {!visitor.cookiePreferences?.analytics && 
+                               !visitor.cookiePreferences?.marketing && 
+                               !visitor.cookiePreferences?.functional && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                  Necessary Only
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Pagination for Visitors */}
+            {totalVisitors > 50 && (
+              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-6 rounded-lg shadow-sm">
+                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm text-gray-700">
+                      Showing page <span className="font-medium">{visitorsPage}</span> of{' '}
+                      <span className="font-medium">{Math.ceil(totalVisitors / 50)}</span>
+                    </p>
+                  </div>
+                  <div>
+                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                      <button
+                        onClick={() => setVisitorsPage(Math.max(1, visitorsPage - 1))}
+                        disabled={visitorsPage === 1}
+                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        Previous
+                      </button>
+                      <button
+                        onClick={() => setVisitorsPage(visitorsPage + 1)}
+                        disabled={visitors.length < 50}
+                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        Next
+                      </button>
+                    </nav>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

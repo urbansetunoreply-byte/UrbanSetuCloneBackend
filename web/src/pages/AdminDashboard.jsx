@@ -164,6 +164,11 @@ export default function AdminDashboard() {
     rejected: 0
   });
   const [fraudTimeline, setFraudTimeline] = useState([]);
+  const [visitorStats, setVisitorStats] = useState({
+    totalVisitors: 0,
+    todayCount: 0,
+    dailyStats: []
+  });
 
   const [showReasonModal, setShowReasonModal] = useState(false);
   const [deleteReason, setDeleteReason] = useState("");
@@ -200,7 +205,8 @@ export default function AdminDashboard() {
           fetchAppointmentCount(),
           fetchBookingStats(),
           fetchAnalytics(),
-          fetchSecurityStats()
+          fetchSecurityStats(),
+          fetchVisitorStats()
         ]);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
@@ -280,6 +286,19 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Failed to fetch security stats:', error);
+    }
+  };
+
+  const fetchVisitorStats = async () => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/api/visitors/stats?days=30`, {
+        withCredentials: true
+      });
+      if (res.data.success) {
+        setVisitorStats(res.data.stats);
+      }
+    } catch (error) {
+      console.error('Failed to fetch visitor stats:', error);
     }
   };
 
@@ -927,6 +946,98 @@ export default function AdminDashboard() {
                 OTP requests made in recent activity
               </div>
             </div>
+          </div>
+
+          {/* Visitor Tracking Statistics */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-lg">
+                  <FaEye className="text-white text-xl" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-800">Public Visitor Tracking</h3>
+              </div>
+              <Link 
+                to="/admin/session-audit-logs" 
+                className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+              >
+                View All Visitors →
+              </Link>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Today's Visitors */}
+              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-4 border border-purple-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-purple-600 font-medium">Today's Visitors</p>
+                    <p className="text-3xl font-bold text-purple-700 mt-1">{visitorStats.todayCount}</p>
+                  </div>
+                  <div className="bg-purple-100 p-3 rounded-full">
+                    <FaEye className="text-xl text-purple-600" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Total Visitors */}
+              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg p-4 border border-blue-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-blue-600 font-medium">Total Visitors (All-Time)</p>
+                    <p className="text-3xl font-bold text-blue-700 mt-1">{visitorStats.totalVisitors}</p>
+                  </div>
+                  <div className="bg-blue-100 p-3 rounded-full">
+                    <FaUsers className="text-xl text-blue-600" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Last 7 Days Average */}
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-green-600 font-medium">7-Day Average</p>
+                    <p className="text-3xl font-bold text-green-700 mt-1">
+                      {visitorStats.dailyStats?.length > 0 
+                        ? Math.round(visitorStats.dailyStats.slice(-7).reduce((sum, d) => sum + d.count, 0) / Math.min(7, visitorStats.dailyStats.slice(-7).length))
+                        : 0
+                      }
+                    </p>
+                  </div>
+                  <div className="bg-green-100 p-3 rounded-full">
+                    <FaChartLine className="text-xl text-green-600" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Daily Visitor Trend (Last 7 Days) */}
+            {visitorStats.dailyStats?.length > 0 && (
+              <div className="mt-6">
+                <h4 className="text-sm font-medium text-gray-700 mb-3">Last 7 Days Trend</h4>
+                <div className="flex items-end gap-2 h-24">
+                  {visitorStats.dailyStats.slice(-7).map((stat, index) => {
+                    const maxCount = Math.max(...visitorStats.dailyStats.slice(-7).map(s => s.count));
+                    const height = maxCount > 0 ? (stat.count / maxCount) * 100 : 0;
+                    const date = new Date(stat.date);
+                    
+                    return (
+                      <div key={index} className="flex-1 flex flex-col items-center">
+                        <div className="text-xs text-gray-600 font-medium mb-1">{stat.count}</div>
+                        <div 
+                          className="w-full bg-gradient-to-t from-purple-500 to-purple-400 rounded-t-lg transition-all duration-300 hover:from-purple-600 hover:to-purple-500"
+                          style={{ height: `${Math.max(10, height)}%` }}
+                          title={`${date.toLocaleDateString()}: ${stat.count} visitors`}
+                        />
+                        <div className="text-xs text-gray-500 mt-2">
+                          {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Pending Reviews & Appointments - High Priority Actions */}
