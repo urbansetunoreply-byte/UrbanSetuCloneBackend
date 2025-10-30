@@ -27,15 +27,17 @@ const Footer = () => {
 
     fetchDailyVisitorCount();
 
-    // Listen for visitor tracked events to update count immediately
+    // Listen for visitor tracked events to update count immediately (for same browser)
     const handleVisitorTracked = () => {
       fetchDailyVisitorCount();
     };
 
     window.addEventListener('visitorTracked', handleVisitorTracked);
 
-    // Refresh count every 5 minutes as backup
-    const interval = setInterval(fetchDailyVisitorCount, 5 * 60 * 1000);
+    // Refresh count every 30 seconds for real-time updates across all users
+    // This ensures when a new visitor accepts cookies on another device,
+    // all users see the updated count within 30 seconds without page refresh
+    const interval = setInterval(fetchDailyVisitorCount, 30 * 1000);
 
     return () => {
       clearInterval(interval);

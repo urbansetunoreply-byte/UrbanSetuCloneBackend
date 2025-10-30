@@ -216,6 +216,15 @@ export default function AdminDashboard() {
     };
 
     fetchAllData();
+
+    // Auto-refresh visitor stats every 30 seconds for real-time updates
+    const visitorStatsInterval = setInterval(() => {
+      fetchVisitorStats();
+    }, 30 * 1000);
+
+    return () => {
+      clearInterval(visitorStatsInterval);
+    };
   }, []);
 
   const fetchOfferListings = async () => {
