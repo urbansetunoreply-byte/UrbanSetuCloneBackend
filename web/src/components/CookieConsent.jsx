@@ -82,6 +82,9 @@ const CookieConsent = () => {
           page: window.location.pathname
         })
       });
+      
+      // Notify other components that a visitor was tracked
+      window.dispatchEvent(new CustomEvent('visitorTracked'));
     } catch (error) {
       console.error('Failed to track visitor:', error);
       // Don't block user experience if tracking fails

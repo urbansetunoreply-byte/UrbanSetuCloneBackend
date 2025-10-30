@@ -27,10 +27,20 @@ const Footer = () => {
 
     fetchDailyVisitorCount();
 
-    // Refresh count every 5 minutes
+    // Listen for visitor tracked events to update count immediately
+    const handleVisitorTracked = () => {
+      fetchDailyVisitorCount();
+    };
+
+    window.addEventListener('visitorTracked', handleVisitorTracked);
+
+    // Refresh count every 5 minutes as backup
     const interval = setInterval(fetchDailyVisitorCount, 5 * 60 * 1000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('visitorTracked', handleVisitorTracked);
+    };
   }, []);
 
   useEffect(() => {
@@ -86,6 +96,10 @@ const Footer = () => {
           page: window.location.pathname
         })
       });
+      
+      // Notify other components that a visitor was tracked
+      window.dispatchEvent(new CustomEvent('visitorTracked'));
+      
       // Refresh visitor count after tracking
       const res = await fetch(`${API_BASE_URL}/api/visitors/count/daily`);
       const data = await res.json();

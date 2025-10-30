@@ -195,11 +195,30 @@ const SessionAuditLogs = () => {
     }
   }, [activeTab, visitorsPage, visitorFilters]);
 
+  // Effect to restart auto-refresh when switching tabs
+  useEffect(() => {
+    if (autoRefresh && autoRefreshRef.current) {
+      // Clear existing interval
+      clearInterval(autoRefreshRef.current);
+      // Start new interval with current tab's refresh function
+      autoRefreshRef.current = setInterval(() => { refreshCurrentTab(); }, 30000);
+    }
+  }, [activeTab, autoRefresh]);
+
+  const refreshCurrentTab = () => {
+    if (activeTab === 'audit') {
+      fetchLogs();
+    } else if (activeTab === 'visitors') {
+      fetchVisitorStats();
+      fetchVisitors();
+    }
+  };
+
   const toggleAutoRefresh = () => {
     setAutoRefresh((prev) => {
       const next = !prev;
       if (next) {
-        autoRefreshRef.current = setInterval(() => { fetchLogs(); }, 30000);
+        autoRefreshRef.current = setInterval(() => { refreshCurrentTab(); }, 30000);
       } else if (autoRefreshRef.current) {
         clearInterval(autoRefreshRef.current);
         autoRefreshRef.current = null;
@@ -291,9 +310,16 @@ const SessionAuditLogs = () => {
             <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
               <div className="flex space-x-2">
                 <button
-                  onClick={() => { setLoading(true); fetchLogs(); }}
+                  onClick={() => { 
+                    if (activeTab === 'audit') {
+                      setLoading(true);
+                    } else {
+                      setVisitorsLoading(true);
+                    }
+                    refreshCurrentTab(); 
+                  }}
                   className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  title="Refresh logs"
+                  title={activeTab === 'audit' ? 'Refresh logs' : 'Refresh visitors'}
                 >
                   <svg className="h-4 w-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v6h6M20 20v-6h-6M20 8a8 8 0 10-3.879 6.804" />
