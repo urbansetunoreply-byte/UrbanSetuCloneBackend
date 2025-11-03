@@ -8,7 +8,7 @@ import { useSelector } from "react-redux";
 import { calculatePasswordStrength, getPasswordStrengthColor, getPasswordStrengthBgColor, getPasswordStrengthText, meetsMinimumRequirements } from "../utils/passwordStrength.js";
 import { authenticatedFetch, getCSRFToken } from '../utils/csrf';
 import { usePageTitle } from '../hooks/usePageTitle';
-
+import { UserPlus } from "lucide-react";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function SignUp({ bootstrapped, sessionChecked }) {
@@ -402,7 +402,10 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8 bg-gray-50">
         <div className="w-full max-w-md">
           <div className="text-center mb-6 sm:mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Create Account</h2>
+            <h2 className="text-3xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
+              <UserPlus className="w-7 h-7 text-indigo-600" />
+              Create Account
+            </h2>
             <p className="text-gray-600 text-sm sm:text-base">Join thousands of users finding their perfect homes</p>
           </div>
           
