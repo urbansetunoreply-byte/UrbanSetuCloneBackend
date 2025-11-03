@@ -277,7 +277,7 @@ export default function Header() {
                   title="Sign Out"
                 >
                   <LogOut className="text-xs" />
-                  <span className="text-xs rotate-180">Sign Out</span>
+                  <span>Sign Out</span>
                 </button>
               )}
             </div>
@@ -636,7 +636,7 @@ function UserNavLinks({ mobile = false, onNavigate, signout }) {
             onClick={() => { handleSignout(); if (onNavigate) onNavigate(); }}
           >
             <LogOut className={`${mobile ? 'text-lg text-red-500' : 'text-base text-red-500'}`} /> 
-            <span className="rotate-180">Sign Out</span>
+            <span>Sign Out</span>
           </li>
           
           {/* Profile avatar for desktop/tablet */}
