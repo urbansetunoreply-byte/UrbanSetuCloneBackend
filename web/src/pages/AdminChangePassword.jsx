@@ -11,6 +11,7 @@ import { authenticatedFetch } from '../utils/csrf';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 
 import { usePageTitle } from '../hooks/usePageTitle';
+import { Lock } from "lucide-react";
 export default function AdminChangePassword() {
   // Set page title
   usePageTitle("Change Password - Security Settings");
@@ -183,7 +184,8 @@ export default function AdminChangePassword() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">🔒 Change Password</h2>
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">
+              <Lock className="w-7 h-7 text-green-600" /> Change Password</h2>
             <p className="text-gray-600">Keep your account secure by updating your password regularly.</p>
           </div>
           
