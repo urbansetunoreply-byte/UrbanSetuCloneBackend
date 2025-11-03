@@ -11,6 +11,8 @@ import { toast } from 'react-toastify';
 import { downloadAndroidApp, isAndroidDevice, isMobileDevice, getDownloadMessage, getDownloadButtonText } from '../utils/androidDownload';
 import { useSignout } from '../hooks/useSignout';
 import SearchSuggestions from './SearchSuggestions';
+import { LogIn } from "lucide-react";
+import { UserPlus } from "lucide-react";
 
 export default function Header() {
   const { currentUser } = useSelector((state) => state.user);
@@ -259,13 +261,11 @@ export default function Header() {
               {!currentUser && (
                 <div className="md:hidden flex items-center gap-3">
                   <Link to="/sign-up" className="flex items-center gap-1 text-white/80 hover:text-white text-sm" title="Sign Up">
-                    <FaUser className="text-xs" />
-                    <span>Sign Up</span>
+                    <FaUser icon={UserPlus} className="text-xs" />
                   </Link>
                   <span className="text-white/40">|</span>
                   <Link to="/sign-in" className="flex items-center gap-1 text-white/80 hover:text-white text-sm" title="Sign In">
-                    <FaSignOutAlt className="text-xs rotate-180" />
-                    <span>Sign In</span>
+                    <FaSignOutAlt icon={LogIn} className="text-xs rotate-180" />
                   </Link>
                 </div>
               )}
