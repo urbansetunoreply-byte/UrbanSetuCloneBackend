@@ -261,11 +261,11 @@ export default function Header() {
               {!currentUser && (
                 <div className="md:hidden flex items-center gap-3">
                   <Link to="/sign-up" className="flex items-center gap-1 text-white/80 hover:text-white text-sm" title="Sign Up">
-                    <FaUser icon={UserPlus} className="text-xs" />
+                    <UserPlus className="text-xs" />
                   </Link>
                   <span className="text-white/40">|</span>
                   <Link to="/sign-in" className="flex items-center gap-1 text-white/80 hover:text-white text-sm" title="Sign In">
-                    <FaSignOutAlt icon={LogIn} className="text-xs rotate-180" />
+                    <LogIn className="text-xs rotate-180" />
                   </Link>
                 </div>
               )}
