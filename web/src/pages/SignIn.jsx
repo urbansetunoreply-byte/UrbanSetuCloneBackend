@@ -7,7 +7,7 @@ import RecaptchaWidget from "../components/RecaptchaWidget";
 import { usePageTitle } from '../hooks/usePageTitle';
 
 import { reconnectSocket } from "../utils/socket";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaSignInAlt } from "react-icons/fa";
 import { areCookiesEnabled, createAuthenticatedFetchOptions } from '../utils/auth';
 import { focusWithoutKeyboard } from '../utils/mobileUtils';
 import { authenticatedFetch, getCSRFToken } from '../utils/csrf';
@@ -632,7 +632,10 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
                 <div className="w-full max-w-md">
                     <div className="text-center mb-8">
-                        <h2 className="text-3xl font-bold text-gray-800 mb-2">Sign In</h2>
+                        <h2 className="text-3xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
+                            <FaSignInAlt className="w-7 h-7 text-indigo-600" />
+                            Sign In
+                        </h2>
                         <p className="text-gray-600">Welcome back! Please sign in to your account.</p>
                     </div>
 
