@@ -12,7 +12,7 @@ import { downloadAndroidApp, isAndroidDevice, isMobileDevice, getDownloadMessage
 import { useSignout } from '../hooks/useSignout';
 import SearchSuggestions from './SearchSuggestions';
 import { LogIn } from "lucide-react";
-import { UserPlus } from "lucide-react";
+import { UserPlus, LogOut } from "lucide-react";
 
 export default function Header() {
   const { currentUser } = useSelector((state) => state.user);
@@ -276,8 +276,8 @@ export default function Header() {
                   className="md:hidden flex items-center gap-1 text-white/80 hover:text-white transition-colors text-sm"
                   title="Sign Out"
                 >
-                  <FaSignOutAlt className="text-xs" />
-                  <span className="text-xs">Sign Out</span>
+                  <LogOut className="text-xs" />
+                  <span className="text-xs rotate-180">Sign Out</span>
                 </button>
               )}
             </div>
@@ -635,8 +635,8 @@ function UserNavLinks({ mobile = false, onNavigate, signout }) {
             className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium cursor-pointer animate-mobile-item-in' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base cursor-pointer flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`} 
             onClick={() => { handleSignout(); if (onNavigate) onNavigate(); }}
           >
-            <FaSignOutAlt className={`${mobile ? 'text-lg text-red-500' : 'text-base text-red-500'}`} /> 
-            <span>Sign Out</span>
+            <LogOut className={`${mobile ? 'text-lg text-red-500' : 'text-base text-red-500'}`} /> 
+            <span className="rotate-180">Sign Out</span>
           </li>
           
           {/* Profile avatar for desktop/tablet */}
