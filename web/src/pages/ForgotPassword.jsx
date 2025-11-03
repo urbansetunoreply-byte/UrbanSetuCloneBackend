@@ -530,9 +530,9 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
         {/* Right Side - Verification Form */}
         <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8 bg-gray-50">
           <div className="w-full max-w-md">
-            <div className="text-center mb-6 sm:mb-8">
+            <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
-              <HelpCircle className="w-7 h-7 text-indigo-600" />
+              <HelpCircle className="w-7 h-7 text-red-600" />
               Forgot Password
             </h2>
               <p className="text-gray-600 text-sm sm:text-base">Enter your registered email to reset your password.</p>
@@ -832,7 +832,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
-              <RotateCcw className="w-7 h-7 text-indigo-600" />
+              <RotateCcw className="w-7 h-7 text-green-600" />
               Reset Password
             </h2>
             <p className="text-gray-600">Create a new strong password to secure your account.</p>
