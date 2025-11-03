@@ -2614,8 +2614,8 @@ export default function Profile() {
               </button>
             )}
 
-            {/* Session Audit Logs for root admin only */}
-            {currentUser.role === 'rootadmin' && (
+            {/* Session Audit Logs for root admin only and public vistors section to both admins and rootadmins */}
+            {(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
               <button
                 onClick={() => navigate('/admin/session-audit-logs')}
                 className={`w-full bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp} animation-delay-1350`}
