@@ -8,7 +8,7 @@ import NotFound from "./NotFound";
 import { focusWithoutKeyboard } from '../utils/mobileUtils';
 import { calculatePasswordStrength, getPasswordStrengthColor, getPasswordStrengthBgColor, getPasswordStrengthText, meetsMinimumRequirements } from "../utils/passwordStrength.js";
 import { authenticatedFetch, getCSRFToken } from '../utils/csrf';
-import { Lock, RotateCcw } from "lucide-react";
+import { HelpCircle, RotateCcw } from "lucide-react";
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -532,7 +532,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
           <div className="w-full max-w-md">
             <div className="text-center mb-6 sm:mb-8">
               <h2 className="text-3xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
-              <Lock className="w-7 h-7 text-indigo-600" />
+              <HelpCircle className="w-7 h-7 text-indigo-600" />
               Forgot Password
             </h2>
               <p className="text-gray-600 text-sm sm:text-base">Enter your registered email to reset your password.</p>
