@@ -378,7 +378,7 @@ const SessionAuditLogs = () => {
                 <p className="text-sm text-gray-500">Total Logs</p>
                 <p className="text-xl sm:text-2xl font-bold text-blue-600">{totalLogs}</p>
                 {lastUpdated && (
-                  <p className="text-xs text-gray-400 mt-1">Updated {lastUpdated.toLocaleTimeString('en-IN')}</p>
+                  <p className="text-xs text-gray-400 mt-1">Updated {lastUpdated.toLocaleTimeString('en-IN', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</p>
                 )}
               </div>
             </div>
@@ -942,7 +942,7 @@ const SessionAuditLogs = () => {
                       {visitors.map((visitor) => (
                         <tr key={visitor._id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {new Date(visitor.timestamp).toLocaleString('en-IN')}
+                            {new Date(visitor.timestamp).toLocaleString('en-IN', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <div className="flex items-center">
