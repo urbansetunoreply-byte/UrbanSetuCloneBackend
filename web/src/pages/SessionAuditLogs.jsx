@@ -864,120 +864,7 @@ const SessionAuditLogs = () => {
                     <p className="text-2xl font-semibold text-gray-900">{visitorStats.todayCount}</p>
                   </div>
                 </div>
-
-        {/* Visitor Filters (toggle like audit section) */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <button
-              onClick={() => setShowVisitorFilters(!showVisitorFilters)}
-              className={`inline-flex items-center px-3 py-2 border shadow-sm text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 ${
-                getVisitorActiveFiltersCount() > 0
-                  ? 'border-purple-300 text-purple-700 bg-purple-50 hover:bg-purple-100'
-                  : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
-              }`}
-            >
-              <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
-              </svg>
-              {showVisitorFilters ? 'Hide Filters' : 'Show Filters'}
-              {getVisitorActiveFiltersCount() > 0 && (
-                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                  {getVisitorActiveFiltersCount()}
-                </span>
-              )}
-            </button>
-            {getVisitorActiveFiltersCount() > 0 && (
-              <button
-                onClick={() => setVisitorFilters({ dateRange: 'today', device: 'all', location: 'all', search: '', analytics: 'any', marketing: 'any', functional: 'any' })}
-                className="text-sm text-red-600 hover:text-red-700 font-medium"
-              >
-                Clear All Filters
-              </button>
-            )}
-          </div>
-
-          {showVisitorFilters && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-            {/* Quick Date Range */}
-            <div className="col-span-1 lg:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { key: 'today', label: 'Today' },
-                  { key: 'yesterday', label: 'Yesterday' },
-                  { key: '7days', label: 'Last 7 days' },
-                  { key: '30days', label: 'Last 30 days' },
-                  { key: 'all', label: 'All' }
-                ].map(opt => (
-                  <button
-                    key={opt.key}
-                    onClick={() => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, dateRange: opt.key })); }}
-                    className={`px-3 py-1.5 rounded-md text-sm border ${visitorFilters.dateRange === opt.key ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Consent Filters */}
-            {[
-              { key: 'analytics', label: 'Analytics' },
-              { key: 'marketing', label: 'Marketing' },
-              { key: 'functional', label: 'Functional' }
-            ].map((c) => (
-              <div key={c.key}>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{c.label} Consent</label>
-                <select
-                  value={visitorFilters[c.key]}
-                  onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, [c.key]: e.target.value })); }}
-                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                >
-                  <option value="any">Any</option>
-                  <option value="true">Allowed</option>
-                  <option value="false">Disallowed</option>
-                </select>
-              </div>
-            ))}
-
-            {/* Device */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Device</label>
-              <input
-                type="text"
-                value={visitorFilters.device}
-                onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, device: e.target.value || 'all' })); }}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="all / Chrome / iPhone ..."
-              />
-            </div>
-
-            {/* Location */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-              <input
-                type="text"
-                value={visitorFilters.location}
-                onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, location: e.target.value || 'all' })); }}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="all / City, Country"
-              />
-            </div>
-
-            {/* Search */}
-            <div className="col-span-1 lg:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
-              <input
-                type="text"
-                value={visitorFilters.search}
-                onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, search: e.target.value })); }}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="IP, device, location..."
-              />
-            </div>
-          </div>
-          )}
-        </div>
+              
               </div>
 
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -1022,6 +909,120 @@ const SessionAuditLogs = () => {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Visitor Filters (toggle like audit section) - placed below cards */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <button
+                  onClick={() => setShowVisitorFilters(!showVisitorFilters)}
+                  className={`inline-flex items-center px-3 py-2 border shadow-sm text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 ${
+                    getVisitorActiveFiltersCount() > 0
+                      ? 'border-purple-300 text-purple-700 bg-purple-50 hover:bg-purple-100'
+                      : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+                  }`}
+                >
+                  <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
+                  </svg>
+                  {showVisitorFilters ? 'Hide Filters' : 'Show Filters'}
+                  {getVisitorActiveFiltersCount() > 0 && (
+                    <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                      {getVisitorActiveFiltersCount()}
+                    </span>
+                  )}
+                </button>
+                {getVisitorActiveFiltersCount() > 0 && (
+                  <button
+                    onClick={() => setVisitorFilters({ dateRange: 'today', device: 'all', location: 'all', search: '', analytics: 'any', marketing: 'any', functional: 'any' })}
+                    className="text-sm text-red-600 hover:text-red-700 font-medium"
+                  >
+                    Clear All Filters
+                  </button>
+                )}
+              </div>
+
+              {showVisitorFilters && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+                {/* Quick Date Range */}
+                <div className="col-span-1 lg:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { key: 'today', label: 'Today' },
+                      { key: 'yesterday', label: 'Yesterday' },
+                      { key: '7days', label: 'Last 7 days' },
+                      { key: '30days', label: 'Last 30 days' },
+                      { key: 'all', label: 'All' }
+                    ].map(opt => (
+                      <button
+                        key={opt.key}
+                        onClick={() => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, dateRange: opt.key })); }}
+                        className={`px-3 py-1.5 rounded-md text-sm border ${visitorFilters.dateRange === opt.key ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Consent Filters */}
+                {[
+                  { key: 'analytics', label: 'Analytics' },
+                  { key: 'marketing', label: 'Marketing' },
+                  { key: 'functional', label: 'Functional' }
+                ].map((c) => (
+                  <div key={c.key}>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{c.label} Consent</label>
+                    <select
+                      value={visitorFilters[c.key]}
+                      onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, [c.key]: e.target.value })); }}
+                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                    >
+                      <option value="any">Any</option>
+                      <option value="true">Allowed</option>
+                      <option value="false">Disallowed</option>
+                    </select>
+                  </div>
+                ))}
+
+                {/* Device */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Device</label>
+                  <input
+                    type="text"
+                    value={visitorFilters.device}
+                    onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, device: e.target.value || 'all' })); }}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    placeholder="all / Chrome / iPhone ..."
+                  />
+                </div>
+
+                {/* Location */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                  <input
+                    type="text"
+                    value={visitorFilters.location}
+                    onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, location: e.target.value || 'all' })); }}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    placeholder="all / City, Country"
+                  />
+                </div>
+
+                {/* Search */}
+                <div className="col-span-1 lg:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                  <input
+                    type="text"
+                    value={visitorFilters.search}
+                    onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, search: e.target.value })); }}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    placeholder="IP, device, location..."
+                  />
+                </div>
+              </div>
+              )}
             </div>
 
             {/* Visitors Table */}
