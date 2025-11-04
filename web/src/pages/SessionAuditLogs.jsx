@@ -32,6 +32,8 @@ const SessionAuditLogs = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [searchTimeout, setSearchTimeout] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [showAuditStats, setShowAuditStats] = useState(false);
+  const [showVisitorStatsToggle, setShowVisitorStatsToggle] = useState(false);
   
   // Visitors state
   const [visitors, setVisitors] = useState([]);
@@ -163,8 +165,8 @@ const SessionAuditLogs = () => {
   };
 
   // Fetch visitors list
-  const fetchVisitors = async () => {
-    setVisitorsLoading(true);
+  const fetchVisitors = async (opts = { manual: false }) => {
+    if (opts.manual) setVisitorsLoading(true);
     try {
       const params = new URLSearchParams({
         page: visitorsPage,
@@ -202,7 +204,7 @@ const SessionAuditLogs = () => {
       console.error('Error fetching visitors:', error);
       toast.error('Failed to fetch visitors');
     } finally {
-      setVisitorsLoading(false);
+      if (opts.manual) setVisitorsLoading(false);
     }
   };
 
@@ -229,7 +231,7 @@ const SessionAuditLogs = () => {
       fetchLogs();
     } else if (activeTab === 'visitors') {
       fetchVisitorStats();
-      fetchVisitors();
+      fetchVisitors({ manual: true });
     }
   };
 
@@ -345,6 +347,66 @@ const SessionAuditLogs = () => {
                   </svg>
                   <span className="hidden sm:inline">Refresh</span>
                 </button>
+                {/* Export Button */}
+                {activeTab === 'audit' && (
+                  <button
+                    onClick={() => {
+                      const rows = logs.map(l => ({
+                        timestamp: new Date(l.timestamp).toISOString(),
+                        user: l.userId?.username || '',
+                        email: l.userId?.email || '',
+                        role: l.role || '',
+                        action: l.action,
+                        ip: l.ip,
+                        location: l.location || '',
+                        device: l.device || '',
+                        suspicious: l.isSuspicious ? 'yes' : 'no'
+                      }));
+                      const header = ['timestamp','user','email','role','action','ip','location','device','suspicious'];
+                      const csv = [header.join(','), ...rows.map(r => header.map(h => (String(r[h]||'').replaceAll('"','""'))).map(s=>`"${s}"`).join(','))].join('\n');
+                      const blob = new Blob([csv], { type: 'text/csv' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url; a.download = `session-logs-${new Date().toISOString().slice(0,10)}.csv`; a.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-gray-700 shadow-sm text-sm leading-4 font-medium rounded-md bg-white hover:bg-gray-50"
+                    title="Export logs as CSV"
+                  >
+                    <svg className="h-4 w-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"/></svg>
+                    <span className="hidden sm:inline">Export</span>
+                  </button>
+                )}
+                {activeTab === 'visitors' && (
+                  <button
+                    onClick={() => {
+                      const rows = visitors.map(v => ({
+                        timestamp: new Date(v.timestamp).toISOString(),
+                        ip: v.ip,
+                        location: v.location || '',
+                        browser: v.browser || '',
+                        browserVersion: v.browserVersion || '',
+                        os: v.os || '',
+                        deviceType: v.deviceType || '',
+                        analytics: v.cookiePreferences?.analytics ? 'yes' : 'no',
+                        marketing: v.cookiePreferences?.marketing ? 'yes' : 'no',
+                        functional: v.cookiePreferences?.functional ? 'yes' : 'no'
+                      }));
+                      const header = ['timestamp','ip','location','browser','browserVersion','os','deviceType','analytics','marketing','functional'];
+                      const csv = [header.join(','), ...rows.map(r => header.map(h => (String(r[h]||'').replaceAll('"','""'))).map(s=>`"${s}"`).join(','))].join('\n');
+                      const blob = new Blob([csv], { type: 'text/csv' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url; a.download = `visitors-${new Date().toISOString().slice(0,10)}.csv`; a.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-gray-700 shadow-sm text-sm leading-4 font-medium rounded-md bg-white hover:bg-gray-50"
+                    title="Export visitors as CSV"
+                  >
+                    <svg className="h-4 w-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"/></svg>
+                    <span className="hidden sm:inline">Export</span>
+                  </button>
+                )}
                 <button
                   onClick={toggleAutoRefresh}
                   className={`flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border ${autoRefresh ? 'border-green-300 text-green-700' : 'border-gray-300 text-gray-700'} shadow-sm text-sm leading-4 font-medium rounded-md bg-white hover:bg-gray-50`}
@@ -453,6 +515,28 @@ const SessionAuditLogs = () => {
         {/* Audit Logs Tab Content */}
         {activeTab === 'audit' && (
           <>
+        {/* Stats Toggle and Search/Filters */}
+        <div className="mb-4">
+          <button onClick={() => setShowAuditStats(!showAuditStats)} className={`px-3 py-2 rounded-md text-sm ${showAuditStats ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+            Toggle Stats
+          </button>
+        </div>
+        {showAuditStats && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <p className="text-sm text-gray-600">Logins</p>
+              <p className="text-2xl font-bold text-green-600">{logs.filter(l => l.action === 'login').length}</p>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <p className="text-sm text-gray-600">Suspicious</p>
+              <p className="text-2xl font-bold text-red-600">{logs.filter(l => l.isSuspicious).length}</p>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <p className="text-sm text-gray-600">Admins</p>
+              <p className="text-2xl font-bold text-purple-600">{logs.filter(l => l.role === 'admin' || l.role === 'rootadmin').length}</p>
+            </div>
+          </div>
+        )}
         {/* Search and Filters */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
           {/* Search Bar */}
@@ -913,6 +997,27 @@ const SessionAuditLogs = () => {
 
             {/* Visitor Filters (toggle like audit section) - placed below cards */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+              <div className="mb-3">
+                <button onClick={() => setShowVisitorStatsToggle(!showVisitorStatsToggle)} className={`px-3 py-2 rounded-md text-sm ${showVisitorStatsToggle ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+                  Toggle Stats
+                </button>
+              </div>
+              {showVisitorStatsToggle && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                    <p className="text-sm text-gray-600">Today</p>
+                    <p className="text-2xl font-bold text-purple-600">{visitorStats.todayCount}</p>
+                  </div>
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                    <p className="text-sm text-gray-600">Total Visitors</p>
+                    <p className="text-2xl font-bold text-blue-600">{visitorStats.totalVisitors}</p>
+                  </div>
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                    <p className="text-sm text-gray-600">Unique Devices (today)</p>
+                    <p className="text-2xl font-bold text-green-600">{visitorStats.deviceStats?.length || 0}</p>
+                  </div>
+                </div>
+              )}
               <div className="flex items-center justify-between mb-4">
                 <button
                   onClick={() => setShowVisitorFilters(!showVisitorFilters)}
@@ -986,29 +1091,35 @@ const SessionAuditLogs = () => {
                   </div>
                 ))}
 
-                {/* Device */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Device</label>
-                  <input
-                    type="text"
-                    value={visitorFilters.device}
-                    onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, device: e.target.value || 'all' })); }}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="all / Chrome / iPhone ..."
-                  />
-                </div>
+            {/* Device */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Device</label>
+              <select
+                value={visitorFilters.device}
+                onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, device: e.target.value })); }}
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              >
+                <option value="all">All</option>
+                {(visitorStats.deviceStats || []).map(d => (
+                  <option key={d.device} value={d.device}>{d.device} ({d.count})</option>
+                ))}
+              </select>
+            </div>
 
-                {/* Location */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-                  <input
-                    type="text"
-                    value={visitorFilters.location}
-                    onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, location: e.target.value || 'all' })); }}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="all / City, Country"
-                  />
-                </div>
+            {/* Location */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+              <select
+                value={visitorFilters.location}
+                onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, location: e.target.value })); }}
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              >
+                <option value="all">All</option>
+                {(visitorStats.locationStats || []).map(l => (
+                  <option key={l.location} value={l.location}>{l.location} ({l.count})</option>
+                ))}
+              </select>
+            </div>
 
                 {/* Search */}
                 <div className="col-span-1 lg:col-span-2">
