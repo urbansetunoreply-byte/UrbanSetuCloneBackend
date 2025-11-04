@@ -813,9 +813,9 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                             value={otpData.email}
                                             onChange={handleOtpChange} 
                                             ref={otpEmailInputRef}
-                                            readOnly={otpSent || otpLoading}
-                                            disabled={otpSent || otpLoading}
-                                            className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${otpSent || otpLoading ? 'pr-12 bg-gray-50 cursor-not-allowed' : ''}`}
+                                            readOnly={otpSent || otpLoading || authInProgress === 'google'}
+                                            disabled={otpSent || otpLoading || authInProgress === 'google'}
+                                            className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${(otpSent || otpLoading || authInProgress === 'google') ? 'pr-12 bg-gray-50 cursor-not-allowed' : ''}`}
                                             required
                                         />
                                         {otpSent && (
@@ -946,7 +946,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 )}
                                 
                                 <button 
-                                    disabled={loading || (!otpSent && (otpLoading || !canResend)) || (otpRequiresCaptcha && !otpRecaptchaToken) || (otpSent && otpData.otp.length !== 6) || otpVerifyingLoading} 
+                                    disabled={loading || authInProgress === 'google' || (!otpSent && (otpLoading || !canResend)) || (otpRequiresCaptcha && !otpRecaptchaToken) || (otpSent && otpData.otp.length !== 6) || otpVerifyingLoading} 
                                     className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
                                 >
                                     {loading || (!otpSent && otpLoading) || otpVerifyingLoading ? (

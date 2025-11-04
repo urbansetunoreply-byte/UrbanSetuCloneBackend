@@ -309,6 +309,8 @@ export default function AdminAppointmentListing() {
               onChange={handleChange}
               placeholder="Property Name"
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              readOnly
+              disabled
               required
             />
             
@@ -319,6 +321,8 @@ export default function AdminAppointmentListing() {
               placeholder="Property Description"
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               rows="2"
+              readOnly
+              disabled
               required
             ></textarea>
             
