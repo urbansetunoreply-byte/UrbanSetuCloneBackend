@@ -8,6 +8,7 @@ import NotificationBell from "./NotificationBell.jsx";
 import { persistor } from '../redux/store';
 import { reconnectSocket } from "../utils/socket";
 import { toast } from 'react-toastify';
+import { LogOut } from "lucide-react";
 import { useSignout } from '../hooks/useSignout';
 import SearchSuggestions from './SearchSuggestions';
 
@@ -262,8 +263,7 @@ export default function AdminHeader() {
                   className="md:hidden flex items-center gap-1 text-white/80 hover:text-white transition-colors text-sm"
                   title="Sign Out"
                 >
-                  <FaSignOutAlt className="text-xs" />
-                    <span className="text-xs">Sign Out</span>
+                  <LogOut className="text-xs" />
                 </button>
               )}
             </div>
@@ -500,7 +500,7 @@ function AdminNavLinks({ mobile = false, onNavigate, pendingCount, handleSignout
         className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium cursor-pointer animate-mobile-item-in' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base cursor-pointer flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}
         onClick={() => { handleSignout(); if (onNavigate) onNavigate(); }}
       >
-        <FaSignOutAlt className={`${mobile ? 'text-lg text-red-500' : 'text-base text-red-500'}`} /> 
+        <LogOut className={`${mobile ? 'text-lg text-red-500' : 'text-base text-red-500'}`} /> 
         <span>Sign Out</span>
       </li>
       
