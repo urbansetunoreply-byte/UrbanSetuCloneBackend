@@ -609,6 +609,7 @@ export const sendTransferRightsOTPEmail = async (email, otp) => {
 
 // Send new login notification email
 export const sendNewLoginEmail = async (email, device, ip, location, loginTime) => {
+  const clientBaseUrl = process.env.CLIENT_BASE_URL || process.env.FRONTEND_URL || 'https://urbansetu.vercel.app';
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
@@ -634,9 +635,12 @@ export const sendNewLoginEmail = async (email, device, ip, location, loginTime) 
               <p style="margin: 5px 0; color: #374151;"><strong>Login Time:</strong> ${new Date(loginTime).toLocaleString('en-GB')}</p>
             </div>
             
-            <p style="color: #6b7280; margin: 15px 0 0 0; font-size: 14px;">
+            <p style="color: #6b7280; margin: 15px 0 10px 0; font-size: 14px;">
               If you didn't make this login, please secure your account immediately by changing your password.
             </p>
+            <div style="text-align:center; margin-top: 10px;">
+              <a href="${clientBaseUrl}/forgot-password" style="display:inline-block; background-color:#2563eb; color:#ffffff; text-decoration:none; padding:10px 16px; border-radius:6px; font-weight:600;">Reset Password</a>
+            </div>
           </div>
           
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
@@ -661,6 +665,7 @@ export const sendNewLoginEmail = async (email, device, ip, location, loginTime) 
 
 // Send suspicious login alert email
 export const sendSuspiciousLoginEmail = async (email, currentDevice, currentIp, currentLocation, previousDevice, previousIp, previousLocation) => {
+  const clientBaseUrl = process.env.CLIENT_BASE_URL || process.env.FRONTEND_URL || 'https://urbansetu.vercel.app';
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
@@ -697,6 +702,9 @@ export const sendSuspiciousLoginEmail = async (email, currentDevice, currentIp, 
               <p style="color: #92400e; margin: 0; font-weight: bold;">
                 If this wasn't you, please secure your account immediately by logging out all sessions and changing your password.
               </p>
+            </div>
+            <div style="text-align:center; margin-top: 10px;">
+              <a href="${clientBaseUrl}/forgot-password" style="display:inline-block; background-color:#dc2626; color:#ffffff; text-decoration:none; padding:10px 16px; border-radius:6px; font-weight:600;">Reset Password</a>
             </div>
           </div>
           
