@@ -54,6 +54,19 @@ const SessionAuditLogs = () => {
     marketing: 'any',
     functional: 'any'
   });
+  const [showVisitorFilters, setShowVisitorFilters] = useState(false);
+
+  const getVisitorActiveFiltersCount = () => {
+    let count = 0;
+    if (visitorFilters.dateRange && visitorFilters.dateRange !== 'today') count++;
+    if (visitorFilters.device && visitorFilters.device !== 'all') count++;
+    if (visitorFilters.location && visitorFilters.location !== 'all') count++;
+    if (visitorFilters.search) count++;
+    if (visitorFilters.analytics !== 'any') count++;
+    if (visitorFilters.marketing !== 'any') count++;
+    if (visitorFilters.functional !== 'any') count++;
+    return count;
+  };
 
   // Debounced search effect
   useEffect(() => {
@@ -837,7 +850,7 @@ const SessionAuditLogs = () => {
         {/* Visitors Tab Content */}
         {activeTab === 'visitors' && (
           <>
-        {/* Visitor Statistics Cards + Quick Range */}
+        {/* Visitor Statistics Cards + Quick Range */
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <div className="flex items-center">
@@ -852,8 +865,38 @@ const SessionAuditLogs = () => {
                   </div>
                 </div>
 
-        {/* Visitor Filters */}
+        {/* Visitor Filters (toggle like audit section) */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={() => setShowVisitorFilters(!showVisitorFilters)}
+              className={`inline-flex items-center px-3 py-2 border shadow-sm text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 ${
+                getVisitorActiveFiltersCount() > 0
+                  ? 'border-purple-300 text-purple-700 bg-purple-50 hover:bg-purple-100'
+                  : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+              }`}
+            >
+              <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
+              </svg>
+              {showVisitorFilters ? 'Hide Filters' : 'Show Filters'}
+              {getVisitorActiveFiltersCount() > 0 && (
+                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                  {getVisitorActiveFiltersCount()}
+                </span>
+              )}
+            </button>
+            {getVisitorActiveFiltersCount() > 0 && (
+              <button
+                onClick={() => setVisitorFilters({ dateRange: 'today', device: 'all', location: 'all', search: '', analytics: 'any', marketing: 'any', functional: 'any' })}
+                className="text-sm text-red-600 hover:text-red-700 font-medium"
+              >
+                Clear All Filters
+              </button>
+            )}
+          </div>
+
+          {showVisitorFilters && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
             {/* Quick Date Range */}
             <div className="col-span-1 lg:col-span-2">
@@ -933,6 +976,7 @@ const SessionAuditLogs = () => {
               />
             </div>
           </div>
+          )}
         </div>
               </div>
 

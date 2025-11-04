@@ -224,12 +224,13 @@ const CookieConsent = () => {
     setShowSettings(false);
   };
 
-  if (!isVisible) return null;
+  // Render only when banner visible or settings modal explicitly opened
+  if (!isVisible && !showSettings) return null;
 
   return (
     <>
       {/* Main Consent Banner */}
-      {!showSettings && (
+      {!showSettings && isVisible && (
         <div className={`fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-2xl transition-all duration-300 ${
           isClosing 
             ? 'opacity-0 translate-y-full' 
