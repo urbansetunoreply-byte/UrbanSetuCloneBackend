@@ -121,6 +121,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [messageRatings, setMessageRatings] = useState(() => JSON.parse(localStorage.getItem('gemini_ratings') || '{}'));
     const [showDislikeModal, setShowDislikeModal] = useState(false);
     const [dislikeFeedbackOption, setDislikeFeedbackOption] = useState('');
+    const [dislikeFeedbackText, setDislikeFeedbackText] = useState('');
     const [dislikeMessageIndex, setDislikeMessageIndex] = useState(null);
     const [showRatingsModal, setShowRatingsModal] = useState(false);
     const [ratingMeta, setRatingMeta] = useState({}); // { ratingKey: { feedback, user, time } }
@@ -1847,8 +1848,15 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
     // Open dislike modal flow
     const openDislikeModal = (index) => {
+        // If already disliked, do not open modal again
+        const msg = messages[index];
+        if (msg && messageRatings[`${index}_${msg.timestamp}`] === 'down') {
+            toast.info('You already provided feedback for this response.');
+            return;
+        }
         setDislikeMessageIndex(index);
         setDislikeFeedbackOption('');
+        setDislikeFeedbackText('');
         setShowDislikeModal(true);
     };
     const submitDislike = async () => {
@@ -1856,9 +1864,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             toast.error('Please select a reason');
             return;
         }
+        if (dislikeFeedbackOption === 'Other' && !dislikeFeedbackText.trim()) {
+            toast.error('Please provide details for Other');
+            return;
+        }
         const idx = dislikeMessageIndex;
         setShowDislikeModal(false);
-        await rateMessage(idx, 'down', dislikeFeedbackOption);
+        const feedback = dislikeFeedbackOption === 'Other' ? `Other: ${dislikeFeedbackText.trim()}` : dislikeFeedbackOption;
+        await rateMessage(idx, 'down', feedback);
     };
 
     const shareMessage = async (message) => {
@@ -6563,6 +6576,15 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 <option value="Harmful/unsafe">Harmful/unsafe</option>
                                 <option value="Other">Other</option>
                             </select>
+                            {dislikeFeedbackOption === 'Other' && (
+                                <textarea
+                                    value={dislikeFeedbackText}
+                                    onChange={(e) => setDislikeFeedbackText(e.target.value)}
+                                    placeholder="Please describe the issue"
+                                    rows={3}
+                                    className={`w-full p-2 rounded border ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'}`}
+                                />
+                            )}
                         </div>
                         <div className={`p-4 flex justify-end gap-2 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                             <button onClick={() => setShowDislikeModal(false)} className="px-3 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300">Cancel</button>
@@ -6579,10 +6601,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     <div className={`relative w-full max-w-2xl rounded-xl shadow-2xl ${isDarkMode ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900'} border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                         <div className={`p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} flex items-center justify-between`}>
                             <h3 className="text-lg font-semibold">Ratings & Feedback</h3>
-                            <button onClick={() => setShowRatingsModal(false)} className="opacity-70 hover:opacity-100"><FaTimes size={16} /></button>
+                            <div className="flex items-center gap-2">
+                                <button onClick={() => { loadRatingMeta(); try { const rs = JSON.parse(localStorage.getItem('gemini_ratings')||'{}'); setMessageRatings(rs);} catch(_){} }} className={`px-2 py-1 rounded text-sm ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}>Refresh</button>
+                                <button onClick={() => setShowRatingsModal(false)} className="opacity-70 hover:opacity-100"><FaTimes size={16} /></button>
+                            </div>
                         </div>
                         <div className="p-4 max-h-[60vh] overflow-y-auto">
-                            {Object.keys(messageRatings).length === 0 ? (
+                            {Object.keys(messageRatings || {}).length === 0 ? (
                                 <div className="text-sm text-gray-500">No ratings yet in this session.</div>
                             ) : (
                                 <div className="space-y-3">
