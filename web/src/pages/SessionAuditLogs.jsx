@@ -850,7 +850,7 @@ const SessionAuditLogs = () => {
         {/* Visitors Tab Content */}
         {activeTab === 'visitors' && (
           <>
-        {/* Visitor Statistics Cards + Quick Range */
+        {/* Visitor Statistics Cards + Quick Range */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <div className="flex items-center">
