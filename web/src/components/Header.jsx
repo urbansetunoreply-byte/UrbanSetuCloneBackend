@@ -277,7 +277,6 @@ export default function Header() {
                   title="Sign Out"
                 >
                   <LogOut className="text-xs" />
-                  <span>Sign Out</span>
                 </button>
               )}
             </div>
