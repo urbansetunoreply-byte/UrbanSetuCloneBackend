@@ -609,7 +609,7 @@ export const sendTransferRightsOTPEmail = async (email, otp) => {
 
 // Send new login notification email
 export const sendNewLoginEmail = async (email, device, ip, location, loginTime) => {
-  const clientBaseUrl = process.env.CLIENT_BASE_URL || process.env.FRONTEND_URL || 'https://urbansetu.vercel.app';
+  const clientBaseUrl = process.env.CLIENT_BASE_URL || process.env.FRONTEND_URL || 'https://urbansetu.vercel.app/forgot-password';
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
@@ -665,7 +665,7 @@ export const sendNewLoginEmail = async (email, device, ip, location, loginTime) 
 
 // Send suspicious login alert email
 export const sendSuspiciousLoginEmail = async (email, currentDevice, currentIp, currentLocation, previousDevice, previousIp, previousLocation) => {
-  const clientBaseUrl = process.env.CLIENT_BASE_URL || process.env.FRONTEND_URL || 'https://urbansetu.vercel.app';
+  const clientBaseUrl = process.env.CLIENT_BASE_URL || process.env.FRONTEND_URL || 'https://urbansetu.vercel.app/forgot-password';
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
