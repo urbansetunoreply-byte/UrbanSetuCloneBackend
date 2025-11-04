@@ -239,7 +239,11 @@ export const getAllVisitors = async (req, res, next) => {
       dateRange = 'today',
       device = 'all',
       location = 'all',
-      search = ''
+      search = '',
+      // New optional consent filters: 'any' | 'true' | 'false'
+      analytics = 'any',
+      marketing = 'any',
+      functional = 'any'
     } = req.query;
     
     // Build filter
@@ -251,6 +255,12 @@ export const getAllVisitors = async (req, res, next) => {
       case 'today':
         filter.visitDate = today;
         break;
+      case 'yesterday': {
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        filter.visitDate = yesterday;
+        break;
+      }
       case '7days':
         const sevenDaysAgo = new Date(today);
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -286,6 +296,13 @@ export const getAllVisitors = async (req, res, next) => {
         { device: { $regex: search, $options: 'i' } }
       ];
     }
+
+    // Consent filters
+    const consent = {};
+    if (analytics !== 'any') consent['cookiePreferences.analytics'] = analytics === 'true';
+    if (marketing !== 'any') consent['cookiePreferences.marketing'] = marketing === 'true';
+    if (functional !== 'any') consent['cookiePreferences.functional'] = functional === 'true';
+    Object.assign(filter, consent);
     
     // Get total count
     const total = await VisitorLog.countDocuments(filter);

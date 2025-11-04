@@ -32,6 +32,16 @@ const UserCookiePolicy = () => {
 
         {/* Content */}
         <div className="bg-white rounded-xl shadow-lg p-8 space-y-8">
+          {/* Manage Cookies CTA */}
+          <div className="flex items-center justify-between p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="text-sm text-amber-800">You can change your cookie preferences anytime.</div>
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('openCookieSettings'))}
+              className="px-4 py-2 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg"
+            >
+              Manage Cookies
+            </button>
+          </div>
           {/* Introduction */}
           <section>
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">What are Cookies?</h2>

@@ -31,6 +31,30 @@ const CookieConsent = () => {
     }
   }, []);
 
+  // Independent visitor tracking: count visitor once per day even without consent
+  useEffect(() => {
+    const trackIfNeeded = async () => {
+      try {
+        const todayKey = `visitor_tracked_${new Date().toISOString().slice(0,10)}`;
+        if (localStorage.getItem(todayKey) === '1') return;
+        // Fire-and-forget minimal tracking with necessary-only defaults
+        await fetch(`${API_BASE_URL}/api/visitors/track`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            cookiePreferences: { necessary: true, analytics: false, marketing: false, functional: false },
+            referrer: document.referrer || 'Direct',
+            page: window.location.pathname
+          })
+        });
+        localStorage.setItem(todayKey, '1');
+        // Let other components refresh counts
+        window.dispatchEvent(new CustomEvent('visitorTracked'));
+      } catch (_) {}
+    };
+    trackIfNeeded();
+  }, []);
+
   // Prevent background scrolling when modal is open
   useEffect(() => {
     if (showSettings) {
