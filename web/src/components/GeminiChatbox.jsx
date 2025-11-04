@@ -119,6 +119,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
     const [bookmarkedMessages, setBookmarkedMessages] = useState([]);
     const [messageRatings, setMessageRatings] = useState(() => JSON.parse(localStorage.getItem('gemini_ratings') || '{}'));
+    const [showDislikeModal, setShowDislikeModal] = useState(false);
+    const [dislikeFeedbackOption, setDislikeFeedbackOption] = useState('');
+    const [dislikeMessageIndex, setDislikeMessageIndex] = useState(null);
+    const [showRatingsModal, setShowRatingsModal] = useState(false);
+    const [ratingMeta, setRatingMeta] = useState({}); // { ratingKey: { feedback, user, time } }
     const [showSettings, setShowSettings] = useState(false);
     const [showBookmarks, setShowBookmarks] = useState(false);
     const [showHistory, setShowHistory] = useState(false);
@@ -483,7 +488,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         setMessageRatings({});
         localStorage.setItem('gemini_ratings', JSON.stringify({}));
     };
-
     // Refresh messages function - reloads current session without losing state
     const refreshMessages = async () => {
         try {
@@ -972,7 +976,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             fetchRateLimitStatus();
         }
     }, [currentUser]);
-
     // Data retention cleanup effect
     useEffect(() => {
         // Only run cleanup if dataRetention is a valid value
@@ -1317,7 +1320,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             sessionId: getOrCreateSessionId(),
             tone: currentUser ? tone : 'neutral'
         });
-
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const currentSessionId = getOrCreateSessionId();
@@ -1776,7 +1778,22 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
     };
 
-    const rateMessage = async (messageIndex, rating) => {
+    const saveRatingMeta = (ratingKey, meta) => {
+        const currentSessionId = getOrCreateSessionId();
+        const key = `gemini_rating_meta_${currentSessionId}`;
+        const prev = JSON.parse(localStorage.getItem(key) || '{}');
+        const next = { ...prev, [ratingKey]: meta };
+        localStorage.setItem(key, JSON.stringify(next));
+        setRatingMeta(next);
+    };
+
+    const loadRatingMeta = () => {
+        const currentSessionId = getOrCreateSessionId();
+        const key = `gemini_rating_meta_${currentSessionId}`;
+        const obj = JSON.parse(localStorage.getItem(key) || '{}');
+        setRatingMeta(obj);
+    };
+    const rateMessage = async (messageIndex, rating, feedback = null) => {
         if (!currentUser) {
             toast.error('Please log in to rate messages');
             return;
@@ -1800,6 +1817,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     messageIndex,
                     messageTimestamp: message.timestamp,
                     rating,
+                    feedback,
                     messageContent: message.content,
                     messageRole: message.role
                 })
@@ -1810,6 +1828,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 const newRatings = { ...messageRatings, [ratingKey]: rating };
                 setMessageRatings(newRatings);
                 localStorage.setItem('gemini_ratings', JSON.stringify(newRatings));
+                // store meta locally for admin view
+                saveRatingMeta(ratingKey, {
+                    feedback: feedback || '',
+                    user: currentUser?.username || currentUser?.email || 'Unknown',
+                    time: new Date().toISOString(),
+                    messagePreview: (message.content || '').slice(0, 140)
+                });
                 toast.success(rating === 'up' ? 'Thanks for the feedback!' : 'Feedback recorded');
             } else {
                 toast.error('Failed to save rating');
@@ -1818,6 +1843,22 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             console.error('Error rating message:', error);
             toast.error('Failed to save rating');
         }
+    };
+
+    // Open dislike modal flow
+    const openDislikeModal = (index) => {
+        setDislikeMessageIndex(index);
+        setDislikeFeedbackOption('');
+        setShowDislikeModal(true);
+    };
+    const submitDislike = async () => {
+        if (!dislikeFeedbackOption) {
+            toast.error('Please select a reason');
+            return;
+        }
+        const idx = dislikeMessageIndex;
+        setShowDislikeModal(false);
+        await rateMessage(idx, 'down', dislikeFeedbackOption);
     };
 
     const shareMessage = async (message) => {
@@ -2245,7 +2286,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             toast.error('Failed to create new session');
         }
     };
-
     const deleteSession = async (sessionId) => {
         if (!currentUser) {
             toast.error('Please log in to delete sessions');
@@ -2736,7 +2776,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         // Clear the input so the same file can be selected again
         event.target.value = '';
     };
-
     // Upload files to Cloudinary and send to chat
     const uploadFilesAndSend = async (files) => {
         try {
@@ -3238,7 +3277,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         // Don't permanently disable smart suggestions - they should be controlled by message count
         inputRef.current?.focus();
     };
-
     const searchInMessages = (query) => {
         if (!query.trim()) {
             setFilteredMessages([]);
@@ -3724,7 +3762,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             default: return 'py-4 px-3';
         }
     };
-
     return (
         <>
             {/* Enhanced Floating AI Chat Button */}
@@ -3930,6 +3967,19 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 {isHeaderMenuOpen && (
                                     <div ref={headerMenuRef} className={`absolute right-0 top-full mt-3 ${isDarkMode ? 'bg-gray-800/95 text-gray-200 border-gray-600' : 'bg-white/95 text-gray-800 border-gray-200'} rounded-xl shadow-2xl border backdrop-blur-sm w-64 z-50 animate-slideDown`}>
                                         <ul className="py-2 text-sm">
+                                            {(currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) && (
+                                                <li>
+                                                    <button
+                                                        onClick={() => { loadRatingMeta(); setShowRatingsModal(true); setIsHeaderMenuOpen(false); }}
+                                                        className={`w-full text-left px-4 py-3 ${isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-100/80'} flex items-center gap-3 transition-all duration-200 hover:scale-[1.02] group`}
+                                                    >
+                                                        <div className={`p-1.5 rounded-lg ${isDarkMode ? 'bg-amber-500/20' : 'bg-amber-100'} group-hover:scale-110 transition-transform duration-200`}>
+                                                            <FaStar size={14} className="text-amber-500" />
+                                                        </div>
+                                                        <span className="font-medium">Ratings & Feedback</span>
+                                                    </button>
+                                                </li>
+                                            )}
                                             {/* New Chat */}
                                             <li>
                                                 <button
@@ -4540,7 +4590,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                         {renderTextWithMarkdownAndLinks(message.content, message.role === 'user')}
                                                     </div>
                                                 )}
-                                                
                                                 {/* Message footer with timestamp and actions */}
                                                 <div className={`flex items-center justify-between mt-2 pt-2 border-t ${isDarkMode ? 'border-gray-200/20' : 'border-gray-300/60'}`}>
                                                     {message.timestamp && showTimestamps && (
@@ -4624,7 +4673,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                     <FaThumbsUp size={10} />
                                                                 </button>
                                                                 <button
-                                                                    onClick={() => rateMessage(index, 'down')}
+                                                                    onClick={() => openDislikeModal(index)}
                                                                     className={`p-1 rounded transition-all duration-200 ${
                                                                         messageRatings[`${index}_${message.timestamp}`] === 'down' 
                                                                             ? 'text-red-600 hover:text-red-700' 
@@ -5038,7 +5087,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 </div>
                             </div>
                         )}
-
                         {/* Bookmarks Modal */}
                         {showBookmarks && (
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
@@ -5498,7 +5546,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 </div>
             </div>
         )}
-
         {/* Sign-in Overlay for Public Users when Prompts Reach Zero */}
         {!currentUser && rateLimitInfo.remaining <= 0 && showSignInOverlay && (
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
@@ -5993,7 +6040,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             </div>
                         </div>
                         )}
-
                         {/* Accessibility Settings - Only for logged-in users */}
                         {currentUser && (
                             <div>
@@ -6499,6 +6545,76 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 </div>
             )}
 
+            {/* Dislike feedback modal */}
+            {showDislikeModal && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/50" onClick={() => setShowDislikeModal(false)} />
+                    <div className={`relative w-full max-w-md rounded-xl shadow-2xl ${isDarkMode ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900'} border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                        <div className={`p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                            <h3 className="text-lg font-semibold">Tell us what went wrong</h3>
+                        </div>
+                        <div className="p-4 space-y-3">
+                            <p className="text-sm">Select a reason (required):</p>
+                            <select value={dislikeFeedbackOption} onChange={(e) => setDislikeFeedbackOption(e.target.value)} className={`w-full p-2 rounded border ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'}`}>
+                                <option value="">Select a reason</option>
+                                <option value="Inaccurate information">Inaccurate information</option>
+                                <option value="Not relevant">Not relevant</option>
+                                <option value="Incomplete answer">Incomplete answer</option>
+                                <option value="Harmful/unsafe">Harmful/unsafe</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div className={`p-4 flex justify-end gap-2 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                            <button onClick={() => setShowDislikeModal(false)} className="px-3 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300">Cancel</button>
+                            <button onClick={submitDislike} className="px-3 py-2 rounded bg-red-600 text-white hover:bg-red-700">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Ratings & Feedback modal (admin) */}
+            {showRatingsModal && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/50" onClick={() => setShowRatingsModal(false)} />
+                    <div className={`relative w-full max-w-2xl rounded-xl shadow-2xl ${isDarkMode ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900'} border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                        <div className={`p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} flex items-center justify-between`}>
+                            <h3 className="text-lg font-semibold">Ratings & Feedback</h3>
+                            <button onClick={() => setShowRatingsModal(false)} className="opacity-70 hover:opacity-100"><FaTimes size={16} /></button>
+                        </div>
+                        <div className="p-4 max-h-[60vh] overflow-y-auto">
+                            {Object.keys(messageRatings).length === 0 ? (
+                                <div className="text-sm text-gray-500">No ratings yet in this session.</div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {messages.map((msg, idx) => {
+                                        const key = `${idx}_${msg.timestamp}`;
+                                        const r = messageRatings[key];
+                                        if (!r) return null;
+                                        const meta = ratingMeta[key] || {};
+                                        return (
+                                            <div key={key} className={`p-3 rounded border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                                                <div className="flex items-center justify-between">
+                                                    <div className="text-sm font-semibold">{r === 'up' ? 'Liked' : 'Disliked'}</div>
+                                                    <div className="text-xs text-gray-500">{meta.time ? new Date(meta.time).toLocaleString() : ''}</div>
+                                                </div>
+                                                <div className="text-xs text-gray-500 mt-1">By: {meta.user || 'Unknown'}</div>
+                                                <div className="mt-2 text-sm">{meta.messagePreview || (msg.content || '').slice(0, 140)}</div>
+                                                {r === 'down' && meta.feedback && (
+                                                    <div className="mt-2 text-xs"><span className="font-semibold">Reason:</span> {meta.feedback}</div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                        <div className={`p-4 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} text-right`}>
+                            <button onClick={() => setShowRatingsModal(false)} className="px-3 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Animation styles */}
             <style>
                 {`
@@ -6995,7 +7111,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             background: #1f2937 !important; /* bg-gray-800 */
             color: #f3f4f6 !important; /* text-gray-100 */
         }
-        
         /* Ensure inline code elements have proper contrast in all scenarios */
         code.bg-gray-100 {
             background: #f3f4f6 !important; /* bg-gray-100 */
@@ -7175,4 +7290,3 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 };
 
 export default GeminiChatbox;
-
