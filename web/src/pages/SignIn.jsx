@@ -719,6 +719,18 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                             </button>
                                         )}
                                     </div>
+
+                                {/* Forgot Password Link under email (only before password step) */}
+                                {!emailStep && (
+                                    <div className="text-right mt-2">
+                                        <Link 
+                                            to={`/forgot-password?email=${encodeURIComponent(formData.email || '')}`}
+                                            className={`text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 ${(authInProgress === 'google' || loading) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                                        >
+                                            Forgot Password?
+                                        </Link>
+                                    </div>
+                                )}
                                 </div>
                                 
                                 {emailStep && (
