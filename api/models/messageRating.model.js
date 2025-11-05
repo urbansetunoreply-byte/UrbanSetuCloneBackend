@@ -37,6 +37,11 @@ const messageRatingSchema = new mongoose.Schema({
     type: String,
     enum: ["user", "assistant"],
     required: true
+  },
+  // Optional feedback text (reason/details) when rating is 'down'
+  feedback: {
+    type: String,
+    default: ''
   }
 }, { 
   timestamps: true,

@@ -575,7 +575,7 @@ export const getUserChatSessions = async (req, res) => {
 export const rateMessage = async (req, res) => {
     try {
         const userId = req.user?.id;
-        const { sessionId, messageIndex, messageTimestamp, rating, messageContent, messageRole } = req.body;
+        const { sessionId, messageIndex, messageTimestamp, rating, messageContent, messageRole, feedback } = req.body;
         
         if (!userId) {
             return res.status(401).json({
@@ -613,7 +613,8 @@ export const rateMessage = async (req, res) => {
                 messageTimestamp: new Date(messageTimestamp),
                 rating,
                 messageContent,
-                messageRole
+                messageRole,
+                feedback: typeof feedback === 'string' ? feedback.slice(0, 500) : ''
             },
             { upsert: true, new: true }
         );
@@ -667,6 +668,52 @@ export const getMessageRatings = async (req, res) => {
             success: false,
             message: 'Failed to retrieve ratings'
         });
+    }
+};
+
+// Admin: Get all ratings across users (optionally filterable)
+export const getAllMessageRatings = async (req, res) => {
+    try {
+        // Only admins/rootadmins allowed
+        const role = req.user?.role;
+        if (role !== 'admin' && role !== 'rootadmin') {
+            return res.status(403).json({ success: false, message: 'Forbidden' });
+        }
+
+        const { limit = 200, days = 30 } = req.query;
+        const since = new Date();
+        since.setDate(since.getDate() - Math.max(0, parseInt(days)));
+
+        const ratings = await MessageRating.find({
+            type: 'rating',
+            createdAt: { $gte: since }
+        })
+            .sort({ createdAt: -1 })
+            .limit(Math.min(1000, Math.max(1, parseInt(limit))))
+            .populate('userId', 'username email role');
+
+        const results = ratings.map(r => ({
+            id: r._id,
+            user: {
+                id: r.userId?._id,
+                username: r.userId?.username || null,
+                email: r.userId?.email || null,
+                role: r.userId?.role || null
+            },
+            sessionId: r.sessionId,
+            messageIndex: r.messageIndex,
+            messageTimestamp: r.messageTimestamp,
+            rating: r.rating,
+            feedback: r.feedback || '',
+            messageContent: r.messageContent,
+            messageRole: r.messageRole,
+            createdAt: r.createdAt
+        }));
+
+        res.status(200).json({ success: true, ratings: results });
+    } catch (error) {
+        console.error('Error getting all message ratings:', error);
+        res.status(500).json({ success: false, message: 'Failed to retrieve ratings' });
     }
 };
 

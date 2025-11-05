@@ -123,8 +123,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [dislikeFeedbackOption, setDislikeFeedbackOption] = useState('');
     const [dislikeFeedbackText, setDislikeFeedbackText] = useState('');
     const [dislikeMessageIndex, setDislikeMessageIndex] = useState(null);
+    const [dislikeSubmitting, setDislikeSubmitting] = useState(false);
     const [showRatingsModal, setShowRatingsModal] = useState(false);
     const [ratingMeta, setRatingMeta] = useState({}); // { ratingKey: { feedback, user, time } }
+    const [allRatings, setAllRatings] = useState([]);
+    const [allRatingsLoading, setAllRatingsLoading] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
     const [showBookmarks, setShowBookmarks] = useState(false);
     const [showHistory, setShowHistory] = useState(false);
@@ -1869,9 +1872,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             return;
         }
         const idx = dislikeMessageIndex;
-        setShowDislikeModal(false);
+        setDislikeSubmitting(true);
         const feedback = dislikeFeedbackOption === 'Other' ? `Other: ${dislikeFeedbackText.trim()}` : dislikeFeedbackOption;
         await rateMessage(idx, 'down', feedback);
+        setDislikeSubmitting(false);
+        setShowDislikeModal(false);
     };
 
     const shareMessage = async (message) => {
@@ -3983,7 +3988,28 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             {(currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) && (
                                                 <li>
                                                     <button
-                                                        onClick={() => { loadRatingMeta(); setShowRatingsModal(true); setIsHeaderMenuOpen(false); }}
+                                                        onClick={async () => { 
+                                                            loadRatingMeta(); 
+                                                            if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
+                                                                try {
+                                                                    setAllRatingsLoading(true);
+                                                                    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+                                                                    const resp = await fetch(`${API_BASE_URL}/api/gemini/ratings-all?limit=500&days=90`, { credentials: 'include' });
+                                                                    if (resp.ok) {
+                                                                        const data = await resp.json();
+                                                                        setAllRatings(Array.isArray(data.ratings) ? data.ratings : []);
+                                                                    } else {
+                                                                        setAllRatings([]);
+                                                                    }
+                                                                } catch (_) {
+                                                                    setAllRatings([]);
+                                                                } finally {
+                                                                    setAllRatingsLoading(false);
+                                                                }
+                                                            }
+                                                            setShowRatingsModal(true); 
+                                                            setIsHeaderMenuOpen(false); 
+                                                        }}
                                                         className={`w-full text-left px-4 py-3 ${isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-100/80'} flex items-center gap-3 transition-all duration-200 hover:scale-[1.02] group`}
                                                     >
                                                         <div className={`p-1.5 rounded-lg ${isDarkMode ? 'bg-amber-500/20' : 'bg-amber-100'} group-hover:scale-110 transition-transform duration-200`}>
@@ -6561,7 +6587,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             {/* Dislike feedback modal */}
             {showDislikeModal && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/50" onClick={() => setShowDislikeModal(false)} />
+                    <div className="absolute inset-0 bg-black/50" onClick={() => { if (!dislikeSubmitting) setShowDislikeModal(false); }} />
                     <div className={`relative w-full max-w-md rounded-xl shadow-2xl ${isDarkMode ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900'} border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                         <div className={`p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                             <h3 className="text-lg font-semibold">Tell us what went wrong</h3>
@@ -6587,8 +6613,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             )}
                         </div>
                         <div className={`p-4 flex justify-end gap-2 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                            <button onClick={() => setShowDislikeModal(false)} className="px-3 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300">Cancel</button>
-                            <button onClick={submitDislike} className="px-3 py-2 rounded bg-red-600 text-white hover:bg-red-700">Submit</button>
+                            <button disabled={dislikeSubmitting} onClick={() => setShowDislikeModal(false)} className={`px-3 py-2 rounded ${isDarkMode ? 'bg-gray-600 text-white hover:bg-gray-500' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'} disabled:opacity-50`}>
+                                Cancel
+                            </button>
+                            <button disabled={dislikeSubmitting} onClick={submitDislike} className={`px-3 py-2 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50`}>
+                                {dislikeSubmitting ? 'Submitting...' : 'Submit'}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -6607,30 +6637,56 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             </div>
                         </div>
                         <div className="p-4 max-h-[60vh] overflow-y-auto">
-                            {Object.keys(messageRatings || {}).length === 0 ? (
-                                <div className="text-sm text-gray-500">No ratings yet in this session.</div>
-                            ) : (
-                                <div className="space-y-3">
-                                    {messages.map((msg, idx) => {
-                                        const key = `${idx}_${msg.timestamp}`;
-                                        const r = messageRatings[key];
-                                        if (!r) return null;
-                                        const meta = ratingMeta[key] || {};
-                                        return (
-                                            <div key={key} className={`p-3 rounded border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                                                <div className="flex items-center justify-between">
-                                                    <div className="text-sm font-semibold">{r === 'up' ? 'Liked' : 'Disliked'}</div>
-                                                    <div className="text-xs text-gray-500">{meta.time ? new Date(meta.time).toLocaleString() : ''}</div>
+                            {(currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) ? (
+                                allRatingsLoading ? (
+                                    <div className="text-sm text-gray-500">Loading ratings...</div>
+                                ) : (
+                                    allRatings.length === 0 ? (
+                                        <div className="text-sm text-gray-500">No ratings found.</div>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {allRatings.map((r) => (
+                                                <div key={r.id} className={`p-3 rounded border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                                                    <div className="flex items-center justify-between">
+                                                        <div className={`text-sm font-semibold ${r.rating === 'up' ? 'text-green-600' : 'text-red-600'}`}>{r.rating === 'up' ? 'Liked' : 'Disliked'}</div>
+                                                        <div className="text-xs text-gray-500">{r.createdAt ? new Date(r.createdAt).toLocaleString() : ''}</div>
+                                                    </div>
+                                                    <div className="text-xs text-gray-500 mt-1">By: {r.user?.username || r.user?.email || 'Unknown'} ({r.user?.role || 'user'})</div>
+                                                    <div className="mt-2 text-sm">{(r.messageContent || '').slice(0, 140)}</div>
+                                                    {r.rating === 'down' && r.feedback && (
+                                                        <div className="mt-2 text-xs"><span className="font-semibold">Reason:</span> {r.feedback}</div>
+                                                    )}
                                                 </div>
-                                                <div className="text-xs text-gray-500 mt-1">By: {meta.user || 'Unknown'}</div>
-                                                <div className="mt-2 text-sm">{meta.messagePreview || (msg.content || '').slice(0, 140)}</div>
-                                                {r === 'down' && meta.feedback && (
-                                                    <div className="mt-2 text-xs"><span className="font-semibold">Reason:</span> {meta.feedback}</div>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
+                                            ))}
+                                        </div>
+                                    )
+                                )
+                            ) : (
+                                Object.keys(messageRatings || {}).length === 0 ? (
+                                    <div className="text-sm text-gray-500">No ratings yet in this session.</div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {messages.map((msg, idx) => {
+                                            const key = `${idx}_${msg.timestamp}`;
+                                            const r = messageRatings[key];
+                                            if (!r) return null;
+                                            const meta = ratingMeta[key] || {};
+                                            return (
+                                                <div key={key} className={`p-3 rounded border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="text-sm font-semibold">{r === 'up' ? 'Liked' : 'Disliked'}</div>
+                                                        <div className="text-xs text-gray-500">{meta.time ? new Date(meta.time).toLocaleString() : ''}</div>
+                                                    </div>
+                                                    <div className="text-xs text-gray-500 mt-1">By: {meta.user || 'Unknown'}</div>
+                                                    <div className="mt-2 text-sm">{meta.messagePreview || (msg.content || '').slice(0, 140)}</div>
+                                                    {r === 'down' && meta.feedback && (
+                                                        <div className="mt-2 text-xs"><span className="font-semibold">Reason:</span> {meta.feedback}</div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )
                             )}
                         </div>
                         <div className={`p-4 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} text-right`}>
@@ -7308,6 +7364,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 scrollbar-width: thin;
             }
         }
+                /* Ensure markdown tables are readable, especially in dark mode */
+                .gemini-chatbox-modal table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; margin-bottom: 0.5rem; }
+                .gemini-chatbox-modal th, .gemini-chatbox-modal td { border: 1px solid rgba(107,114,128,0.3); padding: 6px 8px; text-align: left; }
+                .gemini-chatbox-modal th { font-weight: 600; }
+                .dark .gemini-chatbox-modal th { color: #e5e7eb; background-color: rgba(31,41,55,0.5); }
+                .dark .gemini-chatbox-modal td { color: #e5e7eb; }
+                .gemini-chatbox-modal thead tr { background-color: rgba(0,0,0,0.03); }
+                .dark .gemini-chatbox-modal thead tr { background-color: rgba(31,41,55,0.5); }
                 `}
             </style>
         </>

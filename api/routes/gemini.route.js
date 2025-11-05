@@ -1,5 +1,5 @@
 import express from 'express';
-import { chatWithGemini, getUserChatSessions, rateMessage, getMessageRatings, createNewSession, deleteSession, deleteAllSessions, bookmarkMessage, removeBookmark, getBookmarkedMessages } from '../controllers/gemini.controller.js';
+import { chatWithGemini, getUserChatSessions, rateMessage, getMessageRatings, createNewSession, deleteSession, deleteAllSessions, bookmarkMessage, removeBookmark, getBookmarkedMessages, getAllMessageRatings } from '../controllers/gemini.controller.js';
 import { optionalAuth, verifyToken } from '../utils/verify.js';
 import { aiChatRateLimit, getRateLimitStatus } from '../middleware/aiRateLimiter.js';
 import { cleanupOldChatData, getDataRetentionStats, cleanupUserData } from '../services/dataRetentionService.js';
@@ -26,6 +26,9 @@ router.post('/rate', verifyToken, rateMessage);
 
 // Get message ratings for a session (requires authentication)
 router.get('/ratings/:sessionId', verifyToken, getMessageRatings);
+
+// Admin: Get all message ratings across users
+router.get('/ratings-all', verifyToken, getAllMessageRatings);
 
 // Bookmark a message (requires authentication)
 router.post('/bookmark', verifyToken, bookmarkMessage);
