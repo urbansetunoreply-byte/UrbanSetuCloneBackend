@@ -11,6 +11,7 @@ import GeminiAIWrapper from '../components/GeminiAIWrapper';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { FaHome, FaSearch, FaHeart, FaStar, FaMapMarkerAlt, FaPhone, FaEnvelope, FaShieldAlt, FaAward, FaUsers, FaChartLine, FaLightbulb, FaRocket, FaGem, FaQuoteLeft, FaQuoteRight, FaCheckCircle, FaClock, FaHandshake, FaGlobe, FaMobile, FaDesktop, FaTablet, FaInfoCircle } from "react-icons/fa";
 import AdsterraBanner from "../components/AdsterraBanner";
+import AdHighperformanceBanner from "../components/AdHighperformanceBanner";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -738,6 +739,12 @@ export default function PublicHome() {
       <div className="max-w-6xl mx-auto px-4 py-6">
         <AdsterraBanner />
       </div>
+
+      {/* ✅ Ad for non-logged-in users */}
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        <AdHighperformanceBanner />
+      </div>
+
 
       <ContactSupportWrapper />
       <GeminiAIWrapper />
