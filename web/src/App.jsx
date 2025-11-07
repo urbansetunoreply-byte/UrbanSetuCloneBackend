@@ -684,6 +684,7 @@ function AppRoutes({ bootstrapped }) {
           <Route path="/ai" element={currentUser ? <Navigate to="/user/ai" /> : <PublicAI />} />
           <Route path="/restore-account/:token" element={<AccountRevocation />} />
           <Route path="/restore-property" element={<RestoreProperty />} />
+          <Route path="/offers" element={<Offers />} />
 
           {/* User Routes (Protected) */}
           <Route element={<Private bootstrapped={bootstrapped} />}>
