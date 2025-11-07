@@ -20,6 +20,7 @@ import AccountRevocation from './pages/AccountRevocation';
 import RestoreProperty from './pages/RestoreProperty';
 import NotFound from './pages/NotFound';
 import Terms from "./pages/Terms";
+import Offers from "./pages/Offers";
 
 // Blog redirect component for logged-in users
 const BlogRedirect = () => {
