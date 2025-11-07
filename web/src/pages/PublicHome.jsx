@@ -735,19 +735,20 @@ export default function PublicHome() {
           </div>
         </div>
       </div>
-      {/* Public visitor ad */}
+      {/* 🔔 Ads Section */}
       <div className="max-w-6xl mx-auto px-4 py-6">
+        <p className="text-center text-xs text-gray-500 mb-2">🔔 Ads by Adsterra</p>
         <AdsterraBanner />
       </div>
 
-      {/* ✅ Ad for non-logged-in users */}
       <div className="max-w-6xl mx-auto px-4 py-6">
+        <p className="text-center text-xs text-gray-500 mb-2">🔔 Sponsored — Powered by Adsterra</p>
         <AdHighperformanceBanner />
       </div>
 
-
       <ContactSupportWrapper />
       <GeminiAIWrapper />
+      
     </div>
   );
 } 
