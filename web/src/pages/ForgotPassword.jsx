@@ -10,6 +10,8 @@ import { calculatePasswordStrength, getPasswordStrengthColor, getPasswordStrengt
 import { authenticatedFetch, getCSRFToken } from '../utils/csrf';
 import { HelpCircle, RotateCcw } from "lucide-react";
 import { usePageTitle } from '../hooks/usePageTitle';
+import PrimaryButton from "../components/ui/PrimaryButton";
+import AuthFormLayout from "../components/ui/AuthFormLayout";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function ForgotPassword({ bootstrapped, sessionChecked }) {
@@ -484,7 +486,10 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
 
   if (step === 1) {
     return (
-      <div className="min-h-screen flex">
+      <AuthFormLayout
+        leftSlot={(
+          <>
+      
         
         {/* Left Side - Image and Quote */}
         <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-orange-600 to-red-700 relative overflow-hidden">
@@ -526,6 +531,9 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
             </svg>
           </div>
         </div>
+          </>
+        )}
+      >
 
         {/* Right Side - Verification Form */}
         <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8 bg-gray-50">
@@ -741,19 +749,14 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                   </div>
                 )}
                 
-                <button
+                <PrimaryButton
+                  variant="orange"
+                  loading={loading}
+                  loadingText="Verifying..."
                   disabled={loading || !emailVerified || !recaptchaToken}
-                  className="w-full py-3 px-4 bg-gradient-to-r from-orange-600 to-red-600 text-white font-semibold rounded-lg hover:from-orange-700 hover:to-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
                 >
-                  {loading ? (
-                    <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      Verifying...
-                    </div>
-                  ) : (
-                    "Continue to Reset Password"
-                  )}
-                </button>
+                  Continue to Reset Password
+                </PrimaryButton>
 
                 {error && (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -779,12 +782,15 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
           </div>
         </div>
         <ContactSupportWrapper />
-      </div>
-    );
-  }
+    </AuthFormLayout>
+  );
+}
 
   return (
-    <div className="min-h-screen flex">
+    <AuthFormLayout
+      leftSlot={(
+        <>
+    
       
       {/* Left Side - Image and Quote */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-600 to-teal-700 relative overflow-hidden">
@@ -826,6 +832,9 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
           </svg>
         </div>
       </div>
+        </>
+      )}
+    >
 
       {/* Right Side - Reset Password Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
@@ -1010,24 +1019,19 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                 </div>
               )}
 
-              <button
+              <PrimaryButton
+                variant="teal"
+                loading={loading}
+                loadingText="Resetting..."
                 disabled={
                   loading ||
                   !meetsMinimumRequirements(formData.newPassword) ||
                   (showRecaptcha && !recaptchaToken) ||
                   isLocked
                 }
-                className="w-full py-3 px-4 bg-gradient-to-r from-green-600 to-teal-600 text-white font-semibold rounded-lg hover:from-green-700 hover:to-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
               >
-                {loading ? (
-                  <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Resetting...
-                  </div>
-                ) : (
-                  "➡️ Reset Password"
-                )}
-              </button>
+                Reset Password
+              </PrimaryButton>
 
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -1058,6 +1062,6 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
           </div>
         </div>
       </div>
-    </div>
+    </AuthFormLayout>
   );
 } 

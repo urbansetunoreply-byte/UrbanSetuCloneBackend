@@ -11,7 +11,10 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { areCookiesEnabled, createAuthenticatedFetchOptions } from '../utils/auth';
 import { focusWithoutKeyboard } from '../utils/mobileUtils';
 import { authenticatedFetch, getCSRFToken } from '../utils/csrf';
-import { LogIn } from "lucide-react";
+import { LogIn, Mail, Lock } from "lucide-react";
+import FormField from "../components/ui/FormField";
+import PrimaryButton from "../components/ui/PrimaryButton";
+import AuthFormLayout from "../components/ui/AuthFormLayout";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -584,7 +587,11 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
     };
 
     return (
-        <div className="min-h-screen flex">
+        <AuthFormLayout
+            leftSlot={(
+                <>
+            
+            {/* Left Side - Image and Quote */}
             
             {/* Left Side - Image and Quote */}
             <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-purple-700 relative overflow-hidden">
@@ -628,6 +635,9 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                     </svg>
                 </div>
             </div>
+                </>
+            )}
+            >
 
             {/* Right Side - Sign In Form */}
             <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
@@ -796,19 +806,14 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                     </div>
                                 )}
                                 
-                                <button 
-                                    disabled={loading || (showRecaptcha && !recaptchaToken) || authInProgress !== null} 
-                                    className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
+                                <PrimaryButton
+                                    variant="blue"
+                                    loading={loading}
+                                    loadingText={emailStep ? "Signing In..." : "Continuing..."}
+                                    disabled={loading || (showRecaptcha && !recaptchaToken) || authInProgress !== null}
                                 >
-                                    {loading ? (
-                                        <div className="flex items-center justify-center">
-                                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                                            Signing In...
-                                        </div>
-                                    ) : (
-                                        emailStep ? "Sign In" : "Continue"
-                                    )}
-                                </button>
+                                    {emailStep ? "Sign In" : "Continue"}
+                                </PrimaryButton>
                             </form>
                         ) : (
                             // OTP Sign In Form
@@ -957,19 +962,14 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                     </div>
                                 )}
                                 
-                                <button 
-                                    disabled={loading || authInProgress === 'google' || (!otpSent && (otpLoading || !canResend)) || (otpRequiresCaptcha && !otpRecaptchaToken) || (otpSent && otpData.otp.length !== 6) || otpVerifyingLoading} 
-                                    className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
+                                <PrimaryButton
+                                    variant="blue"
+                                    loading={loading || (!otpSent && otpLoading) || otpVerifyingLoading}
+                                    loadingText={otpVerifyingLoading ? "Verifying OTP..." : (otpSent ? "Signing In..." : "Sending OTP...")}
+                                    disabled={loading || authInProgress === 'google' || (!otpSent && (otpLoading || !canResend)) || (otpRequiresCaptcha && !otpRecaptchaToken) || (otpSent && otpData.otp.length !== 6) || otpVerifyingLoading}
                                 >
-                                    {loading || (!otpSent && otpLoading) || otpVerifyingLoading ? (
-                                        <div className="flex items-center justify-center">
-                                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                                            {otpVerifyingLoading ? "Verifying OTP..." : (otpSent ? "Signing In..." : "Sending OTP...")}
-                                        </div>
-                                    ) : (
-                                        otpSent ? "Sign In" : "Send OTP"
-                                    )}
-                                </button>
+                                    {otpSent ? "Sign In" : "Send OTP"}
+                                </PrimaryButton>
                             </form>
                         )}
                         
@@ -1004,7 +1004,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                     </div>
                 </div>
             </div>
-        </div>
+        </AuthFormLayout>
     );
 }
 

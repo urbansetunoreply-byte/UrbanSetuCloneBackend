@@ -9,6 +9,9 @@ import { calculatePasswordStrength, getPasswordStrengthColor, getPasswordStrengt
 import { authenticatedFetch, getCSRFToken } from '../utils/csrf';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { UserPlus } from "lucide-react";
+import PrimaryButton from "../components/ui/PrimaryButton";
+import AuthFormLayout from "../components/ui/AuthFormLayout";
+import SelectField from "../components/ui/SelectField";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function SignUp({ bootstrapped, sessionChecked }) {
@@ -351,7 +354,10 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
   }, [bootstrapped, sessionChecked, currentUser, navigate]);
 
   return (
-    <div className="min-h-screen flex">
+    <AuthFormLayout
+      leftSlot={(
+        <>
+    
       
       {/* Left Side - Image and Quote */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-600 to-blue-700 relative overflow-hidden">
@@ -397,6 +403,9 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
           </svg>
         </div>
       </div>
+        </>
+      )}
+    >
 
       {/* Right Side - Sign Up Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8 bg-gray-50">
@@ -635,22 +644,19 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
 
 
 
-              <div>
-                <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
-                  I want to <span className="text-red-500">*</span>
-                </label>
-                <select
-                  id="role"
-                  onChange={handleChange}
-                  disabled={authInProgress === 'google'}
-                  className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                  required
-                >
-                  <option value="">Select your role</option>
-                  <option value="user">Buy/Sell Properties</option>
-                  <option value="admin">Manage Platform (Admin)</option>
-                </select>
-              </div>
+              <SelectField
+                label={<>I want to <span className="text-red-500">*</span></>}
+                id="role"
+                value={formData.role}
+                onChange={handleChange}
+                disabled={authInProgress === 'google'}
+                required
+                options={[
+                  { value: "", label: "Select your role" },
+                  { value: "user", label: "Buy/Sell Properties" },
+                  { value: "admin", label: "Manage Platform (Admin)" },
+                ]}
+              />
 
               {/* Password Field */}
               <div>
@@ -791,7 +797,10 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                 </div>
               )}
 
-              <button
+              <PrimaryButton
+                variant="green"
+                loading={loading}
+                loadingText="Creating Account..."
                 disabled={
                   loading ||
                   !meetsMinimumRequirements(formData.password) ||
@@ -799,17 +808,9 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                   !recaptchaToken ||
                   authInProgress === 'google'
                 }
-                className="w-full py-3 px-4 bg-gradient-to-r from-green-600 to-blue-600 text-white font-semibold rounded-lg hover:from-green-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
               >
-                {loading ? (
-                  <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Creating Account...
-                  </div>
-                ) : (
-                  "Create Account"
-                )}
-              </button>
+                Create Account
+              </PrimaryButton>
 
               {success && (
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
@@ -854,6 +855,6 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
         </div>
       </div>
       <ContactSupportWrapper />
-    </div>
+    </AuthFormLayout>
   );
 }
