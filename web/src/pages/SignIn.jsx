@@ -694,7 +694,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                         </button>
                     </div>
                     
-                    <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+<div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-6 md:p-8 border border-gray-100">
                         {loginMethod === "password" ? (
                             // Password Sign In Form
                             <form onSubmit={emailStep ? handleSubmit : handleEmailContinue} className="space-y-6">

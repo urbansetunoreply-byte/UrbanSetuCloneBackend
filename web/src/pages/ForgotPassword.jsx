@@ -13,6 +13,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import PrimaryButton from "../components/ui/PrimaryButton";
 import AuthFormLayout from "../components/ui/AuthFormLayout";
 import FormField from "../components/ui/FormField";
+import StepIndicator from "../components/ui/StepIndicator";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function ForgotPassword({ bootstrapped, sessionChecked }) {
@@ -539,7 +540,8 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
         {/* Right Side - Verification Form */}
         <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8 bg-gray-50">
           <div className="w-full max-w-md">
-            <div className="text-center mb-8">
+          <div className="text-center mb-6 md:mb-8">
+            <StepIndicator steps={["Verify Email", "Reset Password"]} current={0} className="mb-4" />
               <h2 className="text-3xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
               <HelpCircle className="w-7 h-7 text-red-600" />
               Forgot Password
@@ -547,7 +549,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
               <p className="text-gray-600 text-sm sm:text-base">Enter your registered email to reset your password.</p>
             </div>
             
-            <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-8 border border-gray-100">
+<div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-4 sm:p-8 border border-gray-100">
               <form onSubmit={handleVerification} className="space-y-4 sm:space-y-6">
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -832,7 +834,8 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
       {/* Right Side - Reset Password Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
         <div className="w-full max-w-md">
-          <div className="text-center mb-8">
+          <div className="text-center mb-6 md:mb-8">
+            <StepIndicator steps={["Verify Email", "Reset Password"]} current={1} className="mb-4" />
             <h2 className="text-3xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
               <RotateCcw className="w-7 h-7 text-green-600" />
               Reset Password
@@ -840,7 +843,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
             <p className="text-gray-600">Create a new strong password to secure your account.</p>
           </div>
           
-          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+<div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-6 md:p-8 border border-gray-100">
             <form onSubmit={handleResetPassword} className="space-y-6">
               {/* Email Field - Disabled with Edit Option */}
               <div>

@@ -198,7 +198,7 @@ export default function AdminChangePassword() {
             <p className="text-gray-600">Keep your account secure by updating your password regularly.</p>
           </div>
           
-          <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-gray-100">
+<div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-6 md:p-8 border border-gray-100">
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Current Password Field */}
               <div>

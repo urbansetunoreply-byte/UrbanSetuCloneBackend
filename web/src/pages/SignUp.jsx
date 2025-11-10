@@ -419,7 +419,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
             <p className="text-gray-600 text-sm sm:text-base">Join thousands of users finding their perfect homes</p>
           </div>
           
-          <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-8 border border-gray-100">
+<div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-4 sm:p-8 border border-gray-100">
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               <div>
                 <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
