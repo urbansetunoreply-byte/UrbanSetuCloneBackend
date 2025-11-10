@@ -12,6 +12,9 @@ import ContactSupportWrapper from '../components/ContactSupportWrapper';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 import { Lock } from "lucide-react";
+import FormField from "../components/ui/FormField";
+import PrimaryButton from "../components/ui/PrimaryButton";
+import AuthFormLayout from "../components/ui/AuthFormLayout";
 export default function AdminChangePassword() {
   // Set page title
   usePageTitle("Change Password - Security Settings");
@@ -137,8 +140,9 @@ export default function AdminChangePassword() {
   };
 
   return (
-    <div className="min-h-screen flex">
-      
+    <AuthFormLayout
+      leftSlot={(
+        <>
       {/* Left Side - Image and Quote */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-purple-700 relative overflow-hidden">
         <div className="absolute inset-0 bg-black opacity-20"></div>
@@ -179,6 +183,9 @@ export default function AdminChangePassword() {
           </svg>
         </div>
       </div>
+        </>
+      )}
+    >
 
       {/* Right Side - Change Password Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
@@ -191,7 +198,7 @@ export default function AdminChangePassword() {
             <p className="text-gray-600">Keep your account secure by updating your password regularly.</p>
           </div>
           
-          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+          <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-gray-100">
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Current Password Field */}
               <div>
@@ -199,32 +206,25 @@ export default function AdminChangePassword() {
                   Current Password
                 </label>
                 <p className="text-xs text-gray-500 mb-2">(Enter your existing password)</p>
-                <div className="relative">
-                  <input
-                    type={showPrev ? "text" : "password"}
-                    placeholder="Enter your current password"
-                    id="previousPassword"
-                    name="previousPassword"
-                    value={formData.previousPassword}
-                    onChange={handleChange}
-                    ref={currentPasswordRef}
-                    disabled={loading}
-                    className={`w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
-                      loading ? 'bg-gray-100 cursor-not-allowed' : ''
-                    }`}
-                    required
-                  />
-                  <div
-                    className="absolute inset-y-0 right-3 flex items-center cursor-pointer"
-                    onClick={() => setShowPrev(!showPrev)}
-                  >
-                    {showPrev ? (
-                      <FaEyeSlash className="text-gray-600" />
-                    ) : (
-                      <FaEye className="text-gray-600" />
-                    )}
-                  </div>
-                </div>
+                <FormField
+                  label={undefined}
+                  id="previousPassword"
+                  name="previousPassword"
+                  type={showPrev ? 'text' : 'password'}
+                  value={formData.previousPassword}
+                  onChange={handleChange}
+                  ref={currentPasswordRef}
+                  disabled={loading}
+                  placeholder="Enter your current password"
+                  startIcon={<Lock className="w-5 h-5" />}
+                  endAdornment={
+                    <div className="absolute inset-y-0 right-3 flex items-center cursor-pointer" onClick={() => setShowPrev(!showPrev)}>
+                      {showPrev ? (<FaEyeSlash className="text-gray-600" />) : (<FaEye className="text-gray-600" />)}
+                    </div>
+                  }
+                  inputClassName={`${loading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  required
+                />
               </div>
 
               {/* New Password Field */}
@@ -233,31 +233,24 @@ export default function AdminChangePassword() {
                   New Password
                 </label>
                 <p className="text-xs text-gray-500 mb-2">(Create a strong new password)</p>
-                <div className="relative">
-                  <input
-                    type={showNew ? "text" : "password"}
-                    placeholder="Create a strong password"
-                    id="newPassword"
-                    name="newPassword"
-                    value={formData.newPassword}
-                    onChange={handleChange}
-                    disabled={loading}
-                    className={`w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
-                      loading ? 'bg-gray-100 cursor-not-allowed' : ''
-                    }`}
-                    required
-                  />
-                  <div
-                    className="absolute inset-y-0 right-3 flex items-center cursor-pointer"
-                    onClick={() => setShowNew(!showNew)}
-                  >
-                    {showNew ? (
-                      <FaEyeSlash className="text-gray-600" />
-                    ) : (
-                      <FaEye className="text-gray-600" />
-                    )}
-                  </div>
-                </div>
+                <FormField
+                  label={undefined}
+                  id="newPassword"
+                  name="newPassword"
+                  type={showNew ? 'text' : 'password'}
+                  value={formData.newPassword}
+                  onChange={handleChange}
+                  disabled={loading}
+                  placeholder="Create a strong password"
+                  startIcon={<Lock className="w-5 h-5" />}
+                  endAdornment={
+                    <div className="absolute inset-y-0 right-3 flex items-center cursor-pointer" onClick={() => setShowNew(!showNew)}>
+                      {showNew ? (<FaEyeSlash className="text-gray-600" />) : (<FaEye className="text-gray-600" />)}
+                    </div>
+                  }
+                  inputClassName={`${loading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  required
+                />
               </div>
 
               {/* Enhanced Password Strength */}
@@ -312,50 +305,39 @@ export default function AdminChangePassword() {
                   Confirm New Password
                 </label>
                 <p className="text-xs text-gray-500 mb-2">(Re-enter your new password)</p>
-                <div className="relative">
-                  <input
-                    type={showConfirm ? "text" : "password"}
-                    placeholder="Confirm your new password"
-                    id="confirmNewPassword"
-                    name="confirmNewPassword"
-                    value={formData.confirmNewPassword}
-                    onChange={handleChange}
-                    disabled={loading}
-                    className={`w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
-                      loading ? 'bg-gray-100 cursor-not-allowed' : ''
-                    }`}
-                    required
-                  />
-                  <div
-                    className="absolute inset-y-0 right-3 flex items-center cursor-pointer"
-                    onClick={() => setShowConfirm(!showConfirm)}
-                  >
-                    {showConfirm ? (
-                      <FaEyeSlash className="text-gray-600" />
-                    ) : (
-                      <FaEye className="text-gray-600" />
-                    )}
-                  </div>
-                </div>
+                <FormField
+                  label={undefined}
+                  id="confirmNewPassword"
+                  name="confirmNewPassword"
+                  type={showConfirm ? 'text' : 'password'}
+                  value={formData.confirmNewPassword}
+                  onChange={handleChange}
+                  disabled={loading}
+                  placeholder="Confirm your new password"
+                  startIcon={<Lock className="w-5 h-5" />}
+                  endAdornment={
+                    <div className="absolute inset-y-0 right-3 flex items-center cursor-pointer" onClick={() => setShowConfirm(!showConfirm)}>
+                      {showConfirm ? (<FaEyeSlash className="text-gray-600" />) : (<FaEye className="text-gray-600" />)}
+                    </div>
+                  }
+                  inputClassName={`${loading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  required
+                />
               </div>
 
-              <button
+              <PrimaryButton
+                type="submit"
+                variant="blue"
+                loading={loading}
+                loadingText="Updating..."
                 disabled={
                   loading ||
                   !meetsMinimumRequirements(formData.newPassword) ||
                   formData.previousPassword === formData.newPassword
                 }
-                className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
               >
-                {loading ? (
-                  <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Updating...
-                  </div>
-                ) : (
-                  "➡️ Update Password"
-                )}
-              </button>
+                Update Password
+              </PrimaryButton>
 
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -388,6 +370,6 @@ export default function AdminChangePassword() {
         </div>
       </div>
       <ContactSupportWrapper />
-    </div>
+    </AuthFormLayout>
   );
-} 
+}
