@@ -847,26 +847,29 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                   Email Address
                 </label>
-                <div className="relative">
-                  <input
-                    type="email"
-                    value={formData.email}
-                    disabled
-                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed text-gray-600"
-                    readOnly
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStep(1);
-                      navigate('/forgot-password?step=1', { replace: true });
-                    }}
-                    className="absolute inset-y-0 right-3 flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-200"
-                    title="Edit email address"
-                  >
-                    <FaEdit className="text-lg" />
-                  </button>
-                </div>
+                <FormField
+                  label={undefined}
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  readOnly
+                  disabled
+                  startIcon={<Mail className="w-5 h-5" />}
+                  inputClassName="bg-gray-100 cursor-not-allowed text-gray-600 pr-12"
+                  endAdornment={
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStep(1);
+                        navigate('/forgot-password?step=1', { replace: true });
+                      }}
+                      className="absolute inset-y-0 right-3 flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-200"
+                      title="Edit email address"
+                    >
+                      <FaEdit className="text-lg" />
+                    </button>
+                  }
+                />
                 <p className="text-xs text-gray-500 mt-1">
                   Click the edit icon to change your email address
                 </p>

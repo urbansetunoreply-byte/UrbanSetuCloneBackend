@@ -8,7 +8,7 @@ import { useSelector } from "react-redux";
 import { calculatePasswordStrength, getPasswordStrengthColor, getPasswordStrengthBgColor, getPasswordStrengthText, meetsMinimumRequirements } from "../utils/passwordStrength.js";
 import { authenticatedFetch, getCSRFToken } from '../utils/csrf';
 import { usePageTitle } from '../hooks/usePageTitle';
-import { UserPlus, Mail, Lock } from "lucide-react";
+import { UserPlus, Mail, Lock, User, Phone } from "lucide-react";
 import PrimaryButton from "../components/ui/PrimaryButton";
 import AuthFormLayout from "../components/ui/AuthFormLayout";
 import SelectField from "../components/ui/SelectField";
@@ -432,6 +432,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                   placeholder="Enter your full name"
                   onChange={handleChange}
                   disabled={authInProgress === 'google'}
+                  startIcon={<User className="w-5 h-5" />}
                   inputClassName={`${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   required
                 />
@@ -626,6 +627,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                   inputMode="numeric"
                   pattern="[0-9]{10}"
                   maxLength="10"
+                  startIcon={<Phone className="w-5 h-5" />}
                   inputClassName={`${fieldErrors.mobileNumber ? 'border-red-500' : 'border-gray-300'} ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   disabled={authInProgress === 'google'}
                   required
