@@ -8,10 +8,11 @@ import NotFound from "./NotFound";
 import { focusWithoutKeyboard } from '../utils/mobileUtils';
 import { calculatePasswordStrength, getPasswordStrengthColor, getPasswordStrengthBgColor, getPasswordStrengthText, meetsMinimumRequirements } from "../utils/passwordStrength.js";
 import { authenticatedFetch, getCSRFToken } from '../utils/csrf';
-import { HelpCircle, RotateCcw, Lock } from "lucide-react";
+import { HelpCircle, RotateCcw, Lock, Mail } from "lucide-react";
 import { usePageTitle } from '../hooks/usePageTitle';
 import PrimaryButton from "../components/ui/PrimaryButton";
 import AuthFormLayout from "../components/ui/AuthFormLayout";
+import FormField from "../components/ui/FormField";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function ForgotPassword({ bootstrapped, sessionChecked }) {

@@ -8,10 +8,11 @@ import { useSelector } from "react-redux";
 import { calculatePasswordStrength, getPasswordStrengthColor, getPasswordStrengthBgColor, getPasswordStrengthText, meetsMinimumRequirements } from "../utils/passwordStrength.js";
 import { authenticatedFetch, getCSRFToken } from '../utils/csrf';
 import { usePageTitle } from '../hooks/usePageTitle';
-import { UserPlus } from "lucide-react";
+import { UserPlus, Mail, Lock } from "lucide-react";
 import PrimaryButton from "../components/ui/PrimaryButton";
 import AuthFormLayout from "../components/ui/AuthFormLayout";
 import SelectField from "../components/ui/SelectField";
+import FormField from "../components/ui/FormField";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function SignUp({ bootstrapped, sessionChecked }) {
