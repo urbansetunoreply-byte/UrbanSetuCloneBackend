@@ -424,13 +424,14 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                 <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
                   Full Name <span className="text-red-500">*</span>
                 </label>
-                <input
+                <FormField
+                  label={undefined}
+                  id="username"
                   type="text"
                   placeholder="Enter your full name"
-                  id="username"
                   onChange={handleChange}
                   disabled={authInProgress === 'google'}
-                  className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  inputClassName={`${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   required
                 />
               </div>
@@ -444,65 +445,57 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                     </span>
                   )}
                 </label>
-                <div className="relative">
-                  <input
-                    type="email"
-                    placeholder="Enter your email"
-                    id="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    readOnly={(emailVerified || otpSent) && !emailEditMode || otpLoading}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
-                      ((emailVerified || otpSent) && !emailEditMode) || otpLoading
-                        ? "bg-gray-100 cursor-not-allowed border-green-500"
-                        : fieldErrors.email ? "border-red-500" : emailVerified ? "border-green-500" : "border-gray-300"
-                    } ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                    disabled={authInProgress === 'google' || ((emailVerified || otpSent) && !emailEditMode) || otpLoading}
-                    required
-                  />
-                  {fieldErrors.email && (
-                    <p className="text-red-500 text-sm mt-1">{fieldErrors.email}</p>
-                  )}
-                  {!emailVerified && !otpSent && (
-                    <button
-                      type="button"
-                      onClick={handleSendOTP}
-                      disabled={otpLoading || !canResend || !formData.email}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-1 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {otpLoading ? "Sending..." : "Send OTP"}
-                    </button>
-                  )}
-                  {(emailVerified || (otpSent && !emailVerified)) && !emailEditMode && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                <FormField
+                  label={undefined}
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  readOnly={((emailVerified || otpSent) && !emailEditMode) || otpLoading}
+                  disabled={authInProgress === 'google' || ((emailVerified || otpSent) && !emailEditMode) || otpLoading}
+                  startIcon={<Mail className="w-5 h-5" />}
+                  endAdornment={
+                    !emailVerified && !otpSent ? (
                       <button
                         type="button"
-                        onClick={() => {
-                          setEmailEditMode(true);
-                          setOtpSent(false);
-                          setOtp("");
-                          setCanResend(true);
-                          setResendTimer(0);
-                          setEmailVerified(false);
-                        }}
-                        className="text-blue-600 hover:text-blue-800 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
-                        title="Edit email"
+                        onClick={handleSendOTP}
+                        disabled={otpLoading || !canResend || !formData.email}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-1 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <FaEdit className="text-sm" />
+                        {otpLoading ? "Sending..." : "Send OTP"}
                       </button>
-                      <div className="text-green-600">
-                        <FaCheck className="text-xl" />
-                      </div>
-                    </div>
-                  )}
-                  {emailVerified && emailEditMode && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <div className="text-green-600">
-                        <FaCheck className="text-xl" />
-                      </div>
-                    </div>
-                  )}
-                </div>
+                    ) : (
+                      (!emailEditMode) && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEmailEditMode(true);
+                              setOtpSent(false);
+                              setOtp("");
+                              setCanResend(true);
+                              setResendTimer(0);
+                              setEmailVerified(false);
+                            }}
+                            className="text-blue-600 hover:text-blue-800 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
+                            title="Edit email"
+                          >
+                            <FaEdit className="text-sm" />
+                          </button>
+                          <div className="text-green-600">
+                            <FaCheck className="text-xl" />
+                          </div>
+                        </div>
+                      )
+                    )
+                  }
+                  inputClassName={`${((emailVerified || otpSent) && !emailEditMode) || otpLoading ? 'bg-gray-100 cursor-not-allowed border-green-500' : (fieldErrors.email ? 'border-red-500' : (emailVerified ? 'border-green-500' : 'border-gray-300'))} ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  required
+                />
+                {fieldErrors.email && (
+                  <p className="text-red-500 text-sm mt-1">{fieldErrors.email}</p>
+                )}
                 {otpSent && !emailVerified && (
                   <p className="text-sm text-gray-600 mt-2">
                     OTP sent to {formData.email}
@@ -619,10 +612,11 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                 <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700 mb-2">
                   Mobile Number <span className="text-red-500">*</span>
                 </label>
-                <input
+                <FormField
+                  label={undefined}
+                  id="mobileNumber"
                   type="tel"
                   placeholder="Enter 10-digit mobile number"
-                  id="mobileNumber"
                   onChange={(e) => {
                     const digitsOnly = e.target.value.replace(/[^0-9]/g, '');
                     handleChange({ target: { id: 'mobileNumber', value: digitsOnly } });
@@ -631,12 +625,13 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                   inputMode="numeric"
                   pattern="[0-9]{10}"
                   maxLength="10"
-                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
-                    fieldErrors.mobileNumber ? "border-red-500" : "border-gray-300"
-                  } ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  inputClassName={`${fieldErrors.mobileNumber ? 'border-red-500' : 'border-gray-300'} ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   disabled={authInProgress === 'google'}
                   required
                 />
+                {fieldErrors.mobileNumber && (
+                  <p className="text-red-500 text-sm mt-1">{fieldErrors.mobileNumber}</p>
+                )}
                 {fieldErrors.mobileNumber && (
                   <p className="text-red-500 text-sm mt-1">{fieldErrors.mobileNumber}</p>
                 )}
@@ -663,27 +658,26 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                   Password <span className="text-red-500">*</span>
                 </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Create a strong password"
-                    id="password"
-                    onChange={handleChange}
-                    disabled={authInProgress === 'google'}
-                    className={`w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                    required
-                  />
-                  <div
-                    className="absolute inset-y-0 right-3 flex items-center cursor-pointer"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <FaEyeSlash className="text-gray-600" />
-                    ) : (
-                      <FaEye className="text-gray-600" />
-                    )}
-                  </div>
-                </div>
+                <FormField
+                  label={undefined}
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Create a strong password"
+                  onChange={handleChange}
+                  disabled={authInProgress === 'google'}
+                  startIcon={<Lock className="w-5 h-5" />}
+                  endAdornment={
+                    <div className="absolute inset-y-0 right-3 flex items-center cursor-pointer" onClick={() => setShowPassword(!showPassword)}>
+                      {showPassword ? (
+                        <FaEyeSlash className="text-gray-600" />
+                      ) : (
+                        <FaEye className="text-gray-600" />
+                      )}
+                    </div>
+                  }
+                  inputClassName={`pr-12 border border-gray-300 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  required
+                />
               </div>
 
               {/* Enhanced Password Strength */}
@@ -737,27 +731,26 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
                   Confirm Password <span className="text-red-500">*</span>
                 </label>
-                <div className="relative">
-                  <input
-                    type={showCPassword ? "text" : "password"}
-                    placeholder="Confirm your password"
-                    id="confirmPassword"
-                    onChange={handleChange}
-                    disabled={authInProgress === 'google'}
-                    className={`w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                    required
-                  />
-                  <div
-                    className="absolute inset-y-0 right-3 flex items-center cursor-pointer"
-                    onClick={() => setShowCPassword(!showCPassword)}
-                  >
-                    {showCPassword ? (
-                      <FaEyeSlash className="text-gray-600" />
-                    ) : (
-                      <FaEye className="text-gray-600" />
-                    )}
-                  </div>
-                </div>
+                <FormField
+                  label={undefined}
+                  id="confirmPassword"
+                  type={showCPassword ? 'text' : 'password'}
+                  placeholder="Confirm your password"
+                  onChange={handleChange}
+                  disabled={authInProgress === 'google'}
+                  startIcon={<Lock className="w-5 h-5" />}
+                  endAdornment={
+                    <div className="absolute inset-y-0 right-3 flex items-center cursor-pointer" onClick={() => setShowCPassword(!showCPassword)}>
+                      {showCPassword ? (
+                        <FaEyeSlash className="text-gray-600" />
+                      ) : (
+                        <FaEye className="text-gray-600" />
+                      )}
+                    </div>
+                  }
+                  inputClassName={`pr-12 border border-gray-300 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  required
+                />
               </div>
 
               <div className="flex items-start mb-2">

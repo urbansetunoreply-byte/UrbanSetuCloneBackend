@@ -21,6 +21,7 @@ const FormField = forwardRef(function FormField(
     labelClassName = "",
     inputClassName = "",
     onKeyDown,
+    ...rest
   },
   ref
 ) {
@@ -56,6 +57,7 @@ const FormField = forwardRef(function FormField(
           readOnly={readOnly}
           autoComplete={autoComplete}
           className={`${baseInput}${paddings} ${inputClassName} ${disabled ? " bg-gray-100 cursor-not-allowed" : ""}`}
+          {...rest}
         />
         {endAdornment}
       </div>

@@ -702,20 +702,18 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                     <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                                         Email Address
                                     </label>
-                                    <div className="relative">
-                                        <input 
-                                            type="email" 
-                                            placeholder="Enter your email" 
-                                            id="email" 
-                                            value={formData.email}
-                                            onChange={handleChange} 
-                                            ref={emailInputRef}
-                                            readOnly={emailStep || authInProgress === 'google'}
-                                            disabled={authInProgress === 'google' || (authInProgress === 'password' && emailStep) || loading}
-                                            className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${emailStep ? 'pr-12 bg-gray-50' : ''} ${(authInProgress === 'google' || (authInProgress === 'password' && emailStep) || loading) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                                            required
-                                        />
-                                        {emailStep && (
+                                    <FormField
+                                        label={undefined}
+                                        id="email"
+                                        type="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        ref={emailInputRef}
+                                        readOnly={emailStep || authInProgress === 'google'}
+                                        disabled={authInProgress === 'google' || (authInProgress === 'password' && emailStep) || loading}
+                                        placeholder="Enter your email"
+                                        startIcon={<Mail className="w-5 h-5" />}
+                                        endAdornment={emailStep ? (
                                             <button
                                                 type="button"
                                                 onClick={handleEmailEdit}
@@ -727,8 +725,10 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                 </svg>
                                             </button>
-                                        )}
-                                    </div>
+                                        ) : null}
+                                        inputClassName={`${emailStep ? 'pr-12 bg-gray-50' : ''}`}
+                                        required
+                                    />
 
                                 {/* Forgot Password Link under email (only before password step) */}
                                 {!emailStep && (
@@ -748,29 +748,31 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                         <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                                             Password
                                         </label>
-                                        <div className="relative">
-                                            <input 
-                                                type={showPassword ? "text" : "password"}
-                                                placeholder="Enter your password" 
-                                                id="password" 
-                                                value={formData.password}
-                                                onChange={handleChange} 
-                                                ref={passwordInputRef}
-                                                disabled={authInProgress === 'google' || authInProgress === 'password' || loading}
-                                                className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pr-12 ${(authInProgress === 'google' || authInProgress === 'password' || loading) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                                                required
-                                            />
-                                            <button
-                                                type="button"
-                                                disabled={authInProgress === 'google' || authInProgress === 'password' || loading}
-                                                className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 focus:outline-none ${(authInProgress === 'google' || authInProgress === 'password' || loading) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                                tabIndex={-1}
-                                                onClick={() => setShowPassword((prev) => !prev)}
-                                                aria-label={showPassword ? "Hide password" : "Show password"}
-                                            >
-                                                {showPassword ? <FaEyeSlash /> : <FaEye />}
-                                            </button>
-                                        </div>
+                                        <FormField
+                                            label={undefined}
+                                            id="password"
+                                            type={showPassword ? 'text' : 'password'}
+                                            value={formData.password}
+                                            onChange={handleChange}
+                                            ref={passwordInputRef}
+                                            disabled={authInProgress === 'google' || authInProgress === 'password' || loading}
+                                            placeholder="Enter your password"
+                                            startIcon={<Lock className="w-5 h-5" />}
+                                            endAdornment={
+                                                <button
+                                                    type="button"
+                                                    disabled={authInProgress === 'google' || authInProgress === 'password' || loading}
+                                                    className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 focus:outline-none ${(authInProgress === 'google' || authInProgress === 'password' || loading) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                    tabIndex={-1}
+                                                    onClick={() => setShowPassword((prev) => !prev)}
+                                                    aria-label={showPassword ? "Hide password" : "Show password"}
+                                                >
+                                                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                                </button>
+                                            }
+                                            inputClassName={`pr-12 ${(authInProgress === 'google' || authInProgress === 'password' || loading) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                            required
+                                        />
                                         
                                         {/* Forgot Password Link */}
                                         <div className="text-right mt-2">
@@ -822,20 +824,18 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                     <label htmlFor="otp-email" className="block text-sm font-medium text-gray-700 mb-2">
                                         Email Address
                                     </label>
-                                    <div className="relative">
-                                        <input 
-                                            type="email" 
-                                            placeholder="Enter your email" 
-                                            id="email" 
-                                            value={otpData.email}
-                                            onChange={handleOtpChange} 
-                                            ref={otpEmailInputRef}
-                                            readOnly={otpSent || otpLoading || authInProgress === 'google'}
-                                            disabled={otpSent || otpLoading || authInProgress === 'google'}
-                                            className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${(otpSent || otpLoading || authInProgress === 'google') ? 'pr-12 bg-gray-50 cursor-not-allowed' : ''}`}
-                                            required
-                                        />
-                                        {otpSent && (
+                                    <FormField
+                                        label={undefined}
+                                        id="email"
+                                        type="email"
+                                        value={otpData.email}
+                                        onChange={handleOtpChange}
+                                        ref={otpEmailInputRef}
+                                        readOnly={otpSent || otpLoading || authInProgress === 'google'}
+                                        disabled={otpSent || otpLoading || authInProgress === 'google'}
+                                        placeholder="Enter your email"
+                                        startIcon={<Mail className="w-5 h-5" />}
+                                        endAdornment={otpSent ? (
                                             <button
                                                 type="button"
                                                 onClick={() => {
@@ -851,8 +851,10 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                 </svg>
                                             </button>
-                                        )}
-                                    </div>
+                                        ) : null}
+                                        inputClassName={`${(otpSent || otpLoading || authInProgress === 'google') ? 'pr-12 bg-gray-50 cursor-not-allowed' : ''}`}
+                                        required
+                                    />
                                 </div>
                                 
                                 {/* OTP reCAPTCHA Widget - show below email only when OTP field is NOT open */}

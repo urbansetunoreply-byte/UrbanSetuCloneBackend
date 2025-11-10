@@ -8,7 +8,7 @@ import NotFound from "./NotFound";
 import { focusWithoutKeyboard } from '../utils/mobileUtils';
 import { calculatePasswordStrength, getPasswordStrengthColor, getPasswordStrengthBgColor, getPasswordStrengthText, meetsMinimumRequirements } from "../utils/passwordStrength.js";
 import { authenticatedFetch, getCSRFToken } from '../utils/csrf';
-import { HelpCircle, RotateCcw } from "lucide-react";
+import { HelpCircle, RotateCcw, Lock } from "lucide-react";
 import { usePageTitle } from '../hooks/usePageTitle';
 import PrimaryButton from "../components/ui/PrimaryButton";
 import AuthFormLayout from "../components/ui/AuthFormLayout";
@@ -557,64 +557,56 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                       </span>
                     )}
                   </label>
-                  <div className="relative">
-                    <input
-                      type="email"
-                      placeholder="Enter your email"
-                      id="email"
-                      ref={emailInputRef}
-                      value={formData.email}
-                      onChange={handleChange}
-                      readOnly={((emailLocked || emailVerified || otpSent) && !emailEditMode) || otpLoading}
-                      disabled={otpLoading}
-                      className={`w-full px-4 py-3 pr-24 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 ${
-                        (emailVerified && !emailEditMode) || otpLoading
-                          ? "bg-gray-100 cursor-not-allowed border-green-500"
-                          : emailVerified ? "border-green-500" : "border-gray-300"
-                      }`}
-                      required
-                    />
-                    {!emailVerified && !otpSent && (
-                      <button
-                        type="button"
-                        onClick={handleSendOTP}
-                        disabled={otpLoading || !formData.email || !canResend}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-orange-600 text-white rounded-md text-sm font-medium hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed z-10"
-                      >
-                        {otpLoading ? "Sending..." : "Send OTP"}
-                      </button>
-                    )}
-                    {(emailLocked || emailVerified || otpSent) && !emailEditMode && !otpLoading && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                  <FormField
+                    label={undefined}
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    ref={emailInputRef}
+                    value={formData.email}
+                    onChange={handleChange}
+                    readOnly={((emailLocked || emailVerified || otpSent) && !emailEditMode) || otpLoading}
+                    disabled={otpLoading}
+                    startIcon={<Mail className="w-5 h-5" />}
+                    endAdornment={
+                      !emailVerified && !otpSent ? (
                         <button
                           type="button"
-                          onClick={() => {
-                            setEmailEditMode(true);
-                            setOtpSent(false);
-                            setEmailLocked(false);
-                            setOtp("");
-                            setCanResend(true);
-                            setResendTimer(0);
-                            setEmailVerified(false);
-                          }}
-                          className="text-blue-600 hover:text-blue-800 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
-                          title="Edit email"
+                          onClick={handleSendOTP}
+                          disabled={otpLoading || !formData.email || !canResend}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-orange-600 text-white rounded-md text-sm font-medium hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed z-10"
                         >
-                          <FaEdit className="text-sm" />
+                          {otpLoading ? "Sending..." : "Send OTP"}
                         </button>
-                        <div className="text-green-600">
-                          <FaCheck className="text-xl" />
-                        </div>
-                      </div>
-                    )}
-                    {emailVerified && emailEditMode && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        <div className="text-green-600">
-                          <FaCheck className="text-xl" />
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                      ) : (
+                        (!emailEditMode && !otpLoading) && (
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEmailEditMode(true);
+                                setOtpSent(false);
+                                setEmailLocked(false);
+                                setOtp("");
+                                setCanResend(true);
+                                setResendTimer(0);
+                                setEmailVerified(false);
+                              }}
+                              className="text-blue-600 hover:text-blue-800 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
+                              title="Edit email"
+                            >
+                              <FaEdit className="text-sm" />
+                            </button>
+                            <div className="text-green-600">
+                              <FaCheck className="text-xl" />
+                            </div>
+                          </div>
+                        )
+                      )
+                    }
+                    inputClassName={`${(emailVerified && !emailEditMode) || otpLoading ? 'bg-gray-100 cursor-not-allowed border-green-500' : (emailVerified ? 'border-green-500' : 'border-gray-300')}`}
+                    required
+                  />
                   {/* If captcha required before OTP field is open, show below email (outside input wrapper to avoid layout shift on button) */}
                   {otpCaptchaRequired && !otpSent && (
                     <div className="mt-3">
@@ -885,30 +877,24 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                   New Password
                 </label>
                 <p className="text-xs text-gray-500 mb-2">(Enter your new strong password)</p>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Create a strong password"
-                    id="newPassword"
-                    value={formData.newPassword}
-                    onChange={handleChange}
-                    disabled={loading}
-                    className={`w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 ${
-                      loading ? 'bg-gray-100 cursor-not-allowed' : ''
-                    }`}
-                    required
-                  />
-                  <div
-                    className="absolute inset-y-0 right-3 flex items-center cursor-pointer"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <FaEyeSlash className="text-gray-600" />
-                    ) : (
-                      <FaEye className="text-gray-600" />
-                    )}
-                  </div>
-                </div>
+                <FormField
+                  label={undefined}
+                  id="newPassword"
+                  name="newPassword"
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.newPassword}
+                  onChange={handleChange}
+                  disabled={loading}
+                  placeholder="Create a strong password"
+                  startIcon={<Lock className="w-5 h-5" />}
+                  endAdornment={
+                    <div className="absolute inset-y-0 right-3 flex items-center cursor-pointer" onClick={() => setShowPassword(!showPassword)}>
+                      {showPassword ? (<FaEyeSlash className="text-gray-600" />) : (<FaEye className="text-gray-600" />)}
+                    </div>
+                  }
+                  inputClassName={`${loading ? 'bg-gray-100 cursor-not-allowed' : ''} pr-12`}
+                  required
+                />
               </div>
 
               {/* Enhanced Password Strength */}
@@ -963,30 +949,24 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                   Confirm New Password
                 </label>
                 <p className="text-xs text-gray-500 mb-2">(Re-enter your new password)</p>
-                <div className="relative">
-                  <input
-                    type={showCPassword ? "text" : "password"}
-                    placeholder="Confirm your password"
-                    id="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    disabled={loading}
-                    className={`w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 ${
-                      loading ? 'bg-gray-100 cursor-not-allowed' : ''
-                    }`}
-                    required
-                  />
-                  <div
-                    className="absolute inset-y-0 right-3 flex items-center cursor-pointer"
-                    onClick={() => setShowCPassword(!showCPassword)}
-                  >
-                    {showCPassword ? (
-                      <FaEyeSlash className="text-gray-600" />
-                    ) : (
-                      <FaEye className="text-gray-600" />
-                    )}
-                  </div>
-                </div>
+                <FormField
+                  label={undefined}
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showCPassword ? 'text' : 'password'}
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  disabled={loading}
+                  placeholder="Confirm your password"
+                  startIcon={<Lock className="w-5 h-5" />}
+                  endAdornment={
+                    <div className="absolute inset-y-0 right-3 flex items-center cursor-pointer" onClick={() => setShowCPassword(!showCPassword)}>
+                      {showCPassword ? (<FaEyeSlash className="text-gray-600" />) : (<FaEye className="text-gray-600" />)}
+                    </div>
+                  }
+                  inputClassName={`${loading ? 'bg-gray-100 cursor-not-allowed' : ''} pr-12`}
+                  required
+                />
               </div>
 
               {/* reCAPTCHA Widget - Show only when required */}
