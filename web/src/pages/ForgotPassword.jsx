@@ -607,7 +607,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                         )
                       )
                     }
-                    inputClassName={`${(emailVerified && !emailEditMode) || otpLoading ? 'bg-gray-100 cursor-not-allowed border-green-500' : (emailVerified ? 'border-green-500' : 'border-gray-300')}`}
+                    inputClassName={`${(emailVerified && !emailEditMode) || otpLoading ? 'bg-gray-100 cursor-not-allowed border-green-500' : (emailVerified ? 'border-green-500' : 'border-gray-300')} focus:ring-red-500 focus:border-red-500 hover:border-red-500`}
                     required
                   />
                   {/* If captcha required before OTP field is open, show below email (outside input wrapper to avoid layout shift on button) */}
@@ -899,7 +899,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                       {showPassword ? (<FaEyeSlash className="text-gray-600" />) : (<FaEye className="text-gray-600" />)}
                     </div>
                   }
-                  inputClassName={`${loading ? 'bg-gray-100 cursor-not-allowed' : ''} pr-12`}
+                  inputClassName={`${loading ? 'bg-gray-100 cursor-not-allowed' : ''} pr-12 focus:ring-green-500 focus:border-green-500 hover:border-green-500`}
                   required
                 />
               </div>
@@ -971,7 +971,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                       {showCPassword ? (<FaEyeSlash className="text-gray-600" />) : (<FaEye className="text-gray-600" />)}
                     </div>
                   }
-                  inputClassName={`${loading ? 'bg-gray-100 cursor-not-allowed' : ''} pr-12`}
+                  inputClassName={`${loading ? 'bg-gray-100 cursor-not-allowed' : ''} pr-12 focus:ring-green-500 focus:border-green-500 hover:border-green-500`}
                   required
                 />
               </div>

@@ -433,7 +433,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                   onChange={handleChange}
                   disabled={authInProgress === 'google'}
                   startIcon={<User className="w-5 h-5" />}
-                  inputClassName={`${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  inputClassName={`${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} focus:ring-green-500 focus:border-green-500 hover:border-green-500`}
                   required
                 />
               </div>
@@ -492,7 +492,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                       )
                     )
                   }
-                  inputClassName={`${((emailVerified || otpSent) && !emailEditMode) || otpLoading ? 'bg-gray-100 cursor-not-allowed border-green-500' : (fieldErrors.email ? 'border-red-500' : (emailVerified ? 'border-green-500' : 'border-gray-300'))} ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  inputClassName={`${((emailVerified || otpSent) && !emailEditMode) || otpLoading ? 'bg-gray-100 cursor-not-allowed border-green-500' : (fieldErrors.email ? 'border-red-500' : (emailVerified ? 'border-green-500' : 'border-gray-300'))} ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} focus:ring-green-500 focus:border-green-500 hover:border-green-500`}
                   required
                 />
                 {fieldErrors.email && (
@@ -628,7 +628,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                   pattern="[0-9]{10}"
                   maxLength="10"
                   startIcon={<Phone className="w-5 h-5" />}
-                  inputClassName={`${fieldErrors.mobileNumber ? 'border-red-500' : 'border-gray-300'} ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  inputClassName={`${fieldErrors.mobileNumber ? 'border-red-500' : 'border-gray-300'} ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} focus:ring-green-500 focus:border-green-500 hover:border-green-500`}
                   disabled={authInProgress === 'google'}
                   required
                 />
@@ -649,6 +649,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                 onChange={handleChange}
                 disabled={authInProgress === 'google'}
                 required
+                selectClassName="focus:ring-green-500 focus:border-green-500 hover:border-green-500"
                 options={[
                   { value: "", label: "Select your role" },
                   { value: "user", label: "Buy/Sell Properties" },
@@ -678,7 +679,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                       )}
                     </div>
                   }
-                  inputClassName={`pr-12 border border-gray-300 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  inputClassName={`pr-12 border border-gray-300 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} focus:ring-green-500 focus:border-green-500 hover:border-green-500`}
                   required
                 />
               </div>
@@ -751,7 +752,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                       )}
                     </div>
                   }
-                  inputClassName={`pr-12 border border-gray-300 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  inputClassName={`pr-12 border border-gray-300 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} focus:ring-green-500 focus:border-green-500 hover:border-green-500`}
                   required
                 />
               </div>
