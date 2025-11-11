@@ -9645,7 +9645,7 @@ export const sendNewMessageNotificationEmail = async (email, messageDetails) => 
       senderImage
     } = messageDetails;
 
-    const chatUrl = `https://urbansetu.com/appointments/${appointmentId}?chat=true`;
+    const chatUrl = `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments/chat/${appointmentId}`;
     const subject = `New Message on UrbanSetu`;
     
     const html = `
