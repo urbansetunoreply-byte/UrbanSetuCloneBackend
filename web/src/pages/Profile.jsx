@@ -1616,6 +1616,17 @@ export default function Profile() {
 
   return (
     <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
+      {/* Signout Loading Modal */}
+      {isSigningOut && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999]">
+          <div className="bg-white rounded-2xl shadow-2xl p-8">
+            <div className="flex flex-col items-center gap-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600"></div>
+              <p className="text-gray-700 font-medium">Signing out...</p>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="max-w-6xl mx-auto">
         {/* Header Section */}
         <div className={`bg-white rounded-xl shadow-lg p-8 mb-6 ${isVisible ? animationClasses.fadeInUp : 'opacity-0 translate-y-8'}`}>
