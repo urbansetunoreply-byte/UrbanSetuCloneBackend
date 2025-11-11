@@ -1758,15 +1758,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       const currentUserId = currentUser._id;
       const isBuyer = appt.buyerId?._id === currentUserId || appt.buyerId === currentUserId;
       const isSeller = appt.sellerId?._id === currentUserId || appt.sellerId === currentUserId;
-      
-      if (isChatLocked) {
-        if (isBuyer && appt.buyerChatLocked) {
-          setShowChatUnlockModal(true);
-        } else if (isSeller && appt.sellerChatLocked) {
-          setShowChatUnlockModal(true);
-        }
-      } else {
-        // Open chat directly if not locked
+
+      const openChat = () => {
+        setShowChatUnlockModal(false);
         setShowChatModal(true);
         // Update URL when opening chatbox
         navigate(`/user/my-appointments/chat/${appt._id}`, { replace: false });
@@ -1783,9 +1777,27 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
           setPreferUnreadOnOpen(true);
           if (typeof onConsumePreferUnread === 'function') onConsumePreferUnread(appt._id);
         }
+      };
+      
+      if (isChatLocked) {
+        if (chatAccessGranted) {
+          openChat();
+        } else if ((isBuyer && appt.buyerChatLocked) || (isSeller && appt.sellerChatLocked)) {
+          setShowChatUnlockModal(true);
+        }
+      } else {
+        // Open chat directly if not locked
+        openChat();
       }
     }
-  }, [shouldOpenChatFromNotification, activeChatAppointmentId, appt._id, appt.buyerChatLocked, appt.sellerChatLocked, appt.buyerId, appt.sellerId, currentUser._id, onChatOpened, preferUnreadForAppointmentId, onConsumePreferUnread]);
+  }, [shouldOpenChatFromNotification, activeChatAppointmentId, appt._id, appt.buyerChatLocked, appt.sellerChatLocked, appt.buyerId, appt.sellerId, currentUser._id, onChatOpened, preferUnreadForAppointmentId, onConsumePreferUnread, chatAccessGranted, navigate]);
+
+  // Ensure unlock modal closes when chat opens
+  useEffect(() => {
+    if (showChatModal && showChatUnlockModal) {
+      setShowChatUnlockModal(false);
+    }
+  }, [showChatModal, showChatUnlockModal]);
   
   // Store appointment and reasons for modals
   const [appointmentToHandle, setAppointmentToHandle] = useState(null);
