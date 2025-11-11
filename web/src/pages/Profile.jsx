@@ -1311,7 +1311,7 @@ export default function Profile() {
     await signout({
       showToast: true,
       navigateTo: "/",
-      delay: 50
+      delay: 0
     });
   };
 
@@ -1619,11 +1619,9 @@ export default function Profile() {
       {/* Signout Loading Modal */}
       {isSigningOut && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999]">
-          <div className="bg-white rounded-2xl shadow-2xl p-8">
-            <div className="flex flex-col items-center gap-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600"></div>
-              <p className="text-gray-700 font-medium">Signing out...</p>
-            </div>
+          <div className="bg-white rounded-2xl shadow-2xl p-8 flex flex-col items-center gap-4 max-w-sm">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600"></div>
+            <p className="text-lg font-semibold text-gray-800">Signing out...</p>
           </div>
         </div>
       )}
