@@ -9,7 +9,7 @@ import { EmojiButton } from '../components/EmojiPicker';
 import CustomEmojiPicker from '../components/EmojiPicker';
 import { useSoundEffects, SoundControl } from '../components/SoundEffects';
 import { useSelector } from "react-redux";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { createPortal } from 'react-dom';
 import Appointment from "../components/Appointment";
 import { toast, ToastContainer } from 'react-toastify';
@@ -447,10 +447,44 @@ export default function MyAppointments() {
 
 
 
-  // Handle navigation state when coming from notification
+  // Handle navigation state when coming from notification or direct chat link
   const location = useLocation();
+  const { chatId } = useParams();
+  const params = useParams();
+  
   useEffect(() => {
-    if (location.state?.fromNotification && location.state?.openChatForAppointment) {
+    // Handle direct chat link via URL parameter
+    if (params.chatId) {
+      const chatIdFromUrl = params.chatId;
+      
+      // The chatId should match an appointment ID
+      // Wait for appointments to be loaded before trying to open chat
+      if (appointments.length > 0) {
+        const appointment = appointments.find(appt => appt._id === chatIdFromUrl);
+        if (appointment) {
+          setNotificationChatData(appointment);
+          setShouldOpenChatFromNotification(true);
+          setActiveChatAppointmentId(chatIdFromUrl);
+        }
+      } else {
+        // If appointments are not loaded yet, wait for them
+        const checkAppointments = setInterval(() => {
+          if (appointments.length > 0) {
+            const appointment = appointments.find(appt => appt._id === chatIdFromUrl);
+            if (appointment) {
+              setNotificationChatData(appointment);
+              setShouldOpenChatFromNotification(true);
+              setActiveChatAppointmentId(chatIdFromUrl);
+            }
+            clearInterval(checkAppointments);
+          }
+        }, 100);
+        
+        // Cleanup interval after 5 seconds to prevent infinite waiting
+        setTimeout(() => clearInterval(checkAppointments), 5000);
+      }
+    } else if (location.state?.fromNotification && location.state?.openChatForAppointment) {
+      // Handle notification-triggered chat opening
       const appointmentId = location.state.openChatForAppointment;
       
       // Wait for appointments to be loaded before trying to open chat
@@ -483,7 +517,7 @@ export default function MyAppointments() {
         setTimeout(() => clearInterval(checkAppointments), 5000);
       }
     }
-  }, [location.state, navigate, appointments, currentUser._id]);
+  }, [location.state, navigate, appointments, currentUser._id, params.chatId]);
 
   const handleStatusUpdate = async (id, status) => {
     setActionLoading(id + status);
@@ -5652,60 +5686,70 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
           </div>
         </td>
         <td className="border p-2 text-center relative">
-          <button
-            className={`flex items-center justify-center rounded-full p-3 shadow-lg mx-auto relative transform transition-all duration-200 group ${
-              'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white hover:shadow-xl hover:scale-105'
-            }`}
-            title={"Open Chat"}
-            onClick={() => {
-              if ((chatLocked || chatLockStatusLoading) && !chatAccessGranted) {
-                setShowChatUnlockModal(true);
-              } else {
-                setShowChatModal(true);
-                // Dispatch event to notify App.jsx that chat is opened
-                window.dispatchEvent(new CustomEvent('chatOpened', {
-                  detail: { appointmentId: appt._id }
-                }));
+          <div className="flex flex-col gap-2 items-center">
+            <button
+              className={`flex items-center justify-center rounded-full p-3 shadow-lg mx-auto relative transform transition-all duration-200 group ${
+                'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white hover:shadow-xl hover:scale-105'
+              }`}
+              title={"Open Chat"}
+              onClick={() => {
+                if ((chatLocked || chatLockStatusLoading) && !chatAccessGranted) {
+                  setShowChatUnlockModal(true);
+                } else {
+                  setShowChatModal(true);
+                  // Dispatch event to notify App.jsx that chat is opened
+                  window.dispatchEvent(new CustomEvent('chatOpened', {
+                    detail: { appointmentId: appt._id }
+                  }));
+                }
+              }}
+            >
+              {/* Animated circular ring when there are unread messages */}
+              {unreadNewMessages > 0 && !isOtherPartyTyping && !((chatLocked || chatLockStatusLoading) && !chatAccessGranted) && !isStatusHidden && (
+                <div
+                  className="absolute inset-0 rounded-full animate-ping"
+                  style={{
+                    border: '3px solid #ef4444', // Red color for unread messages
+                  }}
+                ></div>
+              )}
+              
+              <FaCommentDots size={22} className={"group-hover:animate-pulse"} />
+              {
+                <div className="absolute inset-0 bg-white rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
               }
-            }}
-          >
-            {/* Animated circular ring when there are unread messages */}
-            {unreadNewMessages > 0 && !isOtherPartyTyping && !((chatLocked || chatLockStatusLoading) && !chatAccessGranted) && !isStatusHidden && (
-              <div
-                className="absolute inset-0 rounded-full animate-ping"
-                style={{
-                  border: '3px solid #ef4444', // Red color for unread messages
-                }}
-              ></div>
-            )}
-            
-            <FaCommentDots size={22} className={"group-hover:animate-pulse"} />
-            {
-              <div className="absolute inset-0 bg-white rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
-            }
-            {/* Show lock icon if chat is locked or loading */}
-            {(chatLocked || chatLockStatusLoading) && !chatAccessGranted && (
-              <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] text-center font-bold border-2 border-white">
-                {chatLockStatusLoading ? '⏳' : '🔒'}
-              </span>
-            )}
-            {/* Typing indicator - highest priority (hide if locked, loading, or status hidden) */}
-            {isOtherPartyTyping && !((chatLocked || chatLockStatusLoading) && !chatAccessGranted) && !isStatusHidden && (
-              <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] text-center font-bold border-2 border-white animate-pulse">
-                ...
-              </span>
-            )}
-            {/* Unread count when not typing (hide if locked, loading, or status hidden) */}
-            {!isOtherPartyTyping && unreadNewMessages > 0 && !((chatLocked || chatLockStatusLoading) && !chatAccessGranted) && !isStatusHidden && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] text-center font-bold border-2 border-white">
-                {unreadNewMessages}
-              </span>
-            )}
-            {/* Online status green dot - show when no typing and no unread count (hide if locked, loading, or status hidden) */}
-            {!isOtherPartyTyping && unreadNewMessages === 0 && isOtherPartyOnlineInTable && !((chatLocked || chatLockStatusLoading) && !chatAccessGranted) && !isStatusHidden && (
-              <span className="absolute -top-1 -right-1 bg-green-500 border-2 border-white rounded-full w-3 h-3"></span>
-            )}
-          </button>
+              {/* Show lock icon if chat is locked or loading */}
+              {(chatLocked || chatLockStatusLoading) && !chatAccessGranted && (
+                <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] text-center font-bold border-2 border-white">
+                  {chatLockStatusLoading ? '⏳' : '🔒'}
+                </span>
+              )}
+              {/* Typing indicator - highest priority (hide if locked, loading, or status hidden) */}
+              {isOtherPartyTyping && !((chatLocked || chatLockStatusLoading) && !chatAccessGranted) && !isStatusHidden && (
+                <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] text-center font-bold border-2 border-white animate-pulse">
+                  ...
+                </span>
+              )}
+              {/* Unread count when not typing (hide if locked, loading, or status hidden) */}
+              {!isOtherPartyTyping && unreadNewMessages > 0 && !((chatLocked || chatLockStatusLoading) && !chatAccessGranted) && !isStatusHidden && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] text-center font-bold border-2 border-white">
+                  {unreadNewMessages}
+                </span>
+              )}
+              {/* Online status green dot - show when no typing and no unread count (hide if locked, loading, or status hidden) */}
+              {!isOtherPartyTyping && unreadNewMessages === 0 && isOtherPartyOnlineInTable && !((chatLocked || chatLockStatusLoading) && !chatAccessGranted) && !isStatusHidden && (
+                <span className="absolute -top-1 -right-1 bg-green-500 border-2 border-white rounded-full w-3 h-3"></span>
+              )}
+            </button>
+            {/* Chat Link Button - Share this specific chat */}
+            <Link
+              to={`/user/my-appointments/chat/${appt._id}`}
+              className="text-blue-600 hover:text-blue-800 text-xs bg-blue-100 hover:bg-blue-200 px-2 py-1 rounded transition-colors duration-200"
+              title="Copy or share chat link"
+            >
+              Link
+            </Link>
+          </div>
         </td>
       </tr>
       {showChatModal && createPortal((
