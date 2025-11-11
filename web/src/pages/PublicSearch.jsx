@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ListingItem from "../components/ListingItem";
 import LocationSelector from "../components/LocationSelector";
@@ -41,6 +41,15 @@ export default function PublicSearch() {
     const [error, setError] = useState(null);
     const [locationFilter, setLocationFilter] = useState({ state: "", district: "", city: "" });
     const [showSuggestions, setShowSuggestions] = useState(false);
+
+    const filterRef = useRef(null);
+    const [filterHeight, setFilterHeight] = useState(0);
+    useEffect(() => {
+        const update = () => setFilterHeight(filterRef.current?.offsetHeight || 0);
+        update();
+        window.addEventListener('resize', update);
+        return () => window.removeEventListener('resize', update);
+    }, [formData, showSuggestions]);
 
     useEffect(() => {
         const urlParams = new URLSearchParams(location.search);
@@ -188,6 +197,7 @@ export default function PublicSearch() {
                 </h3>
                 <form
                     onSubmit={handleSubmit}
+                    ref={filterRef}
                     className="sticky top-16 z-30 grid md:grid-cols-2 gap-4 bg-white/80 backdrop-blur border p-4 rounded-xl mb-6"
                 >
                     <div className="relative">
@@ -361,7 +371,7 @@ export default function PublicSearch() {
                     </button>
                 </form>
 
-                <div className="hidden md:block h-16"></div>
+                <div style={{ height: filterHeight }}></div>
                 <div className="mb-4"><FilterChips formData={formData} onClear={clearAllFilters} onRemove={removeFilter} /></div>
                 {/* Listings Display */}
                 <div className="mt-4">
