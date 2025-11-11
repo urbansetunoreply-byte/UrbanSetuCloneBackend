@@ -89,6 +89,9 @@ export default function MyAppointments() {
   // Preference to open specific chat at unread divider (set by notification click)
   const [preferUnreadForAppointmentId, setPreferUnreadForAppointmentId] = useState(null);
 
+  // Missing chatbox error state
+  const [missingChatbookError, setMissingChatbookError] = useState(null);
+
   // Export chat modal state
   const [showExportModal, setShowExportModal] = useState(false);
   const [exportAppointment, setExportAppointment] = useState(null);
@@ -481,7 +484,11 @@ export default function MyAppointments() {
         }, 100);
         
         // Cleanup interval after 5 seconds to prevent infinite waiting
-        setTimeout(() => clearInterval(checkAppointments), 5000);
+        setTimeout(() => {
+          clearInterval(checkAppointments);
+          // If appointments have been loaded but chatId not found, show error
+          setMissingChatbookError(chatIdFromUrl);
+        }, 5000);
       }
     } else if (location.state?.fromNotification && location.state?.openChatForAppointment) {
       // Handle notification-triggered chat opening
@@ -514,7 +521,11 @@ export default function MyAppointments() {
         }, 100);
         
         // Cleanup interval after 5 seconds to prevent infinite waiting
-        setTimeout(() => clearInterval(checkAppointments), 5000);
+        setTimeout(() => {
+          clearInterval(checkAppointments);
+          // If appointments have been loaded but appointmentId not found, show error
+          setMissingChatbookError(appointmentId);
+        }, 5000);
       }
     }
   }, [location.state, navigate, appointments, currentUser._id, params.chatId]);
@@ -1417,6 +1428,38 @@ export default function MyAppointments() {
           </div>
         </div>
       )}
+
+      {/* Missing Chatbox Error Modal */}
+      {missingChatbookError && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[200] p-4">
+          <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full animate-fadeIn">
+            <div className="text-center">
+              <div className="text-red-500 text-5xl mb-4">❌</div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Appointment Not Found</h2>
+              <p className="text-gray-600 mb-6">
+                The appointment you're looking for doesn't exist or you don't have access to it. It may have been deleted or archived.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setMissingChatbookError(null);
+                    navigate('/user/my-appointments', { replace: true });
+                  }}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                >
+                  Back to Appointments
+                </button>
+                <button
+                  onClick={() => setMissingChatbookError(null)}
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
 
       {/* Export Chat Modal */}
@@ -1707,6 +1750,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       } else {
         // Open chat directly if not locked
         setShowChatModal(true);
+        // Update URL when opening chatbox
+        navigate(`/user/my-appointments/chat/${appt._id}`, { replace: false });
         // Dispatch event to notify App.jsx that chat is opened
         window.dispatchEvent(new CustomEvent('chatOpened', {
           detail: { appointmentId: appt._id }
@@ -2682,6 +2727,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         
         // Open chat modal after successful unlock
         setShowChatModal(true);
+        // Update URL when opening chatbox
+        navigate(`/user/my-appointments/chat/${appt._id}`, { replace: false });
         // Dispatch event to notify App.jsx that chat is opened
         window.dispatchEvent(new CustomEvent('chatOpened', {
           detail: { appointmentId: appt._id }
@@ -2775,6 +2822,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   // Reset chat access when chat modal is closed
   const handleChatModalClose = async () => {
     setShowChatModal(false);
+    // Revert URL when closing chatbox
+    navigate(`/user/my-appointments`, { replace: false });
     
     // Dispatch event to notify App.jsx that chat is closed
     window.dispatchEvent(new CustomEvent('chatClosed'));
@@ -5696,6 +5745,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                 setShowChatUnlockModal(true);
               } else {
                 setShowChatModal(true);
+                // Update URL when opening chatbox
+                navigate(`/user/my-appointments/chat/${appt._id}`, { replace: false });
                 // Dispatch event to notify App.jsx that chat is opened
                 window.dispatchEvent(new CustomEvent('chatOpened', {
                   detail: { appointmentId: appt._id }
