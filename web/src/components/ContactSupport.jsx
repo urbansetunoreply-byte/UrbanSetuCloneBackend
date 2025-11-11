@@ -287,7 +287,7 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
       if (data.success) {
         setSubmitStatus('success');
         setFormData({ subject: '', message: '', email: '', name: '' });
-        toast.success('Message sent successfully!');
+        toast.success("We've received your message — our team will contact you soon.");
         setTimeout(() => {
           handleModalClose();
           setSubmitStatus('');
