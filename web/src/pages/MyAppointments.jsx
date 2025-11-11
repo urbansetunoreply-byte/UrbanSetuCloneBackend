@@ -454,81 +454,98 @@ export default function MyAppointments() {
   const location = useLocation();
   const { chatId } = useParams();
   const params = useParams();
+  const chatResolveRef = useRef(false);
+  const chatIntervalRef = useRef(null);
+  const chatTimeoutRef = useRef(null);
   
   useEffect(() => {
+    // Clear any previous timers when dependencies change
+    if (chatIntervalRef.current) {
+      clearInterval(chatIntervalRef.current);
+      chatIntervalRef.current = null;
+    }
+    if (chatTimeoutRef.current) {
+      clearTimeout(chatTimeoutRef.current);
+      chatTimeoutRef.current = null;
+    }
+    chatResolveRef.current = false;
+
     // Handle direct chat link via URL parameter
     if (params.chatId) {
       const chatIdFromUrl = params.chatId;
-      
-      // The chatId should match an appointment ID
-      // Wait for appointments to be loaded before trying to open chat
-      if (appointments.length > 0) {
+
+      const tryResolveChat = () => {
         const appointment = appointments.find(appt => appt._id === chatIdFromUrl);
         if (appointment) {
+          chatResolveRef.current = true;
           setNotificationChatData(appointment);
           setShouldOpenChatFromNotification(true);
           setActiveChatAppointmentId(chatIdFromUrl);
+          if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
+          if (chatTimeoutRef.current) clearTimeout(chatTimeoutRef.current);
         }
+      };
+
+      if (appointments.length > 0) {
+        tryResolveChat();
       } else {
-        // If appointments are not loaded yet, wait for them
-        const checkAppointments = setInterval(() => {
+        // Poll until appointments are available
+        chatIntervalRef.current = setInterval(() => {
           if (appointments.length > 0) {
-            const appointment = appointments.find(appt => appt._id === chatIdFromUrl);
-            if (appointment) {
-              setNotificationChatData(appointment);
-              setShouldOpenChatFromNotification(true);
-              setActiveChatAppointmentId(chatIdFromUrl);
-            }
-            clearInterval(checkAppointments);
+            tryResolveChat();
+            if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
           }
         }, 100);
-        
-        // Cleanup interval after 5 seconds to prevent infinite waiting
-        setTimeout(() => {
-          clearInterval(checkAppointments);
-          // If appointments have been loaded but chatId not found, show error
-          setMissingChatbookError(chatIdFromUrl);
-        }, 5000);
       }
+
+      // Fallback after 5s if still unresolved
+      chatTimeoutRef.current = setTimeout(() => {
+        if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
+        if (!chatResolveRef.current) {
+          setMissingChatbookError(chatIdFromUrl);
+        }
+      }, 5000);
     } else if (location.state?.fromNotification && location.state?.openChatForAppointment) {
       // Handle notification-triggered chat opening
       const appointmentId = location.state.openChatForAppointment;
-      
-      // Wait for appointments to be loaded before trying to open chat
-      if (appointments.length > 0) {
+
+      const tryResolveNotified = () => {
         const appointment = appointments.find(appt => appt._id === appointmentId);
         if (appointment) {
+          chatResolveRef.current = true;
           setNotificationChatData(appointment);
           setShouldOpenChatFromNotification(true);
           setActiveChatAppointmentId(appointmentId);
-          // Clear the navigation state after setting the data
           navigate(location.pathname, { replace: true });
+          if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
+          if (chatTimeoutRef.current) clearTimeout(chatTimeoutRef.current);
         }
+      };
+
+      if (appointments.length > 0) {
+        tryResolveNotified();
       } else {
-        // If appointments are not loaded yet, wait for them
-        const checkAppointments = setInterval(() => {
+        chatIntervalRef.current = setInterval(() => {
           if (appointments.length > 0) {
-            const appointment = appointments.find(appt => appt._id === appointmentId);
-            if (appointment) {
-              setNotificationChatData(appointment);
-              setShouldOpenChatFromNotification(true);
-              setActiveChatAppointmentId(appointmentId);
-              // Clear the navigation state after setting the data
-              navigate(location.pathname, { replace: true });
-            }
-            clearInterval(checkAppointments);
+            tryResolveNotified();
+            if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
           }
         }, 100);
-        
-        // Cleanup interval after 5 seconds to prevent infinite waiting
-        setTimeout(() => {
-          clearInterval(checkAppointments);
-          // If appointments have been loaded but appointmentId not found, show error
-          setMissingChatbookError(appointmentId);
-        }, 5000);
       }
+
+      chatTimeoutRef.current = setTimeout(() => {
+        if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
+        if (!chatResolveRef.current) {
+          setMissingChatbookError(appointmentId);
+        }
+      }, 5000);
     }
-  }, [location.state, navigate, appointments, currentUser._id, params.chatId]);
+
+    return () => {
+      if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
+      if (chatTimeoutRef.current) clearTimeout(chatTimeoutRef.current);
+    };
+  }, [location.state, navigate, appointments, currentUser?._id, params.chatId]);
 
   const handleStatusUpdate = async (id, status) => {
     setActionLoading(id + status);
