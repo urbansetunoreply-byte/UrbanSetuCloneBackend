@@ -205,11 +205,20 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
             <span className="inline-flex items-center gap-1"><Bath className="w-4 h-4" /> {listing.bathrooms} {listing.bathrooms > 1 ? 'baths' : 'bath'}</span>
           </div>
           
-          {/* Property Features - Special Offer badge */}
-          <div className="mt-2 flex flex-wrap gap-1">
+          {/* Property Features - Special Offer + Type badge */}
+          <div className="mt-2 flex flex-wrap items-center gap-1">
             {listing.offer && (
               <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
                 Special Offer
+              </span>
+            )}
+            {listing.type && (
+              <span
+                className={`text-xs px-2 py-1 rounded-full font-medium ${
+                  listing.type === 'rent' ? 'bg-teal-100 text-teal-700' : 'bg-purple-100 text-purple-700'
+                }`}
+              >
+                {listing.type === 'rent' ? 'Rent' : 'Sale'}
               </span>
             )}
           </div>
