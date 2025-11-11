@@ -1010,7 +1010,7 @@ export default function Search() {
                     </button>
                 </form>
 
-
+                <div className="hidden md:block h-16"></div>
                 <div className="mb-4"><FilterChips formData={formData} onClear={clearAllFilters} onRemove={removeFilter} /></div>
                 {/* Listings Display */}
                 <div className="mt-4">
