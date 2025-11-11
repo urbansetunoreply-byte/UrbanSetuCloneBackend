@@ -198,7 +198,7 @@ export default function PublicSearch() {
                 <form
                     onSubmit={handleSubmit}
                     ref={filterRef}
-                    className="sticky top-16 z-30 grid md:grid-cols-2 gap-4 bg-white/80 backdrop-blur border p-4 rounded-xl mb-6"
+                    className="md:sticky md:top-16 z-30 grid md:grid-cols-2 gap-4 bg-white/80 backdrop-blur border p-4 rounded-xl mb-6"
                 >
                     <div className="relative">
                         <FormField
@@ -371,7 +371,7 @@ export default function PublicSearch() {
                     </button>
                 </form>
 
-                <div style={{ height: filterHeight }}></div>
+                <div className="hidden md:block" style={{ height: filterHeight }}></div>
                 <div className="mb-4"><FilterChips formData={formData} onClear={clearAllFilters} onRemove={removeFilter} /></div>
                 {/* Listings Display */}
                 <div className="mt-4">
