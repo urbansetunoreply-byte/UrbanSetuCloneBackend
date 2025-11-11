@@ -9695,11 +9695,13 @@ export const sendNewMessageNotificationEmail = async (email, messageDetails) => 
               </div>
             </div>
             
-            <!-- Message Preview -->
+            <!-- Message Privacy Notice (no content shown) -->
             <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6; margin-bottom: 30px;">
-              <h3 style="color: #1e40af; margin: 0 0 15px; font-size: 16px; font-weight: 600;">💭 Message Preview</h3>
+              <h3 style="color: #1e40af; margin: 0 0 15px; font-size: 16px; font-weight: 600;">🔒 Message Content Hidden</h3>
               <div style="background-color: white; padding: 15px; border-radius: 6px; border: 1px solid #dbeafe;">
-                <p style="color: #1f2937; margin: 0; font-size: 14px; line-height: 1.6; word-wrap: break-word;">${messagePreview.substring(0, 200)}${messagePreview.length > 200 ? '...' : ''}</p>
+                <p style="color: #1f2937; margin: 0; font-size: 14px; line-height: 1.6; word-wrap: break-word;">
+                  For your privacy, the message content isn’t shown in email. Click the button below to read and reply in UrbanSetu.
+                </p>
               </div>
             </div>
             
