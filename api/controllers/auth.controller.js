@@ -297,34 +297,6 @@ export const SignIn=async(req,res,next)=>{
         // Check for concurrent logins
         const concurrentInfo = detectConcurrentLogins(validUser._id, session.sessionId);
         
-        // Send email notifications
-        try {
-            // Always send new login notification
-            await sendNewLoginEmail(
-                validUser.email,
-                device,
-                identifier,
-                location,
-                new Date()
-            );
-            
-            // Send suspicious login alert if detected
-            if (suspiciousCheck.isSuspicious) {
-                await sendSuspiciousLoginEmail(
-                    validUser.email,
-                    device,
-                    identifier,
-                    location,
-                    suspiciousCheck.previousDevice,
-                    suspiciousCheck.previousIp,
-                    'Unknown Location' // Previous location not stored
-                );
-            }
-        } catch (emailError) {
-            console.error('Email notification error:', emailError);
-            // Don't fail login if email fails
-        }
-        
         // Log session action
         await logSessionAction(
             validUser._id,
@@ -362,6 +334,64 @@ export const SignIn=async(req,res,next)=>{
             path: '/'
         });
         
+        // LOGIN SUCCESSFUL - Send email notifications AFTER login succeeds with retry logic
+        // This is intentionally async and non-blocking
+        (async () => {
+            try {
+                // Helper function to send email with 3 retry attempts
+                const sendEmailWithFallback = async (emailFn, maxAttempts = 3) => {
+                    let lastError = null;
+                    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+                        try {
+                            await emailFn();
+                            console.log(`✅ Email sent successfully on attempt ${attempt}`);
+                            return true;
+                        } catch (error) {
+                            lastError = error;
+                            console.error(`❌ Email attempt ${attempt}/${maxAttempts} failed:`, error.message);
+                            // Wait before retrying (exponential backoff: 1s, 2s, 4s)
+                            if (attempt < maxAttempts) {
+                                await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt - 1) * 1000));
+                            }
+                        }
+                    }
+                    console.error(`❌ Failed to send email after ${maxAttempts} attempts`);
+                    return false;
+                };
+                
+                // Send new login notification with retry
+                await sendEmailWithFallback(() => 
+                    sendNewLoginEmail(
+                        validUser.email,
+                        device,
+                        identifier,
+                        location,
+                        new Date()
+                    )
+                );
+                
+                // Send suspicious login alert if detected, with retry
+                if (suspiciousCheck.isSuspicious) {
+                    await sendEmailWithFallback(() =>
+                        sendSuspiciousLoginEmail(
+                            validUser.email,
+                            device,
+                            identifier,
+                            location,
+                            suspiciousCheck.previousDevice,
+                            suspiciousCheck.previousIp,
+                            'Unknown Location'
+                        )
+                    );
+                }
+            } catch (error) {
+                console.error('Post-login email notification error (non-blocking):', error);
+                // Don't fail login - this is fire-and-forget
+            }
+        })().catch(error => {
+            console.error('Unhandled error in post-login email notification:', error);
+        });
+        
         res.status(200).json({
             _id: validUser._id,
             username: validUser.username,
@@ -375,7 +405,8 @@ export const SignIn=async(req,res,next)=>{
             address: validUser.address,
             gender: validUser.gender,
             token: accessToken, // Keep for backward compatibility
-            sessionId: session.sessionId
+            sessionId: session.sessionId,
+            emailNotificationStatus: 'pending' // Inform client that email is being sent
         });
     }
     catch(error){
@@ -416,33 +447,66 @@ export const Google=async (req,res,next)=>{
                 path: '/'
             });
 
-            // Send new login notifications
-            try {
-                const userAgent = req.get('User-Agent');
-                const device = getDeviceInfo(userAgent);
-                const location = getLocationFromIP(req.ip || req.connection.remoteAddress);
-                await sendNewLoginEmail(
-                    validUser.email,
-                    device,
-                    req.ip,
-                    location,
-                    new Date()
-                );
-                const suspiciousCheck = await checkSuspiciousLogin(validUser._id, req.ip, device);
-                if (suspiciousCheck.isSuspicious) {
-                    await sendSuspiciousLoginEmail(
-                        validUser.email,
-                        device,
-                        req.ip,
-                        location,
-                        suspiciousCheck.previousDevice,
-                        suspiciousCheck.previousIp,
-                        'Unknown Location'
+            // LOGIN SUCCESSFUL - Send email notifications with retry logic
+            const userAgent = req.get('User-Agent');
+            const device = getDeviceInfo(userAgent);
+            const location = getLocationFromIP(req.ip || req.connection.remoteAddress);
+            const suspiciousCheck = await checkSuspiciousLogin(validUser._id, req.ip, device);
+            
+            // Send emails AFTER login response (async, non-blocking)
+            (async () => {
+                try {
+                    // Helper function to send email with 3 retry attempts
+                    const sendEmailWithFallback = async (emailFn, maxAttempts = 3) => {
+                        let lastError = null;
+                        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+                            try {
+                                await emailFn();
+                                console.log(`✅ Google login email sent successfully on attempt ${attempt}`);
+                                return true;
+                            } catch (error) {
+                                lastError = error;
+                                console.error(`❌ Google login email attempt ${attempt}/${maxAttempts} failed:`, error.message);
+                                if (attempt < maxAttempts) {
+                                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt - 1) * 1000));
+                                }
+                            }
+                        }
+                        console.error(`❌ Failed to send Google login email after ${maxAttempts} attempts`);
+                        return false;
+                    };
+                    
+                    // Send new login notification with retry
+                    await sendEmailWithFallback(() =>
+                        sendNewLoginEmail(
+                            validUser.email,
+                            device,
+                            req.ip,
+                            location,
+                            new Date()
+                        )
                     );
+                    
+                    // Send suspicious login alert if detected
+                    if (suspiciousCheck.isSuspicious) {
+                        await sendEmailWithFallback(() =>
+                            sendSuspiciousLoginEmail(
+                                validUser.email,
+                                device,
+                                req.ip,
+                                location,
+                                suspiciousCheck.previousDevice,
+                                suspiciousCheck.previousIp,
+                                'Unknown Location'
+                            )
+                        );
+                    }
+                } catch (error) {
+                    console.error('Post-login email notification error (Google, non-blocking):', error);
                 }
-            } catch (emailError) {
-                console.error('Google login notification error:', emailError);
-            }
+            })().catch(error => {
+                console.error('Unhandled error in Google login email notification:', error);
+            });
             
             res.status(200).json({
                 _id: validUser._id,
