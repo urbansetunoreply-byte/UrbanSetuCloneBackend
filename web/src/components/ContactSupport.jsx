@@ -543,7 +543,14 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                       <div key={message._id} className="border border-gray-200 rounded-lg p-4">
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex-1">
-                            <h4 className="font-semibold text-gray-900">{message.subject}</h4>
+                            <div className="flex items-center gap-3 mb-2">
+                              <h4 className="font-semibold text-gray-900">{message.subject}</h4>
+                              {message.ticketId && (
+                                <span className="text-xs font-mono bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                  {message.ticketId}
+                                </span>
+                              )}
+                            </div>
                             <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
                               <FaClock className="w-3 h-3" />
                               {formatDate(message.createdAt)}

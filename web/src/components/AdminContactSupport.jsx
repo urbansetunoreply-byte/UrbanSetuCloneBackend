@@ -452,7 +452,14 @@ export default function AdminContactSupport({ forceModalOpen = false, onModalClo
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-3 mb-3">
                             <div className="flex-1 min-w-0">
-                              <h4 className="font-semibold text-gray-900 truncate">{message.subject}</h4>
+                              <div className="flex items-center gap-2 mb-1">
+                                <h4 className="font-semibold text-gray-900 truncate">{message.subject}</h4>
+                                {message.ticketId && (
+                                  <span className="text-xs font-mono bg-purple-100 text-purple-800 px-2 py-1 rounded flex-shrink-0">
+                                    {message.ticketId}
+                                  </span>
+                                )}
+                              </div>
                               <div className="flex items-center gap-2 mt-1">
                                 <FaUser className="w-3 h-3 text-gray-400" />
                                 <span className="text-sm text-gray-600">{message.name || 'Anonymous'}</span>
@@ -522,7 +529,14 @@ export default function AdminContactSupport({ forceModalOpen = false, onModalClo
                       {selectedMessage?._id === message._id && (
                         <div className="mt-4 p-4 bg-gray-100 rounded-xl animate-slideDown">
                           <div className="flex items-center justify-between mb-3">
-                            <h5 className="font-medium text-gray-900">Full Message</h5>
+                            <div className="flex items-center gap-3">
+                              <h5 className="font-medium text-gray-900">Full Message</h5>
+                              {message.ticketId && (
+                                <span className="text-xs font-mono bg-purple-200 text-purple-900 px-2 py-1 rounded">
+                                  Ticket: {message.ticketId}
+                                </span>
+                              )}
+                            </div>
                             <span className="text-xs text-gray-500">
                               {new Date(message.createdAt).toLocaleString('en-GB', {
                                 day: '2-digit',
