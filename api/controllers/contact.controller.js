@@ -1,14 +1,15 @@
 import { errorHandler } from "../utils/error.js";
 import Contact from "../models/contact.model.js";
+import { sendContactSupportConfirmationEmail, sendContactSupportReplyEmail } from "../utils/emailService.js";
 
 // Send support message (for users)
 export const sendSupportMessage = async (req, res, next) => {
     try {
-        const { email, subject, message } = req.body;
+        const { email, subject, message, name } = req.body;
 
         // Validate required fields
-        if (!email || !subject || !message) {
-            return next(errorHandler(400, "All fields are required"));
+        if (!email || !subject || !message || !name) {
+            return next(errorHandler(400, "All fields (name, email, subject, message) are required"));
         }
 
         // Validate email format
@@ -17,8 +18,13 @@ export const sendSupportMessage = async (req, res, next) => {
             return next(errorHandler(400, "Please provide a valid email address"));
         }
 
+        // Generate unique ticket ID
+        const ticketId = await Contact.generateTicketId();
+
         // Save message to database
         const newContact = new Contact({
+            ticketId,
+            name,
             email,
             subject,
             message
@@ -26,9 +32,18 @@ export const sendSupportMessage = async (req, res, next) => {
 
         await newContact.save();
 
+        // Send confirmation email
+        try {
+            await sendContactSupportConfirmationEmail(email, ticketId, message, name);
+        } catch (emailError) {
+            console.error('Error sending confirmation email:', emailError);
+            // Don't fail the request if email sending fails
+        }
+
         res.status(200).json({
             success: true,
-            message: "Support message sent successfully"
+            message: "Support message sent successfully",
+            ticketId: ticketId
         });
     } catch (error) {
         next(error);
@@ -152,9 +167,18 @@ export const sendAdminReply = async (req, res, next) => {
         
         await message.save();
 
-        // TODO: Send email notification to user
-        // For now, we'll just return success
-        // In a real implementation, you'd integrate with an email service like Nodemailer
+        // Send reply email to user
+        try {
+            await sendContactSupportReplyEmail(
+                message.email,
+                message.ticketId,
+                message.name,
+                message.adminReply
+            );
+        } catch (emailError) {
+            console.error('Error sending reply email:', emailError);
+            // Don't fail the request if email sending fails
+        }
 
         res.status(200).json({
             success: true,
