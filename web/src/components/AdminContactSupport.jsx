@@ -29,6 +29,8 @@ export default function AdminContactSupport({ forceModalOpen = false, onModalClo
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [messageToDelete, setMessageToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
 
   // Handle force modal opening
   useEffect(() => {
@@ -235,6 +237,30 @@ export default function AdminContactSupport({ forceModalOpen = false, onModalClo
     }
   };
 
+  const handleConfirmDeleteAll = async () => {
+    setIsDeletingAll(true);
+    try {
+      const msgs = [...messages];
+      for (const msg of msgs) {
+        try {
+          await fetch(`${API_BASE_URL}/api/contact/messages/${msg._id}`, {
+            method: 'DELETE',
+            credentials: 'include',
+          });
+        } catch (_) { /* ignore individual failures */ }
+      }
+      setMessages([]);
+      fetchUnreadCount();
+      toast.success('All messages deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting all messages:', error);
+      toast.error('Failed to delete all messages. Please try again.');
+    } finally {
+      setIsDeletingAll(false);
+      setShowDeleteAllConfirm(false);
+    }
+  };
+
   const sendReply = async (messageId) => {
     if (!replyMessage.trim()) {
       toast.error('Please enter a reply message');
@@ -410,12 +436,23 @@ export default function AdminContactSupport({ forceModalOpen = false, onModalClo
                   </p>
                 </div>
               </div>
-              <button
-                onClick={handleModalClose}
-                className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full"
-              >
-                <FaTimes className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                {messages.length > 0 && (
+                  <button
+                    onClick={() => setShowDeleteAllConfirm(true)}
+                    className="text-red-500 hover:text-red-700 transition-colors p-2 hover:bg-red-50 rounded-full"
+                    title="Delete all messages"
+                  >
+                    <FaTrash className="w-4 h-4" />
+                  </button>
+                )}
+                <button
+                  onClick={handleModalClose}
+                  className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full"
+                >
+                  <FaTimes className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             {/* Content */}
@@ -752,6 +789,19 @@ export default function AdminContactSupport({ forceModalOpen = false, onModalClo
         isDestructive={true}
         isLoading={isDeleting}
       />
+
+      {/* Confirmation Modal for Delete All Messages */}
+      <ConfirmationModal
+        isOpen={showDeleteAllConfirm}
+        onClose={() => setShowDeleteAllConfirm(false)}
+        onConfirm={handleConfirmDeleteAll}
+        title="Delete All Messages"
+        message="Are you sure you want to delete all support messages? This action cannot be undone."
+        confirmText="Delete All"
+        cancelText="Cancel"
+        isDestructive={true}
+        isLoading={isDeletingAll}
+      />
     </>
   );
-} 
+}

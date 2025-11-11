@@ -32,6 +32,8 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [messageToDelete, setMessageToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
 
   // Handle force modal opening
   useEffect(() => {
@@ -204,6 +206,31 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
     }
   };
 
+  const handleDeleteAllMessages = async () => {
+    setIsDeletingAll(true);
+    try {
+      // Delete each message sequentially to avoid server overload
+      const msgs = [...userMessages];
+      for (const msg of msgs) {
+        try {
+          await fetch(`${API_BASE_URL}/api/contact/user-messages/${msg._id}?email=${encodeURIComponent(currentUser.email)}`, {
+            method: 'DELETE',
+            credentials: 'include'
+          });
+        } catch (_) { /* ignore individual failures */ }
+      }
+      setUserMessages([]);
+      setUnreadReplies(0);
+      toast.success('All messages deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting all messages:', error);
+      toast.error('Failed to delete all messages. Please try again.');
+    } finally {
+      setIsDeletingAll(false);
+      setShowDeleteAllConfirm(false);
+    }
+  };
+
   // Function to get icon color based on current route
   const getIconColor = () => {
     const path = location.pathname;
@@ -342,12 +369,23 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                   <p className="text-sm text-gray-600">We're here to help you!</p>
                 </div>
               </div>
-              <button
-                onClick={handleModalClose}
-                className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full"
-              >
-                <FaTimes className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                {currentUser && activeTab === 'messages' && userMessages.length > 0 && (
+                  <button
+                    onClick={() => setShowDeleteAllConfirm(true)}
+                    className="text-red-500 hover:text-red-700 transition-colors p-2 hover:bg-red-50 rounded-full"
+                    title="Delete all messages"
+                  >
+                    <FaTrash className="w-4 h-4" />
+                  </button>
+                )}
+                <button
+                  onClick={handleModalClose}
+                  className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full"
+                >
+                  <FaTimes className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             {/* Tabs for logged-in users */}
@@ -704,6 +742,19 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
         isDestructive={true}
         isLoading={isDeleting}
       />
+
+      {/* Confirmation Modal for Delete All Messages */}
+      <ConfirmationModal
+        isOpen={showDeleteAllConfirm}
+        onClose={() => setShowDeleteAllConfirm(false)}
+        onConfirm={handleDeleteAllMessages}
+        title="Delete All Messages"
+        message="Are you sure you want to delete all your messages? This action cannot be undone."
+        confirmText="Delete All"
+        cancelText="Cancel"
+        isDestructive={true}
+        isLoading={isDeletingAll}
+      />
     </>
   );
-} 
+}

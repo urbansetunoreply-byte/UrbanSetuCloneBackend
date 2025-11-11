@@ -285,10 +285,14 @@ export default function AdminAppointmentListing() {
                   required
                 >
                   <option value="">Select Time (9 AM - 7 PM)</option>
-                  {Array.from({ length: 11 }, (_, i) => {
-                    const hour = 9 + i;
-                    const timeStr = `${hour.toString().padStart(2, '0')}:00`;
-                    const displayStr = hour > 12 ? `${hour - 12}:00 PM` : hour === 12 ? '12:00 PM' : `${hour}:00 AM`;
+                  {Array.from({ length: 21 }, (_, i) => {
+                    const totalMinutes = 9 * 60 + i * 30;
+                    const hour = Math.floor(totalMinutes / 60);
+                    const minutes = totalMinutes % 60;
+                    const timeStr = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                    const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+                    const period = hour >= 12 ? 'PM' : 'AM';
+                    const displayStr = `${displayHour}:${minutes.toString().padStart(2, '0')} ${period}`;
                     return (
                       <option key={timeStr} value={timeStr}>
                         {displayStr}
