@@ -9645,8 +9645,8 @@ export const sendNewMessageNotificationEmail = async (email, messageDetails) => 
       senderImage
     } = messageDetails;
 
-    const chatUrl = `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments/chat/${appointmentId}`;
-    const subject = `💬 New Message from ${senderName} - ${propertyName}`;
+    const chatUrl = `https://urbansetu.com/appointments/${appointmentId}?chat=true`;
+    const subject = `New Message on UrbanSetu`;
     
     const html = `
       <!DOCTYPE html>
@@ -9695,12 +9695,12 @@ export const sendNewMessageNotificationEmail = async (email, messageDetails) => 
               </div>
             </div>
             
-            <!-- Message Privacy Notice (no content shown) -->
+            <!-- Message Preview (short) -->
             <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6; margin-bottom: 30px;">
-              <h3 style="color: #1e40af; margin: 0 0 15px; font-size: 16px; font-weight: 600;">🔒 Message Content Hidden</h3>
+              <h3 style="color: #1e40af; margin: 0 0 15px; font-size: 16px; font-weight: 600;">💭 Message Preview</h3>
               <div style="background-color: white; padding: 15px; border-radius: 6px; border: 1px solid #dbeafe;">
-                <p style="color: #1f2937; margin: 0; font-size: 14px; line-height: 1.6; word-wrap: break-word;">
-                  For your privacy, the message content isn’t shown in email. Click the button below to read and reply in UrbanSetu.
+                <p style="color: #1f2937; margin: 0; font-size: 14px; line-height: 1.6; word-wrap: break-word; max-height: 3.2em; overflow: hidden;">
+                  ${messagePreview ? messagePreview.substring(0, 140) : ''}${messagePreview && messagePreview.length > 140 ? '...' : ''}
                 </p>
               </div>
             </div>

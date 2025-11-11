@@ -507,13 +507,13 @@ router.post('/:id/comment', verifyToken, async (req, res) => {
         }
       }
       
-      // Send email notification to the other party
+      // Smart email notification to the other party
       try {
         const sender = await User.findById(userId).select('username email firstName lastName');
         const recipientUser = isBuyer 
-          ? await User.findById(bookingToComment.sellerId).select('email firstName lastName')
-          : await User.findById(bookingToComment.buyerId).select('email firstName lastName');
-        
+          ? await User.findById(bookingToComment.sellerId).select('email firstName lastName _id')
+          : await User.findById(bookingToComment.buyerId).select('email firstName lastName _id');
+
         if (sender && recipientUser && recipientUser.email) {
           const senderName = sender.firstName && sender.lastName 
             ? `${sender.firstName} ${sender.lastName}` 
@@ -521,23 +521,61 @@ router.post('/:id/comment', verifyToken, async (req, res) => {
           const recipientName = recipientUser.firstName && recipientUser.lastName
             ? `${recipientUser.firstName} ${recipientUser.lastName}`
             : recipientUser.email.split('@')[0];
-          
-          const messagePreview = message || (imageUrl ? '📷 Image' : (videoUrl ? '🎥 Video' : (documentUrl ? '📄 Document' : (audioUrl ? '🔊 Audio' : 'Message'))));
-          
-          const messageDetails = {
-            recipientName,
-            senderName,
-            appointmentId: id,
-            propertyName: bookingToComment.propertyName || 'Your Property',
-            messagePreview: messagePreview.substring(0, 150),
-            messageType: type || 'text'
-          };
-          
-          await sendNewMessageNotificationEmail(recipientUser.email, messageDetails);
-          console.log(`📧 New message notification email sent to: ${recipientUser.email}`);
+
+          // Determine online status of recipient
+          const onlineUsers = req.app.get('onlineUsers') || new Set();
+          const recipientId = recipientUser._id.toString();
+          const recipientOnline = onlineUsers.has(recipientId);
+
+          // Update unread counters and decide email
+          const now = new Date();
+          let shouldSendEmail = false;
+          const apptDoc = await booking.findById(id);
+          if (apptDoc) {
+            // Increment unread for recipient only if sender is the other party
+            if (isBuyer) {
+              // recipient is seller
+              apptDoc.sellerUnreadMessageCount = (apptDoc.sellerUnreadMessageCount || 0) + 1;
+              // Cooldown and first-unread logic when offline
+              const lastSent = apptDoc.sellerLastEmailSentAt ? new Date(apptDoc.sellerLastEmailSentAt) : null;
+              const cooldownMs = 60 * 60 * 1000; // 60 minutes
+              const inCooldown = lastSent && (now - lastSent) < cooldownMs;
+              if (!recipientOnline && apptDoc.sellerUnreadMessageCount === 1 && !inCooldown) {
+                shouldSendEmail = true;
+                apptDoc.sellerLastEmailSentAt = now;
+              }
+            } else if (isSeller) {
+              // recipient is buyer
+              apptDoc.buyerUnreadMessageCount = (apptDoc.buyerUnreadMessageCount || 0) + 1;
+              const lastSent = apptDoc.buyerLastEmailSentAt ? new Date(apptDoc.buyerLastEmailSentAt) : null;
+              const cooldownMs = 60 * 60 * 1000; // 60 minutes
+              const inCooldown = lastSent && (now - lastSent) < cooldownMs;
+              if (!recipientOnline && apptDoc.buyerUnreadMessageCount === 1 && !inCooldown) {
+                shouldSendEmail = true;
+                apptDoc.buyerLastEmailSentAt = now;
+              }
+            }
+            await apptDoc.save();
+          }
+
+          if (shouldSendEmail) {
+            const messagePreview = message || (imageUrl ? '📷 Image' : (videoUrl ? '🎥 Video' : (documentUrl ? '📄 Document' : (audioUrl ? '🔊 Audio' : 'Message'))));
+            const messageDetails = {
+              recipientName,
+              senderName,
+              appointmentId: id,
+              propertyName: bookingToComment.propertyName || 'Your Property',
+              messagePreview: (messagePreview || '').toString().substring(0, 140),
+              messageType: type || 'text'
+            };
+            await sendNewMessageNotificationEmail(recipientUser.email, messageDetails);
+            console.log(`📧 New message notification email sent to: ${recipientUser.email}`);
+          } else {
+            console.log('📧 Email suppressed (online or cooldown or not first unread). Recipient:', recipientUser.email);
+          }
         }
       } catch (emailError) {
-        console.error('Error sending new message notification email:', emailError);
+        console.error('Error processing new message notification email:', emailError);
         // Don't fail the request if email fails
       }
       
@@ -1830,6 +1868,19 @@ router.patch('/:id/comments/read', verifyToken, async (req, res) => {
     }
     
     if (updated) {
+      // Reset smart email unread counters for this user since they read/opened chat
+      try {
+        if (userIdStr === buyerIdStr) {
+          bookingDoc.buyerUnreadMessageCount = 0;
+          bookingDoc.buyerLastEmailSentAt = null; // reset offline-session
+        } else if (userIdStr === sellerIdStr) {
+          bookingDoc.sellerUnreadMessageCount = 0;
+          bookingDoc.sellerLastEmailSentAt = null; // reset offline-session
+        }
+      } catch (e) {
+        console.warn('Failed to reset unread counters:', e.message);
+      }
+
       // Use retry logic to handle version conflicts
       let retryCount = 0;
       const maxRetries = 3;

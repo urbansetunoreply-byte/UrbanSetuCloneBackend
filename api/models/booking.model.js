@@ -157,6 +157,11 @@ const bookingSchema = new mongoose.Schema({
   sellerChatAccessGranted: { type: Boolean, default: false },
   // Payment status tracking
   paymentConfirmed: { type: Boolean, default: false },
+  // Smart email notification tracking
+  buyerLastEmailSentAt: { type: Date, default: null },
+  sellerLastEmailSentAt: { type: Date, default: null },
+  buyerUnreadMessageCount: { type: Number, default: 0 },
+  sellerUnreadMessageCount: { type: Number, default: 0 },
 });
 
 const booking = mongoose.model("Booking", bookingSchema);
