@@ -866,8 +866,8 @@ export default function AdminExplore() {
 
             {/* Advanced Filters */}
             <div className="flex gap-2">
-              <FormField id="minPrice" name="minPrice" placeholder="Min Price" value={formData.minPrice} onChange={handleChanges} startIcon={<IndianRupee className="w-4 h-4" />} />
-              <FormField id="maxPrice" name="maxPrice" placeholder="Max Price" value={formData.maxPrice} onChange={handleChanges} startIcon={<IndianRupee className="w-4 h-4" />} />
+              <FormField id="minPrice" name="minPrice" type="number" placeholder="Min Price" value={formData.minPrice} onChange={handleChanges} startIcon={<IndianRupee className="w-4 h-4" />} min={0} />
+              <FormField id="maxPrice" name="maxPrice" type="number" placeholder="Max Price" value={formData.maxPrice} onChange={handleChanges} startIcon={<IndianRupee className="w-4 h-4" />} min={0} />
             </div>
             <div className="flex gap-2">
               <input

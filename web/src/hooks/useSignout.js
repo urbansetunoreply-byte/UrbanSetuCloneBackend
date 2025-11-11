@@ -1,5 +1,6 @@
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from '../redux/user/userSlice';
 import { persistor } from '../redux/store';
 import { reconnectSocket } from '../utils/socket';
@@ -10,6 +11,7 @@ export const useSignout = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const signout = async (options = {}) => {
     const { 
@@ -22,6 +24,7 @@ export const useSignout = () => {
     } = options;
 
     try {
+      setIsSigningOut(true);
       dispatch(signoutUserStart());
       const res = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
       const data = await res.json();
@@ -58,6 +61,7 @@ export const useSignout = () => {
       if (onSuccess) onSuccess();
       
       await new Promise(resolve => setTimeout(resolve, delay));
+      setIsSigningOut(false);
       navigate(navigateTo, { replace: true });
       
     } catch (error) {
@@ -86,9 +90,10 @@ export const useSignout = () => {
       }
       
       if (onError) onError(error.message);
+      setIsSigningOut(false);
       navigate(navigateTo, { replace: true });
     }
   };
 
-  return { signout };
+  return { signout, isSigningOut };
 };

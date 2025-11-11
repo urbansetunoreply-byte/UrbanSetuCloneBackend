@@ -23,7 +23,7 @@ export default function AdminHeader() {
   const [appointmentCount, setAppointmentCount] = useState(0);
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { signout } = useSignout();
+  const { signout, isSigningOut } = useSignout();
 
   // NEW: For desktop search icon expansion
   const [searchOpen, setSearchOpen] = useState(false);
@@ -235,6 +235,16 @@ export default function AdminHeader() {
   };
 
   return (
+    <>
+      {/* Signout Loading Modal */}
+      {isSigningOut && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999]">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 flex flex-col items-center gap-4 max-w-sm">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600"></div>
+            <p className="text-lg font-semibold text-gray-800">Signing out...</p>
+          </div>
+        </div>
+      )}
     <header className={`relative ${getHeaderGradient()} shadow-xl border-b border-white/20 sticky top-0 z-50 transition-all duration-300 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
       {/* Admin Top Bar */}
       <div className="bg-black/20 border-b border-white/10">
@@ -427,6 +437,7 @@ export default function AdminHeader() {
         </div>
       )}
     </header>
+    </>
   );
 }
 
