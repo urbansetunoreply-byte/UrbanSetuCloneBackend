@@ -6,11 +6,6 @@ import data from "../data/countries+states+cities.json";
 import duckImg from "../assets/duck-go-final.gif";
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 import SearchSuggestions from '../components/SearchSuggestions';
-import FormField from "../components/ui/FormField";
-import SelectField from "../components/ui/SelectField";
-import ListingSkeletonGrid from "../components/skeletons/ListingSkeletonGrid";
-import FilterChips from "../components/search/FilterChips";
-import { Search as SearchIcon, IndianRupee } from "lucide-react";
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -122,23 +117,6 @@ export default function PublicSearch() {
         setTimeout(() => setShowSuggestions(false), 200);
     };
 
-    const clearAllFilters = () => {
-        const reset = {
-            searchTerm: "", type: "all", parking: false, furnished: false, offer: false,
-            sort: "createdAt", order: "desc", minPrice: "", maxPrice: "",
-            state: "", bedrooms: "", bathrooms: ""
-        };
-        setFormData(reset);
-        navigate(`?${new URLSearchParams(reset).toString()}`);
-    };
-
-    const removeFilter = (key) => {
-        const updated = { ...formData };
-        if (typeof updated[key] === 'boolean') updated[key] = false; else updated[key] = "";
-        setFormData(updated);
-        navigate(`?${new URLSearchParams(updated).toString()}`);
-    };
-
     const handleSubmit = (e) => {
         e.preventDefault();
         const urlParams = new URLSearchParams(formData);
@@ -172,9 +150,10 @@ export default function PublicSearch() {
 
     if (loading) {
         return (
-            <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
-                <div className="max-w-6xl mx-auto">
-                    <ListingSkeletonGrid count={9} />
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="mt-2 text-gray-600">Loading properties...</p>
                 </div>
             </div>
         );
@@ -182,25 +161,26 @@ export default function PublicSearch() {
 
     return (
         <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
-            <div className="max-w-6xl mx-auto bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-4 md:p-6 relative">
+            <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6 relative">
                 <h3 className="text-3xl font-extrabold text-blue-700 mb-6 text-center drop-shadow">
                     Explore Properties
                 </h3>
                 <form
                     onSubmit={handleSubmit}
-                    className="grid md:grid-cols-2 gap-4 bg-white/80 backdrop-blur border p-4 rounded-xl mb-6"
+                    className="grid md:grid-cols-2 gap-4 bg-gray-100 p-4 rounded-lg mb-6"
                 >
                     <div className="relative">
-                        <FormField
-                            id="searchTerm"
+                        <input
+                            type="text"
                             name="searchTerm"
+                            placeholder="Search..."
                             value={formData.searchTerm}
                             onChange={handleChanges}
-                            placeholder="Search..."
-                            startIcon={<SearchIcon className="w-4 h-4" />}
                             onFocus={handleSearchInputFocus}
                             onBlur={handleSearchInputBlur}
+                            className="p-2 border rounded-md w-full"
                         />
+                        
                         <SearchSuggestions
                             searchTerm={formData.searchTerm}
                             onSuggestionClick={handleSuggestionClick}
@@ -210,20 +190,24 @@ export default function PublicSearch() {
                         />
                     </div>
 
-                    <SelectField
-                        id="sort_order"
-                        value={`${formData.sort}_${formData.order}`}
+                    <select
+                        name="sort_order"
                         onChange={(e) => {
                             const [sort, order] = e.target.value.split("_");
-                            setFormData((prev) => ({ ...prev, sort, order }));
+                            setFormData((prev) => ({
+                                ...prev,
+                                sort,
+                                order,
+                            }));
                         }}
-                        options={[
-                            { value: "regularPrice_desc", label: "Price high to low" },
-                            { value: "regularPrice_asc", label: "Price low to high" },
-                            { value: "createdAt_desc", label: "Latest" },
-                            { value: "createdAt_asc", label: "Oldest" },
-                        ]}
-                    />
+                        value={`${formData.sort}_${formData.order}`}
+                        className="p-2 border rounded-md w-full"
+                    >
+                        <option value="regularPrice_desc">Price high to low</option>
+                        <option value="regularPrice_asc">Price low to high</option>
+                        <option value="createdAt_desc">Latest</option>
+                        <option value="createdAt_asc">Oldest</option>
+                    </select>
 
                     {/* LocationSelector for search - City disabled for public search */}
                     <div className="md:col-span-2">
@@ -328,8 +312,24 @@ export default function PublicSearch() {
 
                     {/* Advanced Filters */}
                     <div className="flex gap-2">
-                      <FormField id="minPrice" name="minPrice" placeholder="Min Price" value={formData.minPrice} onChange={handleChanges} startIcon={<IndianRupee className="w-4 h-4" />} />
-                      <FormField id="maxPrice" name="maxPrice" placeholder="Max Price" value={formData.maxPrice} onChange={handleChanges} startIcon={<IndianRupee className="w-4 h-4" />} />
+                      <input
+                        type="number"
+                        name="minPrice"
+                        placeholder="Min Price"
+                        value={formData.minPrice}
+                        onChange={handleChanges}
+                        className="p-2 border rounded-md w-full"
+                        min={0}
+                      />
+                      <input
+                        type="number"
+                        name="maxPrice"
+                        placeholder="Max Price"
+                        value={formData.maxPrice}
+                        onChange={handleChanges}
+                        className="p-2 border rounded-md w-full"
+                        min={0}
+                      />
                     </div>
                     <div className="flex gap-2">
                       <input
@@ -361,8 +361,6 @@ export default function PublicSearch() {
                     </button>
                 </form>
 
-                <div className="hidden md:block h-16"></div>
-                <div className="mb-4"><FilterChips formData={formData} onClear={clearAllFilters} onRemove={removeFilter} /></div>
                 {/* Listings Display */}
                 <div className="mt-4">
                     <h2 className="text-2xl font-bold text-gray-800 mb-4">Listings</h2>
