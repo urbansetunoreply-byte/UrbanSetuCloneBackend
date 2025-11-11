@@ -6,6 +6,8 @@ import { FaHeart, FaTrash } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import { maskAddress } from '../utils/addressMasking';
 import { toast } from 'react-toastify';
+import PrimaryButton from "./ui/PrimaryButton";
+import { MapPin, Bath, BedDouble, Tag } from "lucide-react";
 
 export default function ListingItem({ listing, onDelete, onWishToggle }) {
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
@@ -74,15 +76,12 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
   }
 
   return (
-    <div className="relative bg-white shadow-md rounded-lg overflow-hidden p-1 sm:p-2 lg:p-4">
+    <div className="group relative bg-white/90 backdrop-blur-xl rounded-2xl overflow-hidden border border-gray-100 shadow-2xl transition-transform duration-200 hover:-translate-y-0.5">
       {/* Offer Badge */}
       {listing.offer && getDiscountPercentage() > 0 && (
-        <div className="absolute top-2 sm:top-4 left-2 sm:left-4 z-20">
-          <span
-            className="bg-yellow-400 text-gray-900 text-xs font-semibold px-2 py-1 rounded-full shadow-md animate-pulse"
-            title="Limited-time offer!"
-          >
-            {getDiscountPercentage()}% OFF
+        <div className="absolute top-2 sm:top-3 left-2 sm:left-3 z-20">
+          <span className="inline-flex items-center gap-1 bg-yellow-400 text-gray-900 text-[10px] sm:text-xs font-semibold px-2 py-1 rounded-full shadow-md">
+            <Tag className="w-3 h-3" /> {getDiscountPercentage()}% OFF
           </span>
         </div>
       )}
@@ -112,25 +111,33 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
 
 
       <Link to={listingLink}>
-        {listing.imageUrls && listing.imageUrls.length > 0 ? (
-          <img
-            src={listing.imageUrls[0]}
-            alt="home"
-            className="w-full h-28 sm:h-40 lg:h-48 object-cover rounded-md"
-            onError={(e) => {
-              e.target.src = "https://via.placeholder.com/400x300?text=No+Image";
-              e.target.className = "w-full h-28 sm:h-40 lg:h-48 object-cover rounded-md opacity-50";
-            }}
-          />
-        ) : (
-          <div className="w-full h-28 sm:h-40 lg:h-48 bg-gray-200 rounded-md flex items-center justify-center">
-            <div className="text-center text-gray-500">
-              <div className="text-4xl mb-2">🏠</div>
-              <p className="text-sm">No Image</p>
+        <div className="relative">
+          {listing.imageUrls && listing.imageUrls.length > 0 ? (
+            <div className="aspect-[16/10] w-full overflow-hidden">
+              <img
+                src={listing.imageUrls[0]}
+                alt="home"
+                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                onError={(e) => {
+                  e.target.src = "https://via.placeholder.com/400x300?text=No+Image";
+                  e.target.className = "h-full w-full object-cover opacity-50";
+                }}
+              />
             </div>
+          ) : (
+            <div className="aspect-[16/10] w-full bg-gray-100 flex items-center justify-center">
+              <div className="text-center text-gray-500">
+                <div className="text-4xl mb-2">🏠</div>
+                <p className="text-sm">No Image</p>
+              </div>
+            </div>
+          )}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/50 to-transparent" />
+          <div className="absolute top-2 right-2">
+            <span className="px-2 py-1 text-[10px] sm:text-xs rounded-full bg-white/90 backdrop-blur text-gray-800 font-medium border">{listing.type === 'rent' ? 'For Rent' : 'For Sale'}</span>
           </div>
-        )}
-        <div className="p-2 sm:p-3">
+        </div>
+        <div className="p-3 sm:p-4">
           <div className="flex items-center justify-between">
             <p className="text-gray-700 font-semibold text-base sm:text-lg truncate flex-1">
               {listing.name}
@@ -151,11 +158,10 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
               </button>
             )}
           </div>
-          <div className="text-sm text-gray-500 flex items-center gap-1 mt-1">
-            <MdLocationOn className="text-red-500" />
+          <div className="text-xs sm:text-sm text-gray-600 flex items-center gap-1 mt-1">
+            <MapPin className="w-4 h-4 text-red-500" />
             <p className="truncate">
               {maskAddress(
-                // Create address object if structured fields exist, otherwise use legacy address
                 listing.propertyNumber || listing.city ? {
                   propertyNumber: listing.propertyNumber,
                   landmark: listing.landmark,
@@ -197,9 +203,9 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
               </p>
             )}
           </div>
-          <div className="flex space-x-2 sm:space-x-4 text-gray-600 text-xs sm:text-sm mt-2">
-            <p>{listing.bedrooms > 1 ? `${listing.bedrooms} beds` : `${listing.bedrooms} bed`}</p>
-            <p>{listing.bathrooms > 1 ? `${listing.bathrooms} bathrooms` : `${listing.bathrooms} bathroom`}</p>
+          <div className="flex items-center gap-3 text-gray-700 text-xs sm:text-sm mt-2">
+            <span className="inline-flex items-center gap-1"><BedDouble className="w-4 h-4" /> {listing.bedrooms} {listing.bedrooms > 1 ? 'beds' : 'bed'}</span>
+            <span className="inline-flex items-center gap-1"><Bath className="w-4 h-4" /> {listing.bathrooms} {listing.bathrooms > 1 ? 'baths' : 'bath'}</span>
           </div>
           
           {/* Property Features - Special Offer badge */}
@@ -219,12 +225,9 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
             You cannot book an appointment for your own property.
           </div>
         ) : (
-          <button
-            onClick={onHandleAppointment}
-            className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center justify-center gap-2 text-sm sm:text-base"
-          >
+          <PrimaryButton variant="blue" type="button" onClick={onHandleAppointment} className="!py-2 sm:!py-3">
             📅 Book Appointment
-          </button>
+          </PrimaryButton>
         )}
       </div>
     </div>
