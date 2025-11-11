@@ -1311,7 +1311,7 @@ export default function Profile() {
     await signout({
       showToast: true,
       navigateTo: "/",
-      delay: 800
+      delay: 50
     });
   };
 
