@@ -15,7 +15,8 @@ import {
   sendAppointmentCancelledByAdminEmail,
   sendAppointmentReinitiatedByAdminEmail,
   sendAppointmentReinitiatedBySellerEmail,
-  sendAppointmentReinitiatedByBuyerEmail
+  sendAppointmentReinitiatedByBuyerEmail,
+  sendNewMessageNotificationEmail
 } from '../utils/emailService.js';
 import bcryptjs from 'bcryptjs';
 
@@ -504,6 +505,40 @@ router.post('/:id/comment', verifyToken, async (req, res) => {
         for (const adminSocket of adminSockets) {
           adminSocket.emit('commentUpdate', emitData);
         }
+      }
+      
+      // Send email notification to the other party
+      try {
+        const sender = await User.findById(userId).select('username email firstName lastName');
+        const recipientUser = isBuyer 
+          ? await User.findById(bookingToComment.sellerId).select('email firstName lastName')
+          : await User.findById(bookingToComment.buyerId).select('email firstName lastName');
+        
+        if (sender && recipientUser && recipientUser.email) {
+          const senderName = sender.firstName && sender.lastName 
+            ? `${sender.firstName} ${sender.lastName}` 
+            : sender.username;
+          const recipientName = recipientUser.firstName && recipientUser.lastName
+            ? `${recipientUser.firstName} ${recipientUser.lastName}`
+            : recipientUser.email.split('@')[0];
+          
+          const messagePreview = message || (imageUrl ? '📷 Image' : (videoUrl ? '🎥 Video' : (documentUrl ? '📄 Document' : (audioUrl ? '🔊 Audio' : 'Message'))));
+          
+          const messageDetails = {
+            recipientName,
+            senderName,
+            appointmentId: id,
+            propertyName: bookingToComment.propertyName || 'Your Property',
+            messagePreview: messagePreview.substring(0, 150),
+            messageType: type || 'text'
+          };
+          
+          await sendNewMessageNotificationEmail(recipientUser.email, messageDetails);
+          console.log(`📧 New message notification email sent to: ${recipientUser.email}`);
+        }
+      } catch (emailError) {
+        console.error('Error sending new message notification email:', emailError);
+        // Don't fail the request if email fails
       }
       
       // Only mark as delivered if the intended recipient is online
