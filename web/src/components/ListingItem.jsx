@@ -133,9 +133,6 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
             </div>
           )}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/50 to-transparent" />
-          <div className="absolute top-2 right-2">
-            <span className="px-2 py-1 text-[10px] sm:text-xs rounded-full bg-white/90 backdrop-blur text-gray-800 font-medium border">{listing.type === 'rent' ? 'For Rent' : 'For Sale'}</span>
-          </div>
         </div>
         <div className="p-3 sm:p-4">
           <div className="flex items-center justify-between">
