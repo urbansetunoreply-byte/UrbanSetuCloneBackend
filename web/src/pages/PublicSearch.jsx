@@ -6,6 +6,7 @@ import data from "../data/countries+states+cities.json";
 import duckImg from "../assets/duck-go-final.gif";
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 import SearchSuggestions from '../components/SearchSuggestions';
+import FilterChips from "../components/search/FilterChips";
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -146,6 +147,24 @@ export default function PublicSearch() {
         const updatedLoc = { ...loc, city: "" };
         setLocationFilter(updatedLoc);
         setFormData((prev) => ({ ...prev, state: loc.state, district: loc.district, city: "" }));
+    };
+
+    const clearAllFilters = () => {
+        const reset = {
+            searchTerm: "", type: "all", parking: false, furnished: false, offer: false,
+            sort: "createdAt", order: "desc", minPrice: "", maxPrice: "",
+            city: "", state: "", bedrooms: "", bathrooms: ""
+        };
+        setFormData(reset);
+        setLocationFilter({ state: "", district: "", city: "" });
+        navigate(`?${new URLSearchParams(reset).toString()}`);
+    };
+
+    const removeFilter = (key) => {
+        const updated = { ...formData };
+        if (typeof updated[key] === 'boolean') updated[key] = false; else updated[key] = "";
+        setFormData(updated);
+        navigate(`?${new URLSearchParams(updated).toString()}`);
     };
 
     if (loading) {
@@ -361,6 +380,8 @@ export default function PublicSearch() {
                     </button>
                 </form>
 
+                <div className="hidden md:block h-16"></div>
+                <div className="mb-4"><FilterChips formData={formData} onClear={clearAllFilters} onRemove={removeFilter} /></div>
                 {/* Listings Display */}
                 <div className="mt-4">
                     <h2 className="text-2xl font-bold text-gray-800 mb-4">Listings</h2>

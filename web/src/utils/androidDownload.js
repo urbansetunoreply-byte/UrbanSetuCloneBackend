@@ -128,7 +128,7 @@ export const downloadAndroidApp = async (filename = 'UrbanSetu_debug.apk') => {
     // Show success message
     return {
       success: true,
-      message: 'Android app download started!'
+      message: 'Your download has started — thanks for choosing our app!'
     };
   } catch (error) {
     console.error('Download failed:', error);
@@ -146,7 +146,7 @@ export const downloadAndroidApp = async (filename = 'UrbanSetu_debug.apk') => {
       
       return {
         success: true,
-        message: 'Android app download started!'
+        message: 'Your download has started — thanks for choosing our app!'
       };
     } catch (fallbackError) {
       console.error('Fallback download failed:', fallbackError);

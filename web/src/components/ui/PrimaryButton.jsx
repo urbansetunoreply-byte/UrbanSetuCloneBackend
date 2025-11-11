@@ -15,6 +15,8 @@ export default function PrimaryButton({
   variant = "blue",
   className = "",
   type = "submit",
+  onClick = null,
+  ...rest
 }) {
   const gradient = variants[variant] || variants.blue;
   return (
@@ -22,7 +24,9 @@ export default function PrimaryButton({
       type={type}
       disabled={disabled || loading}
       aria-busy={loading ? true : undefined}
+      onClick={onClick}
       className={`w-full py-3 px-4 bg-gradient-to-r ${gradient} text-white font-semibold rounded-lg shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black/5 ${className}`}
+      {...rest}
     >
       {loading ? (
         <div className="flex items-center justify-center">
