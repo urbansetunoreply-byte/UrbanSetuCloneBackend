@@ -277,14 +277,25 @@ export default function AdminAppointmentListing() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Select Time</label>
-                <input
-                  type="time"
+                <select
                   name="time"
                   value={formData.time}
                   onChange={handleChange}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
-                />
+                >
+                  <option value="">Select Time (9 AM - 7 PM)</option>
+                  {Array.from({ length: 11 }, (_, i) => {
+                    const hour = 9 + i;
+                    const timeStr = `${hour.toString().padStart(2, '0')}:00`;
+                    const displayStr = hour > 12 ? `${hour - 12}:00 PM` : hour === 12 ? '12:00 PM' : `${hour}:00 AM`;
+                    return (
+                      <option key={timeStr} value={timeStr}>
+                        {displayStr}
+                      </option>
+                    );
+                  })}
+                </select>
               </div>
             </div>
             

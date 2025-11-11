@@ -1514,6 +1514,7 @@ function getDateLabel(date) {
 }
 function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDelete, actionLoading, onShowOtherParty, onOpenReinitiate, handleArchiveAppointment, handleUnarchiveAppointment, isArchived, onCancelRefresh, copyMessageToClipboard, activeChatAppointmentId, shouldOpenChatFromNotification, onChatOpened, onExportChat, preferUnreadForAppointmentId, onConsumePreferUnread }) {
   // Camera modal state - moved to main MyAppointments component
+  const navigate = useNavigate();
   
   const [replyTo, setReplyTo] = useState(null);
   const [comment, setComment] = useState("");
