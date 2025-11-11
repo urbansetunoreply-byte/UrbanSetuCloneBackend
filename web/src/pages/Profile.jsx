@@ -242,7 +242,7 @@ export default function Profile() {
 
   const { currentUser, error } = useSelector((state) => state.user);
   const { wishlist } = useWishlist();
-  const { signout } = useSignout();
+  const { signout, isSigningOut } = useSignout();
   const dispatch = useDispatch();
   const [formData, setFormData] = useState({ avatar: currentUser?.avatar || "" });
   const [updateSuccess, setUpdateSuccess] = useState(false);
