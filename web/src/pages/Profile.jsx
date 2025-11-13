@@ -510,19 +510,24 @@ export default function Profile() {
 
       if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
         // Fetch admin-specific stats
+        // For admins: fetch ALL listings count (same as /admin/listings page which uses /api/listing/get)
+        // Use a large limit to get count, or adjust based on API response
         const [listingsRes, appointmentsRes] = await Promise.all([
-          authenticatedFetch(`${API_BASE_URL}/api/listing/user`),
+          authenticatedFetch(`${API_BASE_URL}/api/listing/get?limit=999999&startIndex=0`),
           authenticatedFetch(`${API_BASE_URL}/api/bookings/`)
         ]);
 
         const listingsData = await listingsRes.json();
         const appointmentsData = await appointmentsRes.json();
 
-        let listingsCount = Array.isArray(listingsData) ? listingsData.length : 0;
-        if (currentUser.role === 'rootadmin' || currentUser.isDefaultAdmin) {
-          listingsCount = Array.isArray(listingsData)
-            ? listingsData.filter(listing => listing.userRef === currentUser._id).length
-            : 0;
+        // For admins, count ALL listings from /api/listing/get endpoint (same as /admin/listings page)
+        let listingsCount = 0;
+        if (Array.isArray(listingsData)) {
+          // API returns array of listings - count them
+          listingsCount = listingsData.length;
+        } else if (typeof listingsData === 'object') {
+          // If response is an object, try to get count property
+          listingsCount = listingsData.count || listingsData.total || 0;
         }
 
         setUserStats(prev => ({
@@ -531,11 +536,6 @@ export default function Profile() {
           wishlist: prev.wishlist, // Keep the wishlist count from context
           watchlist: watchlistCount
         }));
-      } else {
-        // Fetch regular user stats
-        const [listingsRes, appointmentsRes] = await Promise.all([
-          authenticatedFetch(`${API_BASE_URL}/api/listing/user`),
-          authenticatedFetch(`${API_BASE_URL}/api/bookings/user/${currentUser._id}`)
         ]);
 
         const listingsData = await listingsRes.json();
@@ -933,59 +933,26 @@ export default function Profile() {
       setUpdatePasswordError("Password is required");
       return;
     }
+    
     setLoading(true);
     try {
-      dispatch(updateUserStart());
-      const apiUrl = `${API_BASE_URL}/api/user/update/${currentUser._id}`;
-      const options = createAuthenticatedFetchOptions({
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...formData,
-          avatar: formData.avatar === undefined ? "" : formData.avatar,
-          password: updatePassword,
-        }),
+      // Step 1: Verify password first
+      const verifyRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-password`, {
+        method: 'POST',
+        body: JSON.stringify({ password: updatePassword })
       });
-      const res = await fetch(apiUrl, options);
-      const data = await res.json();
-
-      // Handle new backend validation responses
-      if (data.status === "email_exists") {
-        toast.error("Email already registered. Please use a different one.");
-        setEmailError("Email already registered. Please use a different one.");
-        dispatch(updateUserFailure("Email already registered. Please use a different one."));
-        setLoading(false);
-        setShowUpdatePasswordModal(false);
-        setUpdatePassword("");
-        return;
-      }
-      if (data.status === "mobile_exists") {
-        toast.error("Mobile number already in use. Please choose another one.");
-        setMobileError("Mobile number already in use. Please choose another one.");
-        dispatch(updateUserFailure("Mobile number already in use. Please choose another one."));
-        setLoading(false);
-        setShowUpdatePasswordModal(false);
-        setUpdatePassword("");
-        return;
-      }
-      if (data.status === "mobile_invalid") {
-        setMobileError("Please provide a valid 10-digit mobile number");
-        dispatch(updateUserFailure("Please provide a valid 10-digit mobile number"));
-        setLoading(false);
-        setShowUpdatePasswordModal(false);
-        setUpdatePassword("");
-        return;
-      }
-      if (data.status === "invalid_password") {
+      
+      if (!verifyRes.ok) {
+        // Password verification failed
         const previousAttempts = parseInt(localStorage.getItem(PROFILE_PASSWORD_ATTEMPT_KEY) || '0');
         const nextAttempts = previousAttempts + 1;
         localStorage.setItem(PROFILE_PASSWORD_ATTEMPT_KEY, String(nextAttempts));
+        
         setLoading(false);
         setUpdatePassword("");
-
+        
         if (nextAttempts >= 3) {
+          // Too many attempts - sign out
           localStorage.removeItem(PROFILE_PASSWORD_ATTEMPT_KEY);
           setShowUpdatePasswordModal(false);
           toast.error("Too many incorrect password attempts. You've been signed out for security.");
@@ -1009,16 +976,62 @@ export default function Profile() {
             navigate("/sign-in", { replace: true });
           }, 800);
         } else {
+          // Show remaining attempts - keep modal open
           const remaining = 3 - nextAttempts;
           const attemptText = remaining === 1 ? 'attempt' : 'attempts';
-          setUpdatePasswordError(`Incorrect password. ${remaining} ${attemptText} left before logout.`);
+          setUpdatePasswordError(`Incorrect password. ${remaining} ${attemptText} remaining.`);
           toast.error(`Incorrect password. ${remaining} ${attemptText} left.`);
         }
         return;
       }
-      if (data.status === "success") {
-        // Ensure avatar is always a string (empty if deleted)
-        // If mobile number changed, set isGeneratedMobile to false
+      
+      // Step 2: Password verified - proceed with profile update
+      dispatch(updateUserStart());
+      const apiUrl = `${API_BASE_URL}/api/user/update/${currentUser._id}`;
+      const options = createAuthenticatedFetchOptions({
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+          avatar: formData.avatar === undefined ? "" : formData.avatar,
+          password: updatePassword,
+        }),
+      });
+      const res = await fetch(apiUrl, options);
+      const data = await res.json();
+
+      // Handle backend validation responses
+      if (data.status === "email_exists") {
+        toast.error("Email already registered. Please use a different one.");
+        setEmailError("Email already registered. Please use a different one.");
+        dispatch(updateUserFailure("Email already registered. Please use a different one."));
+        setLoading(false);
+        setUpdatePassword("");
+        setUpdatePasswordError("Email already exists. Please change your email and try again.");
+        // Keep modal open for retry
+        return;
+      }
+      if (data.status === "mobile_exists") {
+        toast.error("Mobile number already in use. Please choose another one.");
+        setMobileError("Mobile number already in use. Please choose another one.");
+        dispatch(updateUserFailure("Mobile number already in use. Please choose another one."));
+        setLoading(false);
+        setUpdatePassword("");
+        setUpdatePasswordError("Mobile already exists. Please change your mobile number and try again.");
+        // Keep modal open for retry
+        return;
+      }
+      if (data.status === "mobile_invalid") {
+        setMobileError("Please provide a valid 10-digit mobile number");
+        dispatch(updateUserFailure("Please provide a valid 10-digit mobile number"));
+        setLoading(false);
+        setUpdatePassword("");
+        setUpdatePasswordError("Invalid mobile number. Please fix and try again.");
+        // Keep modal open for retry
+        return;
+      }
         localStorage.removeItem(PROFILE_PASSWORD_ATTEMPT_KEY);
         const updatedUser = {
           ...data.updatedUser,
