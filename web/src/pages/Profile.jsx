@@ -536,6 +536,11 @@ export default function Profile() {
           wishlist: prev.wishlist, // Keep the wishlist count from context
           watchlist: watchlistCount
         }));
+      } else {
+        // Fetch regular user stats
+        const [listingsRes, appointmentsRes] = await Promise.all([
+          authenticatedFetch(`${API_BASE_URL}/api/listing/user`),
+          authenticatedFetch(`${API_BASE_URL}/api/bookings/user/${currentUser._id}`)
         ]);
 
         const listingsData = await listingsRes.json();
