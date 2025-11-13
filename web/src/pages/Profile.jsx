@@ -501,6 +501,8 @@ export default function Profile() {
     };
   }, [emailDebounceTimer, mobileDebounceTimer]);
 
+  const PROFILE_PASSWORD_ATTEMPT_KEY = 'profileUpdatePwAttempts';
+
   const fetchUserStats = async () => {
     try {
       // Fetch watchlist count for all users
@@ -509,7 +511,7 @@ export default function Profile() {
       if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
         // Fetch admin-specific stats
         const [listingsRes, appointmentsRes] = await Promise.all([
-          authenticatedFetch(`${API_BASE_URL}/api/listing/user`),
+          authenticatedFetch(`${API_BASE_URL}/api/listing/count`),
           authenticatedFetch(`${API_BASE_URL}/api/bookings/`)
         ]);
 
@@ -517,9 +519,7 @@ export default function Profile() {
         const appointmentsData = await appointmentsRes.json();
 
         setUserStats(prev => ({
-          listings: Array.isArray(listingsData)
-            ? listingsData.filter(listing => listing.userRef === currentUser._id).length
-            : 0,
+          listings: Number(listingsData?.count) || 0,
           appointments: Array.isArray(appointmentsData) ? appointmentsData.length : 0,
           wishlist: prev.wishlist, // Keep the wishlist count from context
           watchlist: watchlistCount
@@ -914,6 +914,9 @@ export default function Profile() {
     }
     
     // Show password modal for confirmation
+    localStorage.removeItem(PROFILE_PASSWORD_ATTEMPT_KEY);
+    setUpdatePassword("");
+    setUpdatePasswordError("");
     setShowUpdatePasswordModal(true);
   };
 
@@ -969,35 +972,47 @@ export default function Profile() {
         return;
       }
       if (data.status === "invalid_password") {
-        setShowUpdatePasswordModal(false);
-        setUpdatePassword("");
+        const previousAttempts = parseInt(localStorage.getItem(PROFILE_PASSWORD_ATTEMPT_KEY) || '0');
+        const nextAttempts = previousAttempts + 1;
+        localStorage.setItem(PROFILE_PASSWORD_ATTEMPT_KEY, String(nextAttempts));
         setLoading(false);
-        // Forced sign out for security
-        toast.error("You have been signed out for security reasons. No changes were made to your profile.");
-        dispatch(signoutUserStart());
-        try {
-          const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
-          const signoutData = await signoutRes.json();
-          if (signoutData.success === false) {
-            dispatch(signoutUserFailure(signoutData.message));
-          } else {
-            dispatch(signoutUserSuccess(signoutData));
-            if (persistor && persistor.purge) await persistor.purge();
-            reconnectSocket();
-            localStorage.removeItem('accessToken');
-            document.cookie = 'access_token=; Max-Age=0; path=/; domain=' + window.location.hostname + '; secure; samesite=None';
+        setUpdatePassword("");
+
+        if (nextAttempts >= 3) {
+          localStorage.removeItem(PROFILE_PASSWORD_ATTEMPT_KEY);
+          setShowUpdatePasswordModal(false);
+          toast.error("Too many incorrect password attempts. You've been signed out for security.");
+          dispatch(signoutUserStart());
+          try {
+            const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+            const signoutData = await signoutRes.json();
+            if (signoutData.success === false) {
+              dispatch(signoutUserFailure(signoutData.message));
+            } else {
+              dispatch(signoutUserSuccess(signoutData));
+              if (persistor && persistor.purge) await persistor.purge();
+              reconnectSocket();
+              localStorage.removeItem('accessToken');
+              document.cookie = 'access_token=; Max-Age=0; path=/; domain=' + window.location.hostname + '; secure; samesite=None';
+            }
+          } catch (err) {
+            dispatch(signoutUserFailure(err.message));
           }
-        } catch (err) {
-          dispatch(signoutUserFailure(err.message));
+          setTimeout(() => {
+            navigate("/sign-in", { replace: true });
+          }, 800);
+        } else {
+          const remaining = 3 - nextAttempts;
+          const attemptText = remaining === 1 ? 'attempt' : 'attempts';
+          setUpdatePasswordError(`Incorrect password. ${remaining} ${attemptText} left before logout.`);
+          toast.error(`Incorrect password. ${remaining} ${attemptText} left.`);
         }
-        setTimeout(() => {
-          navigate("/sign-in", { replace: true });
-        }, 800);
         return;
       }
       if (data.status === "success") {
         // Ensure avatar is always a string (empty if deleted)
         // If mobile number changed, set isGeneratedMobile to false
+        localStorage.removeItem(PROFILE_PASSWORD_ATTEMPT_KEY);
         const updatedUser = {
           ...data.updatedUser,
           avatar: data.updatedUser.avatar || "",
@@ -2977,7 +2992,7 @@ export default function Profile() {
               {updatePasswordError && <div className="text-red-600 text-sm mb-2">{updatePasswordError}</div>}
               <div className="flex justify-end space-x-3">
                 <button
-                  onClick={() => { setShowUpdatePasswordModal(false); setUpdatePassword(""); setUpdatePasswordError(""); }}
+                  onClick={() => { localStorage.removeItem(PROFILE_PASSWORD_ATTEMPT_KEY); setShowUpdatePasswordModal(false); setUpdatePassword(""); setUpdatePasswordError(""); }}
                   className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
                 >Cancel</button>
                 <button
