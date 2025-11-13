@@ -511,15 +511,22 @@ export default function Profile() {
       if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
         // Fetch admin-specific stats
         const [listingsRes, appointmentsRes] = await Promise.all([
-          authenticatedFetch(`${API_BASE_URL}/api/listing/count`),
+          authenticatedFetch(`${API_BASE_URL}/api/listing/user`),
           authenticatedFetch(`${API_BASE_URL}/api/bookings/`)
         ]);
 
         const listingsData = await listingsRes.json();
         const appointmentsData = await appointmentsRes.json();
 
+        let listingsCount = Array.isArray(listingsData) ? listingsData.length : 0;
+        if (currentUser.role === 'rootadmin' || currentUser.isDefaultAdmin) {
+          listingsCount = Array.isArray(listingsData)
+            ? listingsData.filter(listing => listing.userRef === currentUser._id).length
+            : 0;
+        }
+
         setUserStats(prev => ({
-          listings: Number(listingsData?.count) || 0,
+          listings: listingsCount,
           appointments: Array.isArray(appointmentsData) ? appointmentsData.length : 0,
           wishlist: prev.wishlist, // Keep the wishlist count from context
           watchlist: watchlistCount
@@ -1049,25 +1056,30 @@ export default function Profile() {
       }
       // fallback for other errors
       if (data.success === false || data.status === "error") {
-        setUpdateError(data.message || "Profile Update Failed!");
-        dispatch(updateUserFailure(data.message));
+        const message = data.message || "Profile Update Failed!";
+        setUpdateError(message);
+        dispatch(updateUserFailure(message));
         setLoading(false);
-        setShowUpdatePasswordModal(false);
+        setUpdatePasswordError(message);
         setUpdatePassword("");
+        // Keep modal open to allow retry
         return;
       }
       // If we reach here, it means we got an unexpected response
       setUpdateError("Profile Update Failed!");
+      setUpdatePasswordError("Profile Update Failed!");
       setLoading(false);
-      setShowUpdatePasswordModal(false);
       setUpdatePassword("");
+      // Keep modal open for retry
+      return;
     } catch (error) {
 
       setUpdateError("Profile Update Failed!");
       dispatch(updateUserFailure(error.message));
       setLoading(false);
-      setShowUpdatePasswordModal(false);
+      setUpdatePasswordError(error.message || "Network error");
       setUpdatePassword("");
+      // Keep modal open for retry
     }
   };
 
