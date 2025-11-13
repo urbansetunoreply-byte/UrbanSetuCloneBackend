@@ -601,12 +601,7 @@ function UserNavLinks({ mobile = false, onNavigate, signout }) {
               <span>Services</span>
             </li>
           </Link>
-          <Link to="/user/route-planner" onClick={onNavigate}>
-            <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-3' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
-              <FaRoute className={`${mobile ? 'text-lg text-green-600' : 'text-base text-green-600'}`} />
-              <span>{mobile ? 'Route Planner' : 'Route'}</span>
-            </li>
-          </Link>
+          {/* Route Planner link removed as requested */}
         </>
       )}
       

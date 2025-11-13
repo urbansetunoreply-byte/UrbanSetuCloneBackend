@@ -699,9 +699,11 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                             // Password Sign In Form
                             <form onSubmit={emailStep ? handleSubmit : handleEmailContinue} className="space-y-6">
                                 <div>
-                                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                                        Email Address
-                                    </label>
+                                    {!emailStep && (
+                                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                                          Email Address
+                                      </label>
+                                    )}
                                     <FormField
                                         label={undefined}
                                         id="email"
@@ -821,9 +823,11 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                             // OTP Sign In Form
                             <form onSubmit={otpSent ? handleOtpLogin : handleSendOTP} className="space-y-6">
                                 <div>
-                                    <label htmlFor="otp-email" className="block text-sm font-medium text-gray-700 mb-2">
-                                        Email Address
-                                    </label>
+                                    {!otpSent && (
+                                      <label htmlFor="otp-email" className="block text-sm font-medium text-gray-700 mb-2">
+                                          Email Address
+                                      </label>
+                                    )}
                                     <FormField
                                         label={undefined}
                                         id="email"

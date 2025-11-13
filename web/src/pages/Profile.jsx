@@ -2381,13 +2381,22 @@ export default function Profile() {
             <p className="text-sm text-gray-600 group-hover:text-green-500 transition-colors duration-300">Appointments</p>
           </div>
           <div className={`bg-white rounded-xl shadow-lg ${isAdmin ? 'p-6' : 'p-4'} text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-750' : 'opacity-0 scale-95'}`}>
-            <div className={`bg-red-100 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-red-200 transition-all duration-300 ${animationClasses.heartbeat} group-hover:scale-110`}>
-              <FaHeart className="w-5 h-5 text-red-600 group-hover:text-red-700 transition-colors duration-300" />
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 transition-all duration-300 ${isAdmin ? 'bg-indigo-100 group-hover:bg-indigo-200' : 'bg-red-100 group-hover:bg-red-200'} ${animationClasses.heartbeat} group-hover:scale-110`}>
+              {isAdmin ? (
+                <FaHome className="w-5 h-5 text-indigo-600 group-hover:text-indigo-700 transition-colors duration-300" />
+              ) : (
+                <FaHeart className="w-5 h-5 text-red-600 group-hover:text-red-700 transition-colors duration-300" />
+              )}
             </div>
-            <h3 className="text-xl font-bold text-gray-800 group-hover:text-red-600 transition-colors duration-300">
-              {statsAnimated ? <AnimatedCounter end={userStats.wishlist} delay={800} /> : userStats.wishlist}
+            <h3 className="text-xl font-bold text-gray-800 transition-colors duration-300">
+              {isAdmin
+                ? (statsAnimated ? <AnimatedCounter end={userStats.listings} delay={800} /> : userStats.listings)
+                : (statsAnimated ? <AnimatedCounter end={userStats.wishlist} delay={800} /> : userStats.wishlist)
+              }
             </h3>
-            <p className="text-sm text-gray-600 group-hover:text-red-500 transition-colors duration-300">Wishlist Items</p>
+            <p className="text-sm text-gray-600 transition-colors duration-300">
+              {isAdmin ? 'All Properties' : 'Wishlist Items'}
+            </p>
           </div>
           {!isAdmin && (
           <div className={`bg-white rounded-xl shadow-lg p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-900' : 'opacity-0 scale-95'}`}>

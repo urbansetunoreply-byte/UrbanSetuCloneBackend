@@ -960,24 +960,38 @@ export default function AdminManagement() {
         startLockoutTimer(); // Reset timer on every successful entry
       } else {
         const data = await res.json();
-        // Sign out and redirect on wrong password
-        toast.error("For security reasons, you have been signed out. Please sign in again.");
-        dispatch(signoutUserStart());
-        try {
-          const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`);
-          const signoutData = await signoutRes.json();
-          if (signoutData.success === false) {
-            dispatch(signoutUserFailure(signoutData.message));
-          } else {
-            dispatch(signoutUserSuccess(signoutData));
+        // Track wrong attempts locally (allow up to 3 attempts before logout)
+        const key = 'adminMgmtPwAttempts';
+        const prev = parseInt(localStorage.getItem(key) || '0');
+        const next = prev + 1;
+        localStorage.setItem(key, String(next));
+
+        if (next >= 3) {
+          // Sign out and redirect on third wrong attempt
+          toast.error("Too many incorrect attempts. You've been signed out for security.");
+          dispatch(signoutUserStart());
+          try {
+            const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`);
+            const signoutData = await signoutRes.json();
+            if (signoutData.success === false) {
+              dispatch(signoutUserFailure(signoutData.message));
+            } else {
+              dispatch(signoutUserSuccess(signoutData));
+            }
+          } catch (err) {
+            dispatch(signoutUserFailure(err.message));
           }
-        } catch (err) {
-          dispatch(signoutUserFailure(err.message));
+          setTimeout(() => {
+            navigate('/sign-in');
+          }, 800);
+          return;
+        } else {
+          // Keep modal open and show remaining attempts
+          const remaining = 3 - next;
+          setManagementPasswordError(`Incorrect password. ${remaining} attempt${remaining === 1 ? '' : 's'} left before logout.`);
+          toast.error(`Incorrect password. ${remaining} attempt${remaining === 1 ? '' : 's'} left.`);
+          return;
         }
-        setTimeout(() => {
-          navigate('/sign-in');
-        }, 800);
-        return;
       }
     } catch (err) {
       setManagementPasswordError('Network error');

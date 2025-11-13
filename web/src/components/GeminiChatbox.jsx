@@ -1294,6 +1294,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             }
             return;
         }
+        // Inform user about remaining prompts (non-blocking info)
+        if (rateLimitInfo.role !== 'rootadmin' && typeof rateLimitInfo.remaining === 'number') {
+            toast.info(`${rateLimitInfo.remaining} prompt${rateLimitInfo.remaining === 1 ? '' : 's'} left in this window`, { autoClose: 1200 });
+        }
 
         // Trigger send icon fly animation
         setSendIconAnimating(true);
