@@ -1037,6 +1037,9 @@ export default function Profile() {
         // Keep modal open for retry
         return;
       }
+      if (data.status === "success") {
+        // Ensure avatar is always a string (empty if deleted)
+        // If mobile number changed, set isGeneratedMobile to false
         localStorage.removeItem(PROFILE_PASSWORD_ATTEMPT_KEY);
         const updatedUser = {
           ...data.updatedUser,
