@@ -59,6 +59,17 @@ const SessionAuditLogs = () => {
   const [showVisitorFilters, setShowVisitorFilters] = useState(false);
 
   const getVisitorActiveFiltersCount = () => {
+    let count = 0;
+    if (visitorFilters.dateRange && visitorFilters.dateRange !== 'today') count++;
+    if (visitorFilters.device && visitorFilters.device !== 'all') count++;
+    if (visitorFilters.location && visitorFilters.location !== 'all') count++;
+    if (visitorFilters.search) count++;
+    if (visitorFilters.analytics !== 'any') count++;
+    if (visitorFilters.marketing !== 'any') count++;
+    if (visitorFilters.functional !== 'any') count++;
+    return count;
+  };
+
   const getVisitorEntryValue = (entry) => {
     if (!entry) return 0;
     return entry.count ?? entry.total ?? entry.visits ?? entry.value ?? 0;
@@ -133,16 +144,6 @@ const SessionAuditLogs = () => {
       topLocations: locationStats.slice(0, 4)
     };
   }, [visitorStats]);
-    let count = 0;
-    if (visitorFilters.dateRange && visitorFilters.dateRange !== 'today') count++;
-    if (visitorFilters.device && visitorFilters.device !== 'all') count++;
-    if (visitorFilters.location && visitorFilters.location !== 'all') count++;
-    if (visitorFilters.search) count++;
-    if (visitorFilters.analytics !== 'any') count++;
-    if (visitorFilters.marketing !== 'any') count++;
-    if (visitorFilters.functional !== 'any') count++;
-    return count;
-  };
 
   // Debounced search effect
   useEffect(() => {
