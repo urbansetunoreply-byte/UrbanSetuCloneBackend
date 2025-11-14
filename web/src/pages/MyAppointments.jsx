@@ -22,6 +22,27 @@ import PaymentModal from '../components/PaymentModal';
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+const APPOINTMENT_TIME_SLOTS = Array.from({ length: 21 }, (_, i) => {
+  const totalMinutes = 9 * 60 + i * 30;
+  const hour = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  const value = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+  const period = hour >= 12 ? 'PM' : 'AM';
+  const label = `${displayHour}:${minutes.toString().padStart(2, '0')} ${period}`;
+  return { value, label };
+});
+
+const formatTimeDisplay = (timeValue = '') => {
+  if (!timeValue.includes(':')) return timeValue;
+  const [hourStr, minuteStr] = timeValue.split(':');
+  const hour = parseInt(hourStr, 10);
+  if (Number.isNaN(hour)) return timeValue;
+  const displayHour = ((hour + 11) % 12) + 1;
+  const period = hour >= 12 ? 'PM' : 'AM';
+  return `${displayHour}:${minuteStr.padStart(2, '0')} ${period}`;
+};
+
 export default function MyAppointments() {
   // Set page title
   usePageTitle("My Appointments - Bookings");
@@ -1357,8 +1378,25 @@ export default function MyAppointments() {
                   <input type="date" className="border rounded px-2 py-1 w-full" value={reinitiateData.date} onChange={e => setReinitiateData(d => ({ ...d, date: e.target.value }))} required />
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">Time</label>
-                  <input type="time" className="border rounded px-2 py-1 w-full" value={reinitiateData.time} onChange={e => setReinitiateData(d => ({ ...d, time: e.target.value }))} required />
+                  <label className="block font-semibold mb-1">Time (9 AM - 7 PM)</label>
+                  <select
+                    className="border rounded px-2 py-1 w-full"
+                    value={reinitiateData.time}
+                    onChange={e => setReinitiateData(d => ({ ...d, time: e.target.value }))}
+                    required
+                  >
+                    <option value="">Select Time (9 AM - 7 PM)</option>
+                    {reinitiateData.time && !APPOINTMENT_TIME_SLOTS.some(slot => slot.value === reinitiateData.time) && (
+                      <option value={reinitiateData.time}>
+                        {`Current time (${formatTimeDisplay(reinitiateData.time)})`}
+                      </option>
+                    )}
+                    {APPOINTMENT_TIME_SLOTS.map((slot) => (
+                      <option key={slot.value} value={slot.value}>
+                        {slot.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block font-semibold mb-1">Message (optional)</label>

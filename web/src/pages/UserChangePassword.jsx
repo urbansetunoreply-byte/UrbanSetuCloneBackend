@@ -244,7 +244,7 @@ export default function UserChangePassword() {
                   inputClassName={`${loading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   required
                 />
-                <div className="mt-2">
+                <div className="mt-2 flex justify-end">
                   <button
                     type="button"
                     onClick={handleForgotPasswordClick}
