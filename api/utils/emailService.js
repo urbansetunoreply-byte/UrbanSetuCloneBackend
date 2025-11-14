@@ -279,6 +279,15 @@ const createSuccessResponse = (messageId = null, context = '') => {
   };
 };
 
+// Format dates in Indian Standard Time for email templates
+const formatIndiaTime = (dateInput = new Date(), options = {}) => {
+  const dateValue = dateInput ? new Date(dateInput) : new Date();
+  return dateValue.toLocaleString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    ...options
+  });
+};
+
 // Generate OTP
 export const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -632,7 +641,7 @@ export const sendNewLoginEmail = async (email, device, ip, location, loginTime) 
               <p style="margin: 5px 0; color: #374151;"><strong>Device:</strong> ${device}</p>
               <p style="margin: 5px 0; color: #374151;"><strong>IP Address:</strong> ${ip}</p>
               <p style="margin: 5px 0; color: #374151;"><strong>Location:</strong> ${location || 'Unknown'}</p>
-              <p style="margin: 5px 0; color: #374151;"><strong>Login Time:</strong> ${new Date(loginTime).toLocaleString('en-GB')}</p>
+              <p style="margin: 5px 0; color: #374151;"><strong>Login Time:</strong> ${formatIndiaTime(loginTime)}</p>
             </div>
             
             <p style="color: #6b7280; margin: 15px 0 10px 0; font-size: 14px;">
@@ -751,7 +760,7 @@ export const sendForcedLogoutEmail = async (email, reason, performedBy) => {
             <div style="background-color: #f8fafc; padding: 15px; border-radius: 6px; margin: 15px 0;">
               <p style="margin: 5px 0; color: #374151;"><strong>Reason:</strong> ${reason}</p>
               <p style="margin: 5px 0; color: #374151;"><strong>Performed by:</strong> ${performedBy}</p>
-              <p style="margin: 5px 0; color: #374151;"><strong>Time:</strong> ${new Date().toLocaleString('en-GB')}</p>
+              <p style="margin: 5px 0; color: #374151;"><strong>Time:</strong> ${formatIndiaTime()}</p>
             </div>
             
             <p style="color: #6b7280; margin: 15px 0 0 0; font-size: 14px;">
@@ -1176,7 +1185,7 @@ export const sendPasswordResetSuccessEmail = async (userEmail, userName, resetMe
                 </div>
                 <div style="display: flex; justify-content: space-between; padding: 8px 0;">
                   <span style="color: #6b7280; font-weight: 500;">Reset Time:</span>
-                  <span style="color: #1f2937; font-weight: 600;">${new Date().toLocaleString('en-GB', { 
+                  <span style="color: #1f2937; font-weight: 600;">${formatIndiaTime(undefined, { 
                     weekday: 'long', 
                     year: 'numeric', 
                     month: 'long', 
@@ -1277,7 +1286,7 @@ export const sendPasswordChangeSuccessEmail = async (userEmail, userName, change
                 </div>
                 <div style="display: flex; justify-content: space-between; padding: 8px 0;">
                   <span style="color: #6b7280; font-weight: 500;">Change Time:</span>
-                  <span style="color: #1f2937; font-weight: 600;">${new Date().toLocaleString('en-GB', { 
+                  <span style="color: #1f2937; font-weight: 600;">${formatIndiaTime(undefined, { 
                     weekday: 'long', 
                     year: 'numeric', 
                     month: 'long', 
@@ -1623,7 +1632,7 @@ export const sendContactSupportConfirmationEmail = async (email, ticketId, messa
                 </div>
                 <div style="display: flex; justify-content: space-between; padding: 8px 0;">
                   <span style="color: #6b7280; font-weight: 500;">Received:</span>
-                  <span style="color: #1f2937; font-weight: 600;">${new Date().toLocaleString('en-GB')}</span>
+                  <span style="color: #1f2937; font-weight: 600;">${formatIndiaTime()}</span>
                 </div>
               </div>
             </div>
@@ -1727,7 +1736,7 @@ export const sendContactSupportReplyEmail = async (email, ticketId, senderName, 
                 </div>
                 <div style="display: flex; justify-content: space-between; padding: 6px 0;">
                   <span style="color: #6b7280; font-weight: 500;">Response Date:</span>
-                  <span style="color: #1f2937; font-weight: 600;">${new Date().toLocaleString('en-GB')}</span>
+                  <span style="color: #1f2937; font-weight: 600;">${formatIndiaTime()}</span>
                 </div>
               </div>
             </div>
