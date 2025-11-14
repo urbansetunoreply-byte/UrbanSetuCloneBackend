@@ -94,15 +94,19 @@ router.post('/revoke-all-sessions', verifyToken, async (req, res, next) => {
   try {
     const userId = req.user._id;
     const currentSessionId = req.headers['x-session-id'] || req.cookies.session_id;
-    const sessionCount = await revokeAllOtherUserSessionsFromDB(userId, currentSessionId);
+    const { count: sessionCount, revokedSessionIds } = await revokeAllOtherUserSessionsFromDB(userId, currentSessionId);
     
   // Notify all other sessions to logout immediately
   try {
     const io = req.app.get('io');
     if (io) {
-      // Broadcast to all of user's session rooms: we don't track rooms list, so emit by user room
-      io.to(userId.toString()).emit('forceLogout', { reason: 'All sessions revoked by user' });
-      // Also target-specific sessionsUpdated for UI refresh
+      if (Array.isArray(revokedSessionIds)) {
+        revokedSessionIds.forEach(sessionId => {
+          io.to(`session_${sessionId}`).emit('forceLogout', { reason: 'All sessions revoked by user' });
+          io.to(userId.toString()).emit('forceLogoutSession', { sessionId, reason: 'All sessions revoked by user' });
+        });
+      }
+      // Trigger UI refresh for remaining session(s)
       io.to(userId.toString()).emit('sessionsUpdated');
       io.emit('adminSessionsUpdated');
     }

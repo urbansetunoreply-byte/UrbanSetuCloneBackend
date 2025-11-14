@@ -549,12 +549,12 @@ export const revokeAllUserSessionsFromDB = async (userId) => {
 // Revoke all other user sessions except the provided sessionId
 export const revokeAllOtherUserSessionsFromDB = async (userId, keepSessionId) => {
     const user = await User.findById(userId);
-    if (!user || !user.activeSessions) return 0;
+    if (!user || !user.activeSessions) return { count: 0, revokedSessionIds: [] };
 
     const sessionsToRemove = user.activeSessions.filter(s => s.sessionId !== keepSessionId);
     const sessionIdsToRemove = sessionsToRemove.map(s => s.sessionId);
 
-    if (sessionIdsToRemove.length === 0) return 0;
+    if (sessionIdsToRemove.length === 0) return { count: 0, revokedSessionIds: [] };
 
     // Pull all except keepSessionId
     await User.findByIdAndUpdate(userId, {
@@ -568,7 +568,10 @@ export const revokeAllOtherUserSessionsFromDB = async (userId, keepSessionId) =>
     // Remove from active map
     sessionIdsToRemove.forEach(id => revokeSession(id));
 
-    return sessionIdsToRemove.length;
+    return {
+        count: sessionIdsToRemove.length,
+        revokedSessionIds: sessionIdsToRemove
+    };
 };
 
 // Update session activity in database

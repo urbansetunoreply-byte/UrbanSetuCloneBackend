@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
@@ -59,6 +59,80 @@ const SessionAuditLogs = () => {
   const [showVisitorFilters, setShowVisitorFilters] = useState(false);
 
   const getVisitorActiveFiltersCount = () => {
+  const getVisitorEntryValue = (entry) => {
+    if (!entry) return 0;
+    return entry.count ?? entry.total ?? entry.visits ?? entry.value ?? 0;
+  };
+
+  const formatVisitorDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return dateString;
+    return date.toLocaleDateString('en-IN', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const visitorInsights = useMemo(() => {
+    const daily = Array.isArray(visitorStats?.dailyStats) ? visitorStats.dailyStats : [];
+    const deviceStats = Array.isArray(visitorStats?.deviceStats) ? visitorStats.deviceStats : [];
+    const locationStats = Array.isArray(visitorStats?.locationStats) ? visitorStats.locationStats : [];
+
+    const totalWindow = daily.reduce((sum, entry) => sum + getVisitorEntryValue(entry), 0);
+    const last7 = daily.slice(-7);
+    const prev7 = daily.slice(Math.max(0, daily.length - 14), Math.max(0, daily.length - 7));
+    const last7Total = last7.reduce((sum, entry) => sum + getVisitorEntryValue(entry), 0);
+    const prev7Total = prev7.reduce((sum, entry) => sum + getVisitorEntryValue(entry), 0);
+    const trendPercentage = prev7Total > 0 ? ((last7Total - prev7Total) / prev7Total) * 100 : null;
+    const avgDaily = daily.length > 0 ? totalWindow / daily.length : (visitorStats?.totalVisitors || 0);
+
+    const peakEntry = daily.reduce((max, entry) => {
+      if (!max) return entry;
+      return getVisitorEntryValue(entry) > getVisitorEntryValue(max) ? entry : max;
+    }, null);
+
+    const topDevice = deviceStats.reduce((max, entry) => {
+      if (!max) return entry;
+      return (entry.count || 0) > (max.count || 0) ? entry : max;
+    }, null);
+
+    const topLocation = locationStats.reduce((max, entry) => {
+      if (!max) return entry;
+      return (entry.count || 0) > (max.count || 0) ? entry : max;
+    }, null);
+
+    const summaryPoints = [];
+    if (trendPercentage !== null) {
+      const direction = trendPercentage >= 0 ? 'up' : 'down';
+      summaryPoints.push(`Traffic is ${direction} ${Math.abs(trendPercentage).toFixed(1)}% compared to the previous week.`);
+    }
+    if (avgDaily > 0) {
+      summaryPoints.push(`Average daily visitors: ${Math.round(avgDaily).toLocaleString('en-IN')}.`);
+    }
+    if (peakEntry) {
+      summaryPoints.push(`Peak traffic on ${formatVisitorDate(peakEntry.date || peakEntry.day)} with ${getVisitorEntryValue(peakEntry)} visits.`);
+    }
+    if (topDevice) {
+      summaryPoints.push(`Most visitors use ${topDevice.device || topDevice.name || 'Unknown'} devices (${topDevice.count || 0}).`);
+    }
+    if (topLocation) {
+      summaryPoints.push(`Top region: ${topLocation.location || topLocation.city || 'Unknown'} (${topLocation.count || 0} visits).`);
+    }
+
+    return {
+      avgDaily,
+      last7Total,
+      trendPercentage,
+      peakEntry,
+      topDevice,
+      topLocation,
+      summaryPoints,
+      topDevices: deviceStats.slice(0, 4),
+      topLocations: locationStats.slice(0, 4)
+    };
+  }, [visitorStats]);
     let count = 0;
     if (visitorFilters.dateRange && visitorFilters.dateRange !== 'today') count++;
     if (visitorFilters.device && visitorFilters.device !== 'all') count++;
@@ -1003,19 +1077,110 @@ const SessionAuditLogs = () => {
                 </button>
               </div>
               {showVisitorStatsToggle && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                    <p className="text-sm text-gray-600">Today</p>
-                    <p className="text-2xl font-bold text-purple-600">{visitorStats.todayCount}</p>
+                <div className="space-y-4 mb-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                      <p className="text-sm text-gray-600">Today</p>
+                      <p className="text-2xl font-bold text-purple-600">{visitorStats.todayCount}</p>
+                    </div>
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                      <p className="text-sm text-gray-600">Total Visitors</p>
+                      <p className="text-2xl font-bold text-blue-600">{visitorStats.totalVisitors}</p>
+                    </div>
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                      <p className="text-sm text-gray-600">Unique Devices (today)</p>
+                      <p className="text-2xl font-bold text-green-600">{visitorStats.deviceStats?.length || 0}</p>
+                    </div>
                   </div>
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                    <p className="text-sm text-gray-600">Total Visitors</p>
-                    <p className="text-2xl font-bold text-blue-600">{visitorStats.totalVisitors}</p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                      <p className="text-sm text-gray-600">7-Day Visitors</p>
+                      <p className="text-2xl font-bold text-indigo-600">{(visitorInsights.last7Total || 0).toLocaleString('en-IN')}</p>
+                      <p className="text-xs text-gray-500 mt-1">Compared to previous week</p>
+                    </div>
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                      <p className="text-sm text-gray-600">Avg Daily Traffic</p>
+                      <p className="text-2xl font-bold text-teal-600">{Math.round(visitorInsights.avgDaily || 0).toLocaleString('en-IN')}</p>
+                      <p className="text-xs text-gray-500 mt-1">Based on available stats</p>
+                    </div>
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                      <p className="text-sm text-gray-600">Traffic Trend</p>
+                      {visitorInsights.trendPercentage !== null ? (
+                        <div className="flex items-baseline gap-2">
+                          <p className={`text-2xl font-bold ${visitorInsights.trendPercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {visitorInsights.trendPercentage >= 0 ? '▲' : '▼'} {Math.abs(visitorInsights.trendPercentage).toFixed(1)}%
+                          </p>
+                          <span className="text-xs text-gray-500">vs previous 7 days</span>
+                        </div>
+                      ) : (
+                        <p className="text-2xl font-bold text-gray-400">N/A</p>
+                      )}
+                      {visitorInsights.peakEntry && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Peak: {formatVisitorDate(visitorInsights.peakEntry.date || visitorInsights.peakEntry.day)} ({getVisitorEntryValue(visitorInsights.peakEntry)} visits)
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                    <p className="text-sm text-gray-600">Unique Devices (today)</p>
-                    <p className="text-2xl font-bold text-green-600">{visitorStats.deviceStats?.length || 0}</p>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                      <h4 className="text-sm font-semibold text-gray-700 mb-3">Top Devices</h4>
+                      <div className="space-y-3">
+                        {visitorInsights.topDevices.length === 0 ? (
+                          <p className="text-sm text-gray-500">Not enough data</p>
+                        ) : visitorInsights.topDevices.map((device) => {
+                          const topValue = visitorInsights.topDevices[0]?.count || 1;
+                          const percentage = topValue ? Math.round((device.count / topValue) * 100) : 0;
+                          return (
+                            <div key={device.device} className="space-y-1">
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-gray-600">{device.device}</span>
+                                <span className="text-gray-900 font-semibold">{device.count}</span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div className="bg-purple-500 h-2 rounded-full" style={{ width: `${percentage}%` }}></div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                      <h4 className="text-sm font-semibold text-gray-700 mb-3">Top Locations</h4>
+                      <div className="space-y-3">
+                        {visitorInsights.topLocations.length === 0 ? (
+                          <p className="text-sm text-gray-500">Not enough data</p>
+                        ) : visitorInsights.topLocations.map((location) => {
+                          const topValue = visitorInsights.topLocations[0]?.count || 1;
+                          const percentage = topValue ? Math.round((location.count / topValue) * 100) : 0;
+                          return (
+                            <div key={location.location} className="space-y-1">
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-gray-600">{location.location}</span>
+                                <span className="text-gray-900 font-semibold">{location.count}</span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div className="bg-pink-500 h-2 rounded-full" style={{ width: `${percentage}%` }}></div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
+
+                  {visitorInsights.summaryPoints.length > 0 && (
+                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                      <h4 className="text-sm font-semibold text-purple-800 mb-2">Visitor Highlights</h4>
+                      <ul className="text-sm text-purple-900 space-y-1 list-disc list-inside">
+                        {visitorInsights.summaryPoints.map((point, idx) => (
+                          <li key={idx}>{point}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               )}
               <div className="flex items-center justify-between mb-4">
