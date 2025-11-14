@@ -501,6 +501,8 @@ export default function Profile() {
     };
   }, [emailDebounceTimer, mobileDebounceTimer]);
 
+  const PROFILE_PASSWORD_ATTEMPT_KEY = 'profileUpdatePwAttempts';
+
   const fetchUserStats = async () => {
     try {
       // Fetch watchlist count for all users
@@ -508,18 +510,28 @@ export default function Profile() {
 
       if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
         // Fetch admin-specific stats
+        // For admins: fetch ALL listings count (same as /admin/listings page which uses /api/listing/get)
+        // Use a large limit to get count, or adjust based on API response
         const [listingsRes, appointmentsRes] = await Promise.all([
-          authenticatedFetch(`${API_BASE_URL}/api/listing/user`),
+          authenticatedFetch(`${API_BASE_URL}/api/listing/get?limit=999999&startIndex=0`),
           authenticatedFetch(`${API_BASE_URL}/api/bookings/`)
         ]);
 
         const listingsData = await listingsRes.json();
         const appointmentsData = await appointmentsRes.json();
 
+        // For admins, count ALL listings from /api/listing/get endpoint (same as /admin/listings page)
+        let listingsCount = 0;
+        if (Array.isArray(listingsData)) {
+          // API returns array of listings - count them
+          listingsCount = listingsData.length;
+        } else if (typeof listingsData === 'object') {
+          // If response is an object, try to get count property
+          listingsCount = listingsData.count || listingsData.total || 0;
+        }
+
         setUserStats(prev => ({
-          listings: Array.isArray(listingsData)
-            ? listingsData.filter(listing => listing.userRef === currentUser._id).length
-            : 0,
+          listings: listingsCount,
           appointments: Array.isArray(appointmentsData) ? appointmentsData.length : 0,
           wishlist: prev.wishlist, // Keep the wishlist count from context
           watchlist: watchlistCount
@@ -914,6 +926,9 @@ export default function Profile() {
     }
     
     // Show password modal for confirmation
+    localStorage.removeItem(PROFILE_PASSWORD_ATTEMPT_KEY);
+    setUpdatePassword("");
+    setUpdatePasswordError("");
     setShowUpdatePasswordModal(true);
   };
 
@@ -923,8 +938,59 @@ export default function Profile() {
       setUpdatePasswordError("Password is required");
       return;
     }
+    
     setLoading(true);
     try {
+      // Step 1: Verify password first
+      const verifyRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-password`, {
+        method: 'POST',
+        body: JSON.stringify({ password: updatePassword })
+      });
+      
+      if (!verifyRes.ok) {
+        // Password verification failed
+        const previousAttempts = parseInt(localStorage.getItem(PROFILE_PASSWORD_ATTEMPT_KEY) || '0');
+        const nextAttempts = previousAttempts + 1;
+        localStorage.setItem(PROFILE_PASSWORD_ATTEMPT_KEY, String(nextAttempts));
+        
+        setLoading(false);
+        setUpdatePassword("");
+        
+        if (nextAttempts >= 3) {
+          // Too many attempts - sign out
+          localStorage.removeItem(PROFILE_PASSWORD_ATTEMPT_KEY);
+          setShowUpdatePasswordModal(false);
+          toast.error("Too many incorrect password attempts. You've been signed out for security.");
+          dispatch(signoutUserStart());
+          try {
+            const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+            const signoutData = await signoutRes.json();
+            if (signoutData.success === false) {
+              dispatch(signoutUserFailure(signoutData.message));
+            } else {
+              dispatch(signoutUserSuccess(signoutData));
+              if (persistor && persistor.purge) await persistor.purge();
+              reconnectSocket();
+              localStorage.removeItem('accessToken');
+              document.cookie = 'access_token=; Max-Age=0; path=/; domain=' + window.location.hostname + '; secure; samesite=None';
+            }
+          } catch (err) {
+            dispatch(signoutUserFailure(err.message));
+          }
+          setTimeout(() => {
+            navigate("/sign-in", { replace: true });
+          }, 800);
+        } else {
+          // Show remaining attempts - keep modal open
+          const remaining = 3 - nextAttempts;
+          const attemptText = remaining === 1 ? 'attempt' : 'attempts';
+          setUpdatePasswordError(`Incorrect password. ${remaining} ${attemptText} remaining.`);
+          toast.error(`Incorrect password. ${remaining} ${attemptText} left.`);
+        }
+        return;
+      }
+      
+      // Step 2: Password verified - proceed with profile update
       dispatch(updateUserStart());
       const apiUrl = `${API_BASE_URL}/api/user/update/${currentUser._id}`;
       const options = createAuthenticatedFetchOptions({
@@ -941,14 +1007,15 @@ export default function Profile() {
       const res = await fetch(apiUrl, options);
       const data = await res.json();
 
-      // Handle new backend validation responses
+      // Handle backend validation responses
       if (data.status === "email_exists") {
         toast.error("Email already registered. Please use a different one.");
         setEmailError("Email already registered. Please use a different one.");
         dispatch(updateUserFailure("Email already registered. Please use a different one."));
         setLoading(false);
-        setShowUpdatePasswordModal(false);
         setUpdatePassword("");
+        setUpdatePasswordError("Email already exists. Please change your email and try again.");
+        // Keep modal open for retry
         return;
       }
       if (data.status === "mobile_exists") {
@@ -956,48 +1023,24 @@ export default function Profile() {
         setMobileError("Mobile number already in use. Please choose another one.");
         dispatch(updateUserFailure("Mobile number already in use. Please choose another one."));
         setLoading(false);
-        setShowUpdatePasswordModal(false);
         setUpdatePassword("");
+        setUpdatePasswordError("Mobile already exists. Please change your mobile number and try again.");
+        // Keep modal open for retry
         return;
       }
       if (data.status === "mobile_invalid") {
         setMobileError("Please provide a valid 10-digit mobile number");
         dispatch(updateUserFailure("Please provide a valid 10-digit mobile number"));
         setLoading(false);
-        setShowUpdatePasswordModal(false);
         setUpdatePassword("");
-        return;
-      }
-      if (data.status === "invalid_password") {
-        setShowUpdatePasswordModal(false);
-        setUpdatePassword("");
-        setLoading(false);
-        // Forced sign out for security
-        toast.error("You have been signed out for security reasons. No changes were made to your profile.");
-        dispatch(signoutUserStart());
-        try {
-          const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
-          const signoutData = await signoutRes.json();
-          if (signoutData.success === false) {
-            dispatch(signoutUserFailure(signoutData.message));
-          } else {
-            dispatch(signoutUserSuccess(signoutData));
-            if (persistor && persistor.purge) await persistor.purge();
-            reconnectSocket();
-            localStorage.removeItem('accessToken');
-            document.cookie = 'access_token=; Max-Age=0; path=/; domain=' + window.location.hostname + '; secure; samesite=None';
-          }
-        } catch (err) {
-          dispatch(signoutUserFailure(err.message));
-        }
-        setTimeout(() => {
-          navigate("/sign-in", { replace: true });
-        }, 800);
+        setUpdatePasswordError("Invalid mobile number. Please fix and try again.");
+        // Keep modal open for retry
         return;
       }
       if (data.status === "success") {
         // Ensure avatar is always a string (empty if deleted)
         // If mobile number changed, set isGeneratedMobile to false
+        localStorage.removeItem(PROFILE_PASSWORD_ATTEMPT_KEY);
         const updatedUser = {
           ...data.updatedUser,
           avatar: data.updatedUser.avatar || "",
@@ -1034,25 +1077,30 @@ export default function Profile() {
       }
       // fallback for other errors
       if (data.success === false || data.status === "error") {
-        setUpdateError(data.message || "Profile Update Failed!");
-        dispatch(updateUserFailure(data.message));
+        const message = data.message || "Profile Update Failed!";
+        setUpdateError(message);
+        dispatch(updateUserFailure(message));
         setLoading(false);
-        setShowUpdatePasswordModal(false);
+        setUpdatePasswordError(message);
         setUpdatePassword("");
+        // Keep modal open to allow retry
         return;
       }
       // If we reach here, it means we got an unexpected response
       setUpdateError("Profile Update Failed!");
+      setUpdatePasswordError("Profile Update Failed!");
       setLoading(false);
-      setShowUpdatePasswordModal(false);
       setUpdatePassword("");
+      // Keep modal open for retry
+      return;
     } catch (error) {
 
       setUpdateError("Profile Update Failed!");
       dispatch(updateUserFailure(error.message));
       setLoading(false);
-      setShowUpdatePasswordModal(false);
+      setUpdatePasswordError(error.message || "Network error");
       setUpdatePassword("");
+      // Keep modal open for retry
     }
   };
 
@@ -2381,13 +2429,22 @@ export default function Profile() {
             <p className="text-sm text-gray-600 group-hover:text-green-500 transition-colors duration-300">Appointments</p>
           </div>
           <div className={`bg-white rounded-xl shadow-lg ${isAdmin ? 'p-6' : 'p-4'} text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-750' : 'opacity-0 scale-95'}`}>
-            <div className={`bg-red-100 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-red-200 transition-all duration-300 ${animationClasses.heartbeat} group-hover:scale-110`}>
-              <FaHeart className="w-5 h-5 text-red-600 group-hover:text-red-700 transition-colors duration-300" />
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 transition-all duration-300 ${isAdmin ? 'bg-indigo-100 group-hover:bg-indigo-200' : 'bg-red-100 group-hover:bg-red-200'} ${animationClasses.heartbeat} group-hover:scale-110`}>
+              {isAdmin ? (
+                <FaHome className="w-5 h-5 text-indigo-600 group-hover:text-indigo-700 transition-colors duration-300" />
+              ) : (
+                <FaHeart className="w-5 h-5 text-red-600 group-hover:text-red-700 transition-colors duration-300" />
+              )}
             </div>
-            <h3 className="text-xl font-bold text-gray-800 group-hover:text-red-600 transition-colors duration-300">
-              {statsAnimated ? <AnimatedCounter end={userStats.wishlist} delay={800} /> : userStats.wishlist}
+            <h3 className="text-xl font-bold text-gray-800 transition-colors duration-300">
+              {isAdmin
+                ? (statsAnimated ? <AnimatedCounter end={userStats.listings} delay={800} /> : userStats.listings)
+                : (statsAnimated ? <AnimatedCounter end={userStats.wishlist} delay={800} /> : userStats.wishlist)
+              }
             </h3>
-            <p className="text-sm text-gray-600 group-hover:text-red-500 transition-colors duration-300">Wishlist Items</p>
+            <p className="text-sm text-gray-600 transition-colors duration-300">
+              {isAdmin ? 'All Properties' : 'Wishlist Items'}
+            </p>
           </div>
           {!isAdmin && (
           <div className={`bg-white rounded-xl shadow-lg p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-900' : 'opacity-0 scale-95'}`}>
@@ -2968,7 +3025,7 @@ export default function Profile() {
               {updatePasswordError && <div className="text-red-600 text-sm mb-2">{updatePasswordError}</div>}
               <div className="flex justify-end space-x-3">
                 <button
-                  onClick={() => { setShowUpdatePasswordModal(false); setUpdatePassword(""); setUpdatePasswordError(""); }}
+                  onClick={() => { localStorage.removeItem(PROFILE_PASSWORD_ATTEMPT_KEY); setShowUpdatePasswordModal(false); setUpdatePassword(""); setUpdatePasswordError(""); }}
                   className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
                 >Cancel</button>
                 <button

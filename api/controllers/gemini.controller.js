@@ -5,7 +5,7 @@ import { getRelevantWebsiteData } from '../services/websiteDataService.js';
 import { getRelevantCachedData, needsReindexing, indexAllWebsiteData } from '../services/dataSyncService.js';
 
 const ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY || "AIzaSyAcqc4JRzSG5pdYDWxbk3UZRn0IhrWhV7k"
+    apiKey: process.env.GEMINI_API_KEY || "AIzaSyAcqc4JRzSG5pdYDWxbk3UZRn0IhrWhV7k" || "AIzaSyBg9wSoffCi3RfbaQV6zwH78xoULd2jG0A" || "AIzaSyARHoXUbM0HBoXROadhIdlB-ABhEHvELh4"
 });
 
 export const chatWithGemini = async (req, res) => {
