@@ -1,0 +1,1540 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { useSelector } from 'react-redux';
+import { FaBell, FaTimes, FaCheck, FaTrash, FaEye, FaCalendarAlt, FaEdit, FaEnvelope, FaPaperPlane, FaUsers, FaUser, FaRedo, FaUndo } from 'react-icons/fa';
+import { toast } from 'react-toastify';
+import { socket } from '../utils/socket.js';
+import { useNavigate } from 'react-router-dom';
+import { createPortal } from 'react-dom';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+export default function NotificationBell({ mobile = false }) {
+  const { currentUser } = useSelector((state) => state.user);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [isRinging, setIsRinging] = useState(false);
+  const [previousUnreadCount, setPreviousUnreadCount] = useState(0);
+  const [activeTab, setActiveTab] = useState('notifications'); // 'notifications' or 'send'
+  const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState('');
+  const [title, setTitle] = useState('');
+  const [message, setMessage] = useState('');
+  const [sendingNotification, setSendingNotification] = useState(false);
+  const [fetchingUsers, setFetchingUsers] = useState(false);
+  const [userSearch, setUserSearch] = useState('');
+  
+  // Separate state for "Send to All Users" form
+  const [allUsersTitle, setAllUsersTitle] = useState('');
+  const [allUsersMessage, setAllUsersMessage] = useState('');
+  const bellRef = useRef(null);
+
+  // Scroll lock effect: prevent background scroll when notification dropdown/modal is open
+  useEffect(() => {
+    if (isOpen) {
+      // Save previous overflow style
+      const prevOverflow = document.body.style.overflow;
+      const prevPosition = document.body.style.position;
+      const prevWidth = document.body.style.width;
+      
+      document.body.style.overflow = 'hidden';
+      if (mobile) {
+        document.body.style.position = 'fixed';
+        document.body.style.width = '100%';
+      }
+      
+      // Clean up: restore previous overflow
+      return () => {
+        document.body.style.overflow = prevOverflow;
+        document.body.style.position = prevPosition;
+        document.body.style.width = prevWidth;
+      };
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    }
+    // Clean up on unmount
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    };
+  }, [isOpen, mobile]);
+
+  // Fetch notifications; when showTodayOnly is true, filter to today's notifications and show toast
+  const fetchNotifications = async (showTodayOnly = false) => {
+    if (!currentUser) return;
+    
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/notifications/user/${currentUser._id}`, {
+        credentials: 'include',
+      });
+      const data = await res.json();
+      
+      if (res.ok) {
+        if (showTodayOnly) {
+          const now = new Date();
+          const todayYear = now.getFullYear();
+          const todayMonth = now.getMonth();
+          const todayDate = now.getDate();
+          const todays = (Array.isArray(data) ? data : []).filter((n) => {
+            const d = new Date(n.createdAt);
+            return d.getFullYear() === todayYear && d.getMonth() === todayMonth && d.getDate() === todayDate;
+          });
+          setNotifications(todays.length > 0 ? todays : data);
+          toast.info('Notifications list updated');
+        } else {
+          setNotifications(data);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  };
+
+  // Fetch unread count
+  const fetchUnreadCount = async () => {
+    if (!currentUser) return;
+    
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/notifications/user/${currentUser._id}/unread-count`, {
+        credentials: 'include',
+      });
+      const data = await res.json();
+      
+      if (res.ok) {
+        const newCount = data.count;
+        // Check if this is a new notification (count increased)
+        if (newCount > previousUnreadCount && previousUnreadCount > 0) {
+          triggerBellRing();
+        }
+        setUnreadCount(newCount);
+        setPreviousUnreadCount(newCount);
+      }
+    } catch (error) {
+      console.error('Error fetching unread count:', error);
+    }
+  };
+
+  // Bell ring animation function
+  const triggerBellRing = () => {
+    setIsRinging(true);
+    setTimeout(() => {
+      setIsRinging(false);
+    }, 1500); // Animation lasts 1.5 seconds
+  };
+
+  // Fetch all users for admin notification dropdown
+  const fetchUsers = async () => {
+    if (!currentUser || !isAdmin()) return;
+    
+    setFetchingUsers(true);
+    try {
+
+      const res = await fetch(`${API_BASE_URL}/api/notifications/admin/users`, {
+        credentials: 'include',
+      });
+      const data = await res.json();
+      
+
+      
+      if (res.ok) {
+        setUsers(data);
+
+      } else {
+        console.error('Failed to fetch users:', data);
+        toast.error('Failed to fetch users: ' + (data.message || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      toast.error('Failed to fetch users: ' + error.message);
+    } finally {
+      setFetchingUsers(false);
+    }
+  };
+
+  // Send notification to specific user
+  const sendNotificationToUser = async (e) => {
+    e.preventDefault();
+    
+    if (!selectedUser || !title.trim() || !message.trim()) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    setSendingNotification(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/notifications/admin/send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          userId: selectedUser,
+          title: title.trim(),
+          message: message.trim(),
+          type: 'admin_message'
+        }),
+      });
+
+      const data = await res.json();
+      
+      if (res.ok) {
+        toast.success(data.message);
+        // Reset form
+        setSelectedUser('');
+        setTitle('');
+        setMessage('');
+        setUserSearch('');
+        setActiveTab('notifications');
+      } else {
+        toast.error(data.message || 'Failed to send notification');
+      }
+    } catch (error) {
+      console.error('Error sending notification:', error);
+      toast.error('Failed to send notification');
+    } finally {
+      setSendingNotification(false);
+    }
+  };
+
+  // Send notification to all users
+  const sendNotificationToAll = async (e) => {
+    e.preventDefault();
+    
+    if (!allUsersTitle.trim() || !allUsersMessage.trim()) {
+      toast.error('Please fill in title and message');
+      return;
+    }
+
+    setSendingNotification(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/notifications/admin/send-all`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          title: allUsersTitle.trim(),
+          message: allUsersMessage.trim(),
+          type: 'admin_message'
+        }),
+      });
+
+      const data = await res.json();
+      
+      if (res.ok) {
+        toast.success(data.message);
+        // Reset form
+        setAllUsersTitle('');
+        setAllUsersMessage('');
+        setUserSearch('');
+        setActiveTab('notifications');
+      } else {
+        toast.error(data.message || 'Failed to send notification');
+      }
+    } catch (error) {
+      console.error('Error sending notification:', error);
+      toast.error('Failed to send notification');
+    } finally {
+      setSendingNotification(false);
+    }
+  };
+
+  // Mark notification as read
+  const markAsRead = async (notificationId) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/notifications/${notificationId}/read`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ userId: currentUser._id }),
+      });
+
+      if (res.ok) {
+        // Update local state
+        setNotifications(prev => 
+          prev.map(notif => 
+            notif._id === notificationId 
+              ? { ...notif, isRead: true, readAt: new Date() }
+              : notif
+          )
+        );
+        fetchUnreadCount(); // Refresh count
+      }
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
+
+  // Mark all notifications as read
+  const markAllAsRead = async () => {
+    try {
+      let endpoint;
+      let successMessage;
+      
+      if (isAdmin()) {
+        // For admins, use the sync endpoint to mark all admins' notifications as read
+        endpoint = `${API_BASE_URL}/api/notifications/admin/read-all`;
+        successMessage = 'All notifications marked as read for all admins';
+      } else {
+        // For regular users, use the individual endpoint
+        endpoint = `${API_BASE_URL}/api/notifications/user/${currentUser._id}/read-all`;
+        successMessage = 'All notifications marked as read';
+      }
+
+      const res = await fetch(endpoint, {
+        method: 'PUT',
+        credentials: 'include',
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(prev => 
+          prev.map(notif => ({ ...notif, isRead: true, readAt: new Date() }))
+        );
+        setUnreadCount(0);
+        toast.success(successMessage);
+      }
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+    }
+  };
+
+  // Delete notification
+  const deleteNotification = async (notificationId) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/notifications/${notificationId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ userId: currentUser._id }),
+      });
+
+      if (res.ok) {
+        setNotifications(prev => prev.filter(notif => notif._id !== notificationId));
+        fetchUnreadCount(); // Refresh count
+        toast.success('Notification deleted');
+      }
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+    }
+  };
+
+  // Format date
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMs = now - date;
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+    
+    if (diffInMinutes < 1) {
+      return 'Just now';
+    } else if (diffInMinutes < 60) {
+      return `${diffInMinutes}m ago`;
+    } else if (diffInHours < 24) {
+      return `${diffInHours}h ago`;
+    } else if (diffInDays === 1) {
+      return 'Yesterday';
+    } else if (diffInDays < 7) {
+      return `${diffInDays} days ago`;
+    } else {
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    }
+  };
+
+  // Get notification icon based on type
+  const getNotificationIcon = (type) => {
+    switch (type) {
+      case 'property_edited':
+        return <FaEdit className="w-4 h-4 text-blue-500" />;
+      case 'property_deleted':
+        return <FaTrash className="w-4 h-4 text-red-500" />;
+      case 'appointment_updated':
+        return <FaCalendarAlt className="w-4 h-4 text-green-500" />;
+      case 'admin_message':
+        return <FaEnvelope className="w-4 h-4 text-purple-500" />;
+      case 'admin_booked_appointment':
+        return <FaCalendarAlt className="w-4 h-4 text-orange-500" />;
+      case 'appointment_booked':
+        return <FaCalendarAlt className="w-4 h-4 text-blue-500" />;
+      case 'appointment_cancelled_by_seller':
+        return <FaTimes className="w-4 h-4 text-red-500" />;
+      case 'appointment_cancelled_by_buyer':
+        return <FaTimes className="w-4 h-4 text-yellow-500" />;
+      case 'appointment_cancelled_by_admin':
+        return <FaTimes className="w-4 h-4 text-pink-500" />;
+      case 'appointment_reinitiated_by_admin':
+        return <FaRedo className="w-4 h-4 text-green-500" />;
+      case 'appointment_accepted_by_seller':
+        return <FaCheck className="w-4 h-4 text-green-500" />;
+      case 'appointment_rejected_by_seller':
+        return <FaTimes className="w-4 h-4 text-red-500" />;
+      case 'appointment_reinitiated_by_user':
+        return <FaRedo className="w-4 h-4 text-green-500" />;
+      case 'refund_appeal_submitted':
+        return <FaUndo className="w-4 h-4 text-purple-500" />;
+      // Watchlist notification types
+      case 'watchlist_price_drop':
+        return <FaEye className="w-4 h-4 text-green-500" />;
+      case 'watchlist_price_update':
+        return <FaEye className="w-4 h-4 text-blue-500" />;
+      case 'watchlist_property_sold':
+        return <FaTimes className="w-4 h-4 text-red-500" />;
+      case 'watchlist_property_removed':
+        return <FaTrash className="w-4 h-4 text-red-500" />;
+      case 'watchlist_property_trending':
+        return <FaEye className="w-4 h-4 text-orange-500" />;
+      case 'watchlist_status_update':
+        return <FaEdit className="w-4 h-4 text-purple-500" />;
+      case 'watchlist_update':
+        return <FaEye className="w-4 h-4 text-indigo-500" />;
+      case 'email_service_failure':
+        return <FaEnvelope className="w-4 h-4 text-red-500" />;
+      default:
+        return <FaBell className="w-4 h-4 text-gray-500" />;
+    }
+  };
+
+  // Load data on component mount and user change
+  useEffect(() => {
+    if (currentUser) {
+      fetchNotifications();
+      fetchUnreadCount();
+      
+      // Fetch users if admin (for notification sending)
+      if (isAdmin()) {
+        fetchUsers();
+      }
+      
+      // Set up polling for new notifications every 10 seconds
+      const interval = setInterval(() => {
+        fetchUnreadCount();
+      }, 10000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [currentUser]);
+
+  // Fetch users when send tab is active (admin only)
+  useEffect(() => {
+
+    
+    if (isOpen && activeTab === 'send' && currentUser && isAdmin()) {
+      
+      fetchUsers();
+    }
+  }, [isOpen, activeTab, currentUser]);
+
+  // Don't render if no user
+  if (!currentUser) return null;
+
+
+
+  // Helper function to check if user is admin
+  const isAdmin = () => {
+    return currentUser.role === 'admin' || 
+           currentUser.role === 'rootadmin' || 
+           currentUser.isDefaultAdmin ||
+           currentUser.isAdmin;
+  };
+
+  useEffect(() => {
+    const handleNewNotification = (notification) => {
+      if (!currentUser || notification.userId !== currentUser._id) return;
+      setNotifications((prev) => [notification, ...prev]);
+      setUnreadCount((count) => count + 1);
+    };
+    
+    const handleAllNotificationsMarkedAsRead = (data) => {
+      if (!currentUser || data.adminId !== currentUser._id) return;
+      
+      // Update local state to mark all notifications as read
+      setNotifications(prev => 
+        prev.map(notif => ({ ...notif, isRead: true, readAt: new Date() }))
+      );
+      setUnreadCount(0);
+      
+      // Show toast notification about who marked them as read
+      const markedBy = data.markedBy === currentUser._id ? 'You' : 'Another admin';
+      toast.info(`${markedBy} marked all notifications as read for all admins`);
+    };
+    
+    const handleNotificationMarkedAsRead = (data) => {
+      if (!currentUser || data.notificationId) {
+        // Update the specific notification as read
+        setNotifications(prev => 
+          prev.map(notif => 
+            notif._id === data.notificationId 
+              ? { ...notif, isRead: true, readAt: new Date() }
+              : notif
+          )
+        );
+        
+        // Update unread count
+        setUnreadCount(prev => Math.max(0, prev - 1));
+        
+        // Show toast notification about who marked it as read
+        const markedBy = data.markedBy === currentUser._id ? 'You' : (data.markedByUsername || data.markedByEmail || 'Another admin');
+        toast.info(`${markedBy} marked a notification as read`);
+      }
+    };
+    
+    const handleWatchlistNotification = (data) => {
+      if (!currentUser || data.userId !== currentUser._id) return;
+      setNotifications((prev) => [data.notification, ...prev]);
+      setUnreadCount((count) => count + 1);
+      triggerBellRing(); // Ring bell for watchlist notifications
+    };
+    
+    socket.on('notificationCreated', handleNewNotification);
+    socket.on('allNotificationsMarkedAsRead', handleAllNotificationsMarkedAsRead);
+    socket.on('notificationMarkedAsRead', handleNotificationMarkedAsRead);
+    socket.on('watchlistNotification', handleWatchlistNotification);
+    
+    return () => {
+      socket.off('notificationCreated', handleNewNotification);
+      socket.off('allNotificationsMarkedAsRead', handleAllNotificationsMarkedAsRead);
+      socket.off('notificationMarkedAsRead', handleNotificationMarkedAsRead);
+      socket.off('watchlistNotification', handleWatchlistNotification);
+    };
+  }, [currentUser]);
+
+  return (
+    <div className="relative">
+      {/* Notification Bell Button */}
+      <button
+        ref={bellRef}
+        onClick={() => setIsOpen(!isOpen)}
+        className={`relative p-3 text-yellow-500 hover:text-yellow-400 transition-all duration-300 hover:scale-110 bg-yellow-50 hover:bg-yellow-100 rounded-full ${
+          isRinging ? 'animate-bell-ring' : ''
+        } ${isOpen ? 'bg-yellow-100 text-yellow-600' : ''}`}
+        title="Notifications"
+      >
+        <FaBell className="w-5 h-5 drop-shadow-lg" />
+        {unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-lg animate-pulse">
+            {unreadCount > 99 ? '99+' : unreadCount}
+          </span>
+        )}
+      </button>
+
+      {/* Notification Dropdown or Modal */}
+      {isOpen && (
+        mobile ? (
+          // Mobile: Fullscreen Modal with Portal
+          createPortal(
+            <div 
+              className="fixed inset-0 z-[99999] flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-md"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                  setIsOpen(false);
+                }
+              }}
+            >
+              <div className="w-full max-w-md mx-auto bg-gradient-to-br from-white via-blue-50 to-purple-50 rounded-3xl shadow-2xl border border-gray-200 max-h-[85vh] overflow-hidden relative animate-fade-in notification-popup transform transition-all duration-300"
+                   style={{ marginTop: '1rem', marginBottom: '1rem' }}>
+                {/* Close Button */}
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 z-10 bg-white rounded-full p-2 shadow-lg hover:shadow-xl transition-all duration-200"
+                  aria-label="Close notifications"
+                >
+                  <FaTimes className="w-4 h-4" />
+                </button>
+                {/* Content */}
+                <div className="pt-12 pb-6 px-6">
+                  {/* Header with Tabs */}
+                  <div className="border-b border-gray-200 mb-6">
+                    <h3 className="text-2xl font-bold text-gray-800 text-center tracking-wide mb-2">Notifications</h3>
+                    <div className="flex justify-center">
+                      <div className="w-16 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+                    </div>
+                    {isAdmin() && (
+                      <div className="flex border-b border-gray-200 mt-2">
+                        <button
+                          onClick={() => setActiveTab('notifications')}
+                          className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${
+                            activeTab === 'notifications'
+                              ? 'text-blue-600 border-b-2 border-blue-600'
+                              : 'text-gray-500 hover:text-gray-700'
+                          }`}
+                        >
+                          <FaBell className="w-4 h-4 inline mr-2" />
+                          Notifications
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('send')}
+                          className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${
+                            activeTab === 'send'
+                              ? 'text-blue-600 border-b-2 border-blue-600'
+                              : 'text-gray-500 hover:text-gray-700'
+                          }`}
+                        >
+                          <FaEnvelope className="w-4 h-4 inline mr-2" />
+                          Send Message
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  {/* Tab Content (reuse existing JSX for notifications/send) */}
+                  {activeTab === 'notifications' ? (
+                    <>
+                      {/* Notifications Header Actions */}
+                      <div className="flex items-center justify-between p-4 border-b border-gray-100">
+                        <div className="flex items-center gap-2">
+                          {unreadCount > 0 && (
+                            <button
+                              onClick={markAllAsRead}
+                              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                            >
+                              {isAdmin() ? 'Mark all resolved' : 'Mark all read'}
+                            </button>
+                          )}
+                          <button
+                            onClick={() => fetchNotifications(true)}
+                            className="ml-2 text-sm text-gray-500 hover:text-blue-600 flex items-center gap-1"
+                            title="Refresh notifications"
+                          >
+                            <FaRedo className="w-4 h-4" />
+                            Refresh
+                          </button>
+                          {notifications.length > 0 && (
+                            <button
+                              onClick={() => {
+                                // Clear all notifications
+                                fetch(`${API_BASE_URL}/api/notifications/user/${currentUser._id}/all`, {
+                                  method: 'DELETE',
+                                  credentials: 'include',
+                                }).then(() => {
+                                  setNotifications([]);
+                                  setUnreadCount(0);
+                                  toast.success('All notifications cleared');
+                                });
+                              }}
+                              className="ml-2 text-sm text-red-600 hover:text-red-800 font-medium flex items-center gap-1"
+                              title="Clear all notifications"
+                            >
+                              <FaTrash className="w-4 h-4" />
+                              Clear all
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Notifications List */}
+                      <div className="notification-scroll-area-mobile">
+                        {notifications.length === 0 ? (
+                          <div className="p-6 text-center text-gray-500">
+                            <FaBell className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                            <p>No notifications yet</p>
+                          </div>
+                        ) : (
+                          <div className="divide-y divide-gray-100">
+                            {notifications.map((notification) => (
+                              <div
+                                key={notification._id}
+                                className={`relative group p-4 my-2 rounded-2xl shadow-lg bg-white border transition-all duration-300 flex flex-col gap-2 animate-fadeInNotification
+                                  ${!notification.isRead ? 'border-l-4 border-blue-500 bg-gradient-to-r from-blue-50 to-white shadow-blue-100' : 'border border-gray-200 hover:border-gray-300'}
+                                  hover:shadow-xl hover:-translate-y-1 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 active:scale-[0.98]`}
+                                style={{ animationDelay: `${0.05 * notifications.indexOf(notification)}s` }}
+                              >
+                                <div className="flex items-start gap-3">
+                                  <div className="flex-shrink-0 mt-1">
+                                    {getNotificationIcon(notification.type)}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-start justify-between">
+                                      <div className="flex-1 min-w-0">
+                                        <h4 className="text-base font-bold text-blue-800 flex items-center gap-2">
+                                          {getNotificationIcon(notification.type)}
+                                          <span className="truncate max-w-[180px] md:max-w-[260px]" title={notification.title}>{notification.title}</span>
+                                        </h4>
+                                        <p className="text-sm text-gray-700 mt-1 whitespace-pre-line break-words max-w-xs md:max-w-md lg:max-w-lg font-medium">
+                                          {notification.link ? (
+                                            <span
+                                              className="text-blue-600 hover:underline cursor-pointer font-semibold"
+                                              onClick={() => {
+                                                markAsRead(notification._id);
+                                                if (notification.link.startsWith('http')) {
+                                                  window.open(notification.link, '_blank');
+                                                } else {
+                                                  setIsOpen(false);
+                                                  setTimeout(() => navigate(notification.link), 0);
+                                                }
+                                              }}
+                                            >
+                                              {notification.message}
+                                            </span>
+                                          ) : (
+                                            <span
+                                              className="text-blue-600 hover:underline cursor-pointer font-semibold"
+                                              onClick={() => {
+                                                markAsRead(notification._id);
+                                                setIsOpen(false);
+                                              }}
+                                            >
+                                              {notification.message}
+                                            </span>
+                                          )}
+                                        </p>
+                                        <div className="flex items-center gap-2 mt-2">
+                                          <span className="text-xs text-gray-500">
+                                            {formatDate(notification.createdAt)}
+                                          </span>
+                                          {/* Show 'by Organization' for admin notifications on user side */}
+                                          {notification.adminId && !isAdmin() && (
+                                            <span className="text-xs text-blue-600">
+                                              by Organization
+                                            </span>
+                                          )}
+                                          {/* Optionally, for admins, still show admin name/email */}
+                                          {notification.adminId && isAdmin() && (
+                                            <span className="text-xs text-blue-600">
+                                              by {notification.adminId.username || notification.adminId.email}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-1 ml-2">
+                                        {!notification.isRead && (
+                                          <button
+                                            onClick={() => markAsRead(notification._id)}
+                                            className="p-1 text-green-600 hover:text-green-800 transition-colors"
+                                            title="Mark as read"
+                                          >
+                                            <FaCheck className="w-3 h-3" />
+                                          </button>
+                                        )}
+                                        <button
+                                          onClick={() => deleteNotification(notification._id)}
+                                          className="p-1 text-red-600 hover:text-red-800 transition-colors"
+                                          title="Delete notification"
+                                        >
+                                          <FaTrash className="w-3 h-3" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                    </>
+                  ) : (
+                    /* Send Notification Tab */
+                    <div className="p-4 space-y-4 max-h-80 overflow-y-auto">
+                      {/* Send to All Users */}
+                      <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                        <h4 className="font-semibold text-green-800 mb-3 flex items-center gap-2">
+                          <FaUsers className="w-4 h-4" />
+                          Send to All Users
+                        </h4>
+                        <form onSubmit={sendNotificationToAll} className="space-y-3">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Title
+                            </label>
+                            <input
+                              type="text"
+                              value={allUsersTitle}
+                              onChange={(e) => setAllUsersTitle(e.target.value)}
+                              placeholder="Enter title..."
+                              className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
+                              required
+                              maxLength={100}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Message
+                            </label>
+                            <textarea
+                              value={allUsersMessage}
+                              onChange={(e) => setAllUsersMessage(e.target.value)}
+                              placeholder="Enter message..."
+                              rows={3}
+                              className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none text-gray-900"
+                              required
+                              maxLength={500}
+                            />
+                            <div className="text-xs text-gray-500 mt-1 text-right">
+                              {allUsersMessage.length}/500
+                            </div>
+                          </div>
+                          <button
+                            type="submit"
+                            disabled={sendingNotification || !allUsersTitle.trim() || !allUsersMessage.trim()}
+                            className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                          >
+                            {sendingNotification ? (
+                              <>
+                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                                Sending...
+                              </>
+                            ) : (
+                              <>
+                                <FaUsers className="w-3 h-3" />
+                                Send to All Users
+                              </>
+                            )}
+                          </button>
+                        </form>
+                      </div>
+
+                      {/* Send to Specific User */}
+                      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                        <h4 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                          <FaUser className="w-4 h-4" />
+                          Send to Specific User
+                        </h4>
+                        <form onSubmit={sendNotificationToUser} className="space-y-3">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Select User
+                            </label>
+                            <input
+                              type="text"
+                              value={userSearch}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setUserSearch(value);
+                                // Clear selected user if search changes
+                                if (selectedUser && value.trim()) {
+                                  setSelectedUser('');
+                                }
+                              }}
+                              placeholder="Search users by name, email, or mobile number"
+                              className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 mb-2"
+                              disabled={fetchingUsers}
+                            />
+                            <div className="relative">
+                              <select
+                                value={selectedUser}
+                                onChange={(e) => setSelectedUser(e.target.value)}
+                                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+                                required
+                                disabled={fetchingUsers}
+                              >
+                                <option value="" disabled>
+                                  -- Select a user --
+                                </option>
+                                {users.length === 0 && !fetchingUsers && (
+                                  <option value="" disabled>No users found. Click "Refresh Users" to load.</option>
+                                )}
+                                {users
+                                  .filter((user) => {
+                                    const q = userSearch.trim().toLowerCase();
+                                    if (!q) return true;
+                                    
+                                    const name = (user.username || user.name || "").toLowerCase();
+                                    const email = (user.email || "").toLowerCase();
+                                    const mobileRaw = (user.mobileNumber || user.mobile || "").toString();
+                                    const mobile = mobileRaw.replace(/\D/g, '');
+                                    
+                                    // If query is exactly a 10-digit number, require exact mobile match
+                                    if (/^\d{10}$/.test(q)) {
+                                      return mobile === q;
+                                    }
+                                    
+                                    // Otherwise broad matching across fields
+                                    return (
+                                      name.includes(q) ||
+                                      email.includes(q) ||
+                                      mobileRaw.toLowerCase().includes(q)
+                                    );
+                                  })
+                                  .map((user) => {
+                                    const formatMobileNumber = (mobile) => {
+                                      if (!mobile) return '';
+                                      const cleanMobile = mobile.toString().replace(/[\s\-\(\)]/g, '');
+                                      if (cleanMobile.length === 10) {
+                                        return `+91-${cleanMobile}`;
+                                      } else if (cleanMobile.length === 12 && cleanMobile.startsWith('91')) {
+                                        return `+${cleanMobile}`;
+                                      } else if (cleanMobile.length === 13 && cleanMobile.startsWith('+91')) {
+                                        return cleanMobile;
+                                      }
+                                      return mobile;
+                                    };
+                                    
+                                    const displayName = user.username || user.name || user.email;
+                                    const displayEmail = user.email;
+                                    const displayMobile = formatMobileNumber(user.mobileNumber || user.mobile);
+                                    
+                                    return (
+                                      <option key={user._id} value={user._id}>
+                                        {displayName} ({displayEmail}{displayMobile ? `, ${displayMobile}` : ''})
+                                      </option>
+                                    );
+                                  })}
+                              </select>
+                              {fetchingUsers && (
+                                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500"></div>
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex items-center justify-between mt-1">
+                              <span className="text-xs text-gray-500">
+                                {users.filter((user) => {
+                                  const q = userSearch.trim().toLowerCase();
+                                  if (!q) return true;
+                                  
+                                  const name = (user.username || user.name || "").toLowerCase();
+                                  const email = (user.email || "").toLowerCase();
+                                  const mobileRaw = (user.mobileNumber || user.mobile || "").toString();
+                                  const mobile = mobileRaw.replace(/\D/g, '');
+                                  
+                                  if (/^\d{10}$/.test(q)) {
+                                    return mobile === q;
+                                  }
+                                  
+                                  return (
+                                    name.includes(q) ||
+                                    email.includes(q) ||
+                                    mobileRaw.toLowerCase().includes(q)
+                                  );
+                                }).length} users available
+                              </span>
+                              <button
+                                type="button"
+                                onClick={fetchUsers}
+                                disabled={fetchingUsers}
+                                className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                              >
+                                {fetchingUsers ? 'Loading...' : 'Refresh Users'}
+                              </button>
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Title
+                            </label>
+                            <input
+                              type="text"
+                              value={title}
+                              onChange={(e) => setTitle(e.target.value)}
+                              placeholder="Enter title..."
+                              className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                              required
+                              maxLength={100}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Message
+                            </label>
+                            <textarea
+                              value={message}
+                              onChange={(e) => setMessage(e.target.value)}
+                              placeholder="Enter message..."
+                              rows={3}
+                              className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900"
+                              required
+                              maxLength={500}
+                            />
+                            <div className="text-xs text-gray-500 mt-1 text-right">
+                              {message.length}/500
+                            </div>
+                          </div>
+                          <button
+                            type="submit"
+                            disabled={sendingNotification || !selectedUser || !title.trim() || !message.trim()}
+                            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                          >
+                            {sendingNotification ? (
+                              <>
+                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                                Sending...
+                              </>
+                            ) : (
+                              <>
+                                <FaPaperPlane className="w-3 h-3" />
+                                Send to User
+                              </>
+                            )}
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  )}
+                  
+
+                </div>
+              </div>
+            </div>,
+            document.body
+          )
+        ) : (
+          // Desktop: Dropdown
+          createPortal(
+            <div 
+              className="fixed inset-0 z-[9998] bg-black bg-opacity-30 backdrop-blur-sm"
+              onClick={() => setIsOpen(false)}
+              style={{ pointerEvents: 'auto' }}
+            >
+              <div 
+                className="fixed w-96 bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl border border-gray-200 z-[9999] max-h-96 overflow-hidden notification-popup transform transition-all duration-300" 
+                onClick={(e) => e.stopPropagation()}
+                style={{ 
+                  top: '80px',
+                  right: '20px',
+                  maxHeight: 'calc(100vh - 120px)',
+                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)',
+                  position: 'fixed',
+                  zIndex: 9999
+                }}
+              >
+          {/* Header with Tabs */}
+          <div className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+            <div className="flex items-center justify-between p-5">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                  <FaBell className="w-4 h-4 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-800">Notifications</h3>
+                {unreadCount > 0 && (
+                  <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 font-bold">
+                    {unreadCount}
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors"
+              >
+                <FaTimes className="w-4 h-4" />
+              </button>
+            </div>
+            
+            {/* Tabs - Show send tab only for admins */}
+            {isAdmin() && (
+              <div className="flex border-b border-gray-200">
+                <button
+                  onClick={() => setActiveTab('notifications')}
+                  className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${
+                    activeTab === 'notifications'
+                      ? 'text-blue-600 border-b-2 border-blue-600'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  <FaBell className="w-4 h-4 inline mr-2" />
+                  Notifications
+                </button>
+                <button
+                  onClick={() => setActiveTab('send')}
+                  className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${
+                    activeTab === 'send'
+                      ? 'text-blue-600 border-b-2 border-blue-600'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  <FaEnvelope className="w-4 h-4 inline mr-2" />
+                  Send Message
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Tab Content */}
+          {activeTab === 'notifications' ? (
+            <>
+              {/* Notifications Header Actions */}
+              <div className="flex items-center justify-between p-4 border-b border-gray-100">
+                                        <div className="flex items-center gap-2">
+                          {unreadCount > 0 && (
+                            <button
+                              onClick={markAllAsRead}
+                              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                            >
+                              {isAdmin() ? 'Mark all resolved' : 'Mark all read'}
+                            </button>
+                          )}
+                  <button
+                    onClick={() => fetchNotifications(true)}
+                    className="ml-2 text-sm text-gray-500 hover:text-blue-600 flex items-center gap-1"
+                    title="Refresh notifications"
+                  >
+                    <FaRedo className="w-4 h-4" />
+                    Refresh
+                  </button>
+                  {notifications.length > 0 && (
+                    <button
+                      onClick={() => {
+                        // Clear all notifications
+                        fetch(`${API_BASE_URL}/api/notifications/user/${currentUser._id}/all`, {
+                          method: 'DELETE',
+                          credentials: 'include',
+                        }).then(() => {
+                          setNotifications([]);
+                          setUnreadCount(0);
+                          toast.success('All notifications cleared');
+                        });
+                      }}
+                      className="ml-2 text-sm text-red-600 hover:text-red-800 font-medium flex items-center gap-1"
+                      title="Clear all notifications"
+                    >
+                      <FaTrash className="w-4 h-4" />
+                      Clear all
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Notifications List */}
+              <div className="notification-scroll-area-desktop">
+                {notifications.length === 0 ? (
+                  <div className="p-6 text-center text-gray-500">
+                    <FaBell className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                    <p>No notifications yet</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-100">
+                    {notifications.map((notification) => (
+                      <div
+                        key={notification._id}
+                        className={`p-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-200 border-l-4 ${
+                          !notification.isRead ? 'bg-blue-50 border-blue-500' : 'border-transparent hover:border-gray-200'
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0 mt-1">
+                            {getNotificationIcon(notification.type)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <h4 className="text-sm font-medium text-gray-900">
+                                  {notification.title}
+                                </h4>
+                                <p className="text-sm text-gray-600 mt-1 whitespace-pre-line break-words max-w-xs md:max-w-md lg:max-w-lg">
+                                  {notification.link ? (
+                                    <span
+                                      className="text-blue-600 hover:underline cursor-pointer"
+                                      onClick={() => {
+                                        markAsRead(notification._id);
+                                
+                                        if (notification.link.startsWith('http')) {
+                                          window.open(notification.link, '_blank');
+                                        } else {
+                                          setIsOpen(false);
+                                          setTimeout(() => navigate(notification.link), 0);
+                                        }
+                                      }}
+                                    >
+                                      {notification.message}
+                                    </span>
+                                  ) : (
+                                    <span
+                                      className="text-blue-600 hover:underline cursor-pointer"
+                                      onClick={() => {
+                                        markAsRead(notification._id);
+                                        setIsOpen(false);
+                                      }}
+                                    >
+                                      {notification.message}
+                                    </span>
+                                  )}
+                                </p>
+                                <div className="flex items-center gap-2 mt-2">
+                                  <span className="text-xs text-gray-500">
+                                    {formatDate(notification.createdAt)}
+                                  </span>
+                                  {/* Show 'by Organization' for admin notifications on user side */}
+                                  {notification.adminId && !isAdmin() && (
+                                    <span className="text-xs text-blue-600">
+                                      by Organization
+                                    </span>
+                                  )}
+                                  {/* Optionally, for admins, still show admin name/email */}
+                                  {notification.adminId && isAdmin() && (
+                                    <span className="text-xs text-blue-600">
+                                      by {notification.adminId.username || notification.adminId.email}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1 ml-2">
+                                {!notification.isRead && (
+                                  <button
+                                    onClick={() => markAsRead(notification._id)}
+                                    className="p-1 text-green-600 hover:text-green-800 transition-colors"
+                                    title="Mark as read"
+                                  >
+                                    <FaCheck className="w-3 h-3" />
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => deleteNotification(notification._id)}
+                                  className="p-1 text-red-600 hover:text-red-800 transition-colors"
+                                  title="Delete notification"
+                                >
+                                  <FaTrash className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+
+            </>
+          ) : (
+            /* Send Notification Tab */
+            <div className="p-4 space-y-4 max-h-80 overflow-y-auto">
+              {/* Send to All Users */}
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <h4 className="font-semibold text-green-800 mb-3 flex items-center gap-2">
+                  <FaUsers className="w-4 h-4" />
+                  Send to All Users
+                </h4>
+                <form onSubmit={sendNotificationToAll} className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Title
+                    </label>
+                    <input
+                      type="text"
+                      value={allUsersTitle}
+                      onChange={(e) => setAllUsersTitle(e.target.value)}
+                      placeholder="Enter title..."
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
+                      required
+                      maxLength={100}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Message
+                    </label>
+                    <textarea
+                      value={allUsersMessage}
+                      onChange={(e) => setAllUsersMessage(e.target.value)}
+                      placeholder="Enter message..."
+                      rows={3}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none text-gray-900"
+                      required
+                      maxLength={500}
+                    />
+                    <div className="text-xs text-gray-500 mt-1 text-right">
+                      {allUsersMessage.length}/500
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={sendingNotification || !allUsersTitle.trim() || !allUsersMessage.trim()}
+                    className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {sendingNotification ? (
+                      <>
+                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <FaUsers className="w-3 h-3" />
+                        Send to All Users
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
+
+              {/* Send to Specific User */}
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <h4 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                  <FaUser className="w-4 h-4" />
+                  Send to Specific User
+                </h4>
+                <form onSubmit={sendNotificationToUser} className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Select User
+                    </label>
+                    <input
+                      type="text"
+                      value={userSearch}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setUserSearch(value);
+                        // Clear selected user if search changes
+                        if (selectedUser && value.trim()) {
+                          setSelectedUser('');
+                        }
+                      }}
+                      placeholder="Search users by name, email, or mobile number"
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 mb-2"
+                      disabled={fetchingUsers}
+                    />
+                    <div className="relative">
+                      <select
+                        value={selectedUser}
+                        onChange={(e) => setSelectedUser(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+                        required
+                        disabled={fetchingUsers}
+                      >
+                        <option value="" disabled>
+                          -- Select a user --
+                        </option>
+                        {users.length === 0 && !fetchingUsers && (
+                          <option value="" disabled>No users found. Click "Refresh Users" to load.</option>
+                        )}
+                        {users
+                          .filter((user) => {
+                            const q = userSearch.trim().toLowerCase();
+                            if (!q) return true;
+                            
+                            const name = (user.username || user.name || "").toLowerCase();
+                            const email = (user.email || "").toLowerCase();
+                            const mobileRaw = (user.mobileNumber || user.mobile || "").toString();
+                            const mobile = mobileRaw.replace(/\D/g, '');
+                            
+                            // If query is exactly a 10-digit number, require exact mobile match
+                            if (/^\d{10}$/.test(q)) {
+                              return mobile === q;
+                            }
+                            
+                            // Otherwise broad matching across fields
+                            return (
+                              name.includes(q) ||
+                              email.includes(q) ||
+                              mobileRaw.toLowerCase().includes(q)
+                            );
+                          })
+                          .map((user) => {
+                            const formatMobileNumber = (mobile) => {
+                              if (!mobile) return '';
+                              const cleanMobile = mobile.toString().replace(/[\s\-\(\)]/g, '');
+                              if (cleanMobile.length === 10) {
+                                return `+91-${cleanMobile}`;
+                              } else if (cleanMobile.length === 12 && cleanMobile.startsWith('91')) {
+                                return `+${cleanMobile}`;
+                              } else if (cleanMobile.length === 13 && cleanMobile.startsWith('+91')) {
+                                return cleanMobile;
+                              }
+                              return mobile;
+                            };
+                            
+                            const displayName = user.username || user.name || user.email;
+                            const displayEmail = user.email;
+                            const displayMobile = formatMobileNumber(user.mobileNumber || user.mobile);
+                            
+                            return (
+                              <option key={user._id} value={user._id}>
+                                {displayName} ({displayEmail}{displayMobile ? `, ${displayMobile}` : ''})
+                              </option>
+                            );
+                          })}
+                      </select>
+                      {fetchingUsers && (
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500"></div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-xs text-gray-500">
+                        {users.filter((user) => {
+                          const q = userSearch.trim().toLowerCase();
+                          if (!q) return true;
+                          
+                          const name = (user.username || user.name || "").toLowerCase();
+                          const email = (user.email || "").toLowerCase();
+                          const mobileRaw = (user.mobileNumber || user.mobile || "").toString();
+                          const mobile = mobileRaw.replace(/\D/g, '');
+                          
+                          if (/^\d{10}$/.test(q)) {
+                            return mobile === q;
+                          }
+                          
+                          return (
+                            name.includes(q) ||
+                            email.includes(q) ||
+                            mobileRaw.toLowerCase().includes(q)
+                          );
+                        }).length} users available
+                      </span>
+                      <button
+                        type="button"
+                        onClick={fetchUsers}
+                        disabled={fetchingUsers}
+                        className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                      >
+                        {fetchingUsers ? 'Loading...' : 'Refresh Users'}
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Title
+                    </label>
+                    <input
+                      type="text"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="Enter title..."
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                      required
+                      maxLength={100}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Message
+                    </label>
+                    <textarea
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      placeholder="Enter message..."
+                      rows={3}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900"
+                      required
+                      maxLength={500}
+                    />
+                    <div className="text-xs text-gray-500 mt-1 text-right">
+                      {message.length}/500
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={sendingNotification || !selectedUser || !title.trim() || !message.trim()}
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {sendingNotification ? (
+                      <>
+                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <FaPaperPlane className="w-3 h-3" />
+                        Send to User
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
+              </div>,
+        document.body
+        )
+      )
+      )}
+      {/* Enhanced Animations */}
+      <style jsx>{`
+        @keyframes fadeInNotification {
+          from { 
+            opacity: 0; 
+            transform: translateY(20px) scale(0.95); 
+          }
+          to { 
+            opacity: 1; 
+            transform: translateY(0) scale(1); 
+          }
+        }
+        
+        @keyframes slideInFromTop {
+          from { 
+            opacity: 0; 
+            transform: translateY(-20px) scale(0.95); 
+          }
+          to { 
+            opacity: 1; 
+            transform: translateY(0) scale(1); 
+          }
+        }
+        
+        @keyframes bellRing {
+          0%, 100% { transform: rotate(0deg); }
+          10%, 30%, 50%, 70%, 90% { transform: rotate(10deg); }
+          20%, 40%, 60%, 80% { transform: rotate(-10deg); }
+        }
+        
+        .animate-fadeInNotification {
+          animation: fadeInNotification 0.5s cubic-bezier(0.4,0,0.2,1) both;
+        }
+        
+        .animate-fade-in {
+          animation: slideInFromTop 0.4s cubic-bezier(0.4,0,0.2,1) both;
+        }
+        
+        .animate-bell-ring {
+          animation: bellRing 0.5s ease-in-out;
+        }
+        
+        .notification-popup {
+          backdrop-filter: blur(10px);
+        }
+        
+        .notification-scroll-area-mobile {
+          max-height: calc(85vh - 320px);
+          overflow-y: auto;
+          scrollbar-width: thin;
+          scrollbar-color: #cbd5e0 #f7fafc;
+          padding-bottom: 1rem;
+          -webkit-overflow-scrolling: touch;
+        }
+        
+        .notification-scroll-area-mobile::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        .notification-scroll-area-mobile::-webkit-scrollbar-track {
+          background: #f7fafc;
+          border-radius: 3px;
+        }
+        
+        .notification-scroll-area-mobile::-webkit-scrollbar-thumb {
+          background: #cbd5e0;
+          border-radius: 3px;
+        }
+        
+        .notification-scroll-area-desktop {
+          max-height: calc(100vh - 200px);
+          overflow-y: auto;
+          scrollbar-width: thin;
+          scrollbar-color: #cbd5e0 #f7fafc;
+        }
+        
+        .notification-scroll-area-desktop::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        .notification-scroll-area-desktop::-webkit-scrollbar-track {
+          background: #f7fafc;
+          border-radius: 3px;
+        }
+        
+        .notification-scroll-area-desktop::-webkit-scrollbar-thumb {
+          background: #cbd5e0;
+          border-radius: 3px;
+        }
+      `}</style>
+    </div>
+  );
+} 

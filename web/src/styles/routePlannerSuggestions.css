@@ -1,0 +1,74 @@
+/* Route Planner Address Suggestions Scrollbar Styling */
+
+.suggestions-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db #f3f4f6;
+  -webkit-overflow-scrolling: touch;
+}
+
+.suggestions-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.suggestions-scroll::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 3px;
+}
+
+.suggestions-scroll::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.suggestions-scroll::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Ensure suggestions panel is above other elements */
+.suggestions-panel {
+  z-index: 9999 !important;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+}
+
+/* Smooth scrolling for suggestions */
+.suggestions-list {
+  max-height: 14rem; /* 224px - equivalent to max-h-56 */
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Individual suggestion item styling */
+.suggestion-item {
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  border-bottom: 1px solid #f3f4f6;
+  transition: background-color 150ms ease-in-out;
+}
+
+.suggestion-item:hover {
+  background-color: #f9fafb;
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-item .suggestion-name {
+  font-weight: 500;
+  color: #111827;
+}
+
+.suggestion-item .suggestion-context {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}

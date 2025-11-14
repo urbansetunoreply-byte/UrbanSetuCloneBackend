@@ -1,0 +1,785 @@
+import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import LocationSelector from "../components/LocationSelector";
+import ESGManagement from "../components/ESGManagement";
+import { toast } from 'react-toastify';
+
+import { usePageTitle } from '../hooks/usePageTitle';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+export default function AdminEditListing() {
+  // Set page title
+  usePageTitle("Edit Property - Admin Panel");
+
+  const [formData, setFormData] = useState({
+    imageUrls: [],
+    videoUrls: [],
+    name: "",
+    description: "",
+    propertyNumber: "",
+    landmark: "",
+    city: "",
+    state: "",
+    pincode: "",
+    address: "",
+    type: "sale",
+    bedrooms: 1,
+    bathrooms: 1,
+    regularPrice: 0,
+    discountPrice: 0,
+    offer: false,
+    parking: false,
+    furnished: false,
+    locationLink: "",
+    area: "",
+    floor: "",
+    propertyAge: "",
+    // ESG Data
+    esg: {
+      environmental: {
+        energyRating: 'Not Rated',
+        carbonFootprint: 0,
+        renewableEnergy: false,
+        waterEfficiency: 'Not Rated',
+        wasteManagement: 'Not Rated',
+        greenCertification: 'None',
+        solarPanels: false,
+        rainwaterHarvesting: false
+      },
+      social: {
+        accessibility: 'Not Rated',
+        communityImpact: 0,
+        affordableHousing: false,
+        localEmployment: 0,
+        socialAmenities: [],
+        diversityInclusion: 'Not Rated'
+      },
+      governance: {
+        transparency: 'Not Rated',
+        ethicalStandards: 'Not Rated',
+        compliance: 'Not Rated',
+        riskManagement: 'Not Rated',
+        stakeholderEngagement: 'Not Rated'
+      }
+    },
+  });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [imageErrors, setImageErrors] = useState({});
+  const [uploadingImages, setUploadingImages] = useState({});
+  const [videoErrors, setVideoErrors] = useState({});
+  const [uploadingVideos, setUploadingVideos] = useState({});
+  const { currentUser } = useSelector((state) => state.user);
+  const navigate = useNavigate();
+  const params = useParams();
+  const location = useLocation();
+  const [locationState, setLocationState] = useState({ state: "", district: "", city: "", cities: [] });
+
+  // Get the previous path for redirection
+  const getPreviousPath = () => {
+    const from = location.state?.from;
+    if (from) return from;
+    
+    // Default paths for admin
+    return "/admin/listings";
+  };
+
+  useEffect(() => {
+    const fetchListing = async () => {
+      const listingId = params.listingId;
+      const apiUrl = `${API_BASE_URL}/api/listing/get/${listingId}`;
+      const res = await fetch(apiUrl, { credentials: 'include' });
+      const data = await res.json();
+      if (data.success === false) {
+        setError(data.message);
+        return;
+      }
+      setFormData({
+        ...formData,
+        ...data,
+      });
+      setLocationState({
+        state: data.state || "",
+        district: data.district || "",
+        city: data.city || "",
+        cities: [],
+      });
+    };
+    fetchListing();
+    // eslint-disable-next-line
+  }, [params.listingId]);
+
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      state: locationState.state,
+      city: locationState.city || "",
+    }));
+  }, [locationState]);
+
+  const validateImageUrl = (url) => {
+    if (!url) return true;
+    try { new URL(url); } catch { return false; }
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+    const hasImageExtension = imageExtensions.some(ext => url.toLowerCase().includes(ext));
+    
+    // Check for Cloudinary URLs (they contain 'cloudinary.com')
+    const isCloudinaryUrl = url.includes('cloudinary.com');
+    
+    return hasImageExtension || url.includes('images') || url.includes('img') || isCloudinaryUrl;
+  };
+
+  const validateVideoUrl = (url) => {
+    if (!url) return true;
+    try { new URL(url); } catch { return false; }
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.mkv'];
+    const hasVideoExtension = videoExtensions.some(ext => url.toLowerCase().includes(ext));
+    const isCloudinaryUrl = url.includes('cloudinary.com');
+    return hasVideoExtension || url.includes('video') || isCloudinaryUrl;
+  };
+
+  const handleImageChange = (index, url) => {
+    const newImageUrls = [...formData.imageUrls];
+    newImageUrls[index] = url;
+    setFormData({ ...formData, imageUrls: newImageUrls });
+    const newImageErrors = { ...imageErrors };
+    if (url && !validateImageUrl(url)) {
+      newImageErrors[index] = "Please enter a valid image URL";
+    } else {
+      delete newImageErrors[index];
+    }
+    setImageErrors(newImageErrors);
+  };
+
+  const onHandleRemoveImage = (index) => {
+    setFormData({
+      ...formData,
+      imageUrls: formData.imageUrls.filter((_, i) => i !== index),
+    });
+    const newImageErrors = { ...imageErrors };
+    delete newImageErrors[index];
+    setImageErrors(newImageErrors);
+    
+    // Clear uploading state
+    const newUploadingImages = { ...uploadingImages };
+    delete newUploadingImages[index];
+    setUploadingImages(newUploadingImages);
+  };
+
+  const onHandleRemoveVideo = (index) => {
+    setFormData({
+      ...formData,
+      videoUrls: formData.videoUrls.filter((_, i) => i !== index),
+    });
+    const newVideoErrors = { ...videoErrors };
+    delete newVideoErrors[index];
+    setVideoErrors(newVideoErrors);
+    const newUploadingVideos = { ...uploadingVideos };
+    delete newUploadingVideos[index];
+    setUploadingVideos(newUploadingVideos);
+  };
+
+  const handleFileUpload = async (index, file) => {
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setImageErrors(prev => ({ ...prev, [index]: 'Please select an image file' }));
+      return;
+    }
+    
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      setImageErrors(prev => ({ ...prev, [index]: 'File size must be less than 5MB' }));
+      return;
+    }
+    
+    setUploadingImages(prev => ({ ...prev, [index]: true }));
+    setImageErrors(prev => ({ ...prev, [index]: '' }));
+    
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append('image', file);
+      
+      const res = await fetch(`${API_BASE_URL}/api/upload/image`, {
+        method: 'POST',
+        credentials: 'include',
+        body: uploadFormData,
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok) {
+        // Update the image URL with the uploaded image URL
+        const newImageUrls = [...formData.imageUrls];
+        newImageUrls[index] = data.imageUrl;
+        setFormData(prev => ({ ...prev, imageUrls: newImageUrls }));
+        
+        // Clear any existing errors for this image
+        setImageErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[index];
+          return newErrors;
+        });
+      } else {
+        setImageErrors(prev => ({ ...prev, [index]: data.message || 'Upload failed' }));
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      setImageErrors(prev => ({ ...prev, [index]: 'Upload failed. Please try again.' }));
+    } finally {
+      setUploadingImages(prev => ({ ...prev, [index]: false }));
+    }
+  };
+
+  const handleVideoUrlChange = (index, url) => {
+    const newVideoUrls = [...formData.videoUrls];
+    newVideoUrls[index] = url;
+    setFormData({ ...formData, videoUrls: newVideoUrls });
+    const newVideoErrors = { ...videoErrors };
+    if (url && !validateVideoUrl(url)) {
+      newVideoErrors[index] = 'Please enter a valid video URL';
+    } else {
+      delete newVideoErrors[index];
+    }
+    setVideoErrors(newVideoErrors);
+  };
+
+  const handleVideoUpload = async (index, file) => {
+    if (!file) return;
+    if (!file.type.startsWith('video/')) {
+      setVideoErrors(prev => ({ ...prev, [index]: 'Please select a video file' }));
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setVideoErrors(prev => ({ ...prev, [index]: 'File size must be less than 5MB' }));
+      return;
+    }
+    setUploadingVideos(prev => ({ ...prev, [index]: true }));
+    setVideoErrors(prev => ({ ...prev, [index]: '' }));
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append('video', file);
+      const res = await fetch(`${API_BASE_URL}/api/upload/video`, {
+        method: 'POST',
+        credentials: 'include',
+        body: uploadFormData,
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const newVideoUrls = [...formData.videoUrls];
+        newVideoUrls[index] = data.videoUrl;
+        setFormData(prev => ({ ...prev, videoUrls: newVideoUrls }));
+        setVideoErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[index];
+          return newErrors;
+        });
+      } else {
+        setVideoErrors(prev => ({ ...prev, [index]: data.message || 'Upload failed' }));
+      }
+    } catch (error) {
+      console.error('Video upload error:', error);
+      setVideoErrors(prev => ({ ...prev, [index]: 'Upload failed. Please try again.' }));
+    } finally {
+      setUploadingVideos(prev => ({ ...prev, [index]: false }));
+    }
+  };
+
+  const onHandleChanges = (e) => {
+    const { id, value, checked, type, name } = e.target;
+    let newValue = type === "checkbox" ? checked : value;
+    if (["regularPrice", "discountPrice", "bedrooms", "bathrooms"].includes(id)) {
+      newValue = Number(value);
+    }
+    setFormData({
+      ...formData,
+      [name || id]: newValue,
+    });
+  };
+
+  const onSubmitForm = async (e) => {
+    e.preventDefault();
+    if (!formData.type) return setError("Please select a listing type (Sale or Rent)");
+    // Images are optional when editing as well
+    if (formData.regularPrice < formData.discountPrice)
+      return setError("Discount price should be less than regular price");
+    if (!formData.propertyNumber) return setError("Property number is required");
+    if (!formData.city) return setError("City is required");
+    if (!formData.state) return setError("State is required");
+    if (!formData.pincode) return setError("Pincode is required");
+    if (Object.keys(imageErrors).length > 0) {
+      return setError("Please fix the image URL errors before submitting");
+    }
+    setLoading(true);
+    setError("");
+    try {
+      const apiUrl = `/api/listing/update/${params.listingId}`;
+      const options = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: 'include',
+        body: JSON.stringify(formData),
+      };
+      const res = await fetch(`${API_BASE_URL}${apiUrl}`, options);
+      const data = await res.json();
+      
+      if (res.ok) {
+        toast.success(data.message || "Property Details Updated Successfully!!");
+        navigate(getPreviousPath());
+      } else {
+        const errorMessage = data.message || "Failed to update listing";
+        setError(errorMessage);
+        toast.error(errorMessage);
+      }
+      setLoading(false);
+    } catch (error) {
+      const errorMessage = error.message || "An error occurred while updating the listing";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
+      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6 relative">
+        <h3 className="text-3xl font-extrabold text-blue-700 mb-6 text-center drop-shadow">
+          Edit Listing (Admin)
+        </h3>
+        <form onSubmit={onSubmitForm} className="space-y-6">
+          {/* Basic Information */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h4 className="font-semibold text-gray-800 mb-3">Basic Information</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <input
+                type="text"
+                id="name"
+                placeholder="Property Name"
+                required
+                onChange={onHandleChanges}
+                value={formData.name}
+                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <textarea
+              id="description"
+              placeholder="Property Description"
+              required
+              onChange={onHandleChanges}
+              value={formData.description}
+              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mt-4 resize-y"
+              rows={4}
+            />
+          </div>
+
+          {/* Address Information */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h4 className="font-semibold text-gray-800 mb-3">Address Information</h4>
+            <div className="mb-4">
+              <LocationSelector value={locationState} onChange={setLocationState} mode="form" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <input
+                type="text"
+                id="propertyNumber"
+                placeholder="Property Number/Flat Number"
+                required
+                onChange={onHandleChanges}
+                value={formData.propertyNumber}
+                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <input
+                type="text"
+                id="landmark"
+                placeholder="Landmark (optional)"
+                onChange={onHandleChanges}
+                value={formData.landmark}
+                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <input
+                type="text"
+                id="pincode"
+                placeholder="Pincode"
+                required
+                onChange={onHandleChanges}
+                value={formData.pincode}
+                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                pattern="[0-9]*"
+                inputMode="numeric"
+                maxLength="6"
+                onKeyPress={(e) => {
+                  if (!/[0-9]/.test(e.key)) {
+                    e.preventDefault();
+                  }
+                }}
+              />
+              <input
+                type="text"
+                id="locationLink"
+                placeholder="Google Maps Location Link (Optional)"
+                onChange={onHandleChanges}
+                value={formData.locationLink}
+                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          {/* Property Type */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h4 className="font-semibold text-gray-800 mb-3">Property Type</h4>
+            <div className="flex gap-6">
+              <label className="flex items-center gap-2 p-3 bg-white rounded-lg shadow-sm">
+                <input 
+                  type="radio" 
+                  name="type" 
+                  value="sale" 
+                  onChange={onHandleChanges} 
+                  checked={formData.type === "sale"}
+                  className="text-blue-600"
+                />
+                <span className="font-medium">For Sale</span>
+              </label>
+              <label className="flex items-center gap-2 p-3 bg-white rounded-lg shadow-sm">
+                <input 
+                  type="radio" 
+                  name="type" 
+                  value="rent" 
+                  onChange={onHandleChanges} 
+                  checked={formData.type === "rent"}
+                  className="text-blue-600"
+                />
+                <span className="font-medium">For Rent</span>
+              </label>
+            </div>
+            <div className="mt-4">
+              <div className="flex flex-col">
+                <span className="text-gray-700 font-medium mb-1">Area (sq ft) *</span>
+                <input
+                  type="number"
+                  id="area"
+                  placeholder="Enter property area in square feet"
+                  required
+                  onChange={onHandleChanges}
+                  value={formData.area}
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Area refers to the total built-up area of the property including all rooms, kitchen, bathrooms, and common areas
+                </p>
+              </div>
+            </div>
+            
+            <div className="mt-4">
+              <div className="flex flex-col">
+                <span className="text-gray-700 font-medium mb-1">Floor Number *</span>
+                <input
+                  type="number"
+                  id="floor"
+                  placeholder="Enter floor number (e.g., 0, 1, 2...)"
+                  required
+                  min="0"
+                  onChange={onHandleChanges}
+                  value={formData.floor}
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Floor number refers to which floor the property is located on (Ground floor = 0, First floor = 1, Second floor = 2, etc.)
+                </p>
+              </div>
+            </div>
+            
+            <div className="mt-4">
+              <div className="flex flex-col">
+                <span className="text-gray-700 font-medium mb-1">Property Age (years) *</span>
+                <input
+                  type="number"
+                  id="propertyAge"
+                  placeholder="Enter property age in years (0 for new construction)"
+                  required
+                  min="0"
+                  onChange={onHandleChanges}
+                  value={formData.propertyAge}
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Property age refers to how many years ago the property was constructed/built
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Property Details */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h4 className="font-semibold text-gray-800 mb-3">Property Details</h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="flex flex-col">
+                <span className="text-gray-700 font-medium mb-1">Bedrooms</span>
+                <input
+                  type="number"
+                  id="bedrooms"
+                  onChange={onHandleChanges}
+                  value={formData.bedrooms}
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-gray-700 font-medium mb-1">Bathrooms</span>
+                <input
+                  type="number"
+                  id="bathrooms"
+                  onChange={onHandleChanges}
+                  value={formData.bathrooms}
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-gray-700 font-medium mb-1">Regular Price (₹)</span>
+                <input
+                  type="number"
+                  id="regularPrice"
+                  onChange={onHandleChanges}
+                  value={formData.regularPrice}
+                  placeholder="Enter price"
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-gray-700 font-medium mb-1">Discount Price (₹)</span>
+                <input
+                  type="number"
+                  id="discountPrice"
+                  onChange={onHandleChanges}
+                  value={formData.discountPrice}
+                  placeholder="Enter discount"
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Property Features */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h4 className="font-semibold text-gray-800 mb-3">Property Features</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {["parking", "furnished", "offer"].map((item) => (
+                <label key={item} className="flex items-center space-x-2 p-3 bg-white rounded-lg shadow-sm">
+                  <input 
+                    type="checkbox" 
+                    id={item} 
+                    onChange={onHandleChanges} 
+                    checked={formData[item]}
+                    className="text-blue-600"
+                  />
+                  <span className="text-gray-700 font-medium capitalize">{item}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Property Images */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h4 className="font-semibold text-gray-800 mb-3">Property Images</h4>
+            <p className="text-gray-600 text-sm mb-3">
+              Upload images directly or add image URLs. Supported formats: JPG, PNG, GIF, WebP, SVG (max 5MB per image)
+            </p>
+            <div className="space-y-3">
+              {formData.imageUrls.map((url, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      placeholder={`Image URL ${index + 1} (e.g., https://example.com/image.jpg)`}
+                      value={url || ""}
+                      onChange={(e) => handleImageChange(index, e.target.value)}
+                      className={`flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        imageErrors[index] ? 'border-red-500' : ''
+                      }`}
+                    />
+                    <label className={`p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all flex items-center gap-2 ${uploadingImages[index] ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleFileUpload(index, e.target.files[0])}
+                        disabled={uploadingImages[index]}
+                      />
+                      {uploadingImages[index] ? (
+                        <>
+                          <div className="animate-spin w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+                          <span className="text-sm text-gray-600">Uploading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                          <span className="text-sm text-gray-600">Upload</span>
+                        </>
+                      )}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => onHandleRemoveImage(index)}
+                      className="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition"
+                      title="Remove this photo"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  {imageErrors[index] && (
+                    <p className="text-red-500 text-sm">{imageErrors[index]}</p>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, imageUrls: [...formData.imageUrls, ""] })}
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition mt-2"
+              >
+                Add Photo
+              </button>
+            </div>
+
+            {/* Image Preview */}
+            {formData.imageUrls.some(url => url) && (
+              <div className="mt-4">
+                <h5 className="font-medium text-gray-700 mb-2">Image Preview:</h5>
+                <div className="grid grid-cols-3 gap-4">
+                  {formData.imageUrls.map((url, index) => (
+                    url && (
+                      <div key={url} className="relative">
+                        <img 
+                          src={url} 
+                          alt="listing" 
+                          className="w-full h-24 object-cover rounded-lg"
+                          onError={(e) => {
+                            e.target.src = "https://via.placeholder.com/400x300?text=Image+Not+Found";
+                            e.target.className = "w-full h-24 object-cover rounded-lg opacity-50";
+                          }}
+                        />
+                        <button
+                          onClick={() => onHandleRemoveImage(index)}
+                          type="button"
+                          className="absolute top-0 right-0 bg-red-500 text-white text-xs px-2 py-1 rounded-full hover:bg-red-600 transition"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Property Videos */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h4 className="font-semibold text-gray-800 mb-3">Property Videos</h4>
+            <p className="text-gray-600 text-sm mb-3">
+              Upload videos directly or add video URLs. Supported formats: MP4, WebM, OGG, MOV, MKV (max 5MB per video)
+            </p>
+            <div className="space-y-3">
+              {formData.videoUrls.map((url, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      placeholder={`Video URL ${index + 1} (e.g., https://example.com/video.mp4)`}
+                      value={url || ""}
+                      onChange={(e) => handleVideoUrlChange(index, e.target.value)}
+                      className={`flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        videoErrors[index] ? 'border-red-500' : ''
+                      }`}
+                    />
+                    <label className={`p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all flex items-center gap-2 ${uploadingVideos[index] ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      <input
+                        type="file"
+                        accept="video/*"
+                        className="hidden"
+                        onChange={(e) => handleVideoUpload(index, e.target.files[0])}
+                        disabled={uploadingVideos[index]}
+                      />
+                      {uploadingVideos[index] ? (
+                        <>
+                          <div className="animate-spin w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+                          <span className="text-sm text-gray-600">Uploading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                          <span className="text-sm text-gray-600">Upload</span>
+                        </>
+                      )}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => onHandleRemoveVideo(index)}
+                      className="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition"
+                      title="Remove this video"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  {videoErrors[index] && (
+                    <p className="text-red-500 text-sm">{videoErrors[index]}</p>
+                  )}
+                  {url && (
+                    <div className="w-full rounded-lg overflow-hidden bg-black">
+                      <div className="relative w-full" style={{ paddingTop: '56.25%' }}>
+                        <video
+                          src={url}
+                          className="absolute inset-0 w-full h-full object-contain bg-black"
+                          controls
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, videoUrls: [...formData.videoUrls, ""] })}
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition mt-2"
+              >
+                Add Video
+              </button>
+            </div>
+          </div>
+
+          {/* ESG Management Section */}
+          <div className="mb-6">
+            <ESGManagement 
+              esgData={formData.esg}
+              onESGChange={(esgData) => setFormData({...formData, esg: esgData})}
+              isEditing={true}
+            />
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-4">
+            <button
+              type="button"
+              onClick={() => navigate(getPreviousPath())}
+              disabled={loading}
+              className="flex-1 bg-gray-500 text-white p-3 rounded-lg hover:bg-gray-600 transition-all transform hover:scale-105 shadow-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white p-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? "Updating..." : "Update Listing"}
+            </button>
+          </div>
+          {error && <p className="text-red-500 text-center">{error}</p>}
+        </form>
+      </div>
+    </div>
+  );
+} 

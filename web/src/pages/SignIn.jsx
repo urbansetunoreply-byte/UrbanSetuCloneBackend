@@ -1,0 +1,1016 @@
+import React, { useState, useEffect, useRef } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { signInFailure, signInStart, signInSuccess } from "../redux/user/userSlice.js";
+import Oauth from "../components/Oauth.jsx";
+import RecaptchaWidget from "../components/RecaptchaWidget";
+import { usePageTitle } from '../hooks/usePageTitle';
+
+import { reconnectSocket } from "../utils/socket";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { areCookiesEnabled, createAuthenticatedFetchOptions } from '../utils/auth';
+import { focusWithoutKeyboard } from '../utils/mobileUtils';
+import { authenticatedFetch, getCSRFToken } from '../utils/csrf';
+import { LogIn, Mail, Lock } from "lucide-react";
+import FormField from "../components/ui/FormField";
+import PrimaryButton from "../components/ui/PrimaryButton";
+import AuthFormLayout from "../components/ui/AuthFormLayout";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+export default function SignIn({ bootstrapped, sessionChecked }) {
+    // Set page title
+    usePageTitle("Sign In - Welcome Back");
+    
+    const emailInputRef = useRef(null);
+    const otpEmailInputRef = useRef(null);
+    const passwordInputRef = useRef(null);
+    const otpInputRef = useRef(null);
+    const [formData, setFormData] = useState({
+        email: "",
+        password: ""
+    });
+    const [emailStep, setEmailStep] = useState(false); // Track if email step is completed
+    const [urlError, setUrlError] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [loginMethod, setLoginMethod] = useState("password"); // "password" or "otp"
+    const [otpData, setOtpData] = useState({
+        email: "",
+        otp: ""
+    });
+    const [otpSent, setOtpSent] = useState(false);
+    const [otpLoading, setOtpLoading] = useState(false);
+    const [otpSuccessMessage, setOtpSuccessMessage] = useState("");
+    
+    // Timer states for resend OTP
+    const [resendTimer, setResendTimer] = useState(0);
+    const [canResend, setCanResend] = useState(true);
+    
+    // reCAPTCHA states
+    const [recaptchaToken, setRecaptchaToken] = useState(null);
+    const [recaptchaError, setRecaptchaError] = useState("");
+    const [showRecaptcha, setShowRecaptcha] = useState(false);
+    const [recaptchaKey, setRecaptchaKey] = useState(0); // force remount on expire/used
+    const [otpRecaptchaToken, setOtpRecaptchaToken] = useState(null);
+    const [otpRecaptchaError, setOtpRecaptchaError] = useState("");
+    const [showOtpRecaptcha, setShowOtpRecaptcha] = useState(false);
+    const [otpRequiresCaptcha, setOtpRequiresCaptcha] = useState(false);
+    const [otpRecaptchaKey, setOtpRecaptchaKey] = useState(0); // force remount for OTP
+    const recaptchaRef = useRef(null);
+    const otpRecaptchaRef = useRef(null);
+    
+    // State to track which authentication method is in progress
+    const [authInProgress, setAuthInProgress] = useState(null); // null, 'password', 'otp', 'google'
+    
+    // State to track OTP verification loading
+    const [otpVerifyingLoading, setOtpVerifyingLoading] = useState(false);
+
+    const { loading, error, currentUser } = useSelector((state) => state.user);
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const location = useLocation();
+
+    // Check for error parameters in URL on component mount
+    useEffect(() => {
+        const searchParams = new URLSearchParams(location.search);
+        const errorParam = searchParams.get('error');
+        
+        if (errorParam === 'password_change_unsuccessful') {
+            setUrlError("Password change unsuccessful! Please try again.");
+            // Clear the error parameter from URL
+            navigate('/sign-in', { replace: true });
+        }
+    }, [location.search, navigate]);
+
+    // Check for existing failed attempts on component mount
+    useEffect(() => {
+        const failedAttempts = parseInt(localStorage.getItem('failedLoginAttempts') || '0');
+        if (failedAttempts >= 3) {
+            setShowRecaptcha(true);
+            setRecaptchaError("reCAPTCHA verification is required due to multiple failed attempts.");
+        }
+    }, []);
+
+    // Autofocus email field on mount
+    useEffect(() => {
+        if (emailInputRef.current) {
+            focusWithoutKeyboard(emailInputRef.current);
+        }
+    }, []);
+
+    // Focus OTP email field when OTP method is selected
+    useEffect(() => {
+        if (loginMethod === "otp" && otpEmailInputRef.current) {
+            focusWithoutKeyboard(otpEmailInputRef.current);
+        }
+    }, [loginMethod]);
+
+    // Focus password field when email step is completed
+    useEffect(() => {
+        if (emailStep && passwordInputRef.current) {
+            focusWithoutKeyboard(passwordInputRef.current);
+        }
+    }, [emailStep]);
+
+    // Focus OTP field when OTP is sent
+    useEffect(() => {
+        if (otpSent && otpInputRef.current) {
+            focusWithoutKeyboard(otpInputRef.current);
+        }
+    }, [otpSent]);
+
+    // Block access if already signed in
+    useEffect(() => {
+        if (bootstrapped && sessionChecked && currentUser) {
+            if (currentUser.role === 'admin' || currentUser.role === 'rootadmin') {
+                if (currentUser.isDefaultAdmin) {
+                    navigate('/admin', { replace: true });
+                } else {
+                    navigate('/admin', { replace: true });
+                }
+            } else {
+                navigate('/user', { replace: true });
+            }
+        }
+    }, [bootstrapped, sessionChecked, currentUser, navigate]);
+
+    // Timer effect for resend OTP
+    useEffect(() => {
+        let interval = null;
+        if (resendTimer > 0) {
+            interval = setInterval(() => {
+                setResendTimer((prevTimer) => {
+                    if (prevTimer <= 1) {
+                        setCanResend(true);
+                        return 0;
+                    }
+                    return prevTimer - 1;
+                });
+            }, 1000);
+        }
+        return () => {
+            if (interval) clearInterval(interval);
+        };
+    }, [resendTimer]);
+
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.id]: e.target.value
+        });
+        // Clear URL error when user starts typing
+        if (urlError) {
+            setUrlError("");
+        }
+        // Clear reCAPTCHA error when user starts typing
+        if (recaptchaError) {
+            setRecaptchaError("");
+        }
+    };
+
+    // reCAPTCHA handlers
+    const handleRecaptchaVerify = (token) => {
+        setRecaptchaToken(token);
+        setRecaptchaError("");
+        // Hide after a brief delay to show the tick
+        setTimeout(() => setShowRecaptcha(false), 1000);
+    };
+
+    const handleRecaptchaExpire = () => {
+        setRecaptchaToken(null);
+        setRecaptchaError("reCAPTCHA expired. Please verify again.");
+        // force remount so checkbox resets from tick to empty
+        setRecaptchaKey((k) => k + 1);
+        setShowRecaptcha(true);
+    };
+
+    const handleRecaptchaError = (error) => {
+        setRecaptchaToken(null);
+        setRecaptchaError("reCAPTCHA verification failed. Please try again.");
+        setRecaptchaKey((k) => k + 1);
+        setShowRecaptcha(true);
+    };
+
+    const resetRecaptcha = () => {
+        if (recaptchaRef.current) {
+            recaptchaRef.current.reset();
+        }
+        setRecaptchaToken(null);
+        setRecaptchaError("");
+        setRecaptchaKey((k) => k + 1);
+    };
+
+    // OTP reCAPTCHA handlers
+    const handleOtpRecaptchaVerify = (token) => {
+        setOtpRecaptchaToken(token);
+        setOtpRecaptchaError("");
+        // Hide after a brief delay to show the tick
+        setTimeout(() => setShowOtpRecaptcha(false), 1000);
+    };
+
+    const handleOtpRecaptchaExpire = () => {
+        setOtpRecaptchaToken(null);
+        setOtpRecaptchaError("reCAPTCHA expired. Please verify again.");
+        setOtpRecaptchaKey((k) => k + 1);
+        setShowOtpRecaptcha(true);
+    };
+
+    const handleOtpRecaptchaError = (error) => {
+        setOtpRecaptchaToken(null);
+        setOtpRecaptchaError("reCAPTCHA verification failed. Please try again.");
+        setOtpRecaptchaKey((k) => k + 1);
+        setShowOtpRecaptcha(true);
+    };
+
+    const resetOtpRecaptcha = () => {
+        if (otpRecaptchaRef.current) {
+            otpRecaptchaRef.current.reset();
+        }
+        setOtpRecaptchaToken(null);
+        setOtpRecaptchaError("");
+        setOtpRecaptchaKey((k) => k + 1);
+    };
+
+    // Check if reCAPTCHA should be shown (only after 3+ failed attempts)
+    const checkRecaptchaRequirement = () => {
+        // Only show reCAPTCHA if there are 3+ failed attempts
+        const failedAttempts = parseInt(localStorage.getItem('failedLoginAttempts') || '0');
+        return failedAttempts >= 3;
+    };
+
+    const handleEmailContinue = (e) => {
+        e.preventDefault();
+        if (!formData.email) {
+            dispatch(signInFailure("Email is required"));
+            return;
+        }
+        setEmailStep(true);
+    };
+
+    const handleEmailEdit = () => {
+        setEmailStep(false);
+        setFormData(prev => ({ ...prev, password: "" }));
+    };
+
+    const handleOtpChange = (e) => {
+        // Prevent changes to email when OTP is sent or loading
+        if ((otpSent || otpLoading) && e.target.id === 'email') {
+            return;
+        }
+        
+        setOtpData({
+            ...otpData,
+            [e.target.id]: e.target.value
+        });
+        // Clear URL error when user starts typing
+        if (urlError) {
+            setUrlError("");
+        }
+        // Clear success message when user starts typing
+        if (otpSuccessMessage) {
+            setOtpSuccessMessage("");
+        }
+        // Reset timer when email changes
+        if (e.target.id === "email") {
+            setResendTimer(0);
+            setCanResend(true);
+        }
+    };
+
+    const handleSendOTP = async (e) => {
+        e.preventDefault();
+        if (!otpData.email) {
+            dispatch(signInFailure("Email is required"));
+            return;
+        }
+
+        if (!canResend) {
+            return;
+        }
+
+        // Check if reCAPTCHA is required but not provided
+        if (otpRequiresCaptcha && !otpRecaptchaToken) {
+            dispatch(signInFailure("reCAPTCHA verification is required. Please complete the verification."));
+            setShowOtpRecaptcha(true);
+            return;
+        }
+
+        setOtpLoading(true);
+        setOtpRecaptchaError("");
+        setAuthInProgress('otp');
+        
+        try {
+            const requestBody = { 
+                email: otpData.email,
+                ...(otpRecaptchaToken && { recaptchaToken: otpRecaptchaToken })
+            };
+
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-login-otp`, {
+                method: "POST",
+                body: JSON.stringify(requestBody)
+            });
+            // Handle 403 errors with specific messages
+            if (res.status === 403) {
+                let friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
+                try {
+                    const errData = await res.clone().json();
+                    if (errData && errData.message) {
+                        const message = errData.message.toLowerCase();
+                        if (message.includes('pending approval')) {
+                            friendlyMessage = "Your admin account is pending approval. Please wait for an existing admin to approve your request.";
+                        } else if (message.includes('rejected')) {
+                            friendlyMessage = "Your admin account request has been rejected. Please contact support for more information.";
+                        } else if (message.includes('suspended')) {
+                            friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
+                        } else {
+                            // Use the original message if it's a specific 403 error
+                            friendlyMessage = errData.message;
+                        }
+                    }
+                } catch (_) {}
+                dispatch(signInFailure(friendlyMessage));
+                setOtpLoading(false);
+                return;
+            }
+
+            // Handle password-locked account (423) with friendly time-left message
+            if (res.status === 423) {
+                let friendlyMessage = "Account is temporarily locked due to too many failed attempts. Try again later.";
+                try {
+                    const errData = await res.clone().json();
+                    if (errData && errData.message) {
+                        friendlyMessage = errData.message;
+                    }
+                } catch (_) {}
+                dispatch(signInFailure(friendlyMessage));
+                setOtpLoading(false);
+                return;
+            }
+
+            const data = await res.json();
+
+            if (data.success === false) {
+                // Handle reCAPTCHA errors
+                if (data.message && data.message.toLowerCase().includes("too many failed attempts")) {
+                    // Clear captcha UI and show clear lockout message
+                    setOtpRecaptchaError("Too many failed attempts. Please try again in 15 minutes.");
+                    setShowOtpRecaptcha(false);
+                } else if (data.message && data.message.includes("reCAPTCHA")) {
+                    setOtpRecaptchaError(data.message);
+                    // Force remount to ensure widget appears reliably
+                    setOtpRecaptchaKey((k) => k + 1);
+                    setShowOtpRecaptcha(true);
+                } else if (data.requiresCaptcha) {
+                    setOtpRequiresCaptcha(true);
+                    setShowOtpRecaptcha(true);
+                    setOtpRecaptchaError("reCAPTCHA verification is now required due to multiple attempts.");
+                } else {
+                    dispatch(signInFailure(data.message));
+                }
+                return;
+            }
+
+            setOtpSent(true);
+            setOtpSuccessMessage("OTP sent successfully to your email");
+            setOtpRequiresCaptcha(false);
+            setShowOtpRecaptcha(false);
+            resetOtpRecaptcha();
+            
+            // Start timer for resend
+            setResendTimer(30); // 30 seconds
+            setCanResend(false);
+        } catch (error) {
+            dispatch(signInFailure(error.message));
+        } finally {
+            setOtpLoading(false);
+            setAuthInProgress(null);
+        }
+    };
+
+    const handleOtpLogin = async (e) => {
+        e.preventDefault();
+        if (!otpData.email || !otpData.otp) {
+            dispatch(signInFailure("Email and OTP are required"));
+            return;
+        }
+
+        setOtpVerifyingLoading(true);
+        dispatch(signInStart());
+        setAuthInProgress('otp');
+        
+        // Check if cookies are enabled for better UX
+        const cookiesEnabled = areCookiesEnabled();
+        
+        try {
+            const apiUrl = `${API_BASE_URL}/api/auth/verify-login-otp`;
+            const res = await authenticatedFetch(apiUrl, {
+                method: "POST",
+                body: JSON.stringify(otpData)
+            });
+            // Handle suspended account (403) with friendly message
+            if (res.status === 403) {
+                let friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
+                try {
+                    const errData = await res.clone().json();
+                    if (errData && errData.message && errData.message.toLowerCase().includes('suspended')) {
+                        friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
+                    }
+                } catch (_) {}
+                dispatch(signInFailure(friendlyMessage));
+                return;
+            }
+            const data = await res.json();
+
+            if (data.success === false) {
+                // Handle reCAPTCHA requirements
+                if (data.message && data.message.toLowerCase().includes("too many otp requests")) {
+                    setOtpRecaptchaError("Too many OTP requests. Please try again in 15 minutes.");
+                    setShowOtpRecaptcha(false);
+                    setOtpRequiresCaptcha(false);
+                } else if (data.requiresCaptcha) {
+                    setOtpRequiresCaptcha(true);
+                    setShowOtpRecaptcha(true);
+                    setOtpRecaptchaError("reCAPTCHA verification is now required due to multiple failed attempts.");
+                }
+                dispatch(signInFailure(data.message));
+                return;
+            }
+            
+            if (data.token) {
+                localStorage.setItem('accessToken', data.token);
+                
+            }
+            // Dispatch success and wait for state update
+            dispatch(signInSuccess(data));
+            
+            // Use a small delay to ensure state is updated
+            await new Promise(resolve => setTimeout(resolve, 50));
+            
+            // Reconnect socket with new token
+            reconnectSocket();
+            
+            if (data.role === "admin" || data.role === "rootadmin") {
+                // Special handling for root admin
+                if (data.isDefaultAdmin) {
+                    navigate("/admin");
+                } else {
+                    navigate("/admin");
+                }
+            } else {
+                navigate("/user");
+            }
+
+        } catch (error) {
+            dispatch(signInFailure(error.message));
+        } finally {
+            setOtpVerifyingLoading(false);
+            setAuthInProgress(null);
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        
+        // Check if reCAPTCHA is required and not provided
+        const requiresRecaptcha = checkRecaptchaRequirement();
+        if (requiresRecaptcha && !recaptchaToken) {
+            // Keep captcha errors local to widget, not as global form error
+            setRecaptchaError("reCAPTCHA verification is required due to multiple failed attempts or requests");
+            setShowRecaptcha(true);
+            return;
+        }
+        
+        dispatch(signInStart());
+        setAuthInProgress('password');
+        
+        // Check if cookies are enabled for better UX
+        const cookiesEnabled = areCookiesEnabled();
+        
+        try {
+            const apiUrl = `${API_BASE_URL}/api/auth/signin`;
+            const res = await authenticatedFetch(apiUrl, {
+                method: "POST",
+                body: JSON.stringify({
+                    ...formData,
+                    ...(recaptchaToken && { recaptchaToken })
+                })
+            });
+            // Handle 403 errors with specific messages
+            if (res.status === 403) {
+                let friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
+                try {
+                    const errData = await res.clone().json();
+                    if (errData && errData.message) {
+                        const message = errData.message.toLowerCase();
+                        if (message.includes('pending approval')) {
+                            friendlyMessage = "Your admin account is pending approval. Please wait for an existing admin to approve your request.";
+                        } else if (message.includes('rejected')) {
+                            friendlyMessage = "Your admin account request has been rejected. Please contact support for more information.";
+                        } else if (message.includes('suspended')) {
+                            friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
+                        } else {
+                            // Use the original message if it's a specific 403 error
+                            friendlyMessage = errData.message;
+                        }
+                    }
+                } catch (_) {}
+                // Increment failed attempts to keep captcha logic consistent with other errors
+                const currentAttempts = parseInt(localStorage.getItem('failedLoginAttempts') || '0');
+                const newAttempts = currentAttempts + 1;
+                localStorage.setItem('failedLoginAttempts', newAttempts.toString());
+                dispatch(signInFailure(friendlyMessage));
+                return;
+            }
+            const data = await res.json();
+            
+            //
+
+            if (data.success === false) {
+                // Handle reCAPTCHA errors
+                if (data.message.includes("reCAPTCHA")) {
+                    setRecaptchaError("reCAPTCHA verification is required due to multiple failed attempts or requests");
+                    // Force full reset + remount so checkbox returns reliably
+                    resetRecaptcha();
+                    setRecaptchaKey((k) => k + 1);
+                    setShowRecaptcha(true);
+                } else {
+                    // Increment failed attempts counter
+                    const currentAttempts = parseInt(localStorage.getItem('failedLoginAttempts') || '0');
+                    const newAttempts = currentAttempts + 1;
+                    localStorage.setItem('failedLoginAttempts', newAttempts.toString());
+                    
+                    // Show reCAPTCHA only if this is exactly the 3rd failed attempt
+                    if (newAttempts === 3) {
+                        setShowRecaptcha(true);
+                        setRecaptchaError("reCAPTCHA verification is now required due to multiple failed attempts.");
+                    }
+                }
+                dispatch(signInFailure(data.message));
+                return;
+            }
+            
+            // Clear failed attempts on successful login
+            localStorage.removeItem('failedLoginAttempts');
+            setShowRecaptcha(false);
+            setRecaptchaToken(null);
+            setRecaptchaError("");
+            
+            if (data.token) {
+                localStorage.setItem('accessToken', data.token);
+                
+            }
+            // Dispatch success and wait for state update
+            dispatch(signInSuccess(data));
+            
+            // Use a small delay to ensure state is updated
+            await new Promise(resolve => setTimeout(resolve, 50));
+            
+            // Reconnect socket with new token
+            reconnectSocket();
+            
+            if (data.role === "admin" || data.role === "rootadmin") {
+                // Special handling for root admin
+                if (data.isDefaultAdmin) {
+                    navigate("/admin");
+                } else {
+                    navigate("/admin");
+                }
+            } else {
+                navigate("/user");
+            }
+
+        } catch (error) {
+            dispatch(signInFailure(error.message));
+        } finally {
+            setAuthInProgress(null);
+        }
+    };
+
+    return (
+        <AuthFormLayout
+            leftSlot={(
+                <>
+            
+            {/* Left Side - Image and Quote */}
+            
+            {/* Left Side - Image and Quote */}
+            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-purple-700 relative overflow-hidden">
+                <div className="absolute inset-0 bg-black opacity-20"></div>
+                <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
+                    <div className="text-center max-w-md">
+                        <h1 className="text-4xl font-bold mb-6 animate-fade-in">
+                            Welcome Back
+                        </h1>
+                        <p className="text-xl mb-8 leading-relaxed animate-fade-in-delay">
+                            "Home is not a place, it's a feeling. Find your perfect sanctuary with us."
+                        </p>
+                        <div className="space-y-4 text-lg animate-fade-in-delay-2">
+                            <div className="flex items-center justify-center space-x-3">
+                                <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                                <span>Discover Your Dream Home</span>
+                            </div>
+                            <div className="flex items-center justify-center space-x-3">
+                                <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
+                                <span>Connect with Trusted Agents</span>
+                            </div>
+                            <div className="flex items-center justify-center space-x-3">
+                                <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
+                                <span>Secure & Reliable Platform</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {/* Floating Elements */}
+                <div className="absolute top-20 left-20 w-16 h-16 bg-white bg-opacity-10 rounded-full animate-float"></div>
+                <div className="absolute bottom-32 right-16 w-12 h-12 bg-white bg-opacity-10 rounded-full animate-float" style={{animationDelay: '2s'}}></div>
+                <div className="absolute top-1/2 right-24 w-8 h-8 bg-white bg-opacity-10 rounded-full animate-float" style={{animationDelay: '1s'}}></div>
+                
+                {/* House Silhouette */}
+                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black bg-opacity-20">
+                    <svg className="w-full h-full" viewBox="0 0 100 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 2L2 8V18H18V8L10 2Z" fill="white" fillOpacity="0.1"/>
+                        <path d="M8 12H12V18H8V12Z" fill="white" fillOpacity="0.2"/>
+                        <circle cx="10" cy="5" r="1" fill="white" fillOpacity="0.3"/>
+                    </svg>
+                </div>
+            </div>
+                </>
+            )}
+            >
+
+            {/* Right Side - Sign In Form */}
+            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
+                <div className="w-full max-w-md">
+                    <div className="text-center mb-8">
+                        <h2 className="text-3xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
+                            <LogIn className="w-7 h-7 text-indigo-600" />
+                            Sign In
+                        </h2>
+                        <p className="text-gray-600">Welcome back! Please sign in to your account.</p>
+                    </div>
+
+                    {/* Sign In Method Toggle Tabs */}
+                    <div className="flex bg-gray-100 rounded-lg p-1 mb-6">
+                        <button
+                            type="button"
+                            disabled={authInProgress !== null || otpSent}
+                            onClick={() => {
+                                setLoginMethod("password");
+                                setOtpSent(false);
+                                setOtpData({ email: "", otp: "" });
+                                setOtpSuccessMessage("");
+                                setResendTimer(0);
+                                setCanResend(true);
+                                setEmailStep(false);
+                                setFormData({ email: "", password: "" });
+                            }}
+                            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
+                                loginMethod === "password"
+                                    ? "bg-white text-blue-600 shadow-sm"
+                                    : "text-gray-600 hover:text-gray-800"
+                            } ${(authInProgress !== null || otpSent) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                            Password Sign In
+                        </button>
+                        <button
+                            type="button"
+                            disabled={authInProgress !== null}
+                            onClick={() => {
+                                setLoginMethod("otp");
+                                setFormData({ email: "", password: "" });
+                                setOtpSuccessMessage("");
+                                setResendTimer(0);
+                                setCanResend(true);
+                                setEmailStep(false);
+                            }}
+                            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
+                                loginMethod === "otp"
+                                    ? "bg-white text-blue-600 shadow-sm"
+                                    : "text-gray-600 hover:text-gray-800"
+                            } ${authInProgress !== null ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                            OTP Sign In
+                        </button>
+                    </div>
+                    
+<div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-6 md:p-8 border border-gray-100">
+                        {loginMethod === "password" ? (
+                            // Password Sign In Form
+                            <form onSubmit={emailStep ? handleSubmit : handleEmailContinue} className="space-y-6">
+                                <div>
+                                    {!emailStep && (
+                                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                                          Email Address
+                                      </label>
+                                    )}
+                                    <FormField
+                                        label={undefined}
+                                        id="email"
+                                        type="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        ref={emailInputRef}
+                                        readOnly={emailStep || authInProgress === 'google'}
+                                        disabled={authInProgress === 'google' || (authInProgress === 'password' && emailStep) || loading}
+                                        placeholder="Enter your email"
+                                        startIcon={<Mail className="w-5 h-5" />}
+                                        endAdornment={emailStep ? (
+                                            <button
+                                                type="button"
+                                                onClick={handleEmailEdit}
+                                                disabled={loading || authInProgress !== null}
+                                                className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-800 focus:outline-none ${loading || authInProgress !== null ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                title="Edit email"
+                                            >
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
+                                            </button>
+                                        ) : null}
+                                        inputClassName={`${emailStep ? 'pr-12 bg-gray-50' : ''}`}
+                                        required
+                                    />
+
+                                {/* Forgot Password Link under email (only before password step) */}
+                                {!emailStep && (
+                                    <div className="text-right mt-2">
+                                        <Link 
+                                            to={`/forgot-password?email=${encodeURIComponent(formData.email || '')}`}
+                                            className={`text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 ${(authInProgress === 'google' || loading) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                                        >
+                                            Forgot Password?
+                                        </Link>
+                                    </div>
+                                )}
+                                </div>
+                                
+                                {emailStep && (
+                                    <div>
+                                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                                            Password
+                                        </label>
+                                        <FormField
+                                            label={undefined}
+                                            id="password"
+                                            type={showPassword ? 'text' : 'password'}
+                                            value={formData.password}
+                                            onChange={handleChange}
+                                            ref={passwordInputRef}
+                                            disabled={authInProgress === 'google' || authInProgress === 'password' || loading}
+                                            placeholder="Enter your password"
+                                            startIcon={<Lock className="w-5 h-5" />}
+                                            endAdornment={
+                                                <button
+                                                    type="button"
+                                                    disabled={authInProgress === 'google' || authInProgress === 'password' || loading}
+                                                    className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 focus:outline-none ${(authInProgress === 'google' || authInProgress === 'password' || loading) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                    tabIndex={-1}
+                                                    onClick={() => setShowPassword((prev) => !prev)}
+                                                    aria-label={showPassword ? "Hide password" : "Show password"}
+                                                >
+                                                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                                </button>
+                                            }
+                                            inputClassName={`pr-12 ${(authInProgress === 'google' || authInProgress === 'password' || loading) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                            required
+                                        />
+                                        
+                                        {/* Forgot Password Link */}
+                                        <div className="text-right mt-2">
+                                            <Link 
+                                                to={`/forgot-password?email=${encodeURIComponent(formData.email)}`}
+                                                className={`text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 ${(authInProgress === 'google' || authInProgress === 'password' || loading) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                                            >
+                                                Forgot Password?
+                                            </Link>
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                {/* reCAPTCHA Widget - Show only when required (3+ failed attempts) */}
+                                {showRecaptcha && checkRecaptchaRequirement() && (
+                                    <div className="flex justify-center">
+                                        <RecaptchaWidget
+                                            key={recaptchaKey}
+                                            ref={recaptchaRef}
+                                            onVerify={handleRecaptchaVerify}
+                                            onExpire={handleRecaptchaExpire}
+                                            onError={handleRecaptchaError}
+                                            disabled={loading || authInProgress === 'google'}
+                                            className="transform scale-90"
+                                        />
+                                    </div>
+                                )}
+
+                                {/* reCAPTCHA Error */}
+                                {recaptchaError && (
+                                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                                        <p className="text-red-600 text-sm">{recaptchaError}</p>
+                                    </div>
+                                )}
+                                
+                                <PrimaryButton
+                                    variant="blue"
+                                    loading={loading}
+                                    loadingText={emailStep ? "Signing In..." : "Continuing..."}
+                                    disabled={loading || (showRecaptcha && !recaptchaToken) || authInProgress !== null}
+                                >
+                                    {emailStep ? "Sign In" : "Continue"}
+                                </PrimaryButton>
+                            </form>
+                        ) : (
+                            // OTP Sign In Form
+                            <form onSubmit={otpSent ? handleOtpLogin : handleSendOTP} className="space-y-6">
+                                <div>
+                                    {!otpSent && (
+                                      <label htmlFor="otp-email" className="block text-sm font-medium text-gray-700 mb-2">
+                                          Email Address
+                                      </label>
+                                    )}
+                                    <FormField
+                                        label={undefined}
+                                        id="email"
+                                        type="email"
+                                        value={otpData.email}
+                                        onChange={handleOtpChange}
+                                        ref={otpEmailInputRef}
+                                        readOnly={otpSent || otpLoading || authInProgress === 'google'}
+                                        disabled={otpSent || otpLoading || authInProgress === 'google'}
+                                        placeholder="Enter your email"
+                                        startIcon={<Mail className="w-5 h-5" />}
+                                        endAdornment={otpSent ? (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setOtpSent(false);
+                                                    setOtpData({ email: otpData.email, otp: "" });
+                                                    setOtpSuccessMessage("");
+                                                }}
+                                                disabled={loading || authInProgress !== null}
+                                                className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-800 focus:outline-none ${loading || authInProgress !== null ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                title="Edit email"
+                                            >
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
+                                            </button>
+                                        ) : null}
+                                        inputClassName={`${(otpSent || otpLoading || authInProgress === 'google') ? 'pr-12 bg-gray-50 cursor-not-allowed' : ''}`}
+                                        required
+                                    />
+                                </div>
+                                
+                                {/* OTP reCAPTCHA Widget - show below email only when OTP field is NOT open */}
+                                {showOtpRecaptcha && !otpSent && (
+                                    <div className="flex justify-center mb-4">
+                                        <RecaptchaWidget
+                                            key={otpRecaptchaKey}
+                                            ref={otpRecaptchaRef}
+                                            onVerify={handleOtpRecaptchaVerify}
+                                            onExpire={handleOtpRecaptchaExpire}
+                                            onError={handleOtpRecaptchaError}
+                                            disabled={otpLoading}
+                                            className="transform scale-90"
+                                        />
+                                    </div>
+                                )}
+
+                                {/* OTP reCAPTCHA Error - place with widget under email only when OTP not open */}
+                                {otpRecaptchaError && !otpSent && (
+                                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                                        <p className="text-red-600 text-sm">{otpRecaptchaError}</p>
+                                    </div>
+                                )}
+                                
+                                {otpSent && (
+                                    <div>
+                                        {otpSuccessMessage && (
+                                            <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                                                <p className="text-green-600 text-sm">{otpSuccessMessage}</p>
+                                            </div>
+                                        )}
+                                        <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-2">
+                                            OTP Code
+                                        </label>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Enter 6-digit OTP" 
+                                            id="otp" 
+                                            value={otpData.otp}
+                                            ref={otpInputRef}
+                                            disabled={otpVerifyingLoading}
+                                            onChange={(e) => {
+                                                // Only allow numbers
+                                                const value = e.target.value.replace(/[^0-9]/g, '');
+                                                // Create a new event-like object with the filtered value
+                                                const syntheticEvent = {
+                                                    target: {
+                                                        id: 'otp',
+                                                        value: value
+                                                    }
+                                                };
+                                                handleOtpChange(syntheticEvent);
+                                            }} 
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' && otpSent && !otpVerifyingLoading) {
+                                                    e.preventDefault();
+                                                    if (otpData.otp && otpData.otp.length === 6) {
+                                                        handleOtpLogin(e);
+                                                    }
+                                                }
+                                            }}
+                                            className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-center text-lg tracking-widest ${otpVerifyingLoading ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''}`}
+                                            maxLength="6"
+                                            required
+                                        />
+                                        <p className="text-sm text-gray-500 mt-2">
+                                            Enter the 6-digit code sent to your email
+                                        </p>
+                                    </div>
+                                )}
+                                
+                                {otpSent && (
+                                    <div className="text-center">
+                                        {resendTimer > 0 ? (
+                                            <span className="text-sm text-gray-500">
+                                                Resend in {Math.floor(resendTimer / 60)}:{(resendTimer % 60).toString().padStart(2, '0')}
+                                            </span>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                onClick={handleSendOTP}
+                                                disabled={otpLoading || !canResend || otpVerifyingLoading}
+                                                className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                {otpLoading ? "Sending..." : "Resend OTP"}
+                                            </button>
+                                        )}
+                                        {/* Show OTP reCAPTCHA under resend when OTP field open */}
+                                        {showOtpRecaptcha && (
+                                            <div className="flex justify-center mt-2">
+                                                <RecaptchaWidget
+                                                    key={otpRecaptchaKey}
+                                                    ref={otpRecaptchaRef}
+                                                    onVerify={handleOtpRecaptchaVerify}
+                                                    onExpire={handleOtpRecaptchaExpire}
+                                                    onError={handleOtpRecaptchaError}
+                                                    disabled={otpLoading}
+                                                    className="transform scale-90"
+                                                />
+                                            </div>
+                                        )}
+                                        {otpRecaptchaError && (
+                                            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-2">
+                                                <p className="text-red-600 text-sm">{otpRecaptchaError}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                                
+                                <PrimaryButton
+                                    variant="blue"
+                                    loading={loading || (!otpSent && otpLoading) || otpVerifyingLoading}
+                                    loadingText={otpVerifyingLoading ? "Verifying OTP..." : (otpSent ? "Signing In..." : "Sending OTP...")}
+                                    disabled={loading || authInProgress === 'google' || (!otpSent && (otpLoading || !canResend)) || (otpRequiresCaptcha && !otpRecaptchaToken) || (otpSent && otpData.otp.length !== 6) || otpVerifyingLoading}
+                                >
+                                    {otpSent ? "Sign In" : "Send OTP"}
+                                </PrimaryButton>
+                            </form>
+                        )}
+                        
+                        <div className="relative my-6">
+                            <div className="absolute inset-0 flex items-center">
+                                <div className="w-full border-t border-gray-300"></div>
+                            </div>
+                            <div className="relative flex justify-center text-sm">
+                                <span className="px-2 bg-white text-gray-500">OR</span>
+                            </div>
+                        </div>
+                        
+                        <Oauth pageType="signIn" disabled={authInProgress !== null || otpSent} onAuthStart={setAuthInProgress} />
+                        
+                        {(error || urlError) && (
+                            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                                <p className="text-red-600 text-sm">{urlError || error}</p>
+                            </div>
+                        )}
+                        
+                        <div className="mt-6 text-center">
+                            <p className="text-gray-600">
+                                Don't have an account?{" "}
+                                <Link 
+                                    to="/sign-up" 
+                                    className={`text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors duration-200 ${(authInProgress !== null || loading || otpVerifyingLoading || otpSent) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                                >
+                                    Sign Up
+                                </Link>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </AuthFormLayout>
+    );
+}
+

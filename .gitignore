@@ -1,0 +1,11 @@
+node_modules
+.env
+*.env
+client/dist/
+client/build/
+api/dist/
+dist/
+web/dist/
+mobile/dist/
+*.log
+.DS_Store
