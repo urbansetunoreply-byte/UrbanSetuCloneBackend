@@ -408,7 +408,7 @@ export default function UserChangePassword() {
         onClose={() => setShowSignoutModal(false)}
         onConfirm={handleSignoutConfirm}
         title="Sign Out Required"
-        message="The forgot password page is a public page. You need to sign out to access it. Do you want to sign out now?"
+        message="To reset your password, you must be signed out. Do you want to sign out now?"
         confirmText="Sign Out"
         cancelText="Cancel"
         confirmButtonColor="bg-blue-600 hover:bg-blue-700"
