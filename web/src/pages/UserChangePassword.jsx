@@ -9,6 +9,8 @@ import { focusWithoutKeyboard } from '../utils/mobileUtils';
 import { calculatePasswordStrength, getPasswordStrengthColor, getPasswordStrengthBgColor, getPasswordStrengthText, meetsMinimumRequirements } from "../utils/passwordStrength.js";
 import { authenticatedFetch } from '../utils/csrf';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
+import ConfirmationModal from '../components/ConfirmationModal';
+import { useSignout } from '../hooks/useSignout';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 import { Lock } from "lucide-react";
@@ -25,6 +27,7 @@ export default function UserChangePassword() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const currentPasswordRef = useRef(null);
+  const { signout } = useSignout();
 
   const [formData, setFormData] = useState({
     previousPassword: "",
@@ -37,6 +40,7 @@ export default function UserChangePassword() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
+  const [showSignoutModal, setShowSignoutModal] = useState(false);
 
   const [passwordStrength, setPasswordStrength] = useState({
     score: 0,
@@ -141,6 +145,19 @@ export default function UserChangePassword() {
     }
   };
 
+  const handleForgotPasswordClick = () => {
+    setShowSignoutModal(true);
+  };
+
+  const handleSignoutConfirm = async () => {
+    setShowSignoutModal(false);
+    await signout({
+      showToast: true,
+      navigateTo: "/forgot-password",
+      delay: 0
+    });
+  };
+
   return (
     <AuthFormLayout
       leftSlot={(
@@ -227,6 +244,18 @@ export default function UserChangePassword() {
                   inputClassName={`${loading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   required
                 />
+                <div className="mt-2">
+                  <button
+                    type="button"
+                    onClick={handleForgotPasswordClick}
+                    disabled={loading}
+                    className={`text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline transition-colors duration-200 ${
+                      loading ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+                    }`}
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
               </div>
 
               {/* New Password Field */}
@@ -372,6 +401,20 @@ export default function UserChangePassword() {
         </div>
       </div>
       <ContactSupportWrapper />
+      
+      {/* Signout Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showSignoutModal}
+        onClose={() => setShowSignoutModal(false)}
+        onConfirm={handleSignoutConfirm}
+        title="Sign Out Required"
+        message="The forgot password page is a public page. You need to sign out to access it. Do you want to sign out now?"
+        confirmText="Sign Out"
+        cancelText="Cancel"
+        confirmButtonColor="bg-blue-600 hover:bg-blue-700"
+        isDestructive={false}
+        isLoading={false}
+      />
     </AuthFormLayout>
   );
 }
