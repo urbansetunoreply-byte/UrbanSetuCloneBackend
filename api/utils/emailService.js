@@ -9761,8 +9761,8 @@ export const sendNewMessageNotificationEmail = async (email, messageDetails) => 
   }
 };
 
-// Send data export email with attachment
-export const sendDataExportEmail = async (email, username, dataBuffer) => {
+// Send data export email with download links
+export const sendDataExportEmail = async (email, username, jsonDownloadUrl, txtDownloadUrl) => {
   try {
     const subject = `Your UrbanSetu Data Export - ${new Date().toLocaleDateString()}`;
     const exportDate = formatIndiaTime(new Date(), { 
@@ -9813,7 +9813,21 @@ export const sendDataExportEmail = async (email, username, dataBuffer) => {
               <strong>Export Date:</strong> ${exportDate}
             </p>
             <p style="color: #6b7280; margin: 10px 0 0 0; font-size: 14px;">
-              The attached JSON file can be opened with any text editor or JSON viewer.
+              Click the download buttons below to get your data in your preferred format.
+            </p>
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; align-items: center;">
+              <a href="${jsonDownloadUrl}" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); transition: all 0.3s ease; margin: 5px;">
+                📄 Download JSON File
+              </a>
+              <a href="${txtDownloadUrl}" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3); transition: all 0.3s ease; margin: 5px;">
+                📝 Download TXT File
+              </a>
+            </div>
+            <p style="color: #6b7280; margin: 15px 0 0; font-size: 13px; line-height: 1.6;">
+              <strong>Note:</strong> These download links will expire in 24 hours for security reasons. Please download your data as soon as possible.
             </p>
           </div>
           
@@ -9828,21 +9842,12 @@ export const sendDataExportEmail = async (email, username, dataBuffer) => {
         </div>
       </div>
     `;
-
-    const filename = `urbansetu-data-${username}-${Date.now()}.json`;
     
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
       subject: subject,
-      html: html,
-      attachments: [
-        {
-          filename: filename,
-          content: dataBuffer,
-          contentType: 'application/json'
-        }
-      ]
+      html: html
     };
 
     const result = await sendEmailWithRetry(mailOptions);

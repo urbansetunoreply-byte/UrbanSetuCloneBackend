@@ -872,11 +872,9 @@ export default function Profile() {
         const nextAttempts = previousAttempts + 1;
         localStorage.setItem(PROFILE_PASSWORD_ATTEMPT_KEY, String(nextAttempts));
         
-        setLoading(false);
-        setUpdatePassword("");
-        
+        // Keep loading state during error handling, then set to false
         if (nextAttempts >= 3) {
-          // Too many attempts - sign out
+          // Too many attempts - sign out (keep loading during signout process)
           localStorage.removeItem(PROFILE_PASSWORD_ATTEMPT_KEY);
           setShowUpdatePasswordModal(false);
           toast.error("Too many incorrect password attempts. You've been signed out for security.");
@@ -896,16 +894,20 @@ export default function Profile() {
           } catch (err) {
             dispatch(signoutUserFailure(err.message));
           }
+          setLoading(false);
           setTimeout(() => {
             navigate("/sign-in", { replace: true });
           }, 800);
+          return;
         } else {
           // Show remaining attempts - keep modal open
           const remaining = 3 - nextAttempts;
           const attemptText = remaining === 1 ? 'attempt' : 'attempts';
           setUpdatePasswordError(`Incorrect password. ${remaining} ${attemptText} remaining.`);
           toast.error(`Incorrect password. ${remaining} ${attemptText} left.`);
+          setLoading(false);
         }
+        setUpdatePassword("");
         return;
       }
       

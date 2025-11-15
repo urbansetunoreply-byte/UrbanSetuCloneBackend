@@ -17,6 +17,20 @@ import PropertyWatchlist from "../models/propertyWatchlist.model.js";
 import Booking from "../models/booking.model.js";
 import Payment from "../models/payment.model.js";
 
+// In-memory cache for export data (expires after 24 hours)
+export const exportDataCache = new Map();
+const EXPORT_CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
+
+// Cleanup expired cache entries periodically
+setInterval(() => {
+    const now = Date.now();
+    for (const [token, data] of exportDataCache.entries()) {
+        if (now > data.expiresAt) {
+            exportDataCache.delete(token);
+        }
+    }
+}, 60 * 60 * 1000); // Cleanup every hour
+
 export const test=(req,res)=>{
     res.send("Hello Api")
 }
@@ -649,10 +663,28 @@ export const exportData = async (req, res, next) => {
         const dataStr = JSON.stringify(userData, null, 2);
         const dataBuffer = Buffer.from(dataStr, 'utf-8');
 
-        // Send email with attachment
-        const emailResult = await sendDataExportEmail(user.email, user.username, dataBuffer);
+        // Generate unique token for download links
+        const exportToken = crypto.randomBytes(32).toString('hex');
+        const expiresAt = Date.now() + EXPORT_CACHE_EXPIRY;
+
+        // Store export data in cache
+        exportDataCache.set(exportToken, {
+            data: dataStr,
+            username: user.username,
+            expiresAt: expiresAt
+        });
+
+        // Generate download URLs
+        const base = `${req.protocol}://${req.get('host')}`;
+        const jsonDownloadUrl = `${base}/api/user/export-data/${exportToken}/json`;
+        const txtDownloadUrl = `${base}/api/user/export-data/${exportToken}/txt`;
+
+        // Send email with download links
+        const emailResult = await sendDataExportEmail(user.email, user.username, jsonDownloadUrl, txtDownloadUrl);
 
         if (!emailResult.success) {
+            // Clean up cache on email failure
+            exportDataCache.delete(exportToken);
             return next(errorHandler(500, "Failed to send export email: " + emailResult.error));
         }
 
