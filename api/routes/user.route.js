@@ -1,6 +1,7 @@
 import express from 'express'
 import {test,updateUser,deleteUser,getUserListings,getUserByEmail,changePassword,getApprovedAdmins,transferDefaultAdminRights,deleteUserAfterTransfer,verifyPassword,getAllUsersForAutocomplete,getUserByEmailForAssignment,checkEmailAvailability,checkMobileAvailability,exportData,exportDataCache} from '../controllers/user.controller.js'
 import { verifyToken } from '../utils/verify.js'
+import { dataExportRateLimit } from '../middleware/rateLimiter.js'
 import bcryptjs from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import User from '../models/user.model.js'
@@ -179,8 +180,8 @@ router.get("/validate-email/:email", verifyToken, getUserByEmailForAssignment);
 router.get("/check-email/:email", verifyToken, checkEmailAvailability);
 router.get("/check-mobile/:mobile", verifyToken, checkMobileAvailability);
 
-// Data export route
-router.post("/export-data", verifyToken, exportData);
+// Data export route (with rate limiting: 1 export per 24 hours)
+router.post("/export-data", verifyToken, dataExportRateLimit, exportData);
 
 // Data export download routes (no auth required - token-based access)
 router.get("/export-data/:token/json", async (req, res, next) => {

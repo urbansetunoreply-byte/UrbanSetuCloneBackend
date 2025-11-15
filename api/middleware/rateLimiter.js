@@ -94,3 +94,130 @@ export const failedAttemptsRateLimit = createRateLimiter(
     10, // max 10 failed attempts
     'Too many failed attempts. Please try again in 15 minutes.'
 );
+
+// Rate limiter for data export (user-based, 24 hours cooldown)
+// In-memory store for export rate limiting (keyed by user ID)
+const exportRateLimitStore = new Map();
+
+// Clean up expired entries every hour
+setInterval(() => {
+    const now = Date.now();
+    for (const [userId, data] of exportRateLimitStore.entries()) {
+        if (now > data.expiresAt) {
+            exportRateLimitStore.delete(userId);
+        }
+    }
+}, 60 * 60 * 1000); // Cleanup every hour
+
+/**
+ * Rate limiter for data export endpoint
+ * Allows 1 export per 24 hours per user
+ */
+export const dataExportRateLimit = (req, res, next) => {
+    try {
+        // Only apply to authenticated users
+        if (!req.user || !req.user.id) {
+            return next(errorHandler(401, 'Authentication required for data export'));
+        }
+
+        const userId = req.user.id;
+        const now = Date.now();
+        const windowMs = 24 * 60 * 60 * 1000; // 24 hours
+        const maxExports = 1; // 1 export per 24 hours
+
+        const existing = exportRateLimitStore.get(userId);
+
+        if (!existing) {
+            // First export request
+            exportRateLimitStore.set(userId, {
+                count: 1,
+                firstRequest: now,
+                lastRequest: now,
+                expiresAt: now + windowMs
+            });
+            
+            // Add rate limit headers
+            res.set({
+                'X-RateLimit-Limit': maxExports,
+                'X-RateLimit-Remaining': 0,
+                'X-RateLimit-Reset': new Date(now + windowMs).toISOString(),
+                'X-RateLimit-Window': '24 hours'
+            });
+            
+            return next();
+        }
+
+        // Check if window has expired
+        if (now > existing.expiresAt) {
+            // Reset the window
+            exportRateLimitStore.set(userId, {
+                count: 1,
+                firstRequest: now,
+                lastRequest: now,
+                expiresAt: now + windowMs
+            });
+            
+            // Add rate limit headers
+            res.set({
+                'X-RateLimit-Limit': maxExports,
+                'X-RateLimit-Remaining': 0,
+                'X-RateLimit-Reset': new Date(now + windowMs).toISOString(),
+                'X-RateLimit-Window': '24 hours'
+            });
+            
+            return next();
+        }
+
+        // Check if max exports exceeded
+        if (existing.count >= maxExports) {
+            const resetTime = new Date(existing.expiresAt);
+            const timeRemaining = Math.ceil((existing.expiresAt - now) / (60 * 60 * 1000)); // hours
+            const timeRemainingMinutes = Math.ceil((existing.expiresAt - now) / (60 * 1000)); // minutes
+            
+            let timeMessage;
+            if (timeRemaining >= 1) {
+                timeMessage = timeRemaining === 1 ? '1 hour' : `${timeRemaining} hours`;
+            } else {
+                timeMessage = timeRemainingMinutes === 1 ? '1 minute' : `${timeRemainingMinutes} minutes`;
+            }
+            
+            // Add rate limit headers
+            res.set({
+                'X-RateLimit-Limit': maxExports,
+                'X-RateLimit-Remaining': 0,
+                'X-RateLimit-Reset': resetTime.toISOString(),
+                'X-RateLimit-Window': '24 hours'
+            });
+            
+            return next(errorHandler(429, `You can only export your data once per 24 hours. Please try again in ${timeMessage}.`, {
+                rateLimitInfo: {
+                    limit: maxExports,
+                    windowMs: windowMs,
+                    resetTime: resetTime.toISOString(),
+                    remaining: 0,
+                    timeRemaining: timeMessage
+                }
+            }));
+        }
+
+        // Increment count (shouldn't reach here with maxExports = 1, but keeping for safety)
+        existing.count += 1;
+        existing.lastRequest = now;
+        exportRateLimitStore.set(userId, existing);
+        
+        // Add rate limit headers
+        res.set({
+            'X-RateLimit-Limit': maxExports,
+            'X-RateLimit-Remaining': maxExports - existing.count,
+            'X-RateLimit-Reset': new Date(existing.expiresAt).toISOString(),
+            'X-RateLimit-Window': '24 hours'
+        });
+        
+        next();
+        
+    } catch (error) {
+        console.error('Data export rate limiter error:', error);
+        // On error, allow the request to proceed (fail open)
+        next();
+    }
+};
