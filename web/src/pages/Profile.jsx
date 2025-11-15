@@ -400,6 +400,26 @@ export default function Profile() {
     };
   }, [emailDebounceTimer, mobileDebounceTimer]);
 
+  // Listen for storage changes to update email/phone visibility
+  const [storageUpdateTrigger, setStorageUpdateTrigger] = useState(0);
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'showEmail' || e.key === 'showPhone') {
+        setStorageUpdateTrigger(prev => prev + 1);
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    // Also listen for custom events (for same-tab updates)
+    const handleCustomStorageChange = () => {
+      setStorageUpdateTrigger(prev => prev + 1);
+    };
+    window.addEventListener('settingsUpdated', handleCustomStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('settingsUpdated', handleCustomStorageChange);
+    };
+  }, []);
+
   const PROFILE_PASSWORD_ATTEMPT_KEY = 'profileUpdatePwAttempts';
 
   const fetchUserStats = async () => {
@@ -1231,35 +1251,49 @@ export default function Profile() {
 
                 {/* Contact Information Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                  {/* Email */}
-                  <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 hover:border-blue-300 transition-all duration-300 hover:shadow-md">
-                    <div className="flex items-center">
-                      <FaEnvelope className="w-4 h-4 mr-3 text-blue-500 flex-shrink-0" />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs text-gray-500 font-medium mb-1">Email</p>
-                        <p className="text-gray-700 text-sm break-all">{currentUser.email}</p>
+                  {/* Email - Show only if showEmail setting is true */}
+                  {(() => {
+                    // Use storageUpdateTrigger to force re-render when settings change
+                    const _ = storageUpdateTrigger;
+                    const showEmail = localStorage.getItem('showEmail') === 'true';
+                    return showEmail ? (
+                      <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 hover:border-blue-300 transition-all duration-300 hover:shadow-md">
+                        <div className="flex items-center">
+                          <FaEnvelope className="w-4 h-4 mr-3 text-blue-500 flex-shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs text-gray-500 font-medium mb-1">Email</p>
+                            <p className="text-gray-700 text-sm break-all">{currentUser.email}</p>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
+                    ) : null;
+                  })()}
 
-                  {/* Mobile */}
-                  <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 hover:border-green-300 transition-all duration-300 hover:shadow-md">
-                    <div className="flex items-center">
-                      <FaPhone className="w-4 h-4 mr-3 text-green-500 flex-shrink-0" />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs text-gray-500 font-medium mb-1">Mobile</p>
-                        <p className="text-gray-700 text-sm">
-                          {currentUser.mobileNumber && currentUser.mobileNumber !== "0000000000" 
-                            ? `+91 ${currentUser.mobileNumber.slice(0, 5)} ${currentUser.mobileNumber.slice(5)}`
-                            : "Not provided"
-                          }
-                          {currentUser.isGeneratedMobile && (
-                            <span className="text-xs text-gray-400 block">(Generated for Google signup)</span>
-                          )}
-                        </p>
+                  {/* Mobile - Show only if showPhone setting is true */}
+                  {(() => {
+                    // Use storageUpdateTrigger to force re-render when settings change
+                    const _ = storageUpdateTrigger;
+                    const showPhone = localStorage.getItem('showPhone') === 'true';
+                    return showPhone ? (
+                      <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 hover:border-green-300 transition-all duration-300 hover:shadow-md">
+                        <div className="flex items-center">
+                          <FaPhone className="w-4 h-4 mr-3 text-green-500 flex-shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs text-gray-500 font-medium mb-1">Mobile</p>
+                            <p className="text-gray-700 text-sm">
+                              {currentUser.mobileNumber && currentUser.mobileNumber !== "0000000000" 
+                                ? `+91 ${currentUser.mobileNumber.slice(0, 5)} ${currentUser.mobileNumber.slice(5)}`
+                                : "Not provided"
+                              }
+                              {currentUser.isGeneratedMobile && (
+                                <span className="text-xs text-gray-400 block">(Generated for Google signup)</span>
+                              )}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
+                    ) : null;
+                  })()}
 
                   {/* Gender */}
                   <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 hover:border-purple-300 transition-all duration-300 hover:shadow-md">
@@ -2194,40 +2228,6 @@ export default function Profile() {
 
       {/* Contact Support Wrapper */}
       <ContactSupportWrapper />
-
-      <div className="mt-8 flex flex-col items-center space-y-2 text-sm text-gray-600">
-        {currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? (
-          <>
-            <Link
-              to="/admin/terms"
-              className="text-blue-600 hover:underline"
-            >
-              Admin Terms & Conditions
-            </Link>
-            <Link
-              to="/admin/privacy"
-              className="text-blue-600 hover:underline"
-            >
-              Admin Privacy Policy
-            </Link>
-          </>
-        ) : (
-          <>
-            <Link
-              to="/user/terms"
-              className="text-blue-600 hover:underline"
-            >
-              User Terms & Conditions
-            </Link>
-            <Link
-              to="/user/privacy"
-              className="text-blue-600 hover:underline"
-            >
-              User Privacy Policy
-            </Link>
-          </>
-        )}
-      </div>
     </div>
   );
 }

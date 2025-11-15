@@ -87,6 +87,10 @@ export default function Settings() {
 
   // Data Export
   const [exportingData, setExportingData] = useState(false);
+  const [showExportPasswordModal, setShowExportPasswordModal] = useState(false);
+  const [exportPassword, setExportPassword] = useState("");
+  const [exportPasswordError, setExportPasswordError] = useState("");
+  const [exportPasswordVerifying, setExportPasswordVerifying] = useState(false);
 
   // Account deletion states
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -609,12 +613,16 @@ export default function Settings() {
   const handleShowEmailChange = (value) => {
     setShowEmail(value);
     localStorage.setItem('showEmail', value.toString());
+    // Dispatch custom event to notify Profile page
+    window.dispatchEvent(new Event('settingsUpdated'));
     toast.success('Email visibility updated');
   };
 
   const handleShowPhoneChange = (value) => {
     setShowPhone(value);
     localStorage.setItem('showPhone', value.toString());
+    // Dispatch custom event to notify Profile page
+    window.dispatchEvent(new Event('settingsUpdated'));
     toast.success('Phone visibility updated');
   };
 
@@ -656,7 +664,47 @@ export default function Settings() {
     toast.success('Font size updated');
   };
 
-  const handleExportData = async () => {
+  const handleExportDataClick = () => {
+    setShowExportPasswordModal(true);
+    setExportPassword("");
+    setExportPasswordError("");
+    setExportPasswordVerifying(false);
+  };
+
+  const handleVerifyExportPassword = async () => {
+    setExportPasswordError("");
+    if (!exportPassword) {
+      setExportPasswordError('Password is required');
+      return;
+    }
+    setExportPasswordVerifying(true);
+    try {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-password`, {
+        method: 'POST',
+        body: JSON.stringify({ password: exportPassword })
+      });
+      if (!res.ok) {
+        setShowExportPasswordModal(false);
+        toast.error("For security reasons, you've been signed out automatically.");
+        dispatch(signoutUserStart());
+        const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+        const signoutData = await signoutRes.json();
+        if (signoutData.success === false) dispatch(signoutUserFailure(signoutData.message)); else dispatch(signoutUserSuccess(signoutData));
+        navigate('/sign-in', { replace: true });
+        setExportPasswordVerifying(false);
+        return;
+      }
+      // Password verified, proceed with export
+      setShowExportPasswordModal(false);
+      await performDataExport();
+    } catch (error) {
+      setExportPasswordError('Failed to verify password');
+    } finally {
+      setExportPasswordVerifying(false);
+    }
+  };
+
+  const performDataExport = async () => {
     setExportingData(true);
     try {
       const userData = {
@@ -729,41 +777,55 @@ export default function Settings() {
     </div>
   );
 
-  const ToggleSwitch = ({ label, checked, onChange, description }) => (
-    <div className="flex items-center justify-between py-3 border-b border-gray-200 last:border-b-0">
-      <div className="flex-1">
-        <p className="font-medium text-gray-800">{label}</p>
-        {description && <p className="text-sm text-gray-500 mt-1">{description}</p>}
+  const ToggleSwitch = ({ label, checked, onChange, description }) => {
+    const handleChange = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onChange(e.target.checked);
+    };
+    return (
+      <div className="flex items-center justify-between py-3 border-b border-gray-200 last:border-b-0">
+        <div className="flex-1">
+          <p className="font-medium text-gray-800">{label}</p>
+          {description && <p className="text-sm text-gray-500 mt-1">{description}</p>}
+        </div>
+        <label className="relative inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            checked={checked}
+            onChange={handleChange}
+            className="sr-only peer"
+          />
+          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+        </label>
       </div>
-      <label className="relative inline-flex items-center cursor-pointer">
-        <input
-          type="checkbox"
-          checked={checked}
-          onChange={(e) => onChange(e.target.checked)}
-          className="sr-only peer"
-        />
-        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-      </label>
-    </div>
-  );
+    );
+  };
 
-  const SelectOption = ({ label, value, options, onChange, description }) => (
-    <div className="py-3 border-b border-gray-200 last:border-b-0">
-      <div className="mb-2">
-        <p className="font-medium text-gray-800">{label}</p>
-        {description && <p className="text-sm text-gray-500 mt-1">{description}</p>}
+  const SelectOption = ({ label, value, options, onChange, description }) => {
+    const handleChange = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onChange(e.target.value);
+    };
+    return (
+      <div className="py-3 border-b border-gray-200 last:border-b-0">
+        <div className="mb-2">
+          <p className="font-medium text-gray-800">{label}</p>
+          {description && <p className="text-sm text-gray-500 mt-1">{description}</p>}
+        </div>
+        <select
+          value={value}
+          onChange={handleChange}
+          className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          {options.map(opt => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
       </div>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        {options.map(opt => (
-          <option key={opt.value} value={opt.value}>{opt.label}</option>
-        ))}
-      </select>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 py-10 px-2 md:px-8">
@@ -964,7 +1026,7 @@ export default function Settings() {
         <SettingSection title="Data Management" icon={FaDatabase}>
           <div className="space-y-4">
             <button
-              onClick={handleExportData}
+              onClick={handleExportDataClick}
               disabled={exportingData}
               className={`w-full bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold disabled:opacity-50 disabled:cursor-not-allowed ${animationClasses.slideInUp}`}
             >
@@ -1479,6 +1541,62 @@ export default function Settings() {
                   </div>
                 </form>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Export Data Password Modal */}
+      {showExportPasswordModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-[fadeIn_0.3s_ease-out]">
+          <div className={`bg-white rounded-xl shadow-xl max-w-md w-full ${animationClasses.scaleIn}`}>
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-gray-800 mb-4">Confirm Password</h3>
+              <p className="mb-4 text-gray-600">For security, please confirm your password to download your data.</p>
+              <form onSubmit={(e) => { e.preventDefault(); handleVerifyExportPassword(); }}>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Password:</label>
+                <input
+                  type="password"
+                  className={`w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-green-500 ${exportPasswordVerifying ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  placeholder="Enter your password"
+                  value={exportPassword}
+                  onChange={e => setExportPassword(e.target.value)}
+                  disabled={exportPasswordVerifying}
+                  autoFocus
+                />
+                {exportPasswordError && <div className="text-red-600 text-sm mb-2">{exportPasswordError}</div>}
+                <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowExportPasswordModal(false);
+                      setExportPassword("");
+                      setExportPasswordError("");
+                      setExportPasswordVerifying(false);
+                    }}
+                    className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                    disabled={exportPasswordVerifying}
+                  >
+                    {exportPasswordVerifying ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Verifying...
+                      </>
+                    ) : (
+                      <>
+                        <FaCheck className="w-4 h-4 mr-2" />
+                        Verify & Export
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
