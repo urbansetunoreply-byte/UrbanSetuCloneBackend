@@ -82,7 +82,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
-            content: 'Hello! I\'m your AI assistant powered by Gemini. How can I help you with your real estate needs today?',
+            content: 'Hello! I\'m your AI assistant powered by StackAI. How can I help you with your real estate needs today?',
             timestamp: new Date().toISOString()
         }
     ]);
