@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { FaKey, FaTrash, FaSignOutAlt, FaUser, FaTools, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaCrown, FaTimes, FaCheck } from "react-icons/fa";
+import { useNavigate, Link } from "react-router-dom";
+import { FaKey, FaTrash, FaSignOutAlt, FaUser, FaTools, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaCrown, FaTimes, FaCheck, FaBell, FaEnvelope, FaLock, FaGlobe, FaPalette, FaDownload, FaHistory, FaCode, FaShieldAlt, FaEye, FaEyeSlash, FaMoon, FaSun, FaLanguage, FaClock, FaFileDownload, FaDatabase } from "react-icons/fa";
 import { authenticatedFetch } from '../utils/auth';
 import {
   deleteUserStart,
@@ -31,6 +31,62 @@ export default function Settings() {
   const { signout } = useSignout();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  // Notification Preferences
+  const [emailNotifications, setEmailNotifications] = useState(() => {
+    const saved = localStorage.getItem('emailNotifications');
+    return saved !== null ? saved === 'true' : true;
+  });
+  const [inAppNotifications, setInAppNotifications] = useState(() => {
+    const saved = localStorage.getItem('inAppNotifications');
+    return saved !== null ? saved === 'true' : true;
+  });
+  const [pushNotifications, setPushNotifications] = useState(() => {
+    const saved = localStorage.getItem('pushNotifications');
+    return saved !== null ? saved === 'true' : false;
+  });
+  const [notificationSound, setNotificationSound] = useState(() => {
+    return localStorage.getItem('notificationSound') || 'default';
+  });
+
+  // Privacy Settings
+  const [profileVisibility, setProfileVisibility] = useState(() => {
+    return localStorage.getItem('profileVisibility') || 'public';
+  });
+  const [showEmail, setShowEmail] = useState(() => {
+    const saved = localStorage.getItem('showEmail');
+    return saved !== null ? saved === 'true' : false;
+  });
+  const [showPhone, setShowPhone] = useState(() => {
+    const saved = localStorage.getItem('showPhone');
+    return saved !== null ? saved === 'true' : false;
+  });
+  const [dataSharing, setDataSharing] = useState(() => {
+    const saved = localStorage.getItem('dataSharing');
+    return saved !== null ? saved === 'true' : true;
+  });
+
+  // Language & Region
+  const [language, setLanguage] = useState(() => {
+    return localStorage.getItem('language') || 'en';
+  });
+  const [timezone, setTimezone] = useState(() => {
+    return localStorage.getItem('timezone') || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  });
+  const [dateFormat, setDateFormat] = useState(() => {
+    return localStorage.getItem('dateFormat') || 'MM/DD/YYYY';
+  });
+
+  // Appearance
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('theme') || 'light';
+  });
+  const [fontSize, setFontSize] = useState(() => {
+    return localStorage.getItem('fontSize') || 'medium';
+  });
+
+  // Data Export
+  const [exportingData, setExportingData] = useState(false);
 
   // Account deletion states
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -512,20 +568,217 @@ export default function Settings() {
     }
   };
 
+  // Handlers for settings
+  const handleEmailNotificationsChange = (value) => {
+    setEmailNotifications(value);
+    localStorage.setItem('emailNotifications', value.toString());
+    toast.success('Email notifications preference saved');
+  };
+
+  const handleInAppNotificationsChange = (value) => {
+    setInAppNotifications(value);
+    localStorage.setItem('inAppNotifications', value.toString());
+    toast.success('In-app notifications preference saved');
+  };
+
+  const handlePushNotificationsChange = async (value) => {
+    if (value && 'Notification' in window) {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        toast.error('Push notifications permission denied');
+        return;
+      }
+    }
+    setPushNotifications(value);
+    localStorage.setItem('pushNotifications', value.toString());
+    toast.success('Push notifications preference saved');
+  };
+
+  const handleNotificationSoundChange = (value) => {
+    setNotificationSound(value);
+    localStorage.setItem('notificationSound', value);
+    toast.success('Notification sound preference saved');
+  };
+
+  const handleProfileVisibilityChange = (value) => {
+    setProfileVisibility(value);
+    localStorage.setItem('profileVisibility', value);
+    toast.success('Profile visibility updated');
+  };
+
+  const handleShowEmailChange = (value) => {
+    setShowEmail(value);
+    localStorage.setItem('showEmail', value.toString());
+    toast.success('Email visibility updated');
+  };
+
+  const handleShowPhoneChange = (value) => {
+    setShowPhone(value);
+    localStorage.setItem('showPhone', value.toString());
+    toast.success('Phone visibility updated');
+  };
+
+  const handleDataSharingChange = (value) => {
+    setDataSharing(value);
+    localStorage.setItem('dataSharing', value.toString());
+    toast.success('Data sharing preference saved');
+  };
+
+  const handleLanguageChange = (value) => {
+    setLanguage(value);
+    localStorage.setItem('language', value);
+    toast.success('Language preference saved');
+  };
+
+  const handleTimezoneChange = (value) => {
+    setTimezone(value);
+    localStorage.setItem('timezone', value);
+    toast.success('Timezone updated');
+  };
+
+  const handleDateFormatChange = (value) => {
+    setDateFormat(value);
+    localStorage.setItem('dateFormat', value);
+    toast.success('Date format updated');
+  };
+
+  const handleThemeChange = (value) => {
+    setTheme(value);
+    localStorage.setItem('theme', value);
+    document.documentElement.classList.toggle('dark', value === 'dark');
+    toast.success('Theme updated');
+  };
+
+  const handleFontSizeChange = (value) => {
+    setFontSize(value);
+    localStorage.setItem('fontSize', value);
+    document.documentElement.style.fontSize = value === 'small' ? '14px' : value === 'large' ? '18px' : '16px';
+    toast.success('Font size updated');
+  };
+
+  const handleExportData = async () => {
+    setExportingData(true);
+    try {
+      const userData = {
+        username: currentUser.username,
+        email: currentUser.email,
+        mobileNumber: currentUser.mobileNumber,
+        address: currentUser.address,
+        gender: currentUser.gender,
+        role: currentUser.role,
+        createdAt: currentUser.createdAt,
+        preferences: {
+          emailNotifications,
+          inAppNotifications,
+          pushNotifications,
+          notificationSound,
+          profileVisibility,
+          showEmail,
+          showPhone,
+          dataSharing,
+          language,
+          timezone,
+          dateFormat,
+          theme,
+          fontSize
+        }
+      };
+      const dataStr = JSON.stringify(userData, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `urbansetu-data-${currentUser.username}-${Date.now()}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success('Data exported successfully');
+    } catch (error) {
+      toast.error('Failed to export data');
+    } finally {
+      setExportingData(false);
+    }
+  };
+
+  // Apply theme on mount
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
+
+  // Apply font size on mount
+  useEffect(() => {
+    document.documentElement.style.fontSize = fontSize === 'small' ? '14px' : fontSize === 'large' ? '18px' : '16px';
+  }, [fontSize]);
+
   if (!currentUser) {
     return <div className="text-center text-red-600 mt-10">Please sign in to access settings.</div>;
   }
 
+  const SettingSection = ({ title, icon: Icon, children }) => (
+    <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+      <div className="flex items-center mb-4">
+        {Icon && <Icon className="w-5 h-5 mr-2 text-blue-600" />}
+        <h2 className="text-xl font-bold text-gray-800">{title}</h2>
+      </div>
+      {children}
+    </div>
+  );
+
+  const ToggleSwitch = ({ label, checked, onChange, description }) => (
+    <div className="flex items-center justify-between py-3 border-b border-gray-200 last:border-b-0">
+      <div className="flex-1">
+        <p className="font-medium text-gray-800">{label}</p>
+        {description && <p className="text-sm text-gray-500 mt-1">{description}</p>}
+      </div>
+      <label className="relative inline-flex items-center cursor-pointer">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+          className="sr-only peer"
+        />
+        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+      </label>
+    </div>
+  );
+
+  const SelectOption = ({ label, value, options, onChange, description }) => (
+    <div className="py-3 border-b border-gray-200 last:border-b-0">
+      <div className="mb-2">
+        <p className="font-medium text-gray-800">{label}</p>
+        {description && <p className="text-sm text-gray-500 mt-1">{description}</p>}
+      </div>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        {options.map(opt => (
+          <option key={opt.value} value={opt.value}>{opt.label}</option>
+        ))}
+      </select>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 py-10 px-2 md:px-8">
       <div className="max-w-4xl mx-auto">
-        <div className={`bg-white rounded-xl shadow-lg p-8 ${animationClasses.fadeInUp}`}>
-          <h1 className="text-3xl font-bold text-gray-800 mb-6">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Account Settings
             </span>
           </h1>
-          
+          <p className="text-gray-600">Manage your account preferences and settings</p>
+        </div>
+
+        {/* Security Settings */}
+        <SettingSection title="Security" icon={FaShieldAlt}>
           <div className="space-y-4">
             <button
               onClick={() => navigate((currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? '/admin/change-password' : '/user/change-password')}
@@ -545,35 +798,214 @@ export default function Settings() {
 
             {(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
               <button
+                onClick={() => navigate('/admin/session-management')}
+                className={`w-full bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
+              >
+                <FaHistory className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-pulse`} />
+                Session Management
+              </button>
+            )}
+          </div>
+        </SettingSection>
+
+        {/* Notification Preferences */}
+        <SettingSection title="Notifications" icon={FaBell}>
+          <div className="space-y-0">
+            <ToggleSwitch
+              label="Email Notifications"
+              checked={emailNotifications}
+              onChange={handleEmailNotificationsChange}
+              description="Receive notifications via email"
+            />
+            <ToggleSwitch
+              label="In-App Notifications"
+              checked={inAppNotifications}
+              onChange={handleInAppNotificationsChange}
+              description="Show notifications within the app"
+            />
+            <ToggleSwitch
+              label="Push Notifications"
+              checked={pushNotifications}
+              onChange={handlePushNotificationsChange}
+              description="Receive browser push notifications"
+            />
+            <SelectOption
+              label="Notification Sound"
+              value={notificationSound}
+              options={[
+                { value: 'default', label: 'Default' },
+                { value: 'none', label: 'None' },
+                { value: 'gentle', label: 'Gentle' },
+                { value: 'alert', label: 'Alert' }
+              ]}
+              onChange={handleNotificationSoundChange}
+              description="Choose notification sound preference"
+            />
+          </div>
+        </SettingSection>
+
+        {/* Privacy Settings */}
+        <SettingSection title="Privacy" icon={FaLock}>
+          <div className="space-y-0">
+            <SelectOption
+              label="Profile Visibility"
+              value={profileVisibility}
+              options={[
+                { value: 'public', label: 'Public' },
+                { value: 'friends', label: 'Friends Only' },
+                { value: 'private', label: 'Private' }
+              ]}
+              onChange={handleProfileVisibilityChange}
+              description="Control who can see your profile"
+            />
+            <ToggleSwitch
+              label="Show Email Address"
+              checked={showEmail}
+              onChange={handleShowEmailChange}
+              description="Display your email on your profile"
+            />
+            <ToggleSwitch
+              label="Show Phone Number"
+              checked={showPhone}
+              onChange={handleShowPhoneChange}
+              description="Display your phone number on your profile"
+            />
+            <ToggleSwitch
+              label="Data Sharing for Analytics"
+              checked={dataSharing}
+              onChange={handleDataSharingChange}
+              description="Allow anonymous data sharing to improve our services"
+            />
+          </div>
+        </SettingSection>
+
+        {/* Language & Region */}
+        <SettingSection title="Language & Region" icon={FaGlobe}>
+          <div className="space-y-0">
+            <SelectOption
+              label="Language"
+              value={language}
+              options={[
+                { value: 'en', label: 'English' },
+                { value: 'hi', label: 'Hindi' },
+                { value: 'es', label: 'Spanish' },
+                { value: 'fr', label: 'French' }
+              ]}
+              onChange={handleLanguageChange}
+              description="Choose your preferred language"
+            />
+            <SelectOption
+              label="Timezone"
+              value={timezone}
+              options={[
+                { value: Intl.DateTimeFormat().resolvedOptions().timeZone, label: Intl.DateTimeFormat().resolvedOptions().timeZone },
+                { value: 'America/New_York', label: 'Eastern Time (ET)' },
+                { value: 'America/Chicago', label: 'Central Time (CT)' },
+                { value: 'America/Denver', label: 'Mountain Time (MT)' },
+                { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
+                { value: 'Asia/Kolkata', label: 'India Standard Time (IST)' },
+                { value: 'Europe/London', label: 'Greenwich Mean Time (GMT)' }
+              ]}
+              onChange={handleTimezoneChange}
+              description="Set your timezone"
+            />
+            <SelectOption
+              label="Date Format"
+              value={dateFormat}
+              options={[
+                { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
+                { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },
+                { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD' },
+                { value: 'DD MMM YYYY', label: 'DD MMM YYYY' }
+              ]}
+              onChange={handleDateFormatChange}
+              description="Choose your preferred date format"
+            />
+          </div>
+        </SettingSection>
+
+        {/* Appearance */}
+        <SettingSection title="Appearance" icon={FaPalette}>
+          <div className="space-y-0">
+            <div className="py-3 border-b border-gray-200">
+              <p className="font-medium text-gray-800 mb-2">Theme</p>
+              <div className="flex gap-4">
+                <button
+                  onClick={() => handleThemeChange('light')}
+                  className={`flex-1 p-3 rounded-lg border-2 transition-all ${theme === 'light' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}
+                >
+                  <FaSun className="w-5 h-5 mx-auto mb-1 text-yellow-500" />
+                  <span className="text-sm font-medium">Light</span>
+                </button>
+                <button
+                  onClick={() => handleThemeChange('dark')}
+                  className={`flex-1 p-3 rounded-lg border-2 transition-all ${theme === 'dark' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}
+                >
+                  <FaMoon className="w-5 h-5 mx-auto mb-1 text-gray-700" />
+                  <span className="text-sm font-medium">Dark</span>
+                </button>
+              </div>
+            </div>
+            <SelectOption
+              label="Font Size"
+              value={fontSize}
+              options={[
+                { value: 'small', label: 'Small' },
+                { value: 'medium', label: 'Medium' },
+                { value: 'large', label: 'Large' }
+              ]}
+              onChange={handleFontSizeChange}
+              description="Adjust text size for better readability"
+            />
+          </div>
+        </SettingSection>
+
+        {/* Data Management */}
+        <SettingSection title="Data Management" icon={FaDatabase}>
+          <div className="space-y-4">
+            <button
+              onClick={handleExportData}
+              disabled={exportingData}
+              className={`w-full bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold disabled:opacity-50 disabled:cursor-not-allowed ${animationClasses.slideInUp}`}
+            >
+              {exportingData ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Exporting...
+                </>
+              ) : (
+                <>
+                  <FaFileDownload className={`w-4 h-4 mr-2`} />
+                  Export My Data
+                </>
+              )}
+            </button>
+            <p className="text-sm text-gray-500">Download a copy of your account data in JSON format</p>
+          </div>
+        </SettingSection>
+
+        {/* Admin Settings */}
+        {(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
+          <SettingSection title="Administration" icon={FaUser}>
+            <div className="space-y-4">
+              <button
                 onClick={() => navigate('/admin/management')}
                 className={`w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
               >
                 <FaUser className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-pulse`} />
-                Accounts
+                Account Management
               </button>
-            )}
 
-            {(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
-              <button
-                onClick={() => navigate('/admin/session-management')}
-                className={`w-full bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
-              >
-                <FaTools className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-pulse`} />
-                Session Management
-              </button>
-            )}
+              {currentUser.role === 'rootadmin' && (
+                <button
+                  onClick={() => navigate('/admin/deployment-management')}
+                  className={`w-full bg-teal-500 text-white px-6 py-3 rounded-lg hover:bg-teal-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
+                >
+                  <FaCloudUploadAlt className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-pulse`} />
+                  Deployment Management
+                </button>
+              )}
 
-            {currentUser.role === 'rootadmin' && (
-              <button
-                onClick={() => navigate('/admin/deployment-management')}
-                className={`w-full bg-teal-500 text-white px-6 py-3 rounded-lg hover:bg-teal-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
-              >
-                <FaCloudUploadAlt className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-pulse`} />
-                Deployment Management
-              </button>
-            )}
-
-            {(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
               <button
                 onClick={() => navigate('/admin/session-audit-logs')}
                 className={`w-full bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
@@ -581,9 +1013,14 @@ export default function Settings() {
                 <FaClipboardList className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-pulse`} />
                 Audit Logs
               </button>
-            )}
-              
-            {currentUser.isDefaultAdmin && (
+            </div>
+          </SettingSection>
+        )}
+
+        {/* Default Admin Settings */}
+        {currentUser.isDefaultAdmin && (
+          <SettingSection title="Admin Rights" icon={FaCrown}>
+            <div className="space-y-4">
               <button
                 onClick={onShowTransferModal}
                 className={`w-full bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
@@ -591,9 +1028,6 @@ export default function Settings() {
                 <FaCrown className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-bounce text-yellow-200`} />
                 Transfer Rights
               </button>
-            )}
-            
-            {currentUser.isDefaultAdmin && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
@@ -608,25 +1042,53 @@ export default function Settings() {
                   </div>
                 </div>
               </div>
-            )}
-              
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <button
-                onClick={onHandleSignout}
-                className={`bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
-              >
-                <FaSignOutAlt className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:-translate-x-1`} />
-                Sign Out
-              </button>
-              
-              <button
-                onClick={onHandleDelete}
-                className={`bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
-              >
-                <FaTrash className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-wiggle`} />
-                Delete Account
-              </button>
             </div>
+          </SettingSection>
+        )}
+
+        {/* Legal & Support */}
+        <SettingSection title="Legal & Support" icon={FaShieldAlt}>
+          <div className="space-y-3">
+            <Link
+              to={currentUser.role === 'admin' || currentUser.role === 'rootadmin' ? '/admin/terms' : '/user/terms'}
+              className="block text-blue-600 hover:text-blue-800 hover:underline"
+            >
+              Terms & Conditions
+            </Link>
+            <Link
+              to={currentUser.role === 'admin' || currentUser.role === 'rootadmin' ? '/admin/privacy' : '/user/privacy'}
+              className="block text-blue-600 hover:text-blue-800 hover:underline"
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              to={currentUser.role === 'admin' || currentUser.role === 'rootadmin' ? '/admin/cookie-policy' : '/user/cookie-policy'}
+              className="block text-blue-600 hover:text-blue-800 hover:underline"
+            >
+              Cookie Policy
+            </Link>
+          </div>
+        </SettingSection>
+
+        {/* Account Actions */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Account Actions</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <button
+              onClick={onHandleSignout}
+              className={`bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
+            >
+              <FaSignOutAlt className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:-translate-x-1`} />
+              Sign Out
+            </button>
+            
+            <button
+              onClick={onHandleDelete}
+              className={`bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
+            >
+              <FaTrash className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-wiggle`} />
+              Delete Account
+            </button>
           </div>
         </div>
       </div>
