@@ -19,9 +19,9 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Animation CSS classes
 const animationClasses = {
-  fadeInUp: "animate-[fadeInUp_0.6s_ease-out_forwards] opacity-0 translate-y-8",
-  slideInUp: "animate-[slideInUp_0.5s_ease-out_forwards] opacity-0 translate-y-4",
-  scaleIn: "animate-[scaleIn_0.5s_ease-out_forwards] opacity-0 scale-95",
+  fadeInUp: "opacity-100 translate-y-0",
+  slideInUp: "opacity-100 translate-y-0",
+  scaleIn: "opacity-100 scale-100",
 };
 
 export default function Settings() {
