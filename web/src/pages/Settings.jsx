@@ -576,111 +576,151 @@ export default function Settings() {
   // Handlers for settings - prevent scroll to top
   const preventScroll = () => {
     const scrollY = window.scrollY;
-    window.scrollTo(0, scrollY);
+    // Use requestAnimationFrame to restore scroll position after any potential scroll
+    requestAnimationFrame(() => {
+      window.scrollTo(0, scrollY);
+    });
+  };
+
+  // Enhanced toast function that prevents scrolling
+  const showToast = (message, type = 'success') => {
+    const scrollY = scrollPositionRef.current || window.scrollY;
+    scrollPositionRef.current = scrollY;
+    
+    const restoreScroll = () => {
+      requestAnimationFrame(() => {
+        window.scrollTo(0, scrollY);
+      });
+      setTimeout(() => {
+        window.scrollTo(0, scrollY);
+      }, 0);
+    };
+
+    if (type === 'success') {
+      toast.success(message, {
+        position: 'top-center',
+        autoClose: 2000,
+        onOpen: restoreScroll,
+        onClose: restoreScroll
+      });
+    } else {
+      toast.error(message, {
+        position: 'top-center',
+        autoClose: 2000,
+        onOpen: restoreScroll,
+        onClose: restoreScroll
+      });
+    }
+    
+    // Restore scroll immediately and after delays
+    restoreScroll();
+    setTimeout(restoreScroll, 10);
+    setTimeout(restoreScroll, 50);
+    setTimeout(restoreScroll, 100);
   };
 
   const handleEmailNotificationsChange = (value) => {
-    preventScroll();
+    scrollPositionRef.current = window.scrollY;
     setEmailNotifications(value);
     localStorage.setItem('emailNotifications', value.toString());
-    toast.success('Email notifications preference saved');
+    showToast('Email notifications preference saved');
   };
 
   const handleInAppNotificationsChange = (value) => {
-    preventScroll();
+    scrollPositionRef.current = window.scrollY;
     setInAppNotifications(value);
     localStorage.setItem('inAppNotifications', value.toString());
-    toast.success('In-app notifications preference saved');
+    showToast('In-app notifications preference saved');
   };
 
   const handlePushNotificationsChange = async (value) => {
-    preventScroll();
+    scrollPositionRef.current = window.scrollY;
     if (value && 'Notification' in window) {
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') {
-        toast.error('Push notifications permission denied');
+        showToast('Push notifications permission denied', 'error');
         return;
       }
     }
     setPushNotifications(value);
     localStorage.setItem('pushNotifications', value.toString());
-    toast.success('Push notifications preference saved');
+    showToast('Push notifications preference saved');
   };
 
   const handleNotificationSoundChange = (value) => {
-    preventScroll();
+    scrollPositionRef.current = window.scrollY;
     setNotificationSound(value);
     localStorage.setItem('notificationSound', value);
-    toast.success('Notification sound preference saved');
+    showToast('Notification sound preference saved');
   };
 
   const handleProfileVisibilityChange = (value) => {
-    preventScroll();
+    scrollPositionRef.current = window.scrollY;
     setProfileVisibility(value);
     localStorage.setItem('profileVisibility', value);
-    toast.success('Profile visibility updated');
+    showToast('Profile visibility updated');
   };
 
   const handleShowEmailChange = (value) => {
-    preventScroll();
+    scrollPositionRef.current = window.scrollY;
     setShowEmail(value);
     localStorage.setItem('showEmail', value.toString());
     // Dispatch custom event to notify Profile page
     window.dispatchEvent(new Event('settingsUpdated'));
-    toast.success('Email visibility updated');
+    showToast('Email visibility updated');
   };
 
   const handleShowPhoneChange = (value) => {
-    preventScroll();
+    scrollPositionRef.current = window.scrollY;
     setShowPhone(value);
     localStorage.setItem('showPhone', value.toString());
     // Dispatch custom event to notify Profile page
     window.dispatchEvent(new Event('settingsUpdated'));
-    toast.success('Phone visibility updated');
+    showToast('Phone visibility updated');
   };
 
   const handleDataSharingChange = (value) => {
-    preventScroll();
+    scrollPositionRef.current = window.scrollY;
     setDataSharing(value);
     localStorage.setItem('dataSharing', value.toString());
-    toast.success('Data sharing preference saved');
+    showToast('Data sharing preference saved');
   };
 
   const handleLanguageChange = (value) => {
-    preventScroll();
+    scrollPositionRef.current = window.scrollY;
     setLanguage(value);
     localStorage.setItem('language', value);
-    toast.success('Language preference saved');
+    showToast('Language preference saved');
   };
 
   const handleTimezoneChange = (value) => {
-    preventScroll();
+    scrollPositionRef.current = window.scrollY;
     setTimezone(value);
     localStorage.setItem('timezone', value);
-    toast.success('Timezone updated');
+    showToast('Timezone updated');
   };
 
   const handleDateFormatChange = (value) => {
-    preventScroll();
+    scrollPositionRef.current = window.scrollY;
     setDateFormat(value);
     localStorage.setItem('dateFormat', value);
-    toast.success('Date format updated');
+    showToast('Date format updated');
   };
 
   const handleThemeChange = (value) => {
-    preventScroll();
+    scrollPositionRef.current = window.scrollY;
     setTheme(value);
     localStorage.setItem('theme', value);
     document.documentElement.classList.toggle('dark', value === 'dark');
-    toast.success('Theme updated');
+    showToast('Theme updated');
   };
 
   const handleFontSizeChange = (value) => {
-    preventScroll();
+    scrollPositionRef.current = window.scrollY;
     setFontSize(value);
     localStorage.setItem('fontSize', value);
     document.documentElement.style.fontSize = value === 'small' ? '14px' : value === 'large' ? '18px' : '16px';
-    toast.success('Font size updated');
+    showToast('Font size updated');
   };
 
   const handleExportDataClick = () => {
@@ -751,6 +791,32 @@ export default function Settings() {
       setExportingData(false);
     }
   };
+
+  // Store scroll position to prevent unwanted scrolling
+  const scrollPositionRef = useRef(0);
+
+  // Monitor scroll position and restore it when needed
+  useEffect(() => {
+    const handleScroll = () => {
+      scrollPositionRef.current = window.scrollY;
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Restore scroll position after any state change that might cause scrolling
+  useEffect(() => {
+    const restoreScroll = () => {
+      if (scrollPositionRef.current > 0) {
+        requestAnimationFrame(() => {
+          window.scrollTo(0, scrollPositionRef.current);
+        });
+      }
+    };
+    // Restore scroll after a short delay to ensure DOM updates are complete
+    const timeoutId = setTimeout(restoreScroll, 0);
+    return () => clearTimeout(timeoutId);
+  }, [emailNotifications, inAppNotifications, pushNotifications, notificationSound, profileVisibility, showEmail, showPhone, dataSharing, language, timezone, dateFormat, theme, fontSize]);
 
   // Apply theme on mount
   useEffect(() => {
