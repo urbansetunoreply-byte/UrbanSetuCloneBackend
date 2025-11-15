@@ -591,19 +591,7 @@ function UserNavLinks({ mobile = false, onNavigate, signout }) {
         </li>
       </Link>
 
-      {/* Services quick links */}
-      {currentUser && (
-        <>
-          {/* Movers removed */}
-          <Link to="/user/services" onClick={onNavigate}>
-            <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-3' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
-              <FaTools className={`${mobile ? 'text-lg text-purple-600' : 'text-base text-purple-600'}`} />
-              <span>Services</span>
-            </li>
-          </Link>
-          {/* Route Planner link removed as requested */}
-        </>
-      )}
+      {/* Movers, Services and Route Planner removed */}
       
       {currentUser && (
         <>
