@@ -101,6 +101,7 @@ const UserAI = lazy(() => import('./pages/UserAI'));
 const AdminAI = lazy(() => import('./pages/AdminAI'));
 const CookiePolicy = lazy(() => import('./pages/CookiePolicy'));
 const InvestmentTools = lazy(() => import('./pages/InvestmentTools'));
+const Settings = lazy(() => import('./pages/Settings'));
 
 // Loading component
 const LoadingSpinner = () => (
@@ -718,6 +719,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/user/contact" element={<UserContact />} />
             <Route path="/user/ai" element={<UserAI />} />
             <Route path="/user/investment-tools" element={<InvestmentTools />} />
+            <Route path="/user/settings" element={<Settings />} />
             <Route path="/contact" element={<Navigate to="/user/contact" />} />
             <Route path="/admin/contact" element={<Navigate to="/user/contact" />} />
             <Route path="/ai" element={<Navigate to="/user/ai" />} />
@@ -759,6 +761,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/admin/support" element={<AdminSupport />} />
             <Route path="/admin/ai" element={<AdminAI />} />
             <Route path="/admin/investment-tools" element={<InvestmentTools />} />
+            <Route path="/admin/settings" element={<Settings />} />
             <Route path="/contact" element={<Navigate to="/admin/support" />} />
             <Route path="/support" element={<Navigate to="/admin/support" />} />
             <Route path="/user/contact" element={<Navigate to="/admin/support" />} />
