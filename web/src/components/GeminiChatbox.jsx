@@ -4766,7 +4766,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 <div className={`w-2 h-2 ${isDarkMode ? 'bg-gray-300' : 'bg-gray-400'} rounded-full animate-bounce`} style={{animationDelay: '0.1s'}}></div>
                                                 <div className={`w-2 h-2 ${isDarkMode ? 'bg-gray-300' : 'bg-gray-400'} rounded-full animate-bounce`} style={{animationDelay: '0.2s'}}></div>
                                             </div>
-                                            <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} font-medium`}>Gemini is thinking...</span>
+                                            <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} font-medium`}>SetuAI is thinking...</span>
                                         </div>
                                     </div>
                                 </div>
