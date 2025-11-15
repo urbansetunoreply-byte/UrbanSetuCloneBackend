@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
-import { FaKey, FaTrash, FaSignOutAlt, FaUser, FaTools, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaCrown, FaTimes, FaCheck, FaBell, FaEnvelope, FaLock, FaGlobe, FaPalette, FaDownload, FaHistory, FaCode, FaShieldAlt, FaEye, FaEyeSlash, FaMoon, FaSun, FaLanguage, FaClock, FaFileDownload, FaDatabase } from "react-icons/fa";
+import { FaKey, FaTrash, FaSignOutAlt, FaUser, FaTools, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaCrown, FaTimes, FaCheck, FaBell, FaEnvelope, FaLock, FaGlobe, FaPalette, FaDownload, FaHistory, FaCode, FaShieldAlt, FaEye, FaEyeSlash, FaMoon, FaSun, FaLanguage, FaClock, FaFileDownload, FaDatabase, FaExclamationTriangle } from "react-icons/fa";
 import { authenticatedFetch } from '../utils/auth';
 import {
   deleteUserStart,
@@ -1045,7 +1045,7 @@ export default function Settings() {
                 </>
               )}
             </button>
-            <p className="text-sm text-gray-500">Download a copy of your account data in JSON format</p>
+            <p className="text-sm text-gray-500">Get a copy of your account data in JSON/text format</p>
           </div>
         </SettingSection>
 
@@ -1137,7 +1137,10 @@ export default function Settings() {
 
         {/* Account Actions */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Account Actions</h2>
+          <div className="flex items-center mb-4">
+            <FaExclamationTriangle className="w-5 h-5 mr-2 text-red-600" />
+            <h2 className="text-xl font-bold text-gray-800">Account Actions</h2>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <button
               onClick={onHandleSignout}
