@@ -1882,7 +1882,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
     const shareMessage = async (message) => {
         const shareData = {
-            title: 'Gemini AI Response',
+            title: 'SetuAI Response',
             text: message.content,
             url: window.location.href
         };
@@ -3829,7 +3829,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             boxShadow: isDarkMode ? '0 10px 25px rgba(0,0,0,0.3)' : `0 10px 25px ${getThemeRingColor()}40`
                         }}
                         aria-label="Open AI Chat"
-                        title="Chat with Gemini AI Assistant!"
+                        title="Chat with SetuAI Assistant!"
                     >
                         {/* Animated background ring */}
                         <div
@@ -3863,7 +3863,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         } text-sm px-4 py-2 rounded-xl shadow-2xl hidden group-hover:block z-10 whitespace-nowrap border transform -translate-y-1 transition-all duration-200`}>
                             <div className="flex items-center gap-2">
                                 <span className="text-lg">🤖</span>
-                                <span className="font-medium">Chat with AI Assistant!</span>
+                                <span className="font-medium">Chat with SetuAI Assistant!</span>
                             </div>
                             {/* Tooltip arrow */}
                             <div className={`absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent ${
@@ -3891,9 +3891,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         {/* Screen reader only elements */}
                         {screenReaderSupport && (
                             <>
-                                <h1 id="chat-title" className="sr-only">Gemini AI Chat Assistant</h1>
+                                <h1 id="chat-title" className="sr-only">SetuAI Chat Assistant</h1>
                                 <div id="chat-description" className="sr-only">
-                                    Interactive chat interface with Gemini AI assistant. You can send messages, receive responses, and access various features like voice input, file upload, and settings.
+                                    Interactive chat interface with SetuAI assistant. You can send messages, receive responses, and access various features like voice input, file upload, and settings.
                                 </div>
                                 <div 
                                     id="screen-reader-announcements" 
@@ -3931,7 +3931,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 </div>
                                 <div className="leading-tight block max-w-full">
                                     <div className="text-xs md:text-sm font-semibold truncate flex items-center gap-2">
-                                        Gemini AI
+                                        SetuAI
                                         <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full">PRO</span>
                                     </div>
                                     <div className="text-[10px] md:text-xs text-white/80 truncate flex items-center gap-1">
@@ -4802,7 +4802,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 <div className="bg-white rounded-xl shadow-xl p-5 w-96 max-w-full max-h-[80vh] overflow-y-auto">
                                     <h4 className="font-semibold mb-3 flex items-center gap-2">
                                         <FaRobot className="text-blue-500" />
-                                        Gemini AI Features
+                                        SetuAI Features
                                     </h4>
                                     <div className="space-y-4">
                                         <div>
