@@ -1,12 +1,11 @@
-import { GoogleGenAI } from "@google/genai";
+import axios from 'axios';
 import ChatHistory from '../models/chatHistory.model.js';
 import MessageRating from '../models/messageRating.model.js';
 import { getRelevantWebsiteData } from '../services/websiteDataService.js';
 import { getRelevantCachedData, needsReindexing, indexAllWebsiteData } from '../services/dataSyncService.js';
 
-const ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY || "AIzaSyAcqc4JRzSG5pdYDWxbk3UZRn0IhrWhV7k" || "AIzaSyBg9wSoffCi3RfbaQV6zwH78xoULd2jG0A" || "AIzaSyARHoXUbM0HBoXROadhIdlB-ABhEHvELh4"
-});
+const STACK_AI_API_KEY = process.env.STACK_AI_API_KEY;
+const STACK_AI_API_URL = process.env.STACK_AI_API_URL || 'https://api.stack-ai.com/v1/chat/completions';
 
 export const chatWithGemini = async (req, res) => {
     try {
@@ -57,7 +56,7 @@ export const chatWithGemini = async (req, res) => {
 
         // Enhanced system prompt with more comprehensive real estate knowledge
         const getSystemPrompt = async (tone, userMessage) => {
-            const basePrompt = `You are Gemini, an advanced AI assistant specializing in real estate. You provide comprehensive help with:
+            const basePrompt = `You are an advanced AI assistant specializing in real estate. You provide comprehensive help with:
 
             PROPERTY SEARCH & RECOMMENDATIONS:
             - Finding properties based on budget, location, and preferences
@@ -141,7 +140,7 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
         const systemPrompt = await getSystemPrompt(tone, sanitizedMessage);
         const fullPrompt = `${systemPrompt}\n\nPrevious conversation:\n${conversationContext}\n\nCurrent user message: ${sanitizedMessage}`;
 
-        console.log('Calling Gemini API with model: gemini-2.0-flash-exp, tone:', tone, 'responseLength:', responseLength, 'creativity:', creativity);
+        console.log('Calling Stack AI API, tone:', tone, 'responseLength:', responseLength, 'creativity:', creativity);
         
         // Dynamic model selection based on complexity
         const messageComplexity = sanitizedMessage.length > 500 ? 'complex' : 'simple';
@@ -191,49 +190,45 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
             return getMaxTokens(responseLength, complexity);
         };
         
-        // Build parts array with text and media
-        const parts = [{ text: fullPrompt }];
-        
-        // Add media files if provided
-        if (imageUrl) {
-            parts.push({
-                inline_data: {
-                    mime_type: "image/jpeg", // Default, could be enhanced to detect actual type
-                    data: imageUrl // For now, using URL directly
-                }
+        // Check if Stack AI API key is configured
+        if (!STACK_AI_API_KEY) {
+            return res.status(500).json({
+                success: false,
+                message: 'Stack AI API key is not configured. Please set STACK_AI_API_KEY in environment variables.'
             });
         }
+
+        // Build messages array for Stack AI (OpenAI-compatible format)
+        const messages = [];
         
-        if (audioUrl) {
-            // For audio URLs, we'll include it in the text message for now
-            // In a production environment, you'd want to fetch the audio file and convert to base64
-            // or use a proper speech-to-text service before sending to Gemini
-            console.log('Audio URL provided:', audioUrl);
-            // Note: Gemini 2.0 doesn't directly support audio transcription via URL
-            // This would require fetching the audio file and converting to base64
-        }
+        // Add system prompt as first message
+        messages.push({
+            role: 'system',
+            content: systemPrompt
+        });
         
-        if (videoUrl) {
-            parts.push({
-                inline_data: {
-                    mime_type: "video/mp4", // Default
-                    data: videoUrl
-                }
+        // Add conversation history
+        filteredHistory.forEach(msg => {
+            messages.push({
+                role: msg.role === 'assistant' ? 'assistant' : 'user',
+                content: msg.content
             });
-        }
+        });
         
-        const modelConfig = {
-            model: "gemini-2.0-flash-exp",
-            contents: [{
-                role: 'user',
-                parts: parts
-            }],
-            config: {
-                maxOutputTokens: getMaxTokensFromSettings(responseLength, messageComplexity, maxTokens),
-                temperature: getTemperature(creativity, tone, temperature),
-                topP: getTopP(topP),
-                topK: getTopK(topK),
-            }
+        // Add current user message
+        messages.push({
+            role: 'user',
+            content: sanitizedMessage
+        });
+        
+        // Build request payload for Stack AI
+        const requestPayload = {
+            model: process.env.STACK_AI_MODEL || 'gpt-4o-mini',
+            messages: messages,
+            max_tokens: getMaxTokensFromSettings(responseLength, messageComplexity, maxTokens),
+            temperature: getTemperature(creativity, tone, temperature),
+            top_p: getTopP(topP),
+            stream: enableStreaming === true || enableStreaming === 'true'
         };
         
         // Handle streaming vs non-streaming responses
@@ -253,110 +248,180 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
             });
 
             try {
-                // Use generateContentStream for streaming
-                const stream = await ai.models.generateContentStream(modelConfig);
+                // Call Stack AI API with streaming
+                const streamResponse = await axios.post(STACK_AI_API_URL, requestPayload, {
+                    headers: {
+                        'Authorization': `Bearer ${STACK_AI_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    responseType: 'stream'
+                });
+                
                 let fullResponse = '';
+                let buffer = '';
                 
-                for await (const chunk of stream) {
-                    let chunkText = '';
+                streamResponse.data.on('data', (chunk) => {
+                    buffer += chunk.toString();
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || '';
                     
-                    // Handle different chunk formats
-                    if (typeof chunk.text === 'function') {
-                        chunkText = chunk.text();
-                    } else if (chunk.text) {
-                        chunkText = chunk.text;
-                    } else if (chunk.candidates && chunk.candidates[0] && chunk.candidates[0].content && chunk.candidates[0].content.parts && chunk.candidates[0].content.parts[0] && chunk.candidates[0].content.parts[0].text) {
-                        chunkText = chunk.candidates[0].content.parts[0].text;
-                    }
-                    
-                    if (chunkText) {
-                        fullResponse += chunkText;
-                        // Send chunk to client
-                        res.write(`data: ${JSON.stringify({ 
-                            type: 'chunk', 
-                            content: chunkText,
-                            done: false 
-                        })}\n\n`);
-                    }
-                }
-                
-                // Send completion signal
-                res.write(`data: ${JSON.stringify({ 
-                    type: 'done', 
-                    content: fullResponse,
-                    done: true 
-                })}\n\n`);
-                
-                console.log('Streaming completed, total length:', fullResponse.length);
-                
-                // Save chat history with full response
-                if (userId) {
-                    try {
-                        const chatHistory = await ChatHistory.findOrCreateSession(userId, currentSessionId);
-                        await chatHistory.addMessage('user', message);
-                        await chatHistory.addMessage('assistant', fullResponse);
-                        // Auto-title logic here (same as non-streaming)
-                        await chatHistory.save();
-                        const updatedChatHistory = await ChatHistory.findById(chatHistory._id);
-                        
-                        console.log('Chat history check - Name:', updatedChatHistory.name, 'Message count:', updatedChatHistory.messages?.length);
-                        
-                        const isFallbackTitle = updatedChatHistory.name && (
-                            updatedChatHistory.name.match(/^Chat \d{1,2}\/\d{1,2}\/\d{4}$/) || 
-                            updatedChatHistory.name.match(/^New chat \d+$/)
-                        );
-                        
-                        if ((!updatedChatHistory.name || isFallbackTitle) && updatedChatHistory.messages && updatedChatHistory.messages.length >= 2) {
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = line.slice(6);
+                            if (data === '[DONE]') {
+                                res.write(`data: ${JSON.stringify({ 
+                                    type: 'done', 
+                                    content: fullResponse,
+                                    done: true 
+                                })}\n\n`);
+                                return;
+                            }
+                            
                             try {
-                                console.log('Generating auto-title for session:', currentSessionId);
-                                const convoForTitle = updatedChatHistory.messages.slice(0, 8).map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n');
-                                const titlePrompt = `Create a short, descriptive title (4-7 words) for this real estate conversation. Focus on the main topic or question. Do not include quotes, just return the title.\n\nConversation:\n${convoForTitle}\n\nTitle:`;
-                                
-                                const titleResult = await ai.models.generateContent({
-                                    model: 'gemini-2.0-flash-exp',
-                                    contents: [{ role: 'user', parts: [{ text: titlePrompt }] }]
-                                });
-                                
-                                const titleRaw = titleResult.candidates?.[0]?.content?.parts?.[0]?.text || '';
-                                const title = titleRaw.replace(/[\n\r"']+/g, ' ').slice(0, 80).trim();
-                                
-                                if (title && title.length > 0) {
-                                    updatedChatHistory.name = title;
-                                    await updatedChatHistory.save();
-                                    console.log('Auto-title saved successfully:', title);
-                                } else {
-                                    console.warn('Generated title is empty or invalid, using fallback');
-                                    const firstUserMessage = updatedChatHistory.messages.find(m => m.role === 'user');
-                                    if (firstUserMessage) {
-                                        const fallbackTitle = firstUserMessage.content.slice(0, 50).trim();
-                                        if (fallbackTitle) {
-                                            updatedChatHistory.name = fallbackTitle;
-                                            await updatedChatHistory.save();
-                                            console.log('Fallback title saved:', fallbackTitle);
-                                        }
-                                    }
+                                const parsed = JSON.parse(data);
+                                const content = parsed.choices?.[0]?.delta?.content || '';
+                                if (content) {
+                                    fullResponse += content;
+                                    res.write(`data: ${JSON.stringify({ 
+                                        type: 'chunk', 
+                                        content: content,
+                                        done: false 
+                                    })}\n\n`);
                                 }
                             } catch (e) {
-                                console.error('Auto-title generation failed:', e?.message || e);
-                                const firstUserMessage = updatedChatHistory.messages.find(m => m.role === 'user');
-                                if (firstUserMessage) {
-                                    const fallbackTitle = firstUserMessage.content.slice(0, 50).trim();
-                                    if (fallbackTitle) {
-                                        updatedChatHistory.name = fallbackTitle;
-                                        await updatedChatHistory.save();
-                                        console.log('Fallback title saved:', fallbackTitle);
+                                // Ignore parse errors for incomplete chunks
+                            }
+                        }
+                    }
+                });
+                
+                streamResponse.data.on('end', () => {
+                    // Handle any remaining buffer
+                    if (buffer.trim()) {
+                        const lines = buffer.split('\n');
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                const data = line.slice(6);
+                                if (data === '[DONE]') {
+                                    break;
+                                }
+                                try {
+                                    const parsed = JSON.parse(data);
+                                    const content = parsed.choices?.[0]?.delta?.content || '';
+                                    if (content) {
+                                        fullResponse += content;
+                                        res.write(`data: ${JSON.stringify({ 
+                                            type: 'chunk', 
+                                            content: content,
+                                            done: false 
+                                        })}\n\n`);
                                     }
+                                } catch (e) {
+                                    // Ignore parse errors
                                 }
                             }
                         }
-                        
-                        console.log('Chat history saved successfully');
-                    } catch (historyError) {
-                        console.error('Error saving chat history:', historyError);
                     }
-                }
+                    
+                    // Send completion signal
+                    res.write(`data: ${JSON.stringify({ 
+                        type: 'done', 
+                        content: fullResponse,
+                        done: true 
+                    })}\n\n`);
+                    
+                    // Save chat history with full response
+                    if (userId) {
+                        (async () => {
+                            try {
+                                const chatHistory = await ChatHistory.findOrCreateSession(userId, currentSessionId);
+                                await chatHistory.addMessage('user', message);
+                                await chatHistory.addMessage('assistant', fullResponse);
+                                await chatHistory.save();
+                                const updatedChatHistory = await ChatHistory.findById(chatHistory._id);
+                                
+                                console.log('Chat history check - Name:', updatedChatHistory.name, 'Message count:', updatedChatHistory.messages?.length);
+                                
+                                const isFallbackTitle = updatedChatHistory.name && (
+                                    updatedChatHistory.name.match(/^Chat \d{1,2}\/\d{1,2}\/\d{4}$/) || 
+                                    updatedChatHistory.name.match(/^New chat \d+$/)
+                                );
+                                
+                                if ((!updatedChatHistory.name || isFallbackTitle) && updatedChatHistory.messages && updatedChatHistory.messages.length >= 2) {
+                                    try {
+                                        console.log('Generating auto-title for session:', currentSessionId);
+                                        const convoForTitle = updatedChatHistory.messages.slice(0, 8).map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n');
+                                        const titlePrompt = `Create a short, descriptive title (4-7 words) for this real estate conversation. Focus on the main topic or question. Do not include quotes, just return the title.\n\nConversation:\n${convoForTitle}\n\nTitle:`;
+                                        
+                                        const titleResponse = await axios.post(STACK_AI_API_URL, {
+                                            model: process.env.STACK_AI_MODEL || 'gpt-4o-mini',
+                                            messages: [
+                                                { role: 'system', content: 'You are a helpful assistant that creates short, descriptive titles.' },
+                                                { role: 'user', content: titlePrompt }
+                                            ],
+                                            max_tokens: 50,
+                                            temperature: 0.7
+                                        }, {
+                                            headers: {
+                                                'Authorization': `Bearer ${STACK_AI_API_KEY}`,
+                                                'Content-Type': 'application/json'
+                                            }
+                                        });
+                                        
+                                        const titleRaw = titleResponse.data.choices?.[0]?.message?.content || '';
+                                        const title = titleRaw.replace(/[\n\r"']+/g, ' ').slice(0, 80).trim();
+                                        
+                                        if (title && title.length > 0) {
+                                            updatedChatHistory.name = title;
+                                            await updatedChatHistory.save();
+                                            console.log('Auto-title saved successfully:', title);
+                                        } else {
+                                            console.warn('Generated title is empty or invalid, using fallback');
+                                            const firstUserMessage = updatedChatHistory.messages.find(m => m.role === 'user');
+                                            if (firstUserMessage) {
+                                                const fallbackTitle = firstUserMessage.content.slice(0, 50).trim();
+                                                if (fallbackTitle) {
+                                                    updatedChatHistory.name = fallbackTitle;
+                                                    await updatedChatHistory.save();
+                                                    console.log('Fallback title saved:', fallbackTitle);
+                                                }
+                                            }
+                                        }
+                                    } catch (e) {
+                                        console.error('Auto-title generation failed:', e?.message || e);
+                                        const firstUserMessage = updatedChatHistory.messages.find(m => m.role === 'user');
+                                        if (firstUserMessage) {
+                                            const fallbackTitle = firstUserMessage.content.slice(0, 50).trim();
+                                            if (fallbackTitle) {
+                                                updatedChatHistory.name = fallbackTitle;
+                                                await updatedChatHistory.save();
+                                                console.log('Fallback title saved:', fallbackTitle);
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                console.log('Chat history saved successfully');
+                            } catch (historyError) {
+                                console.error('Error saving chat history:', historyError);
+                            }
+                        })();
+                    }
+                    
+                    res.end();
+                });
                 
-                res.end();
+                streamResponse.data.on('error', (error) => {
+                    console.error('Stream error:', error);
+                    res.write(`data: ${JSON.stringify({ 
+                        type: 'error', 
+                        content: 'Stream error occurred',
+                        done: true 
+                    })}\n\n`);
+                    res.end();
+                });
+                
+                // Note: Chat history saving is now handled in the 'end' event handler above
                 return;
                 
             } catch (streamError) {
@@ -365,8 +430,14 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
                 // Fallback to non-streaming response
                 try {
                     console.log('Falling back to non-streaming response');
-                    const fallbackResult = await ai.models.generateContent(modelConfig);
-                    const fallbackText = fallbackResult.text;
+                    const fallbackPayload = { ...requestPayload, stream: false };
+                    const fallbackResponse = await axios.post(STACK_AI_API_URL, fallbackPayload, {
+                        headers: {
+                            'Authorization': `Bearer ${STACK_AI_API_KEY}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const fallbackText = fallbackResponse.data.choices?.[0]?.message?.content || '';
                     
                     res.write(`data: ${JSON.stringify({ 
                         type: 'done', 
@@ -406,12 +477,18 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
             setTimeout(() => reject(new Error('Request timeout - response taking too long')), 90000);
         });
         
-        const apiCallPromise = ai.models.generateContent(modelConfig);
+        const nonStreamPayload = { ...requestPayload, stream: false };
+        const apiCallPromise = axios.post(STACK_AI_API_URL, nonStreamPayload, {
+            headers: {
+                'Authorization': `Bearer ${STACK_AI_API_KEY}`,
+                'Content-Type': 'application/json'
+            }
+        });
         
         const result = await Promise.race([apiCallPromise, timeoutPromise]);
 
-        const responseText = result.text;
-        console.log('Gemini API response received, length:', responseText ? responseText.length : 0);
+        const responseText = result.data.choices?.[0]?.message?.content || '';
+        console.log('Stack AI API response received, length:', responseText ? responseText.length : 0);
         console.log('Response preview:', responseText ? responseText.substring(0, 100) + '...' : 'No response');
 
         // Save chat history if user is authenticated
@@ -447,13 +524,23 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
                         console.log('Title prompt:', titlePrompt);
                         console.log('AI model call starting...');
                         
-                        const titleResult = await ai.models.generateContent({
-                            model: 'gemini-2.0-flash-exp',
-                            contents: [{ role: 'user', parts: [{ text: titlePrompt }] }]
+                        const titleResponse = await axios.post(STACK_AI_API_URL, {
+                            model: process.env.STACK_AI_MODEL || 'gpt-4o-mini',
+                            messages: [
+                                { role: 'system', content: 'You are a helpful assistant that creates short, descriptive titles.' },
+                                { role: 'user', content: titlePrompt }
+                            ],
+                            max_tokens: 50,
+                            temperature: 0.7
+                        }, {
+                            headers: {
+                                'Authorization': `Bearer ${STACK_AI_API_KEY}`,
+                                'Content-Type': 'application/json'
+                            }
                         });
                         console.log('AI model call completed');
                         
-                        const titleRaw = titleResult.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                        const titleRaw = titleResponse.data.choices?.[0]?.message?.content || '';
                         console.log('Raw title response:', titleRaw);
                         
                         const title = titleRaw.replace(/[\n\r"']+/g, ' ').slice(0, 80).trim();
@@ -504,7 +591,7 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
         });
 
     } catch (error) {
-        console.error('Gemini API Error:', error);
+        console.error('Stack AI API Error:', error);
         
         // Handle timeout errors first
         if (error.message && error.message.includes('timeout')) {
@@ -514,10 +601,10 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
             });
         }
 
-        // Handle specific Gemini errors
+        // Handle specific Stack AI errors
         if (error.response) {
             const status = error.response.status;
-            const errorMessage = error.response.data?.error?.message || 'Gemini API error';
+            const errorMessage = error.response.data?.error?.message || error.response.data?.message || 'Stack AI API error';
             
             if (status === 401) {
                 return res.status(500).json({
@@ -735,7 +822,7 @@ export const createNewSession = async (req, res) => {
         // Create new chat history with default welcome message
         const defaultMessage = {
             role: 'assistant',
-            content: 'Hello! I\'m your AI assistant powered by Gemini. How can I help you with your real estate needs today?',
+            content: 'Hello! I\'m your AI assistant. How can I help you with your real estate needs today?',
             timestamp: new Date().toISOString()
         };
 
