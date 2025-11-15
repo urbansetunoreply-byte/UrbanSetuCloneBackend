@@ -7,11 +7,15 @@ import AuditLog from '../models/auditLog.model.js';
 import AccountRevocation from '../models/accountRevocation.model.js';
 import bcryptjs from "bcryptjs"
 import crypto from 'crypto';
-import { sendAccountDeletionEmail } from '../utils/emailService.js';
+import { sendAccountDeletionEmail, sendDataExportEmail } from '../utils/emailService.js';
 import Review from "../models/review.model.js";
 import ReviewReply from "../models/reviewReply.model.js";
 import { validateEmail } from "../utils/emailValidation.js";
 import { logSecurityEvent } from "../middleware/security.js";
+import Wishlist from "../models/wishlist.model.js";
+import PropertyWatchlist from "../models/propertyWatchlist.model.js";
+import Booking from "../models/booking.model.js";
+import Payment from "../models/payment.model.js";
 
 export const test=(req,res)=>{
     res.send("Hello Api")
@@ -524,6 +528,137 @@ export const checkMobileAvailability = async (req, res, next) => {
         res.status(200).json({ 
             available: true, 
             message: "Mobile number available" 
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Export user data
+export const exportData = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { password } = req.body;
+
+        if (!password) {
+            return next(errorHandler(400, "Password is required"));
+        }
+
+        // Verify password
+        const user = await User.findById(userId);
+        if (!user) {
+            return next(errorHandler(404, "User not found"));
+        }
+
+        const isPasswordValid = await bcryptjs.compare(password, user.password);
+        if (!isPasswordValid) {
+            return next(errorHandler(401, "Invalid password"));
+        }
+
+        // Collect all user data
+        const [wishlistItems, watchlistItems, appointments, userListings, reviews, payments] = await Promise.all([
+            Wishlist.find({ userId }).populate('listingId').lean(),
+            PropertyWatchlist.find({ userId }).populate('listingId').lean(),
+            Booking.find({ $or: [{ buyerId: userId }, { sellerId: userId }] }).populate('listingId').lean(),
+            Listing.find({ userRef: userId }).lean(),
+            Review.find({ userId }).populate('listingId').lean(),
+            Payment.find({ userId }).lean().catch(() => [])
+        ]);
+
+        // Get counts
+        const wishlistCount = wishlistItems.length;
+        const watchlistCount = watchlistItems.length;
+        const appointmentsCount = appointments.length;
+        const listingsCount = userListings.length;
+        const reviewsCount = reviews.length;
+        const paymentsCount = payments.length;
+
+        // Prepare comprehensive user data
+        const userData = {
+            accountInfo: {
+                username: user.username,
+                email: user.email,
+                mobileNumber: user.mobileNumber,
+                address: user.address,
+                gender: user.gender,
+                role: user.role,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt,
+                profilePicture: user.profilePicture
+            },
+            statistics: {
+                wishlistCount,
+                watchlistCount,
+                appointmentsCount,
+                listingsCount,
+                reviewsCount,
+                paymentsCount
+            },
+            wishlist: wishlistItems.map(item => ({
+                listingId: item.listingId?._id || item.listingId,
+                listingTitle: item.listingId?.name || 'N/A',
+                addedAt: item.addedAt || item.createdAt,
+                effectivePriceAtAdd: item.effectivePriceAtAdd
+            })),
+            watchlist: watchlistItems.map(item => ({
+                listingId: item.listingId?._id || item.listingId,
+                listingTitle: item.listingId?.name || 'N/A',
+                addedAt: item.addedAt || item.createdAt,
+                effectivePriceAtAdd: item.effectivePriceAtAdd
+            })),
+            appointments: appointments.map(apt => ({
+                appointmentId: apt._id,
+                listingId: apt.listingId?._id || apt.listingId,
+                listingTitle: apt.listingId?.name || apt.propertyName || 'N/A',
+                purpose: apt.purpose,
+                date: apt.date,
+                time: apt.time,
+                status: apt.status,
+                createdAt: apt.createdAt
+            })),
+            listings: userListings.map(listing => ({
+                listingId: listing._id,
+                name: listing.name,
+                address: listing.address,
+                regularPrice: listing.regularPrice,
+                discountPrice: listing.discountPrice,
+                type: listing.type,
+                offer: listing.offer,
+                createdAt: listing.createdAt,
+                updatedAt: listing.updatedAt
+            })),
+            reviews: reviews.map(review => ({
+                reviewId: review._id,
+                listingId: review.listingId?._id || review.listingId,
+                listingTitle: review.listingId?.name || 'N/A',
+                starRating: review.starRating,
+                comment: review.comment,
+                createdAt: review.createdAt
+            })),
+            payments: payments.map(payment => ({
+                paymentId: payment._id,
+                amount: payment.amount,
+                status: payment.status,
+                createdAt: payment.createdAt
+            })),
+            exportDate: new Date().toISOString(),
+            exportVersion: "1.0"
+        };
+
+        // Convert to JSON string
+        const dataStr = JSON.stringify(userData, null, 2);
+        const dataBuffer = Buffer.from(dataStr, 'utf-8');
+
+        // Send email with attachment
+        const emailResult = await sendDataExportEmail(user.email, user.username, dataBuffer);
+
+        if (!emailResult.success) {
+            return next(errorHandler(500, "Failed to send export email: " + emailResult.error));
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Your data export has been prepared and will be sent to your email shortly."
         });
     } catch (error) {
         next(error);

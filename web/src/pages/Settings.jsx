@@ -91,6 +91,7 @@ export default function Settings() {
   const [exportPassword, setExportPassword] = useState("");
   const [exportPasswordError, setExportPasswordError] = useState("");
   const [exportPasswordVerifying, setExportPasswordVerifying] = useState(false);
+  const [exportPasswordAttempts, setExportPasswordAttempts] = useState(0);
 
   // Account deletion states
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -572,20 +573,28 @@ export default function Settings() {
     }
   };
 
-  // Handlers for settings
+  // Handlers for settings - prevent scroll to top
+  const preventScroll = () => {
+    const scrollY = window.scrollY;
+    window.scrollTo(0, scrollY);
+  };
+
   const handleEmailNotificationsChange = (value) => {
+    preventScroll();
     setEmailNotifications(value);
     localStorage.setItem('emailNotifications', value.toString());
     toast.success('Email notifications preference saved');
   };
 
   const handleInAppNotificationsChange = (value) => {
+    preventScroll();
     setInAppNotifications(value);
     localStorage.setItem('inAppNotifications', value.toString());
     toast.success('In-app notifications preference saved');
   };
 
   const handlePushNotificationsChange = async (value) => {
+    preventScroll();
     if (value && 'Notification' in window) {
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') {
@@ -599,18 +608,21 @@ export default function Settings() {
   };
 
   const handleNotificationSoundChange = (value) => {
+    preventScroll();
     setNotificationSound(value);
     localStorage.setItem('notificationSound', value);
     toast.success('Notification sound preference saved');
   };
 
   const handleProfileVisibilityChange = (value) => {
+    preventScroll();
     setProfileVisibility(value);
     localStorage.setItem('profileVisibility', value);
     toast.success('Profile visibility updated');
   };
 
   const handleShowEmailChange = (value) => {
+    preventScroll();
     setShowEmail(value);
     localStorage.setItem('showEmail', value.toString());
     // Dispatch custom event to notify Profile page
@@ -619,6 +631,7 @@ export default function Settings() {
   };
 
   const handleShowPhoneChange = (value) => {
+    preventScroll();
     setShowPhone(value);
     localStorage.setItem('showPhone', value.toString());
     // Dispatch custom event to notify Profile page
@@ -627,30 +640,35 @@ export default function Settings() {
   };
 
   const handleDataSharingChange = (value) => {
+    preventScroll();
     setDataSharing(value);
     localStorage.setItem('dataSharing', value.toString());
     toast.success('Data sharing preference saved');
   };
 
   const handleLanguageChange = (value) => {
+    preventScroll();
     setLanguage(value);
     localStorage.setItem('language', value);
     toast.success('Language preference saved');
   };
 
   const handleTimezoneChange = (value) => {
+    preventScroll();
     setTimezone(value);
     localStorage.setItem('timezone', value);
     toast.success('Timezone updated');
   };
 
   const handleDateFormatChange = (value) => {
+    preventScroll();
     setDateFormat(value);
     localStorage.setItem('dateFormat', value);
     toast.success('Date format updated');
   };
 
   const handleThemeChange = (value) => {
+    preventScroll();
     setTheme(value);
     localStorage.setItem('theme', value);
     document.documentElement.classList.toggle('dark', value === 'dark');
@@ -658,6 +676,7 @@ export default function Settings() {
   };
 
   const handleFontSizeChange = (value) => {
+    preventScroll();
     setFontSize(value);
     localStorage.setItem('fontSize', value);
     document.documentElement.style.fontSize = value === 'small' ? '14px' : value === 'large' ? '18px' : '16px';
@@ -669,6 +688,7 @@ export default function Settings() {
     setExportPassword("");
     setExportPasswordError("");
     setExportPasswordVerifying(false);
+    setExportPasswordAttempts(0);
   };
 
   const handleVerifyExportPassword = async () => {
@@ -684,13 +704,21 @@ export default function Settings() {
         body: JSON.stringify({ password: exportPassword })
       });
       if (!res.ok) {
-        setShowExportPasswordModal(false);
-        toast.error("For security reasons, you've been signed out automatically.");
-        dispatch(signoutUserStart());
-        const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
-        const signoutData = await signoutRes.json();
-        if (signoutData.success === false) dispatch(signoutUserFailure(signoutData.message)); else dispatch(signoutUserSuccess(signoutData));
-        navigate('/sign-in', { replace: true });
+        const attempts = exportPasswordAttempts + 1;
+        setExportPasswordAttempts(attempts);
+        if (attempts >= 3) {
+          setShowExportPasswordModal(false);
+          toast.error("For security reasons, you've been signed out automatically.");
+          dispatch(signoutUserStart());
+          const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+          const signoutData = await signoutRes.json();
+          if (signoutData.success === false) dispatch(signoutUserFailure(signoutData.message)); else dispatch(signoutUserSuccess(signoutData));
+          navigate('/sign-in', { replace: true });
+          setExportPasswordVerifying(false);
+          return;
+        }
+        setExportPasswordError(`Invalid password. ${3 - attempts} attempt(s) remaining.`);
+        setExportPassword("");
         setExportPasswordVerifying(false);
         return;
       }
@@ -707,41 +735,16 @@ export default function Settings() {
   const performDataExport = async () => {
     setExportingData(true);
     try {
-      const userData = {
-        username: currentUser.username,
-        email: currentUser.email,
-        mobileNumber: currentUser.mobileNumber,
-        address: currentUser.address,
-        gender: currentUser.gender,
-        role: currentUser.role,
-        createdAt: currentUser.createdAt,
-        preferences: {
-          emailNotifications,
-          inAppNotifications,
-          pushNotifications,
-          notificationSound,
-          profileVisibility,
-          showEmail,
-          showPhone,
-          dataSharing,
-          language,
-          timezone,
-          dateFormat,
-          theme,
-          fontSize
-        }
-      };
-      const dataStr = JSON.stringify(userData, null, 2);
-      const dataBlob = new Blob([dataStr], { type: 'application/json' });
-      const url = URL.createObjectURL(dataBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `urbansetu-data-${currentUser.username}-${Date.now()}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      toast.success('Data exported successfully');
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/user/export-data`, {
+        method: 'POST',
+        body: JSON.stringify({ password: exportPassword })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.message || 'Failed to export data');
+        return;
+      }
+      toast.success('Your data export is being prepared. You will receive an email shortly with a download link.');
     } catch (error) {
       toast.error('Failed to export data');
     } finally {

@@ -1,5 +1,5 @@
 import express from 'express'
-import {test,updateUser,deleteUser,getUserListings,getUserByEmail,changePassword,getApprovedAdmins,transferDefaultAdminRights,deleteUserAfterTransfer,verifyPassword,getAllUsersForAutocomplete,getUserByEmailForAssignment,checkEmailAvailability,checkMobileAvailability} from '../controllers/user.controller.js'
+import {test,updateUser,deleteUser,getUserListings,getUserByEmail,changePassword,getApprovedAdmins,transferDefaultAdminRights,deleteUserAfterTransfer,verifyPassword,getAllUsersForAutocomplete,getUserByEmailForAssignment,checkEmailAvailability,checkMobileAvailability,exportData} from '../controllers/user.controller.js'
 import { verifyToken } from '../utils/verify.js'
 import bcryptjs from 'bcryptjs'
 import jwt from 'jsonwebtoken'
@@ -178,6 +178,9 @@ router.get("/validate-email/:email", verifyToken, getUserByEmailForAssignment);
 // New routes for profile validation
 router.get("/check-email/:email", verifyToken, checkEmailAvailability);
 router.get("/check-mobile/:mobile", verifyToken, checkMobileAvailability);
+
+// Data export route
+router.post("/export-data", verifyToken, exportData);
 
 // Count users
 router.get('/count', async (req, res) => {

@@ -9761,5 +9761,98 @@ export const sendNewMessageNotificationEmail = async (email, messageDetails) => 
   }
 };
 
+// Send data export email with attachment
+export const sendDataExportEmail = async (email, username, dataBuffer) => {
+  try {
+    const subject = `Your UrbanSetu Data Export - ${new Date().toLocaleDateString()}`;
+    const exportDate = formatIndiaTime(new Date(), { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #059669; margin: 0; font-size: 28px;">UrbanSetu</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Your Data Export is Ready</p>
+          </div>
+          
+          <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #059669;">
+            <h2 style="color: #1f2937; margin: 0 0 15px 0; font-size: 20px;">Your Data Export is Ready</h2>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              Hello ${username},
+            </p>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              Your requested data export from UrbanSetu has been prepared and is attached to this email. This file contains a comprehensive copy of your account data, including:
+            </p>
+            
+            <ul style="color: #4b5563; margin: 15px 0; padding-left: 20px; line-height: 1.8;">
+              <li>Account information and profile details</li>
+              <li>Wishlist items and watchlist properties</li>
+              <li>Appointments and bookings</li>
+              <li>Your property listings</li>
+              <li>Reviews and ratings</li>
+              <li>Payment history</li>
+              <li>Account statistics and counts</li>
+            </ul>
+            
+            <div style="background-color: #d1fae5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+              <p style="color: #065f46; margin: 0; font-size: 14px; font-weight: 600;">
+                ⚠️ Security Notice:
+              </p>
+              <p style="color: #065f46; margin: 5px 0 0 0; font-size: 13px; line-height: 1.6;">
+                This file contains sensitive personal information. Please keep it secure and do not share it with unauthorized parties. If you did not request this export, please contact our support team immediately.
+              </p>
+            </div>
+            
+            <p style="color: #4b5563; margin: 15px 0 0 0; line-height: 1.6;">
+              <strong>Export Date:</strong> ${exportDate}
+            </p>
+            <p style="color: #6b7280; margin: 10px 0 0 0; font-size: 14px;">
+              The attached JSON file can be opened with any text editor or JSON viewer.
+            </p>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © 2025 UrbanSetu. All rights reserved.
+            </p>
+            <p style="color: #9ca3af; margin: 5px 0 0; font-size: 12px;">
+              This is an automated message. Please do not reply to this email.
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const filename = `urbansetu-data-${username}-${Date.now()}.json`;
+    
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: subject,
+      html: html,
+      attachments: [
+        {
+          filename: filename,
+          content: dataBuffer,
+          contentType: 'application/json'
+        }
+      ]
+    };
+
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ? 
+      createSuccessResponse(result.messageId, 'data_export') : 
+      createErrorResponse(new Error(result.error), 'data_export');
+  } catch (error) {
+    return createErrorResponse(error, 'data_export');
+  }
+};
+
 // Export the current transporter (will be set during initialization)
 export default currentTransporter;
