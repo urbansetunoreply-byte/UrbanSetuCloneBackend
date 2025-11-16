@@ -1454,7 +1454,7 @@ export default function MyAppointments() {
 
         return (
           <div className="modal-backdrop">
-            <div className="modal-content" style={{ maxHeight: '75vh', overflowY: 'auto' }}>
+            <div className="modal-content" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
               <div className="p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-xl font-bold text-blue-700">Reinitiate Appointment</h3>

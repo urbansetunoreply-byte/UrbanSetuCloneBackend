@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { FaUndo, FaDollarSign, FaRupeeSign, FaExclamationTriangle, FaCheckCircle, FaTimes, FaSpinner, FaSearch, FaFilter, FaRedo, FaInfo } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
-const RefundManagement = () => {
+const RefundManagement = ({ onRefundProcessed }) => {
   const [payments, setPayments] = useState([]);
   const [refundRequests, setRefundRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -213,6 +213,10 @@ const RefundManagement = () => {
         toast.success('Refund processed successfully');
         setShowRefundModal(false);
         fetchPayments(false); // Refresh the list without loading indicator
+        // Refresh payment statistics if callback provided
+        if (onRefundProcessed) {
+          onRefundProcessed();
+        }
       } else {
         toast.error(data.message || 'Failed to process refund');
       }
@@ -271,6 +275,10 @@ const RefundManagement = () => {
         setAdminRefundAmount('');
         fetchRefundRequests(false);
         fetchPayments(false);
+        // Refresh payment statistics if callback provided and refund was approved
+        if (onRefundProcessed && action === 'approved') {
+          onRefundProcessed();
+        }
       } else {
         toast.error(data.message || `Failed to ${action} refund request`);
       }

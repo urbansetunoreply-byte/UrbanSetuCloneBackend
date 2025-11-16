@@ -520,7 +520,7 @@ const PaymentDashboard = () => {
           )}
 
           {activeTab === 'refunds' && (
-            <RefundManagement />
+            <RefundManagement onRefundProcessed={fetchPaymentStats} />
           )}
         </div>
       </div>
