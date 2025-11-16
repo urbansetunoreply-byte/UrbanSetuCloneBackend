@@ -255,6 +255,14 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         // Lock was released, but we're already open, so ignore
       });
       
+      // Handle page unload to release lock
+      const handleBeforeUnload = () => {
+        if (lockManagerRef.current) {
+          lockManagerRef.current.releaseLock();
+        }
+      };
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      
       // Initialize method from appointment region before creating intent
       const methodFromAppt = appointment?.region === 'india' ? 'razorpay' : 'paypal';
       setPreferredMethod(methodFromAppt);
@@ -268,6 +276,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
       
       return () => {
         removeLockListener();
+        window.removeEventListener('beforeunload', handleBeforeUnload);
       };
     } else {
       // Release lock when modal closes
