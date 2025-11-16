@@ -290,6 +290,17 @@ const MyPayments = () => {
               </h1>
               <p className="text-gray-600 mt-2">View and manage your payments and receipts</p>
             </div>
+            <button
+              onClick={() => {
+                fetchPayments();
+                toast.info('Refreshing payments...');
+              }}
+              className="bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+              title="Refresh payments"
+            >
+              <FaSync className="text-sm" />
+              <span className="hidden sm:inline">Refresh</span>
+            </button>
           </div>
         </div>
 
