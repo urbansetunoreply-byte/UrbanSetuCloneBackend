@@ -1444,12 +1444,40 @@ export default function MyAppointments() {
         const remainingHours = Math.floor(hoursLeft % 24);
         const isRefunded = reinitiatePaymentStatus && (reinitiatePaymentStatus.status === 'refunded' || reinitiatePaymentStatus.status === 'partially_refunded');
         const canReinitiate = !(isCancelled && (isRefunded || hoursSinceCancellation > 72));
+        
+        // Determine if current user is buyer or seller
+        const isBuyer = currentUser && (reinitiateData.buyerId?._id === currentUser._id || reinitiateData.buyerId === currentUser._id);
+        const isSeller = currentUser && (reinitiateData.sellerId?._id === currentUser._id || reinitiateData.sellerId === currentUser._id);
+        const reinitiationCount = isBuyer ? (reinitiateData.buyerReinitiationCount || 0) : isSeller ? (reinitiateData.sellerReinitiationCount || 0) : 0;
+        const maxReinitiations = 2;
+        const reinitiationsLeft = maxReinitiations - reinitiationCount;
 
         return (
           <div className="modal-backdrop">
             <div className="modal-content">
               <div className="p-6">
-                <h3 className="text-xl font-bold mb-4 text-blue-700">Reinitiate Appointment</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-blue-700">Reinitiate Appointment</h3>
+                  <span className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full font-medium">
+                    {reinitiationCount}/{maxReinitiations} used
+                  </span>
+                </div>
+                
+                {/* Reinitiation count info */}
+                {reinitiationsLeft > 0 && (
+                  <div className="mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-800 rounded">
+                    <p className="text-sm">
+                      <span className="font-semibold">Reinitiations remaining:</span> {reinitiationsLeft} out of {maxReinitiations}
+                    </p>
+                  </div>
+                )}
+                
+                {reinitiationCount >= maxReinitiations && (
+                  <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                    <p className="font-semibold">Maximum reinitiations reached</p>
+                    <p className="text-sm">You have used all {maxReinitiations} reinitiation attempts for this appointment.</p>
+                  </div>
+                )}
                 
                 {/* Show warning messages */}
                 {isCancelled && isRefunded && (

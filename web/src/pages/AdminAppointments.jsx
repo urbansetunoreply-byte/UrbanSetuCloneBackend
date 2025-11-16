@@ -9233,6 +9233,11 @@ function AdminAppointmentRow({
           const isRefunded = reinitiatePaymentStatus && (reinitiatePaymentStatus.status === 'refunded' || reinitiatePaymentStatus.status === 'partially_refunded');
           const isCancelled = appt.status === 'cancelledByBuyer' || appt.status === 'cancelledBySeller' || appt.status === 'cancelledByAdmin';
           const showRefundWarning = isCancelled && isRefunded;
+          
+          // Get reinitiation counts
+          const buyerReinitiationCount = appt.buyerReinitiationCount || 0;
+          const sellerReinitiationCount = appt.sellerReinitiationCount || 0;
+          const maxReinitiations = 2;
 
           return (
             <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
@@ -9243,16 +9248,27 @@ function AdminAppointmentRow({
                       <FaUndo className="text-green-600 text-xl" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-800 mb-2">Reinitiate Appointment</h3>
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-lg font-semibold text-gray-800">Reinitiate Appointment</h3>
+                        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full font-medium">
+                          Buyer: {buyerReinitiationCount}/{maxReinitiations} • Seller: {sellerReinitiationCount}/{maxReinitiations}
+                        </span>
+                      </div>
                       {showRefundWarning ? (
                         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-3">
                           <p className="text-sm font-semibold mb-1">Reinitiation Disabled</p>
                           <p className="text-sm">The buyer has already received a refund for this appointment.</p>
                         </div>
                       ) : (
-                        <p className="text-sm text-gray-600 leading-relaxed text-justify">
-                          Are you sure you want to reinitiate this appointment? This will notify both buyer and seller.
-                        </p>
+                        <>
+                          <p className="text-sm text-gray-600 leading-relaxed text-justify mb-3">
+                            Are you sure you want to reinitiate this appointment? This will notify both buyer and seller.
+                          </p>
+                          <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-2 rounded-lg mb-3">
+                            <p className="text-xs font-semibold mb-1">Reinitiation Count:</p>
+                            <p className="text-xs">Buyer: {buyerReinitiationCount}/{maxReinitiations} used • Seller: {sellerReinitiationCount}/{maxReinitiations} used</p>
+                          </div>
+                        </>
                       )}
                     </div>
                   </div>
