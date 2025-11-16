@@ -9,6 +9,50 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
   const [receiptUrl, setReceiptUrl] = useState('');
   const [processingPayment, setProcessingPayment] = useState(false);
   const [preferredMethod, setPreferredMethod] = useState(() => (appointment?.region === 'india' ? 'razorpay' : 'paypal')); // 'paypal' or 'razorpay'
+  const [expiryTimer, setExpiryTimer] = useState(null); // Timer for payment expiry (15 minutes)
+  const [timeRemaining, setTimeRemaining] = useState(15 * 60); // 15 minutes in seconds
+
+  // Cancel payment when modal is closed without completing
+  const cancelPayment = async () => {
+    if (paymentData && paymentData.payment && (paymentData.payment.status === 'pending' || paymentData.payment.status === 'processing')) {
+      try {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/cancel`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            paymentId: paymentData.payment.paymentId
+          })
+        });
+      } catch (error) {
+        console.error('Error cancelling payment:', error);
+      }
+    }
+  };
+
+  // Handle modal close
+  const handleClose = async () => {
+    // Clear expiry timer
+    if (expiryTimer) {
+      clearInterval(expiryTimer);
+      setExpiryTimer(null);
+    }
+    
+    // Cancel payment if not completed
+    if (!paymentSuccess && paymentData && paymentData.payment) {
+      await cancelPayment();
+      toast.info('Payment session cancelled. You can pay later from My Appointments.');
+    }
+    
+    // Reset states
+    setTimeRemaining(15 * 60);
+    setPaymentData(null);
+    setPaymentSuccess(false);
+    
+    onClose();
+  };
 
   useEffect(() => {
     if (isOpen && appointment) {
@@ -16,9 +60,12 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
       const methodFromAppt = appointment?.region === 'india' ? 'razorpay' : 'paypal';
       setPreferredMethod(methodFromAppt);
       setPaymentData(null);
+      setPaymentSuccess(false);
+      setTimeRemaining(15 * 60); // Reset timer to 15 minutes
       setLoading(true);
       setTimeout(() => createPaymentIntent(methodFromAppt), 0);
     }
+    
     // Lock body scroll when modal is open
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -29,12 +76,64 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
       document.body.style.position = '';
       document.body.style.width = '';
     }
+    
     return () => {
+      // Cleanup on unmount
+      if (expiryTimer) {
+        clearInterval(expiryTimer);
+      }
       document.body.style.overflow = '';
       document.body.style.position = '';
       document.body.style.width = '';
     };
   }, [isOpen, appointment]);
+
+  // Timer effect: Start countdown when payment intent is created
+  useEffect(() => {
+    if (paymentData && paymentData.payment && !paymentSuccess) {
+      // Clear any existing timer
+      if (expiryTimer) {
+        clearInterval(expiryTimer);
+      }
+
+      // Start countdown timer (15 minutes = 900 seconds)
+      setTimeRemaining(15 * 60);
+      
+      const timer = setInterval(() => {
+        setTimeRemaining((prev) => {
+          if (prev <= 1) {
+            // Time expired - cancel payment and close modal
+            clearInterval(timer);
+            handleExpiry();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      setExpiryTimer(timer);
+
+      return () => {
+        clearInterval(timer);
+      };
+    } else {
+      // Clear timer if payment completed or modal closed
+      if (expiryTimer) {
+        clearInterval(expiryTimer);
+        setExpiryTimer(null);
+      }
+    }
+  }, [paymentData, paymentSuccess]);
+
+  // Handle payment expiry
+  const handleExpiry = async () => {
+    toast.info('Payment session expired. Please initiate a new payment.');
+    await cancelPayment();
+    setPaymentData(null);
+    setPaymentSuccess(false);
+    setTimeRemaining(15 * 60);
+    onClose();
+  };
 
   const createPaymentIntent = async (methodOverride) => {
     try {

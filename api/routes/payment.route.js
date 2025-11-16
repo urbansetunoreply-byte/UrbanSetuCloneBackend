@@ -1670,6 +1670,51 @@ router.post('/admin/mark-paid', verifyToken, async (req, res) => {
   }
 });
 
+// POST: Cancel payment (when modal is closed without completing or timer expires)
+router.post('/cancel', verifyToken, async (req, res) => {
+  try {
+    const { paymentId } = req.body;
+    const userId = req.user.id;
+
+    if (!paymentId) {
+      return res.status(400).json({ message: 'Payment ID is required' });
+    }
+
+    const payment = await Payment.findOne({ paymentId });
+    if (!payment) {
+      return res.status(404).json({ message: 'Payment not found' });
+    }
+
+    // Check if user is authorized (only buyer can cancel their own payment)
+    if (payment.userId.toString() !== userId) {
+      return res.status(403).json({ message: 'Unauthorized to cancel this payment' });
+    }
+
+    // Only allow cancelling pending or processing payments
+    if (payment.status !== 'pending' && payment.status !== 'processing') {
+      return res.status(400).json({ 
+        message: `Cannot cancel payment with status: ${payment.status}` 
+      });
+    }
+
+    // Cancel the payment
+    payment.status = 'cancelled';
+    payment.updatedAt = new Date();
+    await payment.save();
+
+    console.log(`Payment ${paymentId} cancelled by user ${userId}`);
+
+    return res.json({ 
+      ok: true, 
+      message: 'Payment cancelled successfully',
+      payment 
+    });
+  } catch (err) {
+    console.error('Error cancelling payment:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Admin: Mark appointment as unpaid (revert latest payment to pending)
 router.post('/admin/mark-unpaid', verifyToken, async (req, res) => {
   try {
