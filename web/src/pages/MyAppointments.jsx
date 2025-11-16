@@ -11607,10 +11607,11 @@ function PaymentStatusCell({ appointment, isBuyer }) {
         if (refetchTimeout) {
           clearTimeout(refetchTimeout);
         }
-        // Wait a bit for backend to fully process, then refetch
+        // Wait longer for backend to fully process and ensure completed payment is saved
+        // Increased delay to 2 seconds to prevent race conditions
         refetchTimeout = setTimeout(async () => {
           await fetchPaymentStatus(true); // Skip loading state
-        }, 1500);
+        }, 2000);
       }
     }
     
@@ -11679,12 +11680,26 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       });
       const data = await response.json();
       if (response.ok && data.payments && data.payments.length > 0) {
-        const latestPayment = data.payments[0];
+        // Prioritize completed or admin-marked payments first
+        // Then prioritize non-cancelled payments
+        // This ensures completed payments are always shown even if cancelled payments were created later
+        const completedPayment = data.payments.find(p => 
+          p.status === 'completed' || p.metadata?.adminMarked
+        );
+        const latestPayment = completedPayment || 
+          data.payments.find(p => p.status !== 'cancelled') || 
+          data.payments[0];
+        
         // Only update if we got a valid payment with status
-        if (latestPayment.status) {
-          setPaymentStatus(latestPayment); // Get the latest payment
-          // Fetch refund request status
-          await fetchRefundRequestStatus(latestPayment.paymentId);
+        if (latestPayment && latestPayment.status) {
+          // Only update if we're setting a completed payment, or if current status is not completed
+          // This prevents overwriting completed status with cancelled/failed status
+          if (latestPayment.status === 'completed' || latestPayment.metadata?.adminMarked || 
+              !paymentStatus || (paymentStatus.status !== 'completed' && !paymentStatus.metadata?.adminMarked)) {
+            setPaymentStatus(latestPayment);
+            // Fetch refund request status
+            await fetchRefundRequestStatus(latestPayment.paymentId);
+          }
         }
       } else if (response.ok && (!data.payments || data.payments.length === 0)) {
         // No payments found - clear payment status
@@ -11725,18 +11740,20 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       const data = await response.json();
       
       if (response.ok && data.payments && data.payments.length > 0) {
-        const latestPayment = data.payments[0];
+        // Prioritize completed or admin-marked payments first
+        const completedPayment = data.payments.find(p => 
+          p.status === 'completed' || p.metadata?.adminMarked
+        );
+        const latestPayment = completedPayment || 
+          data.payments.find(p => p.status !== 'cancelled') || 
+          data.payments[0];
         
         // Check if payment is already completed
         if (latestPayment.status === 'completed' || latestPayment.metadata?.adminMarked) {
           toast.success('Payment already completed!');
-          // Update payment status immediately
+          // Update payment status immediately - lock this status
           setPaymentStatus(latestPayment);
           setLoading(false);
-          // Refetch payment status to update UI with complete data
-          setTimeout(async () => {
-            await fetchPaymentStatus(true);
-          }, 500);
           // Update appointment paymentConfirmed flag immediately
           if (appointment.paymentConfirmed !== true) {
             window.dispatchEvent(new CustomEvent('paymentStatusUpdated', {
@@ -11746,6 +11763,8 @@ function PaymentStatusCell({ appointment, isBuyer }) {
               }
             }));
           }
+          // Don't refetch immediately - let the socket event handler handle it after a delay
+          // This prevents race conditions where cancelled payments might overwrite completed status
           return;
         }
         
