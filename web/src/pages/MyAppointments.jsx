@@ -5993,20 +5993,34 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           >
                             Reinitiate
                           </button>
-                          <span className="text-xs text-gray-500 mt-1">
+                          <span className="text-xs text-gray-500 mt-1 flex flex-col items-center gap-0.5">
                             {isExpired ? (
                               <span className="text-red-500 font-semibold">Window expired</span>
                             ) : isRefunded ? (
                               <span className="text-red-500 font-semibold">Refunded</span>
                             ) : reinitiateCountdown && !reinitiateCountdown.expired ? (
-                              <span className="text-blue-600 font-semibold">
-                                Reinitiation possible for: {reinitiateCountdown.days > 0 ? `${reinitiateCountdown.days}d ` : ''}{reinitiateCountdown.hours}h left
-                              </span>
-                            ) : isBuyer && appt.status === 'cancelledByBuyer' ? (
-                              `${2 - (appt.buyerReinitiationCount || 0)} left`
-                            ) : isSeller && appt.status === 'cancelledBySeller' ? (
-                              `${2 - (appt.sellerReinitiationCount || 0)} left`
-                            ) : ''}
+                              <>
+                                <span className="text-blue-600 font-semibold">
+                                  Reinitiation possible for: {reinitiateCountdown.days > 0 ? `${reinitiateCountdown.days}d ` : ''}{reinitiateCountdown.hours}h left
+                                </span>
+                                <span className="text-gray-400 text-[10px]">
+                                  {isBuyer && appt.status === 'cancelledByBuyer' 
+                                    ? `${(appt.buyerReinitiationCount || 0)}/2`
+                                    : isSeller && appt.status === 'cancelledBySeller'
+                                    ? `${(appt.sellerReinitiationCount || 0)}/2`
+                                    : ''}
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                {isBuyer && appt.status === 'cancelledByBuyer' && (
+                                  <span className="text-gray-400 text-[10px]">{(appt.buyerReinitiationCount || 0)}/2</span>
+                                )}
+                                {isSeller && appt.status === 'cancelledBySeller' && (
+                                  <span className="text-gray-400 text-[10px]">{(appt.sellerReinitiationCount || 0)}/2</span>
+                                )}
+                              </>
+                            )}
                           </span>
                         </div>
                       );
