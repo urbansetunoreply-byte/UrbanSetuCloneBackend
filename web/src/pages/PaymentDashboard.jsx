@@ -384,12 +384,12 @@ const PaymentDashboard = () => {
           {activeTab === 'history' && (
             <div className="space-y-6">
               <div className="flex items-center gap-3 mb-2 flex-wrap">
-                <input id="admin-pay-q" placeholder="Search payment ID, receipt, user" className="px-3 py-2 border rounded-lg text-sm" onChange={async ()=>{ await fetchAdminPayments(); }} />
+                <input id="admin-pay-q" placeholder="Search payment ID, receipt, user" className="px-3 py-2 border rounded-lg text-sm" onChange={async ()=>{ setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} />
                 <label className="text-sm text-gray-600">From:</label>
-                <input id="admin-pay-from" type="date" max={new Date().toISOString().split('T')[0]} className="px-3 py-2 border rounded-lg text-sm" onChange={async ()=>{ await fetchAdminPayments(); }} />
+                <input id="admin-pay-from" type="date" max={new Date().toISOString().split('T')[0]} className="px-3 py-2 border rounded-lg text-sm" onChange={async ()=>{ setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} />
                 <label className="text-sm text-gray-600">To:</label>
-                <input id="admin-pay-to" type="date" max={new Date().toISOString().split('T')[0]} className="px-3 py-2 border rounded-lg text-sm" onChange={async ()=>{ await fetchAdminPayments(); }} />
-                <select id="admin-pay-status" onChange={async () => { await fetchAdminPayments(); }} className="px-3 py-2 border rounded-lg text-sm">
+                <input id="admin-pay-to" type="date" max={new Date().toISOString().split('T')[0]} className="px-3 py-2 border rounded-lg text-sm" onChange={async ()=>{ setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} />
+                <select id="admin-pay-status" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} className="px-3 py-2 border rounded-lg text-sm">
                   <option value="">All Status</option>
                   <option value="completed">Completed</option>
                   <option value="pending">Pending</option>
@@ -397,7 +397,7 @@ const PaymentDashboard = () => {
                   <option value="refunded">Refunded</option>
                   <option value="partially_refunded">Partially Refunded</option>
                 </select>
-                <select id="admin-pay-gateway" onChange={async () => { await fetchAdminPayments(); }} className="px-3 py-2 border rounded-lg text-sm">
+                <select id="admin-pay-gateway" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} className="px-3 py-2 border rounded-lg text-sm">
                   <option value="">All Gateways</option>
                   <option value="paypal">PayPal</option>
                   <option value="razorpay">Razorpay</option>
