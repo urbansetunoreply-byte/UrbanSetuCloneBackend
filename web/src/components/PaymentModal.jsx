@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FaCreditCard, FaDollarSign, FaShieldAlt, FaDownload, FaCheckCircle, FaTimes, FaSpinner } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
@@ -88,6 +88,16 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
     };
   }, [isOpen, appointment]);
 
+  // Handle payment expiry
+  const handleExpiry = useCallback(async () => {
+    toast.info('Payment session expired. Please initiate a new payment.');
+    await cancelPayment();
+    setPaymentData(null);
+    setPaymentSuccess(false);
+    setTimeRemaining(15 * 60);
+    onClose();
+  }, [paymentData]);
+
   // Timer effect: Start countdown when payment intent is created
   useEffect(() => {
     if (paymentData && paymentData.payment && !paymentSuccess) {
@@ -123,17 +133,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         setExpiryTimer(null);
       }
     }
-  }, [paymentData, paymentSuccess]);
-
-  // Handle payment expiry
-  const handleExpiry = async () => {
-    toast.info('Payment session expired. Please initiate a new payment.');
-    await cancelPayment();
-    setPaymentData(null);
-    setPaymentSuccess(false);
-    setTimeRemaining(15 * 60);
-    onClose();
-  };
+  }, [paymentData, paymentSuccess, handleExpiry]);
 
   const createPaymentIntent = async (methodOverride) => {
     try {
