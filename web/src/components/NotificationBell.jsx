@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { FaBell, FaTimes, FaCheck, FaTrash, FaEye, FaCalendarAlt, FaEdit, FaEnvelope, FaPaperPlane, FaUsers, FaUser, FaRedo, FaUndo } from 'react-icons/fa';
+import { FaBell, FaTimes, FaCheck, FaTrash, FaEye, FaCalendarAlt, FaEdit, FaEnvelope, FaPaperPlane, FaUsers, FaUser, FaRedo, FaUndo, FaSearch, FaFilter, FaCopy } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { socket } from '../utils/socket.js';
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +11,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export default function NotificationBell({ mobile = false }) {
   const { currentUser } = useSelector((state) => state.user);
   const [notifications, setNotifications] = useState([]);
+  const [allNotifications, setAllNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -24,6 +25,11 @@ export default function NotificationBell({ mobile = false }) {
   const [sendingNotification, setSendingNotification] = useState(false);
   const [fetchingUsers, setFetchingUsers] = useState(false);
   const [userSearch, setUserSearch] = useState('');
+  
+  // Notification filters
+  const [notificationSearch, setNotificationSearch] = useState('');
+  const [notificationFilter, setNotificationFilter] = useState('all'); // 'all', 'unread', 'read'
+  const [showFilters, setShowFilters] = useState(false);
   
   // Separate state for "Send to All Users" form
   const [allUsersTitle, setAllUsersTitle] = useState('');
@@ -83,10 +89,10 @@ export default function NotificationBell({ mobile = false }) {
             const d = new Date(n.createdAt);
             return d.getFullYear() === todayYear && d.getMonth() === todayMonth && d.getDate() === todayDate;
           });
-          setNotifications(todays.length > 0 ? todays : data);
+          setAllNotifications(todays.length > 0 ? todays : data);
           toast.info('Notifications list updated');
         } else {
-          setNotifications(data);
+          setAllNotifications(data);
         }
       }
     } catch (error) {
@@ -259,7 +265,7 @@ export default function NotificationBell({ mobile = false }) {
 
       if (res.ok) {
         // Update local state
-        setNotifications(prev => 
+        setAllNotifications(prev => 
           prev.map(notif => 
             notif._id === notificationId 
               ? { ...notif, isRead: true, readAt: new Date() }
@@ -296,7 +302,7 @@ export default function NotificationBell({ mobile = false }) {
 
       if (res.ok) {
         const data = await res.json();
-        setNotifications(prev => 
+        setAllNotifications(prev => 
           prev.map(notif => ({ ...notif, isRead: true, readAt: new Date() }))
         );
         setUnreadCount(0);
@@ -320,7 +326,7 @@ export default function NotificationBell({ mobile = false }) {
       });
 
       if (res.ok) {
-        setNotifications(prev => prev.filter(notif => notif._id !== notificationId));
+        setAllNotifications(prev => prev.filter(notif => notif._id !== notificationId));
         fetchUnreadCount(); // Refresh count
         toast.success('Notification deleted');
       }
@@ -453,10 +459,38 @@ export default function NotificationBell({ mobile = false }) {
            currentUser.isAdmin;
   };
 
+  // Filter notifications based on search and filter criteria
+  const filteredNotifications = useMemo(() => {
+    let filtered = [...allNotifications];
+    
+    // Filter by read/unread status
+    if (notificationFilter === 'unread') {
+      filtered = filtered.filter(n => !n.isRead);
+    } else if (notificationFilter === 'read') {
+      filtered = filtered.filter(n => n.isRead);
+    }
+    
+    // Filter by search query
+    if (notificationSearch.trim()) {
+      const searchLower = notificationSearch.trim().toLowerCase();
+      filtered = filtered.filter(n => 
+        n.title?.toLowerCase().includes(searchLower) ||
+        n.message?.toLowerCase().includes(searchLower) ||
+        n.type?.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    return filtered;
+  }, [allNotifications, notificationFilter, notificationSearch]);
+
+  useEffect(() => {
+    setNotifications(filteredNotifications);
+  }, [filteredNotifications]);
+
   useEffect(() => {
     const handleNewNotification = (notification) => {
       if (!currentUser || notification.userId !== currentUser._id) return;
-      setNotifications((prev) => [notification, ...prev]);
+      setAllNotifications((prev) => [notification, ...prev]);
       setUnreadCount((count) => count + 1);
       triggerBellRing(); // Ring bell when new notification arrives
     };
@@ -465,7 +499,7 @@ export default function NotificationBell({ mobile = false }) {
       if (!currentUser || data.adminId !== currentUser._id) return;
       
       // Update local state to mark all notifications as read
-      setNotifications(prev => 
+      setAllNotifications(prev => 
         prev.map(notif => ({ ...notif, isRead: true, readAt: new Date() }))
       );
       setUnreadCount(0);
@@ -478,7 +512,7 @@ export default function NotificationBell({ mobile = false }) {
     const handleNotificationMarkedAsRead = (data) => {
       if (!currentUser || data.notificationId) {
         // Update the specific notification as read
-        setNotifications(prev => 
+        setAllNotifications(prev => 
           prev.map(notif => 
             notif._id === data.notificationId 
               ? { ...notif, isRead: true, readAt: new Date() }
@@ -497,7 +531,7 @@ export default function NotificationBell({ mobile = false }) {
     
     const handleWatchlistNotification = (data) => {
       if (!currentUser || data.userId !== currentUser._id) return;
-      setNotifications((prev) => [data.notification, ...prev]);
+      setAllNotifications((prev) => [data.notification, ...prev]);
       setUnreadCount((count) => count + 1);
       triggerBellRing(); // Ring bell for watchlist notifications
     };
@@ -622,7 +656,7 @@ export default function NotificationBell({ mobile = false }) {
                                   method: 'DELETE',
                                   credentials: 'include',
                                 }).then(() => {
-                                  setNotifications([]);
+                                  setAllNotifications([]);
                                   setUnreadCount(0);
                                   toast.success('All notifications cleared');
                                 });
@@ -712,6 +746,20 @@ export default function NotificationBell({ mobile = false }) {
                                         </div>
                                       </div>
                                       <div className="flex items-center gap-1 ml-2">
+                                        <button
+                                          onClick={() => {
+                                            const text = `${notification.title}\n${notification.message}`;
+                                            navigator.clipboard.writeText(text).then(() => {
+                                              toast.success('Notification copied to clipboard');
+                                            }).catch(() => {
+                                              toast.error('Failed to copy notification');
+                                            });
+                                          }}
+                                          className="p-1 text-blue-600 hover:text-blue-800 transition-colors"
+                                          title="Copy notification"
+                                        >
+                                          <FaCopy className="w-3 h-3" />
+                                        </button>
                                         {!notification.isRead && (
                                           <button
                                             onClick={() => markAsRead(notification._id)}

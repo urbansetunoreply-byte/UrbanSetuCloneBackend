@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { FaDollarSign, FaCreditCard, FaDownload, FaClock, FaCheckCircle, FaTimes, FaExclamationTriangle, FaSpinner, FaMoneyBill, FaLock } from 'react-icons/fa';
+import { FaDollarSign, FaCreditCard, FaDownload, FaClock, FaCheckCircle, FaTimes, FaExclamationTriangle, FaSpinner, FaMoneyBill, FaLock, FaShare, FaCopy, FaEye, FaExternalLinkAlt } from 'react-icons/fa';
 import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from '../redux/user/userSlice';
 import { toast } from 'react-toastify';
 import axios from 'axios';
@@ -18,8 +18,17 @@ const MyPayments = () => {
   const navigate = useNavigate();
   
   const [payments, setPayments] = useState([]);
+  const [allPayments, setAllPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ status: '', gateway: '', currency: '', q: '', fromDate: '', toDate: '' });
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  
+  // Preview modal states
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState(null);
   
   // Export password modal states
   const [showExportPasswordModal, setShowExportPasswordModal] = useState(false);
@@ -43,10 +52,25 @@ const MyPayments = () => {
       params.set('limit', '1000');
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/history?${params.toString()}`, { credentials: 'include' });
       const data = await res.json();
-      if (res.ok) setPayments(data.payments || []);
+      if (res.ok) {
+        setAllPayments(data.payments || []);
+        setCurrentPage(1); // Reset to first page when filters change
+      }
     } catch {}
     finally { setLoading(false); }
   };
+
+  // Pagination effect
+  useEffect(() => {
+    const itemsPerPage = 10;
+    const totalPages = Math.ceil(allPayments.length / itemsPerPage);
+    setTotalPages(totalPages);
+    
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentPagePayments = allPayments.slice(startIndex, endIndex);
+    setPayments(currentPagePayments);
+  }, [allPayments, currentPage]);
 
   const payNow = (payment) => {
     if (!payment || payment.status === 'completed') return;
@@ -67,7 +91,46 @@ const MyPayments = () => {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(objUrl);
-    } catch {}
+      toast.success('Receipt downloaded successfully');
+    } catch {
+      toast.error('Failed to download receipt');
+    }
+  };
+
+  const handlePaymentClick = (payment) => {
+    setSelectedPayment(payment);
+    setShowPreviewModal(true);
+  };
+
+  const sharePayment = async (payment) => {
+    const shareText = `Payment Details:\nProperty: ${payment.appointmentId?.propertyName || 'N/A'}\nAmount: ${payment.currency === 'INR' ? '₹' : '$'}${Number(payment.amount).toFixed(2)}\nStatus: ${payment.status}\nPayment ID: ${payment.paymentId}`;
+    const shareUrl = window.location.origin + `/user/my-payments?paymentId=${payment.paymentId}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Payment Receipt',
+          text: shareText,
+          url: shareUrl
+        });
+        toast.success('Payment shared successfully');
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          copyPaymentLink(shareUrl, shareText);
+        }
+      }
+    } else {
+      copyPaymentLink(shareUrl, shareText);
+    }
+  };
+
+  const copyPaymentLink = async (url, text) => {
+    try {
+      await navigator.clipboard.writeText(text + '\n' + url);
+      toast.success('Payment details copied to clipboard');
+    } catch {
+      toast.error('Failed to copy payment details');
+    }
   };
 
   const statusBadge = (status) => {
@@ -92,12 +155,12 @@ const MyPayments = () => {
 
         <div className="bg-gradient-to-br from-white to-blue-50 rounded-xl shadow-lg p-4 sm:p-6 border border-blue-100">
           <div className="flex items-center gap-3 mb-4 flex-wrap">
-            <input value={filters.q} onChange={(e)=>setFilters(prev=>({...prev,q:e.target.value}))} placeholder="Search payment ID or receipt" className="px-3 py-2 border rounded-lg text-sm" />
+            <input value={filters.q} onChange={(e)=>{setFilters(prev=>({...prev,q:e.target.value})); setCurrentPage(1);}} placeholder="Search payment ID or receipt" className="px-3 py-2 border rounded-lg text-sm" />
             <label className="text-sm text-gray-600">From:</label>
-            <input type="date" value={filters.fromDate} max={new Date().toISOString().split('T')[0]} onChange={(e)=>setFilters(prev=>({...prev,fromDate:e.target.value}))} className="px-3 py-2 border rounded-lg text-sm" />
+            <input type="date" value={filters.fromDate} max={new Date().toISOString().split('T')[0]} onChange={(e)=>{setFilters(prev=>({...prev,fromDate:e.target.value})); setCurrentPage(1);}} className="px-3 py-2 border rounded-lg text-sm" />
             <label className="text-sm text-gray-600">To:</label>
-            <input type="date" value={filters.toDate} max={new Date().toISOString().split('T')[0]} onChange={(e)=>setFilters(prev=>({...prev,toDate:e.target.value}))} className="px-3 py-2 border rounded-lg text-sm" />
-            <select value={filters.status} onChange={(e)=>setFilters(prev=>({...prev,status:e.target.value}))} className="px-3 py-2 border rounded-lg text-sm">
+            <input type="date" value={filters.toDate} max={new Date().toISOString().split('T')[0]} onChange={(e)=>{setFilters(prev=>({...prev,toDate:e.target.value})); setCurrentPage(1);}} className="px-3 py-2 border rounded-lg text-sm" />
+            <select value={filters.status} onChange={(e)=>{setFilters(prev=>({...prev,status:e.target.value})); setCurrentPage(1);}} className="px-3 py-2 border rounded-lg text-sm">
               <option value="">All Status</option>
               <option value="completed">Completed</option>
               <option value="pending">Pending</option>
@@ -105,12 +168,12 @@ const MyPayments = () => {
               <option value="refunded">Refunded</option>
               <option value="partially_refunded">Partially Refunded</option>
             </select>
-            <select value={filters.gateway} onChange={(e)=>setFilters(prev=>({...prev,gateway:e.target.value}))} className="px-3 py-2 border rounded-lg text-sm">
+            <select value={filters.gateway} onChange={(e)=>{setFilters(prev=>({...prev,gateway:e.target.value})); setCurrentPage(1);}} className="px-3 py-2 border rounded-lg text-sm">
               <option value="">All Gateways</option>
               <option value="paypal">PayPal</option>
               <option value="razorpay">Razorpay</option>
             </select>
-            <select value={filters.currency} onChange={(e)=>setFilters(prev=>({...prev,currency:e.target.value}))} className="px-3 py-2 border rounded-lg text-sm">
+            <select value={filters.currency} onChange={(e)=>{setFilters(prev=>({...prev,currency:e.target.value})); setCurrentPage(1);}} className="px-3 py-2 border rounded-lg text-sm">
               <option value="">All Currencies</option>
               <option value="USD">USD ($)</option>
               <option value="INR">INR (₹)</option>
@@ -141,12 +204,12 @@ const MyPayments = () => {
           ) : (
             <div className="space-y-3">
               {Array.isArray(payments) && payments.map((p) => (
-                <div key={p._id} className={`rounded-lg p-4 border ${
+                <div key={p._id} className={`rounded-lg p-4 border cursor-pointer ${
                   p.status === 'completed' ? 'border-green-200 bg-gradient-to-r from-green-50 to-emerald-50' : 
                   p.status === 'failed' ? 'border-red-200 bg-gradient-to-r from-red-50 to-rose-50' : 
                   p.status === 'refunded' || p.status === 'partially_refunded' ? 'border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50' :
                   'border-yellow-200 bg-gradient-to-r from-yellow-50 to-amber-50'
-                } hover:shadow transition` }>
+                } hover:shadow-lg transition-all`} onClick={() => handlePaymentClick(p)}>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div className="flex-1">
                       <div className="font-semibold text-gray-800">{p.appointmentId?.propertyName || 'Property Payment'}</div>
@@ -187,12 +250,15 @@ const MyPayments = () => {
                     </div>
                   </div>
                   <div className="mt-2 text-xs text-gray-600">Payment ID: <span className="font-mono">{p.paymentId}</span></div>
-                  <div className="mt-2 flex items-center gap-2">
+                  <div className="mt-2 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                     {p.receiptUrl && (
                       <button onClick={()=>downloadReceipt(p.receiptUrl)} className="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 text-xs flex items-center gap-1">
                         <FaDownload className="text-xs" /> Receipt
                       </button>
                     )}
+                    <button onClick={() => sharePayment(p)} className="px-3 py-1 bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-200 text-xs flex items-center gap-1">
+                      <FaShare className="text-xs" /> Share
+                    </button>
                     {p.status !== 'completed' && p.status !== 'refunded' && p.status !== 'partially_refunded' && (
                       <button onClick={()=>payNow(p)} className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs flex items-center gap-1">
                         <FaCreditCard className="text-xs" /> Pay Now
@@ -203,8 +269,188 @@ const MyPayments = () => {
               ))}
             </div>
           )}
+
+          {/* Pagination */}
+          {allPayments.length > 10 && totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
+              <div className="text-sm text-gray-700">
+                Page {currentPage} of {totalPages}
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <button
+                  onClick={() => {
+                    setCurrentPage(Math.max(1, currentPage - 1));
+                    toast.info(`Navigated to page ${Math.max(1, currentPage - 1)}`);
+                  }}
+                  disabled={currentPage === 1}
+                  className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => {
+                    setCurrentPage(Math.min(totalPages, currentPage + 1));
+                    toast.info(`Navigated to page ${Math.min(totalPages, currentPage + 1)}`);
+                  }}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
+      
+      {/* Payment Preview Modal */}
+      {showPreviewModal && selectedPayment && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4" onClick={() => setShowPreviewModal(false)}>
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-white border-b border-gray-200 z-10 p-6 pb-4 rounded-t-xl">
+              <div className="flex items-center justify-between">
+                <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                  <FaEye className="text-blue-600" />
+                  Payment Details
+                </h3>
+                <button
+                  onClick={() => setShowPreviewModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <FaTimes className="text-xl" />
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {/* Payment Overview */}
+              <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-6 border border-blue-200">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h4 className="text-xl font-bold text-gray-800">{selectedPayment.appointmentId?.propertyName || 'Property Payment'}</h4>
+                    <p className="text-sm text-gray-600 mt-1">Payment ID: <span className="font-mono">{selectedPayment.paymentId}</span></p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-3xl font-bold text-gray-800">
+                      {selectedPayment.currency === 'INR' ? '₹' : '$'}{Number(selectedPayment.amount).toFixed(2)}
+                    </div>
+                    <div className="mt-2">{statusBadge(selectedPayment.status)}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Information Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="text-sm text-gray-600 mb-1">Gateway</div>
+                  <div className="font-semibold text-gray-800">{selectedPayment.gateway?.toUpperCase() || 'N/A'}</div>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="text-sm text-gray-600 mb-1">Currency</div>
+                  <div className="font-semibold text-gray-800">{selectedPayment.currency || 'N/A'}</div>
+                </div>
+                {selectedPayment.completedAt && (
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <div className="text-sm text-gray-600 mb-1">Paid Date</div>
+                    <div className="font-semibold text-gray-800">
+                      {new Date(selectedPayment.completedAt).toLocaleDateString('en-GB', { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                      })}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {new Date(selectedPayment.completedAt).toLocaleTimeString('en-GB')}
+                    </div>
+                  </div>
+                )}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="text-sm text-gray-600 mb-1">Created Date</div>
+                  <div className="font-semibold text-gray-800">
+                    {new Date(selectedPayment.createdAt).toLocaleDateString('en-GB', { 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {new Date(selectedPayment.createdAt).toLocaleTimeString('en-GB')}
+                  </div>
+                </div>
+                {selectedPayment.refundedAt && (
+                  <div className="bg-red-50 rounded-lg p-4">
+                    <div className="text-sm text-red-600 mb-1">Refunded Date</div>
+                    <div className="font-semibold text-red-800">
+                      {new Date(selectedPayment.refundedAt).toLocaleDateString('en-GB', { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                      })}
+                    </div>
+                    <div className="text-xs text-red-500 mt-1">
+                      {new Date(selectedPayment.refundedAt).toLocaleTimeString('en-GB')}
+                    </div>
+                  </div>
+                )}
+                {selectedPayment.refundAmount > 0 && (
+                  <div className="bg-red-50 rounded-lg p-4">
+                    <div className="text-sm text-red-600 mb-1">Refund Amount</div>
+                    <div className="font-semibold text-red-800">
+                      {selectedPayment.currency === 'INR' ? '₹' : '$'}{Number(selectedPayment.refundAmount).toFixed(2)}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
+                {selectedPayment.receiptUrl && (
+                  <button
+                    onClick={() => {
+                      downloadReceipt(selectedPayment.receiptUrl);
+                      setShowPreviewModal(false);
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                  >
+                    <FaDownload /> Download Receipt
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    sharePayment(selectedPayment);
+                    setShowPreviewModal(false);
+                  }}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
+                >
+                  <FaShare /> Share Payment
+                </button>
+                <button
+                  onClick={() => {
+                    copyPaymentLink(
+                      window.location.origin + `/user/my-payments?paymentId=${selectedPayment.paymentId}`,
+                      `Payment Details:\nProperty: ${selectedPayment.appointmentId?.propertyName || 'N/A'}\nAmount: ${selectedPayment.currency === 'INR' ? '₹' : '$'}${Number(selectedPayment.amount).toFixed(2)}\nStatus: ${selectedPayment.status}\nPayment ID: ${selectedPayment.paymentId}`
+                    );
+                  }}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2"
+                >
+                  <FaCopy /> Copy Details
+                </button>
+                {selectedPayment.status !== 'completed' && selectedPayment.status !== 'refunded' && selectedPayment.status !== 'partially_refunded' && (
+                  <button
+                    onClick={() => {
+                      payNow(selectedPayment);
+                      setShowPreviewModal(false);
+                    }}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                  >
+                    <FaCreditCard /> Pay Now
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Export Password Modal */}
       {showExportPasswordModal && (
