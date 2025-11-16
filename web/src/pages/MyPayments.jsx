@@ -1,14 +1,31 @@
 import React, { useEffect, useState } from 'react';
-import { FaDollarSign, FaCreditCard, FaDownload, FaClock, FaCheckCircle, FaTimes, FaExclamationTriangle, FaSpinner, FaMoneyBill } from 'react-icons/fa';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { FaDollarSign, FaCreditCard, FaDownload, FaClock, FaCheckCircle, FaTimes, FaExclamationTriangle, FaSpinner, FaMoneyBill, FaLock } from 'react-icons/fa';
+import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from '../redux/user/userSlice';
+import { toast } from 'react-toastify';
+import axios from 'axios';
 
 import { usePageTitle } from '../hooks/usePageTitle';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const MyPayments = () => {
   // Set page title
   usePageTitle("My Payments - Payment History");
   
+  const { currentUser } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ status: '', gateway: '', currency: '', q: '', fromDate: '', toDate: '' });
+  
+  // Export password modal states
+  const [showExportPasswordModal, setShowExportPasswordModal] = useState(false);
+  const [exportPassword, setExportPassword] = useState('');
+  const [exportPasswordError, setExportPasswordError] = useState('');
+  const [exportPasswordLoading, setExportPasswordLoading] = useState(false);
 
   useEffect(() => { fetchPayments(); }, [filters]);
 
@@ -99,33 +116,10 @@ const MyPayments = () => {
               <option value="INR">INR (₹)</option>
             </select>
             <button
-              onClick={async ()=>{
-                try {
-                  const params = new URLSearchParams();
-                  if (filters.status) params.set('status', filters.status);
-                  if (filters.gateway) params.set('gateway', filters.gateway);
-                  if (filters.q) params.set('q', filters.q);
-                  if (filters.fromDate) params.set('fromDate', filters.fromDate);
-                  if (filters.toDate) params.set('toDate', filters.toDate);
-                const qs = params.toString();
-                const url = `${import.meta.env.VITE_API_BASE_URL}/api/payments/export-csv${qs ? `?${qs}` : ''}`;
-                  const res = await fetch(url, { credentials: 'include' });
-                  if (!res.ok) {
-                    console.error('Export failed', await res.text());
-                    return;
-                  }
-                  const blob = await res.blob();
-                  const objUrl = window.URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = objUrl;
-                  a.download = 'my_payments.csv';
-                  document.body.appendChild(a);
-                  a.click();
-                  a.remove();
-                  window.URL.revokeObjectURL(objUrl);
-                } catch (e) {
-                  console.error('Export error', e);
-                }
+              onClick={() => {
+                setShowExportPasswordModal(true);
+                setExportPassword('');
+                setExportPasswordError('');
               }}
               className="px-3 py-2 bg-green-100 text-green-700 rounded-lg text-sm flex items-center gap-2"
             >
@@ -211,6 +205,135 @@ const MyPayments = () => {
           )}
         </div>
       </div>
+      
+      {/* Export Password Modal */}
+      {showExportPasswordModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <form 
+            className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4" 
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setExportPasswordLoading(true);
+              setExportPasswordError("");
+              try {
+                const { data } = await axios.post(`${API_BASE_URL}/api/auth/verify-password`, 
+                  { password: exportPassword },
+                  { 
+                    withCredentials: true,
+                    headers: { "Content-Type": "application/json" }
+                  }
+                );
+                if (data.success) {
+                  // Reset attempts on successful password
+                  localStorage.removeItem('userPaymentExportPwAttempts');
+                  setShowExportPasswordModal(false);
+                  setExportPassword("");
+                  setExportPasswordError("");
+                  
+                  // Download export file
+                  try {
+                    const params = new URLSearchParams();
+                    if (filters.status) params.set('status', filters.status);
+                    if (filters.gateway) params.set('gateway', filters.gateway);
+                    if (filters.q) params.set('q', filters.q);
+                    if (filters.fromDate) params.set('fromDate', filters.fromDate);
+                    if (filters.toDate) params.set('toDate', filters.toDate);
+                    const qs = params.toString();
+                    const url = `${API_BASE_URL}/api/payments/export-csv${qs ? `?${qs}` : ''}`;
+                    const res = await fetch(url, { credentials: 'include' });
+                    if (!res.ok) {
+                      toast.error('Failed to export payments');
+                      return;
+                    }
+                    const blob = await res.blob();
+                    const objUrl = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = objUrl;
+                    a.download = 'my_payments.csv';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(objUrl);
+                    toast.success('Payments exported successfully');
+                  } catch (exportError) {
+                    toast.error('Failed to export payments');
+                  }
+                }
+              } catch (err) {
+                // Track wrong attempts locally (allow up to 3 attempts before logout)
+                const key = 'userPaymentExportPwAttempts';
+                const prev = parseInt(localStorage.getItem(key) || '0');
+                const next = prev + 1;
+                localStorage.setItem(key, String(next));
+
+                if (next >= 3) {
+                  // Sign out and redirect on third wrong attempt
+                  localStorage.removeItem(key);
+                  setShowExportPasswordModal(false);
+                  setExportPassword("");
+                  setExportPasswordError("");
+                  toast.error("Too many incorrect attempts. You've been signed out for security.");
+                  dispatch(signoutUserStart());
+                  try {
+                    const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+                    const signoutData = await signoutRes.json();
+                    if (signoutData.success === false) {
+                      dispatch(signoutUserFailure(signoutData.message));
+                    } else {
+                      dispatch(signoutUserSuccess(signoutData));
+                    }
+                  } catch (signoutErr) {
+                    dispatch(signoutUserFailure(signoutErr.message));
+                  }
+                  setTimeout(() => {
+                    navigate('/sign-in');
+                  }, 800);
+                  setExportPasswordLoading(false);
+                  return;
+                } else {
+                  // Keep modal open and show remaining attempts
+                  const remaining = 3 - next;
+                  setExportPasswordError(`Incorrect password. ${remaining} attempt${remaining === 1 ? '' : 's'} left before logout.`);
+                }
+              } finally {
+                setExportPasswordLoading(false);
+              }
+            }}
+          >
+            <h3 className="text-lg font-bold text-blue-700 flex items-center gap-2"><FaLock /> Confirm Password</h3>
+            <input
+              type="password"
+              className="border rounded p-2 w-full"
+              placeholder="Enter your password"
+              value={exportPassword}
+              onChange={e => setExportPassword(e.target.value)}
+              autoFocus
+              required
+            />
+            {exportPasswordError && <div className="text-red-600 text-sm">{exportPasswordError}</div>}
+            <div className="flex gap-2 justify-end">
+              <button 
+                type="button" 
+                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold" 
+                onClick={() => {
+                  setShowExportPasswordModal(false);
+                  setExportPassword("");
+                  setExportPasswordError("");
+                }}
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                className="px-4 py-2 rounded bg-blue-700 text-white font-semibold" 
+                disabled={exportPasswordLoading}
+              >
+                {exportPasswordLoading ? 'Verifying...' : 'Confirm'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 };
