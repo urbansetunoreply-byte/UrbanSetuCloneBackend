@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { FaCreditCard, FaDollarSign, FaShieldAlt, FaDownload, FaCheckCircle, FaTimes, FaSpinner } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
@@ -11,6 +11,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
   const [preferredMethod, setPreferredMethod] = useState(() => (appointment?.region === 'india' ? 'razorpay' : 'paypal')); // 'paypal' or 'razorpay'
   const [expiryTimer, setExpiryTimer] = useState(null); // Timer for payment expiry (15 minutes)
   const [timeRemaining, setTimeRemaining] = useState(15 * 60); // 15 minutes in seconds
+  const paymentDataRef = useRef(null); // Ref to access latest paymentData in timer callback
 
   // Cancel payment when modal is closed without completing
   const cancelPayment = async () => {
@@ -35,20 +36,38 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
   // Handle modal close
   const handleClose = async () => {
     // Clear expiry timer
-    if (expiryTimer) {
-      clearInterval(expiryTimer);
-      setExpiryTimer(null);
-    }
+    setExpiryTimer((prevTimer) => {
+      if (prevTimer) {
+        clearInterval(prevTimer);
+      }
+      return null;
+    });
     
-    // Cancel payment if not completed
-    if (!paymentSuccess && paymentData && paymentData.payment) {
-      await cancelPayment();
-      toast.info('Payment session cancelled. You can pay later from My Appointments.');
+    // Cancel payment if not completed - use ref to get latest paymentData
+    const currentPaymentData = paymentDataRef.current;
+    if (!paymentSuccess && currentPaymentData && currentPaymentData.payment && 
+        (currentPaymentData.payment.status === 'pending' || currentPaymentData.payment.status === 'processing')) {
+      try {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/cancel`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            paymentId: currentPaymentData.payment.paymentId
+          })
+        });
+        toast.info('Payment session cancelled. You can pay later from My Appointments.');
+      } catch (error) {
+        console.error('Error cancelling payment:', error);
+      }
     }
     
     // Reset states
     setTimeRemaining(15 * 60);
     setPaymentData(null);
+    paymentDataRef.current = null;
     setPaymentSuccess(false);
     
     onClose();
@@ -91,8 +110,9 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
   // Handle payment expiry
   const handleExpiry = useCallback(async () => {
     toast.info('Payment session expired. Please initiate a new payment.');
-    // Cancel payment if exists
-    if (paymentData && paymentData.payment && (paymentData.payment.status === 'pending' || paymentData.payment.status === 'processing')) {
+    // Cancel payment if exists - use ref to get latest paymentData
+    const currentPaymentData = paymentDataRef.current;
+    if (currentPaymentData && currentPaymentData.payment && (currentPaymentData.payment.status === 'pending' || currentPaymentData.payment.status === 'processing')) {
       try {
         await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/cancel`, {
           method: 'POST',
@@ -101,7 +121,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
           },
           credentials: 'include',
           body: JSON.stringify({
-            paymentId: paymentData.payment.paymentId
+            paymentId: currentPaymentData.payment.paymentId
           })
         });
       } catch (error) {
@@ -109,14 +129,17 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
       }
     }
     setPaymentData(null);
+    paymentDataRef.current = null;
     setPaymentSuccess(false);
     setTimeRemaining(15 * 60);
-    if (expiryTimer) {
-      clearInterval(expiryTimer);
-      setExpiryTimer(null);
-    }
+    setExpiryTimer((prevTimer) => {
+      if (prevTimer) {
+        clearInterval(prevTimer);
+      }
+      return null;
+    });
     onClose();
-  }, [paymentData, expiryTimer, onClose]);
+  }, [onClose]);
 
   // Timer effect: Start countdown when payment intent is created
   useEffect(() => {
