@@ -311,28 +311,14 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
       return null;
     });
     
-    // Cancel payment if not completed - use ref to get latest paymentData
-    const currentPaymentData = paymentDataRef.current;
-    if (!paymentSuccess && currentPaymentData && currentPaymentData.payment && 
-        (currentPaymentData.payment.status === 'pending' || currentPaymentData.payment.status === 'processing')) {
-      try {
-        await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/cancel`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            paymentId: currentPaymentData.payment.paymentId
-          })
-        });
-        toast.info('Payment session cancelled. You can pay later from My Appointments.');
-      } catch (error) {
-        console.error('Error cancelling payment:', error);
-      }
-    }
+    // Don't cancel payment when modal is closed - let it expire naturally after 10 minutes
+    // This allows the user to reopen the modal and reuse the same payment ID if within 10 minutes
+    // Payment will only be cancelled when:
+    // 1. Timer expires (10 minutes) - handled by handleExpiry
+    // 2. User explicitly cancels - handled separately
+    // 3. Payment is completed - handled by onPaymentSuccess
     
-    // Reset states
+    // Reset states (but keep payment data in backend for reuse)
     setTimeRemaining(10 * 60);
     setPaymentData(null);
     paymentDataRef.current = null;
