@@ -12130,10 +12130,14 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       {showPayModal && isBuyer && (
         <PaymentModal
           isOpen={showPayModal}
-          onClose={() => setShowPayModal(false)}
+          onClose={() => {
+            setShowPayModal(false);
+            setPaying(false); // Clear loading state when modal closes
+          }}
           appointment={{ ...appointment, region: 'india' }}
           onPaymentSuccess={async (payment) => {
             setShowPayModal(false);
+            setPaying(false); // Clear loading state when payment succeeds
             // Optimistically update payment status immediately
             if (payment && (payment.status === 'completed' || payment.metadata?.adminMarked)) {
               setPaymentStatus(payment);
