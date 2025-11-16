@@ -344,24 +344,6 @@ export default function MyAppointments() {
     };
   }, []);
 
-  // Handle highlightAppointmentId from location.state
-  useEffect(() => {
-    if (location.state?.highlightAppointmentId && appointments.length > 0) {
-      const appointmentId = location.state.highlightAppointmentId;
-      setTimeout(() => {
-        const appointmentRow = document.querySelector(`[data-appointment-id="${appointmentId}"]`);
-        if (appointmentRow) {
-          appointmentRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          appointmentRow.classList.add('highlight-appointment');
-          setTimeout(() => {
-            appointmentRow.classList.remove('highlight-appointment');
-          }, 3000);
-        }
-      }, 500);
-      // Clear the state after highlighting
-      navigate(location.pathname, { replace: true, state: {} });
-    }
-  }, [location.state?.highlightAppointmentId, appointments, navigate, location.pathname]);
 
   // Lock background scroll when profile modal is open
   useEffect(() => {
