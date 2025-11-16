@@ -188,23 +188,40 @@ const MyPayments = () => {
             return;
           }
           
-          // Filter out cancelled, failed, and completed payments when checking for active payments
-          // Only check for genuinely active (pending/processing) payments that are NOT cancelled
+          // Check for active (pending/processing) payments that are NOT cancelled
           const activePayment = paymentCheckData.payments.find(p => 
             (p.status === 'pending' || p.status === 'processing') && 
             p.status !== 'cancelled'
           );
           
           if (activePayment) {
-            toast.warning('A payment is already in progress for this appointment in another window/tab. Please complete or cancel that payment first before starting a new one.');
-            setLoadingPaymentId(null);
-            return;
+            // Check if the active payment has expired
+            const now = new Date();
+            const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
+            let isExpired = false;
+            
+            if (activePayment.expiresAt) {
+              const expiresAt = new Date(activePayment.expiresAt);
+              isExpired = expiresAt <= now;
+            } else if (activePayment.createdAt) {
+              const createdAt = new Date(activePayment.createdAt);
+              isExpired = createdAt <= tenMinutesAgo;
+            }
+            
+            if (isExpired) {
+              // Payment expired, allow opening modal (will create new payment)
+              toast.info('Previous payment session expired. Opening a new payment session.');
+            } else {
+              // Payment not expired, allow opening modal (will reuse existing payment)
+              toast.info('Resuming existing payment session.');
+            }
+            // Continue to open modal - backend will handle reusing or creating new payment
           }
           
           // If latest payment is cancelled, failed, or expired, show appropriate message and allow retry
-          if (latestPayment.status === 'cancelled') {
+          if (latestPayment.status === 'cancelled' && !activePayment) {
             toast.info('Previous payment was cancelled. You can initiate a new payment.');
-          } else if (latestPayment.status === 'failed') {
+          } else if (latestPayment.status === 'failed' && !activePayment) {
             toast.info('Previous payment failed. You can retry the payment.');
           }
         }
