@@ -221,6 +221,20 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         // Store the payment initiation time (use payment createdAt or current time)
         const initiatedAt = data.payment?.createdAt ? new Date(data.payment.createdAt) : new Date();
         setPaymentInitiatedTime(initiatedAt);
+        
+        // Calculate remaining time based on expiresAt or createdAt + 10 minutes
+        if (data.payment?.expiresAt) {
+          const expiresAt = new Date(data.payment.expiresAt);
+          const remaining = Math.max(0, Math.floor((expiresAt.getTime() - Date.now()) / 1000));
+          setTimeRemaining(remaining);
+        } else if (data.payment?.createdAt) {
+          const createdAt = new Date(data.payment.createdAt);
+          const expiresAt = new Date(createdAt.getTime() + 10 * 60 * 1000);
+          const remaining = Math.max(0, Math.floor((expiresAt.getTime() - Date.now()) / 1000));
+          setTimeRemaining(remaining);
+        } else {
+          setTimeRemaining(10 * 60); // Default 10 minutes
+        }
       } else {
         // Handle specific error cases
         if (response.status === 400 && data.message && data.message.includes('already completed')) {
