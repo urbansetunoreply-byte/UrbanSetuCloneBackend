@@ -324,14 +324,14 @@ const MyPayments = () => {
             
             <div className="p-6 space-y-6">
               {/* Payment Overview */}
-              <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-6 border border-blue-200">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h4 className="text-xl font-bold text-gray-800">{selectedPayment.appointmentId?.propertyName || 'Property Payment'}</h4>
-                    <p className="text-sm text-gray-600 mt-1">Payment ID: <span className="font-mono">{selectedPayment.paymentId}</span></p>
+              <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-4 sm:p-6 border border-blue-200">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-lg sm:text-xl font-bold text-gray-800 break-words">{selectedPayment.appointmentId?.propertyName || 'Property Payment'}</h4>
+                    <p className="text-sm text-gray-600 mt-1 break-all">Payment ID: <span className="font-mono text-xs">{selectedPayment.paymentId}</span></p>
                   </div>
-                  <div className="text-right">
-                    <div className="text-3xl font-bold text-gray-800">
+                  <div className="text-left sm:text-right flex-shrink-0">
+                    <div className="text-2xl sm:text-3xl font-bold text-gray-800 break-words">
                       {selectedPayment.currency === 'INR' ? '₹' : '$'}{Number(selectedPayment.amount).toFixed(2)}
                     </div>
                     <div className="mt-2">{statusBadge(selectedPayment.status)}</div>
