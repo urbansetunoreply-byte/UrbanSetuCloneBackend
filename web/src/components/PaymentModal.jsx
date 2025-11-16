@@ -47,8 +47,9 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         return;
       }
       
-      if (appointment.status !== 'pending') {
-        toast.error('This appointment is not in pending status. Payment cannot be processed at this time.');
+      // Allow payment for pending or accepted appointments (not yet paid)
+      if (appointment.status !== 'pending' && appointment.status !== 'accepted') {
+        toast.error('This appointment is not in a payable status. Payment cannot be processed at this time.');
         onClose();
         return;
       }
