@@ -2,6 +2,165 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { FaCreditCard, FaDollarSign, FaShieldAlt, FaDownload, FaCheckCircle, FaTimes, FaSpinner } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
+// Generate unique tab ID for cross-tab communication
+const getTabId = () => {
+  let tabId = sessionStorage.getItem('paymentTabId');
+  if (!tabId) {
+    tabId = `tab_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    sessionStorage.setItem('paymentTabId', tabId);
+  }
+  return tabId;
+};
+
+// Cross-tab payment lock manager
+const createPaymentLockManager = (appointmentId) => {
+  const tabId = getTabId();
+  const lockKey = `payment_lock_${appointmentId}`;
+  const channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(`payment_${appointmentId}`) : null;
+  let heartbeatInterval = null;
+  let lockAcquired = false;
+
+  // Try to acquire lock
+  const acquireLock = () => {
+    const lockData = localStorage.getItem(lockKey);
+    const now = Date.now();
+    
+    if (lockData) {
+      try {
+        const { tabId: ownerTabId, timestamp } = JSON.parse(lockData);
+        // If lock is older than 5 seconds without heartbeat, consider it stale
+        if (now - timestamp > 5000 && ownerTabId !== tabId) {
+          // Lock is stale, acquire it
+          localStorage.setItem(lockKey, JSON.stringify({ tabId, timestamp: now }));
+          lockAcquired = true;
+          startHeartbeat();
+          return true;
+        } else if (ownerTabId === tabId) {
+          // We already own this lock
+          lockAcquired = true;
+          startHeartbeat();
+          return true;
+        } else {
+          // Another tab owns the lock
+          return false;
+        }
+      } catch (e) {
+        // Invalid lock data, acquire it
+        localStorage.setItem(lockKey, JSON.stringify({ tabId, timestamp: now }));
+        lockAcquired = true;
+        startHeartbeat();
+        return true;
+      }
+    } else {
+      // No lock exists, acquire it
+      localStorage.setItem(lockKey, JSON.stringify({ tabId, timestamp: now }));
+      lockAcquired = true;
+      startHeartbeat();
+      return true;
+    }
+  };
+
+  // Release lock
+  const releaseLock = () => {
+    if (heartbeatInterval) {
+      clearInterval(heartbeatInterval);
+      heartbeatInterval = null;
+    }
+    
+    const lockData = localStorage.getItem(lockKey);
+    if (lockData) {
+      try {
+        const { tabId: ownerTabId } = JSON.parse(lockData);
+        if (ownerTabId === tabId) {
+          localStorage.removeItem(lockKey);
+          if (channel) {
+            channel.postMessage({ type: 'lock_released', tabId });
+          }
+        }
+      } catch (e) {
+        localStorage.removeItem(lockKey);
+      }
+    }
+    lockAcquired = false;
+  };
+
+  // Start heartbeat to keep lock alive
+  const startHeartbeat = () => {
+    if (heartbeatInterval) {
+      clearInterval(heartbeatInterval);
+    }
+    heartbeatInterval = setInterval(() => {
+      const lockData = localStorage.getItem(lockKey);
+      if (lockData) {
+        try {
+          const { tabId: ownerTabId } = JSON.parse(lockData);
+          if (ownerTabId === tabId) {
+            localStorage.setItem(lockKey, JSON.stringify({ tabId, timestamp: Date.now() }));
+          } else {
+            // Another tab owns the lock now
+            releaseLock();
+          }
+        } catch (e) {
+          releaseLock();
+        }
+      } else {
+        releaseLock();
+      }
+    }, 2000); // Heartbeat every 2 seconds
+  };
+
+  // Check if lock is held by another tab
+  const isLockedByAnotherTab = () => {
+    const lockData = localStorage.getItem(lockKey);
+    if (!lockData) return false;
+    
+    try {
+      const { tabId: ownerTabId, timestamp } = JSON.parse(lockData);
+      const now = Date.now();
+      // If lock is stale (older than 5 seconds), consider it free
+      if (now - timestamp > 5000) {
+        return false;
+      }
+      return ownerTabId !== tabId;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  // Listen for lock release from other tabs
+  const onLockReleased = (callback) => {
+    if (!channel) return () => {};
+    
+    const handler = (event) => {
+      if (event.data.type === 'lock_released') {
+        callback();
+      }
+    };
+    channel.addEventListener('message', handler);
+    
+    return () => {
+      channel.removeEventListener('message', handler);
+    };
+  };
+
+  // Cleanup
+  const cleanup = () => {
+    releaseLock();
+    if (channel) {
+      channel.close();
+    }
+  };
+
+  return {
+    acquireLock,
+    releaseLock,
+    isLockedByAnotherTab,
+    onLockReleased,
+    cleanup,
+    lockAcquired: () => lockAcquired
+  };
+};
+
 const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [paymentData, setPaymentData] = useState(null);
@@ -13,6 +172,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
   const [timeRemaining, setTimeRemaining] = useState(10 * 60); // 10 minutes in seconds
   const [paymentInitiatedTime, setPaymentInitiatedTime] = useState(null); // Store when payment was initiated
   const paymentDataRef = useRef(null); // Ref to access latest paymentData in timer callback
+  const lockManagerRef = useRef(null); // Ref for payment lock manager
 
   // Cancel payment when modal is closed without completing
   const cancelPayment = async () => {
@@ -77,6 +237,24 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
 
   useEffect(() => {
     if (isOpen && appointment) {
+      // Initialize lock manager for this appointment
+      if (!lockManagerRef.current) {
+        lockManagerRef.current = createPaymentLockManager(appointment._id);
+      }
+      
+      // Try to acquire lock before opening modal
+      if (!lockManagerRef.current.acquireLock()) {
+        // Another tab has the payment modal open
+        toast.warning('A payment session is already open for this appointment in another window/tab. Please close that window/tab first before opening a new payment session.');
+        onClose();
+        return;
+      }
+      
+      // Listen for lock release from other tabs
+      const removeLockListener = lockManagerRef.current.onLockReleased(() => {
+        // Lock was released, but we're already open, so ignore
+      });
+      
       // Initialize method from appointment region before creating intent
       const methodFromAppt = appointment?.region === 'india' ? 'razorpay' : 'paypal';
       setPreferredMethod(methodFromAppt);
@@ -87,6 +265,17 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
       setTimeRemaining(10 * 60); // Reset timer to 10 minutes
       setLoading(true);
       setTimeout(() => createPaymentIntent(methodFromAppt), 0);
+      
+      return () => {
+        removeLockListener();
+      };
+    } else {
+      // Release lock when modal closes
+      if (lockManagerRef.current) {
+        lockManagerRef.current.releaseLock();
+        lockManagerRef.current.cleanup();
+        lockManagerRef.current = null;
+      }
     }
     
     // Lock body scroll when modal is open
@@ -105,11 +294,16 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
       if (expiryTimer) {
         clearInterval(expiryTimer);
       }
+      if (lockManagerRef.current) {
+        lockManagerRef.current.releaseLock();
+        lockManagerRef.current.cleanup();
+        lockManagerRef.current = null;
+      }
       document.body.style.overflow = '';
       document.body.style.position = '';
       document.body.style.width = '';
     };
-  }, [isOpen, appointment]);
+  }, [isOpen, appointment, onClose]);
 
   // Handle payment expiry
   const handleExpiry = useCallback(async () => {

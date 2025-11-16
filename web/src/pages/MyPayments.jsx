@@ -195,6 +195,33 @@ const MyPayments = () => {
           );
           
           if (activePayment) {
+            // Check if another tab/window has the payment modal open using cross-tab lock
+            const lockKey = `payment_lock_${appointmentId}`;
+            const lockData = localStorage.getItem(lockKey);
+            let isLockedByAnotherTab = false;
+            
+            if (lockData) {
+              try {
+                const { tabId: ownerTabId, timestamp } = JSON.parse(lockData);
+                const currentTabId = sessionStorage.getItem('paymentTabId');
+                const now = Date.now();
+                
+                // If lock is not stale (less than 5 seconds old) and owned by another tab
+                if (now - timestamp <= 5000 && ownerTabId !== currentTabId) {
+                  isLockedByAnotherTab = true;
+                }
+              } catch (e) {
+                // Invalid lock data, ignore
+              }
+            }
+            
+            if (isLockedByAnotherTab) {
+              // Another tab has the payment modal open
+              toast.warning('A payment session is already open for this appointment in another window/tab. Please close that window/tab first before opening a new payment session.');
+              setLoadingPaymentId(null);
+              return;
+            }
+            
             // Check if the active payment has expired
             const now = new Date();
             const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
