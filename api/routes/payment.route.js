@@ -84,21 +84,21 @@ router.post("/create-intent", verifyToken, async (req, res) => {
       });
     }
 
-    // Check if there's an active (pending/processing) payment intent for this appointment
-    const activePayment = await Payment.findOne({ 
-      appointmentId, 
-      status: { $in: ['pending', 'processing'] }
-    }).sort({ createdAt: -1 });
+    // Cancel/expire all existing pending/processing payments for this appointment
+    // This ensures old payment IDs don't interfere with new payment attempts
+    const cancelledPayments = await Payment.updateMany(
+      { 
+        appointmentId, 
+        status: { $in: ['pending', 'processing'] }
+      },
+      { 
+        status: 'cancelled',
+        updatedAt: new Date()
+      }
+    );
     
-    if (activePayment) {
-      return res.status(409).json({ 
-        message: "A payment is already in progress for this appointment. Please complete or cancel the existing payment first.",
-        activePayment: {
-          paymentId: activePayment.paymentId,
-          status: activePayment.status,
-          createdAt: activePayment.createdAt
-        }
-      });
+    if (cancelledPayments.modifiedCount > 0) {
+      console.log(`Cancelled ${cancelledPayments.modifiedCount} pending/processing payment(s) for appointment ${appointmentId} before creating new payment intent`);
     }
 
     const listing = appointment.listingId;

@@ -104,24 +104,25 @@ const MyPayments = () => {
       
       if (hasCompleted) {
         // If there's a completed payment, only include completed, failed, refunded payments
-        // Remove all pending/processing payments
+        // Remove all pending/processing/cancelled payments
         appointmentPayments.forEach(payment => {
           if (payment.status === 'completed' || payment.status === 'failed' || 
               payment.status === 'refunded' || payment.status === 'partially_refunded') {
             filteredPayments.push(payment);
           }
-          // Skip pending/processing payments when there's a completed payment
+          // Skip pending/processing/cancelled payments when there's a completed payment
         });
       } else {
         // No completed payment - include failed, refunded, and only the most recent pending/processing
+        // Exclude cancelled payments from display
         const completedOrFailed = appointmentPayments.filter(p => 
           p.status === 'failed' || p.status === 'refunded' || p.status === 'partially_refunded'
         );
         filteredPayments.push(...completedOrFailed);
         
-        // For pending/processing, keep only the most recent one
+        // For pending/processing, keep only the most recent one (exclude cancelled)
         const pendingPayments = appointmentPayments.filter(p => 
-          p.status === 'pending' || p.status === 'processing'
+          (p.status === 'pending' || p.status === 'processing') && p.status !== 'cancelled'
         );
         if (pendingPayments.length > 0) {
           // Sort by createdAt descending and take the first (most recent)
