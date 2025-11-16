@@ -157,6 +157,68 @@ const PaymentDashboard = () => {
     }
   };
 
+  const statusBadge = (status) => {
+    const cls = status === 'completed' ? 'bg-green-100 text-green-700' : status === 'failed' ? 'bg-red-100 text-red-700' : status === 'refunded' || status === 'partially_refunded' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700';
+    return <span className={`px-2 py-1 text-[10px] rounded-full font-semibold ${cls}`}>{status}</span>;
+  };
+
+  const handlePaymentClick = (payment) => {
+    setSelectedPayment(payment);
+    setShowPreviewModal(true);
+  };
+
+  const downloadReceipt = async (url) => {
+    if (!url) return;
+    try {
+      const receiptUrl = url.includes('?') ? `${url}&admin=true` : `${url}?admin=true`;
+      const res = await fetch(receiptUrl, { credentials: 'include' });
+      if (!res.ok) return;
+      const blob = await res.blob();
+      const objUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = objUrl;
+      a.download = 'receipt.pdf';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(objUrl);
+      toast.success('Receipt downloaded successfully');
+    } catch {
+      toast.error('Failed to download receipt');
+    }
+  };
+
+  const sharePayment = async (payment) => {
+    const shareText = `Payment Details:\nProperty: ${payment.appointmentId?.propertyName || 'N/A'}\nBuyer: ${payment.userId?.username || 'N/A'}\nAmount: ${payment.currency === 'INR' ? '₹' : '$'}${Number(payment.amount).toFixed(2)}\nStatus: ${payment.status}\nPayment ID: ${payment.paymentId}`;
+    const shareUrl = window.location.origin + `/admin/payments?paymentId=${payment.paymentId}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Payment Receipt',
+          text: shareText,
+          url: shareUrl
+        });
+        toast.success('Payment shared successfully');
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          copyPaymentLink(shareUrl, shareText);
+        }
+      }
+    } else {
+      copyPaymentLink(shareUrl, shareText);
+    }
+  };
+
+  const copyPaymentLink = async (url, text) => {
+    try {
+      await navigator.clipboard.writeText(text + '\n' + url);
+      toast.success('Payment details copied to clipboard');
+    } catch {
+      toast.error('Failed to copy payment details');
+    }
+  };
+
   const tabs = [
     { id: 'overview', label: 'Overview', icon: FaChartLine },
     { id: 'history', label: 'Payment History', icon: FaCreditCard },
