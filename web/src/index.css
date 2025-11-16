@@ -1003,6 +1003,24 @@ body.modal-open {
   }
 }
 
+/* Appointment highlight animation */
+@keyframes highlightPulse {
+  0%, 100% { 
+    background-color: #fef3c7; 
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); 
+  }
+  50% { 
+    background-color: #fde68a; 
+    box-shadow: 0 0 30px rgba(251, 191, 36, 0.8); 
+  }
+}
+
+.highlight-appointment {
+  animation: highlightPulse 2s ease-in-out !important;
+  background-color: #fef3c7 !important;
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.5) !important;
+}
+
 @keyframes progressFill {
   0% {
     width: 0%;
