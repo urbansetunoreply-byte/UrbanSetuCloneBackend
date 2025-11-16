@@ -9,8 +9,8 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
   const [receiptUrl, setReceiptUrl] = useState('');
   const [processingPayment, setProcessingPayment] = useState(false);
   const [preferredMethod, setPreferredMethod] = useState(() => (appointment?.region === 'india' ? 'razorpay' : 'paypal')); // 'paypal' or 'razorpay'
-  const [expiryTimer, setExpiryTimer] = useState(null); // Timer for payment expiry (15 minutes)
-  const [timeRemaining, setTimeRemaining] = useState(15 * 60); // 15 minutes in seconds
+  const [expiryTimer, setExpiryTimer] = useState(null); // Timer for payment expiry (10 minutes)
+  const [timeRemaining, setTimeRemaining] = useState(10 * 60); // 10 minutes in seconds
   const paymentDataRef = useRef(null); // Ref to access latest paymentData in timer callback
 
   // Cancel payment when modal is closed without completing
@@ -65,7 +65,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
     }
     
     // Reset states
-    setTimeRemaining(15 * 60);
+    setTimeRemaining(10 * 60);
     setPaymentData(null);
     paymentDataRef.current = null;
     setPaymentSuccess(false);
@@ -150,8 +150,8 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         clearInterval(expiryTimer);
       }
 
-      // Start countdown timer (15 minutes = 900 seconds)
-      setTimeRemaining(15 * 60);
+      // Start countdown timer (10 minutes = 600 seconds)
+      setTimeRemaining(10 * 60);
       
       const timer = setInterval(() => {
         setTimeRemaining((prev) => {
