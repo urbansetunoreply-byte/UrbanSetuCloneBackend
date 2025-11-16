@@ -11749,13 +11749,26 @@ function PaymentStatusCell({ appointment, isBuyer }) {
           return;
         }
         
-        // Check if there's an active payment in progress (pending/processing) in another tab/window/device
-        if (latestPayment.status === 'pending' || latestPayment.status === 'processing') {
+        // Filter out cancelled, failed, and completed payments when checking for active payments
+        // Only check for genuinely active (pending/processing) payments that are NOT cancelled
+        const activePayment = data.payments.find(payment => 
+          (payment.status === 'pending' || payment.status === 'processing') && 
+          payment.status !== 'cancelled'
+        );
+        
+        if (activePayment) {
           toast.warning('A payment is already in progress for this appointment in another window/tab. Please complete or cancel that payment first before starting a new one.');
           // Update payment status to show the active payment
-          setPaymentStatus(latestPayment);
+          setPaymentStatus(activePayment);
           setLoading(false);
           return;
+        }
+        
+        // If latest payment is cancelled, failed, or expired, show appropriate message and allow retry
+        if (latestPayment.status === 'cancelled') {
+          toast.info('Previous payment was cancelled. You can initiate a new payment.');
+        } else if (latestPayment.status === 'failed') {
+          toast.info('Previous payment failed. You can retry the payment.');
         }
       }
       
