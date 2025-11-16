@@ -440,6 +440,19 @@ router.post("/verify", verifyToken, async (req, res) => {
     payment.receiptUrl = receiptUrl;
     await payment.save();
 
+    // Emit socket event for real-time payment status update
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('paymentStatusUpdated', { 
+        appointmentId: payment.appointmentId, 
+        paymentConfirmed: true 
+      });
+      io.to(`user_${user._id}`).emit('paymentStatusUpdated', { 
+        appointmentId: payment.appointmentId, 
+        paymentConfirmed: true 
+      });
+    }
+
     // Send payment success email to buyer
     try {
       await sendPaymentSuccessEmail(user.email, {
@@ -598,6 +611,19 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
     const receiptUrl = `${base}/api/payments/${payment.paymentId}/receipt`;
     payment.receiptUrl = receiptUrl;
     await payment.save();
+
+    // Emit socket event for real-time payment status update
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('paymentStatusUpdated', { 
+        appointmentId: payment.appointmentId, 
+        paymentConfirmed: true 
+      });
+      io.to(`user_${user._id}`).emit('paymentStatusUpdated', { 
+        appointmentId: payment.appointmentId, 
+        paymentConfirmed: true 
+      });
+    }
 
     // Send payment success email to buyer (reusing existing appointment, user, listing variables)
     try {

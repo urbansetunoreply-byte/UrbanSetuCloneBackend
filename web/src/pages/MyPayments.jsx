@@ -667,10 +667,11 @@ const MyPayments = () => {
             fetchPayments();
             toast.success('Payment completed successfully!');
             // Dispatch event to update MyAppointments page if it's open
-            if (paymentAppointment?._id) {
+            const appointmentId = paymentAppointment?._id || payment?.appointmentId?._id || payment?.appointmentId;
+            if (appointmentId) {
               window.dispatchEvent(new CustomEvent('paymentStatusUpdated', {
                 detail: { 
-                  appointmentId: paymentAppointment._id,
+                  appointmentId: appointmentId,
                   paymentConfirmed: true
                 }
               }));

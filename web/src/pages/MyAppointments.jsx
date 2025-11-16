@@ -419,12 +419,26 @@ export default function MyAppointments() {
       );
     }
     
+    // Handle custom DOM events (fallback from MyPayments page)
+    function handleCustomPaymentStatusUpdate(event) {
+      const { appointmentId, paymentConfirmed } = event.detail;
+      if (appointmentId) {
+        setAppointments((prev) =>
+          prev.map(appt =>
+            appt._id === appointmentId ? { ...appt, paymentConfirmed: Boolean(paymentConfirmed) } : appt
+          )
+        );
+      }
+    }
+    
     socket.on('appointmentUpdate', handleAppointmentUpdate);
     socket.on('paymentStatusUpdated', handlePaymentStatusUpdate);
+    window.addEventListener('paymentStatusUpdated', handleCustomPaymentStatusUpdate);
     
     return () => {
       socket.off('appointmentUpdate', handleAppointmentUpdate);
       socket.off('paymentStatusUpdated', handlePaymentStatusUpdate);
+      window.removeEventListener('paymentStatusUpdated', handleCustomPaymentStatusUpdate);
     };
   }, []);
 
@@ -11579,6 +11593,34 @@ function PaymentStatusCell({ appointment, isBuyer }) {
   useEffect(() => {
     fetchPaymentStatus();
   }, [appointment._id, appointment.paymentConfirmed]); // Add paymentConfirmed dependency
+
+  // Listen for payment status updates via socket or custom events
+  useEffect(() => {
+    function handlePaymentUpdate(event) {
+      const appointmentId = event.detail?.appointmentId || event.appointmentId;
+      const paymentConfirmed = event.detail?.paymentConfirmed ?? event.paymentConfirmed;
+      
+      if (appointmentId === appointment._id && paymentConfirmed) {
+        // Refetch payment status immediately when payment is confirmed
+        fetchPaymentStatus();
+      }
+    }
+    
+    // Listen for custom DOM events (from MyPayments page)
+    window.addEventListener('paymentStatusUpdated', handlePaymentUpdate);
+    
+    // Listen for socket events
+    if (socket) {
+      socket.on('paymentStatusUpdated', handlePaymentUpdate);
+    }
+    
+    return () => {
+      window.removeEventListener('paymentStatusUpdated', handlePaymentUpdate);
+      if (socket) {
+        socket.off('paymentStatusUpdated', handlePaymentUpdate);
+      }
+    };
+  }, [appointment._id]);
 
   // Lock body scroll when refund request modal is open
   useEffect(() => {
