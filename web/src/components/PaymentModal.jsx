@@ -281,6 +281,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
   const [expiryTimer, setExpiryTimer] = useState(null); // Timer for payment expiry (10 minutes)
   const [timeRemaining, setTimeRemaining] = useState(10 * 60); // 10 minutes in seconds
   const [paymentInitiatedTime, setPaymentInitiatedTime] = useState(null); // Store when payment was initiated
+  const [lockAcquired, setLockAcquired] = useState(false); // Track if lock has been acquired
   const paymentDataRef = useRef(null); // Ref to access latest paymentData in timer callback
   const lockManagerRef = useRef(null); // Ref for payment lock manager
 
@@ -338,6 +339,10 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         lockManagerRef.current = createPaymentLockManager(appointment._id);
       }
       
+      // Reset lock acquired state when modal opens
+      setLockAcquired(false);
+      setLoading(true);
+      
       // Try to acquire lock before opening modal (async)
       const acquireLockAsync = async () => {
         try {
@@ -347,11 +352,14 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
             toast.warning(result.message || 'A payment session is already open for this appointment in another window/tab/browser. Please close that window/tab/browser first before opening a new payment session.');
             // Close modal immediately
             setLoading(false);
+            setLockAcquired(false);
             onClose();
             return;
           }
           
-          // Lock acquired, continue with modal initialization
+          // Lock acquired, mark as acquired and continue with modal initialization
+          setLockAcquired(true);
+          
           // Initialize method from appointment region before creating intent
           const methodFromAppt = appointment?.region === 'india' ? 'razorpay' : 'paypal';
           setPreferredMethod(methodFromAppt);
@@ -360,12 +368,12 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
           setPaymentSuccess(false);
           setPaymentInitiatedTime(null); // Reset initiation time
           setTimeRemaining(10 * 60); // Reset timer to 10 minutes
-          setLoading(true);
           setTimeout(() => createPaymentIntent(methodFromAppt), 0);
         } catch (error) {
           console.error('Error acquiring lock:', error);
           toast.error('Failed to acquire payment lock. Please try again.');
           setLoading(false);
+          setLockAcquired(false);
           onClose();
         }
       };
@@ -396,6 +404,8 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         lockManagerRef.current.cleanup();
         lockManagerRef.current = null;
       }
+      // Reset lock acquired state when modal closes
+      setLockAcquired(false);
     }
     
     // Lock body scroll when modal is open
