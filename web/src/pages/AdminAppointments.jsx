@@ -7,9 +7,9 @@ import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
 import ImagePreview from '../components/ImagePreview';
 import LinkPreview from '../components/LinkPreview';
 import { EmojiButton } from '../components/EmojiPicker';
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useState as useLocalState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from 'react-toastify';
 import { socket } from "../utils/socket";
 import { useSoundEffects } from "../components/SoundEffects";
@@ -17,6 +17,7 @@ import { exportEnhancedChatToPDF } from '../utils/pdfExport';
 import ExportChatModal from '../components/ExportChatModal';
 import axios from 'axios';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from "../redux/user/userSlice";
 // Note: Do not import server-only libs here
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -26,6 +27,8 @@ export default function AdminAppointments() {
   usePageTitle("Appointment Management - Admin Panel");
 
   const { currentUser } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   // Function to handle phone number clicks
   const handlePhoneClick = (phoneNumber) => {
@@ -2561,6 +2564,7 @@ function AdminAppointmentRow({
   const [showChatModal, setShowChatModal] = useLocalState(false);
   const [showPasswordModal, setShowPasswordModal] = useLocalState(false);
   const [adminPassword, setAdminPassword] = useLocalState("");
+  const [passwordError, setPasswordError] = useLocalState("");
   const [showDeleteModal, setShowDeleteModal] = useLocalState(false);
   const [messageToDelete, setMessageToDelete] = useLocalState(null);
   const [passwordLoading, setPasswordLoading] = useLocalState(false);
@@ -5005,6 +5009,9 @@ function AdminAppointmentRow({
   const handleChatButtonClick = () => {
     setShowPasswordModal(true);
     setAdminPassword("");
+    setPasswordError("");
+    // Reset attempts when opening modal
+    localStorage.removeItem('adminAppointmentsPwAttempts');
   };
 
   // Load initial comments when chat modal opens (without refresh toast)
@@ -5104,6 +5111,7 @@ function AdminAppointmentRow({
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     setPasswordLoading(true);
+    setPasswordError("");
     try {
       // Call backend to verify admin password
       const { data } = await axios.post(`${API_BASE_URL}/api/auth/verify-password`, 
@@ -5114,7 +5122,11 @@ function AdminAppointmentRow({
         }
       );
       if (data.success) {
+        // Reset attempts on successful password
+        localStorage.removeItem('adminAppointmentsPwAttempts');
         setShowPasswordModal(false);
+        setAdminPassword("");
+        setPasswordError("");
         setShowChatModal(true);
         // Load initial comments when chat opens (without refresh toast)
         setTimeout(() => {
@@ -5122,7 +5134,43 @@ function AdminAppointmentRow({
         }, 100);
       }
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to verify password. Please try again.");
+      // Track wrong attempts locally (allow up to 3 attempts before logout)
+      const key = 'adminAppointmentsPwAttempts';
+      const prev = parseInt(localStorage.getItem(key) || '0');
+      const next = prev + 1;
+      localStorage.setItem(key, String(next));
+
+      if (next >= 3) {
+        // Sign out and redirect on third wrong attempt
+        localStorage.removeItem(key);
+        setShowPasswordModal(false);
+        setAdminPassword("");
+        setPasswordError("");
+        toast.error("Too many incorrect attempts. You've been signed out for security.");
+        dispatch(signoutUserStart());
+        try {
+          const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+          const signoutData = await signoutRes.json();
+          if (signoutData.success === false) {
+            dispatch(signoutUserFailure(signoutData.message));
+          } else {
+            dispatch(signoutUserSuccess(signoutData));
+          }
+        } catch (signoutErr) {
+          dispatch(signoutUserFailure(signoutErr.message));
+        }
+        setTimeout(() => {
+          navigate('/sign-in');
+        }, 800);
+        setPasswordLoading(false);
+        return;
+      } else {
+        // Keep modal open and show remaining attempts
+        const remaining = 3 - next;
+        setPasswordError(`Incorrect password. ${remaining} attempt${remaining === 1 ? '' : 's'} left before logout.`);
+        toast.error(`Incorrect password. ${remaining} attempt${remaining === 1 ? '' : 's'} left.`);
+        setAdminPassword("");
+      }
     }
     setPasswordLoading(false);
   };
@@ -5437,15 +5485,20 @@ function AdminAppointmentRow({
                 <FaUserShield /> Admin Password Required
               </h3>
               <form onSubmit={handlePasswordSubmit} className="w-full flex flex-col gap-3">
-                <input
-                  type="password"
-                  className="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-200"
-                  placeholder="Enter your password"
-                  value={adminPassword}
-                  onChange={e => setAdminPassword(e.target.value)}
-                  required
-                  autoFocus
-                />
+                <div>
+                  <input
+                    type="password"
+                    className="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-200"
+                    placeholder="Enter your password"
+                    value={adminPassword}
+                    onChange={e => setAdminPassword(e.target.value)}
+                    required
+                    autoFocus
+                  />
+                  {passwordError && (
+                    <div className="text-red-600 text-sm mt-1">{passwordError}</div>
+                  )}
+                </div>
                 <button
                   type="submit"
                   className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full font-semibold"

@@ -92,6 +92,7 @@ export default function Settings() {
   const [exportPasswordError, setExportPasswordError] = useState("");
   const [exportPasswordVerifying, setExportPasswordVerifying] = useState(false);
   const [exportPasswordAttempts, setExportPasswordAttempts] = useState(0);
+  const [showExportSignoutModal, setShowExportSignoutModal] = useState(false);
 
   // Account deletion states
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -1629,13 +1630,25 @@ export default function Settings() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Password:</label>
                 <input
                   type="password"
-                  className={`w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-green-500 ${exportPasswordVerifying ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  className={`w-full p-3 border border-gray-300 rounded-lg mb-2 focus:outline-none focus:ring-2 focus:ring-green-500 ${exportPasswordVerifying ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   placeholder="Enter your password"
                   value={exportPassword}
                   onChange={e => setExportPassword(e.target.value)}
                   disabled={exportPasswordVerifying}
                   autoFocus
                 />
+                <div className="flex justify-end mb-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowExportSignoutModal(true)}
+                    disabled={exportPasswordVerifying}
+                    className={`text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline transition-colors duration-200 ${
+                      exportPasswordVerifying ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+                    }`}
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
                 {exportPasswordError && <div className="text-red-600 text-sm mb-2">{exportPasswordError}</div>}
                 <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6">
                   <button
@@ -1669,6 +1682,45 @@ export default function Settings() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Export Password Forgot Password Signout Confirmation Modal */}
+      {showExportSignoutModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-[60] p-4 animate-[fadeIn_0.3s_ease-out]">
+          <div className={`bg-white rounded-xl shadow-xl max-w-md w-full ${animationClasses.scaleIn}`}>
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-gray-800 mb-4">Sign Out Required</h3>
+              <p className="mb-4 text-gray-600">To reset your password, you need to sign out first. You will be redirected to the forgot password page.</p>
+              <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowExportSignoutModal(false)}
+                  className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setShowExportSignoutModal(false);
+                    setShowExportPasswordModal(false);
+                    setExportPassword("");
+                    setExportPasswordError("");
+                    await signout({
+                      showToast: true,
+                      navigateTo: "/forgot-password",
+                      delay: 0
+                    });
+                  }}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center"
+                >
+                  <FaSignOutAlt className="w-4 h-4 mr-2" />
+                  Sign Out & Continue
+                </button>
+              </div>
             </div>
           </div>
         </div>
