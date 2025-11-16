@@ -113,6 +113,17 @@ const paymentSchema = new mongoose.Schema({
     default: Date.now
   },
   completedAt: Date,
+  expiresAt: {
+    type: Date,
+    // Expires 15 minutes after creation for pending/processing payments
+    default: function() {
+      // Set to 15 minutes from now if status is pending/processing
+      if (this.status === 'pending' || this.status === 'processing') {
+        return new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+      }
+      return null;
+    }
+  },
   
   // Additional metadata
   metadata: {
@@ -128,10 +139,22 @@ paymentSchema.index({ userId: 1 });
 paymentSchema.index({ status: 1 });
 paymentSchema.index({ createdAt: -1 });
 paymentSchema.index({ gatewayPaymentId: 1 });
+paymentSchema.index({ expiresAt: 1 }); // Index for finding expired payments
 
-// Pre-save middleware to update updatedAt
+// Pre-save middleware to update updatedAt and set expiresAt for pending/processing payments
 paymentSchema.pre('save', function(next) {
   this.updatedAt = new Date();
+  
+  // Set expiresAt to 15 minutes from now for pending/processing payments
+  if ((this.status === 'pending' || this.status === 'processing') && !this.expiresAt) {
+    this.expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+  }
+  
+  // Clear expiresAt for completed, failed, or cancelled payments
+  if (['completed', 'failed', 'cancelled', 'refunded', 'partially_refunded'].includes(this.status)) {
+    this.expiresAt = null;
+  }
+  
   next();
 });
 

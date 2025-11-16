@@ -84,6 +84,28 @@ router.post("/create-intent", verifyToken, async (req, res) => {
       });
     }
 
+    // Auto-expire old pending/processing payments that are older than 15 minutes
+    // This cleans up payments where modal was closed without proper cancellation
+    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+    const expiredPayments = await Payment.updateMany(
+      {
+        status: { $in: ['pending', 'processing'] },
+        $or: [
+          { expiresAt: { $lte: new Date() } }, // Expired payments
+          { createdAt: { $lte: fifteenMinutesAgo } } // Old payments without expiresAt (fallback)
+        ]
+      },
+      {
+        status: 'cancelled',
+        updatedAt: new Date(),
+        expiresAt: null
+      }
+    );
+    
+    if (expiredPayments.modifiedCount > 0) {
+      console.log(`Auto-expired ${expiredPayments.modifiedCount} old pending/processing payment(s)`);
+    }
+
     // Cancel/expire all existing pending/processing payments for this appointment
     // This ensures old payment IDs don't interfere with new payment attempts
     const cancelledPayments = await Payment.updateMany(
@@ -93,7 +115,8 @@ router.post("/create-intent", verifyToken, async (req, res) => {
       },
       { 
         status: 'cancelled',
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        expiresAt: null
       }
     );
     
@@ -116,7 +139,8 @@ router.post("/create-intent", verifyToken, async (req, res) => {
         paymentType,
         gateway: 'razorpay',
         status: 'pending',
-        receiptNumber: generateReceiptNumber()
+        receiptNumber: generateReceiptNumber(),
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000) // Expires in 15 minutes
       });
       await payment.save();
 
@@ -167,7 +191,8 @@ router.post("/create-intent", verifyToken, async (req, res) => {
         paymentType,
         gateway: 'paypal',
         status: 'pending',
-        receiptNumber: generateReceiptNumber()
+        receiptNumber: generateReceiptNumber(),
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000) // Expires in 15 minutes
       });
       await payment.save();
       return res.status(201).json({
@@ -1700,6 +1725,7 @@ router.post('/cancel', verifyToken, async (req, res) => {
     // Cancel the payment
     payment.status = 'cancelled';
     payment.updatedAt = new Date();
+    payment.expiresAt = null; // Clear expiry since payment is cancelled
     await payment.save();
 
     console.log(`Payment ${paymentId} cancelled by user ${userId}`);
