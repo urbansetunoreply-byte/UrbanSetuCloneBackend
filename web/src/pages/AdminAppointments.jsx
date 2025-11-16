@@ -78,6 +78,7 @@ export default function AdminAppointments() {
   const [cancelReason, setCancelReason] = useState('');
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showReinitiateModal, setShowReinitiateModal] = useState(false);
+  const [reinitiatePaymentStatus, setReinitiatePaymentStatus] = useState(null);
   const [showArchiveModal, setShowArchiveModal] = useState(false);
       const [showUnarchiveModal, setShowUnarchiveModal] = useState(false);
   
@@ -1254,6 +1255,23 @@ export default function AdminAppointments() {
   };
 
   const handleReinitiateAppointment = async (id) => {
+    // Fetch payment status to check if refunded
+    let paymentStatus = null;
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/payments/history?appointmentId=${id}`, {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.payments && data.payments.length > 0) {
+          paymentStatus = data.payments[0];
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching payment status:', error);
+    }
+
+    setReinitiatePaymentStatus(paymentStatus);
     setAppointmentToHandle(id);
     setShowReinitiateModal(true);
     // Close reactions bar when admin action modal opens
@@ -1262,6 +1280,20 @@ export default function AdminAppointments() {
   };
 
   const confirmReinitiate = async () => {
+    // Get the appointment to check status
+    const appt = appointments.find(a => a._id === appointmentToHandle);
+    
+    // Check if payment is refunded for cancelled appointment
+    if (appt && (appt.status === 'cancelledByBuyer' || appt.status === 'cancelledBySeller' || appt.status === 'cancelledByAdmin')) {
+      if (reinitiatePaymentStatus && (reinitiatePaymentStatus.status === 'refunded' || reinitiatePaymentStatus.status === 'partially_refunded')) {
+        toast.error('Reinitiation disabled: The buyer has already received a refund for this appointment.');
+        setShowReinitiateModal(false);
+        setAppointmentToHandle(null);
+        setReinitiatePaymentStatus(null);
+        return;
+      }
+    }
+
     try {
       const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appointmentToHandle}/reinitiate`, 
         {},
@@ -1279,6 +1311,7 @@ export default function AdminAppointments() {
       // Close modal and reset state
       setShowReinitiateModal(false);
       setAppointmentToHandle(null);
+      setReinitiatePaymentStatus(null);
     } catch (err) {
       console.error('Error in confirmReinitiate:', err);
       toast.error(err.response?.data?.message || "Failed to reinitiate appointment.");
@@ -9196,21 +9229,33 @@ function AdminAppointmentRow({
         )}
 
         {/* Reinitiate Appointment Modal */}
-        {showReinitiateModal && appointmentToHandle === appt._id && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-2 sm:mx-4 animate-fadeIn">
-              <div className="p-6">
-                <div className="flex items-start gap-4 mb-6">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <FaUndo className="text-green-600 text-xl" />
+        {showReinitiateModal && appointmentToHandle === appt._id && (() => {
+          const isRefunded = reinitiatePaymentStatus && (reinitiatePaymentStatus.status === 'refunded' || reinitiatePaymentStatus.status === 'partially_refunded');
+          const isCancelled = appt.status === 'cancelledByBuyer' || appt.status === 'cancelledBySeller' || appt.status === 'cancelledByAdmin';
+          const showRefundWarning = isCancelled && isRefunded;
+
+          return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-2 sm:mx-4 animate-fadeIn">
+                <div className="p-6">
+                  <div className="flex items-start gap-4 mb-6">
+                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <FaUndo className="text-green-600 text-xl" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-2">Reinitiate Appointment</h3>
+                      {showRefundWarning ? (
+                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-3">
+                          <p className="text-sm font-semibold mb-1">Reinitiation Disabled</p>
+                          <p className="text-sm">The buyer has already received a refund for this appointment.</p>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-600 leading-relaxed text-justify">
+                          Are you sure you want to reinitiate this appointment? This will notify both buyer and seller.
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Reinitiate Appointment</h3>
-                    <p className="text-sm text-gray-600 leading-relaxed text-justify">
-                      Are you sure you want to reinitiate this appointment? This will notify both buyer and seller.
-                    </p>
-                  </div>
-                </div>
                 
                 <div className="flex gap-3 justify-end">
                   <button
@@ -9218,6 +9263,7 @@ function AdminAppointmentRow({
                     onClick={() => {
                       setShowReinitiateModal(false);
                       setAppointmentToHandle(null);
+                      setReinitiatePaymentStatus(null);
                     }}
                     className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
                   >
@@ -9226,7 +9272,12 @@ function AdminAppointmentRow({
                   <button
                     type="button"
                     onClick={confirmReinitiate}
-                    className="px-4 py-2 rounded-lg bg-green-600 text-white font-medium hover:bg-green-700 transition-colors flex items-center gap-2"
+                    disabled={showRefundWarning}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+                      showRefundWarning
+                        ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                        : 'bg-green-600 text-white hover:bg-green-700'
+                    }`}
                   >
                     <FaUndo size={14} />
                     Reinitiate
@@ -9235,7 +9286,8 @@ function AdminAppointmentRow({
               </div>
             </div>
           </div>
-        )}
+          );
+        })()}
 
         {/* Archive Appointment Modal */}
         {showArchiveModal && appointmentToHandle === appt._id && (
