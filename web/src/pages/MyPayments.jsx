@@ -188,12 +188,8 @@ const MyPayments = () => {
             return;
           }
           
-          // Check if there's an active payment in progress
-          if (latestPayment.status === 'pending' || latestPayment.status === 'processing') {
-            toast.warning('A payment is already in progress for this appointment. Please complete or cancel the existing payment first.');
-            setLoadingPaymentId(null);
-            return;
-          }
+          // Note: Old pending/processing payments are automatically cancelled when a new payment intent is created
+          // So we don't need to block here - the backend will handle it
         }
       } catch (paymentCheckError) {
         console.error('Error checking payment status:', paymentCheckError);
