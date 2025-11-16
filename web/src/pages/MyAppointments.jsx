@@ -12110,14 +12110,21 @@ function PaymentStatusCell({ appointment, isBuyer }) {
           onPaymentSuccess={async (payment) => {
             setShowPayModal(false);
             // Optimistically update payment status immediately
-            if (payment && payment.status === 'completed') {
+            if (payment && (payment.status === 'completed' || payment.metadata?.adminMarked)) {
               setPaymentStatus(payment);
               setLoading(false);
             }
-            // Wait a bit for backend to fully process, then refetch to get complete data
-            setTimeout(async () => {
-              await fetchPaymentStatus(true); // Skip loading state
-            }, 1000);
+            // Update appointment paymentConfirmed flag immediately
+            if (appointment.paymentConfirmed !== true) {
+              window.dispatchEvent(new CustomEvent('paymentStatusUpdated', {
+                detail: { 
+                  appointmentId: appointment._id,
+                  paymentConfirmed: true
+                }
+              }));
+            }
+            // Don't refetch immediately - let the socket event handler handle it after a delay
+            // This prevents race conditions where cancelled payments might overwrite completed status
           }}
         />
       )}
