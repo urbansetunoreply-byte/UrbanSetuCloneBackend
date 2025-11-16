@@ -66,15 +66,57 @@ const MyPayments = () => {
     finally { setLoading(false); }
   };
 
-  // Pagination effect
+  // Pagination effect with duplicate payment filtering
   useEffect(() => {
+    // Filter out duplicate pending payments for the same appointment
+    // Keep only the most recent pending payment per appointment
+    const filteredPayments = allPayments.reduce((acc, payment) => {
+      const appointmentId = payment.appointmentId?._id || payment.appointmentId;
+      if (!appointmentId) {
+        acc.push(payment);
+        return acc;
+      }
+      
+      // If payment is completed, failed, refunded, or partially_refunded, always include it
+      if (payment.status === 'completed' || payment.status === 'failed' || 
+          payment.status === 'refunded' || payment.status === 'partially_refunded') {
+        acc.push(payment);
+        return acc;
+      }
+      
+      // For pending/processing payments, check if we already have one for this appointment
+      const existingPending = acc.find(p => {
+        const existingAppointmentId = p.appointmentId?._id || p.appointmentId;
+        return existingAppointmentId === appointmentId && 
+               (p.status === 'pending' || p.status === 'processing');
+      });
+      
+      if (!existingPending) {
+        acc.push(payment);
+      } else {
+        // Keep the most recent one
+        const existingIndex = acc.findIndex(p => {
+          const existingAppointmentId = p.appointmentId?._id || p.appointmentId;
+          return existingAppointmentId === appointmentId && 
+                 (p.status === 'pending' || p.status === 'processing');
+        });
+        const existingDate = new Date(existingPending.createdAt);
+        const currentDate = new Date(payment.createdAt);
+        if (currentDate > existingDate) {
+          acc[existingIndex] = payment;
+        }
+      }
+      
+      return acc;
+    }, []);
+    
     const itemsPerPage = 10;
-    const totalPages = Math.ceil(allPayments.length / itemsPerPage);
+    const totalPages = Math.ceil(filteredPayments.length / itemsPerPage);
     setTotalPages(totalPages);
     
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const currentPagePayments = allPayments.slice(startIndex, endIndex);
+    const currentPagePayments = filteredPayments.slice(startIndex, endIndex);
     setPayments(currentPagePayments);
   }, [allPayments, currentPage]);
 
@@ -83,8 +125,15 @@ const MyPayments = () => {
     
     try {
       setLoadingAppointment(true);
+      // Extract appointment ID (could be object or string)
+      const appointmentId = payment.appointmentId?._id || payment.appointmentId;
+      if (!appointmentId) {
+        toast.error('Appointment ID not found');
+        return;
+      }
+      
       // Fetch appointment details
-      const res = await fetch(`${API_BASE_URL}/api/bookings/${payment.appointmentId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/bookings/${appointmentId}`, {
         credentials: 'include'
       });
       
@@ -116,14 +165,18 @@ const MyPayments = () => {
   const goToAppointment = (payment) => {
     if (!payment || !payment.appointmentId) return;
     
+    // Extract appointment ID (could be object or string)
+    const appointmentId = payment.appointmentId?._id || payment.appointmentId;
+    if (!appointmentId) return;
+    
     // Navigate to MyAppointments and dispatch custom event to highlight the appointment
     navigate('/user/my-appointments', {
-      state: { highlightAppointmentId: payment.appointmentId }
+      state: { highlightAppointmentId: appointmentId }
     });
     
     // Also dispatch a custom event for immediate highlighting if already on the page
     window.dispatchEvent(new CustomEvent('highlightAppointment', {
-      detail: { appointmentId: payment.appointmentId }
+      detail: { appointmentId: appointmentId }
     }));
   };
 
@@ -532,7 +585,7 @@ const MyPayments = () => {
                     )}
                   </button>
                 )}
-                {selectedPayment.appointmentId && (
+                {(selectedPayment.appointmentId?._id || selectedPayment.appointmentId) && (
                   <button
                     onClick={() => {
                       goToAppointment(selectedPayment);
