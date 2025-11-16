@@ -595,6 +595,28 @@ export default function MyAppointments() {
     };
   }, [location.state, navigate, appointments, currentUser?._id, params.chatId]);
 
+  // Handle highlightAppointmentId from location.state (must be after location declaration)
+  useEffect(() => {
+    if (appointments.length === 0) return;
+    
+    const highlightAppointmentId = location.state?.highlightAppointmentId;
+    
+    if (highlightAppointmentId) {
+      setTimeout(() => {
+        const appointmentRow = document.querySelector(`[data-appointment-id="${highlightAppointmentId}"]`);
+        if (appointmentRow) {
+          appointmentRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          appointmentRow.classList.add('highlight-appointment');
+          setTimeout(() => {
+            appointmentRow.classList.remove('highlight-appointment');
+          }, 3000);
+        }
+      }, 500);
+      // Clear the state after highlighting
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state?.highlightAppointmentId, appointments.length, navigate, location.pathname]);
+
   const handleStatusUpdate = async (id, status) => {
     setActionLoading(id + status);
     try {
