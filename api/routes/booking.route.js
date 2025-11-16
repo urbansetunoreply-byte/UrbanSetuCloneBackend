@@ -305,7 +305,7 @@ router.patch('/:id/status', verifyToken, async (req, res) => {
       { new: true }
     ).populate('buyerId', 'username email mobileNumber avatar')
      .populate('sellerId', 'username email mobileNumber avatar')
-     .populate('listingId', '_id name address');
+     .populate('listingId', 'name description address imageUrls regularPrice');
 
     // --- NEW LOGIC: Update review for verified badge if booking is accepted/completed ---
     if (status === 'accepted' || status === 'completed') {
