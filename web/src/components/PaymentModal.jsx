@@ -177,9 +177,23 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
           if (data.payment) {
             onPaymentSuccess(data.payment);
           }
+          // Payment already completed, no need to cancel
+          setPaymentData(null);
+          setPaymentSuccess(false);
+          if (expiryTimer) {
+            clearInterval(expiryTimer);
+            setExpiryTimer(null);
+          }
           onClose();
         } else if (response.status === 409 && data.message && data.message.includes('already in progress')) {
           toast.warning('A payment is already in progress for this appointment. Please complete or cancel the existing payment first.');
+          // Payment intent not created, no need to cancel
+          setPaymentData(null);
+          setPaymentSuccess(false);
+          if (expiryTimer) {
+            clearInterval(expiryTimer);
+            setExpiryTimer(null);
+          }
           onClose();
         } else {
           toast.error(data.message || 'Failed to create payment intent');
@@ -470,12 +484,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                   Payment Required
                 </h2>
                 <button
-                  onClick={() => {
-                    if (!paymentSuccess) {
-                      toast.info('Payment not completed. You can pay later from My Appointments.');
-                    }
-                    onClose();
-                  }}
+                  onClick={handleClose}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
                   <FaTimes className="text-xl" />
@@ -484,6 +493,14 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
               <p className="text-gray-600 mt-2">
                 Complete your advance payment to confirm the booking
               </p>
+              {paymentData && paymentData.payment && !paymentSuccess && (
+                <div className="mt-3 flex items-center gap-2 text-sm">
+                  <span className="text-gray-600">Time remaining:</span>
+                  <span className={`font-semibold ${timeRemaining < 60 ? 'text-red-600' : timeRemaining < 300 ? 'text-orange-600' : 'text-green-600'}`}>
+                    {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Payment Details */}
