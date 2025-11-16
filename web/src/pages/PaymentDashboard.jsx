@@ -465,34 +465,24 @@ const PaymentDashboard = () => {
                         </div>
                         <div className="mt-2 text-xs text-gray-600">Payment ID: <span className="font-mono">{p.paymentId}</span></div>
                         <div className="mt-1 text-xs text-gray-600">Gateway: {p.gateway?.toUpperCase()}</div>
-                        {p.receiptUrl && (
-                          <div className="mt-2 text-xs">
+                        <div className="mt-2 flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                          {p.receiptUrl && (
                             <button
                               onClick={async () => {
-                                try {
-                                  // Add admin parameter to receipt URL
-                                  const receiptUrl = p.receiptUrl.includes('?') 
-                                    ? `${p.receiptUrl}&admin=true` 
-                                    : `${p.receiptUrl}?admin=true`;
-                                  const res = await fetch(receiptUrl, { credentials: 'include' });
-                                  if (!res.ok) return;
-                                  const blob = await res.blob();
-                                  const url = window.URL.createObjectURL(blob);
-                                  const a = document.createElement('a');
-                                  a.href = url;
-                                  a.download = 'receipt.pdf';
-                                  document.body.appendChild(a);
-                                  a.click();
-                                  a.remove();
-                                  window.URL.revokeObjectURL(url);
-                                } catch {}
+                                downloadReceipt(p.receiptUrl);
                               }}
-                              className="text-blue-600 underline"
+                              className="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 text-xs flex items-center gap-1"
                             >
-                              Receipt
+                              <FaDownload className="text-xs" /> Receipt
                             </button>
-                          </div>
-                        )}
+                          )}
+                          <button
+                            onClick={() => sharePayment(p)}
+                            className="px-3 py-1 bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-200 text-xs flex items-center gap-1"
+                          >
+                            <FaShare className="text-xs" /> Share
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
