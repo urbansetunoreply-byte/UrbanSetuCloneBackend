@@ -147,7 +147,7 @@ const MyPayments = () => {
   }, [allPayments, currentPage]);
 
   const payNow = async (payment) => {
-    if (!payment || payment.status === 'completed' || !payment.appointmentId) return;
+    if (!payment || !payment.appointmentId) return;
     
     try {
       // Track which payment is loading
@@ -157,6 +157,52 @@ const MyPayments = () => {
       const appointmentId = payment.appointmentId?._id || payment.appointmentId;
       if (!appointmentId) {
         toast.error('Appointment ID not found');
+        setLoadingPaymentId(null);
+        return;
+      }
+      
+      // Check if payment is already completed before proceeding
+      try {
+        const paymentCheckRes = await fetch(`${API_BASE_URL}/api/payments/history?appointmentId=${appointmentId}`, {
+          credentials: 'include'
+        });
+        const paymentCheckData = await paymentCheckRes.json();
+        
+        if (paymentCheckRes.ok && paymentCheckData.payments && paymentCheckData.payments.length > 0) {
+          const latestPayment = paymentCheckData.payments[0];
+          
+          // Check if payment is already completed
+          if (latestPayment.status === 'completed' || latestPayment.metadata?.adminMarked) {
+            toast.success('Payment already completed!');
+            // Refresh payments to show updated status
+            await fetchPayments();
+            // Dispatch event to update MyAppointments page if it's open
+            window.dispatchEvent(new CustomEvent('paymentStatusUpdated', {
+              detail: { 
+                appointmentId: appointmentId,
+                paymentConfirmed: true
+              }
+            }));
+            setLoadingPaymentId(null);
+            return;
+          }
+          
+          // Check if there's an active payment in progress
+          if (latestPayment.status === 'pending' || latestPayment.status === 'processing') {
+            toast.warning('A payment is already in progress for this appointment. Please complete or cancel the existing payment first.');
+            setLoadingPaymentId(null);
+            return;
+          }
+        }
+      } catch (paymentCheckError) {
+        console.error('Error checking payment status:', paymentCheckError);
+        // Continue with payment flow if check fails
+      }
+      
+      // If payment status is completed, don't proceed
+      if (payment.status === 'completed') {
+        toast.success('Payment already completed!');
+        await fetchPayments();
         setLoadingPaymentId(null);
         return;
       }

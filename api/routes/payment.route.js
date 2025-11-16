@@ -71,6 +71,36 @@ router.post("/create-intent", verifyToken, async (req, res) => {
       return res.status(403).json({ message: "You can only make payments for your own appointments." });
     }
 
+    // Check if payment is already completed for this appointment
+    const completedPayment = await Payment.findOne({ 
+      appointmentId, 
+      status: 'completed' 
+    }).sort({ createdAt: -1 });
+    
+    if (completedPayment) {
+      return res.status(400).json({ 
+        message: "Payment already completed for this appointment.",
+        payment: completedPayment
+      });
+    }
+
+    // Check if there's an active (pending/processing) payment intent for this appointment
+    const activePayment = await Payment.findOne({ 
+      appointmentId, 
+      status: { $in: ['pending', 'processing'] }
+    }).sort({ createdAt: -1 });
+    
+    if (activePayment) {
+      return res.status(409).json({ 
+        message: "A payment is already in progress for this appointment. Please complete or cancel the existing payment first.",
+        activePayment: {
+          paymentId: activePayment.paymentId,
+          status: activePayment.status,
+          createdAt: activePayment.createdAt
+        }
+      });
+    }
+
     const listing = appointment.listingId;
     // Determine gateway and amounts
     if (gateway === 'razorpay') {

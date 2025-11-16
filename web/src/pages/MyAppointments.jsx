@@ -11716,6 +11716,58 @@ function PaymentStatusCell({ appointment, isBuyer }) {
     }
   };
 
+  const handlePayNowClick = async () => {
+    // Check if payment is already completed before opening modal
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/history?appointmentId=${appointment._id}`, {
+        credentials: 'include'
+      });
+      const data = await response.json();
+      
+      if (response.ok && data.payments && data.payments.length > 0) {
+        const latestPayment = data.payments[0];
+        
+        // Check if payment is already completed
+        if (latestPayment.status === 'completed' || latestPayment.metadata?.adminMarked) {
+          toast.success('Payment already completed!');
+          // Update payment status immediately
+          setPaymentStatus(latestPayment);
+          setLoading(false);
+          // Refetch payment status to update UI with complete data
+          setTimeout(async () => {
+            await fetchPaymentStatus(true);
+          }, 500);
+          // Update appointment paymentConfirmed flag immediately
+          if (appointment.paymentConfirmed !== true) {
+            window.dispatchEvent(new CustomEvent('paymentStatusUpdated', {
+              detail: { 
+                appointmentId: appointment._id,
+                paymentConfirmed: true
+              }
+            }));
+          }
+          return;
+        }
+        
+        // Check if there's an active payment in progress
+        if (latestPayment.status === 'pending' || latestPayment.status === 'processing') {
+          toast.warning('A payment is already in progress for this appointment. Please complete or cancel the existing payment first.');
+          // Update payment status to show the active payment
+          setPaymentStatus(latestPayment);
+          setLoading(false);
+          return;
+        }
+      }
+      
+      // If payment is not completed and no active payment, proceed with opening the modal
+      setShowPayModal(true);
+    } catch (error) {
+      console.error('Error checking payment status:', error);
+      // If there's an error checking, still allow opening the modal
+      setShowPayModal(true);
+    }
+  };
+
   if (loading) {
     return <FaSpinner className="animate-spin text-blue-600" />;
   }
@@ -11905,13 +11957,13 @@ function PaymentStatusCell({ appointment, isBuyer }) {
           {isPending ? (
             <button
               className="mt-1 inline-flex items-center gap-1 text-white bg-blue-600 hover:bg-blue-700 text-xs font-semibold px-3 py-1 rounded"
-              onClick={() => setShowPayModal(true)}
+              onClick={handlePayNowClick}
             >
               <FaCreditCard /> Pay Now
             </button>
           ) : paymentStatus && paymentStatus.status === 'failed' && !isFrozenStatus ? (
             <button
-              onClick={() => setShowPayModal(true)}
+              onClick={handlePayNowClick}
               className="mt-1 inline-flex items-center gap-1 text-white bg-red-600 hover:bg-red-700 text-xs font-semibold px-3 py-1 rounded"
             >
               <FaCreditCard /> Retry Payment

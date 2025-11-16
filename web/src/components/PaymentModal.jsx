@@ -71,7 +71,20 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
       if (response.ok) {
         setPaymentData(data);
       } else {
-        toast.error(data.message || 'Failed to create payment intent');
+        // Handle specific error cases
+        if (response.status === 400 && data.message && data.message.includes('already completed')) {
+          toast.success('Payment already completed!');
+          // Call onPaymentSuccess with the existing payment
+          if (data.payment) {
+            onPaymentSuccess(data.payment);
+          }
+          onClose();
+        } else if (response.status === 409 && data.message && data.message.includes('already in progress')) {
+          toast.warning('A payment is already in progress for this appointment. Please complete or cancel the existing payment first.');
+          onClose();
+        } else {
+          toast.error(data.message || 'Failed to create payment intent');
+        }
       }
     } catch (error) {
       console.error('Error creating payment intent:', error);
