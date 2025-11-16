@@ -135,34 +135,36 @@ const MyPayments = () => {
         return;
       }
       
-      // Fetch appointment details with full population
+      // Fetch appointment details - API returns the booking object directly (not wrapped)
       const res = await fetch(`${API_BASE_URL}/api/bookings/${appointmentId}`, {
         credentials: 'include'
       });
       
       if (!res.ok) {
-        toast.error('Failed to load appointment details');
+        const errorData = await res.json().catch(() => ({ message: 'Failed to load appointment' }));
+        toast.error(errorData.message || 'Failed to load appointment details');
         setLoadingPaymentId(null);
         return;
       }
       
-      const data = await res.json();
-      if (data.success && data.appointment) {
-        // Set appointment with region (default to 'india' if not specified)
-        // Also ensure we have all necessary fields for PaymentModal
-        const appointment = {
-          ...data.appointment,
-          _id: data.appointment._id || appointmentId,
-          region: data.appointment.region || 'india',
-          buyerId: data.appointment.buyerId,
-          sellerId: data.appointment.sellerId,
-          listingId: data.appointment.listingId
-        };
-        setPaymentAppointment(appointment);
-        setShowPaymentModal(true);
-      } else {
+      // API returns booking object directly, not wrapped in { success, appointment }
+      const appointment = await res.json();
+      
+      if (!appointment || !appointment._id) {
         toast.error('Appointment not found');
+        setLoadingPaymentId(null);
+        return;
       }
+      
+      // Prepare appointment object for PaymentModal (same format as MyAppointments)
+      // PaymentModal expects appointment with region field
+      const appointmentForModal = {
+        ...appointment,
+        region: appointment.region || 'india' // Default to 'india' if not specified
+      };
+      
+      setPaymentAppointment(appointmentForModal);
+      setShowPaymentModal(true);
     } catch (error) {
       console.error('Error fetching appointment:', error);
       toast.error('Failed to load appointment details');
