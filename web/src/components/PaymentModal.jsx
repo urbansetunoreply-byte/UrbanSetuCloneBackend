@@ -378,7 +378,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
           paymentDataRef.current = null; // Reset ref
           setPaymentSuccess(false);
           setPaymentInitiatedTime(null); // Reset initiation time
-          setTimeRemaining(10 * 60); // Reset timer to 10 minutes
+          // Don't reset timeRemaining here - it will be calculated from payment data when received
           setTimeout(() => createPaymentIntent(methodFromAppt), 0);
         } catch (error) {
           console.error('Error acquiring lock:', error);
