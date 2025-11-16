@@ -1784,23 +1784,11 @@ router.post('/lock/acquire', verifyToken, async (req, res) => {
         });
       }
       
-      // If lock belongs to same user but different session, allow (same user, different browser)
-      if (existingLock.userId === userId) {
-        // Same user, update timestamp and session
-        existingLock.timestamp = now;
-        existingLock.sessionId = req.sessionId || null;
-        paymentLocks.set(appointmentId, existingLock);
-        return res.json({ 
-          ok: true, 
-          message: 'Lock acquired (same user, session updated)',
-          locked: true
-        });
-      }
-      
-      // Lock is held by another user
+      // Lock is active (not stale) - prevent acquiring even if same user
+      // This ensures only one browser/device can have the payment modal open at a time
       return res.status(409).json({ 
         ok: false, 
-        message: 'Payment session is already open in another browser/device',
+        message: 'Payment session is already open in another browser/device. Please close that browser/device first before opening a new payment session.',
         locked: true,
         lockedBy: existingLock.userId
       });

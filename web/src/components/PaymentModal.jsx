@@ -36,12 +36,15 @@ const createPaymentLockManager = (appointmentId) => {
       
       const data = await response.json();
       
-      if (!response.ok || !data.ok || data.locked === false) {
-        // Backend lock acquisition failed (another browser/device has it)
-        if (response.status === 409 || data.locked === true) {
-          return { success: false, message: data.message || 'Payment session is already open in another browser/device' };
-        }
-        // If backend check fails, still try localStorage (fallback)
+      // Check if backend lock acquisition failed
+      if (response.status === 409) {
+        // Another browser/device has the lock
+        return { success: false, message: data.message || 'Payment session is already open in another browser/device. Please close that browser/device first before opening a new payment session.' };
+      }
+      
+      if (!response.ok || !data.ok) {
+        // Backend error, fall back to localStorage (same-browser only)
+        console.warn('Backend lock acquisition failed, falling back to localStorage:', data);
       } else if (data.ok && data.locked === true) {
         // Backend lock acquired, also set localStorage (for same-browser detection)
         localStorage.setItem(lockKey, JSON.stringify({ tabId, timestamp: Date.now() }));
@@ -337,25 +340,34 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
       
       // Try to acquire lock before opening modal (async)
       const acquireLockAsync = async () => {
-        const result = await lockManagerRef.current.acquireLock();
-        if (!result.success) {
-          // Another tab/browser has the payment modal open
-          toast.warning(result.message || 'A payment session is already open for this appointment in another window/tab/browser. Please close that window/tab/browser first before opening a new payment session.');
+        try {
+          const result = await lockManagerRef.current.acquireLock();
+          if (!result.success) {
+            // Another tab/browser has the payment modal open
+            toast.warning(result.message || 'A payment session is already open for this appointment in another window/tab/browser. Please close that window/tab/browser first before opening a new payment session.');
+            // Close modal immediately
+            setLoading(false);
+            onClose();
+            return;
+          }
+          
+          // Lock acquired, continue with modal initialization
+          // Initialize method from appointment region before creating intent
+          const methodFromAppt = appointment?.region === 'india' ? 'razorpay' : 'paypal';
+          setPreferredMethod(methodFromAppt);
+          setPaymentData(null);
+          paymentDataRef.current = null; // Reset ref
+          setPaymentSuccess(false);
+          setPaymentInitiatedTime(null); // Reset initiation time
+          setTimeRemaining(10 * 60); // Reset timer to 10 minutes
+          setLoading(true);
+          setTimeout(() => createPaymentIntent(methodFromAppt), 0);
+        } catch (error) {
+          console.error('Error acquiring lock:', error);
+          toast.error('Failed to acquire payment lock. Please try again.');
+          setLoading(false);
           onClose();
-          return;
         }
-        
-        // Lock acquired, continue with modal initialization
-        // Initialize method from appointment region before creating intent
-        const methodFromAppt = appointment?.region === 'india' ? 'razorpay' : 'paypal';
-        setPreferredMethod(methodFromAppt);
-        setPaymentData(null);
-        paymentDataRef.current = null; // Reset ref
-        setPaymentSuccess(false);
-        setPaymentInitiatedTime(null); // Reset initiation time
-        setTimeRemaining(10 * 60); // Reset timer to 10 minutes
-        setLoading(true);
-        setTimeout(() => createPaymentIntent(methodFromAppt), 0);
       };
       
       acquireLockAsync();
