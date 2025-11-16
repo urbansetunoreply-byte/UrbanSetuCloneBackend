@@ -319,6 +319,50 @@ export default function MyAppointments() {
     };
   }, [appointments]);
 
+  // Listen for highlightAppointment events (from MyPayments page)
+  useEffect(() => {
+    const handleHighlightAppointment = (e) => {
+      const { appointmentId } = e.detail || {};
+      if (appointmentId) {
+        // Find and highlight the appointment row
+        setTimeout(() => {
+          const appointmentRow = document.querySelector(`[data-appointment-id="${appointmentId}"]`);
+          if (appointmentRow) {
+            appointmentRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            appointmentRow.classList.add('highlight-appointment');
+            setTimeout(() => {
+              appointmentRow.classList.remove('highlight-appointment');
+            }, 3000);
+          }
+        }, 300);
+      }
+    };
+    
+    window.addEventListener('highlightAppointment', handleHighlightAppointment);
+    return () => {
+      window.removeEventListener('highlightAppointment', handleHighlightAppointment);
+    };
+  }, []);
+
+  // Handle highlightAppointmentId from location.state
+  useEffect(() => {
+    if (location.state?.highlightAppointmentId && appointments.length > 0) {
+      const appointmentId = location.state.highlightAppointmentId;
+      setTimeout(() => {
+        const appointmentRow = document.querySelector(`[data-appointment-id="${appointmentId}"]`);
+        if (appointmentRow) {
+          appointmentRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          appointmentRow.classList.add('highlight-appointment');
+          setTimeout(() => {
+            appointmentRow.classList.remove('highlight-appointment');
+          }, 3000);
+        }
+      }, 500);
+      // Clear the state after highlighting
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state?.highlightAppointmentId, appointments, navigate, location.pathname]);
+
   // Lock background scroll when profile modal is open
   useEffect(() => {
     if (showOtherPartyModal) {
@@ -5764,7 +5808,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const selectedMessageForHeaderOptions = headerOptionsMessageId ? comments.find(msg => msg._id === headerOptionsMessageId) : null;
   return (
     <>
-      <tr className={`hover:bg-blue-50 transition align-top ${!isUpcoming ? 'bg-gray-100' : ''}`}>
+      <tr className={`hover:bg-blue-50 transition align-top ${!isUpcoming ? 'bg-gray-100' : ''}`} data-appointment-id={appt._id}>
         <td className="border p-2">
           <div>
             <div>{new Date(appt.date).toLocaleDateString('en-GB')}</div>

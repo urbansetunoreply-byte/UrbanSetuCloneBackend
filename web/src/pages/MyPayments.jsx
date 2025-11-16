@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { FaDollarSign, FaCreditCard, FaDownload, FaClock, FaCheckCircle, FaTimes, FaExclamationTriangle, FaSpinner, FaMoneyBill, FaLock, FaShare, FaCopy, FaEye, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaDollarSign, FaCreditCard, FaDownload, FaClock, FaCheckCircle, FaTimes, FaExclamationTriangle, FaSpinner, FaMoneyBill, FaLock, FaShare, FaCopy, FaEye, FaExternalLinkAlt, FaCalendar } from 'react-icons/fa';
 import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from '../redux/user/userSlice';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+import PaymentModal from '../components/PaymentModal';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -29,6 +30,11 @@ const MyPayments = () => {
   // Preview modal states
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState(null);
+  
+  // Payment modal states
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentAppointment, setPaymentAppointment] = useState(null);
+  const [loadingAppointment, setLoadingAppointment] = useState(false);
   
   // Export password modal states
   const [showExportPasswordModal, setShowExportPasswordModal] = useState(false);
@@ -72,9 +78,53 @@ const MyPayments = () => {
     setPayments(currentPagePayments);
   }, [allPayments, currentPage]);
 
-  const payNow = (payment) => {
-    if (!payment || payment.status === 'completed') return;
-    window.location.href = '/user/my-appointments';
+  const payNow = async (payment) => {
+    if (!payment || payment.status === 'completed' || !payment.appointmentId) return;
+    
+    try {
+      setLoadingAppointment(true);
+      // Fetch appointment details
+      const res = await fetch(`${API_BASE_URL}/api/bookings/${payment.appointmentId}`, {
+        credentials: 'include'
+      });
+      
+      if (!res.ok) {
+        toast.error('Failed to load appointment details');
+        return;
+      }
+      
+      const data = await res.json();
+      if (data.success && data.appointment) {
+        // Set appointment with region (default to 'india' if not specified)
+        const appointment = {
+          ...data.appointment,
+          region: data.appointment.region || 'india'
+        };
+        setPaymentAppointment(appointment);
+        setShowPaymentModal(true);
+      } else {
+        toast.error('Appointment not found');
+      }
+    } catch (error) {
+      console.error('Error fetching appointment:', error);
+      toast.error('Failed to load appointment details');
+    } finally {
+      setLoadingAppointment(false);
+    }
+  };
+
+  const goToAppointment = (payment) => {
+    if (!payment || !payment.appointmentId) return;
+    
+    // Navigate to MyAppointments and dispatch custom event to highlight the appointment
+    navigate('/user/my-appointments', {
+      state: { highlightAppointmentId: payment.appointmentId }
+    });
+    
+    // Also dispatch a custom event for immediate highlighting if already on the page
+    window.dispatchEvent(new CustomEvent('highlightAppointment', {
+      detail: { appointmentId: payment.appointmentId }
+    }));
   };
 
   const downloadReceipt = async (url) => {
@@ -223,6 +273,18 @@ const MyPayments = () => {
                           </span>
                         )}
                       </div>
+                      {p.appointmentId && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            goToAppointment(p);
+                          }}
+                          className="mt-2 px-3 py-1 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 text-xs flex items-center gap-1 w-fit"
+                          title="Go to appointment"
+                        >
+                          <FaCalendar className="text-xs" /> Go to Appointment
+                        </button>
+                      )}
                     </div>
                     <div className="flex flex-col sm:items-end gap-2">
                       <div className="text-xs text-gray-500 space-y-1">
@@ -260,8 +322,23 @@ const MyPayments = () => {
                       <FaShare className="text-xs" /> Share
                     </button>
                     {p.status !== 'completed' && p.status !== 'refunded' && p.status !== 'partially_refunded' && (
-                      <button onClick={()=>payNow(p)} className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs flex items-center gap-1">
-                        <FaCreditCard className="text-xs" /> Pay Now
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          payNow(p);
+                        }} 
+                        className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs flex items-center gap-1"
+                        disabled={loadingAppointment}
+                      >
+                        {loadingAppointment ? (
+                          <>
+                            <FaSpinner className="text-xs animate-spin" /> Loading...
+                          </>
+                        ) : (
+                          <>
+                            <FaCreditCard className="text-xs" /> Pay Now
+                          </>
+                        )}
                       </button>
                     )}
                   </div>
@@ -442,14 +519,60 @@ const MyPayments = () => {
                       setShowPreviewModal(false);
                     }}
                     className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                    disabled={loadingAppointment}
                   >
-                    <FaCreditCard /> Pay Now
+                    {loadingAppointment ? (
+                      <>
+                        <FaSpinner className="animate-spin" /> Loading...
+                      </>
+                    ) : (
+                      <>
+                        <FaCreditCard /> Pay Now
+                      </>
+                    )}
+                  </button>
+                )}
+                {selectedPayment.appointmentId && (
+                  <button
+                    onClick={() => {
+                      goToAppointment(selectedPayment);
+                      setShowPreviewModal(false);
+                    }}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2"
+                  >
+                    <FaCalendar /> Go to Appointment
                   </button>
                 )}
               </div>
             </div>
           </div>
         </div>
+      )}
+      
+      {/* Payment Modal */}
+      {showPaymentModal && paymentAppointment && (
+        <PaymentModal
+          isOpen={showPaymentModal}
+          onClose={() => {
+            setShowPaymentModal(false);
+            setPaymentAppointment(null);
+          }}
+          appointment={paymentAppointment}
+          onPaymentSuccess={(payment) => {
+            setShowPaymentModal(false);
+            setPaymentAppointment(null);
+            // Refresh payments to show updated status
+            fetchPayments();
+            toast.success('Payment completed successfully!');
+            // Dispatch event to update MyAppointments page if it's open
+            window.dispatchEvent(new CustomEvent('paymentStatusUpdated', {
+              detail: { 
+                appointmentId: paymentAppointment._id,
+                paymentConfirmed: true
+              }
+            }));
+          }}
+        />
       )}
       
       {/* Export Password Modal */}
