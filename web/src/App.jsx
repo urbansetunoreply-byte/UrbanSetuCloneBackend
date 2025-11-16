@@ -616,8 +616,35 @@ function AppRoutes({ bootstrapped }) {
 
     socket.on('commentUpdate', handleNewMessage);
     
+    // Handle new notifications with sound and toast
+    const handleNewNotification = (notification) => {
+      if (!currentUser || notification.userId !== currentUser._id) return;
+      
+      // Play notification sound
+      try {
+        const audio = new Audio('/sounds/notification.mp3');
+        audio.volume = 0.7; // Set volume to 70%
+        audio.play().catch(err => {
+          console.log('Could not play notification sound:', err);
+        });
+      } catch (err) {
+        console.log('Could not play notification sound:', err);
+      }
+      
+      // Show toast notification
+      toast.info(notification.message || notification.title || 'New notification', {
+        autoClose: 5000,
+        closeOnClick: true,
+        pauseOnHover: false,
+      });
+    };
+    
+    socket.on('notificationCreated', handleNewNotification);
+    socket.on('watchlistNotification', handleNewNotification);
+    
     return () => {
       socket.off('commentUpdate', handleNewMessage);
+      socket.off('notificationCreated', handleNewNotification);
     };
   }, [dispatch, navigate, currentUser, playNotification, currentlyOpenChat]);
 

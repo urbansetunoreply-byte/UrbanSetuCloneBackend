@@ -3,6 +3,7 @@ import { FaLeaf, FaUsers, FaShieldAlt, FaSave, FaCalculator, FaInfoCircle } from
 
 const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
     const [saving, setSaving] = useState(false);
+    const [saveButtonLoading, setSaveButtonLoading] = useState(false);
     const [esg, setEsg] = useState({
         environmental: {
             energyRating: 'Not Rated',
@@ -605,6 +606,7 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
                 <button
                     type="button"
                     onClick={() => {
+                        setSaveButtonLoading(true);
                         const esgWithCalculations = {
                             ...esg,
                             esgScore: calculatedScore,
@@ -613,11 +615,25 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
                         };
                         console.log('ESGManagement: Save button clicked, sending:', { esgScore: calculatedScore, esgRating: calculatedRating });
                         onESGChange(esgWithCalculations);
+                        // Reset loading state after a brief delay to show feedback
+                        setTimeout(() => {
+                            setSaveButtonLoading(false);
+                        }, 500);
                     }}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={saveButtonLoading}
                 >
-                    <FaSave />
-                    Save ESG Data
+                    {saveButtonLoading ? (
+                        <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            Saving...
+                        </>
+                    ) : (
+                        <>
+                            <FaSave />
+                            Save ESG Data
+                        </>
+                    )}
                 </button>
             </div>
         </div>

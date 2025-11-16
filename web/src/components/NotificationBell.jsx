@@ -458,6 +458,7 @@ export default function NotificationBell({ mobile = false }) {
       if (!currentUser || notification.userId !== currentUser._id) return;
       setNotifications((prev) => [notification, ...prev]);
       setUnreadCount((count) => count + 1);
+      triggerBellRing(); // Ring bell when new notification arrives
     };
     
     const handleAllNotificationsMarkedAsRead = (data) => {

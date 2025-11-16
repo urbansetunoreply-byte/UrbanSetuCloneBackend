@@ -7,6 +7,7 @@ import RefundManagement from '../components/RefundManagement';
 import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from '../redux/user/userSlice';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+import { socket } from '../utils/socket';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -46,6 +47,29 @@ const PaymentDashboard = () => {
   useEffect(() => {
     fetchPaymentStats();
     fetchAdminPayments();
+  }, []);
+
+  // Listen for payment status updates to refresh stats
+  useEffect(() => {
+    if (!socket) return;
+    
+    const handlePaymentStatusUpdate = () => {
+      // Refresh stats when payment status changes
+      fetchPaymentStats();
+    };
+    
+    const handlePaymentCreated = () => {
+      // Refresh stats when new payment is created
+      fetchPaymentStats();
+    };
+    
+    socket.on('paymentStatusUpdated', handlePaymentStatusUpdate);
+    socket.on('paymentCreated', handlePaymentCreated);
+    
+    return () => {
+      socket.off('paymentStatusUpdated', handlePaymentStatusUpdate);
+      socket.off('paymentCreated', handlePaymentCreated);
+    };
   }, []);
 
   const fetchPaymentStats = async () => {
