@@ -1727,6 +1727,216 @@ router.post('/admin/mark-paid', verifyToken, async (req, res) => {
   }
 });
 
+// Payment lock storage (in-memory, for preventing multiple payment sessions across browsers/devices)
+// Format: { appointmentId: { userId, timestamp, sessionId } }
+const paymentLocks = new Map();
+
+// Clean up stale locks every 10 seconds
+setInterval(() => {
+  const now = Date.now();
+  for (const [appointmentId, lock] of paymentLocks.entries()) {
+    // Remove locks older than 5 seconds without heartbeat
+    if (now - lock.timestamp > 5000) {
+      paymentLocks.delete(appointmentId);
+      console.log(`Auto-released stale payment lock for appointment ${appointmentId}`);
+    }
+  }
+}, 10000);
+
+// POST: Acquire payment lock (prevents multiple payment sessions for same appointment)
+router.post('/lock/acquire', verifyToken, async (req, res) => {
+  try {
+    const { appointmentId } = req.body;
+    const userId = req.user.id;
+    
+    if (!appointmentId) {
+      return res.status(400).json({ message: 'Appointment ID is required' });
+    }
+    
+    // Check if appointment exists and user is authorized
+    const appointment = await Booking.findById(appointmentId);
+    if (!appointment) {
+      return res.status(404).json({ message: 'Appointment not found' });
+    }
+    
+    // Check if user is the buyer
+    if (appointment.buyerId.toString() !== userId) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+    
+    const now = Date.now();
+    const existingLock = paymentLocks.get(appointmentId);
+    
+    // Check if lock exists and is not stale
+    if (existingLock) {
+      // If lock is stale (older than 5 seconds), allow acquiring it
+      if (now - existingLock.timestamp > 5000) {
+        // Lock is stale, acquire it
+        paymentLocks.set(appointmentId, {
+          userId,
+          timestamp: now,
+          sessionId: req.sessionId || null
+        });
+        return res.json({ 
+          ok: true, 
+          message: 'Lock acquired (stale lock replaced)',
+          locked: true
+        });
+      }
+      
+      // If lock belongs to same user but different session, allow (same user, different browser)
+      if (existingLock.userId === userId) {
+        // Same user, update timestamp and session
+        existingLock.timestamp = now;
+        existingLock.sessionId = req.sessionId || null;
+        paymentLocks.set(appointmentId, existingLock);
+        return res.json({ 
+          ok: true, 
+          message: 'Lock acquired (same user, session updated)',
+          locked: true
+        });
+      }
+      
+      // Lock is held by another user
+      return res.status(409).json({ 
+        ok: false, 
+        message: 'Payment session is already open in another browser/device',
+        locked: true,
+        lockedBy: existingLock.userId
+      });
+    }
+    
+    // No lock exists, acquire it
+    paymentLocks.set(appointmentId, {
+      userId,
+      timestamp: now,
+      sessionId: req.sessionId || null
+    });
+    
+    return res.json({ 
+      ok: true, 
+      message: 'Lock acquired',
+      locked: true
+    });
+  } catch (err) {
+    console.error('Error acquiring payment lock:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// POST: Release payment lock
+router.post('/lock/release', verifyToken, async (req, res) => {
+  try {
+    const { appointmentId } = req.body;
+    const userId = req.user.id;
+    
+    if (!appointmentId) {
+      return res.status(400).json({ message: 'Appointment ID is required' });
+    }
+    
+    const existingLock = paymentLocks.get(appointmentId);
+    
+    if (existingLock && existingLock.userId === userId) {
+      paymentLocks.delete(appointmentId);
+      return res.json({ 
+        ok: true, 
+        message: 'Lock released',
+        locked: false
+      });
+    }
+    
+    return res.json({ 
+      ok: true, 
+      message: 'Lock not found or not owned by user',
+      locked: false
+    });
+  } catch (err) {
+    console.error('Error releasing payment lock:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// GET: Check payment lock status
+router.get('/lock/check/:appointmentId', verifyToken, async (req, res) => {
+  try {
+    const { appointmentId } = req.params;
+    const userId = req.user.id;
+    
+    const existingLock = paymentLocks.get(appointmentId);
+    const now = Date.now();
+    
+    if (existingLock) {
+      // If lock is stale, consider it free
+      if (now - existingLock.timestamp > 5000) {
+        return res.json({ 
+          ok: true, 
+          locked: false,
+          stale: true
+        });
+      }
+      
+      // If lock belongs to current user, it's not locked (same user can access)
+      if (existingLock.userId === userId) {
+        return res.json({ 
+          ok: true, 
+          locked: false,
+          ownedByUser: true
+        });
+      }
+      
+      // Lock is held by another user
+      return res.json({ 
+        ok: true, 
+        locked: true,
+        lockedBy: existingLock.userId,
+        message: 'Payment session is already open in another browser/device'
+      });
+    }
+    
+    return res.json({ 
+      ok: true, 
+      locked: false
+    });
+  } catch (err) {
+    console.error('Error checking payment lock:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// POST: Heartbeat payment lock (keep lock alive)
+router.post('/lock/heartbeat', verifyToken, async (req, res) => {
+  try {
+    const { appointmentId } = req.body;
+    const userId = req.user.id;
+    
+    if (!appointmentId) {
+      return res.status(400).json({ message: 'Appointment ID is required' });
+    }
+    
+    const existingLock = paymentLocks.get(appointmentId);
+    
+    if (existingLock && existingLock.userId === userId) {
+      // Update timestamp to keep lock alive
+      existingLock.timestamp = Date.now();
+      paymentLocks.set(appointmentId, existingLock);
+      return res.json({ 
+        ok: true, 
+        message: 'Heartbeat received',
+        locked: true
+      });
+    }
+    
+    return res.status(404).json({ 
+      ok: false, 
+      message: 'Lock not found or not owned by user',
+      locked: false
+    });
+  } catch (err) {
+    console.error('Error updating payment lock heartbeat:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // POST: Cancel payment (when modal is closed without completing or timer expires)
 router.post('/cancel', verifyToken, async (req, res) => {
   try {

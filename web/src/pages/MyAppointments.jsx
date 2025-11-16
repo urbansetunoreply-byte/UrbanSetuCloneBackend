@@ -11779,33 +11779,49 @@ function PaymentStatusCell({ appointment, isBuyer }) {
         );
         
         if (activePayment) {
-          // Check if another tab/window has the payment modal open using cross-tab lock
-          const lockKey = `payment_lock_${appointment._id}`;
-          const lockData = localStorage.getItem(lockKey);
-          let isLockedByAnotherTab = false;
-          
-          if (lockData) {
-            try {
-              const { tabId: ownerTabId, timestamp } = JSON.parse(lockData);
-              const currentTabId = sessionStorage.getItem('paymentTabId');
-              const now = Date.now();
-              
-              // If lock is not stale (less than 5 seconds old) and owned by another tab
-              if (now - timestamp <= 5000 && ownerTabId !== currentTabId) {
-                isLockedByAnotherTab = true;
-              }
-            } catch (e) {
-              // Invalid lock data, ignore
+          // Check if another tab/window/browser has the payment modal open using backend lock
+          try {
+            const lockCheckResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/lock/check/${appointment._id}`, {
+              method: 'GET',
+              credentials: 'include'
+            });
+            
+            const lockCheckData = await lockCheckResponse.json();
+            
+            if (lockCheckData.ok && lockCheckData.locked === true && !lockCheckData.ownedByUser) {
+              // Another browser/device has the payment modal open
+              toast.warning(lockCheckData.message || 'A payment session is already open for this appointment in another browser/device. Please close that browser/device first before opening a new payment session.');
+              setPaymentStatus(activePayment);
+              setLoading(false);
+              setPaying(false);
+              return;
             }
-          }
-          
-          if (isLockedByAnotherTab) {
-            // Another tab has the payment modal open
-            toast.warning('A payment session is already open for this appointment in another window/tab. Please close that window/tab first before opening a new payment session.');
-            setPaymentStatus(activePayment);
-            setLoading(false);
-            setPaying(false);
-            return;
+            
+            // Also check localStorage for same-browser detection (fallback)
+            const lockKey = `payment_lock_${appointment._id}`;
+            const lockData = localStorage.getItem(lockKey);
+            
+            if (lockData) {
+              try {
+                const { tabId: ownerTabId, timestamp } = JSON.parse(lockData);
+                const currentTabId = sessionStorage.getItem('paymentTabId');
+                const now = Date.now();
+                
+                // If lock is not stale (less than 5 seconds old) and owned by another tab
+                if (now - timestamp <= 5000 && ownerTabId !== currentTabId) {
+                  toast.warning('A payment session is already open for this appointment in another tab. Please close that tab first before opening a new payment session.');
+                  setPaymentStatus(activePayment);
+                  setLoading(false);
+                  setPaying(false);
+                  return;
+                }
+              } catch (e) {
+                // Invalid lock data, ignore
+              }
+            }
+          } catch (lockCheckError) {
+            console.error('Error checking payment lock:', lockCheckError);
+            // If lock check fails, continue (allow opening modal as fallback)
           }
           
           // Check if the active payment has expired

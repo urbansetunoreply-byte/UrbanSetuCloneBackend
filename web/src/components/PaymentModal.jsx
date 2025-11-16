@@ -12,16 +12,50 @@ const getTabId = () => {
   return tabId;
 };
 
-// Cross-tab payment lock manager
+// Cross-tab and cross-browser payment lock manager
 const createPaymentLockManager = (appointmentId) => {
   const tabId = getTabId();
   const lockKey = `payment_lock_${appointmentId}`;
   const channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(`payment_${appointmentId}`) : null;
   let heartbeatInterval = null;
+  let backendHeartbeatInterval = null;
   let lockAcquired = false;
 
-  // Try to acquire lock
-  const acquireLock = () => {
+  // Try to acquire lock (backend + localStorage)
+  const acquireLock = async () => {
+    try {
+      // First, try to acquire backend lock (works across browsers/devices)
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/lock/acquire`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ appointmentId })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok || !data.ok || data.locked === false) {
+        // Backend lock acquisition failed (another browser/device has it)
+        if (response.status === 409 || data.locked === true) {
+          return { success: false, message: data.message || 'Payment session is already open in another browser/device' };
+        }
+        // If backend check fails, still try localStorage (fallback)
+      } else if (data.ok && data.locked === true) {
+        // Backend lock acquired, also set localStorage (for same-browser detection)
+        localStorage.setItem(lockKey, JSON.stringify({ tabId, timestamp: Date.now() }));
+        lockAcquired = true;
+        startHeartbeat();
+        startBackendHeartbeat();
+        return { success: true };
+      }
+    } catch (error) {
+      console.error('Error acquiring backend lock:', error);
+      // If backend fails, fall back to localStorage only (same-browser detection)
+    }
+    
+    // Fallback to localStorage check (same-browser only)
     const lockData = localStorage.getItem(lockKey);
     const now = Date.now();
     
@@ -34,39 +68,59 @@ const createPaymentLockManager = (appointmentId) => {
           localStorage.setItem(lockKey, JSON.stringify({ tabId, timestamp: now }));
           lockAcquired = true;
           startHeartbeat();
-          return true;
+          return { success: true, fallback: true };
         } else if (ownerTabId === tabId) {
           // We already own this lock
           lockAcquired = true;
           startHeartbeat();
-          return true;
+          return { success: true, fallback: true };
         } else {
           // Another tab owns the lock
-          return false;
+          return { success: false, message: 'Payment session is already open in another tab' };
         }
       } catch (e) {
         // Invalid lock data, acquire it
         localStorage.setItem(lockKey, JSON.stringify({ tabId, timestamp: now }));
         lockAcquired = true;
         startHeartbeat();
-        return true;
+        return { success: true, fallback: true };
       }
     } else {
       // No lock exists, acquire it
       localStorage.setItem(lockKey, JSON.stringify({ tabId, timestamp: now }));
       lockAcquired = true;
       startHeartbeat();
-      return true;
+      return { success: true, fallback: true };
     }
   };
 
-  // Release lock
-  const releaseLock = () => {
+  // Release lock (backend + localStorage)
+  const releaseLock = async () => {
+    // Stop heartbeats
     if (heartbeatInterval) {
       clearInterval(heartbeatInterval);
       heartbeatInterval = null;
     }
+    if (backendHeartbeatInterval) {
+      clearInterval(backendHeartbeatInterval);
+      backendHeartbeatInterval = null;
+    }
     
+    // Release backend lock
+    try {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/lock/release`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ appointmentId })
+      });
+    } catch (error) {
+      console.error('Error releasing backend lock:', error);
+    }
+    
+    // Release localStorage lock
     const lockData = localStorage.getItem(lockKey);
     if (lockData) {
       try {
@@ -84,7 +138,7 @@ const createPaymentLockManager = (appointmentId) => {
     lockAcquired = false;
   };
 
-  // Start heartbeat to keep lock alive
+  // Start heartbeat to keep lock alive (localStorage for same-browser)
   const startHeartbeat = () => {
     if (heartbeatInterval) {
       clearInterval(heartbeatInterval);
@@ -108,22 +162,71 @@ const createPaymentLockManager = (appointmentId) => {
       }
     }, 2000); // Heartbeat every 2 seconds
   };
+  
+  // Start backend heartbeat to keep lock alive (cross-browser)
+  const startBackendHeartbeat = () => {
+    if (backendHeartbeatInterval) {
+      clearInterval(backendHeartbeatInterval);
+    }
+    backendHeartbeatInterval = setInterval(async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/lock/heartbeat`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({ appointmentId })
+        });
+        
+        const data = await response.json();
+        if (!response.ok || !data.ok || !data.locked) {
+          // Lock was lost, release local resources
+          releaseLock();
+        }
+      } catch (error) {
+        console.error('Error sending backend heartbeat:', error);
+        // On error, continue - lock might still be valid
+      }
+    }, 2000); // Heartbeat every 2 seconds
+  };
 
-  // Check if lock is held by another tab
-  const isLockedByAnotherTab = () => {
+  // Check if lock is held by another tab/browser
+  const isLockedByAnotherTab = async () => {
+    // First check backend lock (cross-browser)
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/lock/check/${appointmentId}`, {
+        method: 'GET',
+        credentials: 'include'
+      });
+      
+      const data = await response.json();
+      if (data.ok && data.locked === true && !data.ownedByUser) {
+        // Locked by another browser/device
+        return { locked: true, message: data.message || 'Payment session is already open in another browser/device' };
+      }
+    } catch (error) {
+      console.error('Error checking backend lock:', error);
+      // Continue with localStorage check as fallback
+    }
+    
+    // Fallback to localStorage check (same-browser only)
     const lockData = localStorage.getItem(lockKey);
-    if (!lockData) return false;
+    if (!lockData) return { locked: false };
     
     try {
       const { tabId: ownerTabId, timestamp } = JSON.parse(lockData);
       const now = Date.now();
       // If lock is stale (older than 5 seconds), consider it free
       if (now - timestamp > 5000) {
-        return false;
+        return { locked: false };
       }
-      return ownerTabId !== tabId;
+      if (ownerTabId !== tabId) {
+        return { locked: true, message: 'Payment session is already open in another tab' };
+      }
+      return { locked: false };
     } catch (e) {
-      return false;
+      return { locked: false };
     }
   };
 
@@ -148,6 +251,10 @@ const createPaymentLockManager = (appointmentId) => {
     releaseLock();
     if (channel) {
       channel.close();
+    }
+    if (backendHeartbeatInterval) {
+      clearInterval(backendHeartbeatInterval);
+      backendHeartbeatInterval = null;
     }
   };
 
@@ -242,13 +349,30 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         lockManagerRef.current = createPaymentLockManager(appointment._id);
       }
       
-      // Try to acquire lock before opening modal
-      if (!lockManagerRef.current.acquireLock()) {
-        // Another tab has the payment modal open
-        toast.warning('A payment session is already open for this appointment in another window/tab. Please close that window/tab first before opening a new payment session.');
-        onClose();
-        return;
-      }
+      // Try to acquire lock before opening modal (async)
+      const acquireLockAsync = async () => {
+        const result = await lockManagerRef.current.acquireLock();
+        if (!result.success) {
+          // Another tab/browser has the payment modal open
+          toast.warning(result.message || 'A payment session is already open for this appointment in another window/tab/browser. Please close that window/tab/browser first before opening a new payment session.');
+          onClose();
+          return;
+        }
+        
+        // Lock acquired, continue with modal initialization
+        // Initialize method from appointment region before creating intent
+        const methodFromAppt = appointment?.region === 'india' ? 'razorpay' : 'paypal';
+        setPreferredMethod(methodFromAppt);
+        setPaymentData(null);
+        paymentDataRef.current = null; // Reset ref
+        setPaymentSuccess(false);
+        setPaymentInitiatedTime(null); // Reset initiation time
+        setTimeRemaining(10 * 60); // Reset timer to 10 minutes
+        setLoading(true);
+        setTimeout(() => createPaymentIntent(methodFromAppt), 0);
+      };
+      
+      acquireLockAsync();
       
       // Listen for lock release from other tabs
       const removeLockListener = lockManagerRef.current.onLockReleased(() => {
@@ -262,17 +386,6 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         }
       };
       window.addEventListener('beforeunload', handleBeforeUnload);
-      
-      // Initialize method from appointment region before creating intent
-      const methodFromAppt = appointment?.region === 'india' ? 'razorpay' : 'paypal';
-      setPreferredMethod(methodFromAppt);
-      setPaymentData(null);
-      paymentDataRef.current = null; // Reset ref
-      setPaymentSuccess(false);
-      setPaymentInitiatedTime(null); // Reset initiation time
-      setTimeRemaining(10 * 60); // Reset timer to 10 minutes
-      setLoading(true);
-      setTimeout(() => createPaymentIntent(methodFromAppt), 0);
       
       return () => {
         removeLockListener();
