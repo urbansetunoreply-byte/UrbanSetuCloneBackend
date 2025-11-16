@@ -489,9 +489,31 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         clearInterval(expiryTimer);
       }
 
-      // Start countdown timer (10 minutes = 600 seconds)
-      setTimeRemaining(10 * 60);
+      // Calculate remaining time from payment's expiresAt or createdAt
+      // This ensures the timer shows correct remaining time for both new and reused payments
+      let remainingSeconds = 10 * 60; // Default 10 minutes
       
+      if (paymentData.payment.expiresAt) {
+        const expiresAt = new Date(paymentData.payment.expiresAt);
+        const now = new Date();
+        remainingSeconds = Math.max(0, Math.floor((expiresAt.getTime() - now.getTime()) / 1000));
+      } else if (paymentData.payment.createdAt) {
+        const createdAt = new Date(paymentData.payment.createdAt);
+        const expiresAt = new Date(createdAt.getTime() + 10 * 60 * 1000);
+        const now = new Date();
+        remainingSeconds = Math.max(0, Math.floor((expiresAt.getTime() - now.getTime()) / 1000));
+      }
+      
+      // Set the calculated remaining time
+      setTimeRemaining(remainingSeconds);
+      
+      // If already expired, handle expiry immediately
+      if (remainingSeconds <= 0) {
+        handleExpiry();
+        return;
+      }
+      
+      // Start countdown timer
       const timer = setInterval(() => {
         setTimeRemaining((prev) => {
           if (prev <= 1) {
@@ -558,18 +580,23 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         setPaymentInitiatedTime(initiatedAt);
         
         // Calculate remaining time based on expiresAt or createdAt + 10 minutes
+        // This ensures correct remaining time is shown for both new and reused payments
         if (data.payment?.expiresAt) {
           const expiresAt = new Date(data.payment.expiresAt);
-          const remaining = Math.max(0, Math.floor((expiresAt.getTime() - Date.now()) / 1000));
+          const now = Date.now();
+          const remaining = Math.max(0, Math.floor((expiresAt.getTime() - now) / 1000));
           setTimeRemaining(remaining);
         } else if (data.payment?.createdAt) {
           const createdAt = new Date(data.payment.createdAt);
           const expiresAt = new Date(createdAt.getTime() + 10 * 60 * 1000);
-          const remaining = Math.max(0, Math.floor((expiresAt.getTime() - Date.now()) / 1000));
+          const now = Date.now();
+          const remaining = Math.max(0, Math.floor((expiresAt.getTime() - now) / 1000));
           setTimeRemaining(remaining);
         } else {
-          setTimeRemaining(10 * 60); // Default 10 minutes
+          setTimeRemaining(10 * 60); // Default 10 minutes (fallback)
         }
+        
+        // Note: Timer will be started by the useEffect that watches paymentData
       } else {
         // Handle specific error cases
         if (response.status === 400 && data.message && data.message.includes('already completed')) {
