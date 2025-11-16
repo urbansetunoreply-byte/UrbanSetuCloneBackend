@@ -11592,7 +11592,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
   
   useEffect(() => {
     fetchPaymentStatus();
-  }, [appointment._id, appointment.paymentConfirmed]); // Add paymentConfirmed dependency
+  }, [appointment._id]); // Removed paymentConfirmed to prevent premature refetch before backend updates
 
   // Listen for payment status updates via socket or custom events
   useEffect(() => {
