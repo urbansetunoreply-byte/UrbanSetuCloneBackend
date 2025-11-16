@@ -81,7 +81,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
       setPaymentData(null);
       paymentDataRef.current = null; // Reset ref
       setPaymentSuccess(false);
-      setTimeRemaining(15 * 60); // Reset timer to 15 minutes
+      setTimeRemaining(10 * 60); // Reset timer to 10 minutes
       setLoading(true);
       setTimeout(() => createPaymentIntent(methodFromAppt), 0);
     }
