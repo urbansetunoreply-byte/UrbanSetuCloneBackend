@@ -11596,13 +11596,21 @@ function PaymentStatusCell({ appointment, isBuyer }) {
 
   // Listen for payment status updates via socket or custom events
   useEffect(() => {
+    let refetchTimeout = null;
+    
     function handlePaymentUpdate(event) {
       const appointmentId = event.detail?.appointmentId || event.appointmentId;
       const paymentConfirmed = event.detail?.paymentConfirmed ?? event.paymentConfirmed;
       
       if (appointmentId === appointment._id && paymentConfirmed) {
-        // Refetch payment status immediately when payment is confirmed
-        fetchPaymentStatus();
+        // Clear any pending refetch
+        if (refetchTimeout) {
+          clearTimeout(refetchTimeout);
+        }
+        // Wait a bit for backend to fully process, then refetch
+        refetchTimeout = setTimeout(async () => {
+          await fetchPaymentStatus(true); // Skip loading state
+        }, 1500);
       }
     }
     
@@ -11615,6 +11623,9 @@ function PaymentStatusCell({ appointment, isBuyer }) {
     }
     
     return () => {
+      if (refetchTimeout) {
+        clearTimeout(refetchTimeout);
+      }
       window.removeEventListener('paymentStatusUpdated', handlePaymentUpdate);
       if (socket) {
         socket.off('paymentStatusUpdated', handlePaymentUpdate);
@@ -11658,21 +11669,33 @@ function PaymentStatusCell({ appointment, isBuyer }) {
     };
   }, [showPayModal]);
 
-  const fetchPaymentStatus = async () => {
+  const fetchPaymentStatus = async (skipLoading = false) => {
     try {
+      if (!skipLoading) {
+        setLoading(true);
+      }
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/history?appointmentId=${appointment._id}`, {
         credentials: 'include'
       });
       const data = await response.json();
-      if (response.ok && data.payments.length > 0) {
-        setPaymentStatus(data.payments[0]); // Get the latest payment
-        // Fetch refund request status
-        await fetchRefundRequestStatus(data.payments[0].paymentId);
+      if (response.ok && data.payments && data.payments.length > 0) {
+        const latestPayment = data.payments[0];
+        // Only update if we got a valid payment with status
+        if (latestPayment.status) {
+          setPaymentStatus(latestPayment); // Get the latest payment
+          // Fetch refund request status
+          await fetchRefundRequestStatus(latestPayment.paymentId);
+        }
+      } else if (response.ok && (!data.payments || data.payments.length === 0)) {
+        // No payments found - clear payment status
+        setPaymentStatus(null);
       }
     } catch (error) {
       console.error('Error fetching payment status:', error);
     } finally {
-      setLoading(false);
+      if (!skipLoading) {
+        setLoading(false);
+      }
     }
   };
 
@@ -12000,9 +12023,17 @@ function PaymentStatusCell({ appointment, isBuyer }) {
           isOpen={showPayModal}
           onClose={() => setShowPayModal(false)}
           appointment={{ ...appointment, region: 'india' }}
-          onPaymentSuccess={(payment) => {
+          onPaymentSuccess={async (payment) => {
             setShowPayModal(false);
-            fetchPaymentStatus();
+            // Optimistically update payment status immediately
+            if (payment && payment.status === 'completed') {
+              setPaymentStatus(payment);
+              setLoading(false);
+            }
+            // Wait a bit for backend to fully process, then refetch to get complete data
+            setTimeout(async () => {
+              await fetchPaymentStatus(true); // Skip loading state
+            }, 1000);
           }}
         />
       )}
