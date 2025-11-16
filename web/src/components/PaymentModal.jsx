@@ -572,11 +572,11 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                     <h5 className="font-semibold text-gray-800 mb-2">Select Region</h5>
                     <div className="flex items-center gap-4 text-sm">
                       <label className="inline-flex items-center gap-2">
-                        <input type="radio" name="region" value="india" checked={preferredMethod === 'razorpay'} onChange={() => { const m='razorpay'; setPreferredMethod(m); setLoading(true); setPaymentData(null); setTimeout(() => createPaymentIntent(m), 0); }} />
+                        <input type="radio" name="region" value="india" checked={preferredMethod === 'razorpay'} onChange={() => { const m='razorpay'; setPreferredMethod(m); setLoading(true); setPaymentData(null); paymentDataRef.current = null; setTimeout(() => createPaymentIntent(m), 0); }} />
                         <span>India (₹100 via Razorpay)</span>
                       </label>
                       <label className="inline-flex items-center gap-2">
-                        <input type="radio" name="region" value="international" checked={preferredMethod === 'paypal'} onChange={() => { const m='paypal'; setPreferredMethod(m); setLoading(true); setPaymentData(null); setTimeout(() => createPaymentIntent(m), 0); }} />
+                        <input type="radio" name="region" value="international" checked={preferredMethod === 'paypal'} onChange={() => { const m='paypal'; setPreferredMethod(m); setLoading(true); setPaymentData(null); paymentDataRef.current = null; setTimeout(() => createPaymentIntent(m), 0); }} />
                         <span>International ($5 via PayPal)</span>
                       </label>
                     </div>
