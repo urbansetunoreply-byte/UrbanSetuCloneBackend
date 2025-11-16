@@ -541,11 +541,24 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                 Complete your advance payment to confirm the booking
               </p>
               {paymentData && paymentData.payment && !paymentSuccess && (
-                <div className="mt-3 flex items-center gap-2 text-sm">
-                  <span className="text-gray-600">Time remaining:</span>
-                  <span className={`font-semibold ${timeRemaining < 60 ? 'text-red-600' : timeRemaining < 300 ? 'text-orange-600' : 'text-green-600'}`}>
-                    {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
-                  </span>
+                <div className="mt-4 p-3 rounded-lg border-2 bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-300 shadow-md">
+                  <div className="flex items-center justify-center gap-3">
+                    <span className="text-gray-700 font-medium text-base">⏱️ Time remaining:</span>
+                    <span className={`text-2xl font-bold px-4 py-2 rounded-lg ${
+                      timeRemaining < 60 
+                        ? 'bg-red-100 text-red-700 border-2 border-red-400 animate-pulse' 
+                        : timeRemaining < 300 
+                        ? 'bg-orange-100 text-orange-700 border-2 border-orange-400' 
+                        : 'bg-green-100 text-green-700 border-2 border-green-400'
+                    }`}>
+                      {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
+                    </span>
+                  </div>
+                  {timeRemaining < 300 && (
+                    <p className="text-center mt-2 text-xs font-medium text-gray-600">
+                      Please complete your payment soon
+                    </p>
+                  )}
                 </div>
               )}
             </div>
