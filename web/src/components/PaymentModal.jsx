@@ -132,7 +132,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
     setPaymentData(null);
     paymentDataRef.current = null;
     setPaymentSuccess(false);
-    setTimeRemaining(15 * 60);
+    setTimeRemaining(10 * 60);
     setExpiryTimer((prevTimer) => {
       if (prevTimer) {
         clearInterval(prevTimer);
