@@ -34,7 +34,7 @@ const MyPayments = () => {
   // Payment modal states
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentAppointment, setPaymentAppointment] = useState(null);
-  const [loadingAppointment, setLoadingAppointment] = useState(false);
+  const [loadingPaymentId, setLoadingPaymentId] = useState(null); // Track which payment is loading
   
   // Export password modal states
   const [showExportPasswordModal, setShowExportPasswordModal] = useState(false);
@@ -124,30 +124,39 @@ const MyPayments = () => {
     if (!payment || payment.status === 'completed' || !payment.appointmentId) return;
     
     try {
-      setLoadingAppointment(true);
+      // Track which payment is loading
+      setLoadingPaymentId(payment._id);
+      
       // Extract appointment ID (could be object or string)
       const appointmentId = payment.appointmentId?._id || payment.appointmentId;
       if (!appointmentId) {
         toast.error('Appointment ID not found');
+        setLoadingPaymentId(null);
         return;
       }
       
-      // Fetch appointment details
+      // Fetch appointment details with full population
       const res = await fetch(`${API_BASE_URL}/api/bookings/${appointmentId}`, {
         credentials: 'include'
       });
       
       if (!res.ok) {
         toast.error('Failed to load appointment details');
+        setLoadingPaymentId(null);
         return;
       }
       
       const data = await res.json();
       if (data.success && data.appointment) {
         // Set appointment with region (default to 'india' if not specified)
+        // Also ensure we have all necessary fields for PaymentModal
         const appointment = {
           ...data.appointment,
-          region: data.appointment.region || 'india'
+          _id: data.appointment._id || appointmentId,
+          region: data.appointment.region || 'india',
+          buyerId: data.appointment.buyerId,
+          sellerId: data.appointment.sellerId,
+          listingId: data.appointment.listingId
         };
         setPaymentAppointment(appointment);
         setShowPaymentModal(true);
@@ -158,7 +167,7 @@ const MyPayments = () => {
       console.error('Error fetching appointment:', error);
       toast.error('Failed to load appointment details');
     } finally {
-      setLoadingAppointment(false);
+      setLoadingPaymentId(null);
     }
   };
 
@@ -381,9 +390,9 @@ const MyPayments = () => {
                           payNow(p);
                         }} 
                         className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs flex items-center gap-1"
-                        disabled={loadingAppointment}
+                        disabled={loadingPaymentId === p._id}
                       >
-                        {loadingAppointment ? (
+                        {loadingPaymentId === p._id ? (
                           <>
                             <FaSpinner className="text-xs animate-spin" /> Loading...
                           </>
@@ -572,9 +581,9 @@ const MyPayments = () => {
                       setShowPreviewModal(false);
                     }}
                     className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
-                    disabled={loadingAppointment}
+                    disabled={loadingPaymentId === selectedPayment._id}
                   >
-                    {loadingAppointment ? (
+                    {loadingPaymentId === selectedPayment._id ? (
                       <>
                         <FaSpinner className="animate-spin" /> Loading...
                       </>
@@ -614,16 +623,19 @@ const MyPayments = () => {
           onPaymentSuccess={(payment) => {
             setShowPaymentModal(false);
             setPaymentAppointment(null);
+            setLoadingPaymentId(null);
             // Refresh payments to show updated status
             fetchPayments();
             toast.success('Payment completed successfully!');
             // Dispatch event to update MyAppointments page if it's open
-            window.dispatchEvent(new CustomEvent('paymentStatusUpdated', {
-              detail: { 
-                appointmentId: paymentAppointment._id,
-                paymentConfirmed: true
-              }
-            }));
+            if (paymentAppointment?._id) {
+              window.dispatchEvent(new CustomEvent('paymentStatusUpdated', {
+                detail: { 
+                  appointmentId: paymentAppointment._id,
+                  paymentConfirmed: true
+                }
+              }));
+            }
           }}
         />
       )}
