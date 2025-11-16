@@ -326,7 +326,7 @@ const MyPayments = () => {
                           </span>
                         )}
                       </div>
-                      {p.appointmentId && (
+                      {(p.appointmentId?._id || p.appointmentId) && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
