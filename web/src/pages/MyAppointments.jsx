@@ -754,14 +754,14 @@ export default function MyAppointments() {
       }
     }
 
-    // Check 7-day window for cancelled appointments
+    // Check 3-day (72-hour) window for cancelled appointments
     if (reinitiateData.status === 'cancelledByBuyer' || reinitiateData.status === 'cancelledBySeller') {
       const cancellationDate = reinitiateData.updatedAt ? new Date(reinitiateData.updatedAt) : new Date();
       const now = new Date();
-      const daysSinceCancellation = Math.floor((now - cancellationDate) / (1000 * 60 * 60 * 24));
+      const hoursSinceCancellation = (now - cancellationDate) / (1000 * 60 * 60);
       
-      if (daysSinceCancellation > 7) {
-        toast.error('Reinitiation not possible now. The 7-day reinitiation window has expired.');
+      if (hoursSinceCancellation > 72) {
+        toast.error('Reinitiation not possible now. The 72-hour reinitiation window has expired.');
         return;
       }
     }
@@ -1434,14 +1434,16 @@ export default function MyAppointments() {
       })(), document.body)}
       {/* Reinitiate Modal */}
       {showReinitiateModal && reinitiateData && (() => {
-        // Calculate days since cancellation
+        // Calculate hours since cancellation (72-hour window)
         const isCancelled = reinitiateData.status === 'cancelledByBuyer' || reinitiateData.status === 'cancelledBySeller';
         const cancellationDate = reinitiateData.updatedAt ? new Date(reinitiateData.updatedAt) : new Date();
         const now = new Date();
-        const daysSinceCancellation = Math.floor((now - cancellationDate) / (1000 * 60 * 60 * 24));
-        const daysLeft = 7 - daysSinceCancellation;
+        const hoursSinceCancellation = (now - cancellationDate) / (1000 * 60 * 60);
+        const hoursLeft = 72 - hoursSinceCancellation;
+        const daysLeft = Math.floor(hoursLeft / 24);
+        const remainingHours = Math.floor(hoursLeft % 24);
         const isRefunded = reinitiatePaymentStatus && (reinitiatePaymentStatus.status === 'refunded' || reinitiatePaymentStatus.status === 'partially_refunded');
-        const canReinitiate = !(isCancelled && (isRefunded || daysSinceCancellation > 7));
+        const canReinitiate = !(isCancelled && (isRefunded || hoursSinceCancellation > 72));
 
         return (
           <div className="modal-backdrop">
@@ -1457,22 +1459,27 @@ export default function MyAppointments() {
                   </div>
                 )}
                 
-                {isCancelled && !isRefunded && daysSinceCancellation > 7 && (
+                {isCancelled && !isRefunded && hoursSinceCancellation > 72 && (
                   <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
                     <p className="font-semibold">Reinitiation not possible now</p>
-                    <p className="text-sm">The 7-day reinitiation window has expired. You can only reinitiate within 7 days of cancellation.</p>
+                    <p className="text-sm">The 72-hour (3-day) reinitiation window has expired. You can only reinitiate within 72 hours of cancellation.</p>
                   </div>
                 )}
                 
-                {isCancelled && !isRefunded && daysSinceCancellation <= 7 && (
+                {isCancelled && !isRefunded && hoursSinceCancellation <= 72 && (
                   <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 text-yellow-800 rounded">
-                    <p className="font-semibold">Reinitiation Window</p>
+                    <p className="font-semibold">Reinitiation Window (72 hours)</p>
                     <p className="text-sm">
-                      You can reinitiate this appointment within 7 days of cancellation. 
-                      {daysLeft > 0 ? (
-                        <span className="font-bold"> {daysLeft} day{daysLeft !== 1 ? 's' : ''} remaining.</span>
+                      You can reinitiate this appointment within 72 hours of cancellation. 
+                      {hoursLeft > 0 ? (
+                        <span className="font-bold">
+                          {' '}
+                          {daysLeft > 0 ? `${daysLeft}d ` : ''}
+                          {remainingHours > 0 ? `${remainingHours}h` : ''}
+                          {daysLeft === 0 && remainingHours === 0 ? 'Less than 1h' : ''} left.
+                        </span>
                       ) : (
-                        <span className="font-bold"> Last day to reinitiate.</span>
+                        <span className="font-bold"> Window expired.</span>
                       )}
                     </p>
                   </div>
@@ -1718,6 +1725,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const inputRef = useRef(null); // Add inputRef here
   const [allProperties, setAllProperties] = useState([]);
   const [propertiesLoaded, setPropertiesLoaded] = useState(false);
+  
+  // Reinitiation countdown timer state
+  const [paymentStatusForReinitiate, setPaymentStatusForReinitiate] = useState(null);
+  const [reinitiateCountdown, setReinitiateCountdown] = useState(null);
 
   // Persist draft per appointment when chat is open (placed after refs/state used)
   useEffect(() => {
@@ -1770,6 +1781,73 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       }
     })();
   }, [comment, showChatModal, propertiesLoaded]);
+
+  // Fetch payment status for reinitiation check if appointment is cancelled
+  useEffect(() => {
+    const isCancelled = appt.status === 'cancelledByBuyer' || appt.status === 'cancelledBySeller';
+    const isBuyer = currentUser && (appt.buyerId?._id === currentUser._id || appt.buyerId === currentUser._id);
+    const isSeller = currentUser && (appt.sellerId?._id === currentUser._id || appt.sellerId === currentUser._id);
+    const canShowReinitiate = (appt.status === 'cancelledByBuyer' && isBuyer) || (appt.status === 'cancelledBySeller' && isSeller);
+    
+    if (isCancelled && canShowReinitiate && appt._id) {
+      const fetchPaymentStatus = async () => {
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/payments/history?appointmentId=${appt._id}`, {
+            credentials: 'include'
+          });
+          if (response.ok) {
+            const data = await response.json();
+            if (data.payments && data.payments.length > 0) {
+              setPaymentStatusForReinitiate(data.payments[0]);
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching payment status:', error);
+        }
+      };
+      fetchPaymentStatus();
+    }
+  }, [appt._id, appt.status, currentUser, appt.buyerId, appt.sellerId]);
+
+  // Update countdown timer every second for reinitiation window
+  useEffect(() => {
+    const isCancelled = appt.status === 'cancelledByBuyer' || appt.status === 'cancelledBySeller';
+    const isBuyer = currentUser && (appt.buyerId?._id === currentUser._id || appt.buyerId === currentUser._id);
+    const isSeller = currentUser && (appt.sellerId?._id === currentUser._id || appt.sellerId === currentUser._id);
+    const canShowReinitiate = (appt.status === 'cancelledByBuyer' && isBuyer) || (appt.status === 'cancelledBySeller' && isSeller);
+    
+    if (!isCancelled || !canShowReinitiate) {
+      setReinitiateCountdown(null);
+      return;
+    }
+
+    const updateCountdown = () => {
+      const cancellationDate = appt.updatedAt ? new Date(appt.updatedAt) : new Date();
+      const now = new Date();
+      const hoursSinceCancellation = (now - cancellationDate) / (1000 * 60 * 60);
+      const hoursLeft = 72 - hoursSinceCancellation;
+      
+      if (hoursLeft <= 0) {
+        setReinitiateCountdown({ expired: true });
+        return;
+      }
+      
+      const daysLeft = Math.floor(hoursLeft / 24);
+      const remainingHours = Math.floor(hoursLeft % 24);
+      
+      setReinitiateCountdown({
+        expired: false,
+        days: daysLeft,
+        hours: remainingHours,
+        hoursLeft: hoursLeft
+      });
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    
+    return () => clearInterval(interval);
+  }, [appt.status, appt.updatedAt, currentUser, appt.buyerId, appt.sellerId]);
 
   useEffect(() => {
     if (!showChatModal || !appt?._id || !currentUser?._id) return;
@@ -5885,29 +5963,54 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                       </button>
                     )}
                     {/* Reinitiate button: only show to the cancelling party */}
-                    {((appt.status === 'cancelledByBuyer' && isBuyer) || (appt.status === 'cancelledBySeller' && isSeller)) && (
-                      <div className="flex flex-col items-center">
-                        <button
-                          className="text-blue-500 hover:text-blue-700 text-xs border border-blue-500 rounded px-2 py-1 mt-1"
-                          onClick={() => onOpenReinitiate(appt)}
-                          disabled={
-                            (appt.status === 'cancelledByBuyer' && isBuyer && (appt.buyerReinitiationCount || 0) >= 2) ||
-                            (appt.status === 'cancelledBySeller' && isSeller && (appt.sellerReinitiationCount || 0) >= 2) ||
-                            !appt.buyerId || !appt.sellerId
-                          }
-                          title="Reinitiate or Reschedule Appointment"
-                        >
-                          Reinitiate
-                        </button>
-                        <span className="text-xs text-gray-500 mt-1">
-                          {isBuyer && appt.status === 'cancelledByBuyer'
-                            ? `${2 - (appt.buyerReinitiationCount || 0)} left`
-                            : isSeller && appt.status === 'cancelledBySeller'
-                            ? `${2 - (appt.sellerReinitiationCount || 0)} left`
-                            : ''}
-                        </span>
-                      </div>
-                    )}
+                    {((appt.status === 'cancelledByBuyer' && isBuyer) || (appt.status === 'cancelledBySeller' && isSeller)) && (() => {
+                      const isRefunded = paymentStatusForReinitiate && (paymentStatusForReinitiate.status === 'refunded' || paymentStatusForReinitiate.status === 'partially_refunded');
+                      const isExpired = reinitiateCountdown?.expired || false;
+                      const isDisabled = 
+                        (appt.status === 'cancelledByBuyer' && isBuyer && (appt.buyerReinitiationCount || 0) >= 2) ||
+                        (appt.status === 'cancelledBySeller' && isSeller && (appt.sellerReinitiationCount || 0) >= 2) ||
+                        !appt.buyerId || !appt.sellerId ||
+                        isRefunded ||
+                        isExpired;
+
+                      return (
+                        <div className="flex flex-col items-center">
+                          <button
+                            className={`text-xs border rounded px-2 py-1 mt-1 ${
+                              isDisabled 
+                                ? 'text-gray-400 border-gray-300 cursor-not-allowed' 
+                                : 'text-blue-500 hover:text-blue-700 border-blue-500'
+                            }`}
+                            onClick={() => onOpenReinitiate(appt)}
+                            disabled={isDisabled}
+                            title={
+                              isRefunded 
+                                ? "Reinitiation not possible - Payment refunded"
+                                : isExpired 
+                                ? "Reinitiation window expired"
+                                : "Reinitiate or Reschedule Appointment"
+                            }
+                          >
+                            Reinitiate
+                          </button>
+                          <span className="text-xs text-gray-500 mt-1">
+                            {isExpired ? (
+                              <span className="text-red-500 font-semibold">Window expired</span>
+                            ) : isRefunded ? (
+                              <span className="text-red-500 font-semibold">Refunded</span>
+                            ) : reinitiateCountdown && !reinitiateCountdown.expired ? (
+                              <span className="text-blue-600 font-semibold">
+                                Reinitiation possible for: {reinitiateCountdown.days > 0 ? `${reinitiateCountdown.days}d ` : ''}{reinitiateCountdown.hours}h left
+                              </span>
+                            ) : isBuyer && appt.status === 'cancelledByBuyer' ? (
+                              `${2 - (appt.buyerReinitiationCount || 0)} left`
+                            ) : isSeller && appt.status === 'cancelledBySeller' ? (
+                              `${2 - (appt.sellerReinitiationCount || 0)} left`
+                            ) : ''}
+                          </span>
+                        </div>
+                      );
+                    })()}
                   </>
                 )}
               </>
