@@ -79,6 +79,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
       const methodFromAppt = appointment?.region === 'india' ? 'razorpay' : 'paypal';
       setPreferredMethod(methodFromAppt);
       setPaymentData(null);
+      paymentDataRef.current = null; // Reset ref
       setPaymentSuccess(false);
       setTimeRemaining(15 * 60); // Reset timer to 15 minutes
       setLoading(true);
@@ -212,6 +213,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
       const data = await response.json();
       if (response.ok) {
         setPaymentData(data);
+        paymentDataRef.current = data; // Update ref
       } else {
         // Handle specific error cases
         if (response.status === 400 && data.message && data.message.includes('already completed')) {
@@ -222,6 +224,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
           }
           // Payment already completed, no need to cancel
           setPaymentData(null);
+          paymentDataRef.current = null;
           setPaymentSuccess(false);
           if (expiryTimer) {
             clearInterval(expiryTimer);
@@ -232,6 +235,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
           toast.warning('A payment is already in progress for this appointment. Please complete or cancel the existing payment first.');
           // Payment intent not created, no need to cancel
           setPaymentData(null);
+          paymentDataRef.current = null;
           setPaymentSuccess(false);
           if (expiryTimer) {
             clearInterval(expiryTimer);
