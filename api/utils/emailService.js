@@ -4906,7 +4906,7 @@ export const sendAppointmentAcceptedEmail = async (email, appointmentDetails) =>
         
         <div class="content">
           <div class="appointment-card">
-            <img src="${propertyImage}" alt="${propertyName}" class="property-image" />
+            <img src="${propertyImage}" alt="${propertyName}" class="property-image" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 20px; display: block; max-width: 100%;" />
             <h2 class="property-title">${propertyName}</h2>
             <p class="property-address">📍 ${propertyAddress || 'Address not specified'}</p>
             <p class="property-price">💰 ₹${propertyPrice || 'Price not specified'}</p>
