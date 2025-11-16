@@ -11,6 +11,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
   const [preferredMethod, setPreferredMethod] = useState(() => (appointment?.region === 'india' ? 'razorpay' : 'paypal')); // 'paypal' or 'razorpay'
   const [expiryTimer, setExpiryTimer] = useState(null); // Timer for payment expiry (10 minutes)
   const [timeRemaining, setTimeRemaining] = useState(10 * 60); // 10 minutes in seconds
+  const [paymentInitiatedTime, setPaymentInitiatedTime] = useState(null); // Store when payment was initiated
   const paymentDataRef = useRef(null); // Ref to access latest paymentData in timer callback
 
   // Cancel payment when modal is closed without completing
@@ -69,6 +70,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
     setPaymentData(null);
     paymentDataRef.current = null;
     setPaymentSuccess(false);
+    setPaymentInitiatedTime(null); // Reset initiation time
     
     onClose();
   };
@@ -81,6 +83,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
       setPaymentData(null);
       paymentDataRef.current = null; // Reset ref
       setPaymentSuccess(false);
+      setPaymentInitiatedTime(null); // Reset initiation time
       setTimeRemaining(10 * 60); // Reset timer to 10 minutes
       setLoading(true);
       setTimeout(() => createPaymentIntent(methodFromAppt), 0);
@@ -132,6 +135,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
     setPaymentData(null);
     paymentDataRef.current = null;
     setPaymentSuccess(false);
+    setPaymentInitiatedTime(null); // Reset initiation time
     setTimeRemaining(10 * 60);
     setExpiryTimer((prevTimer) => {
       if (prevTimer) {
@@ -214,6 +218,9 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
       if (response.ok) {
         setPaymentData(data);
         paymentDataRef.current = data; // Update ref
+        // Store the payment initiation time (use payment createdAt or current time)
+        const initiatedAt = data.payment?.createdAt ? new Date(data.payment.createdAt) : new Date();
+        setPaymentInitiatedTime(initiatedAt);
       } else {
         // Handle specific error cases
         if (response.status === 400 && data.message && data.message.includes('already completed')) {
@@ -226,6 +233,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
           setPaymentData(null);
           paymentDataRef.current = null;
           setPaymentSuccess(false);
+          setPaymentInitiatedTime(null); // Reset initiation time
           if (expiryTimer) {
             clearInterval(expiryTimer);
             setExpiryTimer(null);
@@ -237,6 +245,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
           setPaymentData(null);
           paymentDataRef.current = null;
           setPaymentSuccess(false);
+          setPaymentInitiatedTime(null); // Reset initiation time
           if (expiryTimer) {
             clearInterval(expiryTimer);
             setExpiryTimer(null);
@@ -585,11 +594,11 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                     <h5 className="font-semibold text-gray-800 mb-2">Select Region</h5>
                     <div className="flex items-center gap-4 text-sm">
                       <label className="inline-flex items-center gap-2">
-                        <input type="radio" name="region" value="india" checked={preferredMethod === 'razorpay'} onChange={() => { const m='razorpay'; setPreferredMethod(m); setLoading(true); setPaymentData(null); paymentDataRef.current = null; setTimeout(() => createPaymentIntent(m), 0); }} />
+                        <input type="radio" name="region" value="india" checked={preferredMethod === 'razorpay'} onChange={() => { const m='razorpay'; setPreferredMethod(m); setLoading(true); setPaymentData(null); paymentDataRef.current = null; setPaymentInitiatedTime(null); setTimeout(() => createPaymentIntent(m), 0); }} />
                         <span>India (₹100 via Razorpay)</span>
                       </label>
                       <label className="inline-flex items-center gap-2">
-                        <input type="radio" name="region" value="international" checked={preferredMethod === 'paypal'} onChange={() => { const m='paypal'; setPreferredMethod(m); setLoading(true); setPaymentData(null); paymentDataRef.current = null; setTimeout(() => createPaymentIntent(m), 0); }} />
+                        <input type="radio" name="region" value="international" checked={preferredMethod === 'paypal'} onChange={() => { const m='paypal'; setPreferredMethod(m); setLoading(true); setPaymentData(null); paymentDataRef.current = null; setPaymentInitiatedTime(null); setTimeout(() => createPaymentIntent(m), 0); }} />
                         <span>International ($5 via PayPal)</span>
                       </label>
                     </div>
@@ -608,7 +617,35 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                     </div>
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-sm text-gray-500">Payment Initiated:</span>
-                      <span className="text-sm font-medium">{new Date().toLocaleString('en-GB')}</span>
+                      <span className="text-sm font-medium">
+                        {paymentInitiatedTime 
+                          ? paymentInitiatedTime.toLocaleString('en-GB', { 
+                              day: '2-digit', 
+                              month: '2-digit', 
+                              year: 'numeric', 
+                              hour: '2-digit', 
+                              minute: '2-digit', 
+                              second: '2-digit' 
+                            })
+                          : paymentData.payment?.createdAt 
+                            ? new Date(paymentData.payment.createdAt).toLocaleString('en-GB', { 
+                                day: '2-digit', 
+                                month: '2-digit', 
+                                year: 'numeric', 
+                                hour: '2-digit', 
+                                minute: '2-digit', 
+                                second: '2-digit' 
+                              })
+                            : new Date().toLocaleString('en-GB', { 
+                                day: '2-digit', 
+                                month: '2-digit', 
+                                year: 'numeric', 
+                                hour: '2-digit', 
+                                minute: '2-digit', 
+                                second: '2-digit' 
+                              })
+                        }
+                      </span>
                     </div>
                   </div>
 
