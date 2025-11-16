@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { FaDollarSign, FaCreditCard, FaDownload, FaClock, FaCheckCircle, FaTimes, FaExclamationTriangle, FaSpinner, FaMoneyBill, FaLock, FaShare, FaCopy, FaEye, FaExternalLinkAlt, FaCalendar } from 'react-icons/fa';
+import { FaDollarSign, FaCreditCard, FaDownload, FaClock, FaCheckCircle, FaTimes, FaExclamationTriangle, FaSpinner, FaMoneyBill, FaLock, FaShare, FaCopy, FaEye, FaExternalLinkAlt, FaCalendar, FaSync } from 'react-icons/fa';
 import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from '../redux/user/userSlice';
 import { toast } from 'react-toastify';
 import axios from 'axios';
@@ -68,47 +68,73 @@ const MyPayments = () => {
 
   // Pagination effect with duplicate payment filtering
   useEffect(() => {
-    // Filter out duplicate pending payments for the same appointment
-    // Keep only the most recent pending payment per appointment
-    const filteredPayments = allPayments.reduce((acc, payment) => {
+    // First pass: Group payments by appointment ID
+    const paymentsByAppointment = {};
+    allPayments.forEach(payment => {
       const appointmentId = payment.appointmentId?._id || payment.appointmentId;
       if (!appointmentId) {
-        acc.push(payment);
-        return acc;
+        // If no appointment ID, add to a special group
+        if (!paymentsByAppointment['no-appointment']) {
+          paymentsByAppointment['no-appointment'] = [];
+        }
+        paymentsByAppointment['no-appointment'].push(payment);
+        return;
       }
       
-      // If payment is completed, failed, refunded, or partially_refunded, always include it
-      if (payment.status === 'completed' || payment.status === 'failed' || 
-          payment.status === 'refunded' || payment.status === 'partially_refunded') {
-        acc.push(payment);
-        return acc;
+      if (!paymentsByAppointment[appointmentId]) {
+        paymentsByAppointment[appointmentId] = [];
+      }
+      paymentsByAppointment[appointmentId].push(payment);
+    });
+    
+    // Second pass: Filter payments per appointment
+    const filteredPayments = [];
+    
+    Object.keys(paymentsByAppointment).forEach(key => {
+      const appointmentPayments = paymentsByAppointment[key];
+      
+      // For payments without appointment ID, include all
+      if (key === 'no-appointment') {
+        filteredPayments.push(...appointmentPayments);
+        return;
       }
       
-      // For pending/processing payments, check if we already have one for this appointment
-      const existingPending = acc.find(p => {
-        const existingAppointmentId = p.appointmentId?._id || p.appointmentId;
-        return existingAppointmentId === appointmentId && 
-               (p.status === 'pending' || p.status === 'processing');
-      });
+      // Check if there's a completed payment for this appointment
+      const hasCompleted = appointmentPayments.some(p => p.status === 'completed');
       
-      if (!existingPending) {
-        acc.push(payment);
-      } else {
-        // Keep the most recent one
-        const existingIndex = acc.findIndex(p => {
-          const existingAppointmentId = p.appointmentId?._id || p.appointmentId;
-          return existingAppointmentId === appointmentId && 
-                 (p.status === 'pending' || p.status === 'processing');
+      if (hasCompleted) {
+        // If there's a completed payment, only include completed, failed, refunded payments
+        // Remove all pending/processing payments
+        appointmentPayments.forEach(payment => {
+          if (payment.status === 'completed' || payment.status === 'failed' || 
+              payment.status === 'refunded' || payment.status === 'partially_refunded') {
+            filteredPayments.push(payment);
+          }
+          // Skip pending/processing payments when there's a completed payment
         });
-        const existingDate = new Date(existingPending.createdAt);
-        const currentDate = new Date(payment.createdAt);
-        if (currentDate > existingDate) {
-          acc[existingIndex] = payment;
+      } else {
+        // No completed payment - include failed, refunded, and only the most recent pending/processing
+        const completedOrFailed = appointmentPayments.filter(p => 
+          p.status === 'failed' || p.status === 'refunded' || p.status === 'partially_refunded'
+        );
+        filteredPayments.push(...completedOrFailed);
+        
+        // For pending/processing, keep only the most recent one
+        const pendingPayments = appointmentPayments.filter(p => 
+          p.status === 'pending' || p.status === 'processing'
+        );
+        if (pendingPayments.length > 0) {
+          // Sort by createdAt descending and take the first (most recent)
+          const mostRecentPending = pendingPayments.sort((a, b) => 
+            new Date(b.createdAt) - new Date(a.createdAt)
+          )[0];
+          filteredPayments.push(mostRecentPending);
         }
       }
-      
-      return acc;
-    }, []);
+    });
+    
+    // Sort all payments by createdAt descending (most recent first)
+    filteredPayments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     
     const itemsPerPage = 10;
     const totalPages = Math.ceil(filteredPayments.length / itemsPerPage);
