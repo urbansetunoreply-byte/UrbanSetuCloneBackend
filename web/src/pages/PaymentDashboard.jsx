@@ -37,6 +37,14 @@ const PaymentDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [usdPayments, setUsdPayments] = useState([]);
   const [inrPayments, setInrPayments] = useState([]);
+  const [allUsdPayments, setAllUsdPayments] = useState([]);
+  const [allInrPayments, setAllInrPayments] = useState([]);
+  
+  // Pagination states for payment history
+  const [usdPaymentsPage, setUsdPaymentsPage] = useState(1);
+  const [usdPaymentsTotalPages, setUsdPaymentsTotalPages] = useState(1);
+  const [inrPaymentsPage, setInrPaymentsPage] = useState(1);
+  const [inrPaymentsTotalPages, setInrPaymentsTotalPages] = useState(1);
   
   // Export password modal states
   const [showExportPasswordModal, setShowExportPasswordModal] = useState(false);
@@ -48,6 +56,30 @@ const PaymentDashboard = () => {
     fetchPaymentStats();
     fetchAdminPayments();
   }, []);
+
+  // Pagination effect for USD payments
+  useEffect(() => {
+    const itemsPerPage = 10;
+    const totalPages = Math.ceil(allUsdPayments.length / itemsPerPage);
+    setUsdPaymentsTotalPages(totalPages);
+    
+    const startIndex = (usdPaymentsPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentPageUsdPayments = allUsdPayments.slice(startIndex, endIndex);
+    setUsdPayments(currentPageUsdPayments);
+  }, [allUsdPayments, usdPaymentsPage]);
+
+  // Pagination effect for INR payments
+  useEffect(() => {
+    const itemsPerPage = 10;
+    const totalPages = Math.ceil(allInrPayments.length / itemsPerPage);
+    setInrPaymentsTotalPages(totalPages);
+    
+    const startIndex = (inrPaymentsPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentPageInrPayments = allInrPayments.slice(startIndex, endIndex);
+    setInrPayments(currentPageInrPayments);
+  }, [allInrPayments, inrPaymentsPage]);
 
   // Listen for payment status updates to refresh stats
   useEffect(() => {
@@ -103,13 +135,19 @@ const PaymentDashboard = () => {
       const fromDate = fromSel ? fromSel.value : '';
       const toDate = toSel ? toSel.value : '';
       const [usdRes, inrRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?currency=USD&limit=50&status=${encodeURIComponent(status)}&gateway=${encodeURIComponent(gateway)}&q=${encodeURIComponent(q)}&fromDate=${encodeURIComponent(fromDate)}&toDate=${encodeURIComponent(toDate)}`, { credentials: 'include' }),
-        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?currency=INR&limit=50&status=${encodeURIComponent(status)}&gateway=${encodeURIComponent(gateway)}&q=${encodeURIComponent(q)}&fromDate=${encodeURIComponent(fromDate)}&toDate=${encodeURIComponent(toDate)}`, { credentials: 'include' })
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?currency=USD&limit=1000&status=${encodeURIComponent(status)}&gateway=${encodeURIComponent(gateway)}&q=${encodeURIComponent(q)}&fromDate=${encodeURIComponent(fromDate)}&toDate=${encodeURIComponent(toDate)}`, { credentials: 'include' }),
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?currency=INR&limit=1000&status=${encodeURIComponent(status)}&gateway=${encodeURIComponent(gateway)}&q=${encodeURIComponent(q)}&fromDate=${encodeURIComponent(fromDate)}&toDate=${encodeURIComponent(toDate)}`, { credentials: 'include' })
       ]);
       const usdData = await usdRes.json();
       const inrData = await inrRes.json();
-      if (usdRes.ok) setUsdPayments(usdData.payments || []);
-      if (inrRes.ok) setInrPayments(inrData.payments || []);
+      if (usdRes.ok) {
+        setAllUsdPayments(usdData.payments || []);
+        setUsdPaymentsPage(1); // Reset to first page when filters change
+      }
+      if (inrRes.ok) {
+        setAllInrPayments(inrData.payments || []);
+        setInrPaymentsPage(1); // Reset to first page when filters change
+      }
     } catch (e) {
       // non-fatal
     }
@@ -455,6 +493,37 @@ const PaymentDashboard = () => {
                     ))}
                   </div>
                 )}
+                
+                {/* USD Payments Pagination */}
+                {allUsdPayments.length > 10 && usdPaymentsTotalPages > 1 && (
+                  <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
+                    <div className="text-sm text-gray-700">
+                      Page {usdPaymentsPage} of {usdPaymentsTotalPages}
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                      <button
+                        onClick={() => {
+                          setUsdPaymentsPage(Math.max(1, usdPaymentsPage - 1));
+                          toast.info(`Navigated to page ${Math.max(1, usdPaymentsPage - 1)}`);
+                        }}
+                        disabled={usdPaymentsPage === 1}
+                        className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                      >
+                        Previous
+                      </button>
+                      <button
+                        onClick={() => {
+                          setUsdPaymentsPage(Math.min(usdPaymentsTotalPages, usdPaymentsPage + 1));
+                          toast.info(`Navigated to page ${Math.min(usdPaymentsTotalPages, usdPaymentsPage + 1)}`);
+                        }}
+                        disabled={usdPaymentsPage === usdPaymentsTotalPages}
+                        className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
               <div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-3">INR Payments (₹)</h3>
@@ -544,6 +613,37 @@ const PaymentDashboard = () => {
                         )}
                       </div>
                     ))}
+                  </div>
+                )}
+                
+                {/* INR Payments Pagination */}
+                {allInrPayments.length > 10 && inrPaymentsTotalPages > 1 && (
+                  <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
+                    <div className="text-sm text-gray-700">
+                      Page {inrPaymentsPage} of {inrPaymentsTotalPages}
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                      <button
+                        onClick={() => {
+                          setInrPaymentsPage(Math.max(1, inrPaymentsPage - 1));
+                          toast.info(`Navigated to page ${Math.max(1, inrPaymentsPage - 1)}`);
+                        }}
+                        disabled={inrPaymentsPage === 1}
+                        className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                      >
+                        Previous
+                      </button>
+                      <button
+                        onClick={() => {
+                          setInrPaymentsPage(Math.min(inrPaymentsTotalPages, inrPaymentsPage + 1));
+                          toast.info(`Navigated to page ${Math.min(inrPaymentsTotalPages, inrPaymentsPage + 1)}`);
+                        }}
+                        disabled={inrPaymentsPage === inrPaymentsTotalPages}
+                        className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                      >
+                        Next
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

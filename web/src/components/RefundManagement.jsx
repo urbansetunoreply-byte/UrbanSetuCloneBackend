@@ -5,7 +5,12 @@ import { toast } from 'react-toastify';
 const RefundManagement = ({ onRefundProcessed }) => {
   const [payments, setPayments] = useState([]);
   const [refundRequests, setRefundRequests] = useState([]);
+  const [allRefundRequests, setAllRefundRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // Pagination states for refund requests
+  const [refundRequestsPage, setRefundRequestsPage] = useState(1);
+  const [refundRequestsTotalPages, setRefundRequestsTotalPages] = useState(1);
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [showRefundModal, setShowRefundModal] = useState(false);
   const [refundForm, setRefundForm] = useState({
@@ -101,6 +106,18 @@ const RefundManagement = ({ onRefundProcessed }) => {
     fetchRefundRequests(true); // Show loading for filter changes
   }, [refundRequestFilters.status, refundRequestFilters.type, refundRequestFilters.currency, refundRequestFilters.dateFrom, refundRequestFilters.dateTo]);
 
+  // Pagination effect for refund requests
+  useEffect(() => {
+    const itemsPerPage = 10;
+    const totalPages = Math.ceil(allRefundRequests.length / itemsPerPage);
+    setRefundRequestsTotalPages(totalPages);
+    
+    const startIndex = (refundRequestsPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentPageRefundRequests = allRefundRequests.slice(startIndex, endIndex);
+    setRefundRequests(currentPageRefundRequests);
+  }, [allRefundRequests, refundRequestsPage]);
+
   // Initial load effect
   useEffect(() => {
     fetchPayments(true); // Show loading for initial load
@@ -165,7 +182,8 @@ const RefundManagement = ({ onRefundProcessed }) => {
 
       const data = await response.json();
       if (response.ok) {
-        setRefundRequests(data.refundRequests);
+        setAllRefundRequests(data.refundRequests || []);
+        setRefundRequestsPage(1); // Reset to first page when filters change
       } else {
         toast.error(data.message || 'Failed to fetch refund requests');
       }
@@ -881,11 +899,42 @@ const RefundManagement = ({ onRefundProcessed }) => {
             </table>
           </div>
 
-          {refundRequests.length === 0 && (
+          {allRefundRequests.length === 0 && (
             <div className="text-center py-8">
               <FaExclamationTriangle className="text-6xl text-gray-300 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-600 mb-2">No Refund Requests</h3>
               <p className="text-gray-500">No refund requests found.</p>
+            </div>
+          )}
+
+          {/* Refund Requests Pagination */}
+          {allRefundRequests.length > 10 && refundRequestsTotalPages > 1 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
+              <div className="text-sm text-gray-700">
+                Page {refundRequestsPage} of {refundRequestsTotalPages}
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <button
+                  onClick={() => {
+                    setRefundRequestsPage(Math.max(1, refundRequestsPage - 1));
+                    toast.info(`Navigated to page ${Math.max(1, refundRequestsPage - 1)}`);
+                  }}
+                  disabled={refundRequestsPage === 1}
+                  className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => {
+                    setRefundRequestsPage(Math.min(refundRequestsTotalPages, refundRequestsPage + 1));
+                    toast.info(`Navigated to page ${Math.min(refundRequestsTotalPages, refundRequestsPage + 1)}`);
+                  }}
+                  disabled={refundRequestsPage === refundRequestsTotalPages}
+                  className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                >
+                  Next
+                </button>
+              </div>
             </div>
           )}
         </>

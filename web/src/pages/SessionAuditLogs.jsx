@@ -37,8 +37,10 @@ const SessionAuditLogs = () => {
   
   // Visitors state
   const [visitors, setVisitors] = useState([]);
+  const [allVisitors, setAllVisitors] = useState([]);
   const [visitorsLoading, setVisitorsLoading] = useState(false);
   const [visitorsPage, setVisitorsPage] = useState(1);
+  const [visitorsTotalPages, setVisitorsTotalPages] = useState(1);
   const [totalVisitors, setTotalVisitors] = useState(0);
   const [visitorStats, setVisitorStats] = useState({
     totalVisitors: 0,
@@ -244,8 +246,7 @@ const SessionAuditLogs = () => {
     if (opts.manual) setVisitorsLoading(true);
     try {
       const params = new URLSearchParams({
-        page: visitorsPage,
-        limit: 50,
+        limit: 1000, // Fetch all visitors, pagination will be done client-side
         dateRange: visitorFilters.dateRange,
         device: visitorFilters.device,
         location: visitorFilters.location,
@@ -269,8 +270,9 @@ const SessionAuditLogs = () => {
       const data = await res.json();
       
       if (data.success) {
-        setVisitors(data.visitors);
+        setAllVisitors(data.visitors || []);
         setTotalVisitors(data.total);
+        setVisitorsPage(1); // Reset to first page when filters change
         setLastUpdated(new Date());
       } else {
         toast.error(data.message || 'Failed to fetch visitors');
@@ -289,7 +291,19 @@ const SessionAuditLogs = () => {
       fetchVisitorStats();
       fetchVisitors();
     }
-  }, [activeTab, visitorsPage, visitorFilters]);
+  }, [activeTab, visitorFilters]);
+
+  // Pagination effect for visitors
+  useEffect(() => {
+    const itemsPerPage = 10;
+    const totalPages = Math.ceil(allVisitors.length / itemsPerPage);
+    setVisitorsTotalPages(totalPages);
+    
+    const startIndex = (visitorsPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentPageVisitors = allVisitors.slice(startIndex, endIndex);
+    setVisitors(currentPageVisitors);
+  }, [allVisitors, visitorsPage]);
 
   // Effect to restart auto-refresh when switching tabs
   useEffect(() => {
@@ -1420,33 +1434,32 @@ const SessionAuditLogs = () => {
             </div>
 
             {/* Pagination for Visitors */}
-            {totalVisitors > 50 && (
-              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-6 rounded-lg shadow-sm">
-                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm text-gray-700">
-                      Showing page <span className="font-medium">{visitorsPage}</span> of{' '}
-                      <span className="font-medium">{Math.ceil(totalVisitors / 50)}</span>
-                    </p>
-                  </div>
-                  <div>
-                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                      <button
-                        onClick={() => setVisitorsPage(Math.max(1, visitorsPage - 1))}
-                        disabled={visitorsPage === 1}
-                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                      >
-                        Previous
-                      </button>
-                      <button
-                        onClick={() => setVisitorsPage(visitorsPage + 1)}
-                        disabled={visitors.length < 50}
-                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                      >
-                        Next
-                      </button>
-                    </nav>
-                  </div>
+            {allVisitors.length > 10 && visitorsTotalPages > 1 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
+                <div className="text-sm text-gray-700">
+                  Page {visitorsPage} of {visitorsTotalPages}
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                  <button
+                    onClick={() => {
+                      setVisitorsPage(Math.max(1, visitorsPage - 1));
+                      toast.info(`Navigated to page ${Math.max(1, visitorsPage - 1)}`);
+                    }}
+                    disabled={visitorsPage === 1}
+                    className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    onClick={() => {
+                      setVisitorsPage(Math.min(visitorsTotalPages, visitorsPage + 1));
+                      toast.info(`Navigated to page ${Math.min(visitorsTotalPages, visitorsPage + 1)}`);
+                    }}
+                    disabled={visitorsPage === visitorsTotalPages}
+                    className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                  >
+                    Next
+                  </button>
                 </div>
               </div>
             )}
