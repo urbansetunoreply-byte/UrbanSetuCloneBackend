@@ -315,6 +315,16 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
       return null;
     });
     
+    // Release lock when closing
+    if (lockManagerRef.current) {
+      await lockManagerRef.current.releaseLock();
+      lockManagerRef.current.cleanup();
+      lockManagerRef.current = null;
+    }
+    
+    // Show simple message that session is closed
+    toast.info('Payment session closed');
+    
     // Don't cancel payment when modal is closed - let it expire naturally after 10 minutes
     // This allows the user to reopen the modal and reuse the same payment ID if within 10 minutes
     // Payment will only be cancelled when:
@@ -328,6 +338,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
     paymentDataRef.current = null;
     setPaymentSuccess(false);
     setPaymentInitiatedTime(null); // Reset initiation time
+    setLockAcquired(false); // Reset lock acquired state
     
     onClose();
   };
