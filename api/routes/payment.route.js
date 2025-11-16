@@ -84,15 +84,15 @@ router.post("/create-intent", verifyToken, async (req, res) => {
       });
     }
 
-    // Auto-expire old pending/processing payments that are older than 15 minutes
+    // Auto-expire old pending/processing payments that are older than 10 minutes
     // This cleans up payments where modal was closed without proper cancellation
-    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
     const expiredPayments = await Payment.updateMany(
       {
         status: { $in: ['pending', 'processing'] },
         $or: [
           { expiresAt: { $lte: new Date() } }, // Expired payments
-          { createdAt: { $lte: fifteenMinutesAgo } } // Old payments without expiresAt (fallback)
+          { createdAt: { $lte: tenMinutesAgo } } // Old payments without expiresAt (fallback)
         ]
       },
       {
@@ -140,7 +140,7 @@ router.post("/create-intent", verifyToken, async (req, res) => {
         gateway: 'razorpay',
         status: 'pending',
         receiptNumber: generateReceiptNumber(),
-        expiresAt: new Date(Date.now() + 15 * 60 * 1000) // Expires in 15 minutes
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000) // Expires in 10 minutes
       });
       await payment.save();
 
@@ -192,7 +192,7 @@ router.post("/create-intent", verifyToken, async (req, res) => {
         gateway: 'paypal',
         status: 'pending',
         receiptNumber: generateReceiptNumber(),
-        expiresAt: new Date(Date.now() + 15 * 60 * 1000) // Expires in 15 minutes
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000) // Expires in 10 minutes
       });
       await payment.save();
       return res.status(201).json({

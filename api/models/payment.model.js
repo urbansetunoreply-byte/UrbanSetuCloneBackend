@@ -115,11 +115,11 @@ const paymentSchema = new mongoose.Schema({
   completedAt: Date,
   expiresAt: {
     type: Date,
-    // Expires 15 minutes after creation for pending/processing payments
+    // Expires 10 minutes after creation for pending/processing payments
     default: function() {
-      // Set to 15 minutes from now if status is pending/processing
+      // Set to 10 minutes from now if status is pending/processing
       if (this.status === 'pending' || this.status === 'processing') {
-        return new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+        return new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
       }
       return null;
     }
@@ -145,9 +145,9 @@ paymentSchema.index({ expiresAt: 1 }); // Index for finding expired payments
 paymentSchema.pre('save', function(next) {
   this.updatedAt = new Date();
   
-  // Set expiresAt to 15 minutes from now for pending/processing payments
+  // Set expiresAt to 10 minutes from now for pending/processing payments
   if ((this.status === 'pending' || this.status === 'processing') && !this.expiresAt) {
-    this.expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+    this.expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
   }
   
   // Clear expiresAt for completed, failed, or cancelled payments
