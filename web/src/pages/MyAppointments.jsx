@@ -5808,6 +5808,17 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const selectedMessageForHeaderOptions = headerOptionsMessageId ? comments.find(msg => msg._id === headerOptionsMessageId) : null;
   return (
     <>
+      <style>{`
+        .highlight-appointment {
+          animation: highlightPulse 2s ease-in-out;
+          background-color: #fef3c7 !important;
+          box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+        }
+        @keyframes highlightPulse {
+          0%, 100% { background-color: #fef3c7; box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
+          50% { background-color: #fde68a; box-shadow: 0 0 30px rgba(251, 191, 36, 0.8); }
+        }
+      `}</style>
       <tr className={`hover:bg-blue-50 transition align-top ${!isUpcoming ? 'bg-gray-100' : ''}`} data-appointment-id={appt._id}>
         <td className="border p-2">
           <div>
