@@ -645,6 +645,7 @@ function AppRoutes({ bootstrapped }) {
     return () => {
       socket.off('commentUpdate', handleNewMessage);
       socket.off('notificationCreated', handleNewNotification);
+      socket.off('watchlistNotification', handleNewNotification);
     };
   }, [dispatch, navigate, currentUser, playNotification, currentlyOpenChat]);
 
