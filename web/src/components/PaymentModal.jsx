@@ -91,12 +91,32 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
   // Handle payment expiry
   const handleExpiry = useCallback(async () => {
     toast.info('Payment session expired. Please initiate a new payment.');
-    await cancelPayment();
+    // Cancel payment if exists
+    if (paymentData && paymentData.payment && (paymentData.payment.status === 'pending' || paymentData.payment.status === 'processing')) {
+      try {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/cancel`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            paymentId: paymentData.payment.paymentId
+          })
+        });
+      } catch (error) {
+        console.error('Error cancelling payment:', error);
+      }
+    }
     setPaymentData(null);
     setPaymentSuccess(false);
     setTimeRemaining(15 * 60);
+    if (expiryTimer) {
+      clearInterval(expiryTimer);
+      setExpiryTimer(null);
+    }
     onClose();
-  }, [paymentData]);
+  }, [paymentData, expiryTimer, onClose]);
 
   // Timer effect: Start countdown when payment intent is created
   useEffect(() => {
