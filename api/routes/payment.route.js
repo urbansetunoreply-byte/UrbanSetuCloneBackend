@@ -1282,12 +1282,14 @@ router.get("/stats/overview", verifyToken, async (req, res) => {
         $group: {
           _id: null,
           totalPayments: { $sum: 1 },
-          totalAmount: { $sum: '$amount' },
-          totalAmountUsd: { $sum: { $cond: [{ $eq: ['$currency', 'USD'] }, '$amount', 0] } },
-          totalAmountInr: { $sum: { $cond: [{ $eq: ['$currency', 'INR'] }, '$amount', 0] } },
-          totalRefunds: { $sum: '$refundAmount' },
-          totalRefundsUsd: { $sum: { $cond: [{ $eq: ['$currency', 'USD'] }, '$refundAmount', 0] } },
-          totalRefundsInr: { $sum: { $cond: [{ $eq: ['$currency', 'INR'] }, '$refundAmount', 0] } },
+          // Only count completed payments in totals
+          totalAmount: { $sum: { $cond: [{ $eq: ['$status', 'completed'] }, '$amount', 0] } },
+          totalAmountUsd: { $sum: { $cond: [{ $and: [{ $eq: ['$status', 'completed'] }, { $eq: ['$currency', 'USD'] }] }, '$amount', 0] } },
+          totalAmountInr: { $sum: { $cond: [{ $and: [{ $eq: ['$status', 'completed'] }, { $eq: ['$currency', 'INR'] }] }, '$amount', 0] } },
+          // Only count refunds from completed payments
+          totalRefunds: { $sum: { $cond: [{ $eq: ['$status', 'completed'] }, '$refundAmount', 0] } },
+          totalRefundsUsd: { $sum: { $cond: [{ $and: [{ $eq: ['$status', 'completed'] }, { $eq: ['$currency', 'USD'] }] }, '$refundAmount', 0] } },
+          totalRefundsInr: { $sum: { $cond: [{ $and: [{ $eq: ['$status', 'completed'] }, { $eq: ['$currency', 'INR'] }] }, '$refundAmount', 0] } },
           completedPayments: {
             $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] }
           },
@@ -1304,6 +1306,7 @@ router.get("/stats/overview", verifyToken, async (req, res) => {
     const monthlyStats = await Payment.aggregate([
       {
         $match: {
+          status: 'completed', // Only count completed payments
           createdAt: { $gte: new Date(Date.now() - 12 * 30 * 24 * 60 * 60 * 1000) }
         }
       },
@@ -1316,7 +1319,10 @@ router.get("/stats/overview", verifyToken, async (req, res) => {
           count: { $sum: 1 },
           amount: { $sum: '$amount' },
           amountUsd: { $sum: { $cond: [{ $eq: ['$currency', 'USD'] }, '$amount', 0] } },
-          amountInr: { $sum: { $cond: [{ $eq: ['$currency', 'INR'] }, '$amount', 0] } }
+          amountInr: { $sum: { $cond: [{ $eq: ['$currency', 'INR'] }, '$amount', 0] } },
+          refunds: { $sum: '$refundAmount' },
+          refundsUsd: { $sum: { $cond: [{ $eq: ['$currency', 'USD'] }, '$refundAmount', 0] } },
+          refundsInr: { $sum: { $cond: [{ $eq: ['$currency', 'INR'] }, '$refundAmount', 0] } }
         }
       },
       { $sort: { '_id.year': 1, '_id.month': 1 } }

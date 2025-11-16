@@ -1,12 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { FaDollarSign, FaCreditCard, FaChartLine, FaDownload, FaUndo, FaCheckCircle, FaTimes, FaExclamationTriangle, FaSpinner, FaUsers, FaHome, FaCalendar, FaMoneyBill } from 'react-icons/fa';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { FaDollarSign, FaCreditCard, FaChartLine, FaDownload, FaUndo, FaCheckCircle, FaTimes, FaExclamationTriangle, FaSpinner, FaUsers, FaHome, FaCalendar, FaMoneyBill, FaLock } from 'react-icons/fa';
 import PaymentHistory from '../components/PaymentHistory';
 import RefundManagement from '../components/RefundManagement';
+import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from '../redux/user/userSlice';
+import { toast } from 'react-toastify';
+import axios from 'axios';
 
 import { usePageTitle } from '../hooks/usePageTitle';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const PaymentDashboard = () => {
   // Set page title
   usePageTitle("Payment Dashboard - Financial Management");
+  
+  const { currentUser } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   
   const [activeTab, setActiveTab] = useState('overview');
   const [stats, setStats] = useState({
@@ -25,6 +36,12 @@ const PaymentDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [usdPayments, setUsdPayments] = useState([]);
   const [inrPayments, setInrPayments] = useState([]);
+  
+  // Export password modal states
+  const [showExportPasswordModal, setShowExportPasswordModal] = useState(false);
+  const [exportPassword, setExportPassword] = useState('');
+  const [exportPasswordError, setExportPasswordError] = useState('');
+  const [exportPasswordLoading, setExportPasswordLoading] = useState(false);
 
   useEffect(() => {
     fetchPaymentStats();
@@ -149,8 +166,8 @@ const PaymentDashboard = () => {
                 <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-green-100 text-sm font-medium">Total Revenue (USD)</p>
-                      <p className="text-3xl font-bold">${stats.totalAmountUsd.toLocaleString()}</p>
+                      <p className="text-green-100 text-sm font-medium">Net Revenue (USD)</p>
+                      <p className="text-3xl font-bold">${Math.max(0, (stats.totalAmountUsd - stats.totalRefundsUsd)).toLocaleString()}</p>
                     </div>
                     <FaDollarSign className="text-4xl text-green-200" />
                   </div>
@@ -159,8 +176,8 @@ const PaymentDashboard = () => {
                 <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-lg p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-emerald-100 text-sm font-medium">Total Revenue (INR)</p>
-                      <p className="text-3xl font-bold">₹{stats.totalAmountInr.toLocaleString('en-IN')}</p>
+                      <p className="text-emerald-100 text-sm font-medium">Net Revenue (INR)</p>
+                      <p className="text-3xl font-bold">₹{Math.max(0, (stats.totalAmountInr - stats.totalRefundsInr)).toLocaleString('en-IN')}</p>
                     </div>
                     <FaCreditCard className="text-4xl text-emerald-200" />
                   </div>
@@ -235,19 +252,19 @@ const PaymentDashboard = () => {
                             <div className="absolute inset-y-0 left-0 flex w-full gap-1 px-1">
                               <div
                                 className="h-4 rounded-l-full bg-blue-500 transition-all duration-500"
-                                style={{ width: `${Math.min(100, (month.amountUsd / Math.max(1, ...monthlyStats.map(m => m.amountUsd || 0))) * 100)}%` }}
-                                title={`USD: $${(month.amountUsd || 0).toLocaleString()}`}
+                                style={{ width: `${Math.min(100, (Math.max(0, ((month.amountUsd || 0) - (month.refundsUsd || 0))) / Math.max(1, ...monthlyStats.map(m => Math.max(0, ((m.amountUsd || 0) - (m.refundsUsd || 0)))))) * 100)}%` }}
+                                title={`USD Net: $${Math.max(0, ((month.amountUsd || 0) - (month.refundsUsd || 0))).toLocaleString()}`}
                               />
                               <div
                                 className="h-4 rounded-r-full bg-emerald-500 transition-all duration-500"
-                                style={{ width: `${Math.min(100, (month.amountInr / Math.max(1, ...monthlyStats.map(m => m.amountInr || 0))) * 100)}%` }}
-                                title={`INR: ₹${(month.amountInr || 0).toLocaleString('en-IN')}`}
+                                style={{ width: `${Math.min(100, (Math.max(0, ((month.amountInr || 0) - (month.refundsInr || 0))) / Math.max(1, ...monthlyStats.map(m => Math.max(0, ((m.amountInr || 0) - (m.refundsInr || 0)))))) * 100)}%` }}
+                                title={`INR Net: ₹${Math.max(0, ((month.amountInr || 0) - (month.refundsInr || 0))).toLocaleString('en-IN')}`}
                               />
                             </div>
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="font-semibold text-gray-800">$ {(month.amountUsd || 0).toLocaleString()} • ₹ {(month.amountInr || 0).toLocaleString('en-IN')}</div>
+                          <div className="font-semibold text-gray-800">$ {Math.max(0, ((month.amountUsd || 0) - (month.refundsUsd || 0))).toLocaleString()} • ₹ {Math.max(0, ((month.amountInr || 0) - (month.refundsInr || 0))).toLocaleString('en-IN')}</div>
                           <div className="text-sm text-gray-500">{month.count} payments</div>
                         </div>
                       </div>
@@ -283,20 +300,10 @@ const PaymentDashboard = () => {
                   </button>
                   
                   <button
-                    onClick={async () => {
-                      try {
-                        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/export`, { credentials: 'include' });
-                        if (!res.ok) return;
-                        const blob = await res.blob();
-                        const url = window.URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = 'payments_export.csv';
-                        document.body.appendChild(a);
-                        a.click();
-                        a.remove();
-                        window.URL.revokeObjectURL(url);
-                      } catch {}
+                    onClick={() => {
+                      setShowExportPasswordModal(true);
+                      setExportPassword('');
+                      setExportPasswordError('');
                     }}
                     className="bg-green-100 text-green-800 p-3 sm:p-4 rounded-lg hover:bg-green-200 transition-colors flex items-center gap-2 sm:gap-3"
                     title="Export CSV of payments"
@@ -524,6 +531,127 @@ const PaymentDashboard = () => {
           )}
         </div>
       </div>
+      
+      {/* Export Password Modal */}
+      {showExportPasswordModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <form 
+            className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4" 
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setExportPasswordLoading(true);
+              setExportPasswordError("");
+              try {
+                const { data } = await axios.post(`${API_BASE_URL}/api/auth/verify-password`, 
+                  { password: exportPassword },
+                  { 
+                    withCredentials: true,
+                    headers: { "Content-Type": "application/json" }
+                  }
+                );
+                if (data.success) {
+                  // Reset attempts on successful password
+                  localStorage.removeItem('adminPaymentExportPwAttempts');
+                  setShowExportPasswordModal(false);
+                  setExportPassword("");
+                  setExportPasswordError("");
+                  
+                  // Download export file
+                  try {
+                    const res = await fetch(`${API_BASE_URL}/api/payments/admin/export`, { credentials: 'include' });
+                    if (!res.ok) {
+                      toast.error('Failed to export payments');
+                      return;
+                    }
+                    const blob = await res.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'payments_export.csv';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(url);
+                    toast.success('Payments exported successfully');
+                  } catch (exportError) {
+                    toast.error('Failed to export payments');
+                  }
+                }
+              } catch (err) {
+                // Track wrong attempts locally (allow up to 3 attempts before logout)
+                const key = 'adminPaymentExportPwAttempts';
+                const prev = parseInt(localStorage.getItem(key) || '0');
+                const next = prev + 1;
+                localStorage.setItem(key, String(next));
+
+                if (next >= 3) {
+                  // Sign out and redirect on third wrong attempt
+                  localStorage.removeItem(key);
+                  setShowExportPasswordModal(false);
+                  setExportPassword("");
+                  setExportPasswordError("");
+                  toast.error("Too many incorrect attempts. You've been signed out for security.");
+                  dispatch(signoutUserStart());
+                  try {
+                    const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+                    const signoutData = await signoutRes.json();
+                    if (signoutData.success === false) {
+                      dispatch(signoutUserFailure(signoutData.message));
+                    } else {
+                      dispatch(signoutUserSuccess(signoutData));
+                    }
+                  } catch (signoutErr) {
+                    dispatch(signoutUserFailure(signoutErr.message));
+                  }
+                  setTimeout(() => {
+                    navigate('/sign-in');
+                  }, 800);
+                  setExportPasswordLoading(false);
+                  return;
+                } else {
+                  // Keep modal open and show remaining attempts
+                  const remaining = 3 - next;
+                  setExportPasswordError(`Incorrect password. ${remaining} attempt${remaining === 1 ? '' : 's'} left before logout.`);
+                }
+              } finally {
+                setExportPasswordLoading(false);
+              }
+            }}
+          >
+            <h3 className="text-lg font-bold text-blue-700 flex items-center gap-2"><FaLock /> Confirm Password</h3>
+            <input
+              type="password"
+              className="border rounded p-2 w-full"
+              placeholder="Enter your password"
+              value={exportPassword}
+              onChange={e => setExportPassword(e.target.value)}
+              autoFocus
+              required
+            />
+            {exportPasswordError && <div className="text-red-600 text-sm">{exportPasswordError}</div>}
+            <div className="flex gap-2 justify-end">
+              <button 
+                type="button" 
+                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold" 
+                onClick={() => {
+                  setShowExportPasswordModal(false);
+                  setExportPassword("");
+                  setExportPasswordError("");
+                }}
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                className="px-4 py-2 rounded bg-blue-700 text-white font-semibold" 
+                disabled={exportPasswordLoading}
+              >
+                {exportPasswordLoading ? 'Verifying...' : 'Confirm'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 };
