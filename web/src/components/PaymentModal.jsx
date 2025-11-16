@@ -864,6 +864,20 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
   };
 
   if (!isOpen) return null;
+  
+  // Don't render modal content until lock is acquired (prevents flash of modal before lock check)
+  if (!lockAcquired && !paymentSuccess) {
+    return (
+      <div className="fixed inset-0 bg-gradient-to-br from-blue-900/40 to-purple-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="rounded-xl shadow-2xl max-w-md w-full bg-gradient-to-br from-white to-blue-50 p-8">
+          <div className="flex flex-col items-center justify-center">
+            <FaSpinner className="animate-spin text-4xl text-blue-600 mb-4" />
+            <p className="text-gray-700 font-medium">Checking payment session availability...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-gradient-to-br from-blue-900/40 to-purple-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" style={{ overscrollBehavior: 'contain' }}>
