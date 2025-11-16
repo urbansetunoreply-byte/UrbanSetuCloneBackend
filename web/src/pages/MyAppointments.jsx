@@ -11749,8 +11749,14 @@ function PaymentStatusCell({ appointment, isBuyer }) {
           return;
         }
         
-        // Note: Old pending/processing payments are automatically cancelled when a new payment intent is created
-        // So we don't need to block here - the backend will handle it
+        // Check if there's an active payment in progress (pending/processing) in another tab/window/device
+        if (latestPayment.status === 'pending' || latestPayment.status === 'processing') {
+          toast.warning('A payment is already in progress for this appointment in another window/tab. Please complete or cancel that payment first before starting a new one.');
+          // Update payment status to show the active payment
+          setPaymentStatus(latestPayment);
+          setLoading(false);
+          return;
+        }
       }
       
       // If payment is not completed and no active payment, proceed with opening the modal
