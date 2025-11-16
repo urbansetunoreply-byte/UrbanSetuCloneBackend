@@ -1107,25 +1107,87 @@ export default function NotificationBell({ mobile = false }) {
           {activeTab === 'notifications' ? (
             <>
               {/* Notifications Header Actions */}
-              <div className="flex items-center justify-between p-4 border-b border-gray-100">
-                                        <div className="flex items-center gap-2">
-                          {unreadCount > 0 && (
-                            <button
-                              onClick={markAllAsRead}
-                              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                            >
-                              {isAdmin() ? 'Mark all resolved' : 'Mark all read'}
-                            </button>
-                          )}
+              <div className="p-4 border-b border-gray-100 space-y-3">
+                {/* Search and Filter */}
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <input
+                      type="text"
+                      value={notificationSearch}
+                      onChange={(e) => setNotificationSearch(e.target.value)}
+                      placeholder="Search notifications..."
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-900"
+                    />
+                  </div>
+                  <button
+                    onClick={() => setShowFilters(!showFilters)}
+                    className={`px-3 py-2 border rounded-lg text-sm flex items-center gap-2 ${
+                      showFilters || notificationFilter !== 'all' 
+                        ? 'bg-blue-100 text-blue-700 border-blue-300' 
+                        : 'bg-gray-100 text-gray-700 border-gray-300'
+                    }`}
+                    title="Filter notifications"
+                  >
+                    <FaFilter className="w-4 h-4" />
+                  </button>
+                </div>
+                
+                {/* Filter Options */}
+                {showFilters && (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                      onClick={() => setNotificationFilter('all')}
+                      className={`px-3 py-1 rounded-lg text-xs ${
+                        notificationFilter === 'all' 
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-gray-200 text-gray-700'
+                      }`}
+                    >
+                      All
+                    </button>
+                    <button
+                      onClick={() => setNotificationFilter('unread')}
+                      className={`px-3 py-1 rounded-lg text-xs ${
+                        notificationFilter === 'unread' 
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-gray-200 text-gray-700'
+                      }`}
+                    >
+                      Unread ({allNotifications.filter(n => !n.isRead).length})
+                    </button>
+                    <button
+                      onClick={() => setNotificationFilter('read')}
+                      className={`px-3 py-1 rounded-lg text-xs ${
+                        notificationFilter === 'read' 
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-gray-200 text-gray-700'
+                      }`}
+                    >
+                      Read ({allNotifications.filter(n => n.isRead).length})
+                    </button>
+                  </div>
+                )}
+                
+                {/* Action Buttons */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={markAllAsRead}
+                      className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      {isAdmin() ? 'Mark all resolved' : 'Mark all read'}
+                    </button>
+                  )}
                   <button
                     onClick={() => fetchNotifications(true)}
-                    className="ml-2 text-sm text-gray-500 hover:text-blue-600 flex items-center gap-1"
+                    className="text-sm text-gray-500 hover:text-blue-600 flex items-center gap-1"
                     title="Refresh notifications"
                   >
                     <FaRedo className="w-4 h-4" />
                     Refresh
                   </button>
-                  {notifications.length > 0 && (
+                  {allNotifications.length > 0 && (
                     <button
                       onClick={() => {
                         // Clear all notifications
@@ -1133,12 +1195,12 @@ export default function NotificationBell({ mobile = false }) {
                           method: 'DELETE',
                           credentials: 'include',
                         }).then(() => {
-                          setNotifications([]);
+                          setAllNotifications([]);
                           setUnreadCount(0);
                           toast.success('All notifications cleared');
                         });
                       }}
-                      className="ml-2 text-sm text-red-600 hover:text-red-800 font-medium flex items-center gap-1"
+                      className="text-sm text-red-600 hover:text-red-800 font-medium flex items-center gap-1"
                       title="Clear all notifications"
                     >
                       <FaTrash className="w-4 h-4" />
@@ -1222,6 +1284,20 @@ export default function NotificationBell({ mobile = false }) {
                                 </div>
                               </div>
                               <div className="flex items-center gap-1 ml-2">
+                                <button
+                                  onClick={() => {
+                                    const text = `${notification.title}\n${notification.message}`;
+                                    navigator.clipboard.writeText(text).then(() => {
+                                      toast.success('Notification copied to clipboard');
+                                    }).catch(() => {
+                                      toast.error('Failed to copy notification');
+                                    });
+                                  }}
+                                  className="p-1 text-blue-600 hover:text-blue-800 transition-colors"
+                                  title="Copy notification"
+                                >
+                                  <FaCopy className="w-3 h-3" />
+                                </button>
                                 {!notification.isRead && (
                                   <button
                                     onClick={() => markAsRead(notification._id)}
