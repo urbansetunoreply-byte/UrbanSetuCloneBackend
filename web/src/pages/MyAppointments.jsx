@@ -11574,6 +11574,7 @@ You can lock this chat again at any time from the options.</p>
 function PaymentStatusCell({ appointment, isBuyer }) {
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [paying, setPaying] = useState(false); // Track if Pay Now button is loading
   const [showPayModal, setShowPayModal] = useState(false);
   const [showRefundRequestModal, setShowRefundRequestModal] = useState(false);
   const [refundRequestForm, setRefundRequestForm] = useState({
@@ -11732,6 +11733,8 @@ function PaymentStatusCell({ appointment, isBuyer }) {
   };
 
   const handlePayNowClick = async () => {
+    // Set loading state for button
+    setPaying(true);
     // Check if payment is already completed before opening modal
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/history?appointmentId=${appointment._id}`, {
@@ -11765,6 +11768,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
           }
           // Don't refetch immediately - let the socket event handler handle it after a delay
           // This prevents race conditions where cancelled payments might overwrite completed status
+          setPaying(false);
           return;
         }
         
@@ -11780,6 +11784,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
           // Update payment status to show the active payment
           setPaymentStatus(activePayment);
           setLoading(false);
+          setPaying(false);
           return;
         }
         
@@ -11793,10 +11798,12 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       
       // If payment is not completed and no active payment, proceed with opening the modal
       setShowPayModal(true);
+      setPaying(false); // Clear loading when modal opens
     } catch (error) {
       console.error('Error checking payment status:', error);
       // If there's an error checking, still allow opening the modal
       setShowPayModal(true);
+      setPaying(false); // Clear loading on error
     }
   };
 
@@ -11988,17 +11995,35 @@ function PaymentStatusCell({ appointment, isBuyer }) {
           )}
           {isPending ? (
             <button
-              className="mt-1 inline-flex items-center gap-1 text-white bg-blue-600 hover:bg-blue-700 text-xs font-semibold px-3 py-1 rounded"
+              className="mt-1 inline-flex items-center gap-1 text-white bg-blue-600 hover:bg-blue-700 text-xs font-semibold px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handlePayNowClick}
+              disabled={paying}
             >
-              <FaCreditCard /> Pay Now
+              {paying ? (
+                <>
+                  <FaSpinner className="animate-spin" /> Loading...
+                </>
+              ) : (
+                <>
+                  <FaCreditCard /> Pay Now
+                </>
+              )}
             </button>
           ) : paymentStatus && paymentStatus.status === 'failed' && !isFrozenStatus ? (
             <button
               onClick={handlePayNowClick}
-              className="mt-1 inline-flex items-center gap-1 text-white bg-red-600 hover:bg-red-700 text-xs font-semibold px-3 py-1 rounded"
+              className="mt-1 inline-flex items-center gap-1 text-white bg-red-600 hover:bg-red-700 text-xs font-semibold px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={paying}
             >
-              <FaCreditCard /> Retry Payment
+              {paying ? (
+                <>
+                  <FaSpinner className="animate-spin" /> Loading...
+                </>
+              ) : (
+                <>
+                  <FaCreditCard /> Retry Payment
+                </>
+              )}
             </button>
           ) : paymentStatus && paymentStatus.status === 'completed' && 
             ['rejected', 'cancelledBySeller', 'cancelledByAdmin'].includes(appointment.status) && 
