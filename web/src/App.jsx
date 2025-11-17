@@ -68,6 +68,8 @@ const Appointment = lazy(() => import("./components/Appointment"));
 const AdminAppointments = lazy(() => import("./pages/AdminAppointments"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const MyAppointments = lazy(() => import("./pages/MyAppointments"));
+const CallHistory = lazy(() => import("./pages/CallHistory"));
+const AdminCallHistory = lazy(() => import("./pages/AdminCallHistory"));
 const MyListings = lazy(() => import("./pages/MyListings"));
 const AdminAbout = lazy(() => import("./pages/AdminAbout"));
 const AdminExplore = lazy(() => import("./pages/AdminExplore"));
@@ -638,6 +640,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/user/appointment" element={<Appointment />} />
             <Route path="/user/my-appointments" element={<MyAppointments />} />
             <Route path="/user/my-appointments/chat/:chatId" element={<MyAppointments />} />
+            <Route path="/user/call-history" element={<CallHistory />} />
             <Route path="/user/my-payments" element={<MyPayments />} />
             <Route path="/user/my-listings" element={<MyListings />} />
             <Route path="/user/services" element={<OnDemandServices />} />
@@ -662,6 +665,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/appointments" element={<AdminAppointments />} />
             <Route path="/admin/appointments/chat/:chatId" element={<AdminAppointments />} />
+            <Route path="/admin/call-history" element={<AdminCallHistory />} />
             <Route path="/admin/about" element={<AdminAbout />} />
             <Route path="/admin/blogs" element={<AdminBlogs />} />
             <Route path="/admin/blog/:slug" element={<AdminBlogDetail />} />

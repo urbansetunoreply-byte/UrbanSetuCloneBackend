@@ -90,7 +90,7 @@ router.get("/history/:appointmentId", verifyToken, async (req, res) => {
 });
 
 // GET: Admin - Get all call history with stats
-router.get("/admin/calls/history", verifyToken, async (req, res) => {
+router.get("/admin/history", verifyToken, async (req, res) => {
   try {
     // Check admin authorization
     if (req.user.role !== 'admin' && req.user.role !== 'rootadmin') {

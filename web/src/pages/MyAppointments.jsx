@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { FaTrash, FaSearch, FaPen, FaCheck, FaTimes, FaUserShield, FaUser, FaEnvelope, FaPhone, FaArchive, FaUndo, FaCommentDots, FaCheckDouble, FaBan, FaPaperPlane, FaCalendar, FaLightbulb, FaCopy, FaEllipsisV, FaFlag, FaCircle, FaInfoCircle, FaSync, FaStar, FaRegStar, FaThumbtack, FaCalendarAlt, FaCheckSquare, FaDownload, FaDollarSign, FaCreditCard, FaSpinner, FaExclamationTriangle, FaMoneyBill } from "react-icons/fa";
+import { FaTrash, FaSearch, FaPen, FaCheck, FaTimes, FaUserShield, FaUser, FaEnvelope, FaPhone, FaVideo, FaArchive, FaUndo, FaCommentDots, FaCheckDouble, FaBan, FaPaperPlane, FaCalendar, FaLightbulb, FaCopy, FaEllipsisV, FaFlag, FaCircle, FaInfoCircle, FaSync, FaStar, FaRegStar, FaThumbtack, FaCalendarAlt, FaCheckSquare, FaDownload, FaDollarSign, FaCreditCard, FaSpinner, FaExclamationTriangle, FaMoneyBill } from "react-icons/fa";
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
 import UserAvatar from '../components/UserAvatar';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
@@ -18,6 +18,9 @@ import { exportEnhancedChatToPDF } from '../utils/pdfExport';
 import ExportChatModal from '../components/ExportChatModal';
 import axios from 'axios';
 import PaymentModal from '../components/PaymentModal';
+import IncomingCallModal from '../components/IncomingCallModal';
+import ActiveCallModal from '../components/ActiveCallModal';
+import { useCall } from '../hooks/useCall';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -119,8 +122,49 @@ export default function MyAppointments() {
   const [exportAppointment, setExportAppointment] = useState(null);
   const [exportComments, setExportComments] = useState([]);
 
+  // Call functionality
+  const {
+    callState,
+    incomingCall,
+    localStream,
+    remoteStream,
+    isMuted,
+    isVideoEnabled,
+    callDuration,
+    activeCall,
+    localVideoRef,
+    remoteVideoRef,
+    initiateCall,
+    acceptCall,
+    rejectCall,
+    endCall,
+    toggleMute,
+    toggleVideo
+  } = useCall();
 
+  // Handle initiate call
+  const handleInitiateCall = async (appointment, callType, receiverId) => {
+    if (!appointment || !appointment._id) {
+      toast.error('Appointment not found');
+      return;
+    }
+    
+    try {
+      await initiateCall(appointment._id, receiverId, callType);
+    } catch (error) {
+      console.error('Error initiating call:', error);
+      // Error is already handled in useCall hook
+    }
+  };
 
+  // Get other party name for active call
+  const getOtherPartyName = (appointment) => {
+    if (!appointment || !currentUser) return 'Calling...';
+    if (appointment.buyerId._id === currentUser._id) {
+      return appointment.sellerId?.username || 'Calling...';
+    }
+    return appointment.buyerId?.username || 'Calling...';
+  };
 
   // Lock body scroll when archive modals are open
   useEffect(() => {
@@ -1168,6 +1212,21 @@ export default function MyAppointments() {
                         setExportComments(comments);
                         setShowExportModal(true);
                       }}
+                      onInitiateCall={handleInitiateCall}
+                      callState={callState}
+                      incomingCall={incomingCall}
+                      activeCall={activeCall}
+                      localVideoRef={localVideoRef}
+                      remoteVideoRef={remoteVideoRef}
+                      isMuted={isMuted}
+                      isVideoEnabled={isVideoEnabled}
+                      callDuration={callDuration}
+                      onAcceptCall={acceptCall}
+                      onRejectCall={rejectCall}
+                      onEndCall={endCall}
+                      onToggleMute={toggleMute}
+                      onToggleVideo={toggleVideo}
+                      getOtherPartyName={getOtherPartyName}
                     />
                   ))}
                 </tbody>
@@ -1234,10 +1293,25 @@ export default function MyAppointments() {
                         setExportComments(comments);
                         setShowExportModal(true);
                       }}
-                  />
-                ))}
-              </tbody>
-            </table>
+                      onInitiateCall={handleInitiateCall}
+                      callState={callState}
+                      incomingCall={incomingCall}
+                      activeCall={activeCall}
+                      localVideoRef={localVideoRef}
+                      remoteVideoRef={remoteVideoRef}
+                      isMuted={isMuted}
+                      isVideoEnabled={isVideoEnabled}
+                      callDuration={callDuration}
+                      onAcceptCall={acceptCall}
+                      onRejectCall={rejectCall}
+                      onEndCall={endCall}
+                      onToggleMute={toggleMute}
+                      onToggleVideo={toggleVideo}
+                      getOtherPartyName={getOtherPartyName}
+                    />
+                  ))}
+                </tbody>
+              </table>
           </div>
           )
         )}
@@ -1764,6 +1838,39 @@ export default function MyAppointments() {
         imageCount={exportComments.filter(msg => msg.imageUrl && !msg.deleted).length}
       />
       ), document.body)}
+      
+      {/* Incoming Call Modal */}
+      <IncomingCallModal
+        call={incomingCall}
+        onAccept={acceptCall}
+        onReject={rejectCall}
+      />
+
+      {/* Active Call Modal */}
+      {callState === 'active' && activeCall && (
+        <ActiveCallModal
+          callType={activeCall.callType}
+          otherPartyName={(() => {
+            // Find the current appointment from appointments list
+            const appointment = appointments.find(a => a._id === activeCall.appointmentId) || 
+                              allAppointments.find(a => a._id === activeCall.appointmentId);
+            if (!appointment || !currentUser) return 'Calling...';
+            if (appointment.buyerId._id === currentUser._id) {
+              return appointment.sellerId?.username || 'Calling...';
+            }
+            return appointment.buyerId?.username || 'Calling...';
+          })()}
+          isMuted={isMuted}
+          isVideoEnabled={isVideoEnabled}
+          callDuration={callDuration}
+          localVideoRef={localVideoRef}
+          remoteVideoRef={remoteVideoRef}
+          onToggleMute={toggleMute}
+          onToggleVideo={toggleVideo}
+          onEndCall={endCall}
+        />
+      )}
+      
     </div>
   );
 }
@@ -1776,7 +1883,7 @@ function getDateLabel(date) {
   if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
   return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
-function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDelete, actionLoading, onShowOtherParty, onOpenReinitiate, handleArchiveAppointment, handleUnarchiveAppointment, isArchived, onCancelRefresh, copyMessageToClipboard, activeChatAppointmentId, shouldOpenChatFromNotification, onChatOpened, onExportChat, preferUnreadForAppointmentId, onConsumePreferUnread }) {
+function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDelete, actionLoading, onShowOtherParty, onOpenReinitiate, handleArchiveAppointment, handleUnarchiveAppointment, isArchived, onCancelRefresh, copyMessageToClipboard, activeChatAppointmentId, shouldOpenChatFromNotification, onChatOpened, onExportChat, preferUnreadForAppointmentId, onConsumePreferUnread, onInitiateCall, callState, incomingCall, activeCall, localVideoRef, remoteVideoRef, isMuted, isVideoEnabled, callDuration, onAcceptCall, onRejectCall, onEndCall, onToggleMute, onToggleVideo, getOtherPartyName }) {
   // Camera modal state - moved to main MyAppointments component
   const navigate = useNavigate();
   
@@ -1790,6 +1897,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const [savingComment, setSavingComment] = useState(null);
   const location = useLocation();
   const [showChatModal, setShowChatModal] = useState(false);
+  const [callHistory, setCallHistory] = useState([]);
   const chatEndRef = useRef(null);
   const chatContainerRef = useRef(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
@@ -1839,6 +1947,30 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         } catch (_) {}
       }, 0);
     }
+  }, [showChatModal, appt?._id]);
+
+  // Fetch call history for appointment when chat modal opens
+  useEffect(() => {
+    if (!showChatModal || !appt?._id) return;
+    
+    const fetchCallHistory = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/calls/history/${appt._id}`, {
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.calls) {
+            setCallHistory(data.calls);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching call history:', error);
+      }
+    };
+    
+    fetchCallHistory();
   }, [showChatModal, appt?._id]);
 
   // Lazy-load global property list when user starts typing a mention
@@ -7201,6 +7333,43 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
 
 
                         
+                        {/* Call buttons */}
+                        <div className="relative flex items-center gap-2">
+                          {/* Audio Call Button */}
+                          <button
+                            className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-all duration-300 transform hover:scale-110 shadow"
+                            onClick={() => {
+                              const receiverId = appt.buyerId._id === currentUser._id 
+                                ? appt.sellerId._id 
+                                : appt.buyerId._id;
+                              
+                              onInitiateCall(appt, 'audio', receiverId);
+                            }}
+                            title="Audio Call"
+                            aria-label="Audio Call"
+                            disabled={callState === 'active' || callState === 'ringing'}
+                          >
+                            <FaPhone className="text-sm" />
+                          </button>
+                          
+                          {/* Video Call Button */}
+                          <button
+                            className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-all duration-300 transform hover:scale-110 shadow"
+                            onClick={() => {
+                              const receiverId = appt.buyerId._id === currentUser._id 
+                                ? appt.sellerId._id 
+                                : appt.buyerId._id;
+                              
+                              onInitiateCall(appt, 'video', receiverId);
+                            }}
+                            title="Video Call"
+                            aria-label="Video Call"
+                            disabled={callState === 'active' || callState === 'ringing'}
+                          >
+                            <FaVideo className="text-sm" />
+                          </button>
+                        </div>
+                        
                         {/* Search functionality */}
                         <div className="relative search-container">
                           <button
@@ -7673,7 +7842,47 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                       </div>
                     </div>
                   )}
-                  {filteredComments.length === 0 ? (
+                  {/* Call History Display */}
+                  {callHistory.length > 0 && callHistory.map((call) => {
+                    const formatCallDuration = (seconds) => {
+                      if (!seconds || seconds === 0) return 'N/A';
+                      const hours = Math.floor(seconds / 3600);
+                      const minutes = Math.floor((seconds % 3600) / 60);
+                      const secs = seconds % 60;
+                      if (hours > 0) {
+                        return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                      }
+                      return `${minutes}:${secs.toString().padStart(2, '0')}`;
+                    };
+                    
+                    const isCaller = call.callerId?._id === currentUser._id || call.callerId === currentUser._id;
+                    const otherPartyName = isCaller 
+                      ? (call.receiverId?.username || 'Unknown')
+                      : (call.callerId?.username || 'Unknown');
+                    
+                    return (
+                      <div key={call._id} className="flex items-center justify-center gap-2 p-3 bg-gray-100 rounded-lg mb-3 mx-4">
+                        <div className={`flex items-center gap-2 ${call.callType === 'video' ? 'text-blue-500' : 'text-green-500'}`}>
+                          {call.callType === 'video' ? <FaVideo className="text-sm" /> : <FaPhone className="text-sm" />}
+                        </div>
+                        <div className="flex-1 text-sm text-gray-700">
+                          <p>
+                            <span className="font-semibold">{isCaller ? 'You' : otherPartyName}</span>
+                            {' '}called{' '}
+                            <span className="font-semibold">{isCaller ? otherPartyName : 'you'}</span>
+                            {call.duration > 0 && (
+                              <> • {formatCallDuration(call.duration)}</>
+                            )}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {new Date(call.startTime).toLocaleString()} • {call.status}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  
+                  {filteredComments.length === 0 && callHistory.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-center py-8">
                       <FaCommentDots className="text-gray-300 text-4xl mb-3" />
                       <p className="text-gray-500 font-medium text-sm">No messages yet</p>
