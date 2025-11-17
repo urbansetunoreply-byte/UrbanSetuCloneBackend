@@ -4,6 +4,7 @@ import { API_BASE_URL } from '../config/api';
 
 const AdminCallHistory = () => {
   const [calls, setCalls] = useState([]);
+  const [allCalls, setAllCalls] = useState([]); // Store all calls for pagination
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     callType: 'all',
@@ -17,10 +18,18 @@ const AdminCallHistory = () => {
     missed: 0,
     averageDuration: 0
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  const itemsPerPage = 10;
 
   useEffect(() => {
     fetchAllCallHistory();
   }, [filters]);
+
+  useEffect(() => {
+    // Apply pagination when allCalls or currentPage changes
+    applyPagination();
+  }, [allCalls, currentPage]);
 
   const fetchAllCallHistory = async () => {
     try {
@@ -28,6 +37,7 @@ const AdminCallHistory = () => {
       const params = new URLSearchParams();
       if (filters.callType !== 'all') params.append('callType', filters.callType);
       if (filters.status !== 'all') params.append('status', filters.status);
+      params.append('limit', '1000'); // Fetch all calls for client-side pagination
 
       const response = await fetch(`${API_BASE_URL}/api/calls/admin/history?${params}`, {
         credentials: 'include'
@@ -35,7 +45,7 @@ const AdminCallHistory = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setCalls(data.calls || []);
+        setAllCalls(data.calls || []);
         setStats(data.stats || {
           total: 0,
           audio: 0,
@@ -43,6 +53,7 @@ const AdminCallHistory = () => {
           missed: 0,
           averageDuration: 0
         });
+        setCurrentPage(1); // Reset to first page when filter changes
       }
     } catch (error) {
       console.error('Error fetching call history:', error);
@@ -50,6 +61,15 @@ const AdminCallHistory = () => {
       setLoading(false);
     }
   };
+
+  const applyPagination = () => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedCalls = allCalls.slice(startIndex, endIndex);
+    setCalls(paginatedCalls);
+  };
+
+  const totalPages = Math.ceil(allCalls.length / itemsPerPage);
 
   const formatDuration = (seconds) => {
     if (!seconds || seconds === 0) return 'N/A';
@@ -171,6 +191,35 @@ const AdminCallHistory = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
+            <div className="text-sm text-gray-700">
+              Page {currentPage} of {totalPages}
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <button
+                onClick={() => {
+                  setCurrentPage(Math.max(1, currentPage - 1));
+                }}
+                disabled={currentPage === 1}
+                className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => {
+                  setCurrentPage(Math.min(totalPages, currentPage + 1));
+                }}
+                disabled={currentPage === totalPages}
+                className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
