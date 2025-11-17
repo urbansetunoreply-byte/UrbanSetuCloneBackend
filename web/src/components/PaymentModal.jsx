@@ -483,12 +483,13 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
     onClose();
   }, [onClose]);
 
-  // Helper function to calculate remaining time from appointment lock expiry (not payment expiry)
-  // Timer is tied to appointment slot, NOT payment order ID
+  // Helper function to calculate remaining time from appointment lock expiry
+  // Since each payment attempt creates a new payment ID, the appointment lock is reset to 10 minutes
+  // for each new payment initialization. The 10 minutes is the payment window time, NOT payment ID expiry.
   const calculateRemainingTime = useCallback((paymentData) => {
     let expiresAtTime = null;
     
-    // Priority 1: Use appointment.lockExpiryTime (appointment slot lock - never resets)
+    // Priority 1: Use appointment.lockExpiryTime (appointment payment window - resets to 10 min for each new payment)
     if (paymentData?.appointment?.lockExpiryTime) {
       expiresAtTime = new Date(paymentData.appointment.lockExpiryTime).getTime();
     }
@@ -518,11 +519,12 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         clearInterval(expiryTimer);
       }
 
-      // Calculate expiry timestamp from appointment lock (NOT payment expiry)
-      // Timer is tied to appointment slot, NOT payment order ID
+      // Calculate expiry timestamp from appointment lock
+      // Since each payment attempt creates a new payment ID, the appointment lock is reset to 10 minutes
+      // for each new payment initialization. The 10 minutes is the payment window time, NOT payment ID expiry.
       let expiresAtTime = null;
       
-      // Priority 1: Use appointment.lockExpiryTime (appointment slot lock - never resets)
+      // Priority 1: Use appointment.lockExpiryTime (appointment payment window - resets to 10 min for each new payment)
       if (paymentData.appointment?.lockExpiryTime) {
         expiresAtTime = new Date(paymentData.appointment.lockExpiryTime).getTime();
       }

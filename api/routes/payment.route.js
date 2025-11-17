@@ -71,14 +71,14 @@ router.post("/lock/initialize", verifyToken, async (req, res) => {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
+    // IMPORTANT: Since each payment attempt creates a NEW payment ID,
+    // we reset the appointment lock timer to 10 minutes for each new payment initialization.
+    // This gives a fresh 10-minute payment window for each payment attempt.
+    // The 10 minutes is the payment window time, NOT the payment ID expiry time.
     const now = new Date();
-    
-    // Initialize lock if not already set or if expired
-    if (!appointment.lockExpiryTime || appointment.lockExpiryTime <= now) {
-      appointment.lockStartTime = now;
-      appointment.lockExpiryTime = new Date(now.getTime() + 10 * 60 * 1000); // 10 minutes
-      await appointment.save();
-    }
+    appointment.lockStartTime = now;
+    appointment.lockExpiryTime = new Date(now.getTime() + 10 * 60 * 1000); // Always reset to 10 minutes for new payment
+    await appointment.save();
 
     return res.json({
       ok: true,
@@ -115,13 +115,14 @@ router.post("/create-intent", verifyToken, async (req, res) => {
       return res.status(403).json({ message: "You can only make payments for your own appointments." });
     }
 
-    // Initialize appointment lock if not already set or expired
+    // IMPORTANT: Since each payment attempt creates a NEW payment ID,
+    // we reset the appointment lock timer to 10 minutes for each new payment initialization.
+    // This gives a fresh 10-minute payment window for each payment attempt.
+    // The 10 minutes is the payment window time, NOT the payment ID expiry time.
     const now = new Date();
-    if (!appointment.lockExpiryTime || appointment.lockExpiryTime <= now) {
-      appointment.lockStartTime = now;
-      appointment.lockExpiryTime = new Date(now.getTime() + 10 * 60 * 1000); // 10 minutes
-      await appointment.save();
-    }
+    appointment.lockStartTime = now;
+    appointment.lockExpiryTime = new Date(now.getTime() + 10 * 60 * 1000); // Always reset to 10 minutes for new payment
+    await appointment.save();
 
     // Check if payment is already completed for this appointment
     const completedPayment = await Payment.findOne({ 
@@ -141,7 +142,8 @@ router.post("/create-intent", verifyToken, async (req, res) => {
     // This follows Razorpay/PayPal best practices:
     // - Each payment attempt = new order ID
     // - Reusing order IDs can cause payment failures (BAD_REQUEST_ERROR, ORDER_ERROR, etc.)
-    // - Timer is tied to appointment slot (lockExpiryTime), NOT payment ID
+    // - Since each payment gets a new ID, the appointment lock timer is reset to 10 minutes for each new payment
+    // - The 10 minutes is the payment window time (fresh window per attempt), NOT tied to a specific payment ID
     
     // Cancel any existing pending/processing payments for this appointment
     // This keeps the database clean while ensuring we always create fresh payment IDs
