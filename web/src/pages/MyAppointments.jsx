@@ -1226,6 +1226,9 @@ export default function MyAppointments() {
                       onToggleCallMute={toggleCallMute}
                       onToggleVideo={toggleVideo}
                       getOtherPartyName={getOtherPartyName}
+                      // Call History Modal props
+                      setShowCallHistoryModal={setShowCallHistoryModal}
+                      setCallHistoryAppointmentId={setCallHistoryAppointmentId}
                     />
                   ))}
                 </tbody>
@@ -1307,6 +1310,9 @@ export default function MyAppointments() {
                       onToggleCallMute={toggleCallMute}
                       onToggleVideo={toggleVideo}
                       getOtherPartyName={getOtherPartyName}
+                      // Call History Modal props
+                      setShowCallHistoryModal={setShowCallHistoryModal}
+                      setCallHistoryAppointmentId={setCallHistoryAppointmentId}
                     />
                   ))}
                 </tbody>
