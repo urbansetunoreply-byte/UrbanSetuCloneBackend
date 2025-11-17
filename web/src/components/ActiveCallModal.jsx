@@ -32,6 +32,45 @@ const ActiveCallModal = ({
     setIsVisible(true);
   }, []);
 
+  // Maintain video streams when views are swapped
+  useEffect(() => {
+    if (callType !== 'video') return;
+    
+    // Store current streams from refs
+    const localStream = localVideoRef.current?.srcObject;
+    const remoteStream = remoteVideoRef.current?.srcObject;
+    
+    // Small delay to ensure React has updated the DOM with new video elements
+    const timeoutId = setTimeout(() => {
+      // Re-attach streams to the new video elements after swap
+      if (videoSwapped) {
+        // Local is in large view, remote is in small view
+        if (localVideoRef.current && localStream && localVideoRef.current.srcObject !== localStream) {
+          localVideoRef.current.srcObject = localStream;
+          localVideoRef.current.play().catch(err => console.error('Error playing local video after swap:', err));
+        }
+        if (remoteVideoRef.current && remoteStream && remoteVideoRef.current.srcObject !== remoteStream) {
+          remoteVideoRef.current.srcObject = remoteStream;
+          remoteVideoRef.current.muted = false;
+          remoteVideoRef.current.play().catch(err => console.error('Error playing remote video after swap:', err));
+        }
+      } else {
+        // Remote is in large view, local is in small view (default)
+        if (remoteVideoRef.current && remoteStream && remoteVideoRef.current.srcObject !== remoteStream) {
+          remoteVideoRef.current.srcObject = remoteStream;
+          remoteVideoRef.current.muted = false;
+          remoteVideoRef.current.play().catch(err => console.error('Error playing remote video after swap:', err));
+        }
+        if (localVideoRef.current && localStream && localVideoRef.current.srcObject !== localStream) {
+          localVideoRef.current.srcObject = localStream;
+          localVideoRef.current.play().catch(err => console.error('Error playing local video after swap:', err));
+        }
+      }
+    }, 50);
+    
+    return () => clearTimeout(timeoutId);
+  }, [videoSwapped, callType]);
+
   // Show controls on mouse movement and auto-hide after 3 seconds of inactivity
   useEffect(() => {
     if (callType === 'video') {
