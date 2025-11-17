@@ -686,6 +686,21 @@ io.on('connection', (socket) => {
         activeCall.startTime = startTime; // Store synchronized start time
         activeCalls.set(callId, activeCall);
         
+        // Forward any pending WebRTC offers and ICE candidates
+        if (activeCall.pendingOffer) {
+          console.log('[Call Accept] Forwarding pending offer to receiver');
+          socket.emit('webrtc-offer', activeCall.pendingOffer);
+          delete activeCall.pendingOffer;
+        }
+        
+        if (activeCall.pendingCandidates && activeCall.pendingCandidates.length > 0) {
+          console.log('[Call Accept] Forwarding', activeCall.pendingCandidates.length, 'pending ICE candidates to receiver');
+          activeCall.pendingCandidates.forEach(pendingCandidate => {
+            socket.emit('ice-candidate', pendingCandidate);
+          });
+          activeCall.pendingCandidates = [];
+        }
+        
         // Send the exact same timestamp to both caller and receiver
         // This ensures perfect synchronization - both sides calculate from the same reference point
         const startTimeTimestamp = startTime.getTime(); // Milliseconds since epoch
@@ -765,33 +780,80 @@ io.on('connection', (socket) => {
   // WebRTC signaling events
   socket.on('webrtc-offer', ({ callId, offer }) => {
     const activeCall = activeCalls.get(callId);
-    if (activeCall) {
-      // Forward offer from caller to receiver
-      if (socket.id === activeCall.callerSocketId && activeCall.receiverSocketId) {
+    if (!activeCall) {
+      console.log('[WebRTC] Offer received but active call not found:', callId);
+      return;
+    }
+    
+    console.log('[WebRTC] Offer received:', { 
+      callId, 
+      socketId: socket.id, 
+      callerSocketId: activeCall.callerSocketId, 
+      receiverSocketId: activeCall.receiverSocketId 
+    });
+    
+    // Forward offer from caller to receiver
+    if (socket.id === activeCall.callerSocketId) {
+      if (activeCall.receiverSocketId) {
+        // Receiver has accepted, forward immediately
+        console.log('[WebRTC] Forwarding offer to receiver:', activeCall.receiverSocketId);
         io.to(activeCall.receiverSocketId).emit('webrtc-offer', { callId, offer });
+      } else {
+        // Receiver hasn't accepted yet, store pending offer
+        console.log('[WebRTC] Storing pending offer (receiver not ready)');
+        activeCall.pendingOffer = { callId, offer };
+        activeCalls.set(callId, activeCall);
       }
     }
   });
 
   socket.on('webrtc-answer', ({ callId, answer }) => {
     const activeCall = activeCalls.get(callId);
-    if (activeCall) {
-      // Forward answer from receiver to caller
-      if (socket.id === activeCall.receiverSocketId && activeCall.callerSocketId) {
-        io.to(activeCall.callerSocketId).emit('webrtc-answer', { callId, answer });
-      }
+    if (!activeCall) {
+      console.log('[WebRTC] Answer received but active call not found:', callId);
+      return;
+    }
+    
+    console.log('[WebRTC] Answer received:', { 
+      callId, 
+      socketId: socket.id, 
+      callerSocketId: activeCall.callerSocketId, 
+      receiverSocketId: activeCall.receiverSocketId 
+    });
+    
+    // Forward answer from receiver to caller
+    if (socket.id === activeCall.receiverSocketId && activeCall.callerSocketId) {
+      console.log('[WebRTC] Forwarding answer to caller:', activeCall.callerSocketId);
+      io.to(activeCall.callerSocketId).emit('webrtc-answer', { callId, answer });
     }
   });
 
   socket.on('ice-candidate', ({ callId, candidate }) => {
     const activeCall = activeCalls.get(callId);
-    if (activeCall) {
-      // Forward ICE candidate to the other party
-      const targetSocketId = socket.id === activeCall.callerSocketId 
-        ? activeCall.receiverSocketId 
-        : activeCall.callerSocketId;
-      if (targetSocketId) {
-        io.to(targetSocketId).emit('ice-candidate', { callId, candidate });
+    if (!activeCall) {
+      console.log('[WebRTC] ICE candidate received but active call not found:', callId);
+      return;
+    }
+    
+    // Forward ICE candidate to the other party
+    if (socket.id === activeCall.callerSocketId) {
+      // From caller - forward to receiver if ready, otherwise store
+      if (activeCall.receiverSocketId) {
+        console.log('[WebRTC] Forwarding ICE candidate (caller -> receiver)');
+        io.to(activeCall.receiverSocketId).emit('ice-candidate', { callId, candidate });
+      } else {
+        // Store in pending candidates array
+        if (!activeCall.pendingCandidates) {
+          activeCall.pendingCandidates = [];
+        }
+        activeCall.pendingCandidates.push({ callId, candidate });
+        activeCalls.set(callId, activeCall);
+      }
+    } else if (socket.id === activeCall.receiverSocketId) {
+      // From receiver - forward to caller
+      if (activeCall.callerSocketId) {
+        console.log('[WebRTC] Forwarding ICE candidate (receiver -> caller)');
+        io.to(activeCall.callerSocketId).emit('ice-candidate', { callId, candidate });
       }
     }
   });
