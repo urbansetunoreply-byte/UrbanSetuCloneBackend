@@ -4933,7 +4933,7 @@ function AdminAppointmentRow({
     // Focus the main input without selecting text
     setTimeout(() => {
       if (inputRef.current) {
-        inputRef.current.focus();
+        // Removed auto-focus: Don't automatically focus input
         // Place cursor at end of text instead of selecting all
         const length = inputRef.current.value.length;
         inputRef.current.setSelectionRange(length, length);
