@@ -95,9 +95,20 @@ export const useCall = () => {
     
     // Use synchronized start time if provided, otherwise use current time
     if (synchronizedStartTime) {
-      callStartTimeRef.current = synchronizedStartTime.getTime();
+      // Calculate elapsed time since server start time to account for network latency
+      const serverStartTimestamp = synchronizedStartTime.getTime();
+      const currentTimestamp = Date.now();
+      const elapsedSeconds = Math.floor((currentTimestamp - serverStartTimestamp) / 1000);
+      
+      // Set the start time to (current time - elapsed seconds) to sync with server
+      // This ensures both sides show the same time accounting for network delay
+      callStartTimeRef.current = currentTimestamp - (elapsedSeconds * 1000);
+      
+      // Set initial duration immediately
+      setCallDuration(Math.max(0, elapsedSeconds));
     } else {
       callStartTimeRef.current = Date.now();
+      setCallDuration(0);
     }
     
     durationIntervalRef.current = setInterval(() => {

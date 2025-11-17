@@ -36,16 +36,18 @@ const GlobalCallModals = () => {
   const [appointmentData, setAppointmentData] = useState(null);
   const [loadingAppointment, setLoadingAppointment] = useState(false);
 
-  // Fetch appointment data when active call changes
+  // Fetch appointment data when active call or incoming call changes
   useEffect(() => {
     const fetchAppointment = async () => {
-      if (activeCall?.appointmentId) {
+      const appointmentId = activeCall?.appointmentId || incomingCall?.appointmentId;
+      
+      if (appointmentId) {
         // Only fetch if we don't have data for this appointment
-        if (appointmentData?._id !== activeCall.appointmentId) {
+        if (appointmentData?._id !== appointmentId) {
           setLoadingAppointment(true);
           try {
             const response = await axios.get(
-              `${API_BASE_URL}/api/bookings/${activeCall.appointmentId}`,
+              `${API_BASE_URL}/api/bookings/${appointmentId}`,
               { withCredentials: true }
             );
             if (response.data.success) {
@@ -63,13 +65,18 @@ const GlobalCallModals = () => {
     };
 
     fetchAppointment();
-  }, [activeCall?.appointmentId]);
+  }, [activeCall?.appointmentId, incomingCall?.appointmentId]);
 
   // Get other party name and data for active call
   const getOtherPartyName = () => {
+    // For receiver: use callerName from incomingCall as immediate fallback
+    if (incomingCall?.callerName && !appointmentData) {
+      return incomingCall.callerName;
+    }
+    
     if (!appointmentData || !currentUser) return null;
     
-    if (appointmentData.buyerId?._id === currentUser._id) {
+    if (appointmentData.buyerId?._id === currentUser._id || appointmentData.buyerId?._id?.toString() === currentUser._id) {
       return appointmentData.sellerId?.username || null;
     }
     return appointmentData.buyerId?.username || null;
@@ -78,7 +85,7 @@ const GlobalCallModals = () => {
   const getOtherPartyData = () => {
     if (!appointmentData || !currentUser) return null;
     
-    if (appointmentData.buyerId?._id === currentUser._id) {
+    if (appointmentData.buyerId?._id === currentUser._id || appointmentData.buyerId?._id?.toString() === currentUser._id) {
       return appointmentData.sellerId || null;
     }
     return appointmentData.buyerId || null;
