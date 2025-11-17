@@ -2727,8 +2727,6 @@ function AdminAppointmentRow({
   const [hiddenMessageIds, setHiddenMessageIds] = useLocalState(() => getLocallyHiddenIds(appt._id));
   const [headerOptionsMessageId, setHeaderOptionsMessageId] = useLocalState(null);
   const [showHeaderMoreMenu, setShowHeaderMoreMenu] = useLocalState(false);
-  const [showCallHistoryModal, setShowCallHistoryModal] = useLocalState(false);
-  const [callHistoryAppointmentId, setCallHistoryAppointmentId] = useLocalState(null);
   const scrollTimeoutRef = React.useRef(null);
   const [showDeleteChatModal, setShowDeleteChatModal] = useLocalState(false);
   // Reports modal state (admin-wide)
