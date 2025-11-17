@@ -86,6 +86,28 @@ export const useCall = () => {
     }
   }, [activeCall]);
 
+  // Start call timer with optional synchronized start time
+  const startCallTimer = useCallback((synchronizedStartTime = null) => {
+    // Stop any existing timer
+    if (durationIntervalRef.current) {
+      clearInterval(durationIntervalRef.current);
+    }
+    
+    // Use synchronized start time if provided, otherwise use current time
+    if (synchronizedStartTime) {
+      callStartTimeRef.current = synchronizedStartTime.getTime();
+    } else {
+      callStartTimeRef.current = Date.now();
+    }
+    
+    durationIntervalRef.current = setInterval(() => {
+      if (callStartTimeRef.current) {
+        const duration = Math.floor((Date.now() - callStartTimeRef.current) / 1000);
+        setCallDuration(duration);
+      }
+    }, 1000);
+  }, []);
+
   // Listen for incoming calls and WebRTC events
   useEffect(() => {
     const handleIncomingCall = (data) => {
@@ -633,28 +655,6 @@ export const useCall = () => {
       }
     }
   };
-
-  // Start call timer with optional synchronized start time
-  const startCallTimer = useCallback((synchronizedStartTime = null) => {
-    // Stop any existing timer
-    if (durationIntervalRef.current) {
-      clearInterval(durationIntervalRef.current);
-    }
-    
-    // Use synchronized start time if provided, otherwise use current time
-    if (synchronizedStartTime) {
-      callStartTimeRef.current = synchronizedStartTime.getTime();
-    } else {
-      callStartTimeRef.current = Date.now();
-    }
-    
-    durationIntervalRef.current = setInterval(() => {
-      if (callStartTimeRef.current) {
-        const duration = Math.floor((Date.now() - callStartTimeRef.current) / 1000);
-        setCallDuration(duration);
-      }
-    }, 1000);
-  }, []);
 
   return {
     callState,
