@@ -1850,6 +1850,18 @@ export default function MyAppointments() {
       
       {/* Call modals are now global - rendered in App.jsx via GlobalCallModals */}
       
+      {/* Call History Modal */}
+      <CallHistoryModal
+        appointmentId={callHistoryAppointmentId}
+        isOpen={showCallHistoryModal}
+        onClose={() => {
+          setShowCallHistoryModal(false);
+          setCallHistoryAppointmentId(null);
+        }}
+        currentUser={currentUser}
+        isAdmin={false}
+      />
+      
     </div>
   );
 }
@@ -12762,18 +12774,6 @@ function PaymentStatusCell({ appointment, isBuyer }) {
           </div>
         </div>
       )}
-
-      {/* Call History Modal */}
-      <CallHistoryModal
-        appointmentId={callHistoryAppointmentId}
-        isOpen={showCallHistoryModal}
-        onClose={() => {
-          setShowCallHistoryModal(false);
-          setCallHistoryAppointmentId(null);
-        }}
-        currentUser={currentUser}
-        isAdmin={false}
-      />
 
     </div>
   );
