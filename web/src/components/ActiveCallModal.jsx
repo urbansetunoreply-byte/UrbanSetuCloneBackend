@@ -26,7 +26,6 @@ const ActiveCallModal = ({
   const [controlsVisible, setControlsVisible] = useState(true);
   const [videoSwapped, setVideoSwapped] = useState(false); // Track if local/remote videos are swapped
   const controlsTimeoutRef = useRef(null);
-  const mouseTimeoutRef = useRef(null);
   const containerRef = useRef(null);
 
   useEffect(() => {
