@@ -88,6 +88,91 @@ export const useCall = () => {
     }
   }, [activeCall]);
 
+  // Attach remote stream to video/audio elements when stream or call type changes
+  useEffect(() => {
+    if (!remoteStream || !activeCall) {
+      // Clean up when stream or call ends
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = null;
+      }
+      if (remoteAudioRef.current) {
+        remoteAudioRef.current.srcObject = null;
+      }
+      return;
+    }
+
+    console.log('[Call] Remote stream received:', {
+      stream: remoteStream,
+      tracks: remoteStream.getTracks(),
+      videoTracks: remoteStream.getVideoTracks(),
+      audioTracks: remoteStream.getAudioTracks(),
+      callType: activeCall.callType
+    });
+
+    // For video calls - attach to video element (video element handles both video and audio)
+    if (activeCall.callType === 'video' && remoteVideoRef.current) {
+      console.log('[Call] Attaching remote video stream to video element');
+      // Clear previous stream
+      if (remoteVideoRef.current.srcObject) {
+        remoteVideoRef.current.srcObject.getTracks().forEach(track => track.stop());
+      }
+      remoteVideoRef.current.srcObject = remoteStream;
+      remoteVideoRef.current.muted = false; // Ensure audio is not muted
+      // Ensure video plays
+      const playVideo = async () => {
+        try {
+          await remoteVideoRef.current.play();
+          console.log('[Call] Remote video playing successfully');
+        } catch (err) {
+          console.error('Error playing remote video:', err);
+          // Retry after a short delay
+          setTimeout(() => {
+            remoteVideoRef.current?.play().catch(e => {
+              console.error('Retry failed:', e);
+            });
+          }, 500);
+        }
+      };
+      playVideo();
+    }
+
+    // For audio calls - attach to audio element
+    if (activeCall.callType === 'audio' && remoteAudioRef.current) {
+      console.log('[Call] Attaching remote audio stream to audio element');
+      // Clear previous stream
+      if (remoteAudioRef.current.srcObject) {
+        remoteAudioRef.current.srcObject.getTracks().forEach(track => track.stop());
+      }
+      remoteAudioRef.current.srcObject = remoteStream;
+      remoteAudioRef.current.muted = false; // Ensure audio is not muted
+      // Ensure audio plays automatically
+      const playAudio = async () => {
+        try {
+          await remoteAudioRef.current.play();
+          console.log('[Call] Remote audio playing successfully');
+        } catch (err) {
+          console.error('Error playing remote audio:', err);
+          // Retry after a short delay
+          setTimeout(() => {
+            if (remoteAudioRef.current) {
+              remoteAudioRef.current.play().catch(e => {
+                console.error('Retry failed:', e);
+              });
+            }
+          }, 500);
+        }
+      };
+      playAudio();
+    }
+
+    // Cleanup function
+    return () => {
+      if (!activeCall && remoteStream) {
+        remoteStream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [remoteStream, activeCall]);
+
   // Start call timer with server-synchronized start time
   // CRITICAL: This function MUST be called with server's startTime to ensure both sides are synchronized
   const startCallTimer = useCallback((synchronizedStartTime) => {
@@ -455,38 +540,10 @@ export const useCall = () => {
           });
           
           peer.on('stream', (remoteStream) => {
-            console.log('[Call] Received remote stream', remoteStream);
+            console.log('[Call] Received remote stream (caller side)', remoteStream);
+            console.log('[Call] Remote stream tracks:', remoteStream.getTracks());
             setRemoteStream(remoteStream);
-            
-            // Attach to video element for video calls
-            if (callType === 'video' && remoteVideoRef.current) {
-              remoteVideoRef.current.srcObject = remoteStream;
-              // Ensure video plays
-              setTimeout(() => {
-                remoteVideoRef.current?.play().catch(err => {
-                  console.error('Error playing remote video:', err);
-                });
-              }, 100);
-            }
-            
-            // Attach to audio element for audio calls
-            if (callType === 'audio' && remoteAudioRef.current) {
-              remoteAudioRef.current.srcObject = remoteStream;
-              // Ensure audio plays - use setTimeout to ensure element is ready
-              setTimeout(() => {
-                if (remoteAudioRef.current) {
-                  remoteAudioRef.current.play().catch(err => {
-                    console.error('Error playing remote audio:', err);
-                    // Try again after a short delay
-                    setTimeout(() => {
-                      remoteAudioRef.current?.play().catch(e => {
-                        console.error('Retry failed:', e);
-                      });
-                    }, 500);
-                  });
-                }
-              }, 100);
-            }
+            // Stream attachment will be handled by useEffect when remoteStream state updates
           });
 
           peer.on('connect', () => {
@@ -574,38 +631,10 @@ export const useCall = () => {
       });
       
       peer.on('stream', (remoteStream) => {
-        console.log('[Call] Received remote stream', remoteStream);
+        console.log('[Call] Received remote stream (receiver side)', remoteStream);
+        console.log('[Call] Remote stream tracks:', remoteStream.getTracks());
         setRemoteStream(remoteStream);
-        
-        // Attach to video element for video calls
-        if (incomingCall.callType === 'video' && remoteVideoRef.current) {
-          remoteVideoRef.current.srcObject = remoteStream;
-          // Ensure video plays
-          setTimeout(() => {
-            remoteVideoRef.current?.play().catch(err => {
-              console.error('Error playing remote video:', err);
-            });
-          }, 100);
-        }
-        
-        // Attach to audio element for audio calls
-        if (incomingCall.callType === 'audio' && remoteAudioRef.current) {
-          remoteAudioRef.current.srcObject = remoteStream;
-          // Ensure audio plays - use setTimeout to ensure element is ready
-          setTimeout(() => {
-            if (remoteAudioRef.current) {
-              remoteAudioRef.current.play().catch(err => {
-                console.error('Error playing remote audio:', err);
-                // Try again after a short delay
-                setTimeout(() => {
-                  remoteAudioRef.current?.play().catch(e => {
-                    console.error('Retry failed:', e);
-                  });
-                }, 500);
-              });
-            }
-          }, 100);
-        }
+        // Stream attachment will be handled by useEffect when remoteStream state updates
       });
 
       peer.on('connect', () => {
