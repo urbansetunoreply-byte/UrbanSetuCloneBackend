@@ -65,14 +65,23 @@ const GlobalCallModals = () => {
     fetchAppointment();
   }, [activeCall?.appointmentId]);
 
-  // Get other party name for active call
+  // Get other party name and data for active call
   const getOtherPartyName = () => {
-    if (!appointmentData || !currentUser) return 'Calling...';
+    if (!appointmentData || !currentUser) return null;
     
     if (appointmentData.buyerId?._id === currentUser._id) {
-      return appointmentData.sellerId?.username || 'Calling...';
+      return appointmentData.sellerId?.username || null;
     }
-    return appointmentData.buyerId?.username || 'Calling...';
+    return appointmentData.buyerId?.username || null;
+  };
+
+  const getOtherPartyData = () => {
+    if (!appointmentData || !currentUser) return null;
+    
+    if (appointmentData.buyerId?._id === currentUser._id) {
+      return appointmentData.sellerId || null;
+    }
+    return appointmentData.buyerId || null;
   };
 
   return (
@@ -89,6 +98,7 @@ const GlobalCallModals = () => {
         <ActiveCallModal
           callType={activeCall.callType}
           otherPartyName={getOtherPartyName()}
+          otherPartyData={getOtherPartyData()}
           isMuted={isMuted}
           isVideoEnabled={isVideoEnabled}
           remoteIsMuted={remoteIsMuted}
@@ -108,8 +118,8 @@ const GlobalCallModals = () => {
 
       {/* Waiting Screen for Caller - Shows when ringing */}
       {callState === 'ringing' && activeCall && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[9998]">
-          <div className="text-center text-white animate-fade-in">
+        <div className="fixed inset-0 bg-black bg-opacity-90 flex flex-col items-center justify-center z-[9998]">
+          <div className="text-center text-white animate-fade-in flex-1 flex flex-col items-center justify-center">
             <div className={`w-32 h-32 rounded-full mx-auto mb-6 flex items-center justify-center ${
               activeCall.callType === 'video' ? 'bg-blue-500' : 'bg-green-500'
             } animate-pulse shadow-2xl`}>
@@ -124,14 +134,26 @@ const GlobalCallModals = () => {
               )}
             </div>
             <h3 className="text-3xl font-bold mb-2 animate-pulse">Calling...</h3>
-            <p className="text-xl text-gray-300">
-              Waiting for answer
+            <p className="text-xl text-gray-300 mb-4">
+              {appointmentData ? getOtherPartyName() : 'Waiting for answer'}
             </p>
             <div className="mt-8 flex justify-center gap-2">
               <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
               <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
               <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
             </div>
+          </div>
+          {/* End Call Button */}
+          <div className="pb-8 flex justify-center">
+            <button
+              onClick={endCall}
+              className="w-16 h-16 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-all duration-300 shadow-xl hover:scale-110 active:scale-95 transform"
+              title="End Call"
+            >
+              <svg className="w-8 h-8 rotate-[135deg]" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+              </svg>
+            </button>
           </div>
         </div>
       )}

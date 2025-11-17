@@ -357,6 +357,39 @@ io.on('connection', (socket) => {
           }
           if (updated) await appt.save();
         }
+        
+        // Check for pending calls (initiated or ringing) where user is the receiver
+        try {
+          const pendingCalls = await CallHistory.find({
+            receiverId: userId,
+            status: { $in: ['initiated', 'ringing'] },
+            // Only show calls from last 5 minutes (to avoid showing very old calls)
+            startTime: { $gte: new Date(Date.now() - 5 * 60 * 1000) }
+          })
+          .populate('callerId', 'username')
+          .populate('appointmentId', 'propertyName')
+          .sort({ startTime: -1 })
+          .limit(1); // Only show the most recent pending call
+          
+          if (pendingCalls.length > 0) {
+            const pendingCall = pendingCalls[0];
+            
+            // Check if call is still active
+            const activeCall = activeCalls.get(pendingCall.callId);
+            if (activeCall || pendingCall.status === 'initiated' || pendingCall.status === 'ringing') {
+              // Emit incoming call to the user who just came online
+              socket.emit('incoming-call', {
+                callId: pendingCall.callId,
+                appointmentId: pendingCall.appointmentId._id.toString(),
+                callerId: pendingCall.callerId._id.toString(),
+                callType: pendingCall.callType,
+                callerName: pendingCall.callerId?.username || 'Unknown'
+              });
+            }
+          }
+        } catch (callErr) {
+          console.error('Error checking pending calls when user came online:', callErr);
+        }
       } catch (err) {
         console.error('Error marking comments as delivered when user came online:', err);
       }

@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { FaPhone, FaVideo, FaMicrophone, FaMicrophoneSlash, FaVideoSlash, FaSync } from 'react-icons/fa';
+import UserAvatar from './UserAvatar';
 
 const ActiveCallModal = ({ 
   callType, 
   otherPartyName,
+  otherPartyData, // Add other party data for avatar
   isMuted,
   isVideoEnabled,
   remoteIsMuted,
@@ -93,9 +95,19 @@ const ActiveCallModal = ({
               className="hidden"
             />
             <div className="text-center text-white">
-              <div className="w-32 h-32 bg-white bg-opacity-20 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <FaPhone className="text-6xl" />
-              </div>
+              {otherPartyData ? (
+                <UserAvatar 
+                  user={{ username: otherPartyData.username, avatar: otherPartyData.avatar }} 
+                  size="w-32 h-32" 
+                  textSize="text-4xl"
+                  showBorder={true}
+                  className="border-4 border-white shadow-2xl mx-auto mb-4"
+                />
+              ) : (
+                <div className="w-32 h-32 bg-white bg-opacity-20 rounded-full mx-auto mb-4 flex items-center justify-center">
+                  <FaPhone className="text-6xl" />
+                </div>
+              )}
               <h3 className="text-3xl font-bold mb-2">{otherPartyName || 'Calling...'}</h3>
               <p className="text-xl">{formatDuration(callDuration)}</p>
               {/* Remote mute indicator for audio calls */}

@@ -129,11 +129,26 @@ export const useCall = () => {
       }
     };
 
+    const handleCallCancelled = (data) => {
+      // When caller cancels, receiver should close incoming call modal
+      if (incomingCall && incomingCall.callId === data.callId) {
+        setIncomingCall(null);
+        endCall();
+        toast.info('Call was cancelled');
+      }
+      // When caller cancels, caller should close ringing screen
+      if (activeCall && activeCall.callId === data.callId && callState === 'ringing') {
+        endCall();
+        toast.info('Call cancelled');
+      }
+    };
+
     socket.on('incoming-call', handleIncomingCall);
     socket.on('call-accepted', handleCallAccepted);
     socket.on('call-rejected', handleCallRejected);
     socket.on('call-ended', handleCallEnded);
     socket.on('call-missed', handleCallMissed);
+    socket.on('call-cancelled', handleCallCancelled);
     socket.on('webrtc-offer', handleWebRTCOffer);
     socket.on('webrtc-answer', handleWebRTCAnswer);
     socket.on('ice-candidate', handleICECandidate);
@@ -150,6 +165,7 @@ export const useCall = () => {
       socket.off('call-rejected', handleCallRejected);
       socket.off('call-ended', handleCallEnded);
       socket.off('call-missed', handleCallMissed);
+      socket.off('call-cancelled', handleCallCancelled);
       socket.off('webrtc-offer', handleWebRTCOffer);
       socket.off('webrtc-answer', handleWebRTCAnswer);
       socket.off('ice-candidate', handleICECandidate);
