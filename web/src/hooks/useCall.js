@@ -390,7 +390,7 @@ export const useCall = () => {
       socket.off('remote-status-update', handleRemoteStatusUpdate);
       socket.off('call-error');
     };
-  }, [incomingCall, activeCall, callState, handleWebRTCOffer, handleWebRTCAnswer, handleICECandidate, handleRemoteStatusUpdate, startCallTimer]);
+  }, [handleWebRTCOffer, handleWebRTCAnswer, handleICECandidate, handleRemoteStatusUpdate, startCallTimer]);
 
   // Enumerate available cameras
   const enumerateCameras = useCallback(async () => {
