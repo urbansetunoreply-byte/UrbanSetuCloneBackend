@@ -35,6 +35,18 @@ export const useCall = () => {
   const animationFrameRef = useRef(null);
   const lastSecondRef = useRef(null);
   const pendingOfferRef = useRef(null); // Store offer if received before peer is created
+  
+  // Refs to store current state for event handlers (to avoid stale closures)
+  const incomingCallRef = useRef(null);
+  const activeCallRef = useRef(null);
+  const callStateRef = useRef(null);
+  
+  // Update refs when state changes (so handlers can access current values)
+  useEffect(() => {
+    incomingCallRef.current = incomingCall;
+    activeCallRef.current = activeCall;
+    callStateRef.current = callState;
+  }, [incomingCall, activeCall, callState]);
 
   // Handle WebRTC offer
   const handleWebRTCOffer = useCallback(({ callId, offer }) => {
@@ -296,10 +308,11 @@ export const useCall = () => {
       }
       
       // For receiver (incoming call) - state already set in acceptCall, but timer MUST start with server time
-      if (incomingCall && incomingCall.callId === data.callId) {
+      // Use refs to get current values without causing dependency issues
+      if (incomingCallRef.current && incomingCallRef.current.callId === data.callId) {
         // Always start/restart timer with server's synchronized time
         // This ensures timer starts at the exact same moment as on server, accounting for network latency
-        if (callState !== 'active') {
+        if (callStateRef.current !== 'active') {
           setCallState('active');
         }
         // CRITICAL: Only start timer with server's startTime - never use local time
@@ -310,7 +323,7 @@ export const useCall = () => {
         });
       } 
       // For caller (outgoing call)
-      else if (activeCall && activeCall.callId === data.callId) {
+      else if (activeCallRef.current && activeCallRef.current.callId === data.callId) {
         setCallState('active');
         // CRITICAL: Only start timer with server's startTime - never use local time
         startCallTimer(synchronizedStartTime);
@@ -322,21 +335,24 @@ export const useCall = () => {
     };
     
     const handleCallRejected = (data) => {
-      if (activeCall && activeCall.callId === data.callId) {
+      // Use ref to get current value without dependency
+      if (activeCallRef.current && activeCallRef.current.callId === data.callId) {
         endCall();
         toast.info('Call was rejected');
       }
     };
 
     const handleCallEnded = (data) => {
-      if ((activeCall && activeCall.callId === data.callId) || 
-          (incomingCall && incomingCall.callId === data.callId)) {
+      // Use refs to get current values without dependency
+      if ((activeCallRef.current && activeCallRef.current.callId === data.callId) || 
+          (incomingCallRef.current && incomingCallRef.current.callId === data.callId)) {
         endCall();
       }
     };
 
     const handleCallMissed = (data) => {
-      if (activeCall && activeCall.callId === data.callId) {
+      // Use ref to get current value without dependency
+      if (activeCallRef.current && activeCallRef.current.callId === data.callId) {
         endCall();
         toast.info('Call was missed');
       }
@@ -344,7 +360,8 @@ export const useCall = () => {
 
     const handleCallCancelled = (data) => {
       // When caller cancels, receiver should close incoming call modal
-      if (incomingCall && incomingCall.callId === data.callId) {
+      // Use refs to get current values without dependency
+      if (incomingCallRef.current && incomingCallRef.current.callId === data.callId) {
         setIncomingCall(null);
         // Don't call endCall here to avoid double cleanup, just clear incoming call state
         setCallState(null);
@@ -352,8 +369,8 @@ export const useCall = () => {
         toast.info('Call was cancelled');
       }
       // When caller cancels, caller should close ringing screen
-      if (activeCall && activeCall.callId === data.callId && 
-          (callState === 'ringing' || callState === 'initiating')) {
+      if (activeCallRef.current && activeCallRef.current.callId === data.callId && 
+          (callStateRef.current === 'ringing' || callStateRef.current === 'initiating')) {
         // endCall was already called, just ensure state is cleared
         setCallState(null);
         setActiveCall(null);
