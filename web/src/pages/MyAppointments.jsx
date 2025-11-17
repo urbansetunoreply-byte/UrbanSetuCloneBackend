@@ -1852,7 +1852,7 @@ function getDateLabel(date) {
   if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
   return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
-function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDelete, actionLoading, onShowOtherParty, onOpenReinitiate, handleArchiveAppointment, handleUnarchiveAppointment, isArchived, onCancelRefresh, copyMessageToClipboard, activeChatAppointmentId, shouldOpenChatFromNotification, onChatOpened, onExportChat, preferUnreadForAppointmentId, onConsumePreferUnread, onInitiateCall, callState, incomingCall, activeCall, localVideoRef, remoteVideoRef, isCallMuted, isVideoEnabled, callDuration, onAcceptCall, onRejectCall, onEndCall, onToggleCallMute, onToggleVideo, getOtherPartyName }) {
+function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDelete, actionLoading, onShowOtherParty, onOpenReinitiate, handleArchiveAppointment, handleUnarchiveAppointment, isArchived, onCancelRefresh, copyMessageToClipboard, activeChatAppointmentId, shouldOpenChatFromNotification, onChatOpened, onExportChat, preferUnreadForAppointmentId, onConsumePreferUnread, onInitiateCall, callState, incomingCall, activeCall, localVideoRef, remoteVideoRef, isCallMuted, isVideoEnabled, callDuration, onAcceptCall, onRejectCall, onEndCall, onToggleCallMute, onToggleVideo, getOtherPartyName, setShowCallHistoryModal, setCallHistoryAppointmentId }) {
   // Camera modal state - moved to main MyAppointments component
   const navigate = useNavigate();
   
