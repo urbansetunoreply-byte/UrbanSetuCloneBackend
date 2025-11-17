@@ -410,6 +410,8 @@ export const useCall = () => {
       // Use refs to get current values without dependency
       if ((activeCallRef.current && activeCallRef.current.callId === data.callId) || 
           (incomingCallRef.current && incomingCallRef.current.callId === data.callId)) {
+        // Show "Call ended" message when receiving call-ended event from other party
+        toast.info('Call ended.');
         endCall();
       }
     };
@@ -895,9 +897,16 @@ export const useCall = () => {
           credentials: 'include',
           body: JSON.stringify({ callId: activeCall.callId })
         });
+        // Show "Call ended" message when user ends the call
+        toast.info('Call ended.');
       } catch (error) {
         console.error('Error ending call on server:', error);
+        // Still show message even if backend call fails
+        toast.info('Call ended.');
       }
+    } else if (activeCall?.callId) {
+      // Show message even if call wasn't active yet (ringing state)
+      toast.info('Call ended.');
     }
     
     // Clear all call state
