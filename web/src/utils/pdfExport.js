@@ -360,8 +360,9 @@ const renderMessageWithMarkdownAndLinks = (pdf, lines, startX, startY, isCurrent
  * @param {Object} currentUser - Current user object
  * @param {Object} otherParty - Other party user object
  * @param {boolean} includeMedia - Whether to include images in the PDF
+ * @param {Array} callHistory - Array of call history items to include in chronological order
  */
-export const exportEnhancedChatToPDF = async (appointment, comments, currentUser, otherParty, includeMedia = false) => {
+export const exportEnhancedChatToPDF = async (appointment, comments, currentUser, otherParty, includeMedia = false, callHistory = []) => {
   try {
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pageWidth = pdf.internal.pageSize.getWidth();
@@ -438,21 +439,46 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
     pdf.setTextColor(...textColor);
     yPosition += 10;
 
-    if (!comments || comments.length === 0) {
+    // Merge call history with messages chronologically (same as in chat UI)
+    const timelineItems = [
+      // Convert call history to timeline items
+      ...(callHistory || []).map(call => ({
+        type: 'call',
+        id: call._id || call.callId,
+        timestamp: new Date(call.startTime || call.createdAt),
+        call: call,
+        sortTime: new Date(call.startTime || call.createdAt).getTime()
+      })),
+      // Convert chat messages to timeline items
+      ...(comments || []).map(msg => ({
+        type: 'message',
+        id: msg._id,
+        timestamp: new Date(msg.timestamp),
+        message: msg,
+        sortTime: new Date(msg.timestamp).getTime()
+      }))
+    ].sort((a, b) => a.sortTime - b.sortTime); // Sort chronologically
+
+    if (timelineItems.length === 0) {
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'italic');
-      pdf.text('No messages in this conversation.', margin, yPosition);
+      pdf.text('No messages or calls in this conversation.', margin, yPosition);
     } else {
-      const validMessages = comments
-        .filter(msg => !msg.deleted && (msg.message?.trim() || msg.imageUrl || msg.audioUrl || msg.videoUrl || msg.documentUrl))
-        .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+      // Filter valid messages (calls are always valid)
+      const validItems = timelineItems.filter(item => {
+        if (item.type === 'call') return true; // Always include calls
+        const msg = item.message;
+        return !msg.deleted && (msg.message?.trim() || msg.imageUrl || msg.audioUrl || msg.videoUrl || msg.documentUrl);
+      });
 
       let currentDate = '';
 
       // Pre-load all images if including media
       const imageCache = {};
       if (includeMedia) {
-      const imageMessages = validMessages.filter(msg => msg.imageUrl);
+        const imageMessages = validItems
+          .filter(item => item.type === 'message' && item.message?.imageUrl)
+          .map(item => item.message);
         for (const message of imageMessages) {
           try {
             const imageData = await loadImageAsBase64(message.imageUrl);
@@ -465,7 +491,107 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
         }
       }
 
-      for (const message of validMessages) {
+      // Helper function to format call duration
+      const formatCallDuration = (seconds) => {
+        if (!seconds || seconds === 0) return '';
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = Math.floor(seconds % 60);
+        if (hours > 0) {
+          return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+        return `${minutes}:${secs.toString().padStart(2, '0')}`;
+      };
+
+      for (const item of validItems) {
+        const itemDate = item.timestamp.toDateString();
+        
+        // Handle call history items
+        if (item.type === 'call') {
+          const call = item.call;
+          const isCaller = call.callerId?._id === currentUser._id || call.callerId === currentUser._id;
+          const callerName = call.callerId?.username || 'Unknown';
+          const receiverName = call.receiverId?.username || 'Unknown';
+          
+          // Add date separator if new day
+          if (itemDate !== currentDate) {
+            checkPageBreak(15);
+            currentDate = itemDate;
+            
+            pdf.setFillColor(240, 240, 240);
+            pdf.rect(margin, yPosition - 2, pageWidth - (margin * 2), 8, 'F');
+            pdf.setFontSize(9);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text(item.timestamp.toLocaleDateString('en-US', { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            }), pageWidth / 2, yPosition + 3, { align: 'center' });
+            yPosition += 12;
+          }
+
+          // Render call bubble (similar to message bubble)
+          checkPageBreak(20);
+          const bubbleWidth = Math.min(120, pageWidth - (margin * 2) - 20);
+          const callTypeText = call.callType === 'video' ? 'Video Call' : 'Audio Call';
+          const callStatusText = call.status === 'missed' ? ' (Missed)' : 
+                                 call.status === 'rejected' ? ' (Rejected)' :
+                                 call.status === 'cancelled' ? ' (Cancelled)' : '';
+          const callDurationText = call.duration > 0 ? ` • ${formatCallDuration(call.duration)}` : '';
+          
+          // Determine call text based on user role
+          let callText;
+          if (isCaller) {
+            callText = `You called ${receiverName}${callDurationText}${callStatusText}`;
+          } else {
+            callText = `${callerName} called you${callDurationText}${callStatusText}`;
+          }
+
+          const bubbleHeight = 20;
+
+          if (isCaller) {
+            // Right-aligned bubble (caller - blue)
+            pdf.setFillColor(...primaryColor);
+            pdf.roundedRect(pageWidth - margin - bubbleWidth, yPosition, bubbleWidth, bubbleHeight, 2, 2, 'F');
+            pdf.setTextColor(255, 255, 255);
+            pdf.setFontSize(9);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text(callTypeText, pageWidth - margin - bubbleWidth + 5, yPosition + 8);
+            pdf.setFontSize(8);
+            pdf.text(callText, pageWidth - margin - bubbleWidth + 5, yPosition + 15);
+          } else {
+            // Left-aligned bubble (receiver - white)
+            pdf.setFillColor(250, 250, 250);
+            pdf.roundedRect(margin + 20, yPosition, bubbleWidth, bubbleHeight, 2, 2, 'F');
+            pdf.setTextColor(51, 51, 51);
+            pdf.setFontSize(9);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text(callTypeText, margin + 25, yPosition + 8);
+            pdf.setFontSize(8);
+            pdf.text(callText, margin + 25, yPosition + 15);
+          }
+
+          // Timestamp
+          pdf.setTextColor(128, 128, 128);
+          pdf.setFontSize(7);
+          const timestamp = item.timestamp.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+          
+          if (isCaller) {
+            pdf.text(timestamp, pageWidth - margin - bubbleWidth + 5, yPosition - 2);
+          } else {
+            pdf.text(timestamp, margin + 25, yPosition - 2);
+          }
+
+          yPosition += bubbleHeight + 8;
+          continue; // Skip to next item
+        }
+
+        // Handle regular messages (existing logic)
+        const message = item.message;
         const messageDate = new Date(message.timestamp).toDateString();
         
         // Add date separator if new day

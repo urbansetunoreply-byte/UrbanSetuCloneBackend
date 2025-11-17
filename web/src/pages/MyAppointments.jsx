@@ -120,6 +120,7 @@ export default function MyAppointments() {
   const [showExportModal, setShowExportModal] = useState(false);
   const [exportAppointment, setExportAppointment] = useState(null);
   const [exportComments, setExportComments] = useState([]);
+  const [exportCallHistory, setExportCallHistory] = useState([]);
 
   // Call History modal state
   const [showCallHistoryModal, setShowCallHistoryModal] = useState(false);
@@ -1210,9 +1211,10 @@ export default function MyAppointments() {
                       isArchived={true}
                       onCancelRefresh={handleCancelRefresh}
                       copyMessageToClipboard={copyMessageToClipboard}
-                      onExportChat={(appointment, comments) => {
+                      onExportChat={(appointment, comments, callHistory) => {
                         setExportAppointment(appointment);
                         setExportComments(comments);
+                        setExportCallHistory(callHistory || []);
                         setShowExportModal(true);
                       }}
                       onInitiateCall={handleInitiateCall}
@@ -1294,9 +1296,10 @@ export default function MyAppointments() {
                       onConsumePreferUnread={(id) => {
                         if (preferUnreadForAppointmentId === id) setPreferUnreadForAppointmentId(null);
                       }}
-                      onExportChat={(appointment, comments) => {
+                      onExportChat={(appointment, comments, callHistory) => {
                         setExportAppointment(appointment);
                         setExportComments(comments);
+                        setExportCallHistory(callHistory || []);
                         setShowExportModal(true);
                       }}
                       onInitiateCall={handleInitiateCall}
@@ -1817,6 +1820,7 @@ export default function MyAppointments() {
           setShowExportModal(false);
           setExportAppointment(null);
           setExportComments([]);
+          setExportCallHistory([]);
         }}
         onExport={async (includeMedia) => {
           try {
@@ -1830,7 +1834,8 @@ export default function MyAppointments() {
               exportComments, 
               currentUser, 
               otherParty,
-              includeMedia
+              includeMedia,
+              exportCallHistory
             );
             if (result.success) {
               toast.success(`Chat transcript exported as ${result.filename}`);
@@ -7561,7 +7566,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                   className="w-full px-4 py-2 text-left text-sm text-green-600 hover:bg-green-50 flex items-center gap-2"
                                   onClick={() => {
                                     setShowChatOptionsMenu(false);
-                                    onExportChat(appt, filteredComments);
+                                    onExportChat(appt, filteredComments, callHistory);
                                   }}
                                 >
                                   <FaDownload className="text-sm" />

@@ -713,6 +713,7 @@ export default function AdminAppointments() {
   const [showExportModal, setShowExportModal] = useState(false);
   const [exportAppointment, setExportAppointment] = useState(null);
   const [exportComments, setExportComments] = useState([]);
+  const [exportCallHistory, setExportCallHistory] = useState([]);
 
   // Call History modal state
   const [showCallHistoryModal, setShowCallHistoryModal] = useState(false);
@@ -1882,9 +1883,10 @@ export default function AdminAppointments() {
                         getFilteredEmojis={getFilteredEmojis}
                         toggleReactionsBar={toggleReactionsBar}
                         toggleReactionsEmojiPicker={toggleReactionsEmojiPicker}
-                      onExportChat={(appointment, comments) => {
+                      onExportChat={(appointment, comments, callHistory) => {
                         setExportAppointment(appointment);
                         setExportComments(comments);
+                        setExportCallHistory(callHistory || []);
                         setShowExportModal(true);
                       }}
                       activeChatAppointmentId={activeChatAppointmentId}
@@ -1966,9 +1968,10 @@ export default function AdminAppointments() {
                       getFilteredEmojis={getFilteredEmojis}
                       toggleReactionsBar={toggleReactionsBar}
                       toggleReactionsEmojiPicker={toggleReactionsEmojiPicker}
-                      onExportChat={(appointment, comments) => {
+                      onExportChat={(appointment, comments, callHistory) => {
                         setExportAppointment(appointment);
                         setExportComments(comments);
+                        setExportCallHistory(callHistory || []);
                         setShowExportModal(true);
                       }}
                       activeChatAppointmentId={activeChatAppointmentId}
@@ -2390,6 +2393,7 @@ export default function AdminAppointments() {
           setShowExportModal(false);
           setExportAppointment(null);
           setExportComments([]);
+          setExportCallHistory([]);
         }}
         onExport={async (includeMedia) => {
           try {
@@ -2400,7 +2404,8 @@ export default function AdminAppointments() {
               exportComments, 
               currentUser, 
               otherParty,
-              includeMedia
+              includeMedia,
+              exportCallHistory
             );
             if (result.success) {
               toast.success(`Chat transcript exported as ${result.filename}`);
