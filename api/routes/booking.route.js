@@ -2224,7 +2224,10 @@ router.get('/:id', async (req, res) => {
     if (!bookingDoc) {
       return res.status(404).json({ message: 'Appointment not found.' });
     }
-    res.status(200).json({ success: true, booking: bookingDoc });
+    // Return both formats for backward compatibility
+    // Some code expects { success: true, booking: ... }, others expect the booking directly
+    const response = { ...bookingDoc.toObject(), success: true, booking: bookingDoc };
+    res.status(200).json(response);
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch appointment.' });
   }
