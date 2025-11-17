@@ -1127,7 +1127,7 @@ export default function AdminAppointments() {
     socket.on('disconnect', handleDisconnect);
     
     return () => {
-      clearInterval(interval);
+      // Interval removed - no cleanup needed
       clearInterval(adminInterval);
       socket.off('profileUpdated', handleProfileUpdate);
       socket.off('commentUpdate', handleCommentUpdate);
