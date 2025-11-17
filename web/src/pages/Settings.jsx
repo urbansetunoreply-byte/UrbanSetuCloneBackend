@@ -1119,15 +1119,21 @@ export default function Settings() {
         {/* Call Management */}
         <SettingSection title="Call Management" icon={FaPhone}>
           <div className="space-y-4">
-            <button
-              onClick={() => navigate('/user/call-history')}
-              className={`w-full bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
-            >
-              <FaPhone className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-pulse`} />
-              Call History
-            </button>
-            <p className="text-sm text-gray-500">View your audio and video call history with buyers and sellers</p>
+            {/* Only show Call History for regular users, not admins */}
+            {(currentUser.role !== 'admin' && currentUser.role !== 'rootadmin') && (
+              <>
+                <button
+                  onClick={() => navigate('/user/call-history')}
+                  className={`w-full bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
+                >
+                  <FaPhone className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-pulse`} />
+                  Call History
+                </button>
+                <p className="text-sm text-gray-500">View your audio and video call history with buyers and sellers</p>
+              </>
+            )}
             
+            {/* Show Admin Call History for admins only */}
             {(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
               <>
                 <button
