@@ -4873,24 +4873,8 @@ function AdminAppointmentRow({
           }
         }, 50);
         
-        // Aggressively refocus the input field to keep keyboard open on mobile
-        const refocusInput = () => {
-          if (inputRef.current) {
-            inputRef.current.focus();
-            // For mobile devices, ensure the input remains active and set cursor position
-            inputRef.current.setSelectionRange(0, 0);
-            // Force the input to be the active element
-            if (document.activeElement !== inputRef.current) {
-              inputRef.current.click();
-              inputRef.current.focus();
-            }
-          }
-        };
-        
-        // Multiple attempts to maintain focus for mobile devices
-        refocusInput(); // Immediate focus
-        requestAnimationFrame(refocusInput); // Focus after DOM updates
-        setTimeout(refocusInput, 10); // Final fallback
+        // Removed auto-focus: Don't automatically focus input after editing
+        // User can manually click to focus when needed
         
         toast.success("Message edited successfully!");
     } catch (err) {
@@ -4972,27 +4956,8 @@ function AdminAppointmentRow({
 
   const startReply = (comment) => {
     setReplyTo(comment);
-    // Focus the main input with comprehensive focus handling
-    const refocusInput = () => {
-      if (inputRef.current) {
-        inputRef.current.focus();
-        // Place cursor at end of text instead of start
-        const length = inputRef.current.value.length;
-        inputRef.current.setSelectionRange(length, length);
-        // Force the input to be the active element
-        if (document.activeElement !== inputRef.current) {
-          inputRef.current.click();
-          inputRef.current.focus();
-        }
-        // Auto-resize textarea
-        autoResizeTextarea(inputRef.current);
-      }
-    };
-    
-    // Multiple attempts to maintain focus for mobile devices
-    setTimeout(refocusInput, 50); // Initial focus
-    setTimeout(refocusInput, 100); // Focus after DOM updates
-    setTimeout(refocusInput, 200); // Final fallback
+    // Removed auto-focus: Don't automatically focus input
+    // User can manually click to focus when needed
   };
 
   const showMessageInfo = (message) => {
@@ -7079,6 +7044,10 @@ function AdminAppointmentRow({
                                   } transition-all duration-200 hover:scale-110 p-1 rounded-full hover:bg-white hover:bg-opacity-20 ml-1`}
                                   onClick={(e) => { 
                                     e.stopPropagation(); 
+                                    // Show reactions bar for calls (like regular messages)
+                                    setReactionsMessageId(`call-${call._id || call.callId}`);
+                                    setShowReactionsBar(true);
+                                    // Also set header options for call actions
                                     setHeaderOptionsMessageId(`call-${call._id || call.callId}`);
                                   }}
                                   title="Call options"
@@ -10593,6 +10562,82 @@ function AdminAppointmentRow({
         
               {/* Pin Message Modal */}
       {/* Pin Message Modal removed */}
+
+      {/* Call Info Modal */}
+      {showCallInfoModal && selectedCallForInfo && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <FaInfoCircle className="text-blue-500" /> Call Info
+            </h3>
+            <div className="space-y-4">
+              <div className="bg-gray-50 rounded p-3 text-sm text-gray-700">
+                <div className="font-semibold mb-2">Call Type:</div>
+                <div>{selectedCallForInfo.callType === 'video' ? 'Video Call' : 'Audio Call'}</div>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-600">Status:</span>
+                  <span className={`text-sm font-medium ${
+                    selectedCallForInfo.status === 'accepted' ? 'text-green-600' :
+                    selectedCallForInfo.status === 'missed' || selectedCallForInfo.status === 'rejected' || selectedCallForInfo.status === 'cancelled' ? 'text-red-600' :
+                    'text-yellow-600'
+                  }`}>
+                    {selectedCallForInfo.status.charAt(0).toUpperCase() + selectedCallForInfo.status.slice(1)}
+                  </span>
+                </div>
+                
+                {selectedCallForInfo.duration && selectedCallForInfo.duration > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-600">Duration:</span>
+                    <span className="text-sm text-gray-800">
+                      {(() => {
+                        const hours = Math.floor(selectedCallForInfo.duration / 3600);
+                        const minutes = Math.floor((selectedCallForInfo.duration % 3600) / 60);
+                        const secs = selectedCallForInfo.duration % 60;
+                        if (hours > 0) {
+                          return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                        }
+                        return `${minutes}:${secs.toString().padStart(2, '0')}`;
+                      })()}
+                    </span>
+                  </div>
+                )}
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-600">Started:</span>
+                  <span className="text-sm text-gray-800">
+                    {new Date(selectedCallForInfo.startTime || selectedCallForInfo.createdAt).toLocaleString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: true
+                    })}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-600">Participants:</span>
+                  <span className="text-sm text-gray-800">
+                    {selectedCallForInfo.callerId?.username || 'Unknown'} → {selectedCallForInfo.receiverId?.username || 'Unknown'}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => { setShowCallInfoModal(false); setSelectedCallForInfo(null); }}
+                className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Image Preview Modal */}
       <ImagePreview
