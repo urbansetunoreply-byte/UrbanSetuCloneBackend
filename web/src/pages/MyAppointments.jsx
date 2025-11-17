@@ -11842,11 +11842,11 @@ function PaymentStatusCell({ appointment, isBuyer }) {
             toast.info('Previous payment session expired. Opening a new payment session.');
             setPaymentStatus(activePayment);
           } else {
-            // Payment not expired, allow opening modal (will reuse existing payment)
-            toast.info('Resuming existing payment session.');
+            // Payment not expired, allow opening modal (will create new payment ID)
+            // Since each payment attempt creates a new payment ID, no need to show "resuming" message
             setPaymentStatus(activePayment);
           }
-          // Continue to open modal - backend will handle reusing or creating new payment
+          // Continue to open modal - backend will handle creating new payment
         }
         
         // If latest payment is cancelled, failed, or expired, show appropriate message and allow retry
