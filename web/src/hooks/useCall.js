@@ -25,6 +25,13 @@ export const useCall = () => {
   const [activeCall, setActiveCall] = useState(null); // { callId, appointmentId, receiverId, callType }
   const [availableCameras, setAvailableCameras] = useState([]);
   const [currentCameraId, setCurrentCameraId] = useState(null);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [connectionQuality, setConnectionQuality] = useState('good'); // 'excellent', 'good', 'fair', 'poor'
+  const [availableMicrophones, setAvailableMicrophones] = useState([]);
+  const [availableSpeakers, setAvailableSpeakers] = useState([]);
+  const [currentMicrophoneId, setCurrentMicrophoneId] = useState(null);
+  const [currentSpeakerId, setCurrentSpeakerId] = useState(null);
   
   const peerRef = useRef(null);
   const localVideoRef = useRef(null);
@@ -35,6 +42,8 @@ export const useCall = () => {
   const animationFrameRef = useRef(null);
   const lastSecondRef = useRef(null);
   const pendingOfferRef = useRef(null); // Store offer if received before peer is created
+  const screenShareStreamRef = useRef(null); // Store screen share stream
+  const containerRef = useRef(null); // For fullscreen
   
   // Refs to store current state for event handlers (to avoid stale closures)
   const incomingCallRef = useRef(null);
@@ -370,6 +379,9 @@ export const useCall = () => {
         toast.error('Call timer synchronization error. Please refresh.');
         return;
       }
+      
+      // Enumerate audio devices when accepting call
+      await enumerateAudioDevices();
       
       // For receiver (incoming call) - state already set in acceptCall, but timer MUST start with server time
       // Use refs to get current values without causing dependency issues
@@ -962,6 +974,300 @@ export const useCall = () => {
     }
   };
 
+  // Toggle screen sharing (video calls only)
+  const toggleScreenShare = async () => {
+    try {
+      if (!isScreenSharing) {
+        // Start screen sharing
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({
+          video: { cursor: 'always' },
+          audio: true
+        });
+        
+        screenShareStreamRef.current = screenStream;
+        setIsScreenSharing(true);
+        
+        // Replace video tracks in local stream
+        if (localStream && peerRef.current) {
+          const videoTracks = screenStream.getVideoTracks();
+          const audioTracks = screenStream.getAudioTracks();
+          
+          // Add video track
+          if (videoTracks.length > 0) {
+            const sender = peerRef.current._pc.getSenders().find(s => 
+              s.track && s.track.kind === 'video'
+            );
+            if (sender) {
+              await sender.replaceTrack(videoTracks[0]);
+            }
+            // Also update local stream for UI
+            localStream.getVideoTracks().forEach(track => track.stop());
+            videoTracks.forEach(track => localStream.addTrack(track));
+          }
+          
+          // Add audio track if available
+          if (audioTracks.length > 0) {
+            const sender = peerRef.current._pc.getSenders().find(s => 
+              s.track && s.track.kind === 'audio'
+            );
+            if (sender && !isMuted) {
+              await sender.replaceTrack(audioTracks[0]);
+            }
+            audioTracks.forEach(track => localStream.addTrack(track));
+          }
+        }
+        
+        // Stop screen sharing when user stops sharing from browser UI
+        screenStream.getVideoTracks()[0].onended = () => {
+          toggleScreenShare(); // Will stop sharing
+        };
+        
+        toast.success('Screen sharing started');
+      } else {
+        // Stop screen sharing
+        if (screenShareStreamRef.current) {
+          screenShareStreamRef.current.getTracks().forEach(track => track.stop());
+          screenShareStreamRef.current = null;
+        }
+        
+        setIsScreenSharing(false);
+        
+        // Restore camera video
+        if (localStream && callType === 'video' && currentCameraId) {
+          const cameraStream = await navigator.mediaDevices.getUserMedia({
+            video: { deviceId: { exact: currentCameraId } },
+            audio: true
+          });
+          
+          const videoTrack = cameraStream.getVideoTracks()[0];
+          const sender = peerRef.current?._pc.getSenders().find(s => 
+            s.track && s.track.kind === 'video'
+          );
+          
+          if (sender && peerRef.current) {
+            await sender.replaceTrack(videoTrack);
+          }
+          
+          // Update local stream
+          localStream.getVideoTracks().forEach(track => track.stop());
+          localStream.addTrack(videoTrack);
+          cameraStream.getAudioTracks().forEach(track => {
+            track.stop(); // Use original audio track
+          });
+        }
+        
+        toast.info('Screen sharing stopped');
+      }
+    } catch (error) {
+      console.error('Error toggling screen share:', error);
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        toast.error('Screen sharing permission denied');
+      } else if (error.name === 'NotSupportedError') {
+        toast.error('Screen sharing not supported in this browser');
+      } else {
+        toast.error('Failed to toggle screen sharing');
+      }
+      setIsScreenSharing(false);
+    }
+  };
+
+  // Toggle fullscreen
+  const toggleFullscreen = () => {
+    if (!containerRef.current) return;
+    
+    if (!isFullscreen) {
+      if (containerRef.current.requestFullscreen) {
+        containerRef.current.requestFullscreen();
+      } else if (containerRef.current.webkitRequestFullscreen) {
+        containerRef.current.webkitRequestFullscreen();
+      } else if (containerRef.current.msRequestFullscreen) {
+        containerRef.current.msRequestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+    }
+  };
+
+  // Enumerate audio devices
+  const enumerateAudioDevices = async () => {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const microphones = devices.filter(d => d.kind === 'audioinput');
+      const speakers = devices.filter(d => d.kind === 'audiooutput');
+      
+      setAvailableMicrophones(microphones);
+      setAvailableSpeakers(speakers);
+      
+      // Set current devices
+      if (localStream) {
+        const audioTracks = localStream.getAudioTracks();
+        if (audioTracks.length > 0) {
+          const settings = audioTracks[0].getSettings();
+          if (settings.deviceId) {
+            setCurrentMicrophoneId(settings.deviceId);
+          }
+        }
+      }
+      
+      // For speakers, use default if available
+      if (speakers.length > 0 && !currentSpeakerId) {
+        // Try to get default speaker from audio element if available
+        setCurrentSpeakerId(speakers[0].deviceId || 'default');
+      }
+      
+      return { microphones, speakers };
+    } catch (error) {
+      console.error('Error enumerating audio devices:', error);
+      return { microphones: [], speakers: [] };
+    }
+  };
+
+  // Switch microphone
+  const switchMicrophone = async (deviceId) => {
+    try {
+      if (!localStream) return;
+      
+      const newStream = await navigator.mediaDevices.getUserMedia({
+        audio: { deviceId: { exact: deviceId } },
+        video: callType === 'video' ? (currentCameraId ? { deviceId: { exact: currentCameraId } } : true) : false
+      });
+      
+      // Replace audio tracks
+      const audioTrack = newStream.getAudioTracks()[0];
+      const sender = peerRef.current?._pc.getSenders().find(s => 
+        s.track && s.track.kind === 'audio'
+      );
+      
+      if (sender && peerRef.current) {
+        await sender.replaceTrack(audioTrack);
+      }
+      
+      // Update local stream
+      localStream.getAudioTracks().forEach(track => track.stop());
+      localStream.addTrack(audioTrack);
+      
+      // Stop video track from new stream (we only needed audio)
+      if (callType === 'video') {
+        newStream.getVideoTracks().forEach(track => track.stop());
+      }
+      
+      setCurrentMicrophoneId(deviceId);
+      toast.success('Microphone switched');
+    } catch (error) {
+      console.error('Error switching microphone:', error);
+      toast.error('Failed to switch microphone');
+    }
+  };
+
+  // Switch speaker (audio output)
+  const switchSpeaker = async (deviceId) => {
+    try {
+      // Set sink ID for audio output (if supported)
+      if (remoteAudioRef.current && remoteAudioRef.current.setSinkId) {
+        await remoteAudioRef.current.setSinkId(deviceId);
+        setCurrentSpeakerId(deviceId);
+        toast.success('Speaker switched');
+      } else if (remoteVideoRef.current && remoteVideoRef.current.setSinkId) {
+        await remoteVideoRef.current.setSinkId(deviceId);
+        setCurrentSpeakerId(deviceId);
+        toast.success('Speaker switched');
+      } else {
+        toast.info('Speaker switching not supported in this browser');
+      }
+    } catch (error) {
+      console.error('Error switching speaker:', error);
+      toast.error('Failed to switch speaker');
+    }
+  };
+
+  // Monitor connection quality
+  useEffect(() => {
+    if (!peerRef.current || !peerRef.current._pc || callState !== 'active') return;
+    
+    const checkConnectionQuality = async () => {
+      try {
+        const stats = await peerRef.current._pc.getStats();
+        let packetsLost = 0;
+        let packetsReceived = 0;
+        let rtt = 0;
+        let jitter = 0;
+        
+        stats.forEach(report => {
+          if (report.type === 'inbound-rtp' || report.type === 'outbound-rtp') {
+            if (report.packetsLost !== undefined) {
+              packetsLost += report.packetsLost || 0;
+            }
+            if (report.packetsReceived !== undefined) {
+              packetsReceived += report.packetsReceived || 0;
+            }
+            if (report.jitter !== undefined) {
+              jitter += report.jitter || 0;
+            }
+          }
+          if (report.type === 'candidate-pair' && report.selected) {
+            if (report.currentRoundTripTime !== undefined) {
+              rtt = report.currentRoundTripTime * 1000; // Convert to ms
+            }
+          }
+        });
+        
+        // Determine quality based on metrics
+        let quality = 'good';
+        if (rtt < 100 && packetsLost === 0 && jitter < 30) {
+          quality = 'excellent';
+        } else if (rtt < 200 && packetsLost < 5 && jitter < 50) {
+          quality = 'good';
+        } else if (rtt < 300 && packetsLost < 10 && jitter < 100) {
+          quality = 'fair';
+        } else {
+          quality = 'poor';
+        }
+        
+        setConnectionQuality(quality);
+      } catch (error) {
+        console.error('Error checking connection quality:', error);
+      }
+    };
+    
+    const qualityInterval = setInterval(checkConnectionQuality, 5000); // Check every 5 seconds
+    
+    return () => clearInterval(qualityInterval);
+  }, [callState, peerRef.current]);
+
+  // Handle fullscreen changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.msFullscreenElement
+      ));
+    };
+    
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('msfullscreenchange', handleFullscreenChange);
+    
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('msfullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  // Enumerate audio devices when call becomes active
+  useEffect(() => {
+    if (callState === 'active' && localStream) {
+      enumerateAudioDevices();
+    }
+  }, [callState, localStream]);
+
   return {
     callState,
     incomingCall,
@@ -976,8 +1282,16 @@ export const useCall = () => {
     localVideoRef,
     remoteVideoRef,
     remoteAudioRef,
+    containerRef,
     availableCameras,
     currentCameraId,
+    isScreenSharing,
+    isFullscreen,
+    connectionQuality,
+    availableMicrophones,
+    availableSpeakers,
+    currentMicrophoneId,
+    currentSpeakerId,
     initiateCall,
     acceptCall,
     rejectCall,
@@ -985,7 +1299,12 @@ export const useCall = () => {
     toggleMute,
     toggleVideo,
     switchCamera,
-    enumerateCameras
+    toggleScreenShare,
+    toggleFullscreen,
+    enumerateCameras,
+    enumerateAudioDevices,
+    switchMicrophone,
+    switchSpeaker
   };
 };
 

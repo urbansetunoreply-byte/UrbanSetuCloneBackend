@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { FaPhone, FaVideo, FaMicrophone, FaMicrophoneSlash, FaVideoSlash, FaSync } from 'react-icons/fa';
+import { FaPhone, FaVideo, FaMicrophone, FaMicrophoneSlash, FaVideoSlash, FaSync, FaExpand, FaCompress, FaDesktop, FaSignLanguage, FaWifi, FaVolumeUp } from 'react-icons/fa';
 import UserAvatar from './UserAvatar';
 
 const ActiveCallModal = ({ 
@@ -21,14 +21,28 @@ const ActiveCallModal = ({
   onToggleMute,
   onToggleVideo,
   onEndCall,
-  onSwitchCamera
+  onSwitchCamera,
+  onToggleScreenShare,
+  onToggleFullscreen,
+  isScreenSharing,
+  isFullscreen,
+  connectionQuality,
+  availableMicrophones,
+  availableSpeakers,
+  currentMicrophoneId,
+  currentSpeakerId,
+  onSwitchMicrophone,
+  onSwitchSpeaker,
+  containerRef: containerRefProp
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [showCameraMenu, setShowCameraMenu] = useState(false);
+  const [showAudioMenu, setShowAudioMenu] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
   const [videoSwapped, setVideoSwapped] = useState(false); // Track if local/remote videos are swapped
   const controlsTimeoutRef = useRef(null);
-  const containerRef = useRef(null);
+  const containerRefLocal = useRef(null);
+  const containerRef = containerRefProp || containerRefLocal; // Use prop if provided, otherwise use local ref
   const streamsRef = useRef({ local: null, remote: null }); // Store streams persistently
 
   useEffect(() => {
@@ -197,6 +211,51 @@ const ActiveCallModal = ({
           to { transform: translateY(0); }
         }
       `}</style>
+      
+      {/* Connection Quality Indicator */}
+      {connectionQuality && (
+        <div className="absolute top-4 right-4 z-30 flex items-center gap-2 bg-black bg-opacity-70 rounded-full px-3 py-2">
+          <div className={`w-2 h-2 rounded-full ${
+            connectionQuality === 'excellent' ? 'bg-green-500' :
+            connectionQuality === 'good' ? 'bg-green-400' :
+            connectionQuality === 'fair' ? 'bg-yellow-500' :
+            'bg-red-500'
+          }`}></div>
+          <span className="text-white text-xs font-medium capitalize">{connectionQuality}</span>
+        </div>
+      )}
+      
+      {/* Top Controls for Video Calls */}
+      {callType === 'video' && (
+        <div className="absolute top-4 left-4 z-30 flex items-center gap-2">
+          {/* Screen Share Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleScreenShare?.();
+            }}
+            className={`p-2 rounded-full transition-all duration-300 ${
+              isScreenSharing ? 'bg-blue-500 hover:bg-blue-600' : 'bg-black bg-opacity-70 hover:bg-opacity-90'
+            } text-white`}
+            title={isScreenSharing ? 'Stop sharing screen' : 'Share screen'}
+          >
+            <FaDesktop className="text-lg" />
+          </button>
+          
+          {/* Fullscreen Toggle */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFullscreen?.();
+            }}
+            className="p-2 rounded-full bg-black bg-opacity-70 hover:bg-opacity-90 text-white transition-all duration-300"
+            title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+          >
+            {isFullscreen ? <FaCompress className="text-lg" /> : <FaExpand className="text-lg" />}
+          </button>
+        </div>
+      )}
+      
       {/* Remote Video/Audio */}
       <div className="flex-1 relative min-h-0 overflow-hidden" onClick={handleVideoClick}>
         {callType === 'video' ? (
@@ -478,7 +537,92 @@ const ActiveCallModal = ({
         style={{ animation: 'slideIn 0.4s ease-out' }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-center gap-6">
+        <div className="flex items-center justify-center gap-4">
+          {/* Audio Device Menu */}
+          {(availableMicrophones && availableMicrophones.length > 1) || (availableSpeakers && availableSpeakers.length > 1) ? (
+            <div className="relative">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowAudioMenu(!showAudioMenu);
+                }}
+                className="w-12 h-12 rounded-full flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-white transition-all duration-300 shadow-xl hover:scale-110 active:scale-95 transform"
+                title="Audio settings"
+              >
+                <FaVolumeUp className="text-lg" />
+              </button>
+              
+              {/* Audio Device Menu */}
+              {showAudioMenu && (
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-black bg-opacity-95 rounded-lg shadow-xl min-w-[220px] max-w-[280px] z-50 border border-white border-opacity-20">
+                  <div className="py-2">
+                    {/* Microphones */}
+                    {availableMicrophones && availableMicrophones.length > 1 && (
+                      <>
+                        <div className="px-3 py-2 border-b border-white border-opacity-10">
+                          <p className="text-xs font-semibold text-white text-opacity-80 uppercase tracking-wide">Microphone</p>
+                        </div>
+                        {availableMicrophones.map((mic) => (
+                          <button
+                            key={mic.deviceId}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onSwitchMicrophone?.(mic.deviceId);
+                              setShowAudioMenu(false);
+                            }}
+                            className={`w-full text-left px-4 py-2 text-sm text-white hover:bg-white hover:bg-opacity-20 transition-colors ${
+                              currentMicrophoneId === mic.deviceId ? 'bg-white bg-opacity-20 font-medium' : ''
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              {currentMicrophoneId === mic.deviceId && (
+                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                              )}
+                              <span className={currentMicrophoneId === mic.deviceId ? '' : 'pl-4'}>
+                                {mic.label || `Microphone ${mic.deviceId.substring(0, 8)}`}
+                              </span>
+                            </div>
+                          </button>
+                        ))}
+                      </>
+                    )}
+                    
+                    {/* Speakers */}
+                    {availableSpeakers && availableSpeakers.length > 1 && (
+                      <>
+                        <div className="px-3 py-2 border-t border-b border-white border-opacity-10 mt-1">
+                          <p className="text-xs font-semibold text-white text-opacity-80 uppercase tracking-wide">Speaker</p>
+                        </div>
+                        {availableSpeakers.map((speaker) => (
+                          <button
+                            key={speaker.deviceId}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onSwitchSpeaker?.(speaker.deviceId);
+                              setShowAudioMenu(false);
+                            }}
+                            className={`w-full text-left px-4 py-2 text-sm text-white hover:bg-white hover:bg-opacity-20 transition-colors ${
+                              currentSpeakerId === speaker.deviceId ? 'bg-white bg-opacity-20 font-medium' : ''
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              {currentSpeakerId === speaker.deviceId && (
+                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                              )}
+                              <span className={currentSpeakerId === speaker.deviceId ? '' : 'pl-4'}>
+                                {speaker.label || `Speaker ${speaker.deviceId.substring(0, 8)}`}
+                              </span>
+                            </div>
+                          </button>
+                        ))}
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : null}
+          
           {/* Mute/Unmute */}
           <button
             onClick={onToggleMute}

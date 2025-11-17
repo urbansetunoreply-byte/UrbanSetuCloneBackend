@@ -18,6 +18,7 @@ const GlobalCallModals = () => {
     localVideoRef,
     remoteVideoRef,
     remoteAudioRef,
+    containerRef,
     isMuted,
     isVideoEnabled,
     remoteIsMuted,
@@ -25,12 +26,23 @@ const GlobalCallModals = () => {
     callDuration,
     availableCameras,
     currentCameraId,
+    isScreenSharing,
+    isFullscreen,
+    connectionQuality,
+    availableMicrophones,
+    availableSpeakers,
+    currentMicrophoneId,
+    currentSpeakerId,
     acceptCall,
     rejectCall,
     endCall,
     toggleMute,
     toggleVideo,
     switchCamera,
+    toggleScreenShare,
+    toggleFullscreen,
+    switchMicrophone,
+    switchSpeaker,
     enumerateCameras
   } = useCallContext();
 
@@ -140,12 +152,24 @@ const GlobalCallModals = () => {
           localVideoRef={localVideoRef}
           remoteVideoRef={remoteVideoRef}
           remoteAudioRef={remoteAudioRef}
+          containerRef={containerRef}
           availableCameras={availableCameras}
           currentCameraId={currentCameraId}
+          isScreenSharing={isScreenSharing}
+          isFullscreen={isFullscreen}
+          connectionQuality={connectionQuality}
+          availableMicrophones={availableMicrophones}
+          availableSpeakers={availableSpeakers}
+          currentMicrophoneId={currentMicrophoneId}
+          currentSpeakerId={currentSpeakerId}
           onToggleMute={toggleMute}
           onToggleVideo={toggleVideo}
           onEndCall={endCall}
           onSwitchCamera={switchCamera}
+          onToggleScreenShare={toggleScreenShare}
+          onToggleFullscreen={toggleFullscreen}
+          onSwitchMicrophone={switchMicrophone}
+          onSwitchSpeaker={switchSpeaker}
         />
       )}
 
