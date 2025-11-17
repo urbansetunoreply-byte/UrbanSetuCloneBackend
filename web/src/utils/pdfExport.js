@@ -541,16 +541,24 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
           const callDurationText = call.duration > 0 ? ` • ${formatCallDuration(call.duration)}` : '';
           
           // Determine call text based on user role
+          // For admin, show third-person format (Vishal called Varun)
+          const isAdmin = currentUser.role === 'admin' || currentUser.role === 'rootadmin';
           let callText;
-          if (isCaller) {
+          if (isAdmin) {
+            // Admin view: third-person format
+            callText = `${callerName} called ${receiverName}${callDurationText}${callStatusText}`;
+          } else if (isCaller) {
             callText = `You called ${receiverName}${callDurationText}${callStatusText}`;
           } else {
             callText = `${callerName} called you${callDurationText}${callStatusText}`;
           }
+          
+          // For admin, always show on left side (observer view)
+          const isCallerForBubble = isAdmin ? false : isCaller;
 
           const bubbleHeight = 20;
 
-          if (isCaller) {
+          if (isCallerForBubble) {
             // Right-aligned bubble (caller - blue)
             pdf.setFillColor(...primaryColor);
             pdf.roundedRect(pageWidth - margin - bubbleWidth, yPosition, bubbleWidth, bubbleHeight, 2, 2, 'F');
@@ -580,7 +588,7 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
             minute: '2-digit'
           });
           
-          if (isCaller) {
+          if (isCallerForBubble) {
             pdf.text(timestamp, pageWidth - margin - bubbleWidth + 5, yPosition - 2);
           } else {
             pdf.text(timestamp, margin + 25, yPosition - 2);
