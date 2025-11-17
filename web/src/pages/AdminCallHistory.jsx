@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { FaPhone, FaVideo, FaClock, FaCheckCircle, FaTimesCircle, FaFilter } from 'react-icons/fa';
 import { API_BASE_URL } from '../config/api';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const AdminCallHistory = () => {
+  // Set page title
+  usePageTitle("Call History - Admin Panel");
   const [calls, setCalls] = useState([]);
   const [allCalls, setAllCalls] = useState([]); // Store all calls for pagination
   const [loading, setLoading] = useState(true);
