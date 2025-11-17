@@ -129,6 +129,35 @@ export const useCall = () => {
     }
   }, [activeCall]);
 
+  // Maintain local stream on localVideoRef whenever it changes
+  useEffect(() => {
+    if (!localStream || !localVideoRef.current) return;
+    
+    // Only update if stream is different (avoid unnecessary updates)
+    if (localVideoRef.current.srcObject !== localStream) {
+      console.log('[Call] Attaching local stream to video element');
+      localVideoRef.current.srcObject = localStream;
+      localVideoRef.current.muted = true; // Local video should always be muted
+      
+      // Ensure video plays
+      const playVideo = async () => {
+        try {
+          await localVideoRef.current.play();
+          console.log('[Call] Local video playing successfully');
+        } catch (err) {
+          console.error('Error playing local video:', err);
+          // Retry after a short delay
+          setTimeout(() => {
+            localVideoRef.current?.play().catch(e => {
+              console.error('Retry failed:', e);
+            });
+          }, 500);
+        }
+      };
+      playVideo();
+    }
+  }, [localStream, localVideoRef]);
+
   // Attach remote stream to video/audio elements when stream or call type changes
   useEffect(() => {
     if (!remoteStream || !activeCall) {
@@ -153,57 +182,63 @@ export const useCall = () => {
     // For video calls - attach to video element (video element handles both video and audio)
     if (activeCall.callType === 'video' && remoteVideoRef.current) {
       console.log('[Call] Attaching remote video stream to video element');
-      // Clear previous stream
-      if (remoteVideoRef.current.srcObject) {
-        remoteVideoRef.current.srcObject.getTracks().forEach(track => track.stop());
-      }
-      remoteVideoRef.current.srcObject = remoteStream;
-      remoteVideoRef.current.muted = false; // Ensure audio is not muted
-      // Ensure video plays
-      const playVideo = async () => {
-        try {
-          await remoteVideoRef.current.play();
-          console.log('[Call] Remote video playing successfully');
-        } catch (err) {
-          console.error('Error playing remote video:', err);
-          // Retry after a short delay
-          setTimeout(() => {
-            remoteVideoRef.current?.play().catch(e => {
-              console.error('Retry failed:', e);
-            });
-          }, 500);
+      // Only update if stream is different (avoid unnecessary updates)
+      if (remoteVideoRef.current.srcObject !== remoteStream) {
+        // Clear previous stream
+        if (remoteVideoRef.current.srcObject) {
+          remoteVideoRef.current.srcObject.getTracks().forEach(track => track.stop());
         }
-      };
-      playVideo();
+        remoteVideoRef.current.srcObject = remoteStream;
+        remoteVideoRef.current.muted = false; // Ensure audio is not muted
+        // Ensure video plays
+        const playVideo = async () => {
+          try {
+            await remoteVideoRef.current.play();
+            console.log('[Call] Remote video playing successfully');
+          } catch (err) {
+            console.error('Error playing remote video:', err);
+            // Retry after a short delay
+            setTimeout(() => {
+              remoteVideoRef.current?.play().catch(e => {
+                console.error('Retry failed:', e);
+              });
+            }, 500);
+          }
+        };
+        playVideo();
+      }
     }
 
     // For audio calls - attach to audio element
     if (activeCall.callType === 'audio' && remoteAudioRef.current) {
       console.log('[Call] Attaching remote audio stream to audio element');
-      // Clear previous stream
-      if (remoteAudioRef.current.srcObject) {
-        remoteAudioRef.current.srcObject.getTracks().forEach(track => track.stop());
-      }
-      remoteAudioRef.current.srcObject = remoteStream;
-      remoteAudioRef.current.muted = false; // Ensure audio is not muted
-      // Ensure audio plays automatically
-      const playAudio = async () => {
-        try {
-          await remoteAudioRef.current.play();
-          console.log('[Call] Remote audio playing successfully');
-        } catch (err) {
-          console.error('Error playing remote audio:', err);
-          // Retry after a short delay
-          setTimeout(() => {
-            if (remoteAudioRef.current) {
-              remoteAudioRef.current.play().catch(e => {
-                console.error('Retry failed:', e);
-              });
-            }
-          }, 500);
+      // Only update if stream is different (avoid unnecessary updates)
+      if (remoteAudioRef.current.srcObject !== remoteStream) {
+        // Clear previous stream
+        if (remoteAudioRef.current.srcObject) {
+          remoteAudioRef.current.srcObject.getTracks().forEach(track => track.stop());
         }
-      };
-      playAudio();
+        remoteAudioRef.current.srcObject = remoteStream;
+        remoteAudioRef.current.muted = false; // Ensure audio is not muted
+        // Ensure audio plays automatically
+        const playAudio = async () => {
+          try {
+            await remoteAudioRef.current.play();
+            console.log('[Call] Remote audio playing successfully');
+          } catch (err) {
+            console.error('Error playing remote audio:', err);
+            // Retry after a short delay
+            setTimeout(() => {
+              if (remoteAudioRef.current) {
+                remoteAudioRef.current.play().catch(e => {
+                  console.error('Retry failed:', e);
+                });
+              }
+            }, 500);
+          }
+        };
+        playAudio();
+      }
     }
 
     // Cleanup function
