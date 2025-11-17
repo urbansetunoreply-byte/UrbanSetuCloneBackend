@@ -3265,6 +3265,28 @@ function AdminAppointmentRow({
     };
   }, [showPasswordModal]);
 
+  // Handle notification-triggered chat opening
+  useEffect(() => {
+    if (shouldOpenChatFromNotification && activeChatAppointmentId === appt._id) {
+      // Admin can access any chat, no lock check needed
+      setShowChatModal(true);
+      // Update URL when opening chatbox
+      navigate(`/admin/appointments/chat/${appt._id}`, { replace: false });
+      // Dispatch event to notify App.jsx that chat is opened
+      window.dispatchEvent(new CustomEvent('chatOpened', {
+        detail: { appointmentId: appt._id }
+      }));
+      // Notify parent that chat has been opened
+      if (onChatOpened) {
+        onChatOpened();
+      }
+      // Load initial comments when chat opens
+      setTimeout(() => {
+        loadInitialComments();
+      }, 100);
+    }
+  }, [shouldOpenChatFromNotification, activeChatAppointmentId, appt._id, navigate, onChatOpened]);
+
   // Function to fetch starred messages
   const fetchStarredMessages = async () => {
     if (!appt?._id) return;
