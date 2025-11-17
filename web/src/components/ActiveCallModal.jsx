@@ -351,9 +351,9 @@ const ActiveCallModal = ({
                 >
                   <FaSync className="text-sm" />
                 </button>
-                {/* Camera selection menu - positioned above button to avoid going off-screen */}
+                {/* Camera selection menu - positioned to the left of small video to avoid going off-screen */}
                 {showCameraMenu && availableCameras && availableCameras.length > 0 && (
-                  <div className="absolute bottom-full right-0 mb-2 bg-black bg-opacity-95 rounded-lg shadow-xl min-w-[220px] max-w-[280px] z-50 border border-white border-opacity-20">
+                  <div className="absolute top-0 right-full mr-2 bg-black bg-opacity-95 rounded-lg shadow-xl min-w-[220px] max-w-[280px] z-50 border border-white border-opacity-20">
                     <div className="py-2">
                       <div className="px-3 py-2 border-b border-white border-opacity-10">
                         <p className="text-xs font-semibold text-white text-opacity-80 uppercase tracking-wide">Select Camera</p>
