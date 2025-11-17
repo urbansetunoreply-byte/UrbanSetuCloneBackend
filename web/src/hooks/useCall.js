@@ -729,8 +729,10 @@ export const useCall = () => {
   const toggleMute = () => {
     if (localStream) {
       const newMutedState = !isMuted;
+      // When muted, track.enabled should be false (disabled)
+      // When unmuted, track.enabled should be true (enabled)
       localStream.getAudioTracks().forEach(track => {
-        track.enabled = newMutedState;
+        track.enabled = !newMutedState; // Opposite: muted = disabled, unmuted = enabled
       });
       setIsMuted(newMutedState);
       

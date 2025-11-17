@@ -84,6 +84,7 @@ const ActiveCallModal = ({
     e.stopPropagation();
     if (callType === 'video') {
       setVideoSwapped(!videoSwapped);
+      setShowCameraMenu(false); // Close camera menu when swapping views
       setControlsVisible(true);
       // Hide again after 3 seconds
       if (controlsTimeoutRef.current) {
@@ -196,6 +197,53 @@ const ActiveCallModal = ({
             <div className="absolute top-4 right-4 bg-black bg-opacity-70 rounded-full px-4 py-2 z-20">
               <p className="text-white text-lg font-semibold">{formatDuration(callDuration)}</p>
             </div>
+            {/* Camera switch button in large view when "You" video is swapped to large view */}
+            {videoSwapped && availableCameras && availableCameras.length > 1 && (
+              <div className="absolute top-4 right-24 z-30">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowCameraMenu(!showCameraMenu);
+                  }}
+                  className="bg-black bg-opacity-70 hover:bg-opacity-90 rounded-full p-2 text-white transition-all"
+                  title="Switch camera"
+                >
+                  <FaSync className="text-sm" />
+                </button>
+                {/* Camera selection menu - positioned below button when in large view */}
+                {showCameraMenu && availableCameras && availableCameras.length > 0 && (
+                  <div className="absolute top-full right-0 mt-2 bg-black bg-opacity-95 rounded-lg shadow-xl min-w-[220px] max-w-[280px] z-50 border border-white border-opacity-20">
+                    <div className="py-2">
+                      <div className="px-3 py-2 border-b border-white border-opacity-10">
+                        <p className="text-xs font-semibold text-white text-opacity-80 uppercase tracking-wide">Select Camera</p>
+                      </div>
+                      {availableCameras.map((camera) => (
+                        <button
+                          key={camera.deviceId}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSwitchCamera(camera.deviceId);
+                            setShowCameraMenu(false);
+                          }}
+                          className={`w-full text-left px-4 py-3 text-sm text-white hover:bg-white hover:bg-opacity-20 transition-colors ${
+                            currentCameraId === camera.deviceId ? 'bg-white bg-opacity-20 font-medium' : ''
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            {currentCameraId === camera.deviceId && (
+                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            )}
+                            <span className={currentCameraId === camera.deviceId ? '' : 'pl-4'}>
+                              {camera.label || `Camera ${camera.deviceId.substring(0, 8)}`}
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </>
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
@@ -236,7 +284,9 @@ const ActiveCallModal = ({
         {/* Local Video (Picture-in-Picture) - Shows remote when swapped, local when not swapped */}
         {callType === 'video' && (
           <div 
-            className="absolute bottom-24 right-4 w-48 h-36 rounded-lg overflow-hidden border-2 border-white shadow-lg bg-black z-20 cursor-pointer hover:border-blue-400 transition-all" 
+            className={`absolute right-4 w-48 h-36 rounded-lg overflow-hidden border-2 border-white shadow-lg bg-black z-20 cursor-pointer hover:border-blue-400 transition-all duration-300 ${
+              controlsVisible ? 'bottom-24' : 'bottom-6'
+            }`}
             onClick={handleLocalVideoClick}
             title="Click to swap video views"
           >
@@ -288,7 +338,7 @@ const ActiveCallModal = ({
                 </div>
               </>
             )}
-            {/* Camera switch button (only show on local video) */}
+            {/* Camera switch button (only show on local video in small view) */}
             {!videoSwapped && availableCameras && availableCameras.length > 1 && (
               <div className="absolute top-2 right-2 z-30">
                 <button
@@ -302,7 +352,7 @@ const ActiveCallModal = ({
                   <FaSync className="text-sm" />
                 </button>
                 {/* Camera selection menu - positioned above button to avoid going off-screen */}
-                {showCameraMenu && (
+                {showCameraMenu && availableCameras && availableCameras.length > 0 && (
                   <div className="absolute bottom-full right-0 mb-2 bg-black bg-opacity-95 rounded-lg shadow-xl min-w-[220px] max-w-[280px] z-50 border border-white border-opacity-20">
                     <div className="py-2">
                       <div className="px-3 py-2 border-b border-white border-opacity-10">
