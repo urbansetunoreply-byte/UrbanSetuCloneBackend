@@ -3304,27 +3304,18 @@ function AdminAppointmentRow({
     };
   }, [showPasswordModal]);
 
-  // Handle notification-triggered chat opening
+  // Handle notification-triggered chat opening (from URL or notification)
   useEffect(() => {
     if (shouldOpenChatFromNotification && activeChatAppointmentId === appt._id) {
-      // Admin can access any chat, no lock check needed
-      setShowChatModal(true);
-      // Update URL when opening chatbox
-      navigate(`/admin/appointments/chat/${appt._id}`, { replace: false });
-      // Dispatch event to notify App.jsx that chat is opened
-      window.dispatchEvent(new CustomEvent('chatOpened', {
-        detail: { appointmentId: appt._id }
-      }));
-      // Notify parent that chat has been opened
-      if (onChatOpened) {
-        onChatOpened();
-      }
-      // Load initial comments when chat opens
-      setTimeout(() => {
-        loadInitialComments();
-      }, 100);
+      // CRITICAL: Always require password check, even when opening via URL
+      // Show password modal first - chat will open after successful verification
+      setShowPasswordModal(true);
+      setAdminPassword("");
+      setPasswordError("");
+      // Reset attempts when opening modal
+      localStorage.removeItem('adminAppointmentsPwAttempts');
     }
-  }, [shouldOpenChatFromNotification, activeChatAppointmentId, appt._id, navigate, onChatOpened]);
+  }, [shouldOpenChatFromNotification, activeChatAppointmentId, appt._id]);
 
   // Function to fetch starred messages
   const fetchStarredMessages = async () => {
@@ -5375,9 +5366,15 @@ function AdminAppointmentRow({
         window.dispatchEvent(new CustomEvent('chatOpened', {
           detail: { appointmentId: appt._id }
         }));
-        // Notify parent that chat has been opened
+        // Notify parent that chat has been opened (clear URL-triggered flag)
         if (onChatOpened) {
           onChatOpened();
+        }
+        // Clear the shouldOpenChatFromNotification flag to prevent re-triggering
+        // This ensures password modal doesn't re-open after successful verification
+        if (shouldOpenChatFromNotification && activeChatAppointmentId === appt._id) {
+          // Note: We can't directly set these here as they're parent state
+          // The onChatOpened callback should handle clearing them in the parent
         }
         // Load initial comments when chat opens (without refresh toast)
         setTimeout(() => {
