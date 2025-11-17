@@ -1,20 +1,26 @@
 import React, { useEffect, useState } from 'react';
-import { FaPhone, FaVideo, FaMicrophone, FaMicrophoneSlash, FaVideoSlash } from 'react-icons/fa';
+import { FaPhone, FaVideo, FaMicrophone, FaMicrophoneSlash, FaVideoSlash, FaSync } from 'react-icons/fa';
 
 const ActiveCallModal = ({ 
   callType, 
   otherPartyName,
   isMuted,
   isVideoEnabled,
+  remoteIsMuted,
+  remoteVideoEnabled,
   callDuration,
   localVideoRef,
   remoteVideoRef,
-  remoteAudioRef, // Add audio ref for audio calls
+  remoteAudioRef,
+  availableCameras,
+  currentCameraId,
   onToggleMute,
   onToggleVideo,
-  onEndCall
+  onEndCall,
+  onSwitchCamera
 }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const [showCameraMenu, setShowCameraMenu] = useState(false);
 
   useEffect(() => {
     setIsVisible(true);
@@ -48,12 +54,35 @@ const ActiveCallModal = ({
       {/* Remote Video/Audio */}
       <div className="flex-1 relative">
         {callType === 'video' ? (
-          <video
-            ref={remoteVideoRef}
-            autoPlay
-            playsInline
-            className="w-full h-full object-cover"
-          />
+          <>
+            <video
+              ref={remoteVideoRef}
+              autoPlay
+              playsInline
+              className="w-full h-full object-cover"
+            />
+            {/* Remote video off indicator */}
+            {!remoteVideoEnabled && (
+              <div className="absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center">
+                <div className="text-center text-white">
+                  <FaVideoSlash className="text-6xl mb-4 mx-auto opacity-50" />
+                  <p className="text-xl">{otherPartyName || 'Caller'}</p>
+                  <p className="text-sm text-gray-400 mt-2">Video is off</p>
+                </div>
+              </div>
+            )}
+            {/* Remote mute indicator */}
+            {remoteIsMuted && (
+              <div className="absolute top-4 left-4 bg-black bg-opacity-70 rounded-full px-4 py-2 flex items-center gap-2">
+                <FaMicrophoneSlash className="text-white text-lg" />
+                <span className="text-white text-sm">{otherPartyName || 'Caller'} is muted</span>
+              </div>
+            )}
+            {/* Timer for video calls */}
+            <div className="absolute top-4 right-4 bg-black bg-opacity-70 rounded-full px-4 py-2">
+              <p className="text-white text-lg font-semibold">{formatDuration(callDuration)}</p>
+            </div>
+          </>
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
             {/* Hidden audio element for remote audio stream */}
@@ -69,13 +98,20 @@ const ActiveCallModal = ({
               </div>
               <h3 className="text-3xl font-bold mb-2">{otherPartyName || 'Calling...'}</h3>
               <p className="text-xl">{formatDuration(callDuration)}</p>
+              {/* Remote mute indicator for audio calls */}
+              {remoteIsMuted && (
+                <div className="mt-4 flex items-center justify-center gap-2 bg-black bg-opacity-50 rounded-full px-4 py-2">
+                  <FaMicrophoneSlash className="text-white" />
+                  <span className="text-sm">{otherPartyName || 'Caller'} is muted</span>
+                </div>
+              )}
             </div>
           </div>
         )}
         
         {/* Local Video (Picture-in-Picture) */}
         {callType === 'video' && (
-          <div className="absolute bottom-4 right-4 w-48 h-36 rounded-lg overflow-hidden border-2 border-white shadow-lg">
+          <div className="absolute bottom-24 right-4 w-48 h-36 rounded-lg overflow-hidden border-2 border-white shadow-lg bg-black">
             <video
               ref={localVideoRef}
               autoPlay
@@ -86,6 +122,39 @@ const ActiveCallModal = ({
             {!isVideoEnabled && (
               <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                 <FaVideoSlash className="text-white text-2xl" />
+              </div>
+            )}
+            {/* Camera switch button */}
+            {availableCameras && availableCameras.length > 1 && (
+              <div className="absolute top-2 right-2">
+                <button
+                  onClick={() => setShowCameraMenu(!showCameraMenu)}
+                  className="bg-black bg-opacity-70 hover:bg-opacity-90 rounded-full p-2 text-white transition-all"
+                  title="Switch camera"
+                >
+                  <FaSync className="text-sm" />
+                </button>
+                {/* Camera selection menu */}
+                {showCameraMenu && (
+                  <div className="absolute top-12 right-0 bg-black bg-opacity-90 rounded-lg shadow-xl min-w-[200px] z-10">
+                    <div className="py-2">
+                      {availableCameras.map((camera) => (
+                        <button
+                          key={camera.deviceId}
+                          onClick={() => {
+                            onSwitchCamera(camera.deviceId);
+                            setShowCameraMenu(false);
+                          }}
+                          className={`w-full text-left px-4 py-2 text-sm text-white hover:bg-white hover:bg-opacity-20 transition-colors ${
+                            currentCameraId === camera.deviceId ? 'bg-white bg-opacity-20' : ''
+                          }`}
+                        >
+                          {camera.label || `Camera ${camera.deviceId.substring(0, 8)}`}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -132,10 +201,10 @@ const ActiveCallModal = ({
           </button>
         </div>
         
-        {/* Call Duration for audio calls */}
-        {callType === 'audio' && (
-          <div className="text-center mt-6 text-white">
-            <p className="text-2xl font-semibold">{formatDuration(callDuration)}</p>
+        {/* Call Duration for video calls (also shown at top) */}
+        {callType === 'video' && (
+          <div className="text-center mt-4 text-white">
+            <p className="text-lg font-semibold">{formatDuration(callDuration)}</p>
           </div>
         )}
       </div>
@@ -144,4 +213,3 @@ const ActiveCallModal = ({
 };
 
 export default ActiveCallModal;
-

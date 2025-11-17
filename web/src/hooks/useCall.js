@@ -19,8 +19,12 @@ export const useCall = () => {
   const [remoteStream, setRemoteStream] = useState(null);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
+  const [remoteIsMuted, setRemoteIsMuted] = useState(false); // Remote mute status
+  const [remoteVideoEnabled, setRemoteVideoEnabled] = useState(true); // Remote video status
   const [callDuration, setCallDuration] = useState(0);
   const [activeCall, setActiveCall] = useState(null); // { callId, appointmentId, receiverId, callType }
+  const [availableCameras, setAvailableCameras] = useState([]);
+  const [currentCameraId, setCurrentCameraId] = useState(null);
   
   const peerRef = useRef(null);
   const localVideoRef = useRef(null);
@@ -74,21 +78,23 @@ export const useCall = () => {
     }
   }, [activeCall]);
 
+  // Handle remote mute/video status updates
+  const handleRemoteStatusUpdate = useCallback(({ callId, isMuted: remoteMuted, isVideoEnabled: remoteVideo }) => {
+    if (activeCall?.callId === callId) {
+      setRemoteIsMuted(remoteMuted);
+      setRemoteVideoEnabled(remoteVideo);
+    }
+  }, [activeCall]);
+
   // Listen for incoming calls and WebRTC events
   useEffect(() => {
     const handleIncomingCall = (data) => {
       setIncomingCall(data);
-      // Play notification sound if available
-      if (typeof window !== 'undefined' && window.Audio) {
-        // You can add a notification sound here
-      }
     };
     
     const handleCallAccepted = (data) => {
       // For receiver (incoming call) - state already set in acceptCall
       if (incomingCall && incomingCall.callId === data.callId) {
-        // State is already set to 'active' in acceptCall
-        // Just ensure timer is started if not already
         if (callState !== 'active') {
           setCallState('active');
           startCallTimer();
@@ -131,6 +137,7 @@ export const useCall = () => {
     socket.on('webrtc-offer', handleWebRTCOffer);
     socket.on('webrtc-answer', handleWebRTCAnswer);
     socket.on('ice-candidate', handleICECandidate);
+    socket.on('remote-status-update', handleRemoteStatusUpdate);
     socket.on('call-error', (error) => {
       console.error('Call error:', error);
       toast.error(error.message || 'Call error occurred');
@@ -146,23 +153,82 @@ export const useCall = () => {
       socket.off('webrtc-offer', handleWebRTCOffer);
       socket.off('webrtc-answer', handleWebRTCAnswer);
       socket.off('ice-candidate', handleICECandidate);
+      socket.off('remote-status-update', handleRemoteStatusUpdate);
       socket.off('call-error');
     };
-  }, [incomingCall, activeCall, handleWebRTCOffer, handleWebRTCAnswer, handleICECandidate]);
+  }, [incomingCall, activeCall, callState, handleWebRTCOffer, handleWebRTCAnswer, handleICECandidate, handleRemoteStatusUpdate]);
+
+  // Enumerate available cameras
+  const enumerateCameras = useCallback(async () => {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(device => device.kind === 'videoinput');
+      setAvailableCameras(videoDevices);
+      if (videoDevices.length > 0 && !currentCameraId) {
+        setCurrentCameraId(videoDevices[0].deviceId);
+      }
+      return videoDevices;
+    } catch (error) {
+      console.error('Error enumerating cameras:', error);
+      return [];
+    }
+  }, [currentCameraId]);
+
+  // Switch camera
+  const switchCamera = useCallback(async (deviceId) => {
+    if (!localStream || !activeCall || activeCall.callType !== 'video') {
+      return;
+    }
+
+    try {
+      // Get new stream with selected camera
+      const newStream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: { deviceId: { exact: deviceId } }
+      });
+
+      // Replace video track in peer connection
+      const videoTrack = newStream.getVideoTracks()[0];
+      const sender = peerRef.current?._pc?.getSenders()?.find(s => 
+        s.track && s.track.kind === 'video'
+      );
+
+      if (sender && videoTrack) {
+        await sender.replaceTrack(videoTrack);
+      }
+
+      // Update local stream
+      const oldVideoTrack = localStream.getVideoTracks()[0];
+      if (oldVideoTrack) {
+        oldVideoTrack.stop();
+      }
+      localStream.removeTrack(oldVideoTrack);
+      localStream.addTrack(videoTrack);
+
+      // Update video element
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = localStream;
+      }
+
+      setCurrentCameraId(deviceId);
+      toast.success('Camera switched');
+    } catch (error) {
+      console.error('Error switching camera:', error);
+      toast.error('Failed to switch camera');
+    }
+  }, [localStream, activeCall]);
 
   // Initialize call
   const initiateCall = async (appointmentId, receiverId, callType) => {
     try {
       // Check if socket is connected
       if (!socket || !socket.connected) {
-        // Try to reconnect
         const token = getAuthToken();
         if (!token) {
           toast.error('Please sign in to make calls.');
           return;
         }
         
-        // Check if token is expired
         try {
           const parts = token.split('.');
           if (parts.length === 3) {
@@ -170,7 +236,6 @@ export const useCall = () => {
             const currentTime = Date.now() / 1000;
             if (payload.exp && payload.exp < currentTime) {
               toast.error('Your session has expired. Please sign in again.');
-              // Clear expired token
               localStorage.removeItem('accessToken');
               document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
               window.location.href = '/sign-in?error=session_expired';
@@ -183,7 +248,6 @@ export const useCall = () => {
         
         reconnectSocket();
         toast.info('Reconnecting to server...');
-        // Wait a bit for reconnection
         await new Promise(resolve => setTimeout(resolve, 1000));
         if (!socket || !socket.connected) {
           toast.error('Failed to connect to server. Please refresh the page or sign in again.');
@@ -193,11 +257,18 @@ export const useCall = () => {
 
       setCallState('initiating');
       
+      // Enumerate cameras for video calls
+      if (callType === 'video') {
+        await enumerateCameras();
+      }
+      
       // Get user media
-      const stream = await navigator.mediaDevices.getUserMedia({
+      const constraints = {
         audio: true,
-        video: callType === 'video'
-      });
+        video: callType === 'video' ? (currentCameraId ? { deviceId: { exact: currentCameraId } } : true) : false
+      };
+      
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       
       setLocalStream(stream);
       if (localVideoRef.current) {
@@ -213,7 +284,7 @@ export const useCall = () => {
           // Create peer connection AFTER we have the callId
           const peer = new SimplePeer({
             initiator: true,
-            trickle: true, // Enable trickle ICE for faster connection
+            trickle: true,
             stream: stream,
             config: {
               iceServers: STUN_SERVERS
@@ -235,15 +306,37 @@ export const useCall = () => {
           });
           
           peer.on('stream', (remoteStream) => {
-            console.log('[Call] Received remote stream');
+            console.log('[Call] Received remote stream', remoteStream);
             setRemoteStream(remoteStream);
+            
             // Attach to video element for video calls
             if (callType === 'video' && remoteVideoRef.current) {
               remoteVideoRef.current.srcObject = remoteStream;
+              // Ensure video plays
+              setTimeout(() => {
+                remoteVideoRef.current?.play().catch(err => {
+                  console.error('Error playing remote video:', err);
+                });
+              }, 100);
             }
+            
             // Attach to audio element for audio calls
             if (callType === 'audio' && remoteAudioRef.current) {
               remoteAudioRef.current.srcObject = remoteStream;
+              // Ensure audio plays - use setTimeout to ensure element is ready
+              setTimeout(() => {
+                if (remoteAudioRef.current) {
+                  remoteAudioRef.current.play().catch(err => {
+                    console.error('Error playing remote audio:', err);
+                    // Try again after a short delay
+                    setTimeout(() => {
+                      remoteAudioRef.current?.play().catch(e => {
+                        console.error('Retry failed:', e);
+                      });
+                    }, 500);
+                  });
+                }
+              }, 100);
             }
           });
 
@@ -258,7 +351,6 @@ export const useCall = () => {
           });
           
           peerRef.current = peer;
-          
           socket.off('call-initiated', handleCallInitiated);
         }
       };
@@ -291,10 +383,17 @@ export const useCall = () => {
     if (!incomingCall) return;
     
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
+      // Enumerate cameras for video calls
+      if (incomingCall.callType === 'video') {
+        await enumerateCameras();
+      }
+      
+      const constraints = {
         audio: true,
-        video: incomingCall.callType === 'video'
-      });
+        video: incomingCall.callType === 'video' ? (currentCameraId ? { deviceId: { exact: currentCameraId } } : true) : false
+      };
+      
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       
       setLocalStream(stream);
       if (localVideoRef.current) {
@@ -304,7 +403,7 @@ export const useCall = () => {
       // Create peer connection as receiver (non-initiator)
       const peer = new SimplePeer({
         initiator: false,
-        trickle: true, // Enable trickle ICE for faster connection
+        trickle: true,
         stream: stream,
         config: {
           iceServers: STUN_SERVERS
@@ -326,15 +425,37 @@ export const useCall = () => {
       });
       
       peer.on('stream', (remoteStream) => {
-        console.log('[Call] Received remote stream');
+        console.log('[Call] Received remote stream', remoteStream);
         setRemoteStream(remoteStream);
+        
         // Attach to video element for video calls
         if (incomingCall.callType === 'video' && remoteVideoRef.current) {
           remoteVideoRef.current.srcObject = remoteStream;
+          // Ensure video plays
+          setTimeout(() => {
+            remoteVideoRef.current?.play().catch(err => {
+              console.error('Error playing remote video:', err);
+            });
+          }, 100);
         }
+        
         // Attach to audio element for audio calls
         if (incomingCall.callType === 'audio' && remoteAudioRef.current) {
           remoteAudioRef.current.srcObject = remoteStream;
+          // Ensure audio plays - use setTimeout to ensure element is ready
+          setTimeout(() => {
+            if (remoteAudioRef.current) {
+              remoteAudioRef.current.play().catch(err => {
+                console.error('Error playing remote audio:', err);
+                // Try again after a short delay
+                setTimeout(() => {
+                  remoteAudioRef.current?.play().catch(e => {
+                    console.error('Retry failed:', e);
+                  });
+                }, 500);
+              });
+            }
+          }, 100);
         }
       });
 
@@ -443,25 +564,47 @@ export const useCall = () => {
     callStartTimeRef.current = null;
     setActiveCall(null);
     pendingOfferRef.current = null;
+    setRemoteIsMuted(false);
+    setRemoteVideoEnabled(true);
   };
 
   // Toggle mute
   const toggleMute = () => {
     if (localStream) {
+      const newMutedState = !isMuted;
       localStream.getAudioTracks().forEach(track => {
-        track.enabled = isMuted;
+        track.enabled = newMutedState;
       });
-      setIsMuted(!isMuted);
+      setIsMuted(newMutedState);
+      
+      // Notify remote peer
+      if (activeCall?.callId) {
+        socket.emit('call-status-update', {
+          callId: activeCall.callId,
+          isMuted: newMutedState,
+          isVideoEnabled: isVideoEnabled
+        });
+      }
     }
   };
 
   // Toggle video
   const toggleVideo = () => {
     if (localStream) {
+      const newVideoState = !isVideoEnabled;
       localStream.getVideoTracks().forEach(track => {
-        track.enabled = !isVideoEnabled;
+        track.enabled = newVideoState;
       });
-      setIsVideoEnabled(!isVideoEnabled);
+      setIsVideoEnabled(newVideoState);
+      
+      // Notify remote peer
+      if (activeCall?.callId) {
+        socket.emit('call-status-update', {
+          callId: activeCall.callId,
+          isMuted: isMuted,
+          isVideoEnabled: newVideoState
+        });
+      }
     }
   };
 
@@ -483,19 +626,24 @@ export const useCall = () => {
     remoteStream,
     isMuted,
     isVideoEnabled,
+    remoteIsMuted,
+    remoteVideoEnabled,
     callDuration,
     activeCall,
     localVideoRef,
     remoteVideoRef,
-    remoteAudioRef, // Export audio ref for audio calls
+    remoteAudioRef,
+    availableCameras,
+    currentCameraId,
     initiateCall,
     acceptCall,
     rejectCall,
     endCall,
     toggleMute,
-    toggleVideo
+    toggleVideo,
+    switchCamera,
+    enumerateCameras
   };
 };
 
 export default useCall;
-

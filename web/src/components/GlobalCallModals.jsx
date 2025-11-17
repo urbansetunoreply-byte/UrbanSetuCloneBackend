@@ -15,15 +15,21 @@ const GlobalCallModals = () => {
     activeCall,
     localVideoRef,
     remoteVideoRef,
-    remoteAudioRef, // Add audio ref for audio calls
+    remoteAudioRef,
     isMuted,
     isVideoEnabled,
+    remoteIsMuted,
+    remoteVideoEnabled,
     callDuration,
+    availableCameras,
+    currentCameraId,
     acceptCall,
     rejectCall,
     endCall,
     toggleMute,
-    toggleVideo
+    toggleVideo,
+    switchCamera,
+    enumerateCameras
   } = useCallContext();
 
   const { currentUser } = useSelector((state) => state.user);
@@ -85,13 +91,18 @@ const GlobalCallModals = () => {
           otherPartyName={getOtherPartyName()}
           isMuted={isMuted}
           isVideoEnabled={isVideoEnabled}
+          remoteIsMuted={remoteIsMuted}
+          remoteVideoEnabled={remoteVideoEnabled}
           callDuration={callDuration}
           localVideoRef={localVideoRef}
           remoteVideoRef={remoteVideoRef}
-          remoteAudioRef={remoteAudioRef} // Pass audio ref for audio calls
+          remoteAudioRef={remoteAudioRef}
+          availableCameras={availableCameras}
+          currentCameraId={currentCameraId}
           onToggleMute={toggleMute}
           onToggleVideo={toggleVideo}
           onEndCall={endCall}
+          onSwitchCamera={switchCamera}
         />
       )}
 

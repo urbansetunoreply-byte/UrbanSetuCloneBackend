@@ -734,6 +734,24 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Handle call status updates (mute/video)
+  socket.on('call-status-update', ({ callId, isMuted, isVideoEnabled }) => {
+    const activeCall = activeCalls.get(callId);
+    if (activeCall) {
+      // Forward status update to the other party
+      const targetSocketId = socket.id === activeCall.callerSocketId 
+        ? activeCall.receiverSocketId 
+        : activeCall.callerSocketId;
+      if (targetSocketId) {
+        io.to(targetSocketId).emit('remote-status-update', { 
+          callId, 
+          isMuted, 
+          isVideoEnabled 
+        });
+      }
+    }
+  });
+
 });
 
 // Health check endpoint for Render deployment
