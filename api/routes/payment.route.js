@@ -294,7 +294,11 @@ router.post("/create-intent", verifyToken, async (req, res) => {
       return res.status(201).json({
         message: 'Payment intent created successfully',
         payment,
-        paypal: { amount: advanceAmountUsd, currency: 'USD' }
+        paypal: { amount: advanceAmountUsd, currency: 'USD' },
+        appointment: {
+          lockStartTime: appointment.lockStartTime,
+          lockExpiryTime: appointment.lockExpiryTime
+        }
       });
     }
   } catch (err) {
