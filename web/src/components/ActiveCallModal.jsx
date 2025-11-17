@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { FaPhone, FaVideo, FaMicrophone, FaMicrophoneSlash, FaVideoSlash, FaSync } from 'react-icons/fa';
 import UserAvatar from './UserAvatar';
 
@@ -23,10 +23,39 @@ const ActiveCallModal = ({
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [showCameraMenu, setShowCameraMenu] = useState(false);
+  const [controlsVisible, setControlsVisible] = useState(true);
+  const controlsTimeoutRef = useRef(null);
 
   useEffect(() => {
     setIsVisible(true);
   }, []);
+
+  // Auto-hide controls after 3 seconds in video calls
+  useEffect(() => {
+    if (callType === 'video' && controlsVisible) {
+      if (controlsTimeoutRef.current) {
+        clearTimeout(controlsTimeoutRef.current);
+      }
+      controlsTimeoutRef.current = setTimeout(() => {
+        setControlsVisible(false);
+      }, 3000);
+    }
+    return () => {
+      if (controlsTimeoutRef.current) {
+        clearTimeout(controlsTimeoutRef.current);
+      }
+    };
+  }, [callType, controlsVisible]);
+
+  // Show controls when clicking on video
+  const handleVideoClick = () => {
+    if (callType === 'video') {
+      setControlsVisible(true);
+      if (controlsTimeoutRef.current) {
+        clearTimeout(controlsTimeoutRef.current);
+      }
+    }
+  };
 
   const formatDuration = (seconds) => {
     const hours = Math.floor(seconds / 3600);
@@ -54,18 +83,18 @@ const ActiveCallModal = ({
         }
       `}</style>
       {/* Remote Video/Audio */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative" onClick={handleVideoClick}>
         {callType === 'video' ? (
           <>
             <video
               ref={remoteVideoRef}
               autoPlay
               playsInline
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover cursor-pointer"
             />
             {/* Remote video off indicator */}
             {!remoteVideoEnabled && (
-              <div className="absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center">
+              <div className="absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center cursor-pointer">
                 <div className="text-center text-white">
                   <FaVideoSlash className="text-6xl mb-4 mx-auto opacity-50" />
                   <p className="text-xl">{otherPartyName || 'Caller'}</p>
@@ -75,14 +104,18 @@ const ActiveCallModal = ({
             )}
             {/* Remote mute indicator */}
             {remoteIsMuted && (
-              <div className="absolute top-4 left-4 bg-black bg-opacity-70 rounded-full px-4 py-2 flex items-center gap-2">
+              <div className="absolute top-4 left-4 bg-black bg-opacity-70 rounded-full px-4 py-2 flex items-center gap-2 z-20">
                 <FaMicrophoneSlash className="text-white text-lg" />
                 <span className="text-white text-sm">{otherPartyName || 'Caller'} is muted</span>
               </div>
             )}
             {/* Timer for video calls */}
-            <div className="absolute top-4 right-4 bg-black bg-opacity-70 rounded-full px-4 py-2">
+            <div className="absolute top-4 right-4 bg-black bg-opacity-70 rounded-full px-4 py-2 z-20">
               <p className="text-white text-lg font-semibold">{formatDuration(callDuration)}</p>
+            </div>
+            {/* Remote video label */}
+            <div className="absolute bottom-24 left-4 bg-black bg-opacity-70 rounded-full px-4 py-2 z-20">
+              <p className="text-white text-sm font-medium">{otherPartyName || 'Caller'}</p>
             </div>
           </>
         ) : (
@@ -108,7 +141,7 @@ const ActiveCallModal = ({
                   <FaPhone className="text-6xl" />
                 </div>
               )}
-              <h3 className="text-3xl font-bold mb-2">{otherPartyName || 'Calling...'}</h3>
+              <h3 className="text-3xl font-bold mb-2">{otherPartyName || 'Unknown'}</h3>
               <p className="text-xl">{formatDuration(callDuration)}</p>
               {/* Remote mute indicator for audio calls */}
               {remoteIsMuted && (
@@ -123,7 +156,7 @@ const ActiveCallModal = ({
         
         {/* Local Video (Picture-in-Picture) */}
         {callType === 'video' && (
-          <div className="absolute bottom-24 right-4 w-48 h-36 rounded-lg overflow-hidden border-2 border-white shadow-lg bg-black">
+          <div className="absolute bottom-24 right-4 w-48 h-36 rounded-lg overflow-hidden border-2 border-white shadow-lg bg-black z-20" onClick={(e) => e.stopPropagation()}>
             <video
               ref={localVideoRef}
               autoPlay
@@ -136,6 +169,10 @@ const ActiveCallModal = ({
                 <FaVideoSlash className="text-white text-2xl" />
               </div>
             )}
+            {/* Local video label */}
+            <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 rounded-full px-3 py-1">
+              <p className="text-white text-xs font-medium">You</p>
+            </div>
             {/* Camera switch button */}
             {availableCameras && availableCameras.length > 1 && (
               <div className="absolute top-2 right-2">
@@ -175,8 +212,11 @@ const ActiveCallModal = ({
       
       {/* Call Controls */}
       <div 
-        className="bg-black bg-opacity-70 backdrop-blur-sm p-6"
+        className={`bg-black bg-opacity-70 backdrop-blur-sm p-6 transition-opacity duration-300 ${
+          callType === 'video' && !controlsVisible ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}
         style={{ animation: 'slideIn 0.4s ease-out' }}
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-center gap-6">
           {/* Mute/Unmute */}

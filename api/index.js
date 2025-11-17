@@ -663,8 +663,10 @@ io.on('connection', (socket) => {
         return socket.emit('call-error', { message: 'Unauthorized' });
       }
       
-      // Update call status
+      // Update call status and set start time (synchronized)
+      const startTime = new Date();
       call.status = 'accepted';
+      call.startTime = startTime; // Update start time when call is accepted
       call.receiverIP = socket.handshake.address;
       await call.save();
       
@@ -672,16 +674,21 @@ io.on('connection', (socket) => {
       const activeCall = activeCalls.get(callId);
       if (activeCall) {
         activeCall.receiverSocketId = socket.id;
+        activeCall.startTime = startTime; // Store synchronized start time
         activeCalls.set(callId, activeCall);
         
-        // Notify caller that call was accepted
+        // Notify caller that call was accepted with synchronized start time
         io.to(activeCall.callerSocketId).emit('call-accepted', {
           callId,
-          receiverSocketId: socket.id
+          receiverSocketId: socket.id,
+          startTime: startTime.getTime() // Send timestamp for synchronization
         });
         
-        // Notify receiver
-        socket.emit('call-accepted', { callId });
+        // Notify receiver with synchronized start time
+        socket.emit('call-accepted', { 
+          callId,
+          startTime: startTime.getTime() // Send timestamp for synchronization
+        });
       }
     } catch (err) {
       console.error("Error accepting call:", err);

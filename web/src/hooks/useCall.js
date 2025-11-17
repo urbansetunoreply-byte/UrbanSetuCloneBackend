@@ -93,17 +93,20 @@ export const useCall = () => {
     };
     
     const handleCallAccepted = (data) => {
+      // Use synchronized start time from server if provided
+      const synchronizedStartTime = data.startTime ? new Date(data.startTime) : new Date();
+      
       // For receiver (incoming call) - state already set in acceptCall
       if (incomingCall && incomingCall.callId === data.callId) {
         if (callState !== 'active') {
           setCallState('active');
-          startCallTimer();
+          startCallTimer(synchronizedStartTime);
         }
       } 
       // For caller (outgoing call)
       else if (activeCall && activeCall.callId === data.callId) {
         setCallState('active');
-        startCallTimer();
+        startCallTimer(synchronizedStartTime);
         console.log('[Call] Call accepted, connection should be established');
       }
     };
@@ -177,7 +180,7 @@ export const useCall = () => {
       socket.off('remote-status-update', handleRemoteStatusUpdate);
       socket.off('call-error');
     };
-  }, [incomingCall, activeCall, callState, handleWebRTCOffer, handleWebRTCAnswer, handleICECandidate, handleRemoteStatusUpdate]);
+  }, [incomingCall, activeCall, callState, handleWebRTCOffer, handleWebRTCAnswer, handleICECandidate, handleRemoteStatusUpdate, startCallTimer]);
 
   // Enumerate available cameras
   const enumerateCameras = useCallback(async () => {
@@ -510,7 +513,7 @@ export const useCall = () => {
       
       setCallState('active');
       setIncomingCall(null);
-      startCallTimer();
+      // Timer will be started by handleCallAccepted with synchronized time from server
     } catch (error) {
       console.error('Error accepting call:', error);
       toast.error('Failed to access microphone/camera. Please check permissions.');
@@ -631,16 +634,27 @@ export const useCall = () => {
     }
   };
 
-  // Start call timer
-  const startCallTimer = () => {
-    callStartTimeRef.current = Date.now();
+  // Start call timer with optional synchronized start time
+  const startCallTimer = useCallback((synchronizedStartTime = null) => {
+    // Stop any existing timer
+    if (durationIntervalRef.current) {
+      clearInterval(durationIntervalRef.current);
+    }
+    
+    // Use synchronized start time if provided, otherwise use current time
+    if (synchronizedStartTime) {
+      callStartTimeRef.current = synchronizedStartTime.getTime();
+    } else {
+      callStartTimeRef.current = Date.now();
+    }
+    
     durationIntervalRef.current = setInterval(() => {
       if (callStartTimeRef.current) {
         const duration = Math.floor((Date.now() - callStartTimeRef.current) / 1000);
         setCallDuration(duration);
       }
     }, 1000);
-  };
+  }, []);
 
   return {
     callState,
