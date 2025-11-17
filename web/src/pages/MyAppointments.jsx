@@ -12219,7 +12219,10 @@ function PaymentStatusCell({ appointment, isBuyer }) {
             setShowPayModal(false);
             setPaying(false); // Clear loading state when modal closes
           }}
-          appointment={{ ...appointment, region: 'india' }}
+          appointment={{ 
+            ...appointment, 
+            region: appointment.region || 'india' // Use actual region or default to 'india'
+          }}
           onPaymentSuccess={async (payment) => {
             setShowPayModal(false);
             setPaying(false); // Clear loading state when payment succeeds

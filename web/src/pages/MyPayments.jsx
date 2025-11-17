@@ -271,14 +271,6 @@ const MyPayments = () => {
         // Continue with payment flow if check fails
       }
       
-      // If payment status is completed, don't proceed
-      if (payment.status === 'completed') {
-        toast.success('Payment already completed!');
-        await fetchPayments();
-        setLoadingPaymentId(null);
-        return;
-      }
-      
       // Fetch appointment details - API returns the booking object directly (not wrapped)
       const res = await fetch(`${API_BASE_URL}/api/bookings/${appointmentId}`, {
         credentials: 'include'
@@ -336,6 +328,8 @@ const MyPayments = () => {
     } catch (error) {
       console.error('Error fetching appointment:', error);
       toast.error('Failed to load appointment details');
+      // Note: We can't open modal on error here because we need to fetch appointment first
+      // This is different from MyAppointments where appointment is already available as prop
     } finally {
       setLoadingPaymentId(null);
     }
