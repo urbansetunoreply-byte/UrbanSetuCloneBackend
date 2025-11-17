@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaPhone, FaVideo, FaMicrophone, FaMicrophoneSlash, FaVideoSlash } from 'react-icons/fa';
 
 const ActiveCallModal = ({ 
@@ -13,6 +13,12 @@ const ActiveCallModal = ({
   onToggleVideo,
   onEndCall
 }) => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
+
   const formatDuration = (seconds) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -24,7 +30,20 @@ const ActiveCallModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black flex flex-col z-[9999]">
+    <div 
+      className="fixed inset-0 bg-black flex flex-col z-[9999] transition-opacity duration-300"
+      style={{ animation: 'fadeIn 0.3s ease-in' }}
+    >
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slideIn {
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
+        }
+      `}</style>
       {/* Remote Video/Audio */}
       <div className="flex-1 relative">
         {callType === 'video' ? (
@@ -66,46 +85,49 @@ const ActiveCallModal = ({
       </div>
       
       {/* Call Controls */}
-      <div className="bg-black bg-opacity-50 p-6">
-        <div className="flex items-center justify-center gap-4">
+      <div 
+        className="bg-black bg-opacity-70 backdrop-blur-sm p-6"
+        style={{ animation: 'slideIn 0.4s ease-out' }}
+      >
+        <div className="flex items-center justify-center gap-6">
           {/* Mute/Unmute */}
           <button
             onClick={onToggleMute}
-            className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${
+            className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 ${
               isMuted ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-700 hover:bg-gray-600'
-            } text-white shadow-lg`}
+            } text-white shadow-xl hover:scale-110 active:scale-95 transform`}
             title={isMuted ? 'Unmute' : 'Mute'}
           >
-            {isMuted ? <FaMicrophoneSlash className="text-xl" /> : <FaMicrophone className="text-xl" />}
+            {isMuted ? <FaMicrophoneSlash className="text-2xl" /> : <FaMicrophone className="text-2xl" />}
           </button>
           
           {/* Video On/Off (only for video calls) */}
           {callType === 'video' && (
             <button
               onClick={onToggleVideo}
-              className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${
+              className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 ${
                 isVideoEnabled ? 'bg-gray-700 hover:bg-gray-600' : 'bg-red-500 hover:bg-red-600'
-              } text-white shadow-lg`}
+              } text-white shadow-xl hover:scale-110 active:scale-95 transform`}
               title={isVideoEnabled ? 'Turn off video' : 'Turn on video'}
             >
-              {isVideoEnabled ? <FaVideo className="text-xl" /> : <FaVideoSlash className="text-xl" />}
+              {isVideoEnabled ? <FaVideo className="text-2xl" /> : <FaVideoSlash className="text-2xl" />}
             </button>
           )}
           
           {/* End Call */}
           <button
             onClick={onEndCall}
-            className="w-14 h-14 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
+            className="w-16 h-16 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-all duration-300 shadow-xl hover:scale-110 active:scale-95 transform"
             title="End Call"
           >
-            <FaPhone className="text-xl rotate-[135deg]" />
+            <FaPhone className="text-2xl rotate-[135deg]" />
           </button>
         </div>
         
         {/* Call Duration for audio calls */}
         {callType === 'audio' && (
-          <div className="text-center mt-4 text-white">
-            <p className="text-lg">{formatDuration(callDuration)}</p>
+          <div className="text-center mt-6 text-white">
+            <p className="text-2xl font-semibold">{formatDuration(callDuration)}</p>
           </div>
         )}
       </div>

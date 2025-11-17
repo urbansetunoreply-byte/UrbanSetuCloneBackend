@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, useLocation, Navigate, useNavigate, useParams } from "react-router-dom";
-import { useEffect, Suspense, lazy, useState, useMemo } from "react";
+import React, { useEffect, Suspense, lazy, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { verifyAuthStart, verifyAuthSuccess, verifyAuthFailure, signoutUserSuccess } from "./redux/user/userSlice.js";
 import { socket } from "./utils/socket";
@@ -10,10 +10,12 @@ import AdminRoute from "./components/AdminRoute";
 import WishlistProvider from "./WishlistContext";
 import { ImageFavoritesProvider } from "./contexts/ImageFavoritesContext";
 import { HeaderProvider, useHeader } from "./contexts/HeaderContext";
+import { CallProvider, useCallContext } from "./contexts/CallContext";
 import ContactSupportWrapper from "./components/ContactSupportWrapper";
 import NetworkStatus from "./components/NetworkStatus";
 import CookieConsent from "./components/CookieConsent";
 import Footer from "./components/Footer";
+import GlobalCallModals from "./components/GlobalCallModals";
 import UserChangePassword from './pages/UserChangePassword';
 import AdminChangePassword from './pages/AdminChangePassword';
 import AccountRevocation from './pages/AccountRevocation';
@@ -725,6 +727,8 @@ function AppRoutes({ bootstrapped }) {
         theme="light"
         limit={3}
       />
+      {/* Global Call Modals - Shows on any page */}
+      <GlobalCallModals />
     </>
   );
 }
@@ -756,9 +760,11 @@ export default function App() {
     <WishlistProvider>
       <ImageFavoritesProvider>
         <HeaderProvider>
-          <BrowserRouter>
-            <AppRoutes bootstrapped={bootstrapped} />
-          </BrowserRouter>
+          <CallProvider>
+            <BrowserRouter>
+              <AppRoutes bootstrapped={bootstrapped} />
+            </BrowserRouter>
+          </CallProvider>
         </HeaderProvider>
       </ImageFavoritesProvider>
     </WishlistProvider>

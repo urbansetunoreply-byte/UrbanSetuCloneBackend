@@ -1,0 +1,130 @@
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useCallContext } from '../contexts/CallContext';
+import IncomingCallModal from './IncomingCallModal';
+import ActiveCallModal from './ActiveCallModal';
+import axios from 'axios';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+// Component to fetch appointment data for displaying names
+const GlobalCallModals = () => {
+  const {
+    callState,
+    incomingCall,
+    activeCall,
+    localVideoRef,
+    remoteVideoRef,
+    isMuted,
+    isVideoEnabled,
+    callDuration,
+    acceptCall,
+    rejectCall,
+    endCall,
+    toggleMute,
+    toggleVideo
+  } = useCallContext();
+
+  const { currentUser } = useSelector((state) => state.user);
+  const [appointmentData, setAppointmentData] = useState(null);
+  const [loadingAppointment, setLoadingAppointment] = useState(false);
+
+  // Fetch appointment data when active call changes
+  useEffect(() => {
+    const fetchAppointment = async () => {
+      if (activeCall?.appointmentId) {
+        // Only fetch if we don't have data for this appointment
+        if (appointmentData?._id !== activeCall.appointmentId) {
+          setLoadingAppointment(true);
+          try {
+            const response = await axios.get(
+              `${API_BASE_URL}/api/bookings/${activeCall.appointmentId}`,
+              { withCredentials: true }
+            );
+            if (response.data.success) {
+              setAppointmentData(response.data.booking);
+            }
+          } catch (error) {
+            console.error('Error fetching appointment:', error);
+          } finally {
+            setLoadingAppointment(false);
+          }
+        }
+      } else {
+        setAppointmentData(null);
+      }
+    };
+
+    fetchAppointment();
+  }, [activeCall?.appointmentId]);
+
+  // Get other party name for active call
+  const getOtherPartyName = () => {
+    if (!appointmentData || !currentUser) return 'Calling...';
+    
+    if (appointmentData.buyerId?._id === currentUser._id) {
+      return appointmentData.sellerId?.username || 'Calling...';
+    }
+    return appointmentData.buyerId?.username || 'Calling...';
+  };
+
+  return (
+    <>
+      {/* Incoming Call Modal - Shows on any page */}
+      <IncomingCallModal
+        call={incomingCall}
+        onAccept={acceptCall}
+        onReject={rejectCall}
+      />
+
+      {/* Active Call Modal - Shows on any page */}
+      {callState === 'active' && activeCall && (
+        <ActiveCallModal
+          callType={activeCall.callType}
+          otherPartyName={getOtherPartyName()}
+          isMuted={isMuted}
+          isVideoEnabled={isVideoEnabled}
+          callDuration={callDuration}
+          localVideoRef={localVideoRef}
+          remoteVideoRef={remoteVideoRef}
+          onToggleMute={toggleMute}
+          onToggleVideo={toggleVideo}
+          onEndCall={endCall}
+        />
+      )}
+
+      {/* Waiting Screen for Caller - Shows when ringing */}
+      {callState === 'ringing' && activeCall && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[9998]">
+          <div className="text-center text-white animate-fade-in">
+            <div className={`w-32 h-32 rounded-full mx-auto mb-6 flex items-center justify-center ${
+              activeCall.callType === 'video' ? 'bg-blue-500' : 'bg-green-500'
+            } animate-pulse shadow-2xl`}>
+              {activeCall.callType === 'video' ? (
+                <svg className="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
+                </svg>
+              ) : (
+                <svg className="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                </svg>
+              )}
+            </div>
+            <h3 className="text-3xl font-bold mb-2 animate-pulse">Calling...</h3>
+            <p className="text-xl text-gray-300">
+              Waiting for answer
+            </p>
+            <div className="mt-8 flex justify-center gap-2">
+              <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+              <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+export default GlobalCallModals;
+

@@ -1756,14 +1756,28 @@ const TURN_CONFIG = {
 };
 ```
 
-#### Step 5.3: Environment Variables
+#### Step 5.3: Environment Variables (Optional)
+
+**Note**: STUN servers are already hardcoded in `useCall.js`. Only configure these if you want to use custom STUN/TURN servers via environment variables.
+
 ```javascript
-// .env file
-REACT_APP_STUN_SERVERS=stun:stun.l.google.com:19302
-REACT_APP_TURN_SERVER_URL=
-REACT_APP_TURN_USERNAME=
-REACT_APP_TURN_CREDENTIAL=
+// .env file (in web/ directory)
+// For Vite, use VITE_ prefix instead of REACT_APP_
+VITE_STUN_SERVERS=stun:stun.l.google.com:19302,stun:stun1.l.google.com:19302
+VITE_TURN_SERVER_URL=                  // Optional: Only if you need TURN (e.g., turn:your-server.metered.ca:80)
+VITE_TURN_USERNAME=                    // Optional: Your TURN server username
+VITE_TURN_CREDENTIAL=                  // Optional: Your TURN server password
 ```
+
+**How to Get TURN Server Credentials:**
+- **Metered.ca** (Free tier): https://www.metered.ca/tools/openrelay/ ⭐ Recommended
+- **Twilio**: https://www.twilio.com/try-twilio
+- **Xirsys**: https://xirsys.com/
+- **Run your own**: Install coturn on a VPS
+
+**See `STUN_TURN_SETUP_GUIDE.md` for detailed instructions.**
+
+**Current Status**: STUN servers are already configured and working. TURN is optional and only needed if you experience connection issues in strict networks.
 
 ---
 

@@ -18,9 +18,7 @@ import { exportEnhancedChatToPDF } from '../utils/pdfExport';
 import ExportChatModal from '../components/ExportChatModal';
 import axios from 'axios';
 import PaymentModal from '../components/PaymentModal';
-import IncomingCallModal from '../components/IncomingCallModal';
-import ActiveCallModal from '../components/ActiveCallModal';
-import { useCall } from '../hooks/useCall';
+import { useCallContext } from '../contexts/CallContext';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -122,7 +120,7 @@ export default function MyAppointments() {
   const [exportAppointment, setExportAppointment] = useState(null);
   const [exportComments, setExportComments] = useState([]);
 
-  // Call functionality
+  // Call functionality - using global context
   const {
     callState,
     incomingCall,
@@ -140,7 +138,7 @@ export default function MyAppointments() {
     endCall,
     toggleMute: toggleCallMute,
     toggleVideo
-  } = useCall();
+  } = useCallContext();
 
   // Handle initiate call
   const handleInitiateCall = async (appointment, callType, receiverId) => {
@@ -1839,37 +1837,7 @@ export default function MyAppointments() {
       />
       ), document.body)}
       
-      {/* Incoming Call Modal */}
-      <IncomingCallModal
-        call={incomingCall}
-        onAccept={acceptCall}
-        onReject={rejectCall}
-      />
-
-      {/* Active Call Modal */}
-      {callState === 'active' && activeCall && (
-        <ActiveCallModal
-          callType={activeCall.callType}
-          otherPartyName={(() => {
-            // Find the current appointment from appointments list
-            const appointment = appointments.find(a => a._id === activeCall.appointmentId) || 
-                              allAppointments.find(a => a._id === activeCall.appointmentId);
-            if (!appointment || !currentUser) return 'Calling...';
-            if (appointment.buyerId._id === currentUser._id) {
-              return appointment.sellerId?.username || 'Calling...';
-            }
-            return appointment.buyerId?.username || 'Calling...';
-          })()}
-          isMuted={isCallMuted}
-          isVideoEnabled={isVideoEnabled}
-          callDuration={callDuration}
-          localVideoRef={localVideoRef}
-          remoteVideoRef={remoteVideoRef}
-          onToggleMute={toggleCallMute}
-          onToggleVideo={toggleVideo}
-          onEndCall={endCall}
-        />
-      )}
+      {/* Call modals are now global - rendered in App.jsx via GlobalCallModals */}
       
     </div>
   );
