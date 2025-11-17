@@ -714,6 +714,10 @@ export default function AdminAppointments() {
   const [exportAppointment, setExportAppointment] = useState(null);
   const [exportComments, setExportComments] = useState([]);
 
+  // Call History modal state
+  const [showCallHistoryModal, setShowCallHistoryModal] = useState(false);
+  const [callHistoryAppointmentId, setCallHistoryAppointmentId] = useState(null);
+
    // Lock body scroll when admin action modals are open (cancel, reinitiate, archive, unarchive)
    useEffect(() => {
      const shouldLock = showCancelModal || showReinitiateModal || showArchiveModal || showUnarchiveModal;
