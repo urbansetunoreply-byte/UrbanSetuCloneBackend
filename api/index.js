@@ -717,13 +717,16 @@ io.on('connection', (socket) => {
       const callerId = socket.user?._id?.toString();
       const call = await CallHistory.findOne({ callId });
       
-      if (call && call.callerId.toString() === callerId && call.status === 'initiated') {
+      // Allow cancellation if call is initiated or ringing (caller can cancel before answer)
+      if (call && call.callerId.toString() === callerId && 
+          (call.status === 'initiated' || call.status === 'ringing')) {
         call.status = 'cancelled';
         call.endTime = new Date();
         await call.save();
         
         const activeCall = activeCalls.get(callId);
         if (activeCall) {
+          // Emit to receiver to close incoming call modal
           io.to(`user_${call.receiverId}`).emit('call-cancelled', { callId });
           activeCalls.delete(callId);
         }

@@ -133,12 +133,17 @@ export const useCall = () => {
       // When caller cancels, receiver should close incoming call modal
       if (incomingCall && incomingCall.callId === data.callId) {
         setIncomingCall(null);
-        endCall();
+        // Don't call endCall here to avoid double cleanup, just clear incoming call state
+        setCallState(null);
+        setActiveCall(null);
         toast.info('Call was cancelled');
       }
       // When caller cancels, caller should close ringing screen
-      if (activeCall && activeCall.callId === data.callId && callState === 'ringing') {
-        endCall();
+      if (activeCall && activeCall.callId === data.callId && 
+          (callState === 'ringing' || callState === 'initiating')) {
+        // endCall was already called, just ensure state is cleared
+        setCallState(null);
+        setActiveCall(null);
         toast.info('Call cancelled');
       }
     };
@@ -524,6 +529,11 @@ export const useCall = () => {
 
   // End call
   const endCall = async () => {
+    // Cancel call first if still initiating/ringing (before clearing state)
+    if (activeCall?.callId && (callState === 'initiating' || callState === 'ringing')) {
+      socket.emit('call-cancel', { callId: activeCall.callId });
+    }
+
     // Stop local stream
     if (localStream) {
       localStream.getTracks().forEach(track => track.stop());
@@ -556,8 +566,8 @@ export const useCall = () => {
       durationIntervalRef.current = null;
     }
     
-    // Notify backend if call was active
-    if (activeCall?.callId) {
+    // Notify backend if call was active (not just ringing)
+    if (activeCall?.callId && callState === 'active') {
       try {
         await fetch(`${API_BASE_URL}/api/calls/end`, {
           method: 'POST',
@@ -569,16 +579,13 @@ export const useCall = () => {
         console.error('Error ending call on server:', error);
       }
     }
-
-    // Cancel call if still initiating/ringing
-    if (activeCall?.callId && (callState === 'initiating' || callState === 'ringing')) {
-      socket.emit('call-cancel', { callId: activeCall.callId });
-    }
     
+    // Clear all call state
     setCallState(null);
     setCallDuration(0);
     callStartTimeRef.current = null;
     setActiveCall(null);
+    setIncomingCall(null); // Clear incoming call if present (for receiver side)
     pendingOfferRef.current = null;
     setRemoteIsMuted(false);
     setRemoteVideoEnabled(true);
