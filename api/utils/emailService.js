@@ -9859,5 +9859,149 @@ export const sendDataExportEmail = async (email, username, jsonDownloadUrl, txtD
   }
 };
 
+// Send call initiated email
+export const sendCallInitiatedEmail = async (toEmail, { callType, callerName, propertyName }) => {
+  try {
+    const subject = `${callerName} is calling you - ${callType === 'video' ? 'Video' : 'Audio'} Call`;
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2563eb; margin: 0; font-size: 28px;">UrbanSetu</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Incoming ${callType === 'video' ? 'Video' : 'Audio'} Call</p>
+          </div>
+          
+          <div style="background-color: #eff6ff; padding: 25px; border-radius: 8px; border-left: 4px solid #2563eb; margin-bottom: 20px;">
+            <h2 style="color: #1e40af; margin: 0 0 15px 0; font-size: 20px;">📞 Incoming Call</h2>
+            <p style="color: #1e40af; margin: 0 0 15px 0; line-height: 1.6;">
+              <strong>${callerName}</strong> is calling you regarding property: <strong>${propertyName}</strong>
+            </p>
+            <p style="color: #3b82f6; margin: 0; font-size: 14px;">
+              Please check your UrbanSetu chat to answer the call.
+            </p>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              This is an automated notification from UrbanSetu.
+            </p>
+            <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">
+              © 2025 UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    return await sendEmailWithRetry({
+      to: toEmail,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending call initiated email:', error);
+    throw error;
+  }
+};
+
+// Send missed call email
+export const sendCallMissedEmail = async (toEmail, { callType, callerName, propertyName, appointmentDate }) => {
+  try {
+    const subject = `Missed ${callType === 'video' ? 'Video' : 'Audio'} Call from ${callerName}`;
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2563eb; margin: 0; font-size: 28px;">UrbanSetu</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Missed Call</p>
+          </div>
+          
+          <div style="background-color: #fef2f2; padding: 25px; border-radius: 8px; border-left: 4px solid #ef4444; margin-bottom: 20px;">
+            <h2 style="color: #991b1b; margin: 0 0 15px 0; font-size: 20px;">📞 Missed Call</h2>
+            <p style="color: #991b1b; margin: 0 0 15px 0; line-height: 1.6;">
+              You missed a ${callType === 'video' ? 'video' : 'audio'} call from <strong>${callerName}</strong>.
+            </p>
+            <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
+              <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Property:</strong> ${propertyName}</p>
+              ${appointmentDate ? `<p style="color: #4b5563; margin: 0;"><strong>Appointment Date:</strong> ${new Date(appointmentDate).toLocaleDateString()}</p>` : ''}
+            </div>
+            <p style="color: #dc2626; margin: 15px 0 0; font-size: 14px;">
+              You can call back or send a message through your UrbanSetu chat.
+            </p>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              This is an automated notification from UrbanSetu.
+            </p>
+            <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">
+              © 2025 UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    return await sendEmailWithRetry({
+      to: toEmail,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending missed call email:', error);
+    throw error;
+  }
+};
+
+// Send call ended email
+export const sendCallEndedEmail = async (toEmail, { callType, duration, callerName, receiverName, propertyName }) => {
+  try {
+    const otherPersonName = receiverName || callerName;
+    const subject = `Call Ended - ${callType === 'video' ? 'Video' : 'Audio'} Call Summary`;
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2563eb; margin: 0; font-size: 28px;">UrbanSetu</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Call Summary</p>
+          </div>
+          
+          <div style="background-color: #f0fdf4; padding: 25px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 20px;">
+            <h2 style="color: #065f46; margin: 0 0 15px 0; font-size: 20px;">✅ Call Summary</h2>
+            <p style="color: #065f46; margin: 0 0 15px 0; line-height: 1.6;">
+              Your ${callType === 'video' ? 'video' : 'audio'} call with <strong>${otherPersonName}</strong> has ended.
+            </p>
+            <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
+              <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Property:</strong> ${propertyName}</p>
+              <p style="color: #4b5563; margin: 0;"><strong>Duration:</strong> ${duration}</p>
+            </div>
+            <p style="color: #059669; margin: 15px 0 0; font-size: 14px;">
+              You can view the call history in your UrbanSetu account.
+            </p>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              This is an automated notification from UrbanSetu.
+            </p>
+            <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">
+              © 2025 UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    return await sendEmailWithRetry({
+      to: toEmail,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending call ended email:', error);
+    throw error;
+  }
+};
+
 // Export the current transporter (will be set during initialization)
 export default currentTransporter;

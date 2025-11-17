@@ -45,6 +45,10 @@ import advancedAIRecommendationRouter from "./routes/advancedAIRecommendation.ro
 import esgAnalyticsRouter from "./routes/esgAnalytics.route.js";
 import esgAIRecommendationRouter from "./routes/esgAIRecommendation.route.js";
 import visitorRouter from "./routes/visitor.route.js";
+import callRouter from "./routes/call.route.js";
+import { generateCallId } from "./routes/call.route.js";
+import CallHistory from "./models/callHistory.model.js";
+import { sendCallMissedEmail } from "./utils/emailService.js";
 // Use S3 deployment route if AWS is configured, otherwise fallback to Cloudinary
 let deploymentRouter;
 try {
@@ -239,6 +243,9 @@ let lastSeenTimes = new Map(); // Track last seen times for users
 app.set('onlineUsers', onlineUsers);
 app.set('lastSeenTimes', lastSeenTimes);
 
+// Store active calls (in-memory) - shared across all socket connections
+const activeCalls = new Map(); // callId -> { callerSocketId, receiverSocketId, appointmentId, ... }
+
 // Register user appointments socket logic for delivered ticks
 registerUserAppointmentsSocket(io);
 
@@ -412,6 +419,37 @@ io.on('connection', (socket) => {
       socket.leave(`admin_${socket.adminId}`);
     }
     
+    // Cleanup calls on disconnect - end any active calls for this socket
+    for (const [callId, activeCall] of activeCalls.entries()) {
+      if (activeCall.callerSocketId === socket.id || 
+          activeCall.receiverSocketId === socket.id) {
+        // Mark call as ended
+        CallHistory.findOne({ callId }).then(call => {
+          if (call && call.status !== 'ended') {
+            const endTime = new Date();
+            const duration = Math.floor((endTime - call.startTime) / 1000);
+            call.status = 'ended';
+            call.endTime = endTime;
+            call.duration = duration;
+            call.endedBy = socket.user?._id || call.callerId;
+            call.save();
+          }
+        }).catch(err => {
+          console.error('Error ending call on disconnect:', err);
+        });
+        
+        // Notify other party
+        const otherSocketId = activeCall.callerSocketId === socket.id 
+          ? activeCall.receiverSocketId 
+          : activeCall.callerSocketId;
+        if (otherSocketId) {
+          io.to(otherSocketId).emit('call-ended', { callId });
+        }
+        
+        activeCalls.delete(callId);
+      }
+    }
+    
     if (socket.onlineTimeout) clearTimeout(socket.onlineTimeout);
   });
 
@@ -431,6 +469,228 @@ io.on('connection', (socket) => {
       adminSocket.join(`appointment_${data.appointment._id}`);
     }
   });
+
+  // ========== CALL HANDLERS ==========
+
+  // Call initiation handler
+  socket.on('call-initiate', async ({ appointmentId, receiverId, callType }) => {
+    try {
+      const callerId = socket.user?._id?.toString();
+      if (!callerId) {
+        return socket.emit('call-error', { message: 'Not authenticated' });
+      }
+      
+      // Validate appointment and authorization
+      const appointment = await Booking.findById(appointmentId);
+      if (!appointment) {
+        return socket.emit('call-error', { message: 'Appointment not found' });
+      }
+      
+      // Check if caller is buyer or seller
+      if (appointment.buyerId.toString() !== callerId && 
+          appointment.sellerId.toString() !== callerId) {
+        return socket.emit('call-error', { message: 'Unauthorized' });
+      }
+      
+      // Determine receiver
+      const actualReceiverId = appointment.buyerId.toString() === callerId 
+        ? appointment.sellerId.toString() 
+        : appointment.buyerId.toString();
+      
+      if (actualReceiverId !== receiverId) {
+        return socket.emit('call-error', { message: 'Invalid receiver' });
+      }
+      
+      // Create call record
+      const callId = generateCallId();
+      const callHistory = new CallHistory({
+        callId,
+        appointmentId,
+        callerId,
+        receiverId: actualReceiverId,
+        callType,
+        status: 'initiated',
+        callerIP: socket.handshake.address
+      });
+      await callHistory.save();
+      
+      // Store active call
+      activeCalls.set(callId, {
+        callerSocketId: socket.id,
+        receiverId: actualReceiverId,
+        appointmentId,
+        callType,
+        startTime: new Date()
+      });
+      
+      // Send call invitation to receiver
+      io.to(`user_${actualReceiverId}`).emit('incoming-call', {
+        callId,
+        appointmentId,
+        callerId,
+        callType,
+        callerName: socket.user?.username || 'Unknown'
+      });
+      
+      // Send confirmation to caller
+      socket.emit('call-initiated', { callId, status: 'ringing' });
+      
+      // Set timeout for missed call (30 seconds)
+      setTimeout(async () => {
+        const call = await CallHistory.findOne({ callId });
+        if (call && (call.status === 'initiated' || call.status === 'ringing')) {
+          call.status = 'missed';
+          call.endTime = new Date();
+          await call.save();
+          
+          // Remove from active calls
+          activeCalls.delete(callId);
+          
+          // Emit missed call event
+          io.to(`user_${callerId}`).emit('call-missed', { callId });
+          io.to(`user_${actualReceiverId}`).emit('call-missed', { callId });
+          
+          // Send missed call email
+          try {
+            const receiver = await User.findById(actualReceiverId);
+            const appointment = await Booking.findById(appointmentId)
+              .populate('listingId', 'name');
+            const caller = await User.findById(callerId);
+            
+            if (receiver && appointment && caller) {
+              await sendCallMissedEmail(receiver.email, {
+                callType,
+                callerName: caller.username,
+                propertyName: appointment.listingId?.name || appointment.propertyName,
+                appointmentDate: appointment.date
+              });
+            }
+          } catch (emailError) {
+            console.error("Error sending missed call email:", emailError);
+          }
+        }
+      }, 30000); // 30 seconds timeout
+      
+    } catch (err) {
+      console.error("Error initiating call:", err);
+      socket.emit('call-error', { message: 'Failed to initiate call' });
+    }
+  });
+
+  // Call accept handler
+  socket.on('call-accept', async ({ callId }) => {
+    try {
+      const receiverId = socket.user?._id?.toString();
+      if (!receiverId) {
+        return socket.emit('call-error', { message: 'Not authenticated' });
+      }
+      
+      const call = await CallHistory.findOne({ callId });
+      if (!call) {
+        return socket.emit('call-error', { message: 'Call not found' });
+      }
+      
+      if (call.receiverId.toString() !== receiverId) {
+        return socket.emit('call-error', { message: 'Unauthorized' });
+      }
+      
+      // Update call status
+      call.status = 'accepted';
+      call.receiverIP = socket.handshake.address;
+      await call.save();
+      
+      // Update active call
+      const activeCall = activeCalls.get(callId);
+      if (activeCall) {
+        activeCall.receiverSocketId = socket.id;
+        activeCalls.set(callId, activeCall);
+        
+        // Notify caller that call was accepted
+        io.to(activeCall.callerSocketId).emit('call-accepted', {
+          callId,
+          receiverSocketId: socket.id
+        });
+        
+        // Notify receiver
+        socket.emit('call-accepted', { callId });
+      }
+    } catch (err) {
+      console.error("Error accepting call:", err);
+      socket.emit('call-error', { message: 'Failed to accept call' });
+    }
+  });
+
+  // Call reject handler
+  socket.on('call-reject', async ({ callId }) => {
+    try {
+      const receiverId = socket.user?._id?.toString();
+      const call = await CallHistory.findOne({ callId });
+      
+      if (call && call.receiverId.toString() === receiverId) {
+        call.status = 'rejected';
+        call.endTime = new Date();
+        await call.save();
+        
+        const activeCall = activeCalls.get(callId);
+        if (activeCall) {
+          io.to(activeCall.callerSocketId).emit('call-rejected', { callId });
+          activeCalls.delete(callId);
+        }
+      }
+    } catch (err) {
+      console.error("Error rejecting call:", err);
+    }
+  });
+
+  // Call cancel handler
+  socket.on('call-cancel', async ({ callId }) => {
+    try {
+      const callerId = socket.user?._id?.toString();
+      const call = await CallHistory.findOne({ callId });
+      
+      if (call && call.callerId.toString() === callerId && call.status === 'initiated') {
+        call.status = 'cancelled';
+        call.endTime = new Date();
+        await call.save();
+        
+        const activeCall = activeCalls.get(callId);
+        if (activeCall) {
+          io.to(`user_${call.receiverId}`).emit('call-cancelled', { callId });
+          activeCalls.delete(callId);
+        }
+      }
+    } catch (err) {
+      console.error("Error cancelling call:", err);
+    }
+  });
+
+  // WebRTC signaling events
+  socket.on('webrtc-offer', ({ callId, offer }) => {
+    const activeCall = activeCalls.get(callId);
+    if (activeCall && socket.id === activeCall.callerSocketId) {
+      io.to(activeCall.receiverSocketId).emit('webrtc-offer', { callId, offer });
+    }
+  });
+
+  socket.on('webrtc-answer', ({ callId, answer }) => {
+    const activeCall = activeCalls.get(callId);
+    if (activeCall && socket.id === activeCall.receiverSocketId) {
+      io.to(activeCall.callerSocketId).emit('webrtc-answer', { callId, answer });
+    }
+  });
+
+  socket.on('ice-candidate', ({ callId, candidate }) => {
+    const activeCall = activeCalls.get(callId);
+    if (activeCall) {
+      const targetSocketId = socket.id === activeCall.callerSocketId 
+        ? activeCall.receiverSocketId 
+        : activeCall.callerSocketId;
+      if (targetSocketId) {
+        io.to(targetSocketId).emit('ice-candidate', { callId, candidate });
+      }
+    }
+  });
+
 });
 
 // Health check endpoint for Render deployment
@@ -508,6 +768,7 @@ app.use("/api/payments", paymentRouter);
 app.use("/api/sessions", sessionRouter);
 app.use("/api/session-management", sessionManagementRouter);
 app.use("/api/visitors", visitorRouter);
+app.use("/api/calls", callRouter);
 app.use("/api/fraud", fraudRouter);
 app.use("/api/email-monitor", emailMonitorRouter);
 app.use("/api/auth", accountRevocationRouter);
