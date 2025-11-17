@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { FaTrash, FaSearch, FaPen, FaCheck, FaTimes, FaUserShield, FaUser, FaEnvelope, FaPhone, FaVideo, FaArchive, FaUndo, FaCommentDots, FaCheckDouble, FaBan, FaPaperPlane, FaCalendar, FaLightbulb, FaCopy, FaEllipsisV, FaFlag, FaCircle, FaInfoCircle, FaSync, FaStar, FaRegStar, FaThumbtack, FaCalendarAlt, FaCheckSquare, FaDownload, FaDollarSign, FaCreditCard, FaSpinner, FaExclamationTriangle, FaMoneyBill } from "react-icons/fa";
+import { FaTrash, FaSearch, FaPen, FaCheck, FaTimes, FaUserShield, FaUser, FaEnvelope, FaPhone, FaVideo, FaArchive, FaUndo, FaCommentDots, FaCheckDouble, FaBan, FaPaperPlane, FaCalendar, FaLightbulb, FaCopy, FaEllipsisV, FaFlag, FaCircle, FaInfoCircle, FaSync, FaStar, FaRegStar, FaThumbtack, FaCalendarAlt, FaCheckSquare, FaDownload, FaDollarSign, FaCreditCard, FaSpinner, FaExclamationTriangle, FaMoneyBill, FaHistory } from "react-icons/fa";
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
 import UserAvatar from '../components/UserAvatar';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
@@ -19,6 +19,7 @@ import ExportChatModal from '../components/ExportChatModal';
 import axios from 'axios';
 import PaymentModal from '../components/PaymentModal';
 import { useCallContext } from '../contexts/CallContext';
+import CallHistoryModal from '../components/CallHistoryModal';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -2272,6 +2273,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   
   // Chat options menu state
   const [showChatOptionsMenu, setShowChatOptionsMenu] = useState(false);
+  const [showCallHistoryModal, setShowCallHistoryModal] = useState(false);
+  const [callHistoryAppointmentId, setCallHistoryAppointmentId] = useState(null);
   
   // Multi-select message states
   const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -7448,6 +7451,19 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                   Export Chat Transcript (PDF)
                                 </button>
                               )}
+
+                              {/* Call History option */}
+                              <button
+                                className="w-full px-4 py-2 text-left text-sm text-purple-600 hover:bg-purple-50 flex items-center gap-2"
+                                onClick={() => {
+                                  setCallHistoryAppointmentId(appt._id);
+                                  setShowCallHistoryModal(true);
+                                  setShowChatOptionsMenu(false);
+                                }}
+                              >
+                                <FaHistory className="text-sm" />
+                                Call History
+                              </button>
 
                               {/* Line divider */}
                               <div className="border-t border-gray-200 my-1"></div>
@@ -12738,6 +12754,18 @@ function PaymentStatusCell({ appointment, isBuyer }) {
           </div>
         </div>
       )}
+
+      {/* Call History Modal */}
+      <CallHistoryModal
+        appointmentId={callHistoryAppointmentId}
+        isOpen={showCallHistoryModal}
+        onClose={() => {
+          setShowCallHistoryModal(false);
+          setCallHistoryAppointmentId(null);
+        }}
+        currentUser={currentUser}
+        isAdmin={false}
+      />
 
     </div>
   );

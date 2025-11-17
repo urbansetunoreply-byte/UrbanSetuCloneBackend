@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { createPortal } from 'react-dom';
-import { FaTrash, FaSearch, FaPen, FaPaperPlane, FaUser, FaEnvelope, FaCalendar, FaPhone, FaVideo, FaUserShield, FaArchive, FaUndo, FaCommentDots, FaCheck, FaCheckDouble, FaBan, FaTimes, FaLightbulb, FaCopy, FaEllipsisV, FaInfoCircle, FaSync, FaStar, FaRegStar, FaFlag, FaCalendarAlt, FaCheckSquare, FaDownload, FaSpinner, FaDollarSign } from "react-icons/fa";
+import { FaTrash, FaSearch, FaPen, FaPaperPlane, FaUser, FaEnvelope, FaCalendar, FaPhone, FaVideo, FaUserShield, FaArchive, FaUndo, FaCommentDots, FaCheck, FaCheckDouble, FaBan, FaTimes, FaLightbulb, FaCopy, FaEllipsisV, FaInfoCircle, FaSync, FaStar, FaRegStar, FaFlag, FaCalendarAlt, FaCheckSquare, FaDownload, FaSpinner, FaDollarSign, FaHistory } from "react-icons/fa";
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
 import UserAvatar from '../components/UserAvatar';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
@@ -15,6 +15,7 @@ import { socket } from "../utils/socket";
 import { useSoundEffects } from "../components/SoundEffects";
 import { exportEnhancedChatToPDF } from '../utils/pdfExport';
 import ExportChatModal from '../components/ExportChatModal';
+import CallHistoryModal from '../components/CallHistoryModal';
 import axios from 'axios';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from "../redux/user/userSlice";
@@ -1969,6 +1970,9 @@ export default function AdminAppointments() {
                         setShouldOpenChatFromNotification(false);
                         setActiveChatAppointmentId(null);
                       }}
+                      // Call History Modal props
+                      setShowCallHistoryModal={setShowCallHistoryModal}
+                      setCallHistoryAppointmentId={setCallHistoryAppointmentId}
                     />
                   ))}
                 </tbody>
@@ -2405,6 +2409,18 @@ export default function AdminAppointments() {
         messageCount={exportComments.filter(msg => !msg.deleted && (msg.message?.trim() || msg.imageUrl || msg.audioUrl || msg.videoUrl || msg.documentUrl)).length}
         imageCount={exportComments.filter(msg => msg.imageUrl && !msg.deleted).length}
       />
+
+      {/* Call History Modal - Global for all chat modals */}
+      <CallHistoryModal
+        appointmentId={callHistoryAppointmentId}
+        isOpen={showCallHistoryModal}
+        onClose={() => {
+          setShowCallHistoryModal(false);
+          setCallHistoryAppointmentId(null);
+        }}
+        currentUser={currentUser}
+        isAdmin={true}
+      />
     </div>
   );
 }
@@ -2653,7 +2669,10 @@ function AdminAppointmentRow({
   // URL-based chat opening props
   activeChatAppointmentId,
   shouldOpenChatFromNotification,
-  onChatOpened
+  onChatOpened,
+  // Call History Modal props
+  setShowCallHistoryModal,
+  setCallHistoryAppointmentId
 }) {
   const navigate = useNavigate();
   const params = useParams();
@@ -2705,6 +2724,8 @@ function AdminAppointmentRow({
   const [hiddenMessageIds, setHiddenMessageIds] = useLocalState(() => getLocallyHiddenIds(appt._id));
   const [headerOptionsMessageId, setHeaderOptionsMessageId] = useLocalState(null);
   const [showHeaderMoreMenu, setShowHeaderMoreMenu] = useLocalState(false);
+  const [showCallHistoryModal, setShowCallHistoryModal] = useLocalState(false);
+  const [callHistoryAppointmentId, setCallHistoryAppointmentId] = useLocalState(null);
   const scrollTimeoutRef = React.useRef(null);
   const [showDeleteChatModal, setShowDeleteChatModal] = useLocalState(false);
   // Reports modal state (admin-wide)
@@ -6511,6 +6532,20 @@ function AdminAppointmentRow({
                               >
                                 <FaDownload className="text-sm" />
                                 Export Chat Transcript (PDF)
+                              </button>
+                            )}
+                            {/* Call History option */}
+                            {setShowCallHistoryModal && setCallHistoryAppointmentId && (
+                              <button
+                                className="w-full px-4 py-2 text-left text-sm text-purple-600 hover:bg-purple-50 flex items-center gap-2"
+                                onClick={() => {
+                                  setCallHistoryAppointmentId(appt._id);
+                                  setShowCallHistoryModal(true);
+                                  setShowChatOptionsMenu(false);
+                                }}
+                              >
+                                <FaHistory className="text-sm" />
+                                Call History
                               </button>
                             )}
                             {/* User details option for buyer */}
