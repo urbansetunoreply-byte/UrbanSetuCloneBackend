@@ -7810,111 +7810,165 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                       </div>
                     </div>
                   )}
-                  {/* Call History Display */}
-                  {callHistory.length > 0 && callHistory.map((call) => {
+                  {(() => {
+                    // Helper function to format call duration (WhatsApp style: M:SS or H:MM:SS)
                     const formatCallDuration = (seconds) => {
                       if (!seconds || seconds === 0) return 'N/A';
                       const hours = Math.floor(seconds / 3600);
                       const minutes = Math.floor((seconds % 3600) / 60);
-                      const secs = seconds % 60;
+                      const secs = Math.floor(seconds % 60);
                       if (hours > 0) {
                         return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
                       }
                       return `${minutes}:${secs.toString().padStart(2, '0')}`;
                     };
-                    
-                    const isCaller = call.callerId?._id === currentUser._id || call.callerId === currentUser._id;
-                    const otherPartyName = isCaller 
-                      ? (call.receiverId?.username || 'Unknown')
-                      : (call.callerId?.username || 'Unknown');
-                    
-                    return (
-                      <div key={call._id} className="flex items-center justify-center gap-2 p-3 bg-gray-100 rounded-lg mb-3 mx-4">
-                        <div className={`flex items-center gap-2 ${call.callType === 'video' ? 'text-blue-500' : 'text-green-500'}`}>
-                          {call.callType === 'video' ? <FaVideo className="text-sm" /> : <FaPhone className="text-sm" />}
-                        </div>
-                        <div className="flex-1 text-sm text-gray-700">
-                          <p>
-                            <span className="font-semibold">{isCaller ? 'You' : otherPartyName}</span>
-                            {' '}called{' '}
-                            <span className="font-semibold">{isCaller ? otherPartyName : 'you'}</span>
-                            {call.duration > 0 && (
-                              <> • {formatCallDuration(call.duration)}</>
-                            )}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {new Date(call.startTime).toLocaleString()} • {call.status}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  
-                  {filteredComments.length === 0 && callHistory.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full text-center py-8">
-                      <FaCommentDots className="text-gray-300 text-4xl mb-3" />
-                      <p className="text-gray-500 font-medium text-sm">No messages yet</p>
-                      <p className="text-gray-400 text-xs mt-1">Start the conversation and connect with the other party</p>
-                    </div>
-                  ) : (
-                    // Visible window for infinite scroll
-                    (filteredComments.slice(Math.max(0, filteredComments.length - Math.min(visibleCount, filteredComments.length)))).map((c, mapIndex, arr) => {
-                    const index = filteredComments.length - arr.length + mapIndex;
-                    const isMe = c.senderEmail === currentUser.email;
-                    const isEditing = editingComment === c._id;
-                    const currentDate = new Date(c.timestamp);
-                    const previousDate = index > 0 ? new Date(filteredComments[index - 1].timestamp) : null;
-                    const isNewDay = previousDate ? currentDate.toDateString() !== previousDate.toDateString() : true;
-                    const formattedDate = currentDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' });
 
-                    return (
-                      <React.Fragment key={c._id || index}>
-                        {isNewDay && (
-                          <div className="w-full flex justify-center my-2">
-                            <span className="bg-blue-600 text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white">{getDateLabel(currentDate)}</span>
-                          </div>
-                        )}
-                        {/* New messages divider: only right after opening when unread exists */}
-                        {showUnreadDividerOnOpen && unreadNewMessages > 0 && index === filteredComments.length - unreadNewMessages && (
-                          <div className="w-full flex items-center my-2">
-                            <div className="flex-1 h-px bg-gray-300"></div>
-                            <span className="mx-2 text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full border border-red-200">
-                              {unreadNewMessages} unread message{unreadNewMessages > 1 ? 's' : ''}
-                            </span>
-                            <div className="flex-1 h-px bg-gray-300"></div>
-                          </div>
-                        )}
-                        <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-fadeInChatBubble`} style={{ animationDelay: `${0.03 * index}s` }}>
-                          {/* Selection checkbox - only show in selection mode */}
-                          {isSelectionMode && (
-                            <div className={`flex items-start ${isMe ? 'order-2 ml-2' : 'order-1 mr-2'}`}>
-                              <input
-                                type="checkbox"
-                                checked={selectedMessages.some(msg => msg._id === c._id)}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    setSelectedMessages(prev => [...prev, c]);
-                                  } else {
-                                    setSelectedMessages(prev => prev.filter(msg => msg._id !== c._id));
-                                  }
-                                }}
-                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                              />
+                    // Merge call history with chat messages chronologically
+                    const mergedTimeline = [
+                      // Convert call history to timeline items
+                      ...callHistory.map(call => ({
+                        type: 'call',
+                        id: call._id || call.callId,
+                        timestamp: new Date(call.startTime || call.createdAt),
+                        call: call,
+                        // For sorting
+                        sortTime: new Date(call.startTime || call.createdAt).getTime()
+                      })),
+                      // Convert chat messages to timeline items
+                      ...filteredComments.map(msg => ({
+                        type: 'message',
+                        id: msg._id,
+                        timestamp: new Date(msg.timestamp),
+                        message: msg,
+                        // For sorting
+                        sortTime: new Date(msg.timestamp).getTime()
+                      }))
+                    ].sort((a, b) => a.sortTime - b.sortTime); // Sort chronologically
+
+                    // If no items at all
+                    if (mergedTimeline.length === 0) {
+                      return (
+                        <div className="flex flex-col items-center justify-center h-full text-center py-8">
+                          <FaCommentDots className="text-gray-300 text-4xl mb-3" />
+                          <p className="text-gray-500 font-medium text-sm">No messages yet</p>
+                          <p className="text-gray-400 text-xs mt-1">Start the conversation and connect with the other party</p>
+                        </div>
+                      );
+                    }
+
+                    // Render visible items
+                    const visibleItems = mergedTimeline.slice(Math.max(0, mergedTimeline.length - Math.min(visibleCount, mergedTimeline.length)));
+                    
+                    return visibleItems.map((item, mapIndex) => {
+                      const index = mergedTimeline.length - visibleItems.length + mapIndex;
+                      const previousItem = index > 0 ? mergedTimeline[index - 1] : null;
+                      const currentDate = item.timestamp;
+                      const previousDate = previousItem ? previousItem.timestamp : null;
+                      const isNewDay = previousDate ? currentDate.toDateString() !== previousDate.toDateString() : true;
+
+                      // If it's a call, render call history item
+                      if (item.type === 'call') {
+                        const call = item.call;
+                        const isCaller = call.callerId?._id === currentUser._id || call.callerId === currentUser._id;
+                        const otherPartyName = isCaller 
+                          ? (call.receiverId?.username || 'Unknown')
+                          : (call.callerId?.username || 'Unknown');
+                        
+                        return (
+                          <React.Fragment key={`call-${call._id || call.callId}`}>
+                            {isNewDay && (
+                              <div className="w-full flex justify-center my-2">
+                                <span className="bg-blue-600 text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white">
+                                  {getDateLabel(currentDate)}
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex items-center justify-center my-2">
+                              <div className="flex flex-col items-center gap-1 px-4 py-2">
+                                <div className="flex items-center gap-2 text-sm text-gray-700">
+                                  {call.callType === 'video' ? (
+                                    <FaVideo className={`text-sm ${call.status === 'missed' ? 'text-red-500' : 'text-blue-500'}`} />
+                                  ) : (
+                                    <FaPhone className={`text-sm ${call.status === 'missed' ? 'text-red-500' : 'text-green-500'}`} />
+                                  )}
+                                  <span className="font-medium">
+                                    {isCaller ? 'You' : otherPartyName} {isCaller ? 'called' : 'called you'} {isCaller ? otherPartyName : ''}
+                                    {call.duration > 0 && (
+                                      <span className="text-gray-600"> • {formatCallDuration(call.duration)}</span>
+                                    )}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2 text-xs text-gray-500">
+                                  <span>{currentDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}</span>
+                                  <span>•</span>
+                                  <span>{currentDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true })}</span>
+                                  <span>•</span>
+                                  <span>{call.status}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </React.Fragment>
+                        );
+                      }
+
+                      // If it's a message, render chat message (existing logic)
+                      const c = item.message;
+                      const isMe = c.senderEmail === currentUser.email;
+                      const isEditing = editingComment === c._id;
+                      const formattedDate = currentDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' });
+
+                      return (
+                        <React.Fragment key={c._id || index}>
+                          {isNewDay && (
+                            <div className="w-full flex justify-center my-2">
+                              <span className="bg-blue-600 text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white">{getDateLabel(currentDate)}</span>
                             </div>
                           )}
-                          <div
-                            ref={el => messageRefs.current[c._id] = el}
-                            id={`message-${c._id}`}
-                            data-message-id={c._id}
-                            className={`relative rounded-2xl px-4 sm:px-5 py-3 text-sm shadow-xl max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] break-words overflow-visible transition-all duration-300 min-h-[60px] ${c.audioUrl && !c.deleted ? 'min-w-[280px] sm:min-w-[320px]' : ''} ${
-                              isMe 
-                                ? 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white shadow-blue-200 hover:shadow-blue-300 hover:shadow-2xl' 
-                                : 'bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 shadow-gray-200 hover:shadow-lg hover:border-gray-300 hover:shadow-xl'
-                            } ${
-                              highlightedPinnedMessage === c._id ? 'ring-4 ring-purple-400 shadow-2xl scale-105' : ''
-                            } ${isSelectionMode && selectedMessages.some(msg => msg._id === c._id) ? 'ring-2 ring-blue-400' : ''}`}
-                            style={{ animationDelay: `${0.03 * index}s` }}
-                          >
+                          {/* New messages divider: only right after opening when unread exists */}
+                          {showUnreadDividerOnOpen && unreadNewMessages > 0 && item.type === 'message' && (() => {
+                            // Find the index of this message in filteredComments
+                            const messageIndex = filteredComments.findIndex(msg => msg._id === c._id);
+                            return messageIndex === filteredComments.length - unreadNewMessages;
+                          })() && (
+                            <div className="w-full flex items-center my-2">
+                              <div className="flex-1 h-px bg-gray-300"></div>
+                              <span className="mx-2 text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full border border-red-200">
+                                {unreadNewMessages} unread message{unreadNewMessages > 1 ? 's' : ''}
+                              </span>
+                              <div className="flex-1 h-px bg-gray-300"></div>
+                            </div>
+                          )}
+                          <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-fadeInChatBubble`} style={{ animationDelay: `${0.03 * index}s` }}>
+                            {/* Selection checkbox - only show in selection mode */}
+                            {isSelectionMode && (
+                              <div className={`flex items-start ${isMe ? 'order-2 ml-2' : 'order-1 mr-2'}`}>
+                                <input
+                                  type="checkbox"
+                                  checked={selectedMessages.some(msg => msg._id === c._id)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedMessages(prev => [...prev, c]);
+                                    } else {
+                                      setSelectedMessages(prev => prev.filter(msg => msg._id !== c._id));
+                                    }
+                                  }}
+                                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                                />
+                              </div>
+                            )}
+                            <div
+                              ref={el => messageRefs.current[c._id] = el}
+                              id={`message-${c._id}`}
+                              data-message-id={c._id}
+                              className={`relative rounded-2xl px-4 sm:px-5 py-3 text-sm shadow-xl max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] break-words overflow-visible transition-all duration-300 min-h-[60px] ${c.audioUrl && !c.deleted ? 'min-w-[280px] sm:min-w-[320px]' : ''} ${
+                                isMe 
+                                  ? 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white shadow-blue-200 hover:shadow-blue-300 hover:shadow-2xl' 
+                                  : 'bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 shadow-gray-200 hover:shadow-lg hover:border-gray-300 hover:shadow-xl'
+                              } ${
+                                highlightedPinnedMessage === c._id ? 'ring-4 ring-purple-400 shadow-2xl scale-105' : ''
+                              } ${isSelectionMode && selectedMessages.some(msg => msg._id === c._id) ? 'ring-2 ring-blue-400' : ''}`}
+                              style={{ animationDelay: `${0.03 * index}s` }}
+                            >
                             {/* Reply preview above message if this is a reply */}
                             {c.replyTo && (
                               <div className="border-l-4 border-purple-400 pl-3 mb-2 text-xs bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 rounded-lg w-full max-w-full break-words cursor-pointer transition-all duration-200 hover:shadow-sm" onClick={() => {
@@ -8690,7 +8744,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
 
                       </React.Fragment>
                     );
-                  }))}
+                    });
+                  })()}
                   
                   <div ref={chatEndRef} />
                 </div>
