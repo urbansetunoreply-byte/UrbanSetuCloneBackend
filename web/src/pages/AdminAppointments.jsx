@@ -3176,7 +3176,15 @@ function AdminAppointmentRow({
     return () => document.removeEventListener('mousedown', handleClickOutside, true);
   }, [showAttachmentPanel]);
 
-  const selectedMessageForHeaderOptions = headerOptionsMessageId ? localComments.find(msg => msg._id === headerOptionsMessageId) : null;
+  // Message selected for header options overlay
+  const selectedMessageForHeaderOptions = headerOptionsMessageId && headerOptionsMessageId.startsWith('call-') 
+    ? null // Call items handled separately
+    : (headerOptionsMessageId ? localComments.find(msg => msg._id === headerOptionsMessageId) : null);
+  
+  // Call selected for header options overlay
+  const selectedCallForHeaderOptions = headerOptionsMessageId && headerOptionsMessageId.startsWith('call-')
+    ? callHistory.find(call => `call-${call._id || call.callId}` === headerOptionsMessageId)
+    : null;
 
   // Reactions functions
   const handleQuickReaction = async (messageId, emoji) => {
@@ -5981,6 +5989,54 @@ function AdminAppointmentRow({
                       </button>
                     </div>
                   </div>
+                ) : headerOptionsMessageId && selectedCallForHeaderOptions ? (
+                    // Header-level options overlay for call history items (admin view)
+                    <div className="flex items-center justify-end w-full gap-4">
+                      <div className="flex items-center gap-4">
+                        {/* Call info */}
+                        <button
+                          className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                          onClick={() => {
+                            const callTypeText = selectedCallForHeaderOptions.callType === 'video' ? 'Video' : 'Audio';
+                            const callerName = selectedCallForHeaderOptions.callerId?.username || 'Unknown';
+                            const receiverName = selectedCallForHeaderOptions.receiverId?.username || 'Unknown';
+                            const formatCallDuration = (seconds) => {
+                              if (!seconds || seconds === 0) return 'N/A';
+                              const hours = Math.floor(seconds / 3600);
+                              const minutes = Math.floor((seconds % 3600) / 60);
+                              const secs = Math.floor(seconds % 60);
+                              if (hours > 0) {
+                                return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                              }
+                              return `${minutes}:${secs.toString().padStart(2, '0')}`;
+                            };
+                            const callDate = new Date(selectedCallForHeaderOptions.startTime || selectedCallForHeaderOptions.createdAt);
+                            toast.info(
+                              `${callTypeText} Call\n` +
+                              `Caller: ${callerName}\n` +
+                              `Receiver: ${receiverName}\n` +
+                              `Status: ${selectedCallForHeaderOptions.status}\n` +
+                              `Duration: ${formatCallDuration(selectedCallForHeaderOptions.duration)}\n` +
+                              `Date: ${callDate.toLocaleDateString()} ${callDate.toLocaleTimeString()}`
+                            );
+                            setHeaderOptionsMessageId(null);
+                          }}
+                          title="Call info"
+                          aria-label="Call info"
+                        >
+                          <FaInfoCircle size={18} />
+                        </button>
+                        {/* Close button */}
+                        <button
+                          className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors z-10 shadow"
+                          onClick={() => { setHeaderOptionsMessageId(null); setShowHeaderMoreMenu(false); }}
+                          title="Close options"
+                          aria-label="Close options"
+                        >
+                          <FaTimes className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
                 ) : headerOptionsMessageId && selectedMessageForHeaderOptions ? (
                   <div className="flex items-center justify-end w-full gap-4">
                     <div className="flex items-center gap-4">
@@ -6894,11 +6950,13 @@ function AdminAppointmentRow({
                     const previousDate = previousItem ? previousItem.timestamp : null;
                     const isNewDay = previousDate ? currentDate.toDateString() !== previousDate.toDateString() : true;
 
-                    // If it's a call, render call history item (admin view - show third person: "Vishal called Varun")
+                    // If it's a call, render call history as message bubble (admin view - show third person: "Vishal called Varun")
                     if (item.type === 'call') {
                       const call = item.call;
                       const callerName = call.callerId?.username || (typeof call.callerId === 'string' ? 'Unknown' : 'Unknown');
                       const receiverName = call.receiverId?.username || (typeof call.receiverId === 'string' ? 'Unknown' : 'Unknown');
+                      // Admin is observer, so show on left side (received message style)
+                      const isMe = false;
                       
                       return (
                         <React.Fragment key={`call-${call._id || call.callId}`}>
@@ -6909,28 +6967,51 @@ function AdminAppointmentRow({
                               </span>
                             </div>
                           )}
-                          {/* Call history - admin view shows third person (Vishal called Varun) */}
-                          <div className="flex items-center justify-center my-2">
-                            <div className="flex flex-col items-center gap-1 px-4 py-2">
-                              <div className="flex items-center gap-2 text-sm text-gray-700">
-                                {call.callType === 'video' ? (
-                                  <FaVideo className={`text-sm ${call.status === 'missed' ? 'text-red-500' : 'text-blue-500'}`} />
-                                ) : (
-                                  <FaPhone className={`text-sm ${call.status === 'missed' ? 'text-red-500' : 'text-green-500'}`} />
-                                )}
-                                <span className="font-medium">
-                                  {callerName} called {receiverName}
-                                  {call.duration > 0 && (
-                                    <span className="text-gray-600"> • {formatCallDuration(call.duration)}</span>
+                          {/* Call history as message bubble - admin view shows third person (Vishal called Varun) */}
+                          <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-fadeInChatBubble`} style={{ animationDelay: `${0.03 * index}s` }}>
+                            <div
+                              className={`relative rounded-2xl px-4 sm:px-5 py-3 text-sm shadow-xl max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] break-words overflow-visible transition-all duration-300 ${
+                                isMe 
+                                  ? 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white shadow-blue-200 hover:shadow-blue-300 hover:shadow-2xl' 
+                                  : 'bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 shadow-gray-200 hover:shadow-lg hover:border-gray-300 hover:shadow-xl'
+                              }`}
+                              style={{ animationDelay: `${0.03 * index}s` }}
+                            >
+                              <div className={`text-left ${isMe ? 'text-base font-medium' : 'text-sm'}`}>
+                                <div className="flex items-center gap-2">
+                                  {call.callType === 'video' ? (
+                                    <FaVideo className={`text-base ${call.status === 'missed' ? 'text-red-500' : isMe ? 'text-white' : 'text-blue-500'}`} />
+                                  ) : (
+                                    <FaPhone className={`text-base ${call.status === 'missed' ? 'text-red-500' : isMe ? 'text-white' : 'text-green-500'}`} />
                                   )}
-                                </span>
+                                  <span className={isMe ? 'text-white' : 'text-gray-800'}>
+                                    {callerName} called {receiverName}
+                                    {call.duration > 0 && (
+                                      <span className={isMe ? 'text-blue-100' : 'text-gray-600'}> • {formatCallDuration(call.duration)}</span>
+                                    )}
+                                  </span>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-2 text-xs text-gray-500">
-                                <span>{currentDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}</span>
-                                <span>•</span>
-                                <span>{currentDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true })}</span>
-                                <span>•</span>
-                                <span>{call.status}</span>
+                              <div className="flex items-center gap-1 justify-end mt-2" data-message-actions>
+                                <span className={`${isMe ? 'text-blue-200' : 'text-gray-500'} text-[10px]`}>
+                                  {currentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                </span>
+                                {/* Options icon - three dots menu */}
+                                <button
+                                  className={`${
+                                    isMe 
+                                      ? 'text-blue-200 hover:text-white' 
+                                      : 'text-gray-500 hover:text-gray-700'
+                                  } transition-all duration-200 hover:scale-110 p-1 rounded-full hover:bg-white hover:bg-opacity-20 ml-1`}
+                                  onClick={(e) => { 
+                                    e.stopPropagation(); 
+                                    setHeaderOptionsMessageId(`call-${call._id || call.callId}`);
+                                  }}
+                                  title="Call options"
+                                  aria-label="Call options"
+                                >
+                                  <FaEllipsisV size={12} />
+                                </button>
                               </div>
                             </div>
                           </div>
