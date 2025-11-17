@@ -533,14 +533,48 @@ export const useCall = () => {
           setCallState('ringing');
           
           // Create peer connection AFTER we have the callId
+          console.log('[Call] Creating peer connection (caller) with stream:', {
+            stream,
+            audioTracks: stream.getAudioTracks(),
+            videoTracks: stream.getVideoTracks(),
+            tracks: stream.getTracks()
+          });
+          
           const peer = new SimplePeer({
             initiator: true,
             trickle: true,
-            stream: stream,
+            stream: stream, // Add stream to SimplePeer
             config: {
               iceServers: STUN_SERVERS
             }
           });
+          
+          // Manually add tracks to ensure they're sent (after peer connection is ready)
+          // SimplePeer should handle this automatically, but we ensure it happens
+          const ensureTracksAdded = () => {
+            if (peer._pc && stream) {
+              const existingTracks = peer._pc.getSenders().map(s => s.track);
+              stream.getTracks().forEach(track => {
+                // Only add if track is not already added
+                if (!existingTracks.includes(track) && track.enabled) {
+                  console.log('[Call] Adding track to peer connection:', track.kind, track.id, track.enabled);
+                  try {
+                    peer._pc.addTrack(track, stream);
+                  } catch (err) {
+                    console.error('[Call] Error adding track:', err);
+                  }
+                } else {
+                  console.log('[Call] Track already added or disabled:', track.kind, track.id, track.enabled);
+                }
+              });
+            }
+          };
+          
+          // Try to add tracks immediately
+          ensureTracksAdded();
+          
+          // Also try after a short delay (peer connection might not be ready yet)
+          setTimeout(ensureTracksAdded, 100);
           
           peer.on('signal', (data) => {
             if (data.type === 'offer') {
@@ -559,12 +593,16 @@ export const useCall = () => {
           peer.on('stream', (remoteStream) => {
             console.log('[Call] Received remote stream (caller side)', remoteStream);
             console.log('[Call] Remote stream tracks:', remoteStream.getTracks());
+            console.log('[Call] Remote stream audio tracks:', remoteStream.getAudioTracks());
+            console.log('[Call] Remote stream video tracks:', remoteStream.getVideoTracks());
             setRemoteStream(remoteStream);
             // Stream attachment will be handled by useEffect when remoteStream state updates
           });
 
           peer.on('connect', () => {
             console.log('[Call] Peer connection established');
+            console.log('[Call] Peer connection state:', peer._pc?.connectionState);
+            console.log('[Call] Peer connection ICE state:', peer._pc?.iceConnectionState);
           });
 
           peer.on('error', (err) => {
@@ -624,14 +662,48 @@ export const useCall = () => {
       }
       
       // Create peer connection as receiver (non-initiator)
+      console.log('[Call] Creating peer connection (receiver) with stream:', {
+        stream,
+        audioTracks: stream.getAudioTracks(),
+        videoTracks: stream.getVideoTracks(),
+        tracks: stream.getTracks()
+      });
+      
       const peer = new SimplePeer({
         initiator: false,
         trickle: true,
-        stream: stream,
+        stream: stream, // Add stream to SimplePeer
         config: {
           iceServers: STUN_SERVERS
         }
       });
+      
+      // Manually add tracks to ensure they're sent (after peer connection is ready)
+      // SimplePeer should handle this automatically, but we ensure it happens
+      const ensureTracksAdded = () => {
+        if (peer._pc && stream) {
+          const existingTracks = peer._pc.getSenders().map(s => s.track);
+          stream.getTracks().forEach(track => {
+            // Only add if track is not already added
+            if (!existingTracks.includes(track) && track.enabled) {
+              console.log('[Call] Adding track to peer connection:', track.kind, track.id, track.enabled);
+              try {
+                peer._pc.addTrack(track, stream);
+              } catch (err) {
+                console.error('[Call] Error adding track:', err);
+              }
+            } else {
+              console.log('[Call] Track already added or disabled:', track.kind, track.id, track.enabled);
+            }
+          });
+        }
+      };
+      
+      // Try to add tracks immediately
+      ensureTracksAdded();
+      
+      // Also try after a short delay (peer connection might not be ready yet)
+      setTimeout(ensureTracksAdded, 100);
       
       peer.on('signal', (data) => {
         if (data.type === 'answer') {
@@ -650,12 +722,16 @@ export const useCall = () => {
       peer.on('stream', (remoteStream) => {
         console.log('[Call] Received remote stream (receiver side)', remoteStream);
         console.log('[Call] Remote stream tracks:', remoteStream.getTracks());
+        console.log('[Call] Remote stream audio tracks:', remoteStream.getAudioTracks());
+        console.log('[Call] Remote stream video tracks:', remoteStream.getVideoTracks());
         setRemoteStream(remoteStream);
         // Stream attachment will be handled by useEffect when remoteStream state updates
       });
 
       peer.on('connect', () => {
         console.log('[Call] Peer connection established');
+        console.log('[Call] Peer connection state:', peer._pc?.connectionState);
+        console.log('[Call] Peer connection ICE state:', peer._pc?.iceConnectionState);
       });
 
       peer.on('error', (err) => {

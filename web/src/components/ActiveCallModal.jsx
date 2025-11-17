@@ -165,8 +165,10 @@ const ActiveCallModal = ({
                   ref={remoteVideoRef}
                   autoPlay
                   playsInline
+                  muted={false}
                   className="w-full h-full object-cover cursor-pointer"
                   onLoadedMetadata={(e) => {
+                    e.target.muted = false; // Ensure audio is not muted
                     e.target.play().catch(err => console.error('Error playing remote video:', err));
                   }}
                 />
@@ -298,8 +300,10 @@ const ActiveCallModal = ({
                   ref={remoteVideoRef}
                   autoPlay
                   playsInline
+                  muted={false}
                   className="w-full h-full object-cover"
                   onLoadedMetadata={(e) => {
+                    e.target.muted = false; // Ensure audio is not muted
                     e.target.play().catch(err => console.error('Error playing remote video:', err));
                   }}
                 />
