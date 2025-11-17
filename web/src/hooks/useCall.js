@@ -50,47 +50,76 @@ export const useCall = () => {
 
   // Handle WebRTC offer
   const handleWebRTCOffer = useCallback(({ callId, offer }) => {
+    console.log('[Call] handleWebRTCOffer called:', { callId, hasPeer: !!peerRef.current, activeCallId: activeCallRef.current?.callId, incomingCallId: incomingCallRef.current?.callId });
+    
     // If peer doesn't exist yet (receiver), store the offer
     if (!peerRef.current) {
       // Only store if it matches incoming call
-      if (incomingCall?.callId === callId || activeCall?.callId === callId) {
+      if (incomingCallRef.current?.callId === callId || activeCallRef.current?.callId === callId) {
+        console.log('[Call] Storing pending offer for callId:', callId);
         pendingOfferRef.current = { callId, offer };
       }
       return;
     }
     
-    if (activeCall?.callId !== callId) return;
+    if (activeCallRef.current?.callId !== callId) {
+      console.log('[Call] Offer callId mismatch:', { offerCallId: callId, activeCallId: activeCallRef.current?.callId });
+      return;
+    }
     
     try {
+      console.log('[Call] Signaling offer to peer');
       peerRef.current.signal(offer);
     } catch (error) {
-      console.error('Error handling WebRTC offer:', error);
+      console.error('[Call] Error handling WebRTC offer:', error);
     }
-  }, [activeCall, incomingCall]);
+  }, []);
 
   // Handle WebRTC answer
   const handleWebRTCAnswer = useCallback(({ callId, answer }) => {
-    if (!peerRef.current || activeCall?.callId !== callId) return;
+    console.log('[Call] handleWebRTCAnswer called:', { callId, hasPeer: !!peerRef.current, activeCallId: activeCallRef.current?.callId });
+    
+    if (!peerRef.current) {
+      console.log('[Call] No peer connection available for answer');
+      return;
+    }
+    
+    if (activeCallRef.current?.callId !== callId) {
+      console.log('[Call] Answer callId mismatch:', { answerCallId: callId, activeCallId: activeCallRef.current?.callId });
+      return;
+    }
     
     try {
+      console.log('[Call] Signaling answer to peer');
       peerRef.current.signal(answer);
     } catch (error) {
-      console.error('Error handling WebRTC answer:', error);
+      console.error('[Call] Error handling WebRTC answer:', error);
     }
-  }, [activeCall]);
+  }, []);
 
   // Handle ICE candidate
   const handleICECandidate = useCallback(({ callId, candidate }) => {
-    if (!peerRef.current || activeCall?.callId !== callId) return;
+    console.log('[Call] handleICECandidate called:', { callId, hasPeer: !!peerRef.current, activeCallId: activeCallRef.current?.callId, hasCandidate: !!candidate });
+    
+    if (!peerRef.current) {
+      console.log('[Call] No peer connection available for ICE candidate');
+      return;
+    }
+    
+    if (activeCallRef.current?.callId !== callId) {
+      console.log('[Call] ICE candidate callId mismatch:', { candidateCallId: callId, activeCallId: activeCallRef.current?.callId });
+      return;
+    }
     
     try {
       if (candidate) {
+        console.log('[Call] Signaling ICE candidate to peer');
         peerRef.current.signal(candidate);
       }
     } catch (error) {
-      console.error('Error handling ICE candidate:', error);
+      console.error('[Call] Error handling ICE candidate:', error);
     }
-  }, [activeCall]);
+  }, []);
 
   // Handle remote mute/video status updates
   const handleRemoteStatusUpdate = useCallback(({ callId, isMuted: remoteMuted, isVideoEnabled: remoteVideo }) => {
@@ -543,46 +572,45 @@ export const useCall = () => {
           const peer = new SimplePeer({
             initiator: true,
             trickle: true,
-            stream: stream, // Add stream to SimplePeer
+            stream: stream, // SimplePeer will automatically add stream tracks
             config: {
               iceServers: STUN_SERVERS
             }
           });
           
-          // Manually add tracks to ensure they're sent (after peer connection is ready)
-          // SimplePeer should handle this automatically, but we ensure it happens
-          const ensureTracksAdded = () => {
-            if (peer._pc && stream) {
-              const existingTracks = peer._pc.getSenders().map(s => s.track);
-              stream.getTracks().forEach(track => {
-                // Only add if track is not already added
-                if (!existingTracks.includes(track) && track.enabled) {
-                  console.log('[Call] Adding track to peer connection:', track.kind, track.id, track.enabled);
-                  try {
-                    peer._pc.addTrack(track, stream);
-                  } catch (err) {
-                    console.error('[Call] Error adding track:', err);
-                  }
-                } else {
-                  console.log('[Call] Track already added or disabled:', track.kind, track.id, track.enabled);
-                }
-              });
-            }
-          };
-          
-          // Try to add tracks immediately
-          ensureTracksAdded();
-          
-          // Also try after a short delay (peer connection might not be ready yet)
-          setTimeout(ensureTracksAdded, 100);
+          // Log peer connection state changes
+          if (peer._pc) {
+            peer._pc.addEventListener('connectionstatechange', () => {
+              console.log('[Call] Peer connection state changed:', peer._pc.connectionState);
+            });
+            
+            peer._pc.addEventListener('iceconnectionstatechange', () => {
+              console.log('[Call] ICE connection state changed:', peer._pc.iceConnectionState);
+            });
+            
+            peer._pc.addEventListener('icegatheringstatechange', () => {
+              console.log('[Call] ICE gathering state changed:', peer._pc.iceGatheringState);
+            });
+            
+            peer._pc.addEventListener('track', (event) => {
+              console.log('[Call] Track event received:', event.track.kind, event.track.id);
+              if (event.streams && event.streams[0]) {
+                console.log('[Call] Track stream received:', event.streams[0]);
+                setRemoteStream(event.streams[0]);
+              }
+            });
+          }
           
           peer.on('signal', (data) => {
+            console.log('[Call] Signal event:', data.type);
             if (data.type === 'offer') {
+              console.log('[Call] Sending WebRTC offer:', data);
               socket.emit('webrtc-offer', {
                 callId: callId,
                 offer: data
               });
             } else if (data.type === 'candidate') {
+              console.log('[Call] Sending ICE candidate:', data);
               socket.emit('ice-candidate', {
                 callId: callId,
                 candidate: data
@@ -591,7 +619,7 @@ export const useCall = () => {
           });
           
           peer.on('stream', (remoteStream) => {
-            console.log('[Call] Received remote stream (caller side)', remoteStream);
+            console.log('[Call] ✅ Received remote stream (caller side)', remoteStream);
             console.log('[Call] Remote stream tracks:', remoteStream.getTracks());
             console.log('[Call] Remote stream audio tracks:', remoteStream.getAudioTracks());
             console.log('[Call] Remote stream video tracks:', remoteStream.getVideoTracks());
@@ -600,9 +628,10 @@ export const useCall = () => {
           });
 
           peer.on('connect', () => {
-            console.log('[Call] Peer connection established');
+            console.log('[Call] ✅ Peer connection established (connect event)');
             console.log('[Call] Peer connection state:', peer._pc?.connectionState);
             console.log('[Call] Peer connection ICE state:', peer._pc?.iceConnectionState);
+            console.log('[Call] Peer connection signaling state:', peer._pc?.signalingState);
           });
 
           peer.on('error', (err) => {
@@ -672,46 +701,45 @@ export const useCall = () => {
       const peer = new SimplePeer({
         initiator: false,
         trickle: true,
-        stream: stream, // Add stream to SimplePeer
+        stream: stream, // SimplePeer will automatically add stream tracks
         config: {
           iceServers: STUN_SERVERS
         }
       });
       
-      // Manually add tracks to ensure they're sent (after peer connection is ready)
-      // SimplePeer should handle this automatically, but we ensure it happens
-      const ensureTracksAdded = () => {
-        if (peer._pc && stream) {
-          const existingTracks = peer._pc.getSenders().map(s => s.track);
-          stream.getTracks().forEach(track => {
-            // Only add if track is not already added
-            if (!existingTracks.includes(track) && track.enabled) {
-              console.log('[Call] Adding track to peer connection:', track.kind, track.id, track.enabled);
-              try {
-                peer._pc.addTrack(track, stream);
-              } catch (err) {
-                console.error('[Call] Error adding track:', err);
-              }
-            } else {
-              console.log('[Call] Track already added or disabled:', track.kind, track.id, track.enabled);
-            }
-          });
-        }
-      };
-      
-      // Try to add tracks immediately
-      ensureTracksAdded();
-      
-      // Also try after a short delay (peer connection might not be ready yet)
-      setTimeout(ensureTracksAdded, 100);
+      // Log peer connection state changes
+      if (peer._pc) {
+        peer._pc.addEventListener('connectionstatechange', () => {
+          console.log('[Call] Peer connection state changed:', peer._pc.connectionState);
+        });
+        
+        peer._pc.addEventListener('iceconnectionstatechange', () => {
+          console.log('[Call] ICE connection state changed:', peer._pc.iceConnectionState);
+        });
+        
+        peer._pc.addEventListener('icegatheringstatechange', () => {
+          console.log('[Call] ICE gathering state changed:', peer._pc.iceGatheringState);
+        });
+        
+        peer._pc.addEventListener('track', (event) => {
+          console.log('[Call] Track event received:', event.track.kind, event.track.id);
+          if (event.streams && event.streams[0]) {
+            console.log('[Call] Track stream received:', event.streams[0]);
+            setRemoteStream(event.streams[0]);
+          }
+        });
+      }
       
       peer.on('signal', (data) => {
+        console.log('[Call] Signal event:', data.type);
         if (data.type === 'answer') {
+          console.log('[Call] Sending WebRTC answer:', data);
           socket.emit('webrtc-answer', {
             callId: incomingCall.callId,
             answer: data
           });
         } else if (data.type === 'candidate') {
+          console.log('[Call] Sending ICE candidate:', data);
           socket.emit('ice-candidate', {
             callId: incomingCall.callId,
             candidate: data
@@ -720,7 +748,7 @@ export const useCall = () => {
       });
       
       peer.on('stream', (remoteStream) => {
-        console.log('[Call] Received remote stream (receiver side)', remoteStream);
+        console.log('[Call] ✅ Received remote stream (receiver side)', remoteStream);
         console.log('[Call] Remote stream tracks:', remoteStream.getTracks());
         console.log('[Call] Remote stream audio tracks:', remoteStream.getAudioTracks());
         console.log('[Call] Remote stream video tracks:', remoteStream.getVideoTracks());
@@ -729,9 +757,10 @@ export const useCall = () => {
       });
 
       peer.on('connect', () => {
-        console.log('[Call] Peer connection established');
+        console.log('[Call] ✅ Peer connection established (connect event)');
         console.log('[Call] Peer connection state:', peer._pc?.connectionState);
         console.log('[Call] Peer connection ICE state:', peer._pc?.iceConnectionState);
+        console.log('[Call] Peer connection signaling state:', peer._pc?.signalingState);
       });
 
       peer.on('error', (err) => {
