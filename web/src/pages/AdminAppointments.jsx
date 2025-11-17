@@ -1889,6 +1889,9 @@ export default function AdminAppointments() {
                         setShouldOpenChatFromNotification(false);
                         setActiveChatAppointmentId(null);
                       }}
+                      // Call History Modal props
+                      setShowCallHistoryModal={setShowCallHistoryModal}
+                      setCallHistoryAppointmentId={setCallHistoryAppointmentId}
                     />
                   ))}
                 </tbody>
