@@ -121,6 +121,10 @@ export default function MyAppointments() {
   const [exportAppointment, setExportAppointment] = useState(null);
   const [exportComments, setExportComments] = useState([]);
 
+  // Call History modal state
+  const [showCallHistoryModal, setShowCallHistoryModal] = useState(false);
+  const [callHistoryAppointmentId, setCallHistoryAppointmentId] = useState(null);
+
   // Call functionality - using global context
   const {
     callState,
@@ -2279,8 +2283,6 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   
   // Chat options menu state
   const [showChatOptionsMenu, setShowChatOptionsMenu] = useState(false);
-  const [showCallHistoryModal, setShowCallHistoryModal] = useState(false);
-  const [callHistoryAppointmentId, setCallHistoryAppointmentId] = useState(null);
   
   // Multi-select message states
   const [isSelectionMode, setIsSelectionMode] = useState(false);
