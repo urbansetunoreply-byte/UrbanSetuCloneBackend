@@ -915,10 +915,9 @@ export default function AdminAppointments() {
     
     fetchAppointments();
     fetchArchivedAppointments();
-    const interval = setInterval(() => {
-      fetchAppointments();
-      fetchArchivedAppointments();
-    }, 5000);
+    // Removed periodic refresh interval - appointments are updated via socket events in real-time
+    // No need to poll every 5 seconds, which was causing unnecessary message refreshes in chatbox
+    // Real-time updates are handled by socket events (commentUpdate, appointmentUpdate, etc.)
     
     // Listen for profile updates to update user info in appointments
     const handleProfileUpdate = (profileData) => {
@@ -3600,6 +3599,69 @@ function AdminAppointmentRow({
       fetchReportedMessageIds(appt._id);
     }
   }, [showChatModal, appt?._id]);
+
+  // Fetch call history for appointment when chat modal opens
+  React.useEffect(() => {
+    if (!showChatModal || !appt?._id) return;
+    
+    const fetchCallHistory = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/calls/history/${appt._id}`, {
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.calls) {
+            setCallHistory(data.calls);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching call history:', error);
+      }
+    };
+    
+    fetchCallHistory();
+  }, [showChatModal, appt?._id]);
+
+  // Listen for call-ended event to update call history in real-time
+  React.useEffect(() => {
+    if (!appt?._id) return;
+
+    const fetchCallHistory = async () => {
+      if (!appt?._id) return;
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/calls/history/${appt._id}`, {
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.calls) {
+            setCallHistory(data.calls);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching call history:', error);
+      }
+    };
+
+    const handleCallEnded = (data) => {
+      // If this call belongs to this appointment, refetch call history immediately
+      // This ensures call bubbles appear in real-time like regular messages
+      if (data.callId) {
+        // Small delay to ensure backend has saved the call
+        setTimeout(() => {
+          fetchCallHistory();
+        }, 100);
+      }
+    };
+
+    socket.on('call-ended', handleCallEnded);
+    return () => {
+      socket.off('call-ended', handleCallEnded);
+    };
+  }, [appt?._id, socket]);
 
   // Auto-scroll to bottom when chat modal opens
   React.useEffect(() => {
