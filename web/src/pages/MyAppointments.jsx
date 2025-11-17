@@ -3946,6 +3946,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       const now = Date.now();
       localStorage.setItem(clearTimeKey, now);
       setComments([]);
+      setCallHistory([]); // Also clear call history bubbles when clearing chat
 
       // Persist to server so it applies across devices for this user
       await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/chat/clear-local`, 
@@ -5651,6 +5652,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         localStorage.setItem(clearTimeKey, String(effective));
       } catch {}
       setComments([]);
+      setCallHistory([]); // Also clear call history bubbles when chat is cleared
       setUnreadNewMessages(0);
     }
     function handleCommentRemovedForUser({ appointmentId, commentId }) {
