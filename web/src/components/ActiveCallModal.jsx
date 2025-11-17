@@ -113,12 +113,10 @@ const ActiveCallModal = ({
             <div className="absolute top-4 right-4 bg-black bg-opacity-70 rounded-full px-4 py-2 z-20">
               <p className="text-white text-lg font-semibold">{formatDuration(callDuration)}</p>
             </div>
-            {/* Remote video label */}
-            {otherPartyName && (
-              <div className="absolute bottom-24 left-4 bg-black bg-opacity-70 rounded-full px-4 py-2 z-20">
-                <p className="text-white text-sm font-medium">{otherPartyName}</p>
-              </div>
-            )}
+            {/* Remote video label - show name or fallback */}
+            <div className="absolute bottom-24 left-4 bg-black bg-opacity-70 rounded-full px-4 py-2 z-20">
+              <p className="text-white text-sm font-medium">{otherPartyName || 'Caller'}</p>
+            </div>
           </>
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">

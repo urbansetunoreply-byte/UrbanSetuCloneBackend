@@ -74,21 +74,43 @@ const GlobalCallModals = () => {
       return incomingCall.callerName;
     }
     
-    if (!appointmentData || !currentUser) return null;
-    
-    if (appointmentData.buyerId?._id === currentUser._id || appointmentData.buyerId?._id?.toString() === currentUser._id) {
-      return appointmentData.sellerId?.username || null;
+    if (!appointmentData || !currentUser) {
+      // Return callerName from incomingCall if available
+      return incomingCall?.callerName || null;
     }
-    return appointmentData.buyerId?.username || null;
+    
+    // Handle both string and ObjectId comparisons
+    const currentUserId = currentUser._id?.toString() || currentUser._id;
+    const buyerId = appointmentData.buyerId?._id?.toString() || appointmentData.buyerId?.toString() || appointmentData.buyerId;
+    const sellerId = appointmentData.sellerId?._id?.toString() || appointmentData.sellerId?.toString() || appointmentData.sellerId;
+    
+    if (buyerId === currentUserId) {
+      return appointmentData.sellerId?.username || incomingCall?.callerName || null;
+    }
+    if (sellerId === currentUserId) {
+      return appointmentData.buyerId?.username || incomingCall?.callerName || null;
+    }
+    
+    // Fallback to incomingCall callerName
+    return incomingCall?.callerName || null;
   };
 
   const getOtherPartyData = () => {
     if (!appointmentData || !currentUser) return null;
     
-    if (appointmentData.buyerId?._id === currentUser._id || appointmentData.buyerId?._id?.toString() === currentUser._id) {
+    // Handle both string and ObjectId comparisons
+    const currentUserId = currentUser._id?.toString() || currentUser._id;
+    const buyerId = appointmentData.buyerId?._id?.toString() || appointmentData.buyerId?.toString() || appointmentData.buyerId;
+    const sellerId = appointmentData.sellerId?._id?.toString() || appointmentData.sellerId?.toString() || appointmentData.sellerId;
+    
+    if (buyerId === currentUserId) {
       return appointmentData.sellerId || null;
     }
-    return appointmentData.buyerId || null;
+    if (sellerId === currentUserId) {
+      return appointmentData.buyerId || null;
+    }
+    
+    return null;
   };
 
   return (
