@@ -143,7 +143,9 @@ export const useCall = () => {
       // Always calculate from server's startTime - this ensures perfect synchronization
       // Even if intervals drift, both sides calculate from the same reference point
       const now = Date.now();
-      const duration = Math.floor((now - callStartTimeRef.current) / 1000);
+      // Use Math.max(0, ...) to prevent negative durations due to clock skew
+      // If server time is slightly ahead of client time, ensure duration starts at 0
+      const duration = Math.max(0, Math.floor((now - callStartTimeRef.current) / 1000));
       
       // Only update state when the second changes to avoid unnecessary re-renders
       if (duration !== lastSecondRef.current) {
@@ -163,7 +165,8 @@ export const useCall = () => {
       if (callStartTimeRef.current) {
         // Always calculate from server's startTime, not local time
         // This double-check ensures accuracy even if animation frame is delayed
-        const duration = Math.floor((Date.now() - callStartTimeRef.current) / 1000);
+        // Use Math.max(0, ...) to prevent negative durations due to clock skew
+        const duration = Math.max(0, Math.floor((Date.now() - callStartTimeRef.current) / 1000));
         if (duration !== lastSecondRef.current) {
           lastSecondRef.current = duration;
           setCallDuration(duration);
