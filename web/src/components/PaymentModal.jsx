@@ -324,11 +324,15 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
       lockManagerRef.current = null;
     }
     
-    // Show simple message that session is closed
-    toast.info('Payment session closed');
+    // Show message that payment was not completed
+    if (paymentData && paymentData.payment) {
+      toast.info('Payment not completed. You can try again later.');
+    } else {
+      toast.info('Payment session closed. You can try again later.');
+    }
     
     // Don't cancel payment when modal is closed - let it expire naturally after 10 minutes
-    // This allows the user to reopen the modal and reuse the same payment ID if within 10 minutes
+    // This allows the user to reopen the modal and create a new payment ID if within 10 minutes
     // Payment will only be cancelled when:
     // 1. Timer expires (10 minutes) - handled by handleExpiry
     // 2. User explicitly cancels - handled separately
