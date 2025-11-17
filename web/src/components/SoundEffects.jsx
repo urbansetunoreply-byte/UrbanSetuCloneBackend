@@ -5,7 +5,10 @@ const SOUNDS = {
   messageSent: '/sounds/message-sent.mp3',
   messageReceived: '/sounds/message-received.mp3',
   notification: '/sounds/notification.mp3',
-  typing: '/sounds/typing.mp3'
+  typing: '/sounds/typing.mp3',
+  calling: '/sounds/Dailing.mp3',
+  ringtone: '/sounds/ringtone.mp3',
+  endCall: '/sounds/endcall.mp3'
 };
 
 // Fallback sounds using Web Audio API if files aren't available
@@ -36,7 +39,13 @@ const createFallbackSounds = () => {
       createTone(800, 0.1, 'sine');
       setTimeout(() => createTone(1000, 0.1, 'sine'), 100);
     },
-    typing: () => createTone(400, 0.05, 'square')
+    typing: () => createTone(400, 0.05, 'square'),
+    calling: () => createTone(500, 0.3, 'sine'),
+    ringtone: () => {
+      createTone(600, 0.2, 'sine');
+      setTimeout(() => createTone(800, 0.2, 'sine'), 200);
+    },
+    endCall: () => createTone(400, 0.2, 'sine')
   };
 };
 
@@ -69,7 +78,7 @@ export const useSoundEffects = () => {
     };
   }, []);
 
-  const playSound = (soundType) => {
+  const playSound = (soundType, loop = false) => {
     if (isMuted.current) return;
 
     try {
@@ -77,12 +86,14 @@ export const useSoundEffects = () => {
       if (audio && audio.readyState >= 2) {
         // Reset audio to start and play
         audio.currentTime = 0;
+        audio.loop = loop;
         audio.play().catch(() => {
           // Fallback to generated sound if audio file fails
           if (fallbackSounds.current && fallbackSounds.current[soundType]) {
             fallbackSounds.current[soundType]();
           }
         });
+        return audio;
       } else if (fallbackSounds.current && fallbackSounds.current[soundType]) {
         // Use fallback sound
         fallbackSounds.current[soundType]();
@@ -93,6 +104,20 @@ export const useSoundEffects = () => {
       if (fallbackSounds.current && fallbackSounds.current[soundType]) {
         fallbackSounds.current[soundType]();
       }
+    }
+    return null;
+  };
+
+  const stopSound = (soundType) => {
+    try {
+      const audio = audioRefs.current[soundType];
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+        audio.loop = false;
+      }
+    } catch (error) {
+      console.warn('Sound stop failed:', error);
     }
   };
 
@@ -137,6 +162,11 @@ export const useSoundEffects = () => {
     playMessageReceived: () => playSound('messageReceived'),
     playNotification: () => playSound('notification'),
     playTyping: () => playSound('typing'),
+    playCalling: () => playSound('calling', true), // Loop calling sound
+    playRingtone: () => playSound('ringtone', true), // Loop ringtone sound
+    playEndCall: () => playSound('endCall', false), // Play once
+    stopCalling: () => stopSound('calling'),
+    stopRingtone: () => stopSound('ringtone'),
     toggleMute,
     setVolume,
     isMuted: () => isMuted.current,

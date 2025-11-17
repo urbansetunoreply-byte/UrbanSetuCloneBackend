@@ -4,6 +4,7 @@ import SimplePeer from 'simple-peer';
 import { API_BASE_URL } from '../config/api';
 import { toast } from 'react-toastify';
 import { getAuthToken } from '../utils/auth';
+import { useSoundEffects } from '../components/SoundEffects';
 
 // STUN servers for WebRTC
 const STUN_SERVERS = [
@@ -13,6 +14,9 @@ const STUN_SERVERS = [
 ];
 
 export const useCall = () => {
+  // Sound effects for call tones
+  const { playCalling, playRingtone, playEndCall, stopCalling, stopRingtone } = useSoundEffects();
+  
   const [callState, setCallState] = useState(null); // null, 'initiating', 'ringing', 'active', 'ended'
   const [incomingCall, setIncomingCall] = useState(null);
   const [localStream, setLocalStream] = useState(null);
@@ -44,6 +48,8 @@ export const useCall = () => {
   const pendingOfferRef = useRef(null); // Store offer if received before peer is created
   const screenShareStreamRef = useRef(null); // Store screen share stream
   const containerRef = useRef(null); // For fullscreen
+  const callingSoundRef = useRef(null); // Reference to calling sound audio element
+  const ringtoneSoundRef = useRef(null); // Reference to ringtone sound audio element
   
   // Refs to store current state for event handlers (to avoid stale closures)
   const incomingCallRef = useRef(null);
@@ -366,6 +372,9 @@ export const useCall = () => {
   useEffect(() => {
     const handleIncomingCall = (data) => {
       setIncomingCall(data);
+      // Play ringtone when receiving incoming call
+      stopCalling(); // Stop any calling sound that might be playing
+      ringtoneSoundRef.current = playRingtone();
     };
     
     const handleCallAccepted = (data) => {
@@ -383,6 +392,9 @@ export const useCall = () => {
       // For receiver (incoming call) - state already set in acceptCall, but timer MUST start with server time
       // Use refs to get current values without causing dependency issues
       if (incomingCallRef.current && incomingCallRef.current.callId === data.callId) {
+        // Stop ringtone when call is accepted
+        stopRingtone();
+        ringtoneSoundRef.current = null;
         // Always start/restart timer with server's synchronized time
         // This ensures timer starts at the exact same moment as on server, accounting for network latency
         if (callStateRef.current !== 'active') {
@@ -397,6 +409,9 @@ export const useCall = () => {
       } 
       // For caller (outgoing call)
       else if (activeCallRef.current && activeCallRef.current.callId === data.callId) {
+        // Stop calling sound when call is accepted
+        stopCalling();
+        callingSoundRef.current = null;
         setCallState('active');
         // CRITICAL: Only start timer with server's startTime - never use local time
         startCallTimer(synchronizedStartTime);
@@ -410,8 +425,16 @@ export const useCall = () => {
     const handleCallRejected = (data) => {
       // Use ref to get current value without dependency
       if (activeCallRef.current && activeCallRef.current.callId === data.callId) {
+        // Stop calling sound when call is rejected
+        stopCalling();
+        callingSoundRef.current = null;
         endCall();
         toast.info('Call was rejected');
+      }
+      // Stop ringtone when call is rejected (receiver side)
+      if (incomingCallRef.current && incomingCallRef.current.callId === data.callId) {
+        stopRingtone();
+        ringtoneSoundRef.current = null;
       }
     };
 
@@ -419,6 +442,13 @@ export const useCall = () => {
       // Use refs to get current values without dependency
       if ((activeCallRef.current && activeCallRef.current.callId === data.callId) || 
           (incomingCallRef.current && incomingCallRef.current.callId === data.callId)) {
+        // Stop any playing sounds
+        stopCalling();
+        stopRingtone();
+        callingSoundRef.current = null;
+        ringtoneSoundRef.current = null;
+        // Play end call sound
+        playEndCall();
         // Show "Call ended" message when receiving call-ended event from other party
         toast.info('Call ended.');
         endCall();
@@ -428,8 +458,16 @@ export const useCall = () => {
     const handleCallMissed = (data) => {
       // Use ref to get current value without dependency
       if (activeCallRef.current && activeCallRef.current.callId === data.callId) {
+        // Stop calling sound when call is missed
+        stopCalling();
+        callingSoundRef.current = null;
         endCall();
         toast.info('Call was missed');
+      }
+      // Stop ringtone when call is missed (receiver side)
+      if (incomingCallRef.current && incomingCallRef.current.callId === data.callId) {
+        stopRingtone();
+        ringtoneSoundRef.current = null;
       }
     };
 
@@ -606,6 +644,8 @@ export const useCall = () => {
         if (status === 'ringing') {
           setActiveCall({ callId, appointmentId, receiverId, callType });
           setCallState('ringing');
+          // Play calling sound when call is ringing
+          callingSoundRef.current = playCalling();
           
           // Create peer connection AFTER we have the callId
           console.log('[Call] Creating peer connection (caller) with stream:', {
