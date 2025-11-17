@@ -300,7 +300,11 @@ io.on('connection', (socket) => {
   // Allow clients to explicitly register their user room without JWT in socket auth
   socket.on('registerUser', ({ userId }) => {
     if (userId) {
-      socket.join(userId.toString());
+      const userIdStr = userId.toString();
+      // Join both room formats for compatibility (userId and user_${userId})
+      socket.join(userIdStr);
+      socket.join(`user_${userIdStr}`);
+      console.log('[Socket] User registered to rooms:', userIdStr, `user_${userIdStr}`);
     }
   });
   // Broadcast forced logout to a specific session
@@ -327,7 +331,10 @@ io.on('connection', (socket) => {
     lastSeenTimes.delete(userId); // Remove last seen when user comes online
     
     // IMPORTANT: Join user to their personal room for direct messaging
-    socket.join(userId);
+    const userIdStr = userId.toString();
+    // Join both room formats for compatibility (userId and user_${userId})
+    socket.join(userIdStr);
+    socket.join(`user_${userIdStr}`);
     
     io.emit('userOnlineUpdate', { userId, online: true });
     
