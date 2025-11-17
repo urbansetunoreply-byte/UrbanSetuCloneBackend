@@ -136,17 +136,20 @@ router.post("/create-intent", verifyToken, async (req, res) => {
       });
     }
 
-    // Auto-expire old pending/processing payments that are older than 10 minutes
-    // This cleans up payments where modal was closed without proper cancellation
+    // IMPORTANT: Always create a NEW payment ID for every payment attempt
+    // DO NOT reuse existing payment intents, even if they haven't expired
+    // This follows Razorpay/PayPal best practices:
+    // - Each payment attempt = new order ID
+    // - Reusing order IDs can cause payment failures (BAD_REQUEST_ERROR, ORDER_ERROR, etc.)
+    // - Timer is tied to appointment slot (lockExpiryTime), NOT payment ID
+    
+    // Cancel any existing pending/processing payments for this appointment
+    // This keeps the database clean while ensuring we always create fresh payment IDs
     const now = new Date();
-    const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
-    const expiredPayments = await Payment.updateMany(
+    const cancelledPayments = await Payment.updateMany(
       {
-        status: { $in: ['pending', 'processing'] },
-        $or: [
-          { expiresAt: { $lte: now } }, // Expired payments
-          { createdAt: { $lte: tenMinutesAgo }, expiresAt: null } // Old payments without expiresAt (fallback)
-        ]
+        appointmentId,
+        status: { $in: ['pending', 'processing'] }
       },
       {
         status: 'cancelled',
@@ -155,65 +158,8 @@ router.post("/create-intent", verifyToken, async (req, res) => {
       }
     );
     
-    if (expiredPayments.modifiedCount > 0) {
-      console.log(`Auto-expired ${expiredPayments.modifiedCount} old pending/processing payment(s)`);
-    }
-
-    // Check for existing non-expired payment intent for this appointment
-    // Only create a new one if no valid existing payment exists
-    const existingPayment = await Payment.findOne({
-      appointmentId,
-      status: { $in: ['pending', 'processing'] },
-      $or: [
-        { expiresAt: { $gt: now } }, // Not expired
-        { expiresAt: null, createdAt: { $gt: tenMinutesAgo } } // No expiresAt but created within 10 minutes
-      ]
-    }).sort({ createdAt: -1 }); // Get most recent
-    
-    if (existingPayment) {
-      // Check if the existing payment matches the requested gateway
-      const requestedGateway = gateway === 'razorpay' ? 'razorpay' : 'paypal';
-      
-      if (existingPayment.gateway === requestedGateway) {
-        // Return existing non-expired payment intent
-        console.log(`Reusing existing non-expired payment intent ${existingPayment.paymentId} for appointment ${appointmentId}`);
-        
-        // Prepare response based on gateway
-        if (existingPayment.gateway === 'razorpay') {
-          const { keyId } = getRazorpayAuthHeader();
-          return res.status(200).json({
-            message: 'Existing payment intent (Razorpay) reused',
-            payment: existingPayment,
-            razorpay: existingPayment.gatewayOrderId ? {
-              orderId: existingPayment.gatewayOrderId,
-              amount: existingPayment.amount * 100,
-              currency: existingPayment.currency || 'INR',
-              keyId
-            } : null,
-            appointment: {
-              lockStartTime: appointment.lockStartTime,
-              lockExpiryTime: appointment.lockExpiryTime
-            }
-          });
-        } else {
-          return res.status(200).json({
-            message: 'Existing payment intent reused',
-            payment: existingPayment,
-            paypal: { amount: existingPayment.amount, currency: existingPayment.currency || 'USD' },
-            appointment: {
-              lockStartTime: appointment.lockStartTime,
-              lockExpiryTime: appointment.lockExpiryTime
-            }
-          });
-        }
-      } else {
-        // Gateway mismatch - cancel the existing payment and create new one with requested gateway
-        existingPayment.status = 'cancelled';
-        existingPayment.updatedAt = now;
-        existingPayment.expiresAt = null;
-        await existingPayment.save();
-        console.log(`Cancelled existing payment ${existingPayment.paymentId} due to gateway mismatch (${existingPayment.gateway} -> ${requestedGateway})`);
-      }
+    if (cancelledPayments.modifiedCount > 0) {
+      console.log(`Cancelled ${cancelledPayments.modifiedCount} existing pending/processing payment(s) before creating new payment intent for appointment ${appointmentId}`);
     }
 
     const listing = appointment.listingId;
