@@ -145,7 +145,7 @@ router.post("/create-intent", verifyToken, async (req, res) => {
     
     // Cancel any existing pending/processing payments for this appointment
     // This keeps the database clean while ensuring we always create fresh payment IDs
-    const now = new Date();
+    // (reusing 'now' variable declared above)
     const cancelledPayments = await Payment.updateMany(
       {
         appointmentId,
