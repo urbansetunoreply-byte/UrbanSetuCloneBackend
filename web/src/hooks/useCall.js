@@ -25,19 +25,30 @@ export const useCall = () => {
   const peerRef = useRef(null);
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
+  const remoteAudioRef = useRef(null); // For audio calls
   const callStartTimeRef = useRef(null);
   const durationIntervalRef = useRef(null);
+  const pendingOfferRef = useRef(null); // Store offer if received before peer is created
 
   // Handle WebRTC offer
   const handleWebRTCOffer = useCallback(({ callId, offer }) => {
-    if (!peerRef.current || activeCall?.callId !== callId) return;
+    // If peer doesn't exist yet (receiver), store the offer
+    if (!peerRef.current) {
+      // Only store if it matches incoming call
+      if (incomingCall?.callId === callId || activeCall?.callId === callId) {
+        pendingOfferRef.current = { callId, offer };
+      }
+      return;
+    }
+    
+    if (activeCall?.callId !== callId) return;
     
     try {
       peerRef.current.signal(offer);
     } catch (error) {
       console.error('Error handling WebRTC offer:', error);
     }
-  }, [activeCall]);
+  }, [activeCall, incomingCall]);
 
   // Handle WebRTC answer
   const handleWebRTCAnswer = useCallback(({ callId, answer }) => {
@@ -55,7 +66,9 @@ export const useCall = () => {
     if (!peerRef.current || activeCall?.callId !== callId) return;
     
     try {
-      peerRef.current.signal(candidate);
+      if (candidate) {
+        peerRef.current.signal(candidate);
+      }
     } catch (error) {
       console.error('Error handling ICE candidate:', error);
     }
@@ -72,13 +85,20 @@ export const useCall = () => {
     };
     
     const handleCallAccepted = (data) => {
+      // For receiver (incoming call) - state already set in acceptCall
       if (incomingCall && incomingCall.callId === data.callId) {
-        setIncomingCall(null);
+        // State is already set to 'active' in acceptCall
+        // Just ensure timer is started if not already
+        if (callState !== 'active') {
+          setCallState('active');
+          startCallTimer();
+        }
+      } 
+      // For caller (outgoing call)
+      else if (activeCall && activeCall.callId === data.callId) {
         setCallState('active');
         startCallTimer();
-      } else if (activeCall && activeCall.callId === data.callId) {
-        setCallState('active');
-        startCallTimer();
+        console.log('[Call] Call accepted, connection should be established');
       }
     };
     
@@ -184,45 +204,61 @@ export const useCall = () => {
         localVideoRef.current.srcObject = stream;
       }
       
-      // Create peer connection
-      const peer = new SimplePeer({
-        initiator: true,
-        trickle: false,
-        stream: stream,
-        config: {
-          iceServers: STUN_SERVERS
-        }
-      });
-      
-      peer.on('signal', (data) => {
-        if (activeCall?.callId) {
-          socket.emit('webrtc-offer', {
-            callId: activeCall.callId,
-            offer: data
-          });
-        }
-      });
-      
-      peer.on('stream', (stream) => {
-        setRemoteStream(stream);
-        if (remoteVideoRef.current) {
-          remoteVideoRef.current.srcObject = stream;
-        }
-      });
-
-      peer.on('error', (err) => {
-        console.error('Peer connection error:', err);
-        toast.error('Connection error occurred');
-        endCall();
-      });
-      
-      peerRef.current = peer;
-      
-      // Wait for call ID from server before setting up peer signaling
+      // Wait for call ID from server before creating peer connection
       const handleCallInitiated = ({ callId, status }) => {
         if (status === 'ringing') {
           setActiveCall({ callId, appointmentId, receiverId, callType });
           setCallState('ringing');
+          
+          // Create peer connection AFTER we have the callId
+          const peer = new SimplePeer({
+            initiator: true,
+            trickle: true, // Enable trickle ICE for faster connection
+            stream: stream,
+            config: {
+              iceServers: STUN_SERVERS
+            }
+          });
+          
+          peer.on('signal', (data) => {
+            if (data.type === 'offer') {
+              socket.emit('webrtc-offer', {
+                callId: callId,
+                offer: data
+              });
+            } else if (data.type === 'candidate') {
+              socket.emit('ice-candidate', {
+                callId: callId,
+                candidate: data
+              });
+            }
+          });
+          
+          peer.on('stream', (remoteStream) => {
+            console.log('[Call] Received remote stream');
+            setRemoteStream(remoteStream);
+            // Attach to video element for video calls
+            if (callType === 'video' && remoteVideoRef.current) {
+              remoteVideoRef.current.srcObject = remoteStream;
+            }
+            // Attach to audio element for audio calls
+            if (callType === 'audio' && remoteAudioRef.current) {
+              remoteAudioRef.current.srcObject = remoteStream;
+            }
+          });
+
+          peer.on('connect', () => {
+            console.log('[Call] Peer connection established');
+          });
+
+          peer.on('error', (err) => {
+            console.error('Peer connection error:', err);
+            toast.error('Connection error occurred');
+            endCall();
+          });
+          
+          peerRef.current = peer;
+          
           socket.off('call-initiated', handleCallInitiated);
         }
       };
@@ -265,9 +301,10 @@ export const useCall = () => {
         localVideoRef.current.srcObject = stream;
       }
       
+      // Create peer connection as receiver (non-initiator)
       const peer = new SimplePeer({
         initiator: false,
-        trickle: false,
+        trickle: true, // Enable trickle ICE for faster connection
         stream: stream,
         config: {
           iceServers: STUN_SERVERS
@@ -275,17 +312,34 @@ export const useCall = () => {
       });
       
       peer.on('signal', (data) => {
-        socket.emit('webrtc-answer', {
-          callId: incomingCall.callId,
-          answer: data
-        });
+        if (data.type === 'answer') {
+          socket.emit('webrtc-answer', {
+            callId: incomingCall.callId,
+            answer: data
+          });
+        } else if (data.type === 'candidate') {
+          socket.emit('ice-candidate', {
+            callId: incomingCall.callId,
+            candidate: data
+          });
+        }
       });
       
-      peer.on('stream', (stream) => {
-        setRemoteStream(stream);
-        if (remoteVideoRef.current) {
-          remoteVideoRef.current.srcObject = stream;
+      peer.on('stream', (remoteStream) => {
+        console.log('[Call] Received remote stream');
+        setRemoteStream(remoteStream);
+        // Attach to video element for video calls
+        if (incomingCall.callType === 'video' && remoteVideoRef.current) {
+          remoteVideoRef.current.srcObject = remoteStream;
         }
+        // Attach to audio element for audio calls
+        if (incomingCall.callType === 'audio' && remoteAudioRef.current) {
+          remoteAudioRef.current.srcObject = remoteStream;
+        }
+      });
+
+      peer.on('connect', () => {
+        console.log('[Call] Peer connection established');
       });
 
       peer.on('error', (err) => {
@@ -296,7 +350,11 @@ export const useCall = () => {
       
       peerRef.current = peer;
       
-      socket.emit('call-accept', { callId: incomingCall.callId });
+      // If we have a pending offer, signal it now
+      if (pendingOfferRef.current && pendingOfferRef.current.callId === incomingCall.callId) {
+        peer.signal(pendingOfferRef.current.offer);
+        pendingOfferRef.current = null;
+      }
       
       setActiveCall({
         callId: incomingCall.callId,
@@ -304,6 +362,10 @@ export const useCall = () => {
         receiverId: incomingCall.callerId,
         callType: incomingCall.callType
       });
+      
+      // Emit call accept AFTER peer is created
+      socket.emit('call-accept', { callId: incomingCall.callId });
+      
       setCallState('active');
       setIncomingCall(null);
       startCallTimer();
@@ -335,6 +397,14 @@ export const useCall = () => {
     if (remoteStream) {
       remoteStream.getTracks().forEach(track => track.stop());
       setRemoteStream(null);
+    }
+    
+    // Clear remote audio/video refs
+    if (remoteVideoRef.current) {
+      remoteVideoRef.current.srcObject = null;
+    }
+    if (remoteAudioRef.current) {
+      remoteAudioRef.current.srcObject = null;
     }
     
     // Destroy peer connection
@@ -372,6 +442,7 @@ export const useCall = () => {
     setCallDuration(0);
     callStartTimeRef.current = null;
     setActiveCall(null);
+    pendingOfferRef.current = null;
   };
 
   // Toggle mute
@@ -416,6 +487,7 @@ export const useCall = () => {
     activeCall,
     localVideoRef,
     remoteVideoRef,
+    remoteAudioRef, // Export audio ref for audio calls
     initiateCall,
     acceptCall,
     rejectCall,

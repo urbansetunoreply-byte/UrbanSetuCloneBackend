@@ -15,6 +15,7 @@ const GlobalCallModals = () => {
     activeCall,
     localVideoRef,
     remoteVideoRef,
+    remoteAudioRef, // Add audio ref for audio calls
     isMuted,
     isVideoEnabled,
     callDuration,
@@ -87,6 +88,7 @@ const GlobalCallModals = () => {
           callDuration={callDuration}
           localVideoRef={localVideoRef}
           remoteVideoRef={remoteVideoRef}
+          remoteAudioRef={remoteAudioRef} // Pass audio ref for audio calls
           onToggleMute={toggleMute}
           onToggleVideo={toggleVideo}
           onEndCall={endCall}

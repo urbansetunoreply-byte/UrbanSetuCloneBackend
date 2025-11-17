@@ -703,21 +703,28 @@ io.on('connection', (socket) => {
   // WebRTC signaling events
   socket.on('webrtc-offer', ({ callId, offer }) => {
     const activeCall = activeCalls.get(callId);
-    if (activeCall && socket.id === activeCall.callerSocketId) {
-      io.to(activeCall.receiverSocketId).emit('webrtc-offer', { callId, offer });
+    if (activeCall) {
+      // Forward offer from caller to receiver
+      if (socket.id === activeCall.callerSocketId && activeCall.receiverSocketId) {
+        io.to(activeCall.receiverSocketId).emit('webrtc-offer', { callId, offer });
+      }
     }
   });
 
   socket.on('webrtc-answer', ({ callId, answer }) => {
     const activeCall = activeCalls.get(callId);
-    if (activeCall && socket.id === activeCall.receiverSocketId) {
-      io.to(activeCall.callerSocketId).emit('webrtc-answer', { callId, answer });
+    if (activeCall) {
+      // Forward answer from receiver to caller
+      if (socket.id === activeCall.receiverSocketId && activeCall.callerSocketId) {
+        io.to(activeCall.callerSocketId).emit('webrtc-answer', { callId, answer });
+      }
     }
   });
 
   socket.on('ice-candidate', ({ callId, candidate }) => {
     const activeCall = activeCalls.get(callId);
     if (activeCall) {
+      // Forward ICE candidate to the other party
       const targetSocketId = socket.id === activeCall.callerSocketId 
         ? activeCall.receiverSocketId 
         : activeCall.callerSocketId;

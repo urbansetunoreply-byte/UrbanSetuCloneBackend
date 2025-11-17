@@ -9,6 +9,7 @@ const ActiveCallModal = ({
   callDuration,
   localVideoRef,
   remoteVideoRef,
+  remoteAudioRef, // Add audio ref for audio calls
   onToggleMute,
   onToggleVideo,
   onEndCall
@@ -55,6 +56,13 @@ const ActiveCallModal = ({
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            {/* Hidden audio element for remote audio stream */}
+            <audio
+              ref={remoteAudioRef}
+              autoPlay
+              playsInline
+              className="hidden"
+            />
             <div className="text-center text-white">
               <div className="w-32 h-32 bg-white bg-opacity-20 rounded-full mx-auto mb-4 flex items-center justify-center">
                 <FaPhone className="text-6xl" />
