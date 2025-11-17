@@ -111,7 +111,7 @@ const ActiveCallModal = ({
   return (
     <div 
       ref={containerRef}
-      className="fixed inset-0 bg-black flex flex-col z-[9999] transition-opacity duration-300"
+      className="fixed inset-0 bg-black flex flex-col z-[9999] transition-opacity duration-300 overflow-hidden"
       style={{ animation: 'fadeIn 0.3s ease-in' }}
     >
       <style>{`
@@ -125,7 +125,7 @@ const ActiveCallModal = ({
         }
       `}</style>
       {/* Remote Video/Audio */}
-      <div className="flex-1 relative" onClick={handleVideoClick}>
+      <div className="flex-1 relative min-h-0 overflow-hidden" onClick={handleVideoClick}>
         {callType === 'video' ? (
           <>
             {/* Main video (swappable between local and remote) */}
@@ -138,7 +138,7 @@ const ActiveCallModal = ({
                   autoPlay
                   playsInline
                   muted
-                  className="w-full h-full object-cover cursor-pointer"
+                  className="w-full h-full object-cover cursor-pointer max-w-full max-h-full"
                   onLoadedMetadata={(e) => {
                     e.target.play().catch(err => console.error('Error playing local video:', err));
                   }}
@@ -166,7 +166,7 @@ const ActiveCallModal = ({
                   autoPlay
                   playsInline
                   muted={false}
-                  className="w-full h-full object-cover cursor-pointer"
+                  className="w-full h-full object-cover cursor-pointer max-w-full max-h-full"
                   onLoadedMetadata={(e) => {
                     e.target.muted = false; // Ensure audio is not muted
                     e.target.play().catch(err => console.error('Error playing remote video:', err));
