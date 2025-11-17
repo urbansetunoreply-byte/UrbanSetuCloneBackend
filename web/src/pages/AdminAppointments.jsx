@@ -9,7 +9,7 @@ import LinkPreview from '../components/LinkPreview';
 import { EmojiButton } from '../components/EmojiPicker';
 import { useSelector, useDispatch } from "react-redux";
 import { useState as useLocalState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { toast, ToastContainer } from 'react-toastify';
 import { socket } from "../utils/socket";
 import { useSoundEffects } from "../components/SoundEffects";
@@ -29,6 +29,16 @@ export default function AdminAppointments() {
   const { currentUser } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  
+  // Handle navigation state when coming from direct chat link
+  const location = useLocation();
+  const params = useParams();
+  const [shouldOpenChatFromNotification, setShouldOpenChatFromNotification] = useState(false);
+  const [activeChatAppointmentId, setActiveChatAppointmentId] = useState(null);
+  const [missingChatbookError, setMissingChatbookError] = useState(null);
+  const chatResolveRef = useRef(false);
+  const chatIntervalRef = useRef(null);
+  const chatTimeoutRef = useRef(null);
 
   // Function to handle phone number clicks
   const handlePhoneClick = (phoneNumber) => {
@@ -740,6 +750,61 @@ export default function AdminAppointments() {
        document.removeEventListener('click', handleClickOutside);
      };
    }, []);
+
+   // Handle direct chat link via URL parameter
+   useEffect(() => {
+     // Clear any previous timers when dependencies change
+     if (chatIntervalRef.current) {
+       clearInterval(chatIntervalRef.current);
+       chatIntervalRef.current = null;
+     }
+     if (chatTimeoutRef.current) {
+       clearTimeout(chatTimeoutRef.current);
+       chatTimeoutRef.current = null;
+     }
+     chatResolveRef.current = false;
+
+     // Handle direct chat link via URL parameter
+     if (params.chatId) {
+       const chatIdFromUrl = params.chatId;
+
+       const tryResolveChat = () => {
+         const appointment = appointments.find(appt => appt._id === chatIdFromUrl);
+         if (appointment) {
+           chatResolveRef.current = true;
+           setShouldOpenChatFromNotification(true);
+           setActiveChatAppointmentId(chatIdFromUrl);
+           if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
+           if (chatTimeoutRef.current) clearTimeout(chatTimeoutRef.current);
+         }
+       };
+
+       if (appointments.length > 0) {
+         tryResolveChat();
+       } else {
+         // Poll until appointments are available
+         chatIntervalRef.current = setInterval(() => {
+           if (appointments.length > 0) {
+             tryResolveChat();
+             if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
+           }
+         }, 100);
+       }
+
+       // Fallback after 5s if still unresolved
+       chatTimeoutRef.current = setTimeout(() => {
+         if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
+         if (!chatResolveRef.current) {
+           setMissingChatbookError(chatIdFromUrl);
+         }
+       }, 5000);
+     }
+
+     return () => {
+       if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
+       if (chatTimeoutRef.current) clearTimeout(chatTimeoutRef.current);
+     };
+   }, [params.chatId, appointments]);
  
    // Add state to track updated comments for each appointment
   // REMOVED: updatedComments state - no longer needed, using appointments array directly
@@ -1812,17 +1877,23 @@ export default function AdminAppointments() {
                         getFilteredEmojis={getFilteredEmojis}
                         toggleReactionsBar={toggleReactionsBar}
                         toggleReactionsEmojiPicker={toggleReactionsEmojiPicker}
-                        onExportChat={(appointment, comments) => {
-                          setExportAppointment(appointment);
-                          setExportComments(comments);
-                          setShowExportModal(true);
-                        }}
-                      />
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )
+                      onExportChat={(appointment, comments) => {
+                        setExportAppointment(appointment);
+                        setExportComments(comments);
+                        setShowExportModal(true);
+                      }}
+                      activeChatAppointmentId={activeChatAppointmentId}
+                      shouldOpenChatFromNotification={shouldOpenChatFromNotification}
+                      onChatOpened={() => {
+                        setShouldOpenChatFromNotification(false);
+                        setActiveChatAppointmentId(null);
+                      }}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
         ) : (
           // Active Appointments Section
           appointmentsWithComments.length === 0 ? (
@@ -1891,6 +1962,12 @@ export default function AdminAppointments() {
                         setExportAppointment(appointment);
                         setExportComments(comments);
                         setShowExportModal(true);
+                      }}
+                      activeChatAppointmentId={activeChatAppointmentId}
+                      shouldOpenChatFromNotification={shouldOpenChatFromNotification}
+                      onChatOpened={() => {
+                        setShouldOpenChatFromNotification(false);
+                        setActiveChatAppointmentId(null);
                       }}
                     />
                   ))}
@@ -6501,6 +6578,10 @@ function AdminAppointmentRow({
                           // Close reactions bar when chat modal closes
                           setShowReactionsBar(false);
                           setReactionsMessageId(null);
+                          // Clean up URL when chat closes
+                          if (params.chatId) {
+                            navigate('/admin/appointments', { replace: true });
+                          }
                         }}
                         title="Close"
                         aria-label="Close"

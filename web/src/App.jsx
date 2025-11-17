@@ -661,6 +661,7 @@ function AppRoutes({ bootstrapped }) {
           <Route element={<AdminRoute bootstrapped={bootstrapped} />}>
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/appointments" element={<AdminAppointments />} />
+            <Route path="/admin/appointments/chat/:chatId" element={<AdminAppointments />} />
             <Route path="/admin/about" element={<AdminAbout />} />
             <Route path="/admin/blogs" element={<AdminBlogs />} />
             <Route path="/admin/blog/:slug" element={<AdminBlogDetail />} />
