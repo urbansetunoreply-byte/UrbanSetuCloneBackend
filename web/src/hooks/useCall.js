@@ -32,6 +32,8 @@ export const useCall = () => {
   const remoteAudioRef = useRef(null); // For audio calls
   const callStartTimeRef = useRef(null);
   const durationIntervalRef = useRef(null);
+  const animationFrameRef = useRef(null);
+  const lastSecondRef = useRef(null);
   const pendingOfferRef = useRef(null); // Store offer if received before peer is created
 
   // Handle WebRTC offer
@@ -94,15 +96,21 @@ export const useCall = () => {
       return;
     }
 
-    // Stop any existing timer
+    // Stop any existing timers
     if (durationIntervalRef.current) {
       clearInterval(durationIntervalRef.current);
+      durationIntervalRef.current = null;
+    }
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
     }
     
     // Use the exact server start time as the reference point
     // Both sides will use this same timestamp, ensuring perfect synchronization
     const serverStartTimestamp = synchronizedStartTime.getTime();
     callStartTimeRef.current = serverStartTimestamp;
+    lastSecondRef.current = null;
     
     // Calculate initial elapsed time to display immediately (accounts for network latency)
     // This ensures the timer shows the correct duration even if there was a delay
@@ -114,6 +122,7 @@ export const useCall = () => {
     // Set initial duration immediately to account for network latency
     // This ensures both sides show the same time even if they received the event at different times
     setCallDuration(initialDuration);
+    lastSecondRef.current = initialDuration;
     
     console.log('[Call Timer] Started with synchronized server time:', {
       serverStartTime: new Date(serverStartTimestamp).toISOString(),
@@ -124,13 +133,41 @@ export const useCall = () => {
       initialDurationSeconds: initialDuration
     });
     
-    // Update timer every second based on server's startTime
-    // This ensures both sides always calculate from the same reference point
+    // Use requestAnimationFrame for smooth, precise updates
+    // Calculate duration from server timestamp each frame, ensuring no drift
+    const updateTimer = () => {
+      if (!callStartTimeRef.current) {
+        return;
+      }
+      
+      // Always calculate from server's startTime - this ensures perfect synchronization
+      // Even if intervals drift, both sides calculate from the same reference point
+      const now = Date.now();
+      const duration = Math.floor((now - callStartTimeRef.current) / 1000);
+      
+      // Only update state when the second changes to avoid unnecessary re-renders
+      if (duration !== lastSecondRef.current) {
+        lastSecondRef.current = duration;
+        setCallDuration(duration);
+      }
+      
+      // Continue animation loop
+      animationFrameRef.current = requestAnimationFrame(updateTimer);
+    };
+    
+    // Start the animation frame loop for precise timing
+    animationFrameRef.current = requestAnimationFrame(updateTimer);
+    
+    // Also use interval as backup for reliability
     durationIntervalRef.current = setInterval(() => {
       if (callStartTimeRef.current) {
         // Always calculate from server's startTime, not local time
+        // This double-check ensures accuracy even if animation frame is delayed
         const duration = Math.floor((Date.now() - callStartTimeRef.current) / 1000);
-        setCallDuration(duration);
+        if (duration !== lastSecondRef.current) {
+          lastSecondRef.current = duration;
+          setCallDuration(duration);
+        }
       }
     }, 1000);
   }, []);
@@ -631,11 +668,17 @@ export const useCall = () => {
       peerRef.current = null;
     }
     
-    // Stop timer
+    // Stop all timers
     if (durationIntervalRef.current) {
       clearInterval(durationIntervalRef.current);
       durationIntervalRef.current = null;
     }
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+    callStartTimeRef.current = null;
+    lastSecondRef.current = null;
     
     // Notify backend if call was active (not just ringing)
     if (activeCall?.callId && callState === 'active') {
