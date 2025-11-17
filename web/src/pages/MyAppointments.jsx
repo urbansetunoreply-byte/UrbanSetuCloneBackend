@@ -1320,10 +1320,10 @@ export default function MyAppointments() {
                       // Call History Modal props
                       setShowCallHistoryModal={setShowCallHistoryModal}
                       setCallHistoryAppointmentId={setCallHistoryAppointmentId}
-                    />
-                  ))}
-                </tbody>
-              </table>
+                  />
+                ))}
+              </tbody>
+            </table>
           </div>
           )
         )}
@@ -1601,7 +1601,7 @@ export default function MyAppointments() {
         const reinitiationsLeft = maxReinitiations - reinitiationCount;
 
         return (
-          <div className="modal-backdrop">
+        <div className="modal-backdrop">
             <div className="modal-content" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
               <div className="p-5">
                 <div className="flex items-center justify-between mb-4">
@@ -1661,47 +1661,47 @@ export default function MyAppointments() {
                   </div>
                 )}
 
-                <form onSubmit={handleReinitiateSubmit} className="space-y-4">
-                  <div>
-                    <label className="block font-semibold mb-1">Date</label>
+              <form onSubmit={handleReinitiateSubmit} className="space-y-4">
+                <div>
+                  <label className="block font-semibold mb-1">Date</label>
                     <input type="date" className="border rounded px-2 py-1 w-full" value={reinitiateData.date} onChange={e => setReinitiateData(d => ({ ...d, date: e.target.value }))} required disabled={!canReinitiate} />
-                  </div>
-                  <div>
-                    <label className="block font-semibold mb-1">Time (9 AM - 7 PM)</label>
-                    <select
-                      className="border rounded px-2 py-1 w-full"
-                      value={reinitiateData.time}
-                      onChange={e => setReinitiateData(d => ({ ...d, time: e.target.value }))}
-                      required
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">Time (9 AM - 7 PM)</label>
+                  <select
+                    className="border rounded px-2 py-1 w-full"
+                    value={reinitiateData.time}
+                    onChange={e => setReinitiateData(d => ({ ...d, time: e.target.value }))}
+                    required
                       disabled={!canReinitiate}
-                    >
-                      <option value="">Select Time (9 AM - 7 PM)</option>
-                      {reinitiateData.time && !APPOINTMENT_TIME_SLOTS.some(slot => slot.value === reinitiateData.time) && (
-                        <option value={reinitiateData.time}>
-                          {`Current time (${formatTimeDisplay(reinitiateData.time)})`}
-                        </option>
-                      )}
-                      {APPOINTMENT_TIME_SLOTS.map((slot) => (
-                        <option key={slot.value} value={slot.value}>
-                          {slot.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block font-semibold mb-1">Message (optional)</label>
+                  >
+                    <option value="">Select Time (9 AM - 7 PM)</option>
+                    {reinitiateData.time && !APPOINTMENT_TIME_SLOTS.some(slot => slot.value === reinitiateData.time) && (
+                      <option value={reinitiateData.time}>
+                        {`Current time (${formatTimeDisplay(reinitiateData.time)})`}
+                      </option>
+                    )}
+                    {APPOINTMENT_TIME_SLOTS.map((slot) => (
+                      <option key={slot.value} value={slot.value}>
+                        {slot.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">Message (optional)</label>
                     <textarea className="border rounded px-2 py-1 w-full" value={reinitiateData.message} onChange={e => setReinitiateData(d => ({ ...d, message: e.target.value }))} disabled={!canReinitiate} />
-                  </div>
+                </div>
                   <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full disabled:bg-gray-400 disabled:cursor-not-allowed" disabled={!canReinitiate}>Submit</button>
                   <button type="button" className="mt-2 w-full bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400" onClick={() => {
                     setShowReinitiateModal(false);
                     setReinitiateData(null);
                     setReinitiatePaymentStatus(null);
                   }}>Cancel</button>
-                </form>
-              </div>
+              </form>
             </div>
           </div>
+        </div>
         );
       })()}
 
@@ -1935,7 +1935,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         try {
           if (inputRef.current) {
             const length = inputRef.current.value.length;
-            inputRef.current.focus();
+            // Removed auto-focus: Don't focus input automatically when chat opens
+            // inputRef.current.focus();
             inputRef.current.setSelectionRange(length, length);
             // Auto-resize textarea for drafted content
             autoResizeTextarea(inputRef.current);
@@ -2316,6 +2317,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   // Message info modal state
   const [showMessageInfoModal, setShowMessageInfoModal] = useState(false);
   const [selectedMessageForInfo, setSelectedMessageForInfo] = useState(null);
+  // Call info modal state
+  const [showCallInfoModal, setShowCallInfoModal] = useState(false);
+  const [selectedCallForInfo, setSelectedCallForInfo] = useState(null);
   const [sendIconAnimating, setSendIconAnimating] = useState(false);
   const [sendIconSent, setSendIconSent] = useState(false);
   
@@ -4059,24 +4063,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     // Remove the global sending state to allow multiple messages
     // setSending(true);
 
-    // Aggressively refocus the input field to keep keyboard open on mobile
-    const refocusInput = () => {
-      if (inputRef.current) {
-        inputRef.current.focus();
-        // For mobile devices, ensure the input remains active and set cursor position
-        inputRef.current.setSelectionRange(0, 0);
-        // Force the input to be the active element
-        if (document.activeElement !== inputRef.current) {
-          inputRef.current.click();
-          inputRef.current.focus();
-        }
-      }
-    };
-    
-    // Multiple attempts to maintain focus for mobile devices
-    refocusInput(); // Immediate focus
-    requestAnimationFrame(refocusInput); // Focus after DOM updates
-    setTimeout(refocusInput, 10); // Final fallback
+    // Removed auto-focus: Don't automatically focus input after sending message
+    // User can manually click to focus when needed
 
     // Scroll to bottom immediately after adding the message
     if (chatEndRef.current) {
@@ -4119,19 +4107,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         // Remove the temp message and show error
         setComments(prev => prev.filter(msg => msg._id !== tempId));
         toast.error(err.response?.data?.message || 'An error occurred. Please try again.');
-        // Refocus input on error - aggressive mobile focus
-        const refocusInput = () => {
-          if (inputRef.current) {
-            inputRef.current.focus();
-            inputRef.current.setSelectionRange(0, 0);
-            if (document.activeElement !== inputRef.current) {
-              inputRef.current.click();
-              inputRef.current.focus();
-            }
-          }
-        };
-        refocusInput();
-        requestAnimationFrame(refocusInput);
+        // Removed auto-focus: Don't automatically focus input on error
+        // User can manually click to focus when needed
       }
     })();
   };
@@ -4192,26 +4169,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
           }
         }, 50);
         
-        // Aggressively refocus the input field to keep keyboard open on mobile
-        const refocusInput = () => {
-          if (inputRef.current) {
-            inputRef.current.focus();
-            // Place cursor at end of text instead of selecting all
-            const length = inputRef.current.value.length;
-            inputRef.current.setSelectionRange(length, length);
-            
-            // Auto-resize textarea for edited content
-            inputRef.current.style.height = '48px';
-            const scrollHeight = inputRef.current.scrollHeight;
-            const maxHeight = 144;
-            inputRef.current.style.height = Math.min(scrollHeight, maxHeight) + 'px';
-          }
-        };
-        
-        // Multiple attempts to maintain focus for mobile devices
-        refocusInput(); // Immediate focus
-        requestAnimationFrame(refocusInput); // Focus after DOM updates
-        setTimeout(refocusInput, 10); // Final fallback
+        // Removed auto-focus: Don't automatically focus input after editing
+        // User can manually click to focus when needed
         
         toast.success("Message edited successfully!");
     } catch (err) {
@@ -4302,10 +4261,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       }
     };
     
-    // Multiple attempts to maintain focus for mobile devices
-    setTimeout(refocusInput, 50); // Initial focus
-    setTimeout(refocusInput, 100); // Focus after DOM updates
-    setTimeout(refocusInput, 200); // Final fallback
+        // Removed auto-focus: Don't automatically focus input
+        // User can manually click to focus when needed
   };
 
   const getStatusColor = (status) => {
@@ -6240,14 +6197,14 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         isExpired;
 
                       return (
-                        <div className="flex flex-col items-center">
-                          <button
+                      <div className="flex flex-col items-center">
+                        <button
                             className={`text-xs border rounded px-2 py-1 mt-1 ${
                               isDisabled 
                                 ? 'text-gray-400 border-gray-300 cursor-not-allowed' 
                                 : 'text-blue-500 hover:text-blue-700 border-blue-500'
                             }`}
-                            onClick={() => onOpenReinitiate(appt)}
+                          onClick={() => onOpenReinitiate(appt)}
                             disabled={isDisabled}
                             title={
                               isRefunded 
@@ -6256,9 +6213,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                 ? "Reinitiation window expired"
                                 : "Reinitiate or Reschedule Appointment"
                             }
-                          >
-                            Reinitiate
-                          </button>
+                        >
+                          Reinitiate
+                        </button>
                           <span className="text-xs text-gray-500 mt-1 flex flex-col items-center gap-0.5">
                             {isExpired ? (
                               <span className="text-red-500 font-semibold">Window expired</span>
@@ -6269,8 +6226,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                 Reinitiation possible for: {reinitiateCountdown.days > 0 ? `${reinitiateCountdown.days}d ` : ''}{reinitiateCountdown.hours}h left
                               </span>
                             ) : null}
-                          </span>
-                        </div>
+                        </span>
+                      </div>
                       );
                     })()}
                   </>
@@ -6853,36 +6810,38 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                       </div>
                     </div>
                   ) : headerOptionsMessageId && selectedCallForHeaderOptions ? (
-                    // Header-level options overlay for call history items
+                    // Header-level options overlay for call history items (same options as regular messages)
                     <div className="flex items-center justify-end w-full gap-4">
                       <div className="flex items-center gap-4">
-                        {/* Call info */}
+                        {/* Reply */}
+                        <button
+                          className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                          onClick={() => { 
+                            // Create a fake message-like object for reply functionality
+                            const fakeMessage = {
+                              _id: `call-${selectedCallForHeaderOptions._id || selectedCallForHeaderOptions.callId}`,
+                              senderEmail: (selectedCallForHeaderOptions.callerId?._id === currentUser._id || selectedCallForHeaderOptions.callerId === currentUser._id) 
+                                ? currentUser.email 
+                                : (selectedCallForHeaderOptions.receiverId?.email || otherParty?.email),
+                              message: `${selectedCallForHeaderOptions.callType === 'video' ? 'Video' : 'Audio'} call`,
+                              timestamp: selectedCallForHeaderOptions.startTime || selectedCallForHeaderOptions.createdAt,
+                              isCall: true,
+                              call: selectedCallForHeaderOptions
+                            };
+                            startReply(fakeMessage);
+                            setHeaderOptionsMessageId(null);
+                          }}
+                          title="Reply"
+                          aria-label="Reply"
+                        >
+                          <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M10 9V5l-7 7 7 7v-4.1c4.28 0 6.92 1.45 8.84 4.55.23.36.76.09.65-.32C18.31 13.13 15.36 10.36 10 9z"/></svg>
+                        </button>
+                        {/* Call info modal */}
                         <button
                           className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
                           onClick={() => {
-                            const callTypeText = selectedCallForHeaderOptions.callType === 'video' ? 'Video' : 'Audio';
-                            const isCaller = selectedCallForHeaderOptions.callerId?._id === currentUser._id || selectedCallForHeaderOptions.callerId === currentUser._id;
-                            const otherPartyName = isCaller 
-                              ? (selectedCallForHeaderOptions.receiverId?.username || 'Unknown')
-                              : (selectedCallForHeaderOptions.callerId?.username || 'Unknown');
-                            const formatCallDuration = (seconds) => {
-                              if (!seconds || seconds === 0) return 'N/A';
-                              const hours = Math.floor(seconds / 3600);
-                              const minutes = Math.floor((seconds % 3600) / 60);
-                              const secs = Math.floor(seconds % 60);
-                              if (hours > 0) {
-                                return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-                              }
-                              return `${minutes}:${secs.toString().padStart(2, '0')}`;
-                            };
-                            const callDate = new Date(selectedCallForHeaderOptions.startTime || selectedCallForHeaderOptions.createdAt);
-                            toast.info(
-                              `${callTypeText} Call\n` +
-                              `Status: ${selectedCallForHeaderOptions.status}\n` +
-                              `Duration: ${formatCallDuration(selectedCallForHeaderOptions.duration)}\n` +
-                              `Date: ${callDate.toLocaleDateString()} ${callDate.toLocaleTimeString()}\n` +
-                              `${isCaller ? 'You called' : otherPartyName + ' called you'}`
-                            );
+                            setSelectedCallForInfo(selectedCallForHeaderOptions);
+                            setShowCallInfoModal(true);
                             setHeaderOptionsMessageId(null);
                           }}
                           title="Call info"
@@ -6890,6 +6849,50 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         >
                           <FaInfoCircle size={18} />
                         </button>
+                        {/* Pin */}
+                        {!isChatSendBlocked && (
+                          <button
+                            className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                            onClick={() => { 
+                              // Create a fake message-like object for pin functionality
+                              const fakeMessage = {
+                                _id: `call-${selectedCallForHeaderOptions._id || selectedCallForHeaderOptions.callId}`,
+                                senderEmail: (selectedCallForHeaderOptions.callerId?._id === currentUser._id || selectedCallForHeaderOptions.callerId === currentUser._id) 
+                                  ? currentUser.email 
+                                  : (selectedCallForHeaderOptions.receiverId?.email || otherParty?.email),
+                                message: `${selectedCallForHeaderOptions.callType === 'video' ? 'Video' : 'Audio'} call`,
+                                timestamp: selectedCallForHeaderOptions.startTime || selectedCallForHeaderOptions.createdAt,
+                                isCall: true,
+                                call: selectedCallForHeaderOptions
+                              };
+                              setMessageToPin([fakeMessage]);
+                              setShowPinModal(true);
+                              setHeaderOptionsMessageId(null);
+                            }}
+                            title="Pin call"
+                            aria-label="Pin call"
+                          >
+                            <FaThumbtack size={18} />
+                          </button>
+                        )}
+                        {/* Delete */}
+                        {!isChatSendBlocked && (
+                          <button
+                            className="text-white hover:text-red-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                            onClick={() => { 
+                              // For calls, we'll remove them from local call history (they're already saved in DB)
+                              setCallHistory(prev => prev.filter(call => 
+                                (call._id || call.callId) !== (selectedCallForHeaderOptions._id || selectedCallForHeaderOptions.callId)
+                              ));
+                              toast.success('Call removed from chat');
+                              setHeaderOptionsMessageId(null);
+                            }}
+                            title="Delete call"
+                            aria-label="Delete call"
+                          >
+                            <FaTrash size={18} />
+                          </button>
+                        )}
                         {/* Close button */}
                         <button
                           className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors z-10 shadow"
@@ -7962,9 +7965,15 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                     };
 
                     // Merge call history with chat messages chronologically
+                    // CRITICAL: Filter call history by clearTime to prevent old calls from loading after chat is cleared
+                    const filteredCallHistory = callHistory.filter(call => {
+                      const callTimestamp = new Date(call.startTime || call.createdAt).getTime();
+                      return callTimestamp > clearTime;
+                    });
+                    
                     const mergedTimeline = [
-                      // Convert call history to timeline items
-                      ...callHistory.map(call => ({
+                      // Convert filtered call history to timeline items
+                      ...filteredCallHistory.map(call => ({
                         type: 'call',
                         id: call._id || call.callId,
                         timestamp: new Date(call.startTime || call.createdAt),
@@ -7986,11 +7995,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                     // If no items at all
                     if (mergedTimeline.length === 0) {
                       return (
-                        <div className="flex flex-col items-center justify-center h-full text-center py-8">
-                          <FaCommentDots className="text-gray-300 text-4xl mb-3" />
-                          <p className="text-gray-500 font-medium text-sm">No messages yet</p>
-                          <p className="text-gray-400 text-xs mt-1">Start the conversation and connect with the other party</p>
-                        </div>
+                    <div className="flex flex-col items-center justify-center h-full text-center py-8">
+                      <FaCommentDots className="text-gray-300 text-4xl mb-3" />
+                      <p className="text-gray-500 font-medium text-sm">No messages yet</p>
+                      <p className="text-gray-400 text-xs mt-1">Start the conversation and connect with the other party</p>
+                    </div>
                       );
                     }
 
@@ -8060,6 +8069,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                     } transition-all duration-200 hover:scale-110 p-1 rounded-full hover:bg-white hover:bg-opacity-20 ml-1`}
                                     onClick={(e) => { 
                                       e.stopPropagation(); 
+                                      // Show reactions bar for calls (like regular messages)
+                                      setReactionsMessageId(`call-${call._id || call.callId}`);
+                                      setShowReactionsBar(true);
+                                      // Also set header options for call actions
                                       setHeaderOptionsMessageId(`call-${call._id || call.callId}`);
                                     }}
                                     title="Call options"
@@ -8076,62 +8089,62 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
 
                       // If it's a message, render chat message (existing logic)
                       const c = item.message;
-                      const isMe = c.senderEmail === currentUser.email;
-                      const isEditing = editingComment === c._id;
-                      const formattedDate = currentDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' });
+                    const isMe = c.senderEmail === currentUser.email;
+                    const isEditing = editingComment === c._id;
+                    const formattedDate = currentDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' });
 
-                      return (
-                        <React.Fragment key={c._id || index}>
-                          {isNewDay && (
-                            <div className="w-full flex justify-center my-2">
-                              <span className="bg-blue-600 text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white">{getDateLabel(currentDate)}</span>
-                            </div>
-                          )}
-                          {/* New messages divider: only right after opening when unread exists */}
+                    return (
+                      <React.Fragment key={c._id || index}>
+                        {isNewDay && (
+                          <div className="w-full flex justify-center my-2">
+                            <span className="bg-blue-600 text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white">{getDateLabel(currentDate)}</span>
+                          </div>
+                        )}
+                        {/* New messages divider: only right after opening when unread exists */}
                           {showUnreadDividerOnOpen && unreadNewMessages > 0 && item.type === 'message' && (() => {
                             // Find the index of this message in filteredComments
                             const messageIndex = filteredComments.findIndex(msg => msg._id === c._id);
                             return messageIndex === filteredComments.length - unreadNewMessages;
                           })() && (
-                            <div className="w-full flex items-center my-2">
-                              <div className="flex-1 h-px bg-gray-300"></div>
-                              <span className="mx-2 text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full border border-red-200">
-                                {unreadNewMessages} unread message{unreadNewMessages > 1 ? 's' : ''}
-                              </span>
-                              <div className="flex-1 h-px bg-gray-300"></div>
+                          <div className="w-full flex items-center my-2">
+                            <div className="flex-1 h-px bg-gray-300"></div>
+                            <span className="mx-2 text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full border border-red-200">
+                              {unreadNewMessages} unread message{unreadNewMessages > 1 ? 's' : ''}
+                            </span>
+                            <div className="flex-1 h-px bg-gray-300"></div>
+                          </div>
+                        )}
+                        <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-fadeInChatBubble`} style={{ animationDelay: `${0.03 * index}s` }}>
+                          {/* Selection checkbox - only show in selection mode */}
+                          {isSelectionMode && (
+                            <div className={`flex items-start ${isMe ? 'order-2 ml-2' : 'order-1 mr-2'}`}>
+                              <input
+                                type="checkbox"
+                                checked={selectedMessages.some(msg => msg._id === c._id)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedMessages(prev => [...prev, c]);
+                                  } else {
+                                    setSelectedMessages(prev => prev.filter(msg => msg._id !== c._id));
+                                  }
+                                }}
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                              />
                             </div>
                           )}
-                          <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-fadeInChatBubble`} style={{ animationDelay: `${0.03 * index}s` }}>
-                            {/* Selection checkbox - only show in selection mode */}
-                            {isSelectionMode && (
-                              <div className={`flex items-start ${isMe ? 'order-2 ml-2' : 'order-1 mr-2'}`}>
-                                <input
-                                  type="checkbox"
-                                  checked={selectedMessages.some(msg => msg._id === c._id)}
-                                  onChange={(e) => {
-                                    if (e.target.checked) {
-                                      setSelectedMessages(prev => [...prev, c]);
-                                    } else {
-                                      setSelectedMessages(prev => prev.filter(msg => msg._id !== c._id));
-                                    }
-                                  }}
-                                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                                />
-                              </div>
-                            )}
-                            <div
-                              ref={el => messageRefs.current[c._id] = el}
-                              id={`message-${c._id}`}
-                              data-message-id={c._id}
-                              className={`relative rounded-2xl px-4 sm:px-5 py-3 text-sm shadow-xl max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] break-words overflow-visible transition-all duration-300 min-h-[60px] ${c.audioUrl && !c.deleted ? 'min-w-[280px] sm:min-w-[320px]' : ''} ${
-                                isMe 
-                                  ? 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white shadow-blue-200 hover:shadow-blue-300 hover:shadow-2xl' 
-                                  : 'bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 shadow-gray-200 hover:shadow-lg hover:border-gray-300 hover:shadow-xl'
-                              } ${
-                                highlightedPinnedMessage === c._id ? 'ring-4 ring-purple-400 shadow-2xl scale-105' : ''
-                              } ${isSelectionMode && selectedMessages.some(msg => msg._id === c._id) ? 'ring-2 ring-blue-400' : ''}`}
-                              style={{ animationDelay: `${0.03 * index}s` }}
-                            >
+                          <div
+                            ref={el => messageRefs.current[c._id] = el}
+                            id={`message-${c._id}`}
+                            data-message-id={c._id}
+                            className={`relative rounded-2xl px-4 sm:px-5 py-3 text-sm shadow-xl max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] break-words overflow-visible transition-all duration-300 min-h-[60px] ${c.audioUrl && !c.deleted ? 'min-w-[280px] sm:min-w-[320px]' : ''} ${
+                              isMe 
+                                ? 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white shadow-blue-200 hover:shadow-blue-300 hover:shadow-2xl' 
+                                : 'bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 shadow-gray-200 hover:shadow-lg hover:border-gray-300 hover:shadow-xl'
+                            } ${
+                              highlightedPinnedMessage === c._id ? 'ring-4 ring-purple-400 shadow-2xl scale-105' : ''
+                            } ${isSelectionMode && selectedMessages.some(msg => msg._id === c._id) ? 'ring-2 ring-blue-400' : ''}`}
+                            style={{ animationDelay: `${0.03 * index}s` }}
+                          >
                             {/* Reply preview above message if this is a reply */}
                             {c.replyTo && (
                               <div className="border-l-4 border-purple-400 pl-3 mb-2 text-xs bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 rounded-lg w-full max-w-full break-words cursor-pointer transition-all duration-200 hover:shadow-sm" onClick={() => {
@@ -11435,6 +11448,89 @@ You can lock this chat again at any time from the options.</p>
           </div>
         </div>
       ), document.body)}
+
+      {/* Call Info Modal */}
+      {showCallInfoModal && selectedCallForInfo && createPortal((
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <FaInfoCircle className="text-blue-500" /> Call Info
+            </h3>
+            <div className="space-y-4">
+              <div className="bg-gray-50 rounded p-3 text-sm text-gray-700">
+                <div className="font-semibold mb-2">Call Type:</div>
+                <div>{selectedCallForInfo.callType === 'video' ? 'Video Call' : 'Audio Call'}</div>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-600">Status:</span>
+                  <span className={`text-sm font-medium ${
+                    selectedCallForInfo.status === 'accepted' ? 'text-green-600' :
+                    selectedCallForInfo.status === 'missed' || selectedCallForInfo.status === 'rejected' || selectedCallForInfo.status === 'cancelled' ? 'text-red-600' :
+                    'text-yellow-600'
+                  }`}>
+                    {selectedCallForInfo.status.charAt(0).toUpperCase() + selectedCallForInfo.status.slice(1)}
+                  </span>
+                </div>
+                
+                {selectedCallForInfo.duration && selectedCallForInfo.duration > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-600">Duration:</span>
+                    <span className="text-sm text-gray-800">
+                      {(() => {
+                        const hours = Math.floor(selectedCallForInfo.duration / 3600);
+                        const minutes = Math.floor((selectedCallForInfo.duration % 3600) / 60);
+                        const secs = selectedCallForInfo.duration % 60;
+                        if (hours > 0) {
+                          return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                        }
+                        return `${minutes}:${secs.toString().padStart(2, '0')}`;
+                      })()}
+                    </span>
+                  </div>
+                )}
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-600">Started:</span>
+                  <span className="text-sm text-gray-800">
+                    {new Date(selectedCallForInfo.startTime || selectedCallForInfo.createdAt).toLocaleString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: true
+                    })}
+                  </span>
+                </div>
+                
+                {(() => {
+                  const isCaller = selectedCallForInfo.callerId?._id === currentUser._id || selectedCallForInfo.callerId === currentUser._id;
+                  const callerName = selectedCallForInfo.callerId?.username || 'Unknown';
+                  const receiverName = selectedCallForInfo.receiverId?.username || 'Unknown';
+                  return (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-gray-600">Participants:</span>
+                      <span className="text-sm text-gray-800">
+                        {isCaller ? `You → ${receiverName}` : `${callerName} → You`}
+                      </span>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => { setShowCallInfoModal(false); setSelectedCallForInfo(null); }}
+                className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      ), document.body)}
       {/* Starred Messages Modal */}
       {showStarredModal && createPortal((
         <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
@@ -12093,7 +12189,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
           if (latestPayment.status === 'completed' || latestPayment.metadata?.adminMarked || 
               !paymentStatus || (paymentStatus.status !== 'completed' && !paymentStatus.metadata?.adminMarked)) {
             setPaymentStatus(latestPayment);
-            // Fetch refund request status
+        // Fetch refund request status
             await fetchRefundRequestStatus(latestPayment.paymentId);
           }
         }
@@ -12105,7 +12201,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       console.error('Error fetching payment status:', error);
     } finally {
       if (!skipLoading) {
-        setLoading(false);
+      setLoading(false);
       }
     }
   };
@@ -12485,7 +12581,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
                 </>
               ) : (
                 <>
-                  <FaCreditCard /> Pay Now
+              <FaCreditCard /> Pay Now
                 </>
               )}
             </button>
@@ -12501,7 +12597,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
                 </>
               ) : (
                 <>
-                  <FaCreditCard /> Retry Payment
+              <FaCreditCard /> Retry Payment
                 </>
               )}
             </button>
