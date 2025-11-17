@@ -522,9 +522,6 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         toast.warning('Please complete the payment immediately, or wait for this session to expire and initiate a new transaction.');
       }
       
-      // Reset low time warning flag when timer starts
-      lowTimeWarningShownRef.current = false;
-      
       // Start countdown timer
       const timer = setInterval(() => {
         setTimeRemaining((prev) => {
