@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
-import { FaKey, FaTrash, FaSignOutAlt, FaUser, FaTools, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaCrown, FaTimes, FaCheck, FaBell, FaEnvelope, FaLock, FaGlobe, FaPalette, FaDownload, FaHistory, FaCode, FaShieldAlt, FaEye, FaEyeSlash, FaMoon, FaSun, FaLanguage, FaClock, FaFileDownload, FaDatabase, FaExclamationTriangle } from "react-icons/fa";
+import { FaKey, FaTrash, FaSignOutAlt, FaUser, FaTools, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaCrown, FaTimes, FaCheck, FaBell, FaEnvelope, FaLock, FaGlobe, FaPalette, FaDownload, FaHistory, FaCode, FaShieldAlt, FaEye, FaEyeSlash, FaMoon, FaSun, FaLanguage, FaClock, FaFileDownload, FaDatabase, FaExclamationTriangle, FaPhone, FaVideo } from "react-icons/fa";
 import { authenticatedFetch } from '../utils/auth';
 import {
   deleteUserStart,
@@ -1113,6 +1113,33 @@ export default function Settings() {
               )}
             </button>
             <p className="text-sm text-gray-500">Get a copy of your account data in JSON/text format</p>
+          </div>
+        </SettingSection>
+
+        {/* Call Management */}
+        <SettingSection title="Call Management" icon={FaPhone}>
+          <div className="space-y-4">
+            <button
+              onClick={() => navigate('/user/call-history')}
+              className={`w-full bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
+            >
+              <FaPhone className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-pulse`} />
+              Call History
+            </button>
+            <p className="text-sm text-gray-500">View your audio and video call history with buyers and sellers</p>
+            
+            {(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
+              <>
+                <button
+                  onClick={() => navigate('/admin/call-history')}
+                  className={`w-full bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
+                >
+                  <FaVideo className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-pulse`} />
+                  Admin Call History
+                </button>
+                <p className="text-sm text-gray-500">View and manage all call history across the platform</p>
+              </>
+            )}
           </div>
         </SettingSection>
 

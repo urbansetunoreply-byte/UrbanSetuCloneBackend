@@ -128,7 +128,7 @@ export default function MyAppointments() {
     incomingCall,
     localStream,
     remoteStream,
-    isMuted,
+    isMuted: isCallMuted,
     isVideoEnabled,
     callDuration,
     activeCall,
@@ -138,7 +138,7 @@ export default function MyAppointments() {
     acceptCall,
     rejectCall,
     endCall,
-    toggleMute,
+    toggleMute: toggleCallMute,
     toggleVideo
   } = useCall();
 
@@ -1218,13 +1218,13 @@ export default function MyAppointments() {
                       activeCall={activeCall}
                       localVideoRef={localVideoRef}
                       remoteVideoRef={remoteVideoRef}
-                      isMuted={isMuted}
+                      isCallMuted={isCallMuted}
                       isVideoEnabled={isVideoEnabled}
                       callDuration={callDuration}
                       onAcceptCall={acceptCall}
                       onRejectCall={rejectCall}
                       onEndCall={endCall}
-                      onToggleMute={toggleMute}
+                      onToggleCallMute={toggleCallMute}
                       onToggleVideo={toggleVideo}
                       getOtherPartyName={getOtherPartyName}
                     />
@@ -1299,13 +1299,13 @@ export default function MyAppointments() {
                       activeCall={activeCall}
                       localVideoRef={localVideoRef}
                       remoteVideoRef={remoteVideoRef}
-                      isMuted={isMuted}
+                      isCallMuted={isCallMuted}
                       isVideoEnabled={isVideoEnabled}
                       callDuration={callDuration}
                       onAcceptCall={acceptCall}
                       onRejectCall={rejectCall}
                       onEndCall={endCall}
-                      onToggleMute={toggleMute}
+                      onToggleCallMute={toggleCallMute}
                       onToggleVideo={toggleVideo}
                       getOtherPartyName={getOtherPartyName}
                     />
@@ -1860,12 +1860,12 @@ export default function MyAppointments() {
             }
             return appointment.buyerId?.username || 'Calling...';
           })()}
-          isMuted={isMuted}
+          isMuted={isCallMuted}
           isVideoEnabled={isVideoEnabled}
           callDuration={callDuration}
           localVideoRef={localVideoRef}
           remoteVideoRef={remoteVideoRef}
-          onToggleMute={toggleMute}
+          onToggleMute={toggleCallMute}
           onToggleVideo={toggleVideo}
           onEndCall={endCall}
         />
@@ -1883,7 +1883,7 @@ function getDateLabel(date) {
   if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
   return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
-function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDelete, actionLoading, onShowOtherParty, onOpenReinitiate, handleArchiveAppointment, handleUnarchiveAppointment, isArchived, onCancelRefresh, copyMessageToClipboard, activeChatAppointmentId, shouldOpenChatFromNotification, onChatOpened, onExportChat, preferUnreadForAppointmentId, onConsumePreferUnread, onInitiateCall, callState, incomingCall, activeCall, localVideoRef, remoteVideoRef, isMuted, isVideoEnabled, callDuration, onAcceptCall, onRejectCall, onEndCall, onToggleMute, onToggleVideo, getOtherPartyName }) {
+function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDelete, actionLoading, onShowOtherParty, onOpenReinitiate, handleArchiveAppointment, handleUnarchiveAppointment, isArchived, onCancelRefresh, copyMessageToClipboard, activeChatAppointmentId, shouldOpenChatFromNotification, onChatOpened, onExportChat, preferUnreadForAppointmentId, onConsumePreferUnread, onInitiateCall, callState, incomingCall, activeCall, localVideoRef, remoteVideoRef, isCallMuted, isVideoEnabled, callDuration, onAcceptCall, onRejectCall, onEndCall, onToggleCallMute, onToggleVideo, getOtherPartyName }) {
   // Camera modal state - moved to main MyAppointments component
   const navigate = useNavigate();
   
