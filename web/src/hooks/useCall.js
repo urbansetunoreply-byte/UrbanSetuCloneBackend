@@ -475,6 +475,9 @@ export const useCall = () => {
       // When caller cancels, receiver should close incoming call modal
       // Use refs to get current values without dependency
       if (incomingCallRef.current && incomingCallRef.current.callId === data.callId) {
+        // Stop ringtone when call is cancelled
+        stopRingtone();
+        ringtoneSoundRef.current = null;
         setIncomingCall(null);
         // Don't call endCall here to avoid double cleanup, just clear incoming call state
         setCallState(null);
