@@ -1964,6 +1964,45 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     fetchCallHistory();
   }, [showChatModal, appt?._id]);
 
+  // Listen for call-ended event to update call history in real-time
+  useEffect(() => {
+    if (!appt?._id) return;
+
+    const fetchCallHistory = async () => {
+      if (!appt?._id) return;
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/calls/history/${appt._id}`, {
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.calls) {
+            setCallHistory(data.calls);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching call history:', error);
+      }
+    };
+
+    const handleCallEnded = (data) => {
+      // If this call belongs to this appointment, refetch call history immediately
+      // This ensures call bubbles appear in real-time like regular messages
+      if (data.callId) {
+        // Small delay to ensure backend has saved the call
+        setTimeout(() => {
+          fetchCallHistory();
+        }, 100);
+      }
+    };
+
+    socket.on('call-ended', handleCallEnded);
+    return () => {
+      socket.off('call-ended', handleCallEnded);
+    };
+  }, [appt?._id, socket]);
+
   // Lazy-load global property list when user starts typing a mention
   useEffect(() => {
     if (!showChatModal) return;
