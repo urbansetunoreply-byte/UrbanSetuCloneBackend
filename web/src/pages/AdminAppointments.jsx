@@ -2649,8 +2649,15 @@ function AdminAppointmentRow({
   getFilteredEmojis,
   toggleReactionsBar,
   toggleReactionsEmojiPicker,
-  onExportChat
+  onExportChat,
+  // URL-based chat opening props
+  activeChatAppointmentId,
+  shouldOpenChatFromNotification,
+  onChatOpened
 }) {
+  const navigate = useNavigate();
+  const params = useParams();
+  
   // Use parent comments directly for real-time sync, with local state for UI interactions
   const [localComments, setLocalComments] = React.useState(appt.comments || []);
   
