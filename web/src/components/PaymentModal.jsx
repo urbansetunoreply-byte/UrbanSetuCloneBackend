@@ -513,9 +513,27 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         return;
       }
       
+      // Reset low time warning flag when timer restarts
+      lowTimeWarningShownRef.current = false;
+      
+      // Show warning immediately if less than 1 minute remaining when timer starts
+      if (remainingSeconds <= 60 && remainingSeconds > 0) {
+        lowTimeWarningShownRef.current = true;
+        toast.warning('Please complete the payment immediately, or wait for this session to expire and initiate a new transaction.');
+      }
+      
+      // Reset low time warning flag when timer starts
+      lowTimeWarningShownRef.current = false;
+      
       // Start countdown timer
       const timer = setInterval(() => {
         setTimeRemaining((prev) => {
+          // Show warning toast when less than 1 minute remaining (only once)
+          if (prev <= 60 && !lowTimeWarningShownRef.current) {
+            lowTimeWarningShownRef.current = true;
+            toast.warning('Please complete the payment immediately, or wait for this session to expire and initiate a new transaction.');
+          }
+          
           if (prev <= 1) {
             // Time expired - cancel payment and close modal
             clearInterval(timer);
