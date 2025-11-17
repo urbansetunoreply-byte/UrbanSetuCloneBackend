@@ -10947,13 +10947,15 @@ You can lock this chat again at any time from the options.</p>
                 className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors flex items-center gap-2"
               >
                 <FaTrash size={12} />
-                {Array.isArray(messageToDelete)
-                  ? ((messageToDelete.every(m => m.senderEmail === currentUser.email) && deleteForBoth) ? 'Delete for everyone' : 'Delete for me')
-                  : (messageToDelete?.deleted
-                      ? 'Delete for me'
-                      : messageToDelete?.senderEmail === currentUser.email
-                        ? (deleteForBoth ? 'Delete for everyone' : 'Delete for me')
-                        : 'Delete for me')
+                {messageToDelete?.isCall || (messageToDelete?._id && messageToDelete._id.startsWith('call-'))
+                  ? 'Delete'
+                  : Array.isArray(messageToDelete)
+                    ? ((messageToDelete.every(m => m.senderEmail === currentUser.email) && deleteForBoth) ? 'Delete for everyone' : 'Delete for me')
+                    : (messageToDelete?.deleted
+                        ? 'Delete for me'
+                        : messageToDelete?.senderEmail === currentUser.email
+                          ? (deleteForBoth ? 'Delete for everyone' : 'Delete for me')
+                          : 'Delete for me')
                 }
               </button>
             </div>
