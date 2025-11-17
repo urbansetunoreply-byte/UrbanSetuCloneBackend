@@ -4782,18 +4782,8 @@ function AdminAppointmentRow({
         setNewComment(messageContent); // Restore message
         toast.error(err.response?.data?.message || "Failed to send message.");
         // Refocus input on error - aggressive mobile focus
-        const refocusInput = () => {
-          if (inputRef.current) {
-            inputRef.current.focus();
-            inputRef.current.setSelectionRange(0, 0);
-            if (document.activeElement !== inputRef.current) {
-              inputRef.current.click();
-              inputRef.current.focus();
-            }
-          }
-        };
-        refocusInput();
-        requestAnimationFrame(refocusInput);
+        // Removed auto-focus: Don't automatically focus input on error
+        // User can manually click to focus when needed
       }
     })();
   };
