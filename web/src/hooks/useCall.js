@@ -885,6 +885,9 @@ export const useCall = () => {
 
   // Reject call
   const rejectCall = () => {
+    // Stop ringtone when rejecting call
+    stopRingtone();
+    ringtoneSoundRef.current = null;
     if (incomingCall) {
       socket.emit('call-reject', { callId: incomingCall.callId });
       setIncomingCall(null);
@@ -894,6 +897,12 @@ export const useCall = () => {
 
   // End call
   const endCall = async () => {
+    // Stop all sounds first
+    stopCalling();
+    stopRingtone();
+    callingSoundRef.current = null;
+    ringtoneSoundRef.current = null;
+    
     // Cancel call first if still initiating/ringing (before clearing state)
     if (activeCall?.callId && (callState === 'initiating' || callState === 'ringing')) {
       socket.emit('call-cancel', { callId: activeCall.callId });
@@ -946,14 +955,19 @@ export const useCall = () => {
           credentials: 'include',
           body: JSON.stringify({ callId: activeCall.callId })
         });
+        // Play end call sound when user ends the call
+        playEndCall();
         // Show "Call ended" message when user ends the call
         toast.info('Call ended.');
       } catch (error) {
         console.error('Error ending call on server:', error);
-        // Still show message even if backend call fails
+        // Still play sound and show message even if backend call fails
+        playEndCall();
         toast.info('Call ended.');
       }
     } else if (activeCall?.callId) {
+      // Play end call sound even if call wasn't active yet (ringing state)
+      playEndCall();
       // Show message even if call wasn't active yet (ringing state)
       toast.info('Call ended.');
     }
