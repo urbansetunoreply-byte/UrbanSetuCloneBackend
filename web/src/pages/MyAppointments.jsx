@@ -5946,7 +5946,14 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     }
   }
   // Message selected for header options overlay
-  const selectedMessageForHeaderOptions = headerOptionsMessageId ? comments.find(msg => msg._id === headerOptionsMessageId) : null;
+  const selectedMessageForHeaderOptions = headerOptionsMessageId && headerOptionsMessageId.startsWith('call-') 
+    ? null // Call items handled separately
+    : (headerOptionsMessageId ? comments.find(msg => msg._id === headerOptionsMessageId) : null);
+  
+  // Call selected for header options overlay
+  const selectedCallForHeaderOptions = headerOptionsMessageId && headerOptionsMessageId.startsWith('call-')
+    ? callHistory.find(call => `call-${call._id || call.callId}` === headerOptionsMessageId)
+    : null;
   return (
     <>
       <tr className={`hover:bg-blue-50 transition align-top ${!isUpcoming ? 'bg-gray-100' : ''}`} data-appointment-id={appt._id}>
@@ -6794,6 +6801,55 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           }}
                           title="Exit selection mode"
                           aria-label="Exit selection mode"
+                        >
+                          <FaTimes className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : headerOptionsMessageId && selectedCallForHeaderOptions ? (
+                    // Header-level options overlay for call history items
+                    <div className="flex items-center justify-end w-full gap-4">
+                      <div className="flex items-center gap-4">
+                        {/* Call info */}
+                        <button
+                          className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                          onClick={() => {
+                            const callTypeText = selectedCallForHeaderOptions.callType === 'video' ? 'Video' : 'Audio';
+                            const isCaller = selectedCallForHeaderOptions.callerId?._id === currentUser._id || selectedCallForHeaderOptions.callerId === currentUser._id;
+                            const otherPartyName = isCaller 
+                              ? (selectedCallForHeaderOptions.receiverId?.username || 'Unknown')
+                              : (selectedCallForHeaderOptions.callerId?.username || 'Unknown');
+                            const formatCallDuration = (seconds) => {
+                              if (!seconds || seconds === 0) return 'N/A';
+                              const hours = Math.floor(seconds / 3600);
+                              const minutes = Math.floor((seconds % 3600) / 60);
+                              const secs = Math.floor(seconds % 60);
+                              if (hours > 0) {
+                                return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                              }
+                              return `${minutes}:${secs.toString().padStart(2, '0')}`;
+                            };
+                            const callDate = new Date(selectedCallForHeaderOptions.startTime || selectedCallForHeaderOptions.createdAt);
+                            toast.info(
+                              `${callTypeText} Call\n` +
+                              `Status: ${selectedCallForHeaderOptions.status}\n` +
+                              `Duration: ${formatCallDuration(selectedCallForHeaderOptions.duration)}\n` +
+                              `Date: ${callDate.toLocaleDateString()} ${callDate.toLocaleTimeString()}\n` +
+                              `${isCaller ? 'You called' : otherPartyName + ' called you'}`
+                            );
+                            setHeaderOptionsMessageId(null);
+                          }}
+                          title="Call info"
+                          aria-label="Call info"
+                        >
+                          <FaInfoCircle size={18} />
+                        </button>
+                        {/* Close button */}
+                        <button
+                          className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors z-10 shadow"
+                          onClick={() => { setHeaderOptionsMessageId(null); setShowHeaderMoreMenu(false); }}
+                          title="Close options"
+                          aria-label="Close options"
                         >
                           <FaTimes className="w-4 h-4" />
                         </button>
@@ -7902,13 +7958,15 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                       const previousDate = previousItem ? previousItem.timestamp : null;
                       const isNewDay = previousDate ? currentDate.toDateString() !== previousDate.toDateString() : true;
 
-                      // If it's a call, render call history item
+                      // If it's a call, render call history as message bubble (WhatsApp format)
                       if (item.type === 'call') {
                         const call = item.call;
                         const isCaller = call.callerId?._id === currentUser._id || call.callerId === currentUser._id;
                         const otherPartyName = isCaller 
                           ? (call.receiverId?.username || 'Unknown')
                           : (call.callerId?.username || 'Unknown');
+                        // For message bubble: isMe = true if user is caller (right side, blue), false if receiver (left side, white)
+                        const isMe = isCaller;
                         
                         return (
                           <React.Fragment key={`call-${call._id || call.callId}`}>
@@ -7919,27 +7977,50 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                 </span>
                               </div>
                             )}
-                            <div className="flex items-center justify-center my-2">
-                              <div className="flex flex-col items-center gap-1 px-4 py-2">
-                                <div className="flex items-center gap-2 text-sm text-gray-700">
-                                  {call.callType === 'video' ? (
-                                    <FaVideo className={`text-sm ${call.status === 'missed' ? 'text-red-500' : 'text-blue-500'}`} />
-                                  ) : (
-                                    <FaPhone className={`text-sm ${call.status === 'missed' ? 'text-red-500' : 'text-green-500'}`} />
-                                  )}
-                                  <span className="font-medium">
-                                    {isCaller ? 'You' : otherPartyName} {isCaller ? 'called' : 'called you'} {isCaller ? otherPartyName : ''}
-                                    {call.duration > 0 && (
-                                      <span className="text-gray-600"> • {formatCallDuration(call.duration)}</span>
+                            <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-fadeInChatBubble`} style={{ animationDelay: `${0.03 * index}s` }}>
+                              <div
+                                className={`relative rounded-2xl px-4 sm:px-5 py-3 text-sm shadow-xl max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] break-words overflow-visible transition-all duration-300 ${
+                                  isMe 
+                                    ? 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white shadow-blue-200 hover:shadow-blue-300 hover:shadow-2xl' 
+                                    : 'bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 shadow-gray-200 hover:shadow-lg hover:border-gray-300 hover:shadow-xl'
+                                }`}
+                                style={{ animationDelay: `${0.03 * index}s` }}
+                              >
+                                <div className={`text-left ${isMe ? 'text-base font-medium' : 'text-sm'}`}>
+                                  <div className="flex items-center gap-2">
+                                    {call.callType === 'video' ? (
+                                      <FaVideo className={`text-base ${call.status === 'missed' ? 'text-red-500' : isMe ? 'text-white' : 'text-blue-500'}`} />
+                                    ) : (
+                                      <FaPhone className={`text-base ${call.status === 'missed' ? 'text-red-500' : isMe ? 'text-white' : 'text-green-500'}`} />
                                     )}
-                                  </span>
+                                    <span className={isMe ? 'text-white' : 'text-gray-800'}>
+                                      {isCaller ? 'You called' : `${otherPartyName} called you`}
+                                      {call.duration > 0 && (
+                                        <span className={isMe ? 'text-blue-100' : 'text-gray-600'}> • {formatCallDuration(call.duration)}</span>
+                                      )}
+                                    </span>
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-2 text-xs text-gray-500">
-                                  <span>{currentDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}</span>
-                                  <span>•</span>
-                                  <span>{currentDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true })}</span>
-                                  <span>•</span>
-                                  <span>{call.status}</span>
+                                <div className="flex items-center gap-1 justify-end mt-2" data-message-actions>
+                                  <span className={`${isMe ? 'text-blue-200' : 'text-gray-500'} text-[10px]`}>
+                                    {currentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                  </span>
+                                  {/* Options icon - three dots menu */}
+                                  <button
+                                    className={`${
+                                      isMe 
+                                        ? 'text-blue-200 hover:text-white' 
+                                        : 'text-gray-500 hover:text-gray-700'
+                                    } transition-all duration-200 hover:scale-110 p-1 rounded-full hover:bg-white hover:bg-opacity-20 ml-1`}
+                                    onClick={(e) => { 
+                                      e.stopPropagation(); 
+                                      setHeaderOptionsMessageId(`call-${call._id || call.callId}`);
+                                    }}
+                                    title="Call options"
+                                    aria-label="Call options"
+                                  >
+                                    <FaEllipsisV size={12} />
+                                  </button>
                                 </div>
                               </div>
                             </div>
