@@ -101,15 +101,26 @@ export const useCall = () => {
       callStartTimeRef.current = serverStartTimestamp;
       
       // Calculate initial elapsed time to display immediately (accounts for network latency)
+      // This ensures the timer shows the correct duration even if there was a delay
+      // between server accepting the call and frontend receiving the event
       const currentTimestamp = Date.now();
       const elapsedMilliseconds = currentTimestamp - serverStartTimestamp;
       const initialDuration = Math.max(0, Math.floor(elapsedMilliseconds / 1000));
       
-      // Set initial duration immediately
+      // Set initial duration immediately to account for network latency
       setCallDuration(initialDuration);
+      
+      console.log('[Call Timer] Started with synchronized server time:', {
+        serverStartTime: new Date(serverStartTimestamp).toISOString(),
+        currentTime: new Date(currentTimestamp).toISOString(),
+        elapsedMs: elapsedMilliseconds,
+        initialDuration
+      });
     } else {
+      // Fallback to local time if no synchronized time provided
       callStartTimeRef.current = Date.now();
       setCallDuration(0);
+      console.log('[Call Timer] Started with local time (no server sync)');
     }
     
     durationIntervalRef.current = setInterval(() => {
@@ -127,21 +138,31 @@ export const useCall = () => {
     };
     
     const handleCallAccepted = (data) => {
-      // Use synchronized start time from server if provided
-      const synchronizedStartTime = data.startTime ? new Date(data.startTime) : new Date();
+      // Use synchronized start time from server if provided (this is the exact timestamp when call was accepted on server)
+      // Both caller and receiver will receive this same timestamp, ensuring perfect synchronization
+      const synchronizedStartTime = data.startTime ? new Date(data.startTime) : null;
       
-      // For receiver (incoming call) - state already set in acceptCall
+      if (!synchronizedStartTime) {
+        console.warn('[Call] No synchronized startTime received from server, using local time');
+      }
+      
+      // For receiver (incoming call) - state already set in acceptCall, but timer needs to start with server time
       if (incomingCall && incomingCall.callId === data.callId) {
+        // Always start/restart timer with server's synchronized time, regardless of callState
+        // This ensures timer starts at the exact same moment as on server, accounting for network latency
         if (callState !== 'active') {
           setCallState('active');
-          startCallTimer(synchronizedStartTime);
         }
+        // Always restart timer with synchronized startTime from server (even if already started)
+        startCallTimer(synchronizedStartTime || new Date());
+        console.log('[Call] Receiver: Call accepted, timer synchronized with server time:', synchronizedStartTime);
       } 
       // For caller (outgoing call)
       else if (activeCall && activeCall.callId === data.callId) {
         setCallState('active');
-        startCallTimer(synchronizedStartTime);
-        console.log('[Call] Call accepted, connection should be established');
+        // Start timer with synchronized startTime from server
+        startCallTimer(synchronizedStartTime || new Date());
+        console.log('[Call] Caller: Call accepted, timer synchronized with server time:', synchronizedStartTime);
       }
     };
     
