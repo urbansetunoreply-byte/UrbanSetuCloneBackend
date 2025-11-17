@@ -484,6 +484,9 @@ export const useCall = () => {
       // When caller cancels, caller should close ringing screen
       if (activeCallRef.current && activeCallRef.current.callId === data.callId && 
           (callStateRef.current === 'ringing' || callStateRef.current === 'initiating')) {
+        // Stop calling sound when call is cancelled
+        stopCalling();
+        callingSoundRef.current = null;
         // endCall was already called, just ensure state is cleared
         setCallState(null);
         setActiveCall(null);
