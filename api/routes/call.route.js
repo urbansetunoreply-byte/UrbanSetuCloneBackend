@@ -192,18 +192,28 @@ router.post("/end", verifyToken, async (req, res) => {
         .populate('listingId', 'name');
       
       if (caller && receiver && appointment) {
+        // Check if caller is admin
+        const isCallerAdmin = caller.role === 'admin' || caller.role === 'rootadmin';
+        const isReceiverAdmin = receiver.role === 'admin' || receiver.role === 'rootadmin';
+        
         await sendCallEndedEmail(caller.email, {
           callType: call.callType,
           duration: formatDuration(duration),
+          callerName: caller.username,
           receiverName: receiver.username,
-          propertyName: appointment.listingId?.name || appointment.propertyName
+          propertyName: appointment.listingId?.name || appointment.propertyName,
+          appointmentId: call.appointmentId.toString(),
+          isReceiverAdmin: isCallerAdmin
         });
         
         await sendCallEndedEmail(receiver.email, {
           callType: call.callType,
           duration: formatDuration(duration),
           callerName: caller.username,
-          propertyName: appointment.listingId?.name || appointment.propertyName
+          receiverName: receiver.username,
+          propertyName: appointment.listingId?.name || appointment.propertyName,
+          appointmentId: call.appointmentId.toString(),
+          isReceiverAdmin: isReceiverAdmin
         });
       }
     } catch (emailError) {

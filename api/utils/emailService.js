@@ -9860,8 +9860,13 @@ export const sendDataExportEmail = async (email, username, jsonDownloadUrl, txtD
 };
 
 // Send call initiated email
-export const sendCallInitiatedEmail = async (toEmail, { callType, callerName, propertyName }) => {
+export const sendCallInitiatedEmail = async (toEmail, { callType, callerName, propertyName, appointmentId, isReceiverAdmin = false }) => {
   try {
+    const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+    const chatLink = isReceiverAdmin 
+      ? `${clientUrl}/admin/appointments/chat/${appointmentId}`
+      : `${clientUrl}/user/my-appointments/chat/${appointmentId}`;
+    
     const subject = `${callerName} is calling you - ${callType === 'video' ? 'Video' : 'Audio'} Call`;
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
@@ -9876,9 +9881,15 @@ export const sendCallInitiatedEmail = async (toEmail, { callType, callerName, pr
             <p style="color: #1e40af; margin: 0 0 15px 0; line-height: 1.6;">
               <strong>${callerName}</strong> is calling you regarding property: <strong>${propertyName}</strong>
             </p>
-            <p style="color: #3b82f6; margin: 0; font-size: 14px;">
+            <p style="color: #3b82f6; margin: 15px 0 0; font-size: 14px;">
               Please check your UrbanSetu chat to answer the call.
             </p>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <a href="${chatLink}" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); transition: all 0.3s ease; margin: 5px;">
+              📞 Answer Call in Chat
+            </a>
           </div>
           
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
@@ -9954,8 +9965,16 @@ export const sendCallMissedEmail = async (toEmail, { callType, callerName, prope
 };
 
 // Send call ended email
-export const sendCallEndedEmail = async (toEmail, { callType, duration, callerName, receiverName, propertyName }) => {
+export const sendCallEndedEmail = async (toEmail, { callType, duration, callerName, receiverName, propertyName, appointmentId, isReceiverAdmin = false }) => {
   try {
+    const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+    const chatLink = isReceiverAdmin 
+      ? `${clientUrl}/admin/appointments/chat/${appointmentId}`
+      : `${clientUrl}/user/my-appointments/chat/${appointmentId}`;
+    const callHistoryLink = isReceiverAdmin
+      ? `${clientUrl}/admin/call-history`
+      : `${clientUrl}/user/call-history`;
+    
     const otherPersonName = receiverName || callerName;
     const subject = `Call Ended - ${callType === 'video' ? 'Video' : 'Audio'} Call Summary`;
     const html = `
@@ -9975,9 +9994,17 @@ export const sendCallEndedEmail = async (toEmail, { callType, duration, callerNa
               <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Property:</strong> ${propertyName}</p>
               <p style="color: #4b5563; margin: 0;"><strong>Duration:</strong> ${duration}</p>
             </div>
-            <p style="color: #059669; margin: 15px 0 0; font-size: 14px;">
-              You can view the call history in your UrbanSetu account.
-            </p>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <div style="display: flex; flex-direction: column; gap: 12px; align-items: center;">
+              <a href="${callHistoryLink}" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); transition: all 0.3s ease; margin: 5px; width: 100%; max-width: 280px;">
+                📋 View Call History
+              </a>
+              <a href="${chatLink}" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3); transition: all 0.3s ease; margin: 5px; width: 100%; max-width: 280px;">
+                💬 Open Chat
+              </a>
+            </div>
           </div>
           
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">

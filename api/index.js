@@ -48,7 +48,7 @@ import visitorRouter from "./routes/visitor.route.js";
 import callRouter from "./routes/call.route.js";
 import { generateCallId } from "./routes/call.route.js";
 import CallHistory from "./models/callHistory.model.js";
-import { sendCallMissedEmail } from "./utils/emailService.js";
+import { sendCallMissedEmail, sendCallInitiatedEmail } from "./utils/emailService.js";
 // Use S3 deployment route if AWS is configured, otherwise fallback to Cloudinary
 let deploymentRouter;
 try {
@@ -547,6 +547,29 @@ io.on('connection', (socket) => {
       
       // Send confirmation to caller
       socket.emit('call-initiated', { callId, status: 'ringing' });
+      
+      // Send call initiated email to receiver
+      try {
+        const receiver = await User.findById(actualReceiverId);
+        const appointment = await Booking.findById(appointmentId)
+          .populate('listingId', 'name');
+        const caller = await User.findById(callerId);
+        
+        if (receiver && appointment && caller) {
+          // Check if receiver is admin
+          const isReceiverAdmin = receiver.role === 'admin' || receiver.role === 'rootadmin';
+          
+          await sendCallInitiatedEmail(receiver.email, {
+            callType,
+            callerName: caller.username,
+            propertyName: appointment.listingId?.name || appointment.propertyName,
+            appointmentId: appointmentId.toString(),
+            isReceiverAdmin
+          });
+        }
+      } catch (emailError) {
+        console.error("Error sending call initiated email:", emailError);
+      }
       
       // Set timeout for missed call (30 seconds)
       setTimeout(async () => {

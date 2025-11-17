@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { createPortal } from 'react-dom';
-import { FaTrash, FaSearch, FaPen, FaPaperPlane, FaUser, FaEnvelope, FaCalendar, FaPhone, FaUserShield, FaArchive, FaUndo, FaCommentDots, FaCheck, FaCheckDouble, FaBan, FaTimes, FaLightbulb, FaCopy, FaEllipsisV, FaInfoCircle, FaSync, FaStar, FaRegStar, FaFlag, FaCalendarAlt, FaCheckSquare, FaDownload, FaSpinner, FaDollarSign } from "react-icons/fa";
+import { FaTrash, FaSearch, FaPen, FaPaperPlane, FaUser, FaEnvelope, FaCalendar, FaPhone, FaVideo, FaUserShield, FaArchive, FaUndo, FaCommentDots, FaCheck, FaCheckDouble, FaBan, FaTimes, FaLightbulb, FaCopy, FaEllipsisV, FaInfoCircle, FaSync, FaStar, FaRegStar, FaFlag, FaCalendarAlt, FaCheckSquare, FaDownload, FaSpinner, FaDollarSign } from "react-icons/fa";
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
 import UserAvatar from '../components/UserAvatar';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
@@ -2660,6 +2660,7 @@ function AdminAppointmentRow({
   
   // Use parent comments directly for real-time sync, with local state for UI interactions
   const [localComments, setLocalComments] = React.useState(appt.comments || []);
+  const [callHistory, setCallHistory] = React.useState([]);
   
   // Initialize starred messages when comments are loaded
   React.useEffect(() => {
@@ -6799,40 +6800,130 @@ function AdminAppointmentRow({
                     </div>
                   </div>
                 )}
-                {localComments.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full text-center py-8">
-                    <FaCommentDots className="text-gray-300 text-4xl mb-3" />
-                    <p className="text-gray-500 font-medium text-sm">No messages in this conversation</p>
-                    <p className="text-gray-400 text-xs mt-1">Monitor and manage communication between parties</p>
-                  </div>
-                ) : (
-                  (localComments.slice(Math.max(0, localComments.length - visibleCount)).filter(c => c != null)).map((c, mapIndex, arr) => {
-                  
-                  const index = localComments.length - arr.length + mapIndex;
-                  const isMe = c && c.senderEmail === currentUser.email;
-                  const isEditing = editingComment === (c && c._id);
-                  const currentDate = c && c.timestamp ? new Date(c.timestamp) : new Date();
-                  const previousDate = index > 0 && localComments[index - 1] && localComments[index - 1].timestamp ? new Date(localComments[index - 1].timestamp) : null;
-                  const isNewDay = previousDate ? currentDate.toDateString() !== previousDate.toDateString() : true;
+                {(() => {
+                  // Helper function to format call duration (WhatsApp style: M:SS or H:MM:SS)
+                  const formatCallDuration = (seconds) => {
+                    if (!seconds || seconds === 0) return 'N/A';
+                    const hours = Math.floor(seconds / 3600);
+                    const minutes = Math.floor((seconds % 3600) / 60);
+                    const secs = Math.floor(seconds % 60);
+                    if (hours > 0) {
+                      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                    }
+                    return `${minutes}:${secs.toString().padStart(2, '0')}`;
+                  };
 
-                  return (
-                    <React.Fragment key={(c && c._id) || index}>
-                      {isNewDay && (
-                        <div className="w-full flex justify-center my-2">
-                          <span className="bg-blue-600 text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white">{getDateLabel(currentDate)}</span>
-                        </div>
-                      )}
-                      {/* New messages divider */}
-                      {unreadNewMessages > 0 && index === localComments.length - unreadNewMessages && (
-                        <div className="w-full flex items-center my-2">
-                          <div className="flex-1 h-px bg-gray-300"></div>
-                          <span className="mx-2 text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full border border-red-200">
-                            New messages
-                          </span>
-                          <div className="flex-1 h-px bg-gray-300"></div>
-                        </div>
-                      )}
-                      <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-fadeInChatBubble`} style={{ animationDelay: `${0.03 * index}s` }}>
+                  // Merge call history with chat messages chronologically (admin is always receiver)
+                  const mergedTimeline = [
+                    // Convert call history to timeline items
+                    ...callHistory.map(call => ({
+                      type: 'call',
+                      id: call._id || call.callId,
+                      timestamp: new Date(call.startTime || call.createdAt),
+                      call: call,
+                      sortTime: new Date(call.startTime || call.createdAt).getTime()
+                    })),
+                    // Convert chat messages to timeline items
+                    ...localComments.map(msg => ({
+                      type: 'message',
+                      id: msg._id,
+                      timestamp: new Date(msg.timestamp),
+                      message: msg,
+                      sortTime: new Date(msg.timestamp).getTime()
+                    }))
+                  ].sort((a, b) => a.sortTime - b.sortTime); // Sort chronologically
+
+                  // If no items at all
+                  if (mergedTimeline.length === 0) {
+                    return (
+                      <div className="flex flex-col items-center justify-center h-full text-center py-8">
+                        <FaCommentDots className="text-gray-300 text-4xl mb-3" />
+                        <p className="text-gray-500 font-medium text-sm">No messages in this conversation</p>
+                        <p className="text-gray-400 text-xs mt-1">Monitor and manage communication between parties</p>
+                      </div>
+                    );
+                  }
+
+                  // Render visible items
+                  const visibleItems = mergedTimeline.slice(Math.max(0, mergedTimeline.length - Math.min(visibleCount, mergedTimeline.length)));
+                  
+                  return visibleItems.map((item, mapIndex) => {
+                    const index = mergedTimeline.length - visibleItems.length + mapIndex;
+                    const previousItem = index > 0 ? mergedTimeline[index - 1] : null;
+                    const currentDate = item.timestamp;
+                    const previousDate = previousItem ? previousItem.timestamp : null;
+                    const isNewDay = previousDate ? currentDate.toDateString() !== previousDate.toDateString() : true;
+
+                    // If it's a call, render call history item (admin is always receiver, so styled as received)
+                    if (item.type === 'call') {
+                      const call = item.call;
+                      const callerName = call.callerId?.username || 'Unknown';
+                      
+                      return (
+                        <React.Fragment key={`call-${call._id || call.callId}`}>
+                          {isNewDay && (
+                            <div className="w-full flex justify-center my-2">
+                              <span className="bg-blue-600 text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white">
+                                {getDateLabel(currentDate)}
+                              </span>
+                            </div>
+                          )}
+                          {/* Call history styled as received (left side) since admin is receiver */}
+                          <div className="flex items-center justify-start my-2">
+                            <div className="flex flex-col items-start gap-1 px-4 py-2 bg-gray-50 rounded-lg max-w-[80%]">
+                              <div className="flex items-center gap-2 text-sm text-gray-700">
+                                {call.callType === 'video' ? (
+                                  <FaVideo className={`text-sm ${call.status === 'missed' ? 'text-red-500' : 'text-blue-500'}`} />
+                                ) : (
+                                  <FaPhone className={`text-sm ${call.status === 'missed' ? 'text-red-500' : 'text-green-500'}`} />
+                                )}
+                                <span className="font-medium">
+                                  {callerName} called you
+                                  {call.duration > 0 && (
+                                    <span className="text-gray-600"> • {formatCallDuration(call.duration)}</span>
+                                  )}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 text-xs text-gray-500">
+                                <span>{currentDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}</span>
+                                <span>•</span>
+                                <span>{currentDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true })}</span>
+                                <span>•</span>
+                                <span>{call.status}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </React.Fragment>
+                      );
+                    }
+
+                    // If it's a message, render chat message (existing logic)
+                    const c = item.message;
+                    const isMe = c && c.senderEmail === currentUser.email;
+                    const isEditing = editingComment === (c && c._id);
+                    const formattedDate = currentDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' });
+
+                    return (
+                      <React.Fragment key={c._id || index}>
+                        {isNewDay && (
+                          <div className="w-full flex justify-center my-2">
+                            <span className="bg-blue-600 text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white">{getDateLabel(currentDate)}</span>
+                          </div>
+                        )}
+                        {/* New messages divider */}
+                        {unreadNewMessages > 0 && item.type === 'message' && (() => {
+                          const messageIndex = localComments.findIndex(msg => msg._id === c._id);
+                          return messageIndex === localComments.length - unreadNewMessages;
+                        })() && (
+                          <div className="w-full flex items-center my-2">
+                            <div className="flex-1 h-px bg-gray-300"></div>
+                            <span className="mx-2 text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full border border-red-200">
+                              New messages
+                            </span>
+                            <div className="flex-1 h-px bg-gray-300"></div>
+                          </div>
+                        )}
+                        <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-fadeInChatBubble`} style={{ animationDelay: `${0.03 * index}s` }}>
                         {/* Selection checkbox - only show in selection mode */}
                         {isSelectionMode && (
                           <div className={`flex items-start ${isMe ? 'order-2 ml-2' : 'order-1 mr-2'}`}>
@@ -8122,6 +8213,11 @@ function AdminAppointmentRow({
                 </div>
               )}
               
+                  {/* Close IIFE for merged timeline - messages end here */}
+                  })()}
+                  
+                  <div ref={chatEndRef} />
+                  
               <div className="flex gap-2 mt-1 px-3 pb-2 flex-shrink-0 bg-gradient-to-b from-transparent to-white pt-2 items-end">
                 {/* Message Input Container with Attachment and Emoji Icons Inside */}
                 <div className="flex-1 relative">
