@@ -20,10 +20,11 @@ export default defineConfig({
   resolve: {
     alias: {
       buffer: 'buffer',
+      process: 'process/browser',
     },
   },
   optimizeDeps: {
-    include: ['simple-peer', 'buffer'],
+    include: ['simple-peer', 'buffer', 'process'],
     esbuildOptions: {
       define: {
         global: 'globalThis',
@@ -33,6 +34,9 @@ export default defineConfig({
   build: {
     commonjsOptions: {
       transformMixedEsModules: true,
+    },
+    rollupOptions: {
+      plugins: [],
     },
   },
 })
