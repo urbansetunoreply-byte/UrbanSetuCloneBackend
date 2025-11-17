@@ -6854,10 +6854,11 @@ function AdminAppointmentRow({
                     const previousDate = previousItem ? previousItem.timestamp : null;
                     const isNewDay = previousDate ? currentDate.toDateString() !== previousDate.toDateString() : true;
 
-                    // If it's a call, render call history item (admin is always receiver, so styled as received)
+                    // If it's a call, render call history item (admin view - show third person: "Vishal called Varun")
                     if (item.type === 'call') {
                       const call = item.call;
-                      const callerName = call.callerId?.username || 'Unknown';
+                      const callerName = call.callerId?.username || (typeof call.callerId === 'string' ? 'Unknown' : 'Unknown');
+                      const receiverName = call.receiverId?.username || (typeof call.receiverId === 'string' ? 'Unknown' : 'Unknown');
                       
                       return (
                         <React.Fragment key={`call-${call._id || call.callId}`}>
@@ -6868,9 +6869,9 @@ function AdminAppointmentRow({
                               </span>
                             </div>
                           )}
-                          {/* Call history styled as received (left side) since admin is receiver */}
-                          <div className="flex items-center justify-start my-2">
-                            <div className="flex flex-col items-start gap-1 px-4 py-2 bg-gray-50 rounded-lg max-w-[80%]">
+                          {/* Call history - admin view shows third person (Vishal called Varun) */}
+                          <div className="flex items-center justify-center my-2">
+                            <div className="flex flex-col items-center gap-1 px-4 py-2">
                               <div className="flex items-center gap-2 text-sm text-gray-700">
                                 {call.callType === 'video' ? (
                                   <FaVideo className={`text-sm ${call.status === 'missed' ? 'text-red-500' : 'text-blue-500'}`} />
@@ -6878,7 +6879,7 @@ function AdminAppointmentRow({
                                   <FaPhone className={`text-sm ${call.status === 'missed' ? 'text-red-500' : 'text-green-500'}`} />
                                 )}
                                 <span className="font-medium">
-                                  {callerName} called you
+                                  {callerName} called {receiverName}
                                   {call.duration > 0 && (
                                     <span className="text-gray-600"> • {formatCallDuration(call.duration)}</span>
                                   )}
@@ -7910,8 +7911,9 @@ function AdminAppointmentRow({
                       </div>
                     </div>
                     </React.Fragment>
-                  );
-                }))}
+                    );
+                  });
+                })()}
                 
                 <div ref={chatEndRef} />
               </div>
