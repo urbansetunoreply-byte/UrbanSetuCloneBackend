@@ -285,6 +285,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
   const paymentDataRef = useRef(null); // Ref to access latest paymentData in timer callback
   const lockManagerRef = useRef(null); // Ref for payment lock manager
   const lowTimeWarningShownRef = useRef(false); // Ref to track if low time warning has been shown
+  const expiresAtRef = useRef(null); // Ref to store the expiry timestamp for accurate time calculation
 
   // Cancel payment when modal is closed without completing
   const cancelPayment = async () => {
@@ -482,6 +483,25 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
     onClose();
   }, [onClose]);
 
+  // Helper function to calculate remaining time from expiry timestamp
+  const calculateRemainingTime = useCallback((payment) => {
+    let expiresAtTime = null;
+    
+    if (payment.expiresAt) {
+      expiresAtTime = new Date(payment.expiresAt).getTime();
+    } else if (payment.createdAt) {
+      expiresAtTime = new Date(payment.createdAt).getTime() + 10 * 60 * 1000; // 10 minutes from creation
+    }
+    
+    if (!expiresAtTime) {
+      return 10 * 60; // Default 10 minutes
+    }
+    
+    const now = Date.now();
+    const remaining = Math.max(0, Math.floor((expiresAtTime - now) / 1000));
+    return remaining;
+  }, []);
+
   // Timer effect: Start countdown when payment intent is created
   useEffect(() => {
     if (paymentData && paymentData.payment && !paymentSuccess) {
@@ -490,20 +510,23 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         clearInterval(expiryTimer);
       }
 
-      // Calculate remaining time from payment's expiresAt or createdAt
-      // This ensures the timer shows correct remaining time for both new and reused payments
-      let remainingSeconds = 10 * 60; // Default 10 minutes
-      
+      // Calculate expiry timestamp and store in ref
+      let expiresAtTime = null;
       if (paymentData.payment.expiresAt) {
-        const expiresAt = new Date(paymentData.payment.expiresAt);
-        const now = new Date();
-        remainingSeconds = Math.max(0, Math.floor((expiresAt.getTime() - now.getTime()) / 1000));
+        expiresAtTime = new Date(paymentData.payment.expiresAt).getTime();
       } else if (paymentData.payment.createdAt) {
-        const createdAt = new Date(paymentData.payment.createdAt);
-        const expiresAt = new Date(createdAt.getTime() + 10 * 60 * 1000);
-        const now = new Date();
-        remainingSeconds = Math.max(0, Math.floor((expiresAt.getTime() - now.getTime()) / 1000));
+        expiresAtTime = new Date(paymentData.payment.createdAt).getTime() + 10 * 60 * 1000;
       }
+      
+      if (!expiresAtTime) {
+        // Fallback: set default expiry
+        expiresAtTime = Date.now() + 10 * 60 * 1000;
+      }
+      
+      expiresAtRef.current = expiresAtTime;
+      
+      // Calculate initial remaining time
+      const remainingSeconds = calculateRemainingTime(paymentData.payment);
       
       // Set the calculated remaining time
       setTimeRemaining(remainingSeconds);
@@ -523,29 +546,63 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         toast.warning('Please complete the payment immediately, or wait for this session to expire and initiate a new transaction.');
       }
       
-      // Start countdown timer
-      const timer = setInterval(() => {
-        setTimeRemaining((prev) => {
-          // Show warning toast when less than 1 minute remaining (only once)
-          if (prev <= 60 && !lowTimeWarningShownRef.current) {
-            lowTimeWarningShownRef.current = true;
-            toast.warning('Please complete the payment immediately, or wait for this session to expire and initiate a new transaction.');
-          }
-          
-          if (prev <= 1) {
-            // Time expired - cancel payment and close modal
+      // Timer function that recalculates remaining time from expiry timestamp
+      // This ensures accuracy even when tab is inactive (browsers throttle setInterval)
+      let timer = null;
+      const updateTimer = () => {
+        if (!expiresAtRef.current) {
+          return;
+        }
+        
+        const now = Date.now();
+        const remaining = Math.max(0, Math.floor((expiresAtRef.current - now) / 1000));
+        
+        setTimeRemaining(remaining);
+        
+        // Show warning toast when less than 1 minute remaining (only once)
+        if (remaining <= 60 && remaining > 0 && !lowTimeWarningShownRef.current) {
+          lowTimeWarningShownRef.current = true;
+          toast.warning('Please complete the payment immediately, or wait for this session to expire and initiate a new transaction.');
+        }
+        
+        // If expired, handle expiry
+        if (remaining <= 0) {
+          if (timer) {
             clearInterval(timer);
-            handleExpiry();
-            return 0;
+            timer = null;
           }
-          return prev - 1;
-        });
-      }, 1000);
-
+          handleExpiry();
+        }
+      };
+      
+      // Start countdown timer - recalculate from expiry timestamp each second
+      // This ensures accuracy even when browser throttles timers in inactive tabs
+      timer = setInterval(updateTimer, 1000);
       setExpiryTimer(timer);
+      
+      // Handle tab visibility changes to re-sync timer when tab becomes visible
+      const handleVisibilityChange = () => {
+        if (!document.hidden && expiresAtRef.current) {
+          // Tab became visible, recalculate remaining time immediately
+          const remaining = calculateRemainingTime(paymentData.payment);
+          setTimeRemaining(remaining);
+          
+          // If expired while tab was hidden, handle expiry
+          if (remaining <= 0) {
+            if (timer) {
+              clearInterval(timer);
+              timer = null;
+            }
+            handleExpiry();
+          }
+        }
+      };
+      
+      document.addEventListener('visibilitychange', handleVisibilityChange);
 
       return () => {
         clearInterval(timer);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
       };
     } else {
       // Clear timer if payment completed or modal closed
@@ -553,8 +610,9 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         clearInterval(expiryTimer);
         setExpiryTimer(null);
       }
+      expiresAtRef.current = null;
     }
-  }, [paymentData, paymentSuccess, handleExpiry]);
+  }, [paymentData, paymentSuccess, handleExpiry, calculateRemainingTime]);
 
   const createPaymentIntent = async (methodOverride) => {
     try {
