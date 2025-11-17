@@ -2883,6 +2883,9 @@ function AdminAppointmentRow({
   // Message info modal state
   const [showMessageInfoModal, setShowMessageInfoModal] = useLocalState(false);
   const [selectedMessageForInfo, setSelectedMessageForInfo] = useLocalState(null);
+  // Call info modal state
+  const [showCallInfoModal, setShowCallInfoModal] = useLocalState(false);
+  const [selectedCallForInfo, setSelectedCallForInfo] = useLocalState(null);
   // Persist draft per appointment when chat is open
   React.useEffect(() => {
     if (!showChatModal || !appt?._id || !currentUser?._id) return;
@@ -2894,7 +2897,8 @@ function AdminAppointmentRow({
         try {
           if (inputRef.current) {
             const length = inputRef.current.value.length;
-            inputRef.current.focus();
+            // Removed auto-focus: Don't focus input automatically when chat opens
+            // inputRef.current.focus();
             inputRef.current.setSelectionRange(length, length);
             // Auto-resize textarea for drafted content
             autoResizeTextarea(inputRef.current);
@@ -4730,24 +4734,8 @@ function AdminAppointmentRow({
     // Remove the global sending state to allow multiple messages
     // setSending(true);
 
-    // Aggressively refocus the input field to keep keyboard open on mobile
-    const refocusInput = () => {
-      if (inputRef.current) {
-        inputRef.current.focus();
-        // For mobile devices, ensure the input remains active and set cursor position
-        inputRef.current.setSelectionRange(0, 0);
-        // Force the input to be the active element
-        if (document.activeElement !== inputRef.current) {
-          inputRef.current.click();
-          inputRef.current.focus();
-        }
-      }
-    };
-    
-    // Multiple attempts to maintain focus for mobile devices
-    refocusInput(); // Immediate focus
-    requestAnimationFrame(refocusInput); // Focus after DOM updates
-    setTimeout(refocusInput, 10); // Final fallback
+    // Removed auto-focus: Don't automatically focus input after sending message
+    // User can manually click to focus when needed
 
     // Scroll to bottom immediately after adding the message
     if (chatEndRef.current) {
@@ -6054,41 +6042,58 @@ function AdminAppointmentRow({
                     </div>
                   </div>
                 ) : headerOptionsMessageId && selectedCallForHeaderOptions ? (
-                    // Header-level options overlay for call history items (admin view)
+                    // Header-level options overlay for call history items (admin view: reply, info modal, delete)
                     <div className="flex items-center justify-end w-full gap-4">
                       <div className="flex items-center gap-4">
-                        {/* Call info */}
+                        {/* Reply */}
+                        <button
+                          className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                          onClick={() => { 
+                            // Create a fake message-like object for reply functionality
+                            const fakeMessage = {
+                              _id: `call-${selectedCallForHeaderOptions._id || selectedCallForHeaderOptions.callId}`,
+                              senderEmail: selectedCallForHeaderOptions.callerId?.email || 'unknown',
+                              message: `${selectedCallForHeaderOptions.callType === 'video' ? 'Video' : 'Audio'} call`,
+                              timestamp: selectedCallForHeaderOptions.startTime || selectedCallForHeaderOptions.createdAt,
+                              isCall: true,
+                              call: selectedCallForHeaderOptions
+                            };
+                            startReply(fakeMessage);
+                            setHeaderOptionsMessageId(null);
+                          }}
+                          title="Reply"
+                          aria-label="Reply"
+                        >
+                          <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M10 9V5l-7 7 7 7v-4.1c4.28 0 6.92 1.45 8.84 4.55.23.36.76.09.65-.32C18.31 13.13 15.36 10.36 10 9z"/></svg>
+                        </button>
+                        {/* Call info modal */}
                         <button
                           className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
                           onClick={() => {
-                            const callTypeText = selectedCallForHeaderOptions.callType === 'video' ? 'Video' : 'Audio';
-                            const callerName = selectedCallForHeaderOptions.callerId?.username || 'Unknown';
-                            const receiverName = selectedCallForHeaderOptions.receiverId?.username || 'Unknown';
-                            const formatCallDuration = (seconds) => {
-                              if (!seconds || seconds === 0) return 'N/A';
-                              const hours = Math.floor(seconds / 3600);
-                              const minutes = Math.floor((seconds % 3600) / 60);
-                              const secs = Math.floor(seconds % 60);
-                              if (hours > 0) {
-                                return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-                              }
-                              return `${minutes}:${secs.toString().padStart(2, '0')}`;
-                            };
-                            const callDate = new Date(selectedCallForHeaderOptions.startTime || selectedCallForHeaderOptions.createdAt);
-                            toast.info(
-                              `${callTypeText} Call\n` +
-                              `Caller: ${callerName}\n` +
-                              `Receiver: ${receiverName}\n` +
-                              `Status: ${selectedCallForHeaderOptions.status}\n` +
-                              `Duration: ${formatCallDuration(selectedCallForHeaderOptions.duration)}\n` +
-                              `Date: ${callDate.toLocaleDateString()} ${callDate.toLocaleTimeString()}`
-                            );
+                            setSelectedCallForInfo(selectedCallForHeaderOptions);
+                            setShowCallInfoModal(true);
                             setHeaderOptionsMessageId(null);
                           }}
                           title="Call info"
                           aria-label="Call info"
                         >
                           <FaInfoCircle size={18} />
+                        </button>
+                        {/* Delete */}
+                        <button
+                          className="text-white hover:text-red-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                          onClick={() => { 
+                            // For calls, we'll remove them from local call history (they're already saved in DB)
+                            setCallHistory(prev => prev.filter(call => 
+                              (call._id || call.callId) !== (selectedCallForHeaderOptions._id || selectedCallForHeaderOptions.callId)
+                            ));
+                            toast.success('Call removed from chat');
+                            setHeaderOptionsMessageId(null);
+                          }}
+                          title="Delete call"
+                          aria-label="Delete call"
+                        >
+                          <FaTrash size={18} />
                         </button>
                         {/* Close button */}
                         <button
@@ -6974,9 +6979,14 @@ function AdminAppointmentRow({
                   };
 
                   // Merge call history with chat messages chronologically (admin is always receiver)
+                  // CRITICAL: Filter call history by clearTime to prevent old calls from loading after chat is cleared
+                  // For admin, we don't have user-specific clearTime, but we should still filter if needed
+                  // For now, admin sees all calls (admin is observer, doesn't clear chat for users)
+                  const filteredCallHistory = callHistory; // Admin sees all calls as observer
+                  
                   const mergedTimeline = [
-                    // Convert call history to timeline items
-                    ...callHistory.map(call => ({
+                    // Convert filtered call history to timeline items
+                    ...filteredCallHistory.map(call => ({
                       type: 'call',
                       id: call._id || call.callId,
                       timestamp: new Date(call.startTime || call.createdAt),

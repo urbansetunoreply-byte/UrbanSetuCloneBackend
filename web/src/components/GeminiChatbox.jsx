@@ -4602,7 +4602,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                             className={`w-full p-2 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} placeholder-gray-500`}
                                                             rows={3}
                                                             placeholder="Edit your message... (Ctrl+Enter to send, Esc to cancel)"
-                                                            autoFocus
+                                                            // Removed autoFocus - don't auto-focus input
                                                         />
                                                         <div className="flex gap-2 justify-end">
                                                             <button
@@ -5510,7 +5510,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         className={`w-full px-3 py-2 border ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded mb-4`}
                         placeholder="Enter chat name"
                         maxLength={80}
-                        autoFocus
+                        // Removed autoFocus - don't auto-focus input
                     />
                     <div className="flex justify-end gap-2">
                         <button onClick={() => { setShowRenameModal(false); setRenameTargetSessionId(null); }} className={`px-3 py-1.5 text-sm rounded border ${isDarkMode ? 'border-gray-600 text-gray-300' : 'border-gray-300 text-gray-700'}`}>Cancel</button>
