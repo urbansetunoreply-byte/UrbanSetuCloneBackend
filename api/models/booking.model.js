@@ -157,6 +157,9 @@ const bookingSchema = new mongoose.Schema({
   sellerChatAccessGranted: { type: Boolean, default: false },
   // Payment status tracking
   paymentConfirmed: { type: Boolean, default: false },
+  // Appointment slot lock for payment (10 minutes non-resettable)
+  lockStartTime: { type: Date, default: null }, // When user enters payment page
+  lockExpiryTime: { type: Date, default: null }, // 10 minutes from lockStartTime (never resets)
   // Smart email notification tracking
   buyerLastEmailSentAt: { type: Date, default: null },
   sellerLastEmailSentAt: { type: Date, default: null },

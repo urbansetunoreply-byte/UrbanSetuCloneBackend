@@ -300,6 +300,30 @@ const MyPayments = () => {
         return;
       }
       
+      // Initialize appointment lock before opening modal (timer is tied to appointment slot, not payment ID)
+      try {
+        const lockInitResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/lock/initialize`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({ appointmentId: appointment._id })
+        });
+        
+        if (lockInitResponse.ok) {
+          const lockData = await lockInitResponse.json();
+          // Update appointment with lock info if provided
+          if (lockData.appointment) {
+            appointment.lockStartTime = lockData.appointment.lockStartTime;
+            appointment.lockExpiryTime = lockData.appointment.lockExpiryTime;
+          }
+        }
+      } catch (lockError) {
+        console.error('Error initializing appointment lock:', lockError);
+        // Continue anyway - backend will initialize lock when creating payment intent
+      }
+      
       // Prepare appointment object for PaymentModal (same format as MyAppointments)
       // PaymentModal expects appointment with region field
       const appointmentForModal = {
@@ -552,7 +576,7 @@ const MyPayments = () => {
                           </>
                         ) : (
                           <>
-                            <FaCreditCard className="text-xs" /> Pay Now
+                        <FaCreditCard className="text-xs" /> Pay Now
                           </>
                         )}
                       </button>

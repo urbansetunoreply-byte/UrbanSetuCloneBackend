@@ -373,15 +373,15 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
           // Lock acquired, mark as acquired and continue with modal initialization
           setLockAcquired(true);
           
-          // Initialize method from appointment region before creating intent
-          const methodFromAppt = appointment?.region === 'india' ? 'razorpay' : 'paypal';
-          setPreferredMethod(methodFromAppt);
-          setPaymentData(null);
+      // Initialize method from appointment region before creating intent
+      const methodFromAppt = appointment?.region === 'india' ? 'razorpay' : 'paypal';
+      setPreferredMethod(methodFromAppt);
+      setPaymentData(null);
           paymentDataRef.current = null; // Reset ref
           setPaymentSuccess(false);
           setPaymentInitiatedTime(null); // Reset initiation time
           // Don't reset timeRemaining here - it will be calculated from payment data when received
-          setTimeout(() => createPaymentIntent(methodFromAppt), 0);
+      setTimeout(() => createPaymentIntent(methodFromAppt), 0);
         } catch (error) {
           console.error('Error acquiring lock:', error);
           toast.error('Failed to acquire payment lock. Please try again.');
@@ -483,14 +483,22 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
     onClose();
   }, [onClose]);
 
-  // Helper function to calculate remaining time from expiry timestamp
-  const calculateRemainingTime = useCallback((payment) => {
+  // Helper function to calculate remaining time from appointment lock expiry (not payment expiry)
+  // Timer is tied to appointment slot, NOT payment order ID
+  const calculateRemainingTime = useCallback((paymentData) => {
     let expiresAtTime = null;
     
-    if (payment.expiresAt) {
-      expiresAtTime = new Date(payment.expiresAt).getTime();
-    } else if (payment.createdAt) {
-      expiresAtTime = new Date(payment.createdAt).getTime() + 10 * 60 * 1000; // 10 minutes from creation
+    // Priority 1: Use appointment.lockExpiryTime (appointment slot lock - never resets)
+    if (paymentData?.appointment?.lockExpiryTime) {
+      expiresAtTime = new Date(paymentData.appointment.lockExpiryTime).getTime();
+    }
+    // Priority 2: Fallback to payment.expiresAt (for backward compatibility)
+    else if (paymentData?.payment?.expiresAt) {
+      expiresAtTime = new Date(paymentData.payment.expiresAt).getTime();
+    }
+    // Priority 3: Fallback to payment.createdAt + 10 minutes
+    else if (paymentData?.payment?.createdAt) {
+      expiresAtTime = new Date(paymentData.payment.createdAt).getTime() + 10 * 60 * 1000;
     }
     
     if (!expiresAtTime) {
@@ -510,11 +518,20 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         clearInterval(expiryTimer);
       }
 
-      // Calculate expiry timestamp and store in ref
+      // Calculate expiry timestamp from appointment lock (NOT payment expiry)
+      // Timer is tied to appointment slot, NOT payment order ID
       let expiresAtTime = null;
-      if (paymentData.payment.expiresAt) {
+      
+      // Priority 1: Use appointment.lockExpiryTime (appointment slot lock - never resets)
+      if (paymentData.appointment?.lockExpiryTime) {
+        expiresAtTime = new Date(paymentData.appointment.lockExpiryTime).getTime();
+      }
+      // Priority 2: Fallback to payment.expiresAt (for backward compatibility)
+      else if (paymentData.payment?.expiresAt) {
         expiresAtTime = new Date(paymentData.payment.expiresAt).getTime();
-      } else if (paymentData.payment.createdAt) {
+      }
+      // Priority 3: Fallback to payment.createdAt + 10 minutes
+      else if (paymentData.payment?.createdAt) {
         expiresAtTime = new Date(paymentData.payment.createdAt).getTime() + 10 * 60 * 1000;
       }
       
@@ -526,7 +543,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
       expiresAtRef.current = expiresAtTime;
       
       // Calculate initial remaining time
-      const remainingSeconds = calculateRemainingTime(paymentData.payment);
+      const remainingSeconds = calculateRemainingTime(paymentData);
       
       // Set the calculated remaining time
       setTimeRemaining(remainingSeconds);
@@ -584,7 +601,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
       const handleVisibilityChange = () => {
         if (!document.hidden && expiresAtRef.current) {
           // Tab became visible, recalculate remaining time immediately
-          const remaining = calculateRemainingTime(paymentData.payment);
+          const remaining = calculateRemainingTime(paymentData);
           setTimeRemaining(remaining);
           
           // If expired while tab was hidden, handle expiry
@@ -653,22 +670,10 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         const initiatedAt = data.payment?.createdAt ? new Date(data.payment.createdAt) : new Date();
         setPaymentInitiatedTime(initiatedAt);
         
-        // Calculate remaining time based on expiresAt or createdAt + 10 minutes
-        // This ensures correct remaining time is shown for both new and reused payments
-        if (data.payment?.expiresAt) {
-          const expiresAt = new Date(data.payment.expiresAt);
-          const now = Date.now();
-          const remaining = Math.max(0, Math.floor((expiresAt.getTime() - now) / 1000));
-          setTimeRemaining(remaining);
-        } else if (data.payment?.createdAt) {
-          const createdAt = new Date(data.payment.createdAt);
-          const expiresAt = new Date(createdAt.getTime() + 10 * 60 * 1000);
-          const now = Date.now();
-          const remaining = Math.max(0, Math.floor((expiresAt.getTime() - now) / 1000));
-          setTimeRemaining(remaining);
-        } else {
-          setTimeRemaining(10 * 60); // Default 10 minutes (fallback)
-        }
+        // Calculate remaining time based on appointment.lockExpiryTime (appointment slot lock)
+        // Timer is tied to appointment slot, NOT payment order ID
+        const remaining = calculateRemainingTime(data);
+        setTimeRemaining(remaining);
         
         // Note: Timer will be started by the useEffect that watches paymentData
       } else {
@@ -701,8 +706,8 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
             setExpiryTimer(null);
           }
           onClose();
-        } else {
-          toast.error(data.message || 'Failed to create payment intent');
+      } else {
+        toast.error(data.message || 'Failed to create payment intent');
         }
       }
     } catch (error) {

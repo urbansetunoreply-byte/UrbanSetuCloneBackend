@@ -11857,6 +11857,30 @@ function PaymentStatusCell({ appointment, isBuyer }) {
         }
       }
       
+      // Initialize appointment lock before opening modal (timer is tied to appointment slot, not payment ID)
+      try {
+        const lockInitResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/lock/initialize`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({ appointmentId: appointment._id })
+        });
+        
+        if (lockInitResponse.ok) {
+          const lockData = await lockInitResponse.json();
+          // Update appointment with lock info if provided
+          if (lockData.appointment) {
+            appointment.lockStartTime = lockData.appointment.lockStartTime;
+            appointment.lockExpiryTime = lockData.appointment.lockExpiryTime;
+          }
+        }
+      } catch (lockError) {
+        console.error('Error initializing appointment lock:', lockError);
+        // Continue anyway - backend will initialize lock when creating payment intent
+      }
+      
       // If payment is not completed and no active payment, proceed with opening the modal
       setShowPayModal(true);
       setPaying(false); // Clear loading when modal opens

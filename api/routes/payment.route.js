@@ -50,6 +50,50 @@ const getRazorpayAuthHeader = () => {
   return { keyId, authHeader: `Basic ${auth}` };
 };
 
+// POST: Initialize appointment lock (called when payment modal opens)
+router.post("/lock/initialize", verifyToken, async (req, res) => {
+  try {
+    const { appointmentId } = req.body;
+    const userId = req.user.id;
+
+    if (!appointmentId) {
+      return res.status(400).json({ message: 'Appointment ID is required' });
+    }
+
+    // Validate appointment
+    const appointment = await Booking.findById(appointmentId);
+    if (!appointment) {
+      return res.status(404).json({ message: 'Appointment not found' });
+    }
+
+    // Check if user is authorized
+    if (appointment.buyerId.toString() !== userId) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    const now = new Date();
+    
+    // Initialize lock if not already set or if expired
+    if (!appointment.lockExpiryTime || appointment.lockExpiryTime <= now) {
+      appointment.lockStartTime = now;
+      appointment.lockExpiryTime = new Date(now.getTime() + 10 * 60 * 1000); // 10 minutes
+      await appointment.save();
+    }
+
+    return res.json({
+      ok: true,
+      appointment: {
+        _id: appointment._id,
+        lockStartTime: appointment.lockStartTime,
+        lockExpiryTime: appointment.lockExpiryTime
+      }
+    });
+  } catch (err) {
+    console.error('Error initializing appointment lock:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // POST: Create payment intent (advance payment for booking)
 router.post("/create-intent", verifyToken, async (req, res) => {
   try {
@@ -69,6 +113,14 @@ router.post("/create-intent", verifyToken, async (req, res) => {
     // Check if user is authorized
     if (appointment.buyerId._id.toString() !== userId) {
       return res.status(403).json({ message: "You can only make payments for your own appointments." });
+    }
+
+    // Initialize appointment lock if not already set or expired
+    const now = new Date();
+    if (!appointment.lockExpiryTime || appointment.lockExpiryTime <= now) {
+      appointment.lockStartTime = now;
+      appointment.lockExpiryTime = new Date(now.getTime() + 10 * 60 * 1000); // 10 minutes
+      await appointment.save();
     }
 
     // Check if payment is already completed for this appointment
@@ -137,13 +189,21 @@ router.post("/create-intent", verifyToken, async (req, res) => {
               amount: existingPayment.amount * 100,
               currency: existingPayment.currency || 'INR',
               keyId
-            } : null
+            } : null,
+            appointment: {
+              lockStartTime: appointment.lockStartTime,
+              lockExpiryTime: appointment.lockExpiryTime
+            }
           });
         } else {
           return res.status(200).json({
             message: 'Existing payment intent reused',
             payment: existingPayment,
-            paypal: { amount: existingPayment.amount, currency: existingPayment.currency || 'USD' }
+            paypal: { amount: existingPayment.amount, currency: existingPayment.currency || 'USD' },
+            appointment: {
+              lockStartTime: appointment.lockStartTime,
+              lockExpiryTime: appointment.lockExpiryTime
+            }
           });
         }
       } else {
@@ -208,7 +268,11 @@ router.post("/create-intent", verifyToken, async (req, res) => {
       return res.status(201).json({
         message: 'Payment intent (Razorpay) created successfully',
         payment,
-        razorpay: { orderId: order.id, amount: advanceAmountInr * 100, currency: 'INR', keyId }
+        razorpay: { orderId: order.id, amount: advanceAmountInr * 100, currency: 'INR', keyId },
+        appointment: {
+          lockStartTime: appointment.lockStartTime,
+          lockExpiryTime: appointment.lockExpiryTime
+        }
       });
     } else {
       // Default PayPal USD $5 advance
