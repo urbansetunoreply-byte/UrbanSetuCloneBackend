@@ -353,38 +353,42 @@ const ActiveCallModal = ({
                 </button>
               </div>
             )}
-            {/* Camera selection menu - positioned above small video window in green circled location */}
-            {!videoSwapped && showCameraMenu && availableCameras && availableCameras.length > 1 && (
-              <div className="absolute bottom-full right-0 mb-2 bg-black bg-opacity-95 rounded-lg shadow-xl min-w-[220px] max-w-[280px] z-50 border border-white border-opacity-20">
-                    <div className="py-2">
-                      <div className="px-3 py-2 border-b border-white border-opacity-10">
-                        <p className="text-xs font-semibold text-white text-opacity-80 uppercase tracking-wide">Select Camera</p>
-                      </div>
-                      {availableCameras.map((camera) => (
-                        <button
-                          key={camera.deviceId}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onSwitchCamera(camera.deviceId);
-                            setShowCameraMenu(false);
-                          }}
-                          className={`w-full text-left px-4 py-3 text-sm text-white hover:bg-white hover:bg-opacity-20 transition-colors ${
-                            currentCameraId === camera.deviceId ? 'bg-white bg-opacity-20 font-medium' : ''
-                          }`}
-                        >
-                          <div className="flex items-center gap-2">
-                            {currentCameraId === camera.deviceId && (
-                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                            )}
-                            <span className={currentCameraId === camera.deviceId ? '' : 'pl-4'}>
-                              {camera.label || `Camera ${camera.deviceId.substring(0, 8)}`}
-                            </span>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
+          </div>
+        )}
+        {/* Camera selection menu - positioned above small video window in green circled location */}
+        {callType === 'video' && !videoSwapped && showCameraMenu && availableCameras && availableCameras.length > 1 && (
+          <div 
+            className={`absolute right-4 bg-black bg-opacity-95 rounded-lg shadow-xl min-w-[220px] max-w-[280px] z-50 border border-white border-opacity-20 ${
+              controlsVisible ? 'bottom-[200px]' : 'bottom-[182px]'
+            }`}
+          >
+            <div className="py-2">
+              <div className="px-3 py-2 border-b border-white border-opacity-10">
+                <p className="text-xs font-semibold text-white text-opacity-80 uppercase tracking-wide">Select Camera</p>
+              </div>
+              {availableCameras.map((camera) => (
+                <button
+                  key={camera.deviceId}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSwitchCamera(camera.deviceId);
+                    setShowCameraMenu(false);
+                  }}
+                  className={`w-full text-left px-4 py-3 text-sm text-white hover:bg-white hover:bg-opacity-20 transition-colors ${
+                    currentCameraId === camera.deviceId ? 'bg-white bg-opacity-20 font-medium' : ''
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    {currentCameraId === camera.deviceId && (
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    )}
+                    <span className={currentCameraId === camera.deviceId ? '' : 'pl-4'}>
+                      {camera.label || `Camera ${camera.deviceId.substring(0, 8)}`}
+                    </span>
                   </div>
-                )}
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
