@@ -132,11 +132,15 @@ const ActiveCallModal = ({
               // Local video in big view (when swapped)
               <>
                 <video
+                  key="local-large"
                   ref={localVideoRef}
                   autoPlay
                   playsInline
                   muted
                   className="w-full h-full object-cover cursor-pointer"
+                  onLoadedMetadata={(e) => {
+                    e.target.play().catch(err => console.error('Error playing local video:', err));
+                  }}
                 />
                 {!isVideoEnabled && (
                   <div className="absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center cursor-pointer">
@@ -156,10 +160,14 @@ const ActiveCallModal = ({
               // Remote video in big view (default)
               <>
                 <video
+                  key="remote-large"
                   ref={remoteVideoRef}
                   autoPlay
                   playsInline
                   className="w-full h-full object-cover cursor-pointer"
+                  onLoadedMetadata={(e) => {
+                    e.target.play().catch(err => console.error('Error playing remote video:', err));
+                  }}
                 />
                 {/* Remote video off indicator */}
                 {!remoteVideoEnabled && (
@@ -236,10 +244,14 @@ const ActiveCallModal = ({
               // Remote video in mini view (when swapped)
               <>
                 <video
+                  key="remote-small"
                   ref={remoteVideoRef}
                   autoPlay
                   playsInline
                   className="w-full h-full object-cover"
+                  onLoadedMetadata={(e) => {
+                    e.target.play().catch(err => console.error('Error playing remote video:', err));
+                  }}
                 />
                 {!remoteVideoEnabled && (
                   <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
@@ -255,11 +267,15 @@ const ActiveCallModal = ({
               // Local video in mini view (default)
               <>
                 <video
+                  key="local-small"
                   ref={localVideoRef}
                   autoPlay
                   playsInline
                   muted
                   className="w-full h-full object-cover"
+                  onLoadedMetadata={(e) => {
+                    e.target.play().catch(err => console.error('Error playing local video:', err));
+                  }}
                 />
                 {!isVideoEnabled && (
                   <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
@@ -274,7 +290,7 @@ const ActiveCallModal = ({
             )}
             {/* Camera switch button (only show on local video) */}
             {!videoSwapped && availableCameras && availableCameras.length > 1 && (
-              <div className="absolute top-2 right-2">
+              <div className="absolute top-2 right-2 z-30">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -285,10 +301,13 @@ const ActiveCallModal = ({
                 >
                   <FaSync className="text-sm" />
                 </button>
-                {/* Camera selection menu */}
+                {/* Camera selection menu - positioned above button to avoid going off-screen */}
                 {showCameraMenu && (
-                  <div className="absolute top-12 right-0 bg-black bg-opacity-90 rounded-lg shadow-xl min-w-[200px] z-10">
+                  <div className="absolute bottom-full right-0 mb-2 bg-black bg-opacity-95 rounded-lg shadow-xl min-w-[220px] max-w-[280px] z-50 border border-white border-opacity-20">
                     <div className="py-2">
+                      <div className="px-3 py-2 border-b border-white border-opacity-10">
+                        <p className="text-xs font-semibold text-white text-opacity-80 uppercase tracking-wide">Select Camera</p>
+                      </div>
                       {availableCameras.map((camera) => (
                         <button
                           key={camera.deviceId}
@@ -297,11 +316,18 @@ const ActiveCallModal = ({
                             onSwitchCamera(camera.deviceId);
                             setShowCameraMenu(false);
                           }}
-                          className={`w-full text-left px-4 py-2 text-sm text-white hover:bg-white hover:bg-opacity-20 transition-colors ${
-                            currentCameraId === camera.deviceId ? 'bg-white bg-opacity-20' : ''
+                          className={`w-full text-left px-4 py-3 text-sm text-white hover:bg-white hover:bg-opacity-20 transition-colors ${
+                            currentCameraId === camera.deviceId ? 'bg-white bg-opacity-20 font-medium' : ''
                           }`}
                         >
-                          {camera.label || `Camera ${camera.deviceId.substring(0, 8)}`}
+                          <div className="flex items-center gap-2">
+                            {currentCameraId === camera.deviceId && (
+                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            )}
+                            <span className={currentCameraId === camera.deviceId ? '' : 'pl-4'}>
+                              {camera.label || `Camera ${camera.deviceId.substring(0, 8)}`}
+                            </span>
+                          </div>
                         </button>
                       ))}
                     </div>
