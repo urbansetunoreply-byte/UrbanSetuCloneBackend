@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -11,7 +12,13 @@ export default defineConfig({
         },
       },
   },
-  plugins: [react()],
+  plugins: [
+    react(),
+    nodePolyfills({
+      // Whether to polyfill `node:` protocol imports.
+      protocolImports: true,
+    })
+  ],
   define: {
     'process.env': JSON.stringify({}),
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
@@ -20,11 +27,10 @@ export default defineConfig({
   resolve: {
     alias: {
       buffer: 'buffer',
-      process: 'process/browser',
     },
   },
   optimizeDeps: {
-    include: ['simple-peer', 'buffer', 'process'],
+    include: ['simple-peer', 'buffer'],
     esbuildOptions: {
       define: {
         global: 'globalThis',
