@@ -1882,21 +1882,21 @@ export default function AdminAppointments() {
                         getFilteredEmojis={getFilteredEmojis}
                         toggleReactionsBar={toggleReactionsBar}
                         toggleReactionsEmojiPicker={toggleReactionsEmojiPicker}
-                      onExportChat={(appointment, comments, callHistory) => {
+                        onExportChat={(appointment, comments, callHistory) => {
                           setExportAppointment(appointment);
                           setExportComments(comments);
-                        setExportCallHistory(callHistory || []);
+                          setExportCallHistory(callHistory || []);
                           setShowExportModal(true);
                         }}
-                      activeChatAppointmentId={activeChatAppointmentId}
-                      shouldOpenChatFromNotification={shouldOpenChatFromNotification}
-                      onChatOpened={() => {
-                        setShouldOpenChatFromNotification(false);
-                        setActiveChatAppointmentId(null);
-                      }}
-                      // Call History Modal props
-                      setShowCallHistoryModal={setShowCallHistoryModal}
-                      setCallHistoryAppointmentId={setCallHistoryAppointmentId}
+                        activeChatAppointmentId={activeChatAppointmentId}
+                        shouldOpenChatFromNotification={shouldOpenChatFromNotification}
+                        onChatOpened={() => {
+                          setShouldOpenChatFromNotification(false);
+                          setActiveChatAppointmentId(null);
+                        }}
+                        // Call History Modal props
+                        setShowCallHistoryModal={setShowCallHistoryModal}
+                        setCallHistoryAppointmentId={setCallHistoryAppointmentId}
                       />
                     ))}
                   </tbody>
