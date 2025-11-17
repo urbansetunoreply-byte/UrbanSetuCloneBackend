@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FaPhone, FaVideo, FaTimes, FaClock, FaCheckCircle, FaTimesCircle, FaUser, FaSpinner } from 'react-icons/fa';
+import { FaPhone, FaVideo, FaTimes, FaClock, FaCheckCircle, FaTimesCircle, FaUser, FaSpinner, FaTrash, FaSync } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -8,6 +9,9 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
   const [calls, setCalls] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
+  const [showDeleteSingleModal, setShowDeleteSingleModal] = useState(false);
+  const [callToDelete, setCallToDelete] = useState(null);
 
   useEffect(() => {
     if (isOpen && appointmentId) {
@@ -35,6 +39,24 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDeleteAll = () => {
+    // Local deletion - remove all calls from view (for users only)
+    setCalls([]);
+    toast.success('All call history removed from your view');
+    setShowDeleteAllModal(false);
+  };
+
+  const handleDeleteSingle = () => {
+    if (!callToDelete) return;
+    // Local deletion - remove single call from view (for users only)
+    setCalls(prev => prev.filter(call => 
+      (call._id || call.callId) !== (callToDelete._id || callToDelete.callId)
+    ));
+    toast.success('Call history removed from your view');
+    setShowDeleteSingleModal(false);
+    setCallToDelete(null);
   };
 
   const formatDuration = (seconds) => {
@@ -119,13 +141,34 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
               </>
             )}
           </h2>
-          <button
-            onClick={onClose}
-            className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
-            title="Close"
-          >
-            <FaTimes className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Refresh Button (for both users and admins) */}
+            <button
+              onClick={fetchCallHistory}
+              disabled={loading}
+              className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Refresh"
+            >
+              <FaSync className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+            </button>
+            {/* Delete All Button (users only) */}
+            {!isAdmin && calls.length > 0 && (
+              <button
+                onClick={() => setShowDeleteAllModal(true)}
+                className="text-white hover:text-red-200 bg-white/10 hover:bg-red-500/20 rounded-full p-2 transition-colors"
+                title="Delete all call history"
+              >
+                <FaTrash className="w-5 h-5" />
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+              title="Close"
+            >
+              <FaTimes className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Content */}
@@ -221,6 +264,19 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
                           </div>
                         </div>
                       </div>
+                      {/* Delete Button (users only) */}
+                      {!isAdmin && (
+                        <button
+                          onClick={() => {
+                            setCallToDelete(call);
+                            setShowDeleteSingleModal(true);
+                          }}
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full p-2 transition-colors ml-2 flex-shrink-0"
+                          title="Delete this call history"
+                        >
+                          <FaTrash className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
@@ -228,6 +284,87 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
             </div>
           )}
         </div>
+
+        {/* Delete All Confirmation Modal */}
+        {showDeleteAllModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+              <div className="p-6">
+                <div className="flex items-start gap-4 mb-6">
+                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <FaTrash className="text-red-600 text-xl" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Delete All Call History</h3>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      Are you sure you want to delete all call history from your view? This action will only remove the calls from your view and will not affect the other party or the database records.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex gap-3 justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteAllModal(false)}
+                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDeleteAll}
+                    className="px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition-colors flex items-center gap-2"
+                  >
+                    <FaTrash size={14} />
+                    Delete All
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Single Call Confirmation Modal */}
+        {showDeleteSingleModal && callToDelete && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+              <div className="p-6">
+                <div className="flex items-start gap-4 mb-6">
+                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <FaTrash className="text-red-600 text-xl" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Delete Call History</h3>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      Are you sure you want to delete this call history from your view? This action will only remove the call from your view and will not affect the other party or the database records.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex gap-3 justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowDeleteSingleModal(false);
+                      setCallToDelete(null);
+                    }}
+                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDeleteSingle}
+                    className="px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition-colors flex items-center gap-2"
+                  >
+                    <FaTrash size={14} />
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="p-4 border-t border-gray-200 bg-gray-50 rounded-b-lg">
