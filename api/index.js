@@ -253,15 +253,28 @@ io.use(async (socket, next) => {
     const token = socket.handshake.auth && socket.handshake.auth.token;
   if (token) {
     try {
+      if (!process.env.JWT_TOKEN) {
+        console.error('JWT_TOKEN is not set in environment variables');
+        return next(new Error('Server configuration error'));
+      }
     const decoded = jwt.verify(token, process.env.JWT_TOKEN);
     const user = await User.findById(decoded.id);
       if (user) {
     socket.user = user;
     socket.join(user._id.toString());
+    socket.join(`user_${user._id.toString()}`);
+      } else {
+        console.warn('User not found for token:', decoded.id);
       }
   } catch (error) {
-      // Invalid token, treat as public user
+      console.error('Socket auth error:', error.message);
+      // Invalid token, treat as public user (but log for debugging)
+      if (error.name !== 'JsonWebTokenError' && error.name !== 'TokenExpiredError') {
+        console.error('Unexpected auth error:', error);
+      }
     }
+  } else {
+    console.log('Socket connected without token (public user)');
   }
   // Allow connection for both public and authenticated users
   next();

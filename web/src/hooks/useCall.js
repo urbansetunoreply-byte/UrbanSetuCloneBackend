@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { socket } from '../utils/socket';
+import { socket, reconnectSocket } from '../utils/socket';
 import SimplePeer from 'simple-peer';
 import { API_BASE_URL } from '../config/api';
 import { toast } from 'react-toastify';
+import { getAuthToken } from '../utils/auth';
 
 // STUN servers for WebRTC
 const STUN_SERVERS = [
@@ -132,6 +133,24 @@ export const useCall = () => {
   // Initialize call
   const initiateCall = async (appointmentId, receiverId, callType) => {
     try {
+      // Check if socket is connected
+      if (!socket || !socket.connected) {
+        // Try to reconnect
+        const token = getAuthToken();
+        if (!token) {
+          toast.error('Please sign in to make calls.');
+          return;
+        }
+        reconnectSocket();
+        toast.info('Reconnecting to server...');
+        // Wait a bit for reconnection
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        if (!socket || !socket.connected) {
+          toast.error('Failed to connect to server. Please refresh the page.');
+          return;
+        }
+      }
+
       setCallState('initiating');
       
       // Get user media
@@ -179,14 +198,7 @@ export const useCall = () => {
       
       peerRef.current = peer;
       
-      // Emit call initiation
-      socket.emit('call-initiate', {
-        appointmentId,
-        receiverId,
-        callType
-      });
-
-      // Wait for call ID from server
+      // Wait for call ID from server before setting up peer signaling
       const handleCallInitiated = ({ callId, status }) => {
         if (status === 'ringing') {
           setActiveCall({ callId, appointmentId, receiverId, callType });
@@ -197,10 +209,23 @@ export const useCall = () => {
 
       socket.once('call-initiated', handleCallInitiated);
       
+      // Emit call initiation
+      socket.emit('call-initiate', {
+        appointmentId,
+        receiverId,
+        callType
+      });
+      
     } catch (error) {
       console.error('Error initiating call:', error);
       setCallState(null);
-      toast.error('Failed to access microphone/camera. Please check permissions.');
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        toast.error('Microphone/camera permission denied. Please allow access in your browser settings.');
+      } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+        toast.error('No microphone/camera found. Please connect a device.');
+      } else {
+        toast.error('Failed to access microphone/camera. Please check permissions.');
+      }
       throw error;
     }
   };

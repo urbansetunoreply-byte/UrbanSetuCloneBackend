@@ -62,6 +62,23 @@ socket.on('connect', () => {
   registerSessionRoom();
   registerUserRoom();
   ensureSessionRoomRegistration();
+  
+  // Re-register user room after connection to ensure authentication
+  const token = getToken();
+  if (token) {
+    // Extract user ID from token if possible, or wait for server to set it
+    try {
+      const parts = token.split('.');
+      if (parts.length === 3) {
+        const payload = JSON.parse(atob(parts[1]));
+        if (payload.id) {
+          socket.emit('registerUser', { userId: payload.id });
+        }
+      }
+    } catch (e) {
+      // Token parsing failed, will rely on cookie-based registration
+    }
+  }
 });
 
 socket.on('disconnect', () => {
@@ -123,6 +140,22 @@ export function reconnectSocket() {
       console.log('[Socket] Reconnected to server');
     }
     registerSessionRoom();
+    registerUserRoom();
+    
+    // Re-register user room after reconnection
+    if (token) {
+      try {
+        const parts = token.split('.');
+        if (parts.length === 3) {
+          const payload = JSON.parse(atob(parts[1]));
+          if (payload.id) {
+            socket.emit('registerUser', { userId: payload.id });
+          }
+        }
+      } catch (e) {
+        // Token parsing failed
+      }
+    }
   });
 
   socket.on('disconnect', () => {

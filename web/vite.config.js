@@ -12,4 +12,21 @@ export default defineConfig({
       },
   },
   plugins: [react()],
+  define: {
+    'process.env': '{}',
+    global: 'globalThis',
+  },
+  resolve: {
+    alias: {
+      buffer: 'buffer',
+    },
+  },
+  optimizeDeps: {
+    include: ['simple-peer'],
+    esbuildOptions: {
+      define: {
+        global: 'globalThis',
+      },
+    },
+  },
 })
