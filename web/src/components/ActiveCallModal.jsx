@@ -11,6 +11,8 @@ const ActiveCallModal = ({
   remoteIsMuted,
   remoteVideoEnabled,
   callDuration,
+  localStream,
+  remoteStream,
   localVideoRef,
   remoteVideoRef,
   remoteAudioRef,
@@ -27,49 +29,81 @@ const ActiveCallModal = ({
   const [videoSwapped, setVideoSwapped] = useState(false); // Track if local/remote videos are swapped
   const controlsTimeoutRef = useRef(null);
   const containerRef = useRef(null);
+  const streamsRef = useRef({ local: null, remote: null }); // Store streams persistently
 
   useEffect(() => {
     setIsVisible(true);
   }, []);
 
+  // Update streams ref when they change
+  useEffect(() => {
+    if (localStream) {
+      streamsRef.current.local = localStream;
+    }
+    if (remoteStream) {
+      streamsRef.current.remote = remoteStream;
+    }
+  }, [localStream, remoteStream]);
+
   // Maintain video streams when views are swapped
   useEffect(() => {
     if (callType !== 'video') return;
     
-    // Store current streams from refs
-    const localStream = localVideoRef.current?.srcObject;
-    const remoteStream = remoteVideoRef.current?.srcObject;
+    // Get streams from ref (persistent across re-renders) or from props
+    const localStreamObj = streamsRef.current.local || localStream;
+    const remoteStreamObj = streamsRef.current.remote || remoteStream;
+    
+    if (!localStreamObj || !remoteStreamObj) {
+      console.log('[Call] Streams not available yet for swap:', { local: !!localStreamObj, remote: !!remoteStreamObj });
+      return;
+    }
+    
+    console.log('[Call] View swapped, re-attaching streams:', { videoSwapped, hasLocal: !!localStreamObj, hasRemote: !!remoteStreamObj });
     
     // Small delay to ensure React has updated the DOM with new video elements
     const timeoutId = setTimeout(() => {
       // Re-attach streams to the new video elements after swap
       if (videoSwapped) {
         // Local is in large view, remote is in small view
-        if (localVideoRef.current && localStream && localVideoRef.current.srcObject !== localStream) {
-          localVideoRef.current.srcObject = localStream;
+        if (localVideoRef.current && localStreamObj) {
+          if (localVideoRef.current.srcObject !== localStreamObj) {
+            console.log('[Call] Attaching local stream to large view');
+            localVideoRef.current.srcObject = localStreamObj;
+            localVideoRef.current.muted = true;
+          }
           localVideoRef.current.play().catch(err => console.error('Error playing local video after swap:', err));
         }
-        if (remoteVideoRef.current && remoteStream && remoteVideoRef.current.srcObject !== remoteStream) {
-          remoteVideoRef.current.srcObject = remoteStream;
-          remoteVideoRef.current.muted = false;
+        if (remoteVideoRef.current && remoteStreamObj) {
+          if (remoteVideoRef.current.srcObject !== remoteStreamObj) {
+            console.log('[Call] Attaching remote stream to small view');
+            remoteVideoRef.current.srcObject = remoteStreamObj;
+            remoteVideoRef.current.muted = false;
+          }
           remoteVideoRef.current.play().catch(err => console.error('Error playing remote video after swap:', err));
         }
       } else {
         // Remote is in large view, local is in small view (default)
-        if (remoteVideoRef.current && remoteStream && remoteVideoRef.current.srcObject !== remoteStream) {
-          remoteVideoRef.current.srcObject = remoteStream;
-          remoteVideoRef.current.muted = false;
+        if (remoteVideoRef.current && remoteStreamObj) {
+          if (remoteVideoRef.current.srcObject !== remoteStreamObj) {
+            console.log('[Call] Attaching remote stream to large view');
+            remoteVideoRef.current.srcObject = remoteStreamObj;
+            remoteVideoRef.current.muted = false;
+          }
           remoteVideoRef.current.play().catch(err => console.error('Error playing remote video after swap:', err));
         }
-        if (localVideoRef.current && localStream && localVideoRef.current.srcObject !== localStream) {
-          localVideoRef.current.srcObject = localStream;
+        if (localVideoRef.current && localStreamObj) {
+          if (localVideoRef.current.srcObject !== localStreamObj) {
+            console.log('[Call] Attaching local stream to small view');
+            localVideoRef.current.srcObject = localStreamObj;
+            localVideoRef.current.muted = true;
+          }
           localVideoRef.current.play().catch(err => console.error('Error playing local video after swap:', err));
         }
       }
-    }, 50);
+    }, 100); // Slightly longer delay to ensure DOM is ready
     
     return () => clearTimeout(timeoutId);
-  }, [videoSwapped, callType]);
+  }, [videoSwapped, callType, localStream, remoteStream, localVideoRef, remoteVideoRef]);
 
   // Show controls on mouse movement and auto-hide after 3 seconds of inactivity
   useEffect(() => {

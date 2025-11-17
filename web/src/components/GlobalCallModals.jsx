@@ -13,6 +13,8 @@ const GlobalCallModals = () => {
     callState,
     incomingCall,
     activeCall,
+    localStream,
+    remoteStream,
     localVideoRef,
     remoteVideoRef,
     remoteAudioRef,
@@ -133,6 +135,8 @@ const GlobalCallModals = () => {
           remoteIsMuted={remoteIsMuted}
           remoteVideoEnabled={remoteVideoEnabled}
           callDuration={callDuration}
+          localStream={localStream}
+          remoteStream={remoteStream}
           localVideoRef={localVideoRef}
           remoteVideoRef={remoteVideoRef}
           remoteAudioRef={remoteAudioRef}
