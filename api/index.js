@@ -664,6 +664,8 @@ io.on('connection', (socket) => {
       }
       
       // Update call status and set start time (synchronized)
+      // CRITICAL: This timestamp is the authoritative start time for both caller and receiver
+      // Both sides will use this exact timestamp to calculate call duration
       const startTime = new Date();
       call.status = 'accepted';
       call.startTime = startTime; // Update start time when call is accepted
@@ -677,17 +679,27 @@ io.on('connection', (socket) => {
         activeCall.startTime = startTime; // Store synchronized start time
         activeCalls.set(callId, activeCall);
         
+        // Send the exact same timestamp to both caller and receiver
+        // This ensures perfect synchronization - both sides calculate from the same reference point
+        const startTimeTimestamp = startTime.getTime(); // Milliseconds since epoch
+        
+        console.log('[Call Accept] Server set startTime:', {
+          startTime: startTime.toISOString(),
+          timestamp: startTimeTimestamp,
+          callId
+        });
+        
         // Notify caller that call was accepted with synchronized start time
         io.to(activeCall.callerSocketId).emit('call-accepted', {
           callId,
           receiverSocketId: socket.id,
-          startTime: startTime.getTime() // Send timestamp for synchronization
+          startTime: startTimeTimestamp // Send exact timestamp for synchronization
         });
         
-        // Notify receiver with synchronized start time
+        // Notify receiver with synchronized start time (same timestamp)
         socket.emit('call-accepted', { 
           callId,
-          startTime: startTime.getTime() // Send timestamp for synchronization
+          startTime: startTimeTimestamp // Send exact timestamp for synchronization
         });
       }
     } catch (err) {
