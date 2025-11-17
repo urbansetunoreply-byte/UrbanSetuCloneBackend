@@ -284,6 +284,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
   const [lockAcquired, setLockAcquired] = useState(false); // Track if lock has been acquired
   const paymentDataRef = useRef(null); // Ref to access latest paymentData in timer callback
   const lockManagerRef = useRef(null); // Ref for payment lock manager
+  const lowTimeWarningShownRef = useRef(false); // Ref to track if low time warning has been shown
 
   // Cancel payment when modal is closed without completing
   const cancelPayment = async () => {
