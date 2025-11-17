@@ -3895,6 +3895,19 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     if (!messageToDelete) return;
     
     try {
+      // Handle call deletion (calls are stored in DB, we just remove from local display)
+      if (messageToDelete.isCall || (messageToDelete._id && messageToDelete._id.startsWith('call-'))) {
+        const callToDelete = messageToDelete.call || messageToDelete;
+        setCallHistory(prev => prev.filter(call => 
+          (call._id || call.callId) !== (callToDelete._id || callToDelete.callId)
+        ));
+        toast.success('Call removed from chat');
+        setShowDeleteModal(false);
+        setMessageToDelete(null);
+        setDeleteForBoth(true);
+        return;
+      }
+      
       // Multi-select branch
       if (Array.isArray(messageToDelete)) {
         const ids = messageToDelete.map(m => m._id);
@@ -4096,6 +4109,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         const newComment = data.comments[data.comments.length - 1];
         
         // Update only the status and ID of the temp message, keeping it visible
+        // Preserve replyTo if it was a call (not sent to backend but stored locally)
         setComments(prev => prev.map(msg => 
           msg._id === tempId 
             ? { 
@@ -4103,7 +4117,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                 _id: newComment._id,
                 status: newComment.status,
                 readBy: newComment.readBy || msg.readBy,
-                timestamp: newComment.timestamp || msg.timestamp
+                timestamp: newComment.timestamp || msg.timestamp,
+                // Preserve original replyTo if it was a call (backend won't return it)
+                replyTo: originalReplyToId || newComment.replyTo || msg.replyTo
               }
             : msg
         ));
@@ -6856,16 +6872,28 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         >
                           <FaInfoCircle size={18} />
                         </button>
-                        {/* Pin - Disabled for calls as they can't be pinned as comments */}
-                        {false && (
+                        {/* Pin */}
+                        {!isChatSendBlocked && (
                           <button
                             className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
                             onClick={() => { 
-                              // Calls cannot be pinned - they are not comments
-                              toast.error('Calls cannot be pinned. Only messages can be pinned.');
+                              // Create a fake message-like object for pin functionality
+                              const fakeMessage = {
+                                _id: `call-${selectedCallForHeaderOptions._id || selectedCallForHeaderOptions.callId}`,
+                                senderEmail: (selectedCallForHeaderOptions.callerId?._id === currentUser._id || selectedCallForHeaderOptions.callerId === currentUser._id) 
+                                  ? currentUser.email 
+                                  : (selectedCallForHeaderOptions.receiverId?.email || otherParty?.email),
+                                message: `${selectedCallForHeaderOptions.callType === 'video' ? 'Video' : 'Audio'} call`,
+                                timestamp: selectedCallForHeaderOptions.startTime || selectedCallForHeaderOptions.createdAt,
+                                isCall: true,
+                                call: selectedCallForHeaderOptions
+                              };
+                              setMessageToPin([fakeMessage]);
+                              setShowPinModal(true);
+                              setHeaderOptionsMessageId(null);
                             }}
-                            title="Pin call (disabled)"
-                            aria-label="Pin call (disabled)"
+                            title="Pin call"
+                            aria-label="Pin call"
                           >
                             <FaThumbtack size={18} />
                           </button>
@@ -6875,11 +6903,13 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           <button
                             className="text-white hover:text-red-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
                             onClick={() => { 
-                              // For calls, we'll remove them from local call history (they're already saved in DB)
-                              setCallHistory(prev => prev.filter(call => 
-                                (call._id || call.callId) !== (selectedCallForHeaderOptions._id || selectedCallForHeaderOptions.callId)
-                              ));
-                              toast.success('Call removed from chat');
+                              // Show confirmation modal for call deletion
+                              setMessageToDelete({
+                                _id: `call-${selectedCallForHeaderOptions._id || selectedCallForHeaderOptions.callId}`,
+                                isCall: true,
+                                call: selectedCallForHeaderOptions
+                              });
+                              setShowDeleteModal(true);
                               setHeaderOptionsMessageId(null);
                             }}
                             title="Delete call"
@@ -10831,10 +10861,17 @@ You can lock this chat again at any time from the options.</p>
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <FaTrash className="text-red-500" />
-              {Array.isArray(messageToDelete) ? 'Delete Selected Messages' : 'Delete Message'}
+              {messageToDelete?.isCall || (messageToDelete?._id && messageToDelete._id.startsWith('call-')) 
+                ? 'Delete Call' 
+                : Array.isArray(messageToDelete) ? 'Delete Selected Messages' : 'Delete Message'}
             </h3>
             
-            {(!Array.isArray(messageToDelete) && messageToDelete?.deleted) ? (
+            {messageToDelete?.isCall || (messageToDelete?._id && messageToDelete._id.startsWith('call-')) ? (
+              // Call deletion - show simplified message
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to delete this call from the chat? The call will be removed from your view, but the call record will remain in the database.
+              </p>
+            ) : (!Array.isArray(messageToDelete) && messageToDelete?.deleted) ? (
               // Deleted message - show simplified message for local removal
               <p className="text-gray-600 mb-6">
                 Delete this message for me?

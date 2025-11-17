@@ -4767,6 +4767,7 @@ function AdminAppointmentRow({
         const newCommentFromServer = data.comments[data.comments.length - 1];
         
         // Update only the status and ID of the temp message, keeping it visible
+        // Preserve replyTo if it was a call (not sent to backend but stored locally)
         setLocalComments(prev => prev.map(msg => 
           msg._id === tempId 
             ? { 
@@ -4774,7 +4775,9 @@ function AdminAppointmentRow({
                 _id: newCommentFromServer._id,
                 status: newCommentFromServer.status,
                 readBy: newCommentFromServer.readBy || msg.readBy,
-                timestamp: newCommentFromServer.timestamp || msg.timestamp
+                timestamp: newCommentFromServer.timestamp || msg.timestamp,
+                // Preserve original replyTo if it was a call (backend won't return it)
+                replyTo: originalReplyToId || newCommentFromServer.replyTo || msg.replyTo
               }
             : msg
         ));
