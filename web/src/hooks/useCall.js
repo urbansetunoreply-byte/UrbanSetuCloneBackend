@@ -141,12 +141,32 @@ export const useCall = () => {
           toast.error('Please sign in to make calls.');
           return;
         }
+        
+        // Check if token is expired
+        try {
+          const parts = token.split('.');
+          if (parts.length === 3) {
+            const payload = JSON.parse(atob(parts[1]));
+            const currentTime = Date.now() / 1000;
+            if (payload.exp && payload.exp < currentTime) {
+              toast.error('Your session has expired. Please sign in again.');
+              // Clear expired token
+              localStorage.removeItem('accessToken');
+              document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
+              window.location.href = '/sign-in?error=session_expired';
+              return;
+            }
+          }
+        } catch (e) {
+          console.warn('Token validation failed:', e);
+        }
+        
         reconnectSocket();
         toast.info('Reconnecting to server...');
         // Wait a bit for reconnection
         await new Promise(resolve => setTimeout(resolve, 1000));
         if (!socket || !socket.connected) {
-          toast.error('Failed to connect to server. Please refresh the page.');
+          toast.error('Failed to connect to server. Please refresh the page or sign in again.');
           return;
         }
       }

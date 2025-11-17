@@ -13,8 +13,9 @@ export default defineConfig({
   },
   plugins: [react()],
   define: {
-    'process.env': '{}',
-    global: 'globalThis',
+    'process.env': JSON.stringify({}),
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+    'global': 'globalThis',
   },
   resolve: {
     alias: {
@@ -22,11 +23,16 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['simple-peer'],
+    include: ['simple-peer', 'buffer'],
     esbuildOptions: {
       define: {
         global: 'globalThis',
       },
+    },
+  },
+  build: {
+    commonjsOptions: {
+      transformMixedEsModules: true,
     },
   },
 })

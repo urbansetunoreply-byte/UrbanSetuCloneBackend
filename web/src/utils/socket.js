@@ -87,6 +87,20 @@ socket.on('disconnect', () => {
 
 socket.on('connect_error', (error) => {
   console.log('[Socket] Connection error:', error);
+  
+  // If token expired, try to refresh or ask user to sign in
+  if (error.message && (error.message.includes('expired') || error.message.includes('jwt'))) {
+    console.log('[Socket] Token expired, attempting to refresh...');
+    // Clear expired token
+    localStorage.removeItem('accessToken');
+    document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
+    // Try to reconnect with new token if available
+    const newToken = getToken();
+    if (newToken) {
+      socket.auth = { token: newToken };
+      socket.connect();
+    }
+  }
 });
 
 // Listen for forced logout events
@@ -164,6 +178,20 @@ export function reconnectSocket() {
 
   socket.on('connect_error', (error) => {
     console.log('[Socket] Connection error:', error);
+    
+    // If token expired, try to refresh or ask user to sign in
+    if (error.message && (error.message.includes('expired') || error.message.includes('jwt'))) {
+      console.log('[Socket] Token expired, attempting to refresh...');
+      // Clear expired token
+      localStorage.removeItem('accessToken');
+      document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
+      // Try to reconnect with new token if available
+      const newToken = getToken();
+      if (newToken) {
+        socket.auth = { token: newToken };
+        socket.connect();
+      }
+    }
   });
 
   socket.on('forceLogout', ({ reason }) => {
