@@ -55,10 +55,10 @@ const callHistorySchema = new mongoose.Schema({
 });
 
 // Indexes for better performance
+// Note: callId already has unique index from field definition (line 4: unique: true)
 callHistorySchema.index({ appointmentId: 1, createdAt: -1 });
 callHistorySchema.index({ callerId: 1, createdAt: -1 });
 callHistorySchema.index({ receiverId: 1, createdAt: -1 });
-callHistorySchema.index({ callId: 1 }, { unique: true });
 callHistorySchema.index({ status: 1 });
 callHistorySchema.index({ callType: 1 });
 
