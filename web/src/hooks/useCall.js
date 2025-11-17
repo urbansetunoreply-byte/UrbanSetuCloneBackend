@@ -380,9 +380,6 @@ export const useCall = () => {
         return;
       }
       
-      // Enumerate audio devices when accepting call
-      await enumerateAudioDevices();
-      
       // For receiver (incoming call) - state already set in acceptCall, but timer MUST start with server time
       // Use refs to get current values without causing dependency issues
       if (incomingCallRef.current && incomingCallRef.current.callId === data.callId) {
