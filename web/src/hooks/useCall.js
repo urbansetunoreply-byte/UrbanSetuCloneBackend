@@ -157,10 +157,27 @@ export const useCall = () => {
       animationFrameRef.current = requestAnimationFrame(updateTimer);
     };
     
-    // Start the animation frame loop for precise timing
+    // Start the animation frame loop immediately for instant updates
+    // This ensures the timer starts ticking right away, not waiting for the first frame
     animationFrameRef.current = requestAnimationFrame(updateTimer);
     
-    // Also use interval as backup for reliability
+    // Also use interval as backup for reliability, but start immediately with a small delay
+    // This ensures the timer ticks immediately rather than waiting up to 1000ms
+    const immediateUpdate = () => {
+      if (callStartTimeRef.current) {
+        const now = Date.now();
+        const duration = Math.max(0, Math.floor((now - callStartTimeRef.current) / 1000));
+        if (duration !== lastSecondRef.current) {
+          lastSecondRef.current = duration;
+          setCallDuration(duration);
+        }
+      }
+    };
+    
+    // Trigger immediate update to ensure timer starts ticking right away
+    immediateUpdate();
+    
+    // Then set up interval for regular updates (every 1000ms)
     durationIntervalRef.current = setInterval(() => {
       if (callStartTimeRef.current) {
         // Always calculate from server's startTime, not local time
