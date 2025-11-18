@@ -66,25 +66,20 @@ export const useCall = () => {
 
   // Handle WebRTC offer
   const handleWebRTCOffer = useCallback(({ callId, offer }) => {
-    console.log('[Call] handleWebRTCOffer called:', { callId, hasPeer: !!peerRef.current, activeCallId: activeCallRef.current?.callId, incomingCallId: incomingCallRef.current?.callId });
-    
     // If peer doesn't exist yet (receiver), store the offer
     if (!peerRef.current) {
       // Only store if it matches incoming call
       if (incomingCallRef.current?.callId === callId || activeCallRef.current?.callId === callId) {
-        console.log('[Call] Storing pending offer for callId:', callId);
         pendingOfferRef.current = { callId, offer };
       }
       return;
     }
     
     if (activeCallRef.current?.callId !== callId) {
-      console.log('[Call] Offer callId mismatch:', { offerCallId: callId, activeCallId: activeCallRef.current?.callId });
       return;
     }
     
     try {
-      console.log('[Call] Signaling offer to peer');
       peerRef.current.signal(offer);
     } catch (error) {
       console.error('[Call] Error handling WebRTC offer:', error);
@@ -93,20 +88,15 @@ export const useCall = () => {
 
   // Handle WebRTC answer
   const handleWebRTCAnswer = useCallback(({ callId, answer }) => {
-    console.log('[Call] handleWebRTCAnswer called:', { callId, hasPeer: !!peerRef.current, activeCallId: activeCallRef.current?.callId });
-    
     if (!peerRef.current) {
-      console.log('[Call] No peer connection available for answer');
       return;
     }
     
     if (activeCallRef.current?.callId !== callId) {
-      console.log('[Call] Answer callId mismatch:', { answerCallId: callId, activeCallId: activeCallRef.current?.callId });
       return;
     }
     
     try {
-      console.log('[Call] Signaling answer to peer');
       peerRef.current.signal(answer);
     } catch (error) {
       console.error('[Call] Error handling WebRTC answer:', error);
@@ -115,21 +105,16 @@ export const useCall = () => {
 
   // Handle ICE candidate
   const handleICECandidate = useCallback(({ callId, candidate }) => {
-    console.log('[Call] handleICECandidate called:', { callId, hasPeer: !!peerRef.current, activeCallId: activeCallRef.current?.callId, hasCandidate: !!candidate });
-    
     if (!peerRef.current) {
-      console.log('[Call] No peer connection available for ICE candidate');
       return;
     }
     
     if (activeCallRef.current?.callId !== callId) {
-      console.log('[Call] ICE candidate callId mismatch:', { candidateCallId: callId, activeCallId: activeCallRef.current?.callId });
       return;
     }
     
     try {
       if (candidate) {
-        console.log('[Call] Signaling ICE candidate to peer');
         peerRef.current.signal(candidate);
       }
     } catch (error) {
@@ -151,7 +136,6 @@ export const useCall = () => {
     
     // Only update if stream is different (avoid unnecessary updates)
     if (localVideoRef.current.srcObject !== localStream) {
-      console.log('[Call] Attaching local stream to video element');
       localVideoRef.current.srcObject = localStream;
       localVideoRef.current.muted = true; // Local video should always be muted
       
@@ -159,7 +143,6 @@ export const useCall = () => {
       const playVideo = async () => {
         try {
           await localVideoRef.current.play();
-          console.log('[Call] Local video playing successfully');
         } catch (err) {
           console.error('Error playing local video:', err);
           // Retry after a short delay
@@ -187,17 +170,8 @@ export const useCall = () => {
       return;
     }
 
-    console.log('[Call] Remote stream received:', {
-      stream: remoteStream,
-      tracks: remoteStream.getTracks(),
-      videoTracks: remoteStream.getVideoTracks(),
-      audioTracks: remoteStream.getAudioTracks(),
-      callType: activeCall.callType
-    });
-
     // For video calls - attach to video element (video element handles both video and audio)
     if (activeCall.callType === 'video' && remoteVideoRef.current) {
-      console.log('[Call] Attaching remote video stream to video element');
       // Only update if stream is different (avoid unnecessary updates)
       if (remoteVideoRef.current.srcObject !== remoteStream) {
         // Clear previous stream
@@ -210,7 +184,6 @@ export const useCall = () => {
         const playVideo = async () => {
           try {
             await remoteVideoRef.current.play();
-            console.log('[Call] Remote video playing successfully');
           } catch (err) {
             console.error('Error playing remote video:', err);
             // Retry after a short delay
@@ -227,7 +200,6 @@ export const useCall = () => {
 
     // For audio calls - attach to audio element
     if (activeCall.callType === 'audio' && remoteAudioRef.current) {
-      console.log('[Call] Attaching remote audio stream to audio element');
       // Only update if stream is different (avoid unnecessary updates)
       if (remoteAudioRef.current.srcObject !== remoteStream) {
         // Clear previous stream
@@ -240,7 +212,6 @@ export const useCall = () => {
         const playAudio = async () => {
           try {
             await remoteAudioRef.current.play();
-            console.log('[Call] Remote audio playing successfully');
           } catch (err) {
             console.error('Error playing remote audio:', err);
             // Retry after a short delay
@@ -403,10 +374,6 @@ export const useCall = () => {
         }
         // CRITICAL: Only start timer with server's startTime - never use local time
         startCallTimer(synchronizedStartTime);
-        console.log('[Call] Receiver: Call accepted, timer synchronized with server time:', {
-          serverStartTime: synchronizedStartTime.toISOString(),
-          serverTimestamp: data.startTime
-        });
       } 
       // For caller (outgoing call)
       else if (activeCallRef.current && activeCallRef.current.callId === data.callId) {
@@ -416,10 +383,6 @@ export const useCall = () => {
         setCallState('active');
         // CRITICAL: Only start timer with server's startTime - never use local time
         startCallTimer(synchronizedStartTime);
-        console.log('[Call] Caller: Call accepted, timer synchronized with server time:', {
-          serverStartTime: synchronizedStartTime.toISOString(),
-          serverTimestamp: data.startTime
-        });
       }
     };
     
@@ -658,13 +621,6 @@ export const useCall = () => {
           callingSoundRef.current = playCalling();
           
           // Create peer connection AFTER we have the callId
-          console.log('[Call] Creating peer connection (caller) with stream:', {
-            stream,
-            audioTracks: stream.getAudioTracks(),
-            videoTracks: stream.getVideoTracks(),
-            tracks: stream.getTracks()
-          });
-          
           const peer = new SimplePeer({
             initiator: true,
             trickle: true,
@@ -674,39 +630,22 @@ export const useCall = () => {
             }
           });
           
-          // Log peer connection state changes
+          // Track peer connection state changes
           if (peer._pc) {
-            peer._pc.addEventListener('connectionstatechange', () => {
-              console.log('[Call] Peer connection state changed:', peer._pc.connectionState);
-            });
-            
-            peer._pc.addEventListener('iceconnectionstatechange', () => {
-              console.log('[Call] ICE connection state changed:', peer._pc.iceConnectionState);
-            });
-            
-            peer._pc.addEventListener('icegatheringstatechange', () => {
-              console.log('[Call] ICE gathering state changed:', peer._pc.iceGatheringState);
-            });
-            
             peer._pc.addEventListener('track', (event) => {
-              console.log('[Call] Track event received:', event.track.kind, event.track.id);
               if (event.streams && event.streams[0]) {
-                console.log('[Call] Track stream received:', event.streams[0]);
                 setRemoteStream(event.streams[0]);
               }
             });
           }
           
           peer.on('signal', (data) => {
-            console.log('[Call] Signal event:', data.type);
             if (data.type === 'offer') {
-              console.log('[Call] Sending WebRTC offer:', data);
               socket.emit('webrtc-offer', {
                 callId: callId,
                 offer: data
               });
             } else if (data.type === 'candidate') {
-              console.log('[Call] Sending ICE candidate:', data);
               socket.emit('ice-candidate', {
                 callId: callId,
                 candidate: data
@@ -715,19 +654,12 @@ export const useCall = () => {
           });
           
           peer.on('stream', (remoteStream) => {
-            console.log('[Call] ✅ Received remote stream (caller side)', remoteStream);
-            console.log('[Call] Remote stream tracks:', remoteStream.getTracks());
-            console.log('[Call] Remote stream audio tracks:', remoteStream.getAudioTracks());
-            console.log('[Call] Remote stream video tracks:', remoteStream.getVideoTracks());
             setRemoteStream(remoteStream);
             // Stream attachment will be handled by useEffect when remoteStream state updates
           });
 
           peer.on('connect', () => {
-            console.log('[Call] ✅ Peer connection established (connect event)');
-            console.log('[Call] Peer connection state:', peer._pc?.connectionState);
-            console.log('[Call] Peer connection ICE state:', peer._pc?.iceConnectionState);
-            console.log('[Call] Peer connection signaling state:', peer._pc?.signalingState);
+            // Connection established
           });
 
           peer.on('error', (err) => {
@@ -787,13 +719,6 @@ export const useCall = () => {
       }
       
       // Create peer connection as receiver (non-initiator)
-      console.log('[Call] Creating peer connection (receiver) with stream:', {
-        stream,
-        audioTracks: stream.getAudioTracks(),
-        videoTracks: stream.getVideoTracks(),
-        tracks: stream.getTracks()
-      });
-      
       const peer = new SimplePeer({
         initiator: false,
         trickle: true,
@@ -803,39 +728,22 @@ export const useCall = () => {
         }
       });
       
-      // Log peer connection state changes
+      // Track peer connection state changes
       if (peer._pc) {
-        peer._pc.addEventListener('connectionstatechange', () => {
-          console.log('[Call] Peer connection state changed:', peer._pc.connectionState);
-        });
-        
-        peer._pc.addEventListener('iceconnectionstatechange', () => {
-          console.log('[Call] ICE connection state changed:', peer._pc.iceConnectionState);
-        });
-        
-        peer._pc.addEventListener('icegatheringstatechange', () => {
-          console.log('[Call] ICE gathering state changed:', peer._pc.iceGatheringState);
-        });
-        
         peer._pc.addEventListener('track', (event) => {
-          console.log('[Call] Track event received:', event.track.kind, event.track.id);
           if (event.streams && event.streams[0]) {
-            console.log('[Call] Track stream received:', event.streams[0]);
             setRemoteStream(event.streams[0]);
           }
         });
       }
       
       peer.on('signal', (data) => {
-        console.log('[Call] Signal event:', data.type);
         if (data.type === 'answer') {
-          console.log('[Call] Sending WebRTC answer:', data);
           socket.emit('webrtc-answer', {
             callId: incomingCall.callId,
             answer: data
           });
         } else if (data.type === 'candidate') {
-          console.log('[Call] Sending ICE candidate:', data);
           socket.emit('ice-candidate', {
             callId: incomingCall.callId,
             candidate: data
@@ -844,19 +752,12 @@ export const useCall = () => {
       });
       
       peer.on('stream', (remoteStream) => {
-        console.log('[Call] ✅ Received remote stream (receiver side)', remoteStream);
-        console.log('[Call] Remote stream tracks:', remoteStream.getTracks());
-        console.log('[Call] Remote stream audio tracks:', remoteStream.getAudioTracks());
-        console.log('[Call] Remote stream video tracks:', remoteStream.getVideoTracks());
         setRemoteStream(remoteStream);
         // Stream attachment will be handled by useEffect when remoteStream state updates
       });
 
       peer.on('connect', () => {
-        console.log('[Call] ✅ Peer connection established (connect event)');
-        console.log('[Call] Peer connection state:', peer._pc?.connectionState);
-        console.log('[Call] Peer connection ICE state:', peer._pc?.iceConnectionState);
-        console.log('[Call] Peer connection signaling state:', peer._pc?.signalingState);
+        // Connection established
       });
 
       peer.on('error', (err) => {

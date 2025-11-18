@@ -68,11 +68,8 @@ const ActiveCallModal = ({
     const remoteStreamObj = streamsRef.current.remote || remoteStream;
     
     if (!localStreamObj || !remoteStreamObj) {
-      console.log('[Call] Streams not available yet for swap:', { local: !!localStreamObj, remote: !!remoteStreamObj });
       return;
     }
-    
-    console.log('[Call] View swapped, re-attaching streams:', { videoSwapped, hasLocal: !!localStreamObj, hasRemote: !!remoteStreamObj });
     
     // Small delay to ensure React has updated the DOM with new video elements
     const timeoutId = setTimeout(() => {
@@ -81,7 +78,6 @@ const ActiveCallModal = ({
         // Local is in large view, remote is in small view
         if (localVideoRef.current && localStreamObj) {
           if (localVideoRef.current.srcObject !== localStreamObj) {
-            console.log('[Call] Attaching local stream to large view');
             localVideoRef.current.srcObject = localStreamObj;
             localVideoRef.current.muted = true;
           }
@@ -89,7 +85,6 @@ const ActiveCallModal = ({
         }
         if (remoteVideoRef.current && remoteStreamObj) {
           if (remoteVideoRef.current.srcObject !== remoteStreamObj) {
-            console.log('[Call] Attaching remote stream to small view');
             remoteVideoRef.current.srcObject = remoteStreamObj;
             remoteVideoRef.current.muted = false;
           }
