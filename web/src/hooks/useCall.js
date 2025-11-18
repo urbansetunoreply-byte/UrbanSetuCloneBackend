@@ -876,6 +876,10 @@ export const useCall = () => {
         callType: incomingCall.callType
       });
       
+      // Stop ringtone immediately when call is accepted (don't wait for server response)
+      stopRingtone();
+      ringtoneSoundRef.current = null;
+      
       // Emit call accept AFTER peer is created
       socket.emit('call-accept', { callId: incomingCall.callId });
       
@@ -894,6 +898,8 @@ export const useCall = () => {
     // Stop ringtone when rejecting call
     stopRingtone();
     ringtoneSoundRef.current = null;
+    // Play end call sound when rejecting call
+    playEndCall();
     if (incomingCall) {
       socket.emit('call-reject', { callId: incomingCall.callId });
       setIncomingCall(null);
