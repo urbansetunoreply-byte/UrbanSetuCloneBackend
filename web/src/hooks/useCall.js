@@ -50,6 +50,7 @@ export const useCall = () => {
   const containerRef = useRef(null); // For fullscreen
   const callingSoundRef = useRef(null); // Reference to calling sound audio element
   const ringtoneSoundRef = useRef(null); // Reference to ringtone sound audio element
+  const isEndingCallRef = useRef(false); // Flag to prevent double end call sound
   
   // Refs to store current state for event handlers (to avoid stale closures)
   const incomingCallRef = useRef(null);
@@ -447,8 +448,11 @@ export const useCall = () => {
         stopRingtone();
         callingSoundRef.current = null;
         ringtoneSoundRef.current = null;
-        // Play end call sound
-        playEndCall();
+        // Only play end call sound if we didn't just end the call ourselves
+        // (to prevent double playing when user clicks hang and server broadcasts back)
+        if (!isEndingCallRef.current) {
+          playEndCall();
+        }
         // Show "Call ended" message when receiving call-ended event from other party
         toast.info('Call ended.');
         endCall();
@@ -909,6 +913,10 @@ export const useCall = () => {
 
   // End call
   const endCall = async () => {
+    // Set flag to prevent double end call sound
+    const wasEndingCall = isEndingCallRef.current;
+    isEndingCallRef.current = true;
+    
     // Stop all sounds first
     stopCalling();
     stopRingtone();
@@ -968,18 +976,27 @@ export const useCall = () => {
           body: JSON.stringify({ callId: activeCall.callId })
         });
         // Play end call sound when user ends the call
-        playEndCall();
+        // Only play if this is the first time ending (not from handleCallEnded)
+        if (!wasEndingCall) {
+          playEndCall();
+        }
         // Show "Call ended" message when user ends the call
         toast.info('Call ended.');
       } catch (error) {
         console.error('Error ending call on server:', error);
         // Still play sound and show message even if backend call fails
-        playEndCall();
+        // Only play if this is the first time ending (not from handleCallEnded)
+        if (!wasEndingCall) {
+          playEndCall();
+        }
         toast.info('Call ended.');
       }
     } else if (activeCall?.callId) {
       // Play end call sound even if call wasn't active yet (ringing state)
-      playEndCall();
+      // Only play if this is the first time ending (not from handleCallEnded)
+      if (!wasEndingCall) {
+        playEndCall();
+      }
       // Show message even if call wasn't active yet (ringing state)
       toast.info('Call ended.');
     }
@@ -993,6 +1010,11 @@ export const useCall = () => {
     pendingOfferRef.current = null;
     setRemoteIsMuted(false);
     setRemoteVideoEnabled(true);
+    
+    // Reset flag after a short delay to allow for cleanup
+    setTimeout(() => {
+      isEndingCallRef.current = false;
+    }, 1000);
   };
 
   // Toggle mute
