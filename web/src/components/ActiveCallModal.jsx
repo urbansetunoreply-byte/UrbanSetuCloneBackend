@@ -94,7 +94,6 @@ const ActiveCallModal = ({
         // Remote is in large view, local is in small view (default)
         if (remoteVideoRef.current && remoteStreamObj) {
           if (remoteVideoRef.current.srcObject !== remoteStreamObj) {
-            console.log('[Call] Attaching remote stream to large view');
             remoteVideoRef.current.srcObject = remoteStreamObj;
             remoteVideoRef.current.muted = false;
           }
@@ -102,7 +101,6 @@ const ActiveCallModal = ({
         }
         if (localVideoRef.current && localStreamObj) {
           if (localVideoRef.current.srcObject !== localStreamObj) {
-            console.log('[Call] Attaching local stream to small view');
             localVideoRef.current.srcObject = localStreamObj;
             localVideoRef.current.muted = true;
           }

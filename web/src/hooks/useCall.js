@@ -272,15 +272,6 @@ export const useCall = () => {
     setCallDuration(initialDuration);
     lastSecondRef.current = initialDuration;
     
-    console.log('[Call Timer] Started with synchronized server time:', {
-      serverStartTime: new Date(serverStartTimestamp).toISOString(),
-      serverTimestamp: serverStartTimestamp,
-      currentTime: new Date(currentTimestamp).toISOString(),
-      currentTimestamp: currentTimestamp,
-      elapsedMs: elapsedMilliseconds,
-      initialDurationSeconds: initialDuration
-    });
-    
     // Use requestAnimationFrame for smooth, precise updates
     // Calculate duration from server timestamp each frame, ensuring no drift
     const updateTimer = () => {
