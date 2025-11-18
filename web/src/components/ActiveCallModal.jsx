@@ -212,9 +212,9 @@ const ActiveCallModal = ({
         }
       `}</style>
       
-      {/* Connection Quality Indicator */}
+      {/* Connection Quality Indicator - positioned below timer */}
       {connectionQuality && (
-        <div className="absolute top-4 right-4 z-30 flex items-center gap-2 bg-black bg-opacity-70 rounded-full px-3 py-2">
+        <div className="absolute top-16 right-4 z-30 flex items-center gap-2 bg-black bg-opacity-70 rounded-full px-3 py-2">
           <div className={`w-2 h-2 rounded-full ${
             connectionQuality === 'excellent' ? 'bg-green-500' :
             connectionQuality === 'good' ? 'bg-green-400' :
