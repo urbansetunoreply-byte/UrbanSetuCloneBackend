@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toast } from 'react-toastify';
-import { FaLock, FaCalendarAlt, FaMoneyBillWave, FaCheckCircle, FaChevronRight, FaHome, FaShieldAlt, FaFileContract } from "react-icons/fa";
+import { FaLock, FaCalendarAlt, FaMoneyBillWave, FaCheckCircle, FaChevronRight, FaHome, FaShieldAlt, FaFileContract, FaTimesCircle } from "react-icons/fa";
 import { usePageTitle } from '../hooks/usePageTitle';
 import PaymentModal from '../components/PaymentModal';
 import ContractPreview from '../components/rental/ContractPreview';
@@ -99,6 +99,21 @@ export default function RentProperty() {
               const existingContract = contractData.contract || contractData;
               
               if (existingContract && existingContract._id) {
+                // Check if contract is rejected or terminated
+                if (existingContract.status === 'rejected' || existingContract.status === 'terminated') {
+                  setContract(existingContract);
+                  setResumingContract(true);
+                  setLoading(false);
+                  
+                  // Show rejection message
+                  const rejectionMessage = existingContract.status === 'rejected'
+                    ? `This contract was rejected by the seller${existingContract.rejectionReason ? `: ${existingContract.rejectionReason}` : ''}. Please try booking a new one.`
+                    : `This contract was terminated${existingContract.terminationReason ? `: ${existingContract.terminationReason}` : ''}. Please try booking a new one.`;
+                  
+                  toast.error(rejectionMessage);
+                  return; // Stop further processing
+                }
+                
                 setContract(existingContract);
                 setResumingContract(true);
                 
@@ -434,6 +449,61 @@ export default function RentProperty() {
           >
             <FaHome /> Go Home
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show rejection message if contract is rejected or terminated
+  if (contract && (contract.status === 'rejected' || contract.status === 'terminated')) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-100 py-10 px-4 md:px-8">
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+            <div className="mb-6">
+              <FaTimesCircle className="text-6xl text-red-500 mx-auto mb-4" />
+              <h2 className="text-3xl font-bold text-gray-800 mb-2">
+                {contract.status === 'rejected' ? 'Contract Rejected' : 'Contract Terminated'}
+              </h2>
+              <p className="text-gray-600 mb-4">
+                {contract.status === 'rejected' 
+                  ? 'This contract was rejected by the seller before completion.'
+                  : 'This contract was terminated before completion.'}
+              </p>
+              {contract.rejectionReason && contract.status === 'rejected' && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4 text-left">
+                  <p className="font-semibold text-red-800 mb-1">Rejection Reason:</p>
+                  <p className="text-red-700">{contract.rejectionReason}</p>
+                </div>
+              )}
+              {contract.terminationReason && contract.status === 'terminated' && (
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4 text-left">
+                  <p className="font-semibold text-orange-800 mb-1">Termination Reason:</p>
+                  <p className="text-orange-700">{contract.terminationReason}</p>
+                </div>
+              )}
+              {(contract.rejectedAt || contract.terminatedAt) && (
+                <p className="text-sm text-gray-500 mb-4">
+                  {contract.status === 'rejected' ? 'Rejected' : 'Terminated'} on{' '}
+                  {new Date(contract.rejectedAt || contract.terminatedAt).toLocaleString('en-GB')}
+                </p>
+              )}
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => navigate(`/user/rent-property?listingId=${listingId}`)}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
+              >
+                <FaLock /> Book New Contract
+              </button>
+              <button
+                onClick={() => navigate("/user/rental-contracts")}
+                className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 flex items-center justify-center gap-2"
+              >
+                <FaFileContract /> View All Contracts
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );

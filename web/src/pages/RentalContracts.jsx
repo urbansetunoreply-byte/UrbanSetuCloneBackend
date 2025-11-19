@@ -16,7 +16,7 @@ export default function RentalContracts() {
   
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all'); // 'all', 'active', 'pending_signature', 'expired', 'terminated'
+  const [filter, setFilter] = useState('all'); // 'all', 'active', 'pending_signature', 'expired', 'terminated', 'rejected'
   const [selectedContract, setSelectedContract] = useState(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
 
@@ -93,6 +93,8 @@ export default function RentalContracts() {
         return 'bg-red-100 text-red-700 border-red-200';
       case 'terminated':
         return 'bg-orange-100 text-orange-700 border-orange-200';
+      case 'rejected':
+        return 'bg-red-200 text-red-800 border-red-300';
       default:
         return 'bg-gray-100 text-gray-700 border-gray-200';
     }
@@ -129,7 +131,7 @@ export default function RentalContracts() {
 
           {/* Filters */}
           <div className="flex gap-2 flex-wrap">
-            {['all', 'active', 'pending_signature', 'expired', 'terminated'].map((status) => (
+            {['all', 'active', 'pending_signature', 'expired', 'terminated', 'rejected'].map((status) => (
               <button
                 key={status}
                 onClick={() => setFilter(status)}

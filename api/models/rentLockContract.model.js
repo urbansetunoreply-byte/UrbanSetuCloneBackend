@@ -109,7 +109,7 @@ const rentLockContractSchema = new mongoose.Schema({
   // Contract Status
   status: {
     type: String,
-    enum: ['draft', 'pending_signature', 'active', 'expired', 'terminated', 'renewed'],
+    enum: ['draft', 'pending_signature', 'active', 'expired', 'terminated', 'renewed', 'rejected'],
     default: 'draft'
   },
   
@@ -171,6 +171,15 @@ const rentLockContractSchema = new mongoose.Schema({
     ref: 'User',
     default: null
   },
+  
+  // Rejection (before completion)
+  rejectedAt: Date,
+  rejectedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
+  rejectionReason: String,
   
   // Metadata
   contractDocumentUrl: String, // PDF contract
