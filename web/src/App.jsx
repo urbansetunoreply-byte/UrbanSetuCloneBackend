@@ -115,6 +115,7 @@ const PropertyVerification = lazy(() => import('./pages/PropertyVerification'));
 const AdminPropertyVerification = lazy(() => import('./pages/AdminPropertyVerification'));
 const RentalRatings = lazy(() => import('./pages/RentalRatings'));
 const AdminRentalRatings = lazy(() => import('./pages/AdminRentalRatings'));
+const AdminRentalContracts = lazy(() => import('./pages/AdminRentalContracts'));
 const RentalLoans = lazy(() => import('./pages/RentalLoans'));
 
 // Loading component
@@ -720,6 +721,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/admin/investment-tools" element={<InvestmentTools />} />
             <Route path="/admin/property-verification" element={<AdminPropertyVerification />} />
             <Route path="/admin/rental-ratings" element={<AdminRentalRatings />} />
+            <Route path="/admin/rental-contracts" element={<AdminRentalContracts />} />
             <Route path="/admin/settings" element={<Settings />} />
             <Route path="/contact" element={<Navigate to="/admin/support" />} />
             <Route path="/support" element={<Navigate to="/admin/support" />} />

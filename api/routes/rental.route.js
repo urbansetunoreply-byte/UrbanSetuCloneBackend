@@ -38,7 +38,9 @@ import {
   generateRentPrediction,
   getRentPrediction,
   getLocalityScore,
-  listAllRatings
+  listAllRatings,
+  listAllContracts,
+  updateContractStatus
 } from '../controllers/rental.controller.js';
 
 const router = express.Router();
@@ -46,8 +48,10 @@ const router = express.Router();
 // Rent-Lock Contract Routes
 router.post("/contracts/create", verifyToken, createContract);
 router.get("/contracts", verifyToken, listContracts);
+router.get("/contracts/all", verifyToken, listAllContracts); // Admin: List all contracts
 router.get("/contracts/:contractId", verifyToken, getContract);
 router.post("/contracts/:contractId/sign", verifyToken, signContract);
+router.put("/contracts/:contractId/status", verifyToken, updateContractStatus); // Admin: Update contract status
 router.get("/contracts/:contractId/download", verifyToken, downloadContractPDF);
 
 // Rent Wallet Routes

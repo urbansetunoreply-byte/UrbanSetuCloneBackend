@@ -2135,6 +2135,13 @@ export default function Profile() {
                   <FaGavel className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
                   <span className="font-medium text-xs sm:text-sm">Disputes</span>
                 </Link>
+                <Link
+                  to="/admin/rental-contracts"
+                  className={`bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1550`}
+                >
+                  <FaFileContract className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
+                  <span className="font-medium text-xs sm:text-sm">Rental Contracts</span>
+                </Link>
               </>
             ) : null}
 

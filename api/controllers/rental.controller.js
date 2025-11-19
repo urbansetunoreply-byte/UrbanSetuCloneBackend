@@ -295,6 +295,123 @@ export const listContracts = async (req, res, next) => {
   }
 };
 
+// List All Contracts (Admin only)
+export const listAllContracts = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    
+    const user = await User.findById(userId);
+    if (user?.role !== 'admin' && user?.role !== 'rootadmin') {
+      return res.status(403).json({ message: "Unauthorized. Only admin can access all contracts." });
+    }
+
+    const { status, search } = req.query;
+    
+    // Build query - no user filter for admin
+    let query = {};
+    if (status && status !== 'all') {
+      query.status = status;
+    }
+    
+    // Fetch all contracts
+    let contracts = await RentLockContract.find(query)
+      .populate('listingId', 'name propertyNumber address city state imageUrls type')
+      .populate('tenantId', 'username email avatar firstName lastName mobileNumber')
+      .populate('landlordId', 'username email avatar firstName lastName mobileNumber')
+      .populate('bookingId', 'status purpose propertyName date time')
+      .sort({ createdAt: -1 });
+
+    // Apply search filter if provided
+    if (search) {
+      const searchLower = search.toLowerCase();
+      contracts = contracts.filter(c => 
+        c.contractId?.toLowerCase().includes(searchLower) ||
+        c.listingId?.name?.toLowerCase().includes(searchLower) ||
+        c.listingId?.address?.toLowerCase().includes(searchLower) ||
+        c.tenantId?.username?.toLowerCase().includes(searchLower) ||
+        c.tenantId?.email?.toLowerCase().includes(searchLower) ||
+        c.landlordId?.username?.toLowerCase().includes(searchLower) ||
+        c.landlordId?.email?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    res.json({
+      success: true,
+      contracts,
+      total: contracts.length
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Update Contract Status (Admin only)
+export const updateContractStatus = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { contractId } = req.params;
+    const { status, reason } = req.body;
+
+    const user = await User.findById(userId);
+    if (user?.role !== 'admin' && user?.role !== 'rootadmin') {
+      return res.status(403).json({ message: "Unauthorized. Only admin can update contract status." });
+    }
+
+    // Find contract
+    let contract = await RentLockContract.findOne({ contractId: contractId });
+    if (!contract) {
+      try {
+        const mongoose = await import('mongoose');
+        if (mongoose.default.Types.ObjectId.isValid(contractId)) {
+          contract = await RentLockContract.findById(contractId);
+        }
+      } catch (error) {
+        // Continue to 404 error below
+      }
+    }
+
+    if (!contract) {
+      return res.status(404).json({ message: "Contract not found." });
+    }
+
+    // Validate status
+    const validStatuses = ['draft', 'pending_signature', 'active', 'expired', 'terminated', 'rejected'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: "Invalid contract status." });
+    }
+
+    // Update status
+    const oldStatus = contract.status;
+    contract.status = status;
+
+    // Handle status-specific updates
+    if (status === 'terminated') {
+      contract.terminatedAt = new Date();
+      contract.terminatedBy = userId;
+      if (reason) contract.terminationReason = reason;
+    } else if (status === 'rejected') {
+      contract.rejectedAt = new Date();
+      contract.rejectedBy = userId;
+      if (reason) contract.rejectionReason = reason;
+    }
+
+    await contract.save();
+
+    // Populate before returning
+    await contract.populate('tenantId', 'username email avatar');
+    await contract.populate('landlordId', 'username email avatar');
+    await contract.populate('listingId', 'name address');
+
+    res.json({
+      success: true,
+      message: `Contract status updated from ${oldStatus} to ${status}.`,
+      contract
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Sign Contract (Tenant or Landlord)
 export const signContract = async (req, res, next) => {
   try {
