@@ -1,5 +1,6 @@
 import React from 'react';
-import { FaChartLine, FaDollarSign, FaTrendingUp, FaTrendingDown, FaEquals, FaInfoCircle, FaSpinner } from 'react-icons/fa';
+import { FaChartLine, FaDollarSign, FaEquals, FaInfoCircle, FaSpinner } from 'react-icons/fa';
+import { TrendingUp, TrendingDown } from "lucide-react";
 
 export default function RentPredictionDisplay({ prediction, loading, onGenerate }) {
   if (loading) {
