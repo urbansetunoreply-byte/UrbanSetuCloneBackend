@@ -4,6 +4,7 @@ import Booking from "../models/booking.model.js";
 import Listing from "../models/listing.model.js";
 import User from "../models/user.model.js";
 import { errorHandler } from "../utils/error.js";
+import { generateRentLockContractPDF } from "../utils/contractPDFGenerator.js";
 
 // Payment reminder function (can be called by cron job)
 export const sendPaymentReminders = async () => {
@@ -417,6 +418,54 @@ export const updateAutoDebit = async (req, res, next) => {
       wallet
     });
   } catch (error) {
+    next(error);
+  }
+};
+
+// Download Contract PDF
+export const downloadContractPDF = async (req, res, next) => {
+  try {
+    const { contractId } = req.params;
+    const userId = req.user.id;
+
+    const contract = await RentLockContract.findById(contractId)
+      .populate('listingId', 'name propertyNumber address city state area bedrooms')
+      .populate('tenantId', 'username email firstName lastName mobileNumber')
+      .populate('landlordId', 'username email firstName lastName mobileNumber')
+      .populate('bookingId');
+
+    if (!contract) {
+      return res.status(404).json({ message: "Contract not found." });
+    }
+
+    // Verify user has access (tenant or landlord)
+    if (contract.tenantId._id.toString() !== userId && contract.landlordId._id.toString() !== userId) {
+      return res.status(403).json({ message: "Unauthorized." });
+    }
+
+    // Generate PDF
+    const doc = generateRentLockContractPDF(
+      contract,
+      contract.tenantId,
+      contract.landlordId,
+      contract.listingId,
+      contract.bookingId
+    );
+
+    // Set response headers
+    res.status(200);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="rent_contract_${contract.contractId}.pdf"`);
+
+    // Stream PDF to response
+    doc.pipe(res);
+    doc.on('error', (e) => {
+      try { res.end(); } catch {}
+      console.error('PDF generation error:', e);
+    });
+    doc.end();
+  } catch (error) {
+    console.error('Error downloading contract PDF:', error);
     next(error);
   }
 };

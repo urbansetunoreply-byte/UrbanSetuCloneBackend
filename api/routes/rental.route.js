@@ -6,7 +6,8 @@ import {
   listContracts,
   signContract,
   getWallet,
-  updateAutoDebit
+  updateAutoDebit,
+  downloadContractPDF
 } from '../controllers/rental.controller.js';
 
 const router = express.Router();
@@ -16,6 +17,7 @@ router.post("/contracts/create", verifyToken, createContract);
 router.get("/contracts", verifyToken, listContracts);
 router.get("/contracts/:contractId", verifyToken, getContract);
 router.post("/contracts/:contractId/sign", verifyToken, signContract);
+router.get("/contracts/:contractId/download", verifyToken, downloadContractPDF);
 
 // Rent Wallet Routes
 router.get("/wallet/:contractId", verifyToken, getWallet);
