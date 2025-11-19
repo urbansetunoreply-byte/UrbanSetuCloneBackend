@@ -663,8 +663,9 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         credentials: 'include',
         body: JSON.stringify({
           appointmentId: appointment._id,
-          paymentType: 'advance',
-          gateway: (methodOverride || preferredMethod) === 'razorpay' ? 'razorpay' : 'paypal'
+          paymentType: appointment.isRentalPayment ? 'security_deposit' : 'advance',
+          gateway: (methodOverride || preferredMethod) === 'razorpay' ? 'razorpay' : 'paypal',
+          ...(appointment.contractId && { contractId: appointment.contractId })
         })
       });
 

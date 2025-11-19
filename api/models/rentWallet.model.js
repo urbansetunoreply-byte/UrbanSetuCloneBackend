@@ -5,7 +5,7 @@ const rentWalletSchema = new mongoose.Schema({
   walletId: {
     type: String,
     unique: true,
-    required: true,
+    required: false, // Changed to false - pre-save hook will generate it
     index: true
   },
   userId: {

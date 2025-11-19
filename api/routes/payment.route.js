@@ -98,7 +98,7 @@ router.post("/lock/initialize", verifyToken, async (req, res) => {
 // POST: Create payment intent (advance payment for booking)
 router.post("/create-intent", verifyToken, async (req, res) => {
   try {
-    const { appointmentId, amount, paymentType = 'advance', gateway = 'paypal' } = req.body;
+    const { appointmentId, amount, paymentType = 'advance', gateway = 'paypal', contractId } = req.body;
     const userId = req.user.id;
 
     // Validate appointment
@@ -114,6 +114,27 @@ router.post("/create-intent", verifyToken, async (req, res) => {
     // Check if user is authorized
     if (appointment.buyerId._id.toString() !== userId) {
       return res.status(403).json({ message: "You can only make payments for your own appointments." });
+    }
+
+    // If this is a rental payment, validate contract and calculate amount
+    let rentalPaymentAmount = null;
+    let contract = null;
+    if (contractId && (paymentType === 'security_deposit' || paymentType === 'advance')) {
+      const RentLockContract = (await import('../models/rentLockContract.model.js')).default;
+      contract = await RentLockContract.findById(contractId)
+        .populate('listingId', 'name address');
+      
+      if (!contract) {
+        return res.status(404).json({ message: "Rental contract not found." });
+      }
+      
+      // Verify user is the tenant
+      if (contract.tenantId.toString() !== userId) {
+        return res.status(403).json({ message: "Unauthorized. Only tenant can make rental payments." });
+      }
+      
+      // Calculate total: security deposit + first month rent
+      rentalPaymentAmount = (contract.securityDeposit || 0) + (contract.lockedRentAmount || 0);
     }
 
     // IMPORTANT: Since each payment attempt creates a NEW payment ID,
@@ -168,8 +189,8 @@ router.post("/create-intent", verifyToken, async (req, res) => {
     const listing = appointment.listingId;
     // Determine gateway and amounts
     if (gateway === 'razorpay') {
-      // INR ₹100 advance via Razorpay
-      const advanceAmountInr = 100; // rupees
+      // For rental payments, use calculated amount; otherwise use ₹100 advance
+      const advanceAmountInr = rentalPaymentAmount ? Math.round(rentalPaymentAmount) : 100;
       const payment = new Payment({
         paymentId: generatePaymentId(),
         appointmentId,
@@ -177,11 +198,12 @@ router.post("/create-intent", verifyToken, async (req, res) => {
         listingId: listing._id,
         amount: advanceAmountInr,
         currency: 'INR',
-        paymentType,
+        paymentType: rentalPaymentAmount ? 'security_deposit' : paymentType,
         gateway: 'razorpay',
         status: 'pending',
         receiptNumber: generateReceiptNumber(),
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000) // Expires in 10 minutes
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000), // Expires in 10 minutes
+        ...(contractId && { contractId })
       });
       await payment.save();
 
@@ -224,8 +246,8 @@ router.post("/create-intent", verifyToken, async (req, res) => {
         }
       });
     } else {
-      // Default PayPal USD $5 advance
-      const advanceAmountUsd = 5;
+      // For rental payments, convert INR to USD (approximate); otherwise use $5 advance
+      const advanceAmountUsd = rentalPaymentAmount ? Math.round((rentalPaymentAmount / 83) * 100) / 100 : 5; // Approx 1 USD = 83 INR
       const payment = new Payment({
         paymentId: generatePaymentId(),
         appointmentId,
@@ -233,11 +255,12 @@ router.post("/create-intent", verifyToken, async (req, res) => {
         listingId: listing._id,
         amount: advanceAmountUsd,
         currency: 'USD',
-        paymentType,
+        paymentType: rentalPaymentAmount ? 'security_deposit' : paymentType,
         gateway: 'paypal',
         status: 'pending',
         receiptNumber: generateReceiptNumber(),
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000) // Expires in 10 minutes
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000), // Expires in 10 minutes
+        ...(contractId && { contractId })
       });
       await payment.save();
       return res.status(201).json({

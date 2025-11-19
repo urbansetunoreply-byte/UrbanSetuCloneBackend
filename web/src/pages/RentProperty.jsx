@@ -883,7 +883,13 @@ export default function RentProperty() {
           <PaymentModal
             isOpen={showPaymentModal}
             onClose={() => setShowPaymentModal(false)}
-            appointment={booking}
+            appointment={{
+              ...booking,
+              contractId: contract._id,
+              isRentalPayment: true,
+              securityDeposit: contract.securityDeposit || 0,
+              firstMonthRent: contract.lockedRentAmount || 0
+            }}
             onPaymentSuccess={handlePaymentSuccess}
           />
         )}

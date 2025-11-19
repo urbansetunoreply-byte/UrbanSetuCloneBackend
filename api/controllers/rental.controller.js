@@ -491,8 +491,8 @@ export const signContract = async (req, res, next) => {
         await booking.save();
       }
 
-      // Create rent wallet
-      const wallet = await RentWallet.create({
+      // Create rent wallet - use new + save to ensure pre-save hook runs
+      const wallet = new RentWallet({
         userId: contract.tenantId,
         contractId: contract._id
       });
