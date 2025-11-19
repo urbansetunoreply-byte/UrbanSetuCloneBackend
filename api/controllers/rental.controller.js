@@ -17,7 +17,19 @@ import {
   findSimilarProperties 
 } from "../utils/rentPredictionEngine.js";
 import { sendRentalNotification } from "../utils/rentalNotificationService.js";
-import { sendContractSignedEmail } from "../utils/emailService.js";
+import { 
+  sendContractSignedEmail,
+  sendDisputeRaisedEmail,
+  sendDisputeResolvedEmail,
+  sendVerificationRequestedEmail,
+  sendVerificationApprovedEmail,
+  sendVerificationRejectedEmail,
+  sendRatingReceivedEmail,
+  sendLoanAppliedEmail,
+  sendLoanApprovedEmail,
+  sendLoanRejectedEmail,
+  sendLoanDisbursedEmail
+} from "../utils/emailService.js";
 
 // Payment reminder function (can be called by cron job)
 export const sendPaymentReminders = async () => {
@@ -971,6 +983,8 @@ export const createDispute = async (req, res, next) => {
     if (contractPopulated) {
       const listing = contractPopulated.listingId;
       
+      const raisedAgainstUser = await User.findById(raisedAgainst);
+      
       // Notify the party against whom dispute is raised
       await sendRentalNotification({
         userId: raisedAgainst,
@@ -986,6 +1000,18 @@ export const createDispute = async (req, res, next) => {
         actionUrl: `/user/disputes?disputeId=${dispute._id}`,
         io
       });
+
+      // Send email notification
+      if (raisedAgainstUser?.email) {
+        const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+        await sendDisputeRaisedEmail(raisedAgainstUser.email, {
+          propertyName: listing.name,
+          raisedByName: dispute.raisedBy?.username || 'User',
+          disputeType: category || 'other',
+          description: description,
+          disputeUrl: `${clientUrl}/user/disputes?disputeId=${dispute._id}`
+        });
+      }
 
       // Notify admins (you can extend this to notify all admins)
       // For now, we'll just log it
@@ -1243,6 +1269,9 @@ export const resolveDispute = async (req, res, next) => {
 
       if (contract) {
         const listing = contract.listingId;
+        const raisedByUser = await User.findById(disputePopulated.raisedBy._id);
+        const raisedAgainstUser = await User.findById(disputePopulated.raisedAgainst._id);
+        const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
 
         // Notify both parties
         await sendRentalNotification({
@@ -1276,6 +1305,24 @@ export const resolveDispute = async (req, res, next) => {
           actionUrl: `/user/disputes?disputeId=${dispute._id}`,
           io
         });
+
+        // Send email notifications
+        if (raisedByUser?.email) {
+          await sendDisputeResolvedEmail(raisedByUser.email, {
+            propertyName: listing.name,
+            decision,
+            amount: amount || 0,
+            disputeUrl: `${clientUrl}/user/disputes?disputeId=${dispute._id}`
+          });
+        }
+        if (raisedAgainstUser?.email) {
+          await sendDisputeResolvedEmail(raisedAgainstUser.email, {
+            propertyName: listing.name,
+            decision,
+            amount: amount || 0,
+            disputeUrl: `${clientUrl}/user/disputes?disputeId=${dispute._id}`
+          });
+        }
       }
     }
 
@@ -1375,6 +1422,15 @@ export const requestVerification = async (req, res, next) => {
       actionUrl: `/user/property-verification?listingId=${listing._id}`,
       io
     });
+
+    // Send email notification
+    if (verification.landlordId?.email) {
+      const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+      await sendVerificationRequestedEmail(verification.landlordId.email, {
+        propertyName: verification.listingId.name,
+        verificationUrl: `${clientUrl}/user/property-verification?listingId=${listing._id}`
+      });
+    }
 
     res.status(201).json({
       success: true,
@@ -1550,6 +1606,15 @@ export const approveVerification = async (req, res, next) => {
           actionUrl: `/user/property-verification?listingId=${verificationPopulated.listingId._id}`,
           io
         });
+
+        // Send email notification
+        if (verificationPopulated.landlordId?.email) {
+          const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+          await sendVerificationApprovedEmail(verificationPopulated.landlordId.email, {
+            propertyName: verificationPopulated.listingId.name,
+            verificationUrl: `${clientUrl}/user/property-verification?listingId=${verificationPopulated.listingId._id}`
+          });
+        }
       }
     }
 
@@ -1622,6 +1687,16 @@ export const rejectVerification = async (req, res, next) => {
         actionUrl: `/user/property-verification?listingId=${verificationPopulated.listingId._id}`,
         io
       });
+
+      // Send email notification
+      if (verificationPopulated.landlordId?.email) {
+        const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+        await sendVerificationRejectedEmail(verificationPopulated.landlordId.email, {
+          propertyName: verificationPopulated.listingId.name,
+          rejectionReason: rejectionReason || 'Please check admin notes for details',
+          verificationUrl: `${clientUrl}/user/property-verification?listingId=${verificationPopulated.listingId._id}`
+        });
+      }
     }
 
     res.json({
@@ -1718,6 +1793,7 @@ export const submitRentalRating = async (req, res, next) => {
       const listing = contractPopulated.listingId;
       const ratedUserId = role === 'tenant' ? contract.landlordId._id : contract.tenantId._id;
       const raterUsername = role === 'tenant' ? contract.tenantId.username : contract.landlordId.username;
+      const ratedUser = await User.findById(ratedUserId);
 
       await sendRentalNotification({
         userId: ratedUserId,
@@ -1733,6 +1809,20 @@ export const submitRentalRating = async (req, res, next) => {
         actionUrl: `/user/rental-ratings?contractId=${contract._id}`,
         io
       });
+
+      // Send email notification
+      if (ratedUser?.email) {
+        const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+        const overallRating = role === 'tenant' 
+          ? rating.tenantRating?.overallRating || 0
+          : rating.landlordRating?.overallRating || 0;
+        await sendRatingReceivedEmail(ratedUser.email, {
+          propertyName: listing.name,
+          ratedByName: raterUsername,
+          overallRating,
+          ratingUrl: `${clientUrl}/user/rental-ratings?contractId=${contract._id}`
+        });
+      }
     }
 
     // Populate for response
@@ -1999,6 +2089,17 @@ export const applyForRentalLoan = async (req, res, next) => {
         actionUrl: `/user/rental-loans?loanId=${loan._id}`,
         io
       });
+
+      // Send email notification
+      if (loan.userId?.email) {
+        const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+        await sendLoanAppliedEmail(loan.userId.email, {
+          propertyName: contractPopulated.listingId.name,
+          loanType,
+          loanAmount,
+          loanUrl: `${clientUrl}/user/rental-loans?loanId=${loan._id}`
+        });
+      }
     }
 
     res.status(201).json({
@@ -2174,6 +2275,27 @@ export const approveRentalLoan = async (req, res, next) => {
           actionUrl: `/user/rental-loans?loanId=${loan._id}`,
           io
         });
+
+        // Send email notification
+        if (loanPopulated.userId?.email) {
+          const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+          if (loan.status === 'disbursed') {
+            await sendLoanDisbursedEmail(loanPopulated.userId.email, {
+              propertyName: contract.listingId.name,
+              loanType: loan.loanType,
+              disbursedAmount: loan.disbursedAmount || loan.loanAmount,
+              disbursementReference: loan.disbursementReference,
+              loanUrl: `${clientUrl}/user/rental-loans?loanId=${loan._id}`
+            });
+          } else {
+            await sendLoanApprovedEmail(loanPopulated.userId.email, {
+              propertyName: contract.listingId.name,
+              loanType: loan.loanType,
+              loanAmount: loan.loanAmount,
+              loanUrl: `${clientUrl}/user/rental-loans?loanId=${loan._id}`
+            });
+          }
+        }
       }
     }
 
@@ -2247,6 +2369,18 @@ export const rejectRentalLoan = async (req, res, next) => {
           actionUrl: `/user/rental-loans?loanId=${loan._id}`,
           io
         });
+
+        // Send email notification
+        if (loanPopulated.userId?.email) {
+          const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+          await sendLoanRejectedEmail(loanPopulated.userId.email, {
+            propertyName: contract.listingId.name,
+            loanType: loan.loanType,
+            loanAmount: loan.loanAmount,
+            rejectionReason: rejectionReason || 'Please check admin notes for details',
+            loanUrl: `${clientUrl}/user/rental-loans?loanId=${loan._id}`
+          });
+        }
       }
     }
 
@@ -2316,6 +2450,18 @@ export const disburseRentalLoan = async (req, res, next) => {
           actionUrl: `/user/rental-loans?loanId=${loan._id}`,
           io
         });
+
+        // Send email notification
+        if (loanPopulated.userId?.email) {
+          const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+          await sendLoanDisbursedEmail(loanPopulated.userId.email, {
+            propertyName: contract.listingId.name,
+            loanType: loan.loanType,
+            disbursedAmount: loan.disbursedAmount,
+            disbursementReference: loan.disbursementReference,
+            loanUrl: `${clientUrl}/user/rental-loans?loanId=${loan._id}`
+          });
+        }
       }
     }
 

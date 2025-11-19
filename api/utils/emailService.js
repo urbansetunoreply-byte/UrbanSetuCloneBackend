@@ -10563,5 +10563,684 @@ export const sendContractExpiringSoonEmail = async (email, contractDetails) => {
   }
 };
 
+// Send Dispute Raised Email
+export const sendDisputeRaisedEmail = async (email, disputeDetails) => {
+  try {
+    const {
+      propertyName,
+      raisedByName,
+      disputeType,
+      description,
+      disputeUrl
+    } = disputeDetails;
+
+    const subject = `⚠️ Dispute Raised - ${propertyName}`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Dispute Raised - UrbanSetu</title>
+      </head>
+      <body>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+          <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(239, 68, 68, 0.3);">
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold;">⚠️</span>
+              </div>
+              <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Dispute Raised</h1>
+              <p style="color: #6b7280; margin: 10px 0 0 0;">Action required</p>
+            </div>
+            
+            <div style="background-color: #fef2f2; padding: 25px; border-radius: 8px; border-left: 4px solid #ef4444; margin-bottom: 25px;">
+              <h2 style="color: #991b1b; margin: 0 0 15px 0; font-size: 20px;">Dispute Notification</h2>
+              <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Property:</strong> ${propertyName}</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Raised By:</strong> ${raisedByName}</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Dispute Type:</strong> ${disputeType}</p>
+                ${description ? `<p style="color: #4b5563; margin: 10px 0 0;"><strong>Description:</strong> ${description.substring(0, 200)}${description.length > 200 ? '...' : ''}</p>` : ''}
+              </div>
+              <p style="color: #991b1b; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
+                A dispute has been raised regarding your rental contract. Please review the details and respond promptly. Our team will mediate the dispute if needed.
+              </p>
+            </div>
+            
+            ${disputeUrl ? `<div style="text-align: center; margin-top: 30px;">
+              <a href="${disputeUrl}" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3);">View Dispute</a>
+            </div>` : ''}
+            
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending dispute raised email:', error);
+    throw error;
+  }
+};
+
+// Send Dispute Resolved Email
+export const sendDisputeResolvedEmail = async (email, disputeDetails) => {
+  try {
+    const {
+      propertyName,
+      decision,
+      amount,
+      disputeUrl
+    } = disputeDetails;
+
+    const subject = `✅ Dispute Resolved - ${propertyName}`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Dispute Resolved - UrbanSetu</title>
+      </head>
+      <body>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+          <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);">
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold;">✅</span>
+              </div>
+              <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Dispute Resolved</h1>
+              <p style="color: #6b7280; margin: 10px 0 0 0;">Resolution complete</p>
+            </div>
+            
+            <div style="background-color: #f0fdf4; padding: 25px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 25px;">
+              <h2 style="color: #065f46; margin: 0 0 15px 0; font-size: 20px;">Dispute Resolution</h2>
+              <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Property:</strong> ${propertyName}</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Decision:</strong> ${decision}</p>
+                ${amount ? `<p style="color: #4b5563; margin: 0;"><strong>Amount:</strong> ₹${amount}</p>` : ''}
+              </div>
+              <p style="color: #065f46; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
+                The dispute regarding ${propertyName} has been resolved. The decision has been made by our admin team. If you have any concerns, please contact support.
+              </p>
+            </div>
+            
+            ${disputeUrl ? `<div style="text-align: center; margin-top: 30px;">
+              <a href="${disputeUrl}" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);">View Dispute Details</a>
+            </div>` : ''}
+            
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending dispute resolved email:', error);
+    throw error;
+  }
+};
+
+// Send Verification Requested Email
+export const sendVerificationRequestedEmail = async (email, verificationDetails) => {
+  try {
+    const {
+      propertyName,
+      verificationUrl
+    } = verificationDetails;
+
+    const subject = `📋 Property Verification Request Submitted - ${propertyName}`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Verification Requested - UrbanSetu</title>
+      </head>
+      <body>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+          <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);">
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold;">📋</span>
+              </div>
+              <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Verification Request Submitted</h1>
+              <p style="color: #6b7280; margin: 10px 0 0 0;">Under review</p>
+            </div>
+            
+            <div style="background-color: #eff6ff; padding: 25px; border-radius: 8px; border-left: 4px solid #3b82f6; margin-bottom: 25px;">
+              <h2 style="color: #1e40af; margin: 0 0 15px 0; font-size: 20px;">Verification Status</h2>
+              <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Property:</strong> ${propertyName}</p>
+                <p style="color: #4b5563; margin: 0;"><strong>Status:</strong> <span style="color: #f59e0b; font-weight: 600;">Pending Review</span></p>
+              </div>
+              <p style="color: #1e40af; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
+                Your property verification request has been submitted successfully. Our team will review your documents and property details. You will be notified once the verification is complete.
+              </p>
+            </div>
+            
+            ${verificationUrl ? `<div style="text-align: center; margin-top: 30px;">
+              <a href="${verificationUrl}" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);">View Verification Status</a>
+            </div>` : ''}
+            
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending verification requested email:', error);
+    throw error;
+  }
+};
+
+// Send Verification Approved Email
+export const sendVerificationApprovedEmail = async (email, verificationDetails) => {
+  try {
+    const {
+      propertyName,
+      verificationUrl
+    } = verificationDetails;
+
+    const subject = `✅ Property Verification Approved - ${propertyName}`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Verification Approved - UrbanSetu</title>
+      </head>
+      <body>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+          <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);">
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold;">✅</span>
+              </div>
+              <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Verification Approved!</h1>
+              <p style="color: #6b7280; margin: 10px 0 0 0;">Congratulations</p>
+            </div>
+            
+            <div style="background-color: #f0fdf4; padding: 25px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 25px;">
+              <h2 style="color: #065f46; margin: 0 0 15px 0; font-size: 20px;">Property Verified</h2>
+              <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Property:</strong> ${propertyName}</p>
+                <p style="color: #4b5563; margin: 0;"><strong>Status:</strong> <span style="color: #10b981; font-weight: 600;">✓ Verified</span></p>
+              </div>
+              <p style="color: #065f46; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
+                Congratulations! Your property ${propertyName} has been successfully verified. A verification badge has been added to your listing, which will help build trust with potential tenants.
+              </p>
+            </div>
+            
+            ${verificationUrl ? `<div style="text-align: center; margin-top: 30px;">
+              <a href="${verificationUrl}" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);">View Verified Property</a>
+            </div>` : ''}
+            
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending verification approved email:', error);
+    throw error;
+  }
+};
+
+// Send Verification Rejected Email
+export const sendVerificationRejectedEmail = async (email, verificationDetails) => {
+  try {
+    const {
+      propertyName,
+      rejectionReason,
+      verificationUrl
+    } = verificationDetails;
+
+    const subject = `❌ Property Verification Rejected - ${propertyName}`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Verification Rejected - UrbanSetu</title>
+      </head>
+      <body>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+          <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(239, 68, 68, 0.3);">
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold;">❌</span>
+              </div>
+              <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Verification Rejected</h1>
+              <p style="color: #6b7280; margin: 10px 0 0 0;">Action required</p>
+            </div>
+            
+            <div style="background-color: #fef2f2; padding: 25px; border-radius: 8px; border-left: 4px solid #ef4444; margin-bottom: 25px;">
+              <h2 style="color: #991b1b; margin: 0 0 15px 0; font-size: 20px;">Verification Status</h2>
+              <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Property:</strong> ${propertyName}</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Status:</strong> <span style="color: #ef4444; font-weight: 600;">Rejected</span></p>
+                ${rejectionReason ? `<p style="color: #4b5563; margin: 10px 0 0;"><strong>Reason:</strong> ${rejectionReason}</p>` : ''}
+              </div>
+              <p style="color: #991b1b; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
+                Your property verification request has been rejected. Please review the reason provided and resubmit your verification request with corrected information or additional documents.
+              </p>
+            </div>
+            
+            ${verificationUrl ? `<div style="text-align: center; margin-top: 30px;">
+              <a href="${verificationUrl}" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);">Resubmit Verification</a>
+            </div>` : ''}
+            
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending verification rejected email:', error);
+    throw error;
+  }
+};
+
+// Send Rating Received Email
+export const sendRatingReceivedEmail = async (email, ratingDetails) => {
+  try {
+    const {
+      propertyName,
+      ratedByName,
+      overallRating,
+      ratingUrl
+    } = ratingDetails;
+
+    const subject = `⭐ New Rating Received - ${propertyName}`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>New Rating Received - UrbanSetu</title>
+      </head>
+      <body>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+          <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(245, 158, 11, 0.3);">
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold;">⭐</span>
+              </div>
+              <h1 style="color: #1f2937; margin: 0; font-size: 28px;">New Rating Received</h1>
+              <p style="color: #6b7280; margin: 10px 0 0 0;">Feedback update</p>
+            </div>
+            
+            <div style="background-color: #fffbeb; padding: 25px; border-radius: 8px; border-left: 4px solid #f59e0b; margin-bottom: 25px;">
+              <h2 style="color: #92400e; margin: 0 0 15px 0; font-size: 20px;">Rating Details</h2>
+              <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Property:</strong> ${propertyName}</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Rated By:</strong> ${ratedByName}</p>
+                <p style="color: #4b5563; margin: 0;"><strong>Overall Rating:</strong> ${'⭐'.repeat(Math.round(overallRating))} ${overallRating}/5</p>
+              </div>
+              <p style="color: #92400e; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
+                You have received a new rating from ${ratedByName} for your rental contract at ${propertyName}. Check out the detailed feedback and ratings.
+              </p>
+            </div>
+            
+            ${ratingUrl ? `<div style="text-align: center; margin-top: 30px;">
+              <a href="${ratingUrl}" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3);">View Rating</a>
+            </div>` : ''}
+            
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending rating received email:', error);
+    throw error;
+  }
+};
+
+// Send Loan Applied Email
+export const sendLoanAppliedEmail = async (email, loanDetails) => {
+  try {
+    const {
+      propertyName,
+      loanType,
+      loanAmount,
+      loanUrl
+    } = loanDetails;
+
+    const subject = `📝 Rental Loan Application Submitted - ${propertyName}`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Loan Application Submitted - UrbanSetu</title>
+      </head>
+      <body>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+          <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);">
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold;">📝</span>
+              </div>
+              <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Loan Application Submitted</h1>
+              <p style="color: #6b7280; margin: 10px 0 0 0;">Under review</p>
+            </div>
+            
+            <div style="background-color: #eff6ff; padding: 25px; border-radius: 8px; border-left: 4px solid #3b82f6; margin-bottom: 25px;">
+              <h2 style="color: #1e40af; margin: 0 0 15px 0; font-size: 20px;">Application Details</h2>
+              <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Property:</strong> ${propertyName}</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Loan Type:</strong> ${loanType}</p>
+                <p style="color: #4b5563; margin: 0;"><strong>Loan Amount:</strong> ₹${loanAmount}</p>
+              </div>
+              <p style="color: #1e40af; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
+                Your ${loanType} loan application of ₹${loanAmount} for ${propertyName} has been submitted successfully. Our team will review your application and you will be notified of the decision soon.
+              </p>
+            </div>
+            
+            ${loanUrl ? `<div style="text-align: center; margin-top: 30px;">
+              <a href="${loanUrl}" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);">View Loan Application</a>
+            </div>` : ''}
+            
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending loan applied email:', error);
+    throw error;
+  }
+};
+
+// Send Loan Approved Email
+export const sendLoanApprovedEmail = async (email, loanDetails) => {
+  try {
+    const {
+      propertyName,
+      loanType,
+      loanAmount,
+      loanUrl
+    } = loanDetails;
+
+    const subject = `✅ Rental Loan Approved - ${propertyName}`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Loan Approved - UrbanSetu</title>
+      </head>
+      <body>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+          <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);">
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold;">✅</span>
+              </div>
+              <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Loan Approved!</h1>
+              <p style="color: #6b7280; margin: 10px 0 0 0;">Congratulations</p>
+            </div>
+            
+            <div style="background-color: #f0fdf4; padding: 25px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 25px;">
+              <h2 style="color: #065f46; margin: 0 0 15px 0; font-size: 20px;">Approval Details</h2>
+              <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Property:</strong> ${propertyName}</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Loan Type:</strong> ${loanType}</p>
+                <p style="color: #4b5563; margin: 0;"><strong>Approved Amount:</strong> ₹${loanAmount}</p>
+              </div>
+              <p style="color: #065f46; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
+                Great news! Your ${loanType} loan application of ₹${loanAmount} for ${propertyName} has been approved. The loan will be disbursed to your account soon. You will receive another notification once the disbursement is complete.
+              </p>
+            </div>
+            
+            ${loanUrl ? `<div style="text-align: center; margin-top: 30px;">
+              <a href="${loanUrl}" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);">View Loan Details</a>
+            </div>` : ''}
+            
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending loan approved email:', error);
+    throw error;
+  }
+};
+
+// Send Loan Rejected Email
+export const sendLoanRejectedEmail = async (email, loanDetails) => {
+  try {
+    const {
+      propertyName,
+      loanType,
+      loanAmount,
+      rejectionReason,
+      loanUrl
+    } = loanDetails;
+
+    const subject = `❌ Rental Loan Application Rejected - ${propertyName}`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Loan Rejected - UrbanSetu</title>
+      </head>
+      <body>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+          <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(239, 68, 68, 0.3);">
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold;">❌</span>
+              </div>
+              <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Loan Application Rejected</h1>
+              <p style="color: #6b7280; margin: 10px 0 0 0;">Application status</p>
+            </div>
+            
+            <div style="background-color: #fef2f2; padding: 25px; border-radius: 8px; border-left: 4px solid #ef4444; margin-bottom: 25px;">
+              <h2 style="color: #991b1b; margin: 0 0 15px 0; font-size: 20px;">Rejection Details</h2>
+              <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Property:</strong> ${propertyName}</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Loan Type:</strong> ${loanType}</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Loan Amount:</strong> ₹${loanAmount}</p>
+                ${rejectionReason ? `<p style="color: #4b5563; margin: 10px 0 0;"><strong>Reason:</strong> ${rejectionReason}</p>` : ''}
+              </div>
+              <p style="color: #991b1b; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
+                We regret to inform you that your ${loanType} loan application of ₹${loanAmount} for ${propertyName} has been rejected. ${rejectionReason ? `Reason: ${rejectionReason}` : 'Please contact support for more details.'}
+              </p>
+            </div>
+            
+            ${loanUrl ? `<div style="text-align: center; margin-top: 30px;">
+              <a href="${loanUrl}" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);">View Loan Details</a>
+            </div>` : ''}
+            
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending loan rejected email:', error);
+    throw error;
+  }
+};
+
+// Send Loan Disbursed Email
+export const sendLoanDisbursedEmail = async (email, loanDetails) => {
+  try {
+    const {
+      propertyName,
+      loanType,
+      disbursedAmount,
+      disbursementReference,
+      loanUrl
+    } = loanDetails;
+
+    const subject = `💰 Rental Loan Disbursed - ${propertyName}`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Loan Disbursed - UrbanSetu</title>
+      </head>
+      <body>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+          <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);">
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold;">💰</span>
+              </div>
+              <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Loan Disbursed!</h1>
+              <p style="color: #6b7280; margin: 10px 0 0 0;">Payment received</p>
+            </div>
+            
+            <div style="background-color: #f0fdf4; padding: 25px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 25px;">
+              <h2 style="color: #065f46; margin: 0 0 15px 0; font-size: 20px;">Disbursement Details</h2>
+              <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Property:</strong> ${propertyName}</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Loan Type:</strong> ${loanType}</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Disbursed Amount:</strong> ₹${disbursedAmount}</p>
+                <p style="color: #4b5563; margin: 0;"><strong>Reference:</strong> ${disbursementReference}</p>
+              </div>
+              <p style="color: #065f46; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
+                Your ${loanType} loan of ₹${disbursedAmount} for ${propertyName} has been successfully disbursed to your account. Reference number: ${disbursementReference}. Please check your account balance and ensure all EMI payments are made on time.
+              </p>
+            </div>
+            
+            ${loanUrl ? `<div style="text-align: center; margin-top: 30px;">
+              <a href="${loanUrl}" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);">View Loan Details</a>
+            </div>` : ''}
+            
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending loan disbursed email:', error);
+    throw error;
+  }
+};
+
 // Export the current transporter (will be set during initialization)
 export default currentTransporter;
