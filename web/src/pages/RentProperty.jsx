@@ -129,7 +129,9 @@ export default function RentProperty() {
             propertyName: listing?.name || '',
             propertyDescription: listing?.description || '',
             rentLockPlanSelected: formData.rentLockPlan,
-            customLockDuration: formData.rentLockPlan === 'custom' ? formData.customLockDuration : null
+            customLockDuration: formData.rentLockPlan === 'custom' ? formData.customLockDuration : null,
+            visibleToBuyer: false, // Hide booking until payment is complete
+            visibleToSeller: false // Hide booking until payment is complete
           })
         });
 
@@ -165,12 +167,12 @@ export default function RentProperty() {
             bookingId: booking._id,
             rentLockPlan: formData.rentLockPlan,
             lockDuration,
-            lockedRentAmount: listing?.monthlyRent || listing?.discountPrice || 0,
+            lockedRentAmount: listing?.monthlyRent || listing?.discountPrice || listing?.regularPrice || 0,
             startDate: startDate.toISOString(),
             endDate: endDate.toISOString(),
             paymentFrequency: 'monthly',
             dueDate: 1,
-            securityDeposit: (listing?.monthlyRent || listing?.discountPrice || 0) * (listing?.securityDepositMonths || 2),
+            securityDeposit: (listing?.monthlyRent || listing?.discountPrice || listing?.regularPrice || 0) * (listing?.securityDepositMonths || 2),
             maintenanceCharges: listing?.maintenanceCharges || 0,
             advanceRent: 0,
             moveInDate: startDate.toISOString()
@@ -307,32 +309,28 @@ export default function RentProperty() {
     }
   };
 
-  const handlePaymentSuccess = () => {
-    toast.success("Payment successful! Redirecting to your appointments...");
-    // Suggest loan option after payment
-    setTimeout(() => {
-      toast.info(
-        <div>
-          <p className="mb-2">Need help with security deposit or rent?</p>
-          <button
-            onClick={() => {
-              if (contract?._id) {
-                navigate(`/user/rental-loans?contractId=${contract._id}`);
-              } else {
-                navigate('/user/rental-loans');
-              }
-            }}
-            className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm"
-          >
-            Apply for Rental Loan
-          </button>
-        </div>,
-        { autoClose: 10000 }
-      );
-    }, 1500);
-    setTimeout(() => {
-      navigate("/user/my-appointments");
-    }, 2000);
+  const handlePaymentSuccess = async () => {
+    // Make booking visible after payment succeeds
+    if (booking?._id) {
+      try {
+        await fetch(`${API_BASE_URL}/api/bookings/${booking._id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            visibleToBuyer: true,
+            visibleToSeller: true
+          })
+        });
+      } catch (error) {
+        console.error("Error updating booking visibility:", error);
+      }
+    }
+
+    toast.success("Payment successful! Proceeding to Move-in step...");
+    // Move to step 5 (Move-in)
+    setStep(5);
+    setShowPaymentModal(false);
   };
 
   if (loading && !listing) {
@@ -367,7 +365,7 @@ export default function RentProperty() {
                             formData.rentLockPlan === '5_year' ? 60 :
                             formData.customLockDuration || 12;
 
-  const monthlyRent = listing.monthlyRent || listing.discountPrice || 0;
+  const monthlyRent = listing.monthlyRent || listing.discountPrice || listing.regularPrice || 0;
   const securityDeposit = monthlyRent * (listing.securityDepositMonths || 2);
   const totalAmount = securityDeposit + monthlyRent; // Security deposit + first month rent
 
@@ -674,6 +672,18 @@ export default function RentProperty() {
           </div>
         )}
 
+        {/* Step 4: Payment */}
+        {step === 4 && booking && contract && (
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h2 className="text-2xl font-bold text-blue-700 mb-6 flex items-center gap-2">
+              <FaMoneyBillWave /> Payment Required
+            </h2>
+            <p className="text-gray-600 mb-4">
+              Please complete the payment for security deposit and first month's rent to proceed with move-in.
+            </p>
+          </div>
+        )}
+
         {/* Payment Modal */}
         {showPaymentModal && step === 4 && booking && contract && (
           <PaymentModal
@@ -682,6 +692,49 @@ export default function RentProperty() {
             appointment={booking}
             onPaymentSuccess={handlePaymentSuccess}
           />
+        )}
+
+        {/* Step 5: Move-in */}
+        {step === 5 && contract && (
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h2 className="text-2xl font-bold text-blue-700 mb-6 flex items-center gap-2">
+              <FaHome /> Move-in Checklist
+            </h2>
+            <div className="space-y-4 mb-6">
+              <p className="text-gray-600">
+                Complete your move-in checklist to document the property condition. This will help protect you during move-out.
+              </p>
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <h3 className="font-semibold text-blue-800 mb-2">What to do:</h3>
+                <ul className="list-disc list-inside space-y-1 text-sm text-blue-700">
+                  <li>Upload photos/videos of each room</li>
+                  <li>Document existing damages or issues</li>
+                  <li>Note amenities and their condition</li>
+                  <li>Add any special notes for the landlord</li>
+                </ul>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <button
+                onClick={() => {
+                  const contractId = contract.contractId || contract._id;
+                  navigate(`/user/services?contractId=${contractId}&checklist=move_in`);
+                }}
+                className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 flex items-center justify-center gap-2"
+              >
+                <FaCheckCircle /> Complete Move-in Checklist
+              </button>
+              <button
+                onClick={() => {
+                  toast.success("Booking complete! You can complete the checklist later from your appointments.");
+                  navigate("/user/my-appointments");
+                }}
+                className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Skip for Now
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>

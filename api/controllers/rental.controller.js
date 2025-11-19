@@ -214,11 +214,28 @@ export const getContract = async (req, res, next) => {
     const { contractId } = req.params;
     const userId = req.user.id;
 
-    const contract = await RentLockContract.findById(contractId)
+    // Try to find by contractId string field first, then by _id (MongoDB ObjectId)
+    let contract = await RentLockContract.findOne({ contractId: contractId })
       .populate('listingId', 'name propertyNumber address city state')
       .populate('tenantId', 'username email avatar')
       .populate('landlordId', 'username email avatar')
       .populate('bookingId');
+
+    // If not found by contractId, try by _id (in case contractId param is actually an ObjectId)
+    if (!contract) {
+      try {
+        const mongoose = await import('mongoose');
+        if (mongoose.default.Types.ObjectId.isValid(contractId)) {
+          contract = await RentLockContract.findById(contractId)
+            .populate('listingId', 'name propertyNumber address city state')
+            .populate('tenantId', 'username email avatar')
+            .populate('landlordId', 'username email avatar')
+            .populate('bookingId');
+        }
+      } catch (error) {
+        // Continue to 404 error below
+      }
+    }
 
     if (!contract) {
       return res.status(404).json({ message: "Contract not found." });
@@ -284,7 +301,21 @@ export const signContract = async (req, res, next) => {
     const { signatureData } = req.body;
     const userId = req.user.id;
 
-    const contract = await RentLockContract.findById(contractId);
+    // Try to find by contractId string field first, then by _id (MongoDB ObjectId)
+    let contract = await RentLockContract.findOne({ contractId: contractId });
+
+    // If not found by contractId, try by _id (in case contractId param is actually an ObjectId)
+    if (!contract) {
+      try {
+        const mongoose = await import('mongoose');
+        if (mongoose.default.Types.ObjectId.isValid(contractId)) {
+          contract = await RentLockContract.findById(contractId);
+        }
+      } catch (error) {
+        // Continue to 404 error below
+      }
+    }
+
     if (!contract) {
       return res.status(404).json({ message: "Contract not found." });
     }
@@ -540,11 +571,28 @@ export const downloadContractPDF = async (req, res, next) => {
     const { contractId } = req.params;
     const userId = req.user.id;
 
-    const contract = await RentLockContract.findById(contractId)
+    // Try to find by contractId string field first, then by _id (MongoDB ObjectId)
+    let contract = await RentLockContract.findOne({ contractId: contractId })
       .populate('listingId', 'name propertyNumber address city state area bedrooms')
       .populate('tenantId', 'username email firstName lastName mobileNumber')
       .populate('landlordId', 'username email firstName lastName mobileNumber')
       .populate('bookingId');
+
+    // If not found by contractId, try by _id (in case contractId param is actually an ObjectId)
+    if (!contract) {
+      try {
+        const mongoose = await import('mongoose');
+        if (mongoose.default.Types.ObjectId.isValid(contractId)) {
+          contract = await RentLockContract.findById(contractId)
+            .populate('listingId', 'name propertyNumber address city state area bedrooms')
+            .populate('tenantId', 'username email firstName lastName mobileNumber')
+            .populate('landlordId', 'username email firstName lastName mobileNumber')
+            .populate('bookingId');
+        }
+      } catch (error) {
+        // Continue to 404 error below
+      }
+    }
 
     if (!contract) {
       return res.status(404).json({ message: "Contract not found." });
