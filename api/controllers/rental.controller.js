@@ -2,6 +2,7 @@ import RentLockContract from "../models/rentLockContract.model.js";
 import RentWallet from "../models/rentWallet.model.js";
 import MoveInOutChecklist from "../models/moveInOutChecklist.model.js";
 import Dispute from "../models/dispute.model.js";
+import PropertyVerification from "../models/propertyVerification.model.js";
 import Booking from "../models/booking.model.js";
 import Listing from "../models/listing.model.js";
 import User from "../models/user.model.js";
@@ -1115,6 +1116,291 @@ export const resolveDispute = async (req, res, next) => {
       success: true,
       message: "Dispute resolved.",
       dispute
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Request Property Verification
+export const requestVerification = async (req, res, next) => {
+  try {
+    const { listingId } = req.params;
+    const { 
+      ownershipProof, 
+      identityProof, 
+      addressProof,
+      verificationFee 
+    } = req.body;
+    const userId = req.user.id;
+
+    // Verify listing exists and user is the owner
+    const listing = await Listing.findById(listingId);
+    if (!listing) {
+      return res.status(404).json({ message: "Listing not found." });
+    }
+
+    if (listing.userRef.toString() !== userId) {
+      return res.status(403).json({ message: "Unauthorized. Only property owner can request verification." });
+    }
+
+    // Check if verification already exists
+    const existingVerification = await PropertyVerification.findOne({ listingId: listing._id });
+    if (existingVerification) {
+      if (existingVerification.status === 'verified') {
+        return res.status(400).json({ 
+          message: "Property is already verified.",
+          verification: existingVerification
+        });
+      }
+      if (existingVerification.status === 'pending' || existingVerification.status === 'in_progress') {
+        return res.status(400).json({ 
+          message: "Verification request already exists and is being processed.",
+          verification: existingVerification
+        });
+      }
+    }
+
+    // Create verification request
+    const verification = await PropertyVerification.create({
+      listingId: listing._id,
+      landlordId: userId,
+      documents: {
+        ownershipProof: {
+          documentUrl: ownershipProof?.documentUrl || '',
+          documentType: ownershipProof?.documentType || 'other',
+          verified: false
+        },
+        identityProof: {
+          documentUrl: identityProof?.documentUrl || '',
+          documentType: identityProof?.documentType || 'other',
+          verified: false
+        },
+        addressProof: {
+          documentUrl: addressProof?.documentUrl || '',
+          documentType: addressProof?.documentType || 'other',
+          verified: false
+        }
+      },
+      verificationFee: verificationFee || 0,
+      paymentStatus: verificationFee > 0 ? 'pending' : 'completed',
+      status: 'pending'
+    });
+
+    // Update listing with verification reference
+    listing.verificationId = verification._id;
+    await listing.save();
+
+    await verification.populate('listingId', 'name address');
+    await verification.populate('landlordId', 'username email');
+
+    res.status(201).json({
+      success: true,
+      message: "Verification request created successfully.",
+      verification
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get Verification Status
+export const getVerificationStatus = async (req, res, next) => {
+  try {
+    const { listingId } = req.params;
+    const userId = req.user.id;
+
+    const listing = await Listing.findById(listingId);
+    if (!listing) {
+      return res.status(404).json({ message: "Listing not found." });
+    }
+
+    // Verify user has access (owner or admin)
+    const user = await User.findById(userId);
+    const isAdmin = user?.role === 'admin';
+    
+    if (listing.userRef.toString() !== userId && !isAdmin) {
+      return res.status(403).json({ message: "Unauthorized." });
+    }
+
+    const verification = await PropertyVerification.findOne({ listingId: listing._id })
+      .populate('listingId', 'name address')
+      .populate('landlordId', 'username email')
+      .populate('documents.ownershipProof.verifiedBy', 'username')
+      .populate('documents.identityProof.verifiedBy', 'username')
+      .populate('documents.addressProof.verifiedBy', 'username')
+      .populate('physicalInspection.inspector', 'username');
+
+    if (!verification) {
+      return res.json({
+        success: true,
+        verification: null,
+        message: "No verification request found."
+      });
+    }
+
+    res.json({
+      success: true,
+      verification
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Approve Verification (Admin only)
+export const approveVerification = async (req, res, next) => {
+  try {
+    const { verificationId } = req.params;
+    const { 
+      ownershipVerified,
+      identityVerified,
+      addressVerified,
+      photosVerified,
+      locationVerified,
+      amenitiesVerified,
+      adminNotes
+    } = req.body;
+    const userId = req.user.id;
+
+    const user = await User.findById(userId);
+    if (user?.role !== 'admin') {
+      return res.status(403).json({ message: "Unauthorized. Only admin can approve verification." });
+    }
+
+    const verification = await PropertyVerification.findById(verificationId)
+      .populate('listingId');
+
+    if (!verification) {
+      return res.status(404).json({ message: "Verification not found." });
+    }
+
+    // Update document verification status
+    if (ownershipVerified !== undefined) {
+      verification.documents.ownershipProof.verified = ownershipVerified;
+      if (ownershipVerified) {
+        verification.documents.ownershipProof.verifiedAt = new Date();
+        verification.documents.ownershipProof.verifiedBy = userId;
+      }
+    }
+
+    if (identityVerified !== undefined) {
+      verification.documents.identityProof.verified = identityVerified;
+      if (identityVerified) {
+        verification.documents.identityProof.verifiedAt = new Date();
+        verification.documents.identityProof.verifiedBy = userId;
+      }
+    }
+
+    if (addressVerified !== undefined) {
+      verification.documents.addressProof.verified = addressVerified;
+      if (addressVerified) {
+        verification.documents.addressProof.verifiedAt = new Date();
+        verification.documents.addressProof.verifiedBy = userId;
+      }
+    }
+
+    // Update property inspection status
+    if (photosVerified !== undefined) {
+      verification.photosVerified = photosVerified;
+    }
+
+    if (locationVerified !== undefined) {
+      verification.locationVerified = locationVerified;
+    }
+
+    if (amenitiesVerified !== undefined) {
+      verification.amenitiesVerified = amenitiesVerified;
+    }
+
+    // Update admin notes
+    if (adminNotes) {
+      verification.adminNotes = adminNotes;
+    }
+
+    // Check if all required verifications are complete
+    const allDocumentsVerified = 
+      verification.documents.ownershipProof.verified &&
+      verification.documents.identityProof.verified &&
+      verification.documents.addressProof.verified;
+    
+    const allInspectionsVerified = 
+      verification.photosVerified &&
+      verification.locationVerified;
+
+    // Update status
+    if (allDocumentsVerified && allInspectionsVerified) {
+      verification.status = 'verified';
+      verification.verifiedBadgeIssued = true;
+      
+      // Update listing
+      if (verification.listingId) {
+        const listing = await Listing.findById(verification.listingId._id || verification.listingId);
+        if (listing) {
+          listing.isVerified = true;
+          listing.verificationId = verification._id;
+          await listing.save();
+        }
+      }
+    } else if (verification.status === 'pending') {
+      verification.status = 'in_progress';
+    }
+
+    await verification.save();
+
+    res.json({
+      success: true,
+      message: "Verification updated successfully.",
+      verification
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Reject Verification (Admin only)
+export const rejectVerification = async (req, res, next) => {
+  try {
+    const { verificationId } = req.params;
+    const { rejectionReason, adminNotes } = req.body;
+    const userId = req.user.id;
+
+    const user = await User.findById(userId);
+    if (user?.role !== 'admin') {
+      return res.status(403).json({ message: "Unauthorized. Only admin can reject verification." });
+    }
+
+    const verification = await PropertyVerification.findById(verificationId)
+      .populate('listingId');
+
+    if (!verification) {
+      return res.status(404).json({ message: "Verification not found." });
+    }
+
+    verification.status = 'rejected';
+    verification.rejectionReason = rejectionReason || '';
+    verification.rejectedAt = new Date();
+    verification.rejectedBy = userId;
+    
+    if (adminNotes) {
+      verification.adminNotes = adminNotes;
+    }
+
+    // Update listing
+    if (verification.listingId) {
+      const listing = await Listing.findById(verification.listingId._id || verification.listingId);
+      if (listing) {
+        listing.isVerified = false;
+        await listing.save();
+      }
+    }
+
+    await verification.save();
+
+    res.json({
+      success: true,
+      message: "Verification rejected.",
+      verification
     });
   } catch (error) {
     next(error);

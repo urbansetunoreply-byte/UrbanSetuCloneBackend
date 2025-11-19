@@ -382,6 +382,23 @@ export default function CreateListing() {
       
       if (res.ok) {
         toast.success("Property Added Successfully!!");
+        // If rental property, suggest verification
+        if (formData.type === "rent") {
+          setTimeout(() => {
+            toast.info(
+              <div>
+                <p className="mb-2">Get your property verified to build trust!</p>
+                <button
+                  onClick={() => navigate(`/user/property-verification?listingId=${data.listing?._id || data._id}`)}
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
+                >
+                  Request Verification
+                </button>
+              </div>,
+              { autoClose: 8000 }
+            );
+          }, 1000);
+        }
         navigate(getPreviousPath());
       } else {
         const errorMessage = data.message || "Failed to create listing";

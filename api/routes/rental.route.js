@@ -19,7 +19,11 @@ import {
   listDisputes,
   updateDisputeStatus,
   addDisputeComment,
-  resolveDispute
+  resolveDispute,
+  requestVerification,
+  getVerificationStatus,
+  approveVerification,
+  rejectVerification
 } from '../controllers/rental.controller.js';
 
 const router = express.Router();
@@ -71,6 +75,12 @@ router.get("/disputes/:disputeId", verifyToken, getDispute);
 router.put("/disputes/:disputeId/status", verifyToken, updateDisputeStatus);
 router.post("/disputes/:disputeId/comments", verifyToken, addDisputeComment);
 router.post("/disputes/:disputeId/resolve", verifyToken, resolveDispute);
+
+// Property Verification Routes
+router.post("/verification/:listingId", verifyToken, requestVerification);
+router.get("/verification/:listingId", verifyToken, getVerificationStatus);
+router.post("/verification/:verificationId/approve", verifyToken, approveVerification);
+router.post("/verification/:verificationId/reject", verifyToken, rejectVerification);
 
 export default router;
 

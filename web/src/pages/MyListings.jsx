@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { FaEdit, FaTrash, FaEye, FaPlus, FaLock } from "react-icons/fa";
+import { FaEdit, FaTrash, FaEye, FaPlus, FaLock, FaShieldAlt } from "react-icons/fa";
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 import { maskAddress } from '../utils/addressMasking';
 import { toast } from 'react-toastify';
@@ -306,8 +306,17 @@ export default function MyListings() {
                       )}
                     </div>
 
+                    {/* Verification Badge */}
+                    {listing.type === 'rent' && listing.isVerified && (
+                      <div className="mb-3">
+                        <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-semibold flex items-center gap-1 w-fit">
+                          <FaShieldAlt /> Verified
+                        </span>
+                      </div>
+                    )}
+
                     {/* Actions */}
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <Link
                         to={`/user/listing/${listing._id}`}
                         className="flex-1 bg-blue-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-blue-600 transition flex items-center justify-center gap-1"
@@ -320,6 +329,14 @@ export default function MyListings() {
                       >
                         <FaEdit /> Edit
                       </Link>
+                      {listing.type === 'rent' && (
+                        <Link
+                          to={`/user/property-verification?listingId=${listing._id}`}
+                          className="flex-1 bg-green-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-green-600 transition flex items-center justify-center gap-1"
+                        >
+                          <FaShieldAlt /> {listing.isVerified ? 'Verify Status' : 'Verify'}
+                        </Link>
+                      )}
                       <button
                         onClick={() => handleDelete(listing._id)}
                         className="flex-1 bg-red-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-red-600 transition flex items-center justify-center gap-1"

@@ -1572,10 +1572,16 @@ export default function Listing() {
               </div>
             )}
 
-            <div className="flex space-x-4 mb-4">
+            <div className="flex flex-wrap items-center gap-2 mb-4">
               <span className={`px-3 py-1 text-white rounded-md ${listing.type === "rent" ? "bg-blue-500" : "bg-green-500"}`}>
                 {listing.type === "rent" ? "For Rent" : "For Sale"}
               </span>
+              {listing.isVerified && listing.type === "rent" && (
+                <span className="px-3 py-1 bg-green-100 text-green-700 rounded-md flex items-center gap-1 font-semibold">
+                  <FaShieldAlt className="text-green-600" />
+                  Verified Property
+                </span>
+              )}
             </div>
 
             <p className="text-gray-700 mb-4 leading-relaxed">
