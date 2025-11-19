@@ -171,7 +171,17 @@ export default function RentProperty() {
           throw new Error(contractData.message || "Failed to create contract");
         }
 
-        setContract(contractData.contract);
+        // Fetch full contract details with populated fields
+        const fullContractRes = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractData.contract.contractId || contractData.contract._id}`, {
+          credentials: 'include'
+        });
+        const fullContractData = await fullContractRes.json();
+        
+        if (fullContractRes.ok && fullContractData.contract) {
+          setContract(fullContractData.contract);
+        } else {
+          setContract(contractData.contract);
+        }
         setStep(2); // Move to contract review
       } catch (error) {
         console.error("Error creating booking/contract:", error);
@@ -180,9 +190,17 @@ export default function RentProperty() {
         setLoading(false);
       }
     } else if (step === 2) {
+      // Contract review - user can proceed to signing
       setStep(3); // Move to signing
     } else if (step === 3) {
-      // Signing handled by sign buttons
+      // Signing handled by sign buttons and signature component
+      // If both signed, move to payment
+      if (contract?.tenantSignature?.signed && contract?.landlordSignature?.signed) {
+        setStep(4);
+        setShowPaymentModal(true);
+      } else {
+        toast.info("Please sign the contract before proceeding.");
+      }
     }
   };
 
