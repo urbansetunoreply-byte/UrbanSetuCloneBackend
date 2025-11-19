@@ -5,6 +5,8 @@ import { toast } from 'react-toastify';
 import { FaLock, FaCalendarAlt, FaMoneyBillWave, FaCheckCircle, FaChevronRight, FaHome, FaShieldAlt, FaFileContract } from "react-icons/fa";
 import { usePageTitle } from '../hooks/usePageTitle';
 import PaymentModal from '../components/PaymentModal';
+import ContractPreview from '../components/rental/ContractPreview';
+import DigitalSignature from '../components/rental/DigitalSignature';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -32,6 +34,8 @@ export default function RentProperty() {
   const [contract, setContract] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [booking, setBooking] = useState(null);
+  const [showSignatureModal, setShowSignatureModal] = useState(false);
+  const [signingAs, setSigningAs] = useState(null); // 'tenant' or 'landlord'
 
   // Fetch listing details
   useEffect(() => {
@@ -182,20 +186,37 @@ export default function RentProperty() {
     }
   };
 
-  const handleSign = async (isTenant) => {
-    if (!contract) {
+  const handleSignClick = (isTenant) => {
+    // Check if already signed
+    if (isTenant && contract.tenantSignature?.signed) {
+      toast.info("You have already signed this contract.");
+      return;
+    }
+    if (!isTenant && contract.landlordSignature?.signed) {
+      toast.info("Landlord has already signed this contract.");
+      return;
+    }
+    
+    setSigningAs(isTenant ? 'tenant' : 'landlord');
+    setShowSignatureModal(true);
+  };
+
+  const handleSignatureConfirm = async (signatureData) => {
+    if (!contract || !signingAs) {
       toast.error("Contract not found.");
       return;
     }
 
+    const isTenant = signingAs === 'tenant';
+
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE_URL}/api/rental/contracts/${contract.contractId}/sign`, {
+      const res = await fetch(`${API_BASE_URL}/api/rental/contracts/${contract.contractId || contract._id}/sign`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          signatureData: `signed_by_${isTenant ? 'tenant' : 'landlord'}_${Date.now()}`
+          signatureData: signatureData
         })
       });
 
@@ -204,16 +225,19 @@ export default function RentProperty() {
         throw new Error(data.message || "Failed to sign contract");
       }
 
+      setContract(data.contract);
+      setShowSignatureModal(false);
+      setSigningAs(null);
+
       if (data.isFullySigned) {
-        toast.success("Contract signed successfully!");
+        toast.success("Contract fully signed by both parties!");
         setContract(data.contract);
         setStep(4); // Move to payment
         setShowPaymentModal(true);
       } else {
         toast.success(isTenant ? "Your signature added. Waiting for landlord to sign." : "Your signature added. Waiting for tenant to sign.");
-        setContract(data.contract);
         
-        // If landlord signs, move tenant to payment step
+        // If landlord signs and tenant already signed, move to payment
         if (!isTenant && contract.tenantSignature?.signed) {
           setStep(4);
           setShowPaymentModal(true);
@@ -415,80 +439,111 @@ export default function RentProperty() {
         )}
 
         {/* Step 2: Contract Review */}
-        {step === 2 && contract && (
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-blue-700 mb-6">Review Contract Terms</h2>
+        {step === 2 && contract && listing && (
+          <div className="space-y-6">
+            <ContractPreview 
+              contract={contract} 
+              listing={listing}
+              tenant={currentUser}
+              landlord={contract.landlordId}
+              onDownload={() => toast.success("Contract PDF downloaded!")}
+            />
             
-            <div className="space-y-4 mb-6">
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <h3 className="font-semibold mb-2">Contract Details</h3>
-                <p><strong>Contract ID:</strong> {contract.contractId}</p>
-                <p><strong>Lock Duration:</strong> {contract.lockDuration} months</p>
-                <p><strong>Monthly Rent:</strong> ₹{contract.lockedRentAmount.toLocaleString('en-IN')}</p>
-                <p><strong>Security Deposit:</strong> ₹{contract.securityDeposit.toLocaleString('en-IN')}</p>
-                <p><strong>Start Date:</strong> {new Date(contract.startDate).toLocaleDateString()}</p>
-                <p><strong>End Date:</strong> {new Date(contract.endDate).toLocaleDateString()}</p>
-              </div>
-
-              <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                <h3 className="font-semibold mb-2">Important Terms</h3>
-                <ul className="list-disc list-inside space-y-1 text-sm">
-                  <li>Rent is locked at ₹{contract.lockedRentAmount.toLocaleString('en-IN')} per month for {contract.lockDuration} months</li>
-                  <li>No rent increases during the lock period</li>
-                  <li>Security deposit of ₹{contract.securityDeposit.toLocaleString('en-IN')} will be held in escrow</li>
-                  <li>Monthly rent due on day {contract.dueDate} of each month</li>
-                </ul>
-              </div>
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <button
+                onClick={handleNext}
+                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 flex items-center justify-center"
+              >
+                Continue to Signing
+                <FaChevronRight className="ml-2" />
+              </button>
             </div>
-
-            <button
-              onClick={handleNext}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 flex items-center justify-center"
-            >
-              Continue to Signing
-              <FaChevronRight className="ml-2" />
-            </button>
           </div>
         )}
 
         {/* Step 3: Signing */}
         {step === 3 && contract && (
           <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-blue-700 mb-6">Sign Contract</h2>
+            <h2 className="text-2xl font-bold text-blue-700 mb-6 flex items-center gap-2">
+              <FaFileContract /> Sign Contract
+            </h2>
             
-            <div className="space-y-4 mb-6">
-              <div className="p-4 border-2 rounded-lg">
-                <div className="flex items-center justify-between mb-4">
+            <div className="space-y-6 mb-6">
+              {/* Tenant Signature */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
                   <div>
-                    <h3 className="font-semibold">Tenant Signature</h3>
+                    <h3 className="font-semibold text-lg">Tenant Signature</h3>
                     <p className="text-sm text-gray-600">{currentUser.username || currentUser.email}</p>
                   </div>
-                  {contract.tenantSignature?.signed ? (
-                    <FaCheckCircle className="text-green-600 text-2xl" />
-                  ) : (
-                    <button
-                      onClick={() => handleSign(true)}
-                      disabled={loading}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                    >
-                      Sign
-                    </button>
+                  {contract.tenantSignature?.signed && (
+                    <div className="flex items-center gap-2 text-green-600">
+                      <FaCheckCircle className="text-2xl" />
+                      <span className="font-semibold">Signed</span>
+                    </div>
                   )}
                 </div>
+                {contract.tenantSignature?.signed ? (
+                  <div className="p-4 bg-green-50 border-2 border-green-200 rounded-lg">
+                    <p className="text-sm text-gray-600">
+                      Signed on {new Date(contract.tenantSignature.signedAt).toLocaleString('en-GB')}
+                    </p>
+                    {contract.tenantSignature.signatureData && (
+                      <img 
+                        src={contract.tenantSignature.signatureData} 
+                        alt="Tenant signature" 
+                        className="mt-2 border border-gray-300 rounded bg-white"
+                        style={{ maxHeight: '80px' }}
+                      />
+                    )}
+                  </div>
+                ) : (
+                  <DigitalSignature
+                    title="Tenant Signature"
+                    userName={currentUser.username || currentUser.email}
+                    onSign={handleSignatureConfirm}
+                    disabled={loading}
+                  />
+                )}
               </div>
 
-              <div className="p-4 border-2 rounded-lg">
-                <div className="flex items-center justify-between mb-4">
+              {/* Landlord Signature */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
                   <div>
-                    <h3 className="font-semibold">Landlord Signature</h3>
+                    <h3 className="font-semibold text-lg">Landlord Signature</h3>
                     <p className="text-sm text-gray-600">Property Owner</p>
                   </div>
                   {contract.landlordSignature?.signed ? (
-                    <FaCheckCircle className="text-green-600 text-2xl" />
+                    <div className="flex items-center gap-2 text-green-600">
+                      <FaCheckCircle className="text-2xl" />
+                      <span className="font-semibold">Signed</span>
+                    </div>
                   ) : (
-                    <span className="text-gray-400">Pending</span>
+                    <span className="text-yellow-600 font-semibold">Pending</span>
                   )}
                 </div>
+                {contract.landlordSignature?.signed ? (
+                  <div className="p-4 bg-green-50 border-2 border-green-200 rounded-lg">
+                    <p className="text-sm text-gray-600">
+                      Signed on {new Date(contract.landlordSignature.signedAt).toLocaleString('en-GB')}
+                    </p>
+                    {contract.landlordSignature.signatureData && (
+                      <img 
+                        src={contract.landlordSignature.signatureData} 
+                        alt="Landlord signature" 
+                        className="mt-2 border border-gray-300 rounded bg-white"
+                        style={{ maxHeight: '80px' }}
+                      />
+                    )}
+                  </div>
+                ) : (
+                  <div className="p-4 bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg text-center">
+                    <p className="text-gray-500">
+                      Waiting for landlord to sign the contract
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -504,15 +559,41 @@ export default function RentProperty() {
             {contract.tenantSignature?.signed && (
               <button
                 onClick={() => {
-                  setStep(4);
-                  setShowPaymentModal(true);
+                  if (contract.landlordSignature?.signed) {
+                    setStep(4);
+                    setShowPaymentModal(true);
+                  } else {
+                    toast.info("Waiting for landlord to sign the contract.");
+                  }
                 }}
                 disabled={!contract.landlordSignature?.signed || loading}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
                 {contract.landlordSignature?.signed ? 'Proceed to Payment' : 'Waiting for Landlord Signature'}
+                {contract.landlordSignature?.signed && <FaChevronRight className="ml-2" />}
               </button>
             )}
+          </div>
+        )}
+
+        {/* Signature Modal (if needed for separate modal flow) */}
+        {showSignatureModal && signingAs && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                {signingAs === 'tenant' ? 'Sign as Tenant' : 'Sign as Landlord'}
+              </h3>
+              <DigitalSignature
+                title={`${signingAs === 'tenant' ? 'Tenant' : 'Landlord'} Signature`}
+                userName={signingAs === 'tenant' ? (currentUser.username || currentUser.email) : 'Property Owner'}
+                onSign={handleSignatureConfirm}
+                onCancel={() => {
+                  setShowSignatureModal(false);
+                  setSigningAs(null);
+                }}
+                disabled={loading}
+              />
+            </div>
           </div>
         )}
 
