@@ -10490,6 +10490,98 @@ export const sendContractSignedEmail = async (email, contractDetails) => {
 };
 
 // Send contract expiring soon email
+export const sendContractRejectedEmail = async (email, contractDetails) => {
+  const { contractId, propertyName, rejectionReason, rejectedBy } = contractDetails;
+  
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Rental Contract Rejected</title>
+    </head>
+    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f5;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
+        <tr>
+          <td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+              <!-- Header -->
+              <tr>
+                <td style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); padding: 30px; text-align: center;">
+                  <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600;">Contract Rejected</h1>
+                </td>
+              </tr>
+              
+              <!-- Content -->
+              <tr>
+                <td style="padding: 40px 30px;">
+                  <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">Dear Valued Customer,</p>
+                  
+                  <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                    We regret to inform you that your rental contract has been rejected.
+                  </p>
+                  
+                  <div style="background-color: #fef2f2; border-left: 4px solid #dc2626; padding: 20px; margin: 25px 0; border-radius: 5px;">
+                    <h3 style="color: #991b1b; margin: 0 0 15px 0; font-size: 18px;">Contract Details</h3>
+                    <table width="100%" cellpadding="5" cellspacing="0">
+                      <tr>
+                        <td style="color: #666666; font-size: 14px; padding: 5px 0; width: 140px;"><strong>Contract ID:</strong></td>
+                        <td style="color: #333333; font-size: 14px; padding: 5px 0;">${contractId || 'N/A'}</td>
+                      </tr>
+                      <tr>
+                        <td style="color: #666666; font-size: 14px; padding: 5px 0;"><strong>Property:</strong></td>
+                        <td style="color: #333333; font-size: 14px; padding: 5px 0;">${propertyName || 'N/A'}</td>
+                      </tr>
+                      <tr>
+                        <td style="color: #666666; font-size: 14px; padding: 5px 0;"><strong>Rejected By:</strong></td>
+                        <td style="color: #333333; font-size: 14px; padding: 5px 0;">${rejectedBy || 'Seller/Admin'}</td>
+                      </tr>
+                      <tr>
+                        <td style="color: #666666; font-size: 14px; padding: 5px 0;"><strong>Rejection Reason:</strong></td>
+                        <td style="color: #dc2626; font-size: 14px; padding: 5px 0; font-weight: 500;">${rejectionReason || 'Booking was rejected by seller'}</td>
+                      </tr>
+                    </table>
+                  </div>
+                  
+                  <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 20px 0;">
+                    If you believe this was an error or would like to discuss alternative arrangements, please contact the property owner or our support team.
+                  </p>
+                  
+                  <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 20px 0 0 0;">
+                    We apologize for any inconvenience this may cause. If you're interested in other properties, please visit our platform to explore more options.
+                  </p>
+                </td>
+              </tr>
+              
+              <!-- Footer -->
+              <tr>
+                <td style="background-color: #f9fafb; padding: 25px 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+                  <p style="color: #6b7280; font-size: 14px; margin: 0 0 10px 0;">Need help? Contact our support team</p>
+                  <p style="color: #9ca3af; font-size: 12px; margin: 0;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+
+  try {
+    await sendBrevoEmail({
+      to: email,
+      subject: `Rental Contract Rejected - ${propertyName || 'Property'}`,
+      html: htmlContent
+    });
+    return { success: true, message: "Contract rejection email sent successfully" };
+  } catch (error) {
+    console.error("Error sending contract rejection email:", error);
+    throw error;
+  }
+};
+
 export const sendContractExpiringSoonEmail = async (email, contractDetails) => {
   try {
     const { 

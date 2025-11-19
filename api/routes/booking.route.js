@@ -390,18 +390,25 @@ router.patch('/:id/status', verifyToken, async (req, res) => {
     // --- END Notify buyer logic ---
 
     // --- Auto-reject contract if booking is rejected and purpose is 'rent' ---
-    if (status === 'rejected' && updated.purpose === 'rent' && bookingToUpdate.contractId) {
+    // Note: Contract is linked via contract.bookingId (not booking.contractId)
+    // So we always try to find and reject a contract when a rent booking is rejected
+    if (status === 'rejected' && updated.purpose === 'rent') {
       try {
         const rejectionReason = req.body.rejectionReason || 'Booking was rejected by seller';
         const result = await rejectContractForBooking(
-          bookingToUpdate._id,
+          bookingToUpdate._id, // This is the bookingId that the contract references
           sellerId,
           rejectionReason
         );
         if (result.success) {
           console.log(`✅ Contract ${result.contract.contractId} rejected automatically for booking ${bookingToUpdate._id}`);
         } else {
-          console.log(`⚠️ Could not auto-reject contract for booking ${bookingToUpdate._id}: ${result.message}`);
+          // Log but don't fail if contract not found or already rejected/terminated
+          if (result.message?.includes('not found')) {
+            console.log(`ℹ️ No contract found for booking ${bookingToUpdate._id} - this is normal if contract was not created yet.`);
+          } else {
+            console.log(`⚠️ Could not auto-reject contract for booking ${bookingToUpdate._id}: ${result.message}`);
+          }
         }
       } catch (contractError) {
         console.error('Error auto-rejecting contract for booking:', contractError);

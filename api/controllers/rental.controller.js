@@ -2932,10 +2932,13 @@ export const getLocalityScore = async (req, res, next) => {
 };
 
 // Utility function to reject contract when booking is rejected/cancelled
-export const rejectContractForBooking = async (bookingId, rejectedBy, rejectionReason) => {
+export const rejectContractForBooking = async (bookingId, rejectedById, rejectionReason) => {
   try {
-    // Find contract by bookingId
-    const contract = await RentLockContract.findOne({ bookingId });
+    // Find contract by bookingId and populate necessary fields
+    const contract = await RentLockContract.findOne({ bookingId })
+      .populate('tenantId', 'username email')
+      .populate('landlordId', 'username email')
+      .populate('listingId', 'name');
     
     if (!contract) {
       return { success: false, message: "Contract not found for this booking." };
@@ -2946,12 +2949,35 @@ export const rejectContractForBooking = async (bookingId, rejectedBy, rejectionR
       return { success: false, message: `Cannot reject contract with status: ${contract.status}` };
     }
     
+    // Get user who rejected (could be seller/admin)
+    const User = (await import("../models/user.model.js")).default;
+    const rejectedByUser = await User.findById(rejectedById);
+    
     // Update contract status to rejected
     contract.status = 'rejected';
     contract.rejectedAt = new Date();
-    contract.rejectedBy = rejectedBy;
+    contract.rejectedBy = rejectedById;
     contract.rejectionReason = rejectionReason || 'Booking was rejected/cancelled by seller';
     await contract.save();
+    
+    // Send notification to tenant
+    await sendRentalNotification(
+      contract.tenantId._id,
+      'rent_contract_rejected',
+      'Rental Contract Rejected',
+      `Your rental contract for ${contract.listingId?.name || 'a property'} has been rejected. Reason: ${rejectionReason || 'Booking was rejected by seller'}`,
+      contract.listingId?._id,
+      contract._id
+    );
+    
+    // Send email to tenant
+    const { sendContractRejectedEmail } = await import("../utils/emailService.js");
+    await sendContractRejectedEmail(contract.tenantId.email, {
+      contractId: contract.contractId,
+      propertyName: contract.listingId?.name || 'a property',
+      rejectionReason: rejectionReason || 'Booking was rejected by seller',
+      rejectedBy: rejectedByUser?.username || 'Seller/Admin'
+    });
     
     return { success: true, contract };
   } catch (error) {
