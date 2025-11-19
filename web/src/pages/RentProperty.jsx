@@ -138,8 +138,14 @@ export default function RentProperty() {
           throw new Error(bookingData.message || "Failed to create booking");
         }
 
-        setBooking(bookingData.booking);
-        setFormData(prev => ({ ...prev, bookingId: bookingData.booking._id }));
+        // Validate booking data structure - booking API returns 'appointment', not 'booking'
+        const booking = bookingData.appointment || bookingData.booking || bookingData;
+        if (!booking || !booking._id) {
+          throw new Error("Invalid booking data received. Please try again.");
+        }
+
+        setBooking(booking);
+        setFormData(prev => ({ ...prev, bookingId: booking._id }));
         
         // Create contract
         const lockDuration = formData.rentLockPlan === '1_year' ? 12 :
@@ -156,7 +162,7 @@ export default function RentProperty() {
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({
-            bookingId: bookingData.booking._id,
+            bookingId: booking._id,
             rentLockPlan: formData.rentLockPlan,
             lockDuration,
             lockedRentAmount: listing?.monthlyRent || listing?.discountPrice || 0,
@@ -176,17 +182,44 @@ export default function RentProperty() {
           throw new Error(contractData.message || "Failed to create contract");
         }
 
-        // Fetch full contract details with populated fields
-        const fullContractRes = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractData.contract.contractId || contractData.contract._id}`, {
-          credentials: 'include'
-        });
-        const fullContractData = await fullContractRes.json();
-        
-        if (fullContractRes.ok && fullContractData.contract) {
-          setContract(fullContractData.contract);
-        } else {
-          setContract(contractData.contract);
+        // Validate contract data structure
+        const contract = contractData.contract || contractData;
+        if (!contract) {
+          throw new Error("Invalid contract data received. Please try again.");
         }
+
+        // Get contract ID (check both contractId and _id)
+        const contractId = contract.contractId || contract._id;
+        if (!contractId) {
+          throw new Error("Contract ID not found. Please try again.");
+        }
+
+        // Fetch full contract details with populated fields
+        try {
+          const fullContractRes = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractId}`, {
+            credentials: 'include'
+          });
+          
+          if (fullContractRes.ok) {
+            const fullContractData = await fullContractRes.json();
+            if (fullContractData.success && fullContractData.contract) {
+              setContract(fullContractData.contract);
+            } else if (fullContractData.contract) {
+              setContract(fullContractData.contract);
+            } else {
+              // Fallback to contract from create response
+              setContract(contract);
+            }
+          } else {
+            // If fetch fails, use contract from create response
+            setContract(contract);
+          }
+        } catch (fetchError) {
+          console.error("Error fetching full contract details:", fetchError);
+          // Fallback to contract from create response
+          setContract(contract);
+        }
+        
         setStep(2); // Move to contract review
       } catch (error) {
         console.error("Error creating booking/contract:", error);
