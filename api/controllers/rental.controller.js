@@ -2489,7 +2489,7 @@ export const listRentalLoans = async (req, res, next) => {
     const userId = req.user.id;
     const { status, loanType, contractId } = req.query;
     const user = await User.findById(userId);
-    const isAdmin = user?.role === 'admin';
+    const isAdmin = user?.role === 'admin' || user?.role === 'rootadmin';
 
     let query = {};
 

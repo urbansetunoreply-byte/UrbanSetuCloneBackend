@@ -2142,6 +2142,13 @@ export default function Profile() {
                   <FaFileContract className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
                   <span className="font-medium text-xs sm:text-sm">Rental Contracts</span>
                 </Link>
+                <Link
+                  to="/admin/rental-loans"
+                  className={`bg-purple-600 text-white p-3 rounded-lg hover:bg-purple-700 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1600`}
+                >
+                  <FaCreditCard className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
+                  <span className="font-medium text-xs sm:text-sm">Rental Loans</span>
+                </Link>
               </>
             ) : null}
 
@@ -2217,6 +2224,13 @@ export default function Profile() {
                 >
                   <FaGavel className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
                   <span className="font-medium text-xs sm:text-sm">Disputes</span>
+                </Link>
+                <Link
+                  to="/user/rental-loans"
+                  className={`bg-purple-500 text-white p-3 rounded-lg hover:bg-purple-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1600`}
+                >
+                  <FaCreditCard className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
+                  <span className="font-medium text-xs sm:text-sm">Rental Loans</span>
                 </Link>
               </>
             )}
