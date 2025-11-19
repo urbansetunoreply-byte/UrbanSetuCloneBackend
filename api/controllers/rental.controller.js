@@ -2052,6 +2052,55 @@ export const getPropertyRatings = async (req, res, next) => {
   }
 };
 
+// List All Verifications (Admin only)
+export const listAllVerifications = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    
+    const user = await User.findById(userId);
+    if (user?.role !== 'admin') {
+      return res.status(403).json({ message: "Unauthorized. Only admin can access all verifications." });
+    }
+
+    const { status, search } = req.query;
+    
+    // Build query
+    const query = {};
+    if (status && status !== 'all') {
+      query.status = status;
+    }
+    
+    // Fetch all verifications
+    let verifications = await PropertyVerification.find(query)
+      .populate('listingId', 'name address city state type monthlyRent')
+      .populate('landlordId', 'username email avatar')
+      .populate('documents.ownershipProof.verifiedBy', 'username')
+      .populate('documents.identityProof.verifiedBy', 'username')
+      .populate('documents.addressProof.verifiedBy', 'username')
+      .sort({ createdAt: -1 });
+
+    // Apply search filter if provided
+    if (search) {
+      const searchLower = search.toLowerCase();
+      verifications = verifications.filter(v => 
+        v.listingId?.name?.toLowerCase().includes(searchLower) ||
+        v.listingId?.address?.toLowerCase().includes(searchLower) ||
+        v.landlordId?.username?.toLowerCase().includes(searchLower) ||
+        v.landlordId?.email?.toLowerCase().includes(searchLower) ||
+        v.verificationId?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    res.json({
+      success: true,
+      verifications,
+      total: verifications.length
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Apply for Rental Loan
 export const applyForRentalLoan = async (req, res, next) => {
   try {

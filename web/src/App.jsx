@@ -111,6 +111,7 @@ const RentWallet = lazy(() => import('./pages/RentWallet'));
 const RentalContracts = lazy(() => import('./pages/RentalContracts'));
 const DisputeResolution = lazy(() => import('./pages/DisputeResolution'));
 const PropertyVerification = lazy(() => import('./pages/PropertyVerification'));
+const AdminPropertyVerification = lazy(() => import('./pages/AdminPropertyVerification'));
 const RentalRatings = lazy(() => import('./pages/RentalRatings'));
 const RentalLoans = lazy(() => import('./pages/RentalLoans'));
 
@@ -714,6 +715,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/admin/support" element={<AdminSupport />} />
             <Route path="/admin/ai" element={<AdminAI />} />
             <Route path="/admin/investment-tools" element={<InvestmentTools />} />
+            <Route path="/admin/property-verification" element={<AdminPropertyVerification />} />
             <Route path="/admin/settings" element={<Settings />} />
             <Route path="/contact" element={<Navigate to="/admin/support" />} />
             <Route path="/support" element={<Navigate to="/admin/support" />} />

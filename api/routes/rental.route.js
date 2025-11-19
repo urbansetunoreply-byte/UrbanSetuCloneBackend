@@ -24,6 +24,7 @@ import {
   getVerificationStatus,
   approveVerification,
   rejectVerification,
+  listAllVerifications,
   submitRentalRating,
   getRentalRating,
   listRentalRatings,
@@ -92,6 +93,7 @@ router.post("/disputes/:disputeId/resolve", verifyToken, resolveDispute);
 // Property Verification Routes
 router.post("/verification/:listingId", verifyToken, requestVerification);
 router.get("/verification/:listingId", verifyToken, getVerificationStatus);
+router.get("/verification", verifyToken, listAllVerifications); // Admin: List all verifications
 router.post("/verification/:verificationId/approve", verifyToken, approveVerification);
 router.post("/verification/:verificationId/reject", verifyToken, rejectVerification);
 

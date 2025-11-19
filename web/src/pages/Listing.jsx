@@ -1461,6 +1461,11 @@ export default function Listing() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
               <h2 className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-800 break-words flex items-center gap-2">
                 {listing.name}
+                {listing.isVerified && (
+                  <span className="ml-3 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold flex items-center gap-1">
+                    <FaCheckCircle /> Verified Property
+                  </span>
+                )}
                 {/* Wishlist Heart Icon - hide for admins */}
                 {(!currentUser || (currentUser && !(currentUser.role === 'admin' || currentUser.role === 'rootadmin'))) && (
                   <button

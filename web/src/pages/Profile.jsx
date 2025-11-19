@@ -2114,6 +2114,13 @@ export default function Profile() {
                   <FaQuestionCircle className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
                   <span className="font-medium text-xs sm:text-sm">Manage FAQs</span>
                 </Link>
+                <Link
+                  to="/admin/property-verification"
+                  className={`bg-teal-500 text-white p-3 rounded-lg hover:bg-teal-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1400`}
+                >
+                  <FaShieldAlt className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
+                  <span className="font-medium text-xs sm:text-sm">Property Verification</span>
+                </Link>
               </>
             ) : null}
 
@@ -2161,6 +2168,13 @@ export default function Profile() {
                 >
                   <FaQuestionCircle className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
                   <span className="font-medium text-xs sm:text-sm">FAQs</span>
+                </Link>
+                <Link
+                  to="/user/property-verification"
+                  className={`bg-teal-500 text-white p-3 rounded-lg hover:bg-teal-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1400`}
+                >
+                  <FaShieldAlt className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
+                  <span className="font-medium text-xs sm:text-sm">Property Verification</span>
                 </Link>
               </>
             )}
