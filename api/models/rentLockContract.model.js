@@ -4,9 +4,8 @@ const rentLockContractSchema = new mongoose.Schema({
   // Contract Identification
   contractId: {
     type: String,
-    unique: true,
-    required: true,
-    index: true
+    unique: true, // unique already creates an index
+    required: true
   },
   bookingId: {
     type: mongoose.Schema.Types.ObjectId,

@@ -17,8 +17,7 @@ const rentalLoanSchema = new mongoose.Schema({
   contractId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'RentLockContract',
-    required: true,
-    index: true
+    required: true
   },
   
   // Loan Details

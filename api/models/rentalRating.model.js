@@ -12,20 +12,17 @@ const rentalRatingSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'RentLockContract',
     required: true,
-    index: true,
-    unique: true
+    unique: true // unique already creates an index
   },
   tenantId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
-    index: true
+    required: true
   },
   landlordId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
-    index: true
+    required: true
   },
   
   // Tenant rates Landlord

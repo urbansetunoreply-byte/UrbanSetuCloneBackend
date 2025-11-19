@@ -169,7 +169,7 @@ const rentPredictionSchema = new mongoose.Schema({
 });
 
 // Indexes
-rentPredictionSchema.index({ listingId: 1 });
+// listingId already has unique index from unique: true constraint
 rentPredictionSchema.index({ priceComparison: 1 });
 rentPredictionSchema.index({ 'localityScore.overall': -1 }); // For sorting by locality score
 
