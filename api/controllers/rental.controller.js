@@ -527,8 +527,8 @@ export const signContract = async (req, res, next) => {
       const io = req.app.get('io');
       const contractPopulated = await RentLockContract.findById(contract._id)
         .populate('listingId', 'name address')
-        .populate('tenantId', 'username firstName lastName')
-        .populate('landlordId', 'username firstName lastName');
+        .populate('tenantId', 'username firstName lastName email')
+        .populate('landlordId', 'username firstName lastName email');
 
       if (contractPopulated) {
         const listing = contractPopulated.listingId;
