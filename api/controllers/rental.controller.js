@@ -401,17 +401,17 @@ export const updateContractStatus = async (req, res, next) => {
     const Booking = (await import('../models/booking.model.js')).default;
     const booking = await Booking.findById(contract.bookingId);
     if (booking) {
-      // Map contract status to booking rentalStatus
+      // Map contract status to booking rentalStatus (available values: pending_contract, contract_signed, move_in_pending, active_rental, move_out_pending, completed, terminated)
       if (status === 'rejected') {
-        booking.rentalStatus = 'contract_rejected';
+        booking.rentalStatus = 'terminated'; // Use 'terminated' as closest match for rejected contracts
       } else if (status === 'terminated') {
-        booking.rentalStatus = 'contract_terminated';
+        booking.rentalStatus = 'terminated';
       } else if (status === 'active') {
         booking.rentalStatus = 'contract_signed';
       } else if (status === 'expired') {
-        booking.rentalStatus = 'contract_expired';
+        booking.rentalStatus = 'terminated'; // Use 'terminated' as closest match
       }
-      // If contract is rejected/terminated, also reject the booking if needed
+      // If contract is rejected/terminated, also update booking status if needed
       if (status === 'rejected' && booking.status !== 'rejected') {
         booking.status = 'rejected';
       } else if (status === 'terminated' && booking.status === 'accepted') {
