@@ -2310,11 +2310,12 @@ router.get('/admin/list', verifyToken, async (req, res) => {
     if (user.role !== 'admin' && user.role !== 'rootadmin') {
       return res.status(403).json({ message: 'Unauthorized' });
     }
-    const { currency, status, gateway, page = 1, limit = 20, q, fromDate, toDate } = req.query;
+    const { currency, status, gateway, paymentType, page = 1, limit = 20, q, fromDate, toDate } = req.query;
     const query = {};
     if (currency) query.currency = currency.toUpperCase();
     if (status) query.status = status;
     if (gateway) query.gateway = gateway;
+    if (paymentType) query.paymentType = paymentType;
     if (q) {
       const rx = new RegExp(q, 'i');
       query.$or = [
@@ -2335,6 +2336,7 @@ router.get('/admin/list', verifyToken, async (req, res) => {
       .populate('appointmentId', 'propertyName date status buyerId sellerId')
       .populate('listingId', 'name address')
       .populate('userId', 'username email')
+      .populate('contractId', 'contractId')
       .sort({ createdAt: -1 })
       .limit(Number(limit))
       .skip((Number(page) - 1) * Number(limit));

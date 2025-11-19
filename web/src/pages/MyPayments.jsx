@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { FaDollarSign, FaCreditCard, FaDownload, FaClock, FaCheckCircle, FaTimes, FaExclamationTriangle, FaSpinner, FaMoneyBill, FaLock, FaShare, FaCopy, FaEye, FaExternalLinkAlt, FaCalendar, FaSync } from 'react-icons/fa';
+import { FaDollarSign, FaCreditCard, FaDownload, FaClock, FaCheckCircle, FaTimes, FaExclamationTriangle, FaSpinner, FaMoneyBill, FaLock, FaShare, FaCopy, FaEye, FaExternalLinkAlt, FaCalendar, FaSync, FaWallet, FaHome, FaKey } from 'react-icons/fa';
 import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from '../redux/user/userSlice';
 import { toast } from 'react-toastify';
 import axios from 'axios';
@@ -21,7 +21,7 @@ const MyPayments = () => {
   const [payments, setPayments] = useState([]);
   const [allPayments, setAllPayments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({ status: '', gateway: '', currency: '', q: '', fromDate: '', toDate: '' });
+  const [filters, setFilters] = useState({ status: '', gateway: '', currency: '', paymentType: '', q: '', fromDate: '', toDate: '' });
   
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -51,6 +51,7 @@ const MyPayments = () => {
       if (filters.status) params.set('status', filters.status);
       if (filters.gateway) params.set('gateway', filters.gateway);
       if (filters.currency) params.set('currency', filters.currency);
+      if (filters.paymentType) params.set('paymentType', filters.paymentType);
       if (filters.q) params.set('q', filters.q);
       if (filters.fromDate) params.set('fromDate', filters.fromDate);
       if (filters.toDate) params.set('toDate', filters.toDate);
@@ -462,6 +463,13 @@ const MyPayments = () => {
               <option value="USD">USD ($)</option>
               <option value="INR">INR (₹)</option>
             </select>
+            <select value={filters.paymentType} onChange={(e)=>{setFilters(prev=>({...prev,paymentType:e.target.value})); setCurrentPage(1);}} className="px-3 py-2 border rounded-lg text-sm">
+              <option value="">All Types</option>
+              <option value="advance">Advance Payment</option>
+              <option value="monthly_rent">Monthly Rent</option>
+              <option value="security_deposit">Security Deposit</option>
+              <option value="booking_fee">Booking Fee</option>
+            </select>
             <button
               onClick={() => {
                 setShowExportPasswordModal(true);
@@ -496,11 +504,40 @@ const MyPayments = () => {
                 } hover:shadow-lg transition-all`} onClick={() => handlePaymentClick(p)}>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div className="flex-1">
-                      <div className="font-semibold text-gray-800">{p.appointmentId?.propertyName || 'Property Payment'}</div>
+                      <div className="font-semibold text-gray-800 flex items-center gap-2">
+                        {p.appointmentId?.propertyName || 'Property Payment'}
+                        {p.paymentType && (
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                            p.paymentType === 'monthly_rent' ? 'bg-green-100 text-green-700' :
+                            p.paymentType === 'advance' ? 'bg-blue-100 text-blue-700' :
+                            p.paymentType === 'security_deposit' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-gray-100 text-gray-700'
+                          }`}>
+                            {p.paymentType === 'monthly_rent' ? 'Rent' :
+                             p.paymentType === 'advance' ? 'Advance' :
+                             p.paymentType === 'security_deposit' ? 'Security Deposit' :
+                             p.paymentType?.replace('_', ' ')}
+                          </span>
+                        )}
+                      </div>
                       <div className="text-xs text-gray-500 flex flex-wrap items-center gap-2 mt-1">
                         <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">{p.gateway?.toUpperCase()}</span>
                         <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">{p.currency || 'USD'}</span>
                         <span>{p.currency === 'INR' ? '₹' : '$'}{Number(p.amount).toFixed(2)}</span>
+                        {p.paymentType === 'monthly_rent' && p.rentMonth && p.rentYear && (
+                          <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">
+                            {new Date(p.rentYear, p.rentMonth - 1).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}
+                          </span>
+                        )}
+                        {p.escrowStatus && (
+                          <span className={`px-2 py-0.5 rounded-full ${
+                            p.escrowStatus === 'released' ? 'bg-green-100 text-green-700' :
+                            p.escrowStatus === 'held' ? 'bg-orange-100 text-orange-700' :
+                            'bg-gray-100 text-gray-700'
+                          }`}>
+                            Escrow: {p.escrowStatus}
+                          </span>
+                        )}
                         {p.refundAmount > 0 && (
                           <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-700">
                             Refunded: {p.currency === 'INR' ? '₹' : '$'}{Number(p.refundAmount).toFixed(2)}
@@ -546,10 +583,22 @@ const MyPayments = () => {
                     </div>
                   </div>
                   <div className="mt-2 text-xs text-gray-600">Payment ID: <span className="font-mono">{p.paymentId}</span></div>
-                  <div className="mt-2 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                  <div className="mt-2 flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
                     {p.receiptUrl && (
                       <button onClick={()=>downloadReceipt(p.receiptUrl)} className="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 text-xs flex items-center gap-1">
                         <FaDownload className="text-xs" /> Receipt
+                      </button>
+                    )}
+                    {p.paymentType === 'monthly_rent' && p.contractId && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/user/rent-wallet?contractId=${p.contractId._id || p.contractId}`);
+                        }}
+                        className="px-3 py-1 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 text-xs flex items-center gap-1"
+                        title="View Rent Wallet"
+                      >
+                        <FaWallet className="text-xs" /> Rent Wallet
                       </button>
                     )}
                     <button onClick={() => sharePayment(p)} className="px-3 py-1 bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-200 text-xs flex items-center gap-1">
@@ -653,6 +702,24 @@ const MyPayments = () => {
               {/* Payment Information Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="text-sm text-gray-600 mb-1">Payment Type</div>
+                  <div className="font-semibold text-gray-800">
+                    {selectedPayment.paymentType ? (
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                        selectedPayment.paymentType === 'monthly_rent' ? 'bg-green-100 text-green-700' :
+                        selectedPayment.paymentType === 'advance' ? 'bg-blue-100 text-blue-700' :
+                        selectedPayment.paymentType === 'security_deposit' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-gray-100 text-gray-700'
+                      }`}>
+                        {selectedPayment.paymentType === 'monthly_rent' ? 'Monthly Rent' :
+                         selectedPayment.paymentType === 'advance' ? 'Advance Payment' :
+                         selectedPayment.paymentType === 'security_deposit' ? 'Security Deposit' :
+                         selectedPayment.paymentType?.replace('_', ' ')}
+                      </span>
+                    ) : 'N/A'}
+                  </div>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-4">
                   <div className="text-sm text-gray-600 mb-1">Gateway</div>
                   <div className="font-semibold text-gray-800">{selectedPayment.gateway?.toUpperCase() || 'N/A'}</div>
                 </div>
@@ -660,6 +727,37 @@ const MyPayments = () => {
                   <div className="text-sm text-gray-600 mb-1">Currency</div>
                   <div className="font-semibold text-gray-800">{selectedPayment.currency || 'N/A'}</div>
                 </div>
+                {selectedPayment.paymentType === 'monthly_rent' && selectedPayment.rentMonth && selectedPayment.rentYear && (
+                  <div className="bg-indigo-50 rounded-lg p-4">
+                    <div className="text-sm text-indigo-600 mb-1">Rent Period</div>
+                    <div className="font-semibold text-indigo-800">
+                      {new Date(selectedPayment.rentYear, selectedPayment.rentMonth - 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
+                    </div>
+                  </div>
+                )}
+                {selectedPayment.escrowStatus && (
+                  <div className={`rounded-lg p-4 ${
+                    selectedPayment.escrowStatus === 'released' ? 'bg-green-50' :
+                    selectedPayment.escrowStatus === 'held' ? 'bg-orange-50' :
+                    'bg-gray-50'
+                  }`}>
+                    <div className={`text-sm mb-1 ${
+                      selectedPayment.escrowStatus === 'released' ? 'text-green-600' :
+                      selectedPayment.escrowStatus === 'held' ? 'text-orange-600' :
+                      'text-gray-600'
+                    }`}>Escrow Status</div>
+                    <div className={`font-semibold ${
+                      selectedPayment.escrowStatus === 'released' ? 'text-green-800' :
+                      selectedPayment.escrowStatus === 'held' ? 'text-orange-800' :
+                      'text-gray-800'
+                    }`}>{selectedPayment.escrowStatus.charAt(0).toUpperCase() + selectedPayment.escrowStatus.slice(1)}</div>
+                    {selectedPayment.escrowReleasedAt && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        Released: {new Date(selectedPayment.escrowReleasedAt).toLocaleDateString('en-GB')}
+                      </div>
+                    )}
+                  </div>
+                )}
                 {selectedPayment.completedAt && (
                   <div className="bg-gray-50 rounded-lg p-4">
                     <div className="text-sm text-gray-600 mb-1">Paid Date</div>
@@ -724,6 +822,17 @@ const MyPayments = () => {
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
                   >
                     <FaDownload /> Download Receipt
+                  </button>
+                )}
+                {selectedPayment.paymentType === 'monthly_rent' && selectedPayment.contractId && (
+                  <button
+                    onClick={() => {
+                      navigate(`/user/rent-wallet?contractId=${selectedPayment.contractId._id || selectedPayment.contractId}`);
+                      setShowPreviewModal(false);
+                    }}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                  >
+                    <FaWallet /> View Rent Wallet
                   </button>
                 )}
                 <button

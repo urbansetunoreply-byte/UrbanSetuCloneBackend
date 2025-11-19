@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { FaDollarSign, FaCreditCard, FaChartLine, FaDownload, FaUndo, FaCheckCircle, FaTimes, FaExclamationTriangle, FaSpinner, FaUsers, FaHome, FaCalendar, FaMoneyBill, FaLock, FaShare, FaEye, FaCopy, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaDollarSign, FaCreditCard, FaChartLine, FaDownload, FaUndo, FaCheckCircle, FaTimes, FaExclamationTriangle, FaSpinner, FaUsers, FaHome, FaCalendar, FaMoneyBill, FaLock, FaShare, FaEye, FaCopy, FaExternalLinkAlt, FaWallet } from 'react-icons/fa';
 import PaymentHistory from '../components/PaymentHistory';
 import RefundManagement from '../components/RefundManagement';
 import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from '../redux/user/userSlice';
@@ -130,17 +130,19 @@ const PaymentDashboard = () => {
     try {
       const statusSel = document.getElementById('admin-pay-status');
       const gatewaySel = document.getElementById('admin-pay-gateway');
+      const paymentTypeSel = document.getElementById('admin-pay-paymentType');
       const qSel = document.getElementById('admin-pay-q');
       const fromSel = document.getElementById('admin-pay-from');
       const toSel = document.getElementById('admin-pay-to');
       const status = statusSel ? statusSel.value : '';
       const gateway = gatewaySel ? gatewaySel.value : '';
+      const paymentType = paymentTypeSel ? paymentTypeSel.value : '';
       const q = qSel ? qSel.value : '';
       const fromDate = fromSel ? fromSel.value : '';
       const toDate = toSel ? toSel.value : '';
       const [usdRes, inrRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?currency=USD&limit=1000&status=${encodeURIComponent(status)}&gateway=${encodeURIComponent(gateway)}&q=${encodeURIComponent(q)}&fromDate=${encodeURIComponent(fromDate)}&toDate=${encodeURIComponent(toDate)}`, { credentials: 'include' }),
-        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?currency=INR&limit=1000&status=${encodeURIComponent(status)}&gateway=${encodeURIComponent(gateway)}&q=${encodeURIComponent(q)}&fromDate=${encodeURIComponent(fromDate)}&toDate=${encodeURIComponent(toDate)}`, { credentials: 'include' })
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?currency=USD&limit=1000&status=${encodeURIComponent(status)}&gateway=${encodeURIComponent(gateway)}&paymentType=${encodeURIComponent(paymentType)}&q=${encodeURIComponent(q)}&fromDate=${encodeURIComponent(fromDate)}&toDate=${encodeURIComponent(toDate)}`, { credentials: 'include' }),
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?currency=INR&limit=1000&status=${encodeURIComponent(status)}&gateway=${encodeURIComponent(gateway)}&paymentType=${encodeURIComponent(paymentType)}&q=${encodeURIComponent(q)}&fromDate=${encodeURIComponent(fromDate)}&toDate=${encodeURIComponent(toDate)}`, { credentials: 'include' })
       ]);
       const usdData = await usdRes.json();
       const inrData = await inrRes.json();
@@ -468,6 +470,13 @@ const PaymentDashboard = () => {
                   <option value="paypal">PayPal</option>
                   <option value="razorpay">Razorpay</option>
                 </select>
+                <select id="admin-pay-paymentType" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} className="px-3 py-2 border rounded-lg text-sm">
+                  <option value="">All Types</option>
+                  <option value="advance">Advance Payment</option>
+                  <option value="monthly_rent">Monthly Rent</option>
+                  <option value="security_deposit">Security Deposit</option>
+                  <option value="booking_fee">Booking Fee</option>
+                </select>
               </div>
               <div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-3">USD Payments ($)</h3>
@@ -487,8 +496,39 @@ const PaymentDashboard = () => {
                       } hover:shadow-lg transition-all`} onClick={() => handlePaymentClick(p)}>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                           <div className="flex-1">
-                            <div className="font-semibold text-gray-800">{p.appointmentId?.propertyName || 'Property Payment'}</div>
-                            <div className="text-xs text-gray-500">Buyer: {p.userId?.username || 'N/A'}</div>
+                            <div className="font-semibold text-gray-800 flex items-center gap-2 flex-wrap">
+                              {p.appointmentId?.propertyName || 'Property Payment'}
+                              {p.paymentType && (
+                                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                                  p.paymentType === 'monthly_rent' ? 'bg-green-100 text-green-700' :
+                                  p.paymentType === 'advance' ? 'bg-blue-100 text-blue-700' :
+                                  p.paymentType === 'security_deposit' ? 'bg-yellow-100 text-yellow-700' :
+                                  'bg-gray-100 text-gray-700'
+                                }`}>
+                                  {p.paymentType === 'monthly_rent' ? 'Rent' :
+                                   p.paymentType === 'advance' ? 'Advance' :
+                                   p.paymentType === 'security_deposit' ? 'Security Deposit' :
+                                   p.paymentType?.replace('_', ' ')}
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-xs text-gray-500 flex flex-wrap items-center gap-2 mt-1">
+                              <span>Buyer: {p.userId?.username || 'N/A'}</span>
+                              {p.paymentType === 'monthly_rent' && p.rentMonth && p.rentYear && (
+                                <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">
+                                  {new Date(p.rentYear, p.rentMonth - 1).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}
+                                </span>
+                              )}
+                              {p.escrowStatus && (
+                                <span className={`px-2 py-0.5 rounded-full ${
+                                  p.escrowStatus === 'released' ? 'bg-green-100 text-green-700' :
+                                  p.escrowStatus === 'held' ? 'bg-orange-100 text-orange-700' :
+                                  'bg-gray-100 text-gray-700'
+                                }`}>
+                                  Escrow: {p.escrowStatus}
+                                </span>
+                              )}
+                            </div>
                           </div>
                           <div className="flex flex-col sm:items-end gap-2">
                             <div className="text-lg font-bold">$ {Number(p.amount).toFixed(2)}</div>
@@ -599,8 +639,39 @@ const PaymentDashboard = () => {
                       } hover:shadow-lg transition-all`} onClick={() => handlePaymentClick(p)}>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                           <div className="flex-1">
-                            <div className="font-semibold text-gray-800">{p.appointmentId?.propertyName || 'Property Payment'}</div>
-                            <div className="text-xs text-gray-500">Buyer: {p.userId?.username || 'N/A'}</div>
+                            <div className="font-semibold text-gray-800 flex items-center gap-2 flex-wrap">
+                              {p.appointmentId?.propertyName || 'Property Payment'}
+                              {p.paymentType && (
+                                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                                  p.paymentType === 'monthly_rent' ? 'bg-green-100 text-green-700' :
+                                  p.paymentType === 'advance' ? 'bg-blue-100 text-blue-700' :
+                                  p.paymentType === 'security_deposit' ? 'bg-yellow-100 text-yellow-700' :
+                                  'bg-gray-100 text-gray-700'
+                                }`}>
+                                  {p.paymentType === 'monthly_rent' ? 'Rent' :
+                                   p.paymentType === 'advance' ? 'Advance' :
+                                   p.paymentType === 'security_deposit' ? 'Security Deposit' :
+                                   p.paymentType?.replace('_', ' ')}
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-xs text-gray-500 flex flex-wrap items-center gap-2 mt-1">
+                              <span>Buyer: {p.userId?.username || 'N/A'}</span>
+                              {p.paymentType === 'monthly_rent' && p.rentMonth && p.rentYear && (
+                                <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">
+                                  {new Date(p.rentYear, p.rentMonth - 1).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}
+                                </span>
+                              )}
+                              {p.escrowStatus && (
+                                <span className={`px-2 py-0.5 rounded-full ${
+                                  p.escrowStatus === 'released' ? 'bg-green-100 text-green-700' :
+                                  p.escrowStatus === 'held' ? 'bg-orange-100 text-orange-700' :
+                                  'bg-gray-100 text-gray-700'
+                                }`}>
+                                  Escrow: {p.escrowStatus}
+                                </span>
+                              )}
+                            </div>
                           </div>
                           <div className="flex flex-col sm:items-end gap-2">
                             <div className="text-lg font-bold">₹ {Number(p.amount).toFixed(2)}</div>
