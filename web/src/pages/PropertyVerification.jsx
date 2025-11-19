@@ -47,6 +47,18 @@ export default function PropertyVerification() {
     fetchMyListings();
   }, [currentUser]);
 
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (showVerificationForm || showVerificationStatus) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showVerificationForm, showVerificationStatus]);
+
   // Handle URL parameters
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -64,7 +76,8 @@ export default function PropertyVerification() {
   const fetchMyListings = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE_URL}/api/listing/get`, {
+      // Fetch user's own listings (like MyListings page)
+      const res = await fetch(`${API_BASE_URL}/api/listing/user`, {
         credentials: 'include'
       });
 
@@ -276,37 +289,66 @@ export default function PropertyVerification() {
 
         {/* Verification Form Modal */}
         {showVerificationForm && selectedListing && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full p-6 my-8">
-              <VerificationForm
-                listing={selectedListing}
-                onSuccess={handleVerificationCreated}
-                onCancel={() => {
-                  setShowVerificationForm(false);
-                  setSelectedListing(null);
-                }}
-              />
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            style={{ overflow: 'hidden' }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setShowVerificationForm(false);
+                setSelectedListing(null);
+              }
+            }}
+          >
+            <div 
+              className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6">
+                <VerificationForm
+                  listing={selectedListing}
+                  onSuccess={handleVerificationCreated}
+                  onCancel={() => {
+                    setShowVerificationForm(false);
+                    setSelectedListing(null);
+                  }}
+                />
+              </div>
             </div>
           </div>
         )}
 
         {/* Verification Status Modal */}
         {showVerificationStatus && selectedListing && selectedVerification && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 my-8">
-              <VerificationStatus
-                verification={selectedVerification}
-                listing={selectedListing}
-                currentUser={currentUser}
-                onUpdate={handleVerificationUpdated}
-                STATUS_COLORS={STATUS_COLORS}
-                STATUS_LABELS={STATUS_LABELS}
-                onClose={() => {
-                  setShowVerificationStatus(false);
-                  setSelectedVerification(null);
-                  setSelectedListing(null);
-                }}
-              />
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            style={{ overflow: 'hidden' }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setShowVerificationStatus(false);
+                setSelectedVerification(null);
+                setSelectedListing(null);
+              }
+            }}
+          >
+            <div 
+              className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6">
+                <VerificationStatus
+                  verification={selectedVerification}
+                  listing={selectedListing}
+                  currentUser={currentUser}
+                  onUpdate={handleVerificationUpdated}
+                  STATUS_COLORS={STATUS_COLORS}
+                  STATUS_LABELS={STATUS_LABELS}
+                  onClose={() => {
+                    setShowVerificationStatus(false);
+                    setSelectedVerification(null);
+                    setSelectedListing(null);
+                  }}
+                />
+              </div>
             </div>
           </div>
         )}

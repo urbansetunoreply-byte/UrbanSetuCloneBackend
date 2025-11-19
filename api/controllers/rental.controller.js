@@ -164,8 +164,14 @@ export const createContract = async (req, res, next) => {
       calculatedEndDate.setMonth(calculatedEndDate.getMonth() + lockDuration);
     }
 
-    // Create contract
-    const contract = await RentLockContract.create({
+    // Generate contractId before creating
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 9).toUpperCase();
+    const contractId = `RENT-${timestamp}-${random}`;
+
+    // Create contract with pre-generated contractId
+    const contract = new RentLockContract({
+      contractId,
       bookingId,
       listingId: booking.listingId._id,
       tenantId: booking.buyerId._id,
@@ -184,6 +190,7 @@ export const createContract = async (req, res, next) => {
       moveInDate: moveInDate ? new Date(moveInDate) : null,
       status: 'pending_signature'
     });
+    await contract.save();
 
     // Update booking with contract reference
     booking.contractId = contract._id;
@@ -1375,8 +1382,14 @@ export const requestVerification = async (req, res, next) => {
       }
     }
 
-    // Create verification request
-    const verification = await PropertyVerification.create({
+    // Generate verificationId before creating
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 9).toUpperCase();
+    const verificationId = `VERIFY-${timestamp}-${random}`;
+
+    // Create verification request with pre-generated verificationId
+    const verification = new PropertyVerification({
+      verificationId,
       listingId: listing._id,
       landlordId: userId,
       documents: {
@@ -1400,6 +1413,7 @@ export const requestVerification = async (req, res, next) => {
       paymentStatus: verificationFee > 0 ? 'pending' : 'completed',
       status: 'pending'
     });
+    await verification.save();
 
     // Update listing with verification reference
     listing.verificationId = verification._id;

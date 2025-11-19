@@ -79,7 +79,8 @@ export default function VerificationForm({ listing, onSuccess, onCancel }) {
       if (!res.ok) throw new Error('Upload failed');
 
       const data = await res.json();
-      const documentUrl = data.documentUrl || data.url || data.imageUrl;
+      // Cloudinary returns 'path' for document URL
+      const documentUrl = data.documentUrl || data.path || data.url || data.imageUrl;
 
       setFormData(prev => ({
         ...prev,
