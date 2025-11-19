@@ -283,6 +283,7 @@ export const listContracts = async (req, res, next) => {
       .populate('listingId', 'name propertyNumber address city state imageUrls')
       .populate('tenantId', 'username email avatar')
       .populate('landlordId', 'username email avatar')
+      .populate('bookingId', 'status purpose propertyName')
       .sort({ createdAt: -1 });
 
     res.json({
