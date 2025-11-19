@@ -2931,3 +2931,32 @@ export const getLocalityScore = async (req, res, next) => {
   }
 };
 
+// Utility function to reject contract when booking is rejected/cancelled
+export const rejectContractForBooking = async (bookingId, rejectedBy, rejectionReason) => {
+  try {
+    // Find contract by bookingId
+    const contract = await RentLockContract.findOne({ bookingId });
+    
+    if (!contract) {
+      return { success: false, message: "Contract not found for this booking." };
+    }
+    
+    // Only reject if contract is not already active, expired, terminated, or already rejected
+    if (['active', 'expired', 'terminated', 'rejected'].includes(contract.status)) {
+      return { success: false, message: `Cannot reject contract with status: ${contract.status}` };
+    }
+    
+    // Update contract status to rejected
+    contract.status = 'rejected';
+    contract.rejectedAt = new Date();
+    contract.rejectedBy = rejectedBy;
+    contract.rejectionReason = rejectionReason || 'Booking was rejected/cancelled by seller';
+    await contract.save();
+    
+    return { success: true, contract };
+  } catch (error) {
+    console.error("Error rejecting contract for booking:", error);
+    return { success: false, error: error.message };
+  }
+};
+

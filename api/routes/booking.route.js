@@ -18,6 +18,7 @@ import {
   sendAppointmentReinitiatedByBuyerEmail,
   sendNewMessageNotificationEmail
 } from '../utils/emailService.js';
+import { rejectContractForBooking } from '../controllers/rental.controller.js';
 import bcryptjs from 'bcryptjs';
 
 const router = express.Router();
@@ -387,6 +388,28 @@ router.patch('/:id/status', verifyToken, async (req, res) => {
       console.error('Failed to create notification for buyer:', notificationError);
     }
     // --- END Notify buyer logic ---
+
+    // --- Auto-reject contract if booking is rejected and purpose is 'rent' ---
+    if (status === 'rejected' && updated.purpose === 'rent' && bookingToUpdate.contractId) {
+      try {
+        const { rejectContractForBooking } = await import('../controllers/rental.controller.js');
+        const rejectionReason = req.body.rejectionReason || 'Booking was rejected by seller';
+        const result = await rejectContractForBooking(
+          bookingToUpdate._id,
+          sellerId,
+          rejectionReason
+        );
+        if (result.success) {
+          console.log(`✅ Contract ${result.contract.contractId} rejected automatically for booking ${bookingToUpdate._id}`);
+        } else {
+          console.log(`⚠️ Could not auto-reject contract for booking ${bookingToUpdate._id}: ${result.message}`);
+        }
+      } catch (contractError) {
+        console.error('Error auto-rejecting contract for booking:', contractError);
+        // Don't fail the booking update if contract rejection fails
+      }
+    }
+    // --- END Auto-reject contract logic ---
 
     // Emit socket.io event for real-time appointment update
     if (io) {
