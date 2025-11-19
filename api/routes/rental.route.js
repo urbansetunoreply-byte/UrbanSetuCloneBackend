@@ -37,7 +37,8 @@ import {
   disburseRentalLoan,
   generateRentPrediction,
   getRentPrediction,
-  getLocalityScore
+  getLocalityScore,
+  listAllRatings
 } from '../controllers/rental.controller.js';
 
 const router = express.Router();
@@ -101,6 +102,7 @@ router.post("/verification/:verificationId/reject", verifyToken, rejectVerificat
 router.post("/ratings/:contractId", verifyToken, submitRentalRating);
 router.get("/ratings/:contractId", verifyToken, getRentalRating);
 router.get("/ratings", verifyToken, listRentalRatings);
+router.get("/ratings/all", verifyToken, listAllRatings); // Admin: List all ratings
 router.get("/ratings/property/:listingId", getPropertyRatings); // Public endpoint
 
 // Rental Loans Routes

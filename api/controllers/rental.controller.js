@@ -1993,6 +1993,62 @@ export const listRentalRatings = async (req, res, next) => {
   }
 };
 
+// List All Ratings (Admin only)
+export const listAllRatings = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    
+    const user = await User.findById(userId);
+    if (user?.role !== 'admin' && user?.role !== 'rootadmin') {
+      return res.status(403).json({ message: "Unauthorized. Only admin can access all ratings." });
+    }
+
+    const { role, search } = req.query;
+    
+    // Build query - no user filter for admin
+    let query = {};
+    if (role && role !== 'all') {
+      // Filter by rating direction, not user role
+      if (role === 'tenant') {
+        query = { 'tenantToLandlordRating.overallRating': { $exists: true, $ne: null } };
+      } else if (role === 'landlord') {
+        query = { 'landlordToTenantRating.overallRating': { $exists: true, $ne: null } };
+      }
+    }
+    
+    // Fetch all ratings
+    let ratings = await RentalRating.find(query)
+      .populate('contractId', 'contractId listingId lockedRentAmount startDate endDate')
+      .populate('listingId', 'name address city state')
+      .populate('tenantId', 'username email avatar')
+      .populate('landlordId', 'username email avatar')
+      .sort({ createdAt: -1 });
+
+    // Apply search filter if provided
+    if (search) {
+      const searchLower = search.toLowerCase();
+      ratings = ratings.filter(r => 
+        r.contractId?.contractId?.toLowerCase().includes(searchLower) ||
+        r.contractId?.listingId?.name?.toLowerCase().includes(searchLower) ||
+        r.contractId?.listingId?.address?.toLowerCase().includes(searchLower) ||
+        r.tenantId?.username?.toLowerCase().includes(searchLower) ||
+        r.tenantId?.email?.toLowerCase().includes(searchLower) ||
+        r.landlordId?.username?.toLowerCase().includes(searchLower) ||
+        r.landlordId?.email?.toLowerCase().includes(searchLower) ||
+        r.ratingId?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    res.json({
+      success: true,
+      ratings,
+      total: ratings.length
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Get Property Ratings (Public - for listing page)
 export const getPropertyRatings = async (req, res, next) => {
   try {
@@ -2058,7 +2114,7 @@ export const listAllVerifications = async (req, res, next) => {
     const userId = req.user.id;
     
     const user = await User.findById(userId);
-    if (user?.role !== 'admin') {
+    if (user?.role !== 'admin' && user?.role !== 'rootadmin') {
       return res.status(403).json({ message: "Unauthorized. Only admin can access all verifications." });
     }
 
