@@ -224,7 +224,7 @@ export const sendOverduePaymentNotifications = async ({ io = null }) => {
     for (const wallet of wallets) {
       const contract = await RentLockContract.findById(wallet.contractId)
         .populate('listingId', 'name address')
-        .populate('tenantId', 'username firstName lastName');
+        .populate('tenantId', 'username firstName lastName email');
 
       if (!contract || !contract.listingId) continue;
 
@@ -236,7 +236,11 @@ export const sendOverduePaymentNotifications = async ({ io = null }) => {
       if (overduePayments.length === 0) continue;
 
       const listing = contract.listingId;
+      const tenant = contract.tenantId;
       const totalOverdue = overduePayments.reduce((sum, p) => sum + (p.amount + (p.penaltyAmount || 0)), 0);
+
+      // Ensure tenant has email
+      if (!tenant.email) continue;
 
       const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
       const walletUrl = `${clientUrl}/user/rent-wallet?contractId=${contract._id}`;
