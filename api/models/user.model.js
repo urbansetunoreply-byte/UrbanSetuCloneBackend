@@ -128,6 +128,74 @@ const userSchema = new mongoose.Schema({
   lastKnownDevice: {
     type: String,
     default: null
+  },
+  
+  // Rental Profile
+  rentalProfile: {
+    isTenant: {
+      type: Boolean,
+      default: false
+    },
+    isLandlord: {
+      type: Boolean,
+      default: false
+    },
+    activeContractsAsTenant: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    activeContractsAsLandlord: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    totalRentPaid: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    totalRentReceived: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    averageTenantRating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5
+    },
+    averageLandlordRating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5
+    },
+    verifiedLandlord: {
+      type: Boolean,
+      default: false,
+      index: true
+    }
+  },
+  
+  // Auto-debit Settings
+  autoDebitSettings: {
+    enabled: {
+      type: Boolean,
+      default: false
+    },
+    defaultMethod: {
+      type: String,
+      enum: ['razorpay', 'paypal', 'bank_account', 'upi'],
+      default: null
+    },
+    defaultDay: {
+      type: Number, // Day of month (1-31)
+      min: 1,
+      max: 31,
+      default: 1
+    }
   }
 }, { timestamps: true });
 

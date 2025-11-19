@@ -1,0 +1,215 @@
+import mongoose from "mongoose";
+
+const moveInOutChecklistSchema = new mongoose.Schema({
+  // Checklist Identification
+  checklistId: {
+    type: String,
+    unique: true,
+    required: true,
+    index: true
+  },
+  contractId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'RentLockContract',
+    required: true,
+    index: true
+  },
+  type: {
+    type: String,
+    enum: ['move_in', 'move_out'],
+    required: true,
+    index: true
+  },
+  
+  // Property Condition - Images
+  images: [{
+    url: {
+      type: String,
+      required: true
+    },
+    room: {
+      type: String,
+      enum: ['living_room', 'bedroom', 'kitchen', 'bathroom', 'balcony', 'hallway', 'parking', 'exterior', 'other'],
+      required: true
+    },
+    description: String,
+    uploadedAt: {
+      type: Date,
+      default: Date.now
+    },
+    uploadedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    }
+  }],
+  
+  // Property Condition - Videos
+  videos: [{
+    url: {
+      type: String,
+      required: true
+    },
+    room: {
+      type: String,
+      enum: ['living_room', 'bedroom', 'kitchen', 'bathroom', 'balcony', 'hallway', 'parking', 'exterior', 'other'],
+      required: true
+    },
+    description: String,
+    uploadedAt: {
+      type: Date,
+      default: Date.now
+    },
+    uploadedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    }
+  }],
+  
+  // Room-wise Checklist
+  rooms: [{
+    roomName: {
+      type: String,
+      required: true
+    },
+    condition: {
+      type: String,
+      enum: ['excellent', 'good', 'fair', 'poor', 'damaged'],
+      required: true
+    },
+    notes: String,
+    damages: [{
+      description: {
+        type: String,
+        required: true
+      },
+      estimatedCost: {
+        type: Number,
+        min: 0,
+        default: 0
+      },
+      imageUrl: String,
+      acknowledgedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
+      },
+      acknowledgedAt: Date
+    }]
+  }],
+  
+  // Amenities Checklist
+  amenities: [{
+    name: {
+      type: String,
+      required: true
+    }, // 'furniture', 'appliances', 'fixtures', etc.
+    condition: {
+      type: String,
+      enum: ['excellent', 'good', 'fair', 'poor', 'damaged', 'not_available'],
+      required: true
+    },
+    working: {
+      type: Boolean,
+      default: true
+    },
+    notes: String
+  }],
+  
+  // Signatures/Approvals
+  landlordApproved: {
+    type: Boolean,
+    default: false
+  },
+  landlordApprovedAt: Date,
+  landlordNotes: String,
+  
+  tenantApproved: {
+    type: Boolean,
+    default: false
+  },
+  tenantApprovedAt: Date,
+  tenantNotes: String,
+  
+  // Comparison (for move-out only)
+  damageAssessment: {
+    totalDamageCost: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    deductedFromDeposit: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    repairRequired: [String],
+    images: [String],
+    assessedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null
+    },
+    assessedAt: Date,
+    assessmentNotes: String
+  },
+  
+  // Status
+  status: {
+    type: String,
+    enum: ['in_progress', 'pending_approval', 'approved', 'disputed', 'completed'],
+    default: 'in_progress'
+  },
+  
+  completedAt: Date,
+  
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
+}, {
+  timestamps: true
+});
+
+// Indexes
+moveInOutChecklistSchema.index({ contractId: 1, type: 1 });
+moveInOutChecklistSchema.index({ status: 1 });
+
+// Generate checklistId before saving
+moveInOutChecklistSchema.pre('save', async function(next) {
+  if (!this.checklistId) {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 9).toUpperCase();
+    const prefix = this.type === 'move_in' ? 'MI' : 'MO';
+    this.checklistId = `${prefix}-${timestamp}-${random}`;
+  }
+  this.updatedAt = Date.now();
+  next();
+});
+
+// Virtual for checking if checklist is approved
+moveInOutChecklistSchema.virtual('isApproved').get(function() {
+  return this.landlordApproved && this.tenantApproved;
+});
+
+// Method to calculate total damages
+moveInOutChecklistSchema.methods.calculateTotalDamages = function() {
+  let total = 0;
+  this.rooms.forEach(room => {
+    room.damages.forEach(damage => {
+      total += damage.estimatedCost || 0;
+    });
+  });
+  this.damageAssessment.totalDamageCost = total;
+  return total;
+};
+
+const MoveInOutChecklist = mongoose.model("MoveInOutChecklist", moveInOutChecklistSchema);
+
+export default MoveInOutChecklist;
+

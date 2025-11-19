@@ -49,6 +49,7 @@ import callRouter from "./routes/call.route.js";
 import { generateCallId } from "./routes/call.route.js";
 import CallHistory from "./models/callHistory.model.js";
 import { sendCallMissedEmail, sendCallInitiatedEmail } from "./utils/emailService.js";
+import rentalRouter from "./routes/rental.route.js";
 // Use S3 deployment route if AWS is configured, otherwise fallback to Cloudinary
 let deploymentRouter;
 try {
@@ -944,6 +945,7 @@ app.use("/api/data-sync", dataSyncRouter);
 app.use("/api/faqs", faqRouter);
 app.use("/api/blogs", blogRouter);
 app.use("/api/advanced-ai", advancedAIRecommendationRouter);
+app.use("/api/rental", rentalRouter);
 console.log('All API routes registered successfully');
 
 // Catch-all route for 404s - must be after all other routes

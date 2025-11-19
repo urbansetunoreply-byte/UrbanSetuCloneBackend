@@ -165,6 +165,61 @@ const bookingSchema = new mongoose.Schema({
   sellerLastEmailSentAt: { type: Date, default: null },
   buyerUnreadMessageCount: { type: Number, default: 0 },
   sellerUnreadMessageCount: { type: Number, default: 0 },
+  
+  // Rent-Lock Specific (for rental appointments)
+  rentLockPlanSelected: {
+    type: String,
+    enum: ['1_year', '3_year', '5_year', 'custom'],
+    default: null
+  },
+  customLockDuration: {
+    type: Number, // in months, if custom plan
+    min: 1,
+    max: 60,
+    default: null
+  },
+  
+  // Contract
+  contractId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'RentLockContract',
+    default: null
+  },
+  
+  // Rental Status
+  rentalStatus: {
+    type: String,
+    enum: ['pending_contract', 'contract_signed', 'move_in_pending', 'active_rental', 'move_out_pending', 'completed', 'terminated'],
+    default: null
+  },
+  
+  // Move Dates
+  moveInDate: {
+    type: Date,
+    default: null
+  },
+  moveOutDate: {
+    type: Date,
+    default: null
+  },
+  
+  // Security Deposit
+  securityDepositPaid: {
+    type: Boolean,
+    default: false
+  },
+  securityDepositAmount: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  
+  // Rent Wallet
+  walletId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'RentWallet',
+    default: null
+  }
 });
 
 const booking = mongoose.model("Booking", bookingSchema);

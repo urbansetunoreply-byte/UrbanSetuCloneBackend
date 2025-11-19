@@ -1,0 +1,144 @@
+[33mcommit cf693bf3b4280edab846dca605701b47b57f039c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: Vijay <chalendravijay09@gmail.com>
+Date:   Wed Nov 19 08:47:18 2025 +0530
+
+    fix: Separate video and screen share controls - don't interfere with each other
+    
+    Issues Fixed:
+    1. Video off indicator shown during screen share
+       - Only show 'Video is off' message when NOT screen sharing
+       - Remote screen share should display regardless of camera status
+       - Screen share content not disturbed by video toggle state
+       - Added check: !remoteVideoEnabled && !remoteIsScreenSharing
+    
+    2. Toggling video during screen share now only affects camera, not screen share
+       - When screen sharing and video is toggled off, camera video disables
+       - Screen share track remains enabled and continues streaming
+       - Detects screen tracks by label (contains 'screen', 'Screen', 'display')
+       - Only toggles camera tracks, leaves screen share tracks untouched
+    
+    3. Improved user experience
+       - Screen share continues uninterrupted when camera is disabled
+       - Clear separation between camera and screen share controls
+       - Remote viewers always see screen share content when active
+    
+    Changes:
+    - ActiveCallModal.jsx: Added !remoteIsScreenSharing check to video-off indicator
+    - useCall.js: Enhanced toggleVideo to differentiate between camera and screen tracks
+    - Logic: Camera toggle affects only camera, screen share toggle affects only screen
+
+ web/src/components/ActiveCallModal.jsx |  4 [32m++[m[31m--[m
+ web/src/hooks/useCall.js               | 22 [32m+++++++++++++++++++[m[31m---[m
+ 2 files changed, 21 insertions(+), 5 deletions(-)
+
+[33mcommit 4eb11ae1894c177b22a8ac93c0b70cf0a6fafa3a[m
+Author: Vijay <chalendravijay09@gmail.com>
+Date:   Wed Nov 19 08:38:20 2025 +0530
+
+    re-implement: Fix screen sharing issues on both sides and add conflict resolution
+    
+    Issues Fixed:
+    1. When person A stops screen sharing, B's video goes blank at A's side
+       - Added forced refresh of remote stream when local stops screen sharing
+       - Temporarily unset remoteVideoRef.srcObject then re-attach to force video refresh
+       - Ensures remote video displays properly when local screen share ends
+       - Uses nested setTimeout with 50ms delays for proper DOM update timing
+    
+    2. Conflict resolution when both users try to screen share at the same time
+       - Added check for remoteIsScreenSharing state when starting screen share
+       - Shows confirmation dialog: 'Other person is also sharing. Are you sure you want to share yours?'
+       - If user confirms, emits 'stop-remote-screen-share' event to remote peer
+       - Remote peer receives event and automatically stops screen share
+       - Local peer then starts screen sharing
+    
+    3. Improved screen share state management
+       - Added handleStopRemoteScreenShare callback to handle remote stop requests
+       - Properly restores camera video track when remote requests stop
+       - Shows notification: 'Screen sharing stopped - other person is now sharing'
+       - Registered socket listener for 'stop-remote-screen-share' events
+    
+    Changes:
+    - toggleScreenShare: Added conflict detection and remote stop request
+    - handleStopRemoteScreenShare: New handler for remote stop requests
+    - Remote video refresh: Forces UI update when local screen share stops
+    - Socket listeners: Added 'stop-remote-screen-share' event listener
+
+ web/src/hooks/useCall.js | 72 [32m+++++++++++++++++++++++++++++++++++++++++++++++[m[31m-[m
+ 1 file changed, 71 insertions(+), 1 deletion(-)
+
+[33mcommit 06bc8bbf3760364cb42fc036f0eaf4984d3e65a3[m
+Author: Vijay <chalendravijay09@gmail.com>
+Date:   Wed Nov 19 08:10:23 2025 +0530
+
+    fix: Fix screen sharing stop issues and immediate UI updates
+    
+    Issues Fixed:
+    1. Screen share dialog appearing when stopping
+       - Changed onended handler to stop sharing directly without calling toggleScreenShare
+       - Prevents getDisplayMedia dialog from appearing again
+       - Properly handles restoration of camera track immediately
+    
+    2. Remote video not updating when screen share ends
+       - Added force update in remote stream detection
+       - Temporarily unset srcObject then re-attach to force video refresh
+       - This helps with the 'stuck on screen share' issue
+    
+    3. UI not switching back immediately to video
+       - Added forceRender state to trigger component re-render when screen share state changes
+       - Both local and remote screen share state changes now trigger UI updates
+       - Remote stream detection now immediately detects when camera replaces screen share
+    
+    4. Other side showing black video when local stops sharing
+       - Improved stream handling in onended handler
+       - Remote side now properly updates its UI when detecting screen share ends
+    
+    Changes:
+    - useCall.js: Better onended handler that avoids showing dialog again
+    - ActiveCallModal.jsx: Force re-render state for immediate UI updates
+    - Improved screen share detection and state management
+
+ web/src/components/ActiveCallModal.jsx | 23 [32m+++++++++[m[31m--------[m
+ web/src/hooks/useCall.js               | 46 [32m+++++++++++++++++++++++++++++++++[m[31m-[m
+ 2 files changed, 57 insertions(+), 12 deletions(-)
+
+[33mcommit 913b17c9d2cabc557981564ee6c0d6e79fabd37c[m
+Author: Vijay <chalendravijay09@gmail.com>
+Date:   Wed Nov 19 07:58:24 2025 +0530
+
+    fix: Fix JSX syntax errors in video rendering
+
+ web/src/components/ActiveCallModal.jsx | 25 [32m++++++++++++++[m[31m-----------[m
+ 1 file changed, 14 insertions(+), 11 deletions(-)
+
+[33mcommit 6c4eb1c14773fe385047651a6df40c65559cfe92[m
+Author: Vijay <chalendravijay09@gmail.com>
+Date:   Wed Nov 19 07:57:53 2025 +0530
+
+    feat: Complete screen sharing implementation with proper layout and zoom
+    
+    Major fixes:
+    1. Fixed blank video when screen share ends - properly restore remote stream
+    2. Fixed layout during screen share:
+       - Person sharing: big window = screen share, small window = other party
+       - Other party: big window = screen share (remote), small window = yourself
+    3. Fixed video display:
+       - Use object-contain for screen share to show complete content
+       - Use object-contain for camera video to fit properly
+       - Videos now fit properly regardless of dimensions
+    4. Added zoom/pan functionality like Google Meet:
+       - Mouse wheel to zoom in/out (1x to 3x)
+       - Click and drag to pan when zoomed
+       - Zoom indicator shows current zoom level
+       - Auto-reset zoom when screen share ends
+    
+    Technical changes:
+    - Added remoteIsScreenSharing state tracking via track label detection
+    - Fixed layout logic to handle all screen sharing scenarios
+    - Added zoom/pan state and handlers
+    - Improved stream re-attachment when screen sharing state changes
+    - Better video element management with proper object-fit
+
+ web/src/components/ActiveCallModal.jsx  | 309 [32m+++++++++++++++++++++++++[m[31m-------[m
+ web/src/components/GlobalCallModals.jsx |   2 [32m+[m
+ web/src/hooks/useCall.js                |  10 [32m++[m
+ 3 files changed, 260 insertions(+), 61 deletions(-)

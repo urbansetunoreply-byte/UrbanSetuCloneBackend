@@ -129,6 +129,48 @@ const paymentSchema = new mongoose.Schema({
   metadata: {
     type: Map,
     of: mongoose.Schema.Types.Mixed
+  },
+  
+  // Rental Payment Fields
+  rentMonth: {
+    type: Number, // 1-12
+    min: 1,
+    max: 12,
+    default: null
+  },
+  rentYear: {
+    type: Number,
+    default: null
+  },
+  contractId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'RentLockContract',
+    default: null,
+    index: true
+  },
+  walletId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'RentWallet',
+    default: null,
+    index: true
+  },
+  penaltyAmount: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  isAutoDebit: {
+    type: Boolean,
+    default: false
+  },
+  escrowStatus: {
+    type: String,
+    enum: ['pending', 'held', 'released', 'refunded'],
+    default: null
+  },
+  escrowReleasedAt: {
+    type: Date,
+    default: null
   }
 });
 

@@ -228,6 +228,149 @@ const listingSchema = new mongoose.Schema({
             type: Date,
             default: Date.now
         }
+    },
+    
+    // Rent-Lock Plans (for rental properties)
+    rentLockPlans: {
+        availablePlans: [{
+            type: String,
+            enum: ['1_year', '3_year', '5_year', 'custom']
+        }],
+        defaultPlan: {
+            type: String,
+            enum: ['1_year', '3_year', '5_year', 'custom'],
+            default: '1_year'
+        }
+    },
+    
+    // Rent-specific fields
+    monthlyRent: {
+        type: Number,
+        default: null,
+        min: 0
+    },
+    securityDepositMonths: {
+        type: Number, // Usually 2-3 months
+        default: 2,
+        min: 0
+    },
+    maintenanceCharges: {
+        type: Number, // Optional monthly
+        default: 0,
+        min: 0
+    },
+    advanceRentMonths: {
+        type: Number, // Optional advance
+        default: 0,
+        min: 0
+    },
+    
+    // Property Verification
+    isVerified: {
+        type: Boolean,
+        default: false,
+        index: true
+    },
+    verificationId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'PropertyVerification',
+        default: null
+    },
+    
+    // Locality Score (pre-computed)
+    localityScore: {
+        safety: {
+            type: Number,
+            min: 0,
+            max: 10,
+            default: 0
+        },
+        accessibility: {
+            type: Number,
+            min: 0,
+            max: 10,
+            default: 0
+        },
+        waterAvailability: {
+            type: Number,
+            min: 0,
+            max: 10,
+            default: 0
+        },
+        schools: {
+            type: Number,
+            min: 0,
+            max: 10,
+            default: 0
+        },
+        offices: {
+            type: Number,
+            min: 0,
+            max: 10,
+            default: 0
+        },
+        traffic: {
+            type: Number,
+            min: 0,
+            max: 10,
+            default: 0
+        },
+        grocery: {
+            type: Number,
+            min: 0,
+            max: 10,
+            default: 0
+        },
+        medical: {
+            type: Number,
+            min: 0,
+            max: 10,
+            default: 0
+        },
+        shopping: {
+            type: Number,
+            min: 0,
+            max: 10,
+            default: 0
+        },
+        overall: {
+            type: Number,
+            min: 0,
+            max: 10,
+            default: 0
+        },
+        lastUpdated: {
+            type: Date,
+            default: Date.now
+        }
+    },
+    
+    // Rent Prediction
+    rentPrediction: {
+        predictedRent: {
+            type: Number,
+            default: null,
+            min: 0
+        },
+        marketAverage: {
+            type: Number,
+            default: null,
+            min: 0
+        },
+        priceComparison: {
+            type: String,
+            enum: ['overpriced', 'fair', 'underpriced'],
+            default: null
+        },
+        lastUpdated: {
+            type: Date,
+            default: null
+        },
+        predictionId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'RentPrediction',
+            default: null
+        }
     }
 }, { timestamps: true });
 
