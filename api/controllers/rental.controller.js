@@ -1915,11 +1915,11 @@ export const getRentalRating = async (req, res, next) => {
       return res.status(404).json({ message: "Contract not found." });
     }
 
-    // Verify user has access (tenant, landlord, or admin)
+    // Verify user has access (tenant, landlord, or admin/rootadmin)
     const isTenant = contract.tenantId.toString() === userId;
     const isLandlord = contract.landlordId.toString() === userId;
     const user = await User.findById(userId);
-    const isAdmin = user?.role === 'admin';
+    const isAdmin = user?.role === 'admin' || user?.role === 'rootadmin';
 
     if (!isTenant && !isLandlord && !isAdmin) {
       return res.status(403).json({ message: "Unauthorized." });
