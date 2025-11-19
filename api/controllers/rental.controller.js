@@ -2550,7 +2550,22 @@ export const generateRentPrediction = async (req, res, next) => {
 
     // Update listing with prediction reference
     listing.rentPrediction = prediction._id;
-    listing.localityScore = localityScore.overall;
+    
+    // Update listing with full localityScore object (matching Listing model structure)
+    // The localityScore object from calculateLocalityScore already has all required fields
+    listing.localityScore = {
+      safety: localityScore.safety || 0,
+      accessibility: localityScore.accessibility || 0,
+      waterAvailability: localityScore.waterAvailability || 0,
+      schools: localityScore.schools || 0,
+      offices: localityScore.offices || 0,
+      traffic: localityScore.traffic || 0,
+      grocery: localityScore.grocery || 0,
+      medical: localityScore.medical || 0,
+      shopping: localityScore.shopping || 0,
+      overall: localityScore.overall || 0
+    };
+    
     await listing.save();
 
     await prediction.populate('listingId', 'name address city');
