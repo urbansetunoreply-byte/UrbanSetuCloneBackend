@@ -2320,12 +2320,41 @@ export default function Listing() {
                 {/* Rent Property Button (only for rental properties) */}
                 {listing.type === "rent" && (
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       if (!currentUser) {
                         toast.info('Please sign in to rent a property.');
                         navigate('/sign-in');
                         return;
                       }
+                      
+                      // Check if there's a pending contract for this listing
+                      try {
+                        const res = await fetch(`${API_BASE_URL}/api/rental/contracts?status=pending_signature&status=draft`, {
+                          credentials: 'include'
+                        });
+                        
+                        if (res.ok) {
+                          const data = await res.json();
+                          if (data.contracts && data.contracts.length > 0) {
+                            // Find contract for this listing
+                            const pendingContract = data.contracts.find(
+                              c => (c.listingId?._id === listing._id || c.listingId === listing._id) &&
+                                   (c.tenantId?._id === currentUser._id || c.tenantId === currentUser._id)
+                            );
+                            
+                            if (pendingContract) {
+                              toast.info('You have a pending contract. Resuming from where you left off.');
+                              navigate(`/user/rent-property?listingId=${listing._id}&contractId=${pendingContract.contractId || pendingContract._id}`);
+                              return;
+                            }
+                          }
+                        }
+                      } catch (error) {
+                        console.error('Error checking pending contracts:', error);
+                        // Continue with normal flow if check fails
+                      }
+                      
+                      // Normal flow - start new rental process
                       navigate(`/user/rent-property?listingId=${listing._id}`);
                     }}
                     className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-8 py-3 rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2"

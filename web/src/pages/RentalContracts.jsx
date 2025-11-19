@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FaFileContract, FaDownload, FaEye, FaCalendarAlt, FaMoneyBillWave, FaLock, FaCheckCircle, FaTimesCircle, FaSpinner, FaHome, FaUser, FaChevronRight, FaSignInAlt, FaSignOutAlt, FaGavel, FaStar, FaCreditCard } from 'react-icons/fa';
+import { FaFileContract, FaDownload, FaEye, FaCalendarAlt, FaMoneyBillWave, FaLock, FaCheckCircle, FaTimesCircle, FaSpinner, FaHome, FaUser, FaChevronRight, FaSignInAlt, FaSignOutAlt, FaGavel, FaStar, FaCreditCard, FaPlayCircle } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
 import ContractPreview from '../components/rental/ContractPreview';
 
@@ -233,6 +233,21 @@ export default function RentalContracts() {
                   </div>
 
                   <div className="flex flex-col gap-2">
+                    {(contract.status === 'pending_signature' || contract.status === 'draft') && (
+                      <button
+                        onClick={() => {
+                          const listingId = contract.listingId?._id || contract.listingId;
+                          if (listingId) {
+                            navigate(`/user/rent-property?listingId=${listingId}&contractId=${contract.contractId || contract._id}`);
+                          } else {
+                            toast.error('Unable to continue contract. Listing not found.');
+                          }
+                        }}
+                        className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center justify-center gap-2"
+                      >
+                        <FaPlayCircle /> Continue Contract
+                      </button>
+                    )}
                     <button
                       onClick={() => handleView(contract)}
                       className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"

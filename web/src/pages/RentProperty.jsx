@@ -21,6 +21,7 @@ export default function RentProperty() {
   // Get listing information from URL params
   const searchParams = new URLSearchParams(location.search);
   const listingId = searchParams.get('listingId');
+  const contractIdParam = searchParams.get('contractId'); // For resuming contracts
   
   const [loading, setLoading] = useState(true);
   const [listing, setListing] = useState(null);
@@ -32,14 +33,15 @@ export default function RentProperty() {
     bookingId: null
   });
   const [contract, setContract] = useState(null);
+  const [resumingContract, setResumingContract] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [booking, setBooking] = useState(null);
   const [showSignatureModal, setShowSignatureModal] = useState(false);
   const [signingAs, setSigningAs] = useState(null); // 'tenant' or 'landlord'
 
-  // Fetch listing details
+  // Fetch listing details and resume contract if contractId is provided
   useEffect(() => {
-    const fetchListing = async () => {
+    const fetchListingAndContract = async () => {
       if (!listingId) {
         toast.error("Listing ID is required.");
         navigate("/user");
@@ -47,6 +49,9 @@ export default function RentProperty() {
       }
 
       try {
+        setLoading(true);
+
+        // Fetch listing
         const res = await fetch(`${API_BASE_URL}/api/listing/get/${listingId}`, {
           credentials: 'include'
         });
@@ -81,6 +86,58 @@ export default function RentProperty() {
             rentLockPlan: listingData.rentLockPlans.defaultPlan
           }));
         }
+
+        // If contractId is provided, fetch and resume contract
+        if (contractIdParam) {
+          try {
+            const contractRes = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractIdParam}`, {
+              credentials: 'include'
+            });
+
+            if (contractRes.ok) {
+              const contractData = await contractRes.json();
+              const existingContract = contractData.contract || contractData;
+              
+              if (existingContract && existingContract._id) {
+                setContract(existingContract);
+                setResumingContract(true);
+                
+                // Determine which step to resume from
+                let resumeStep = 1;
+                if (existingContract.status === 'pending_signature') {
+                  // Check signatures to determine step
+                  const isTenant = currentUser?._id === existingContract.tenantId?._id || currentUser?._id === existingContract.tenantId;
+                  const tenantSigned = existingContract.tenantSignature?.signed;
+                  const landlordSigned = existingContract.landlordSignature?.signed;
+                  
+                  if (!tenantSigned || !landlordSigned) {
+                    resumeStep = 3; // Signing step
+                  } else {
+                    resumeStep = 4; // Payment step
+                  }
+                } else if (existingContract.status === 'active') {
+                  resumeStep = 5; // Move-in step
+                } else {
+                  resumeStep = 2; // Contract review step
+                }
+
+                setStep(resumeStep);
+                setFormData(prev => ({
+                  ...prev,
+                  rentLockPlan: existingContract.rentLockPlan || prev.rentLockPlan,
+                  customLockDuration: existingContract.lockDuration || prev.customLockDuration,
+                  moveInDate: existingContract.moveInDate ? new Date(existingContract.moveInDate).toISOString().split('T')[0] : prev.moveInDate,
+                  bookingId: existingContract.bookingId?._id || existingContract.bookingId || prev.bookingId
+                }));
+
+                toast.info('Resuming your contract from where you left off.');
+              }
+            }
+          } catch (contractError) {
+            console.error("Error fetching contract:", contractError);
+            // Continue with normal flow if contract fetch fails
+          }
+        }
       } catch (error) {
         console.error("Error fetching listing:", error);
         toast.error(error.message || "Failed to load property details.");
@@ -90,8 +147,8 @@ export default function RentProperty() {
       }
     };
 
-    fetchListing();
-  }, [listingId, navigate]);
+    fetchListingAndContract();
+  }, [listingId, contractIdParam, currentUser, navigate]);
 
   const handlePlanChange = (plan) => {
     setFormData(prev => ({

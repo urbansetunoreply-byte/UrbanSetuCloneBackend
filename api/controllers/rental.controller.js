@@ -494,8 +494,21 @@ export const getWallet = async (req, res, next) => {
     const { contractId } = req.params;
     const userId = req.user.id;
 
-    // Verify contract exists and user has access
-    const contract = await RentLockContract.findById(contractId);
+    // Try to find by contractId string field first, then by _id (MongoDB ObjectId)
+    let contract = await RentLockContract.findOne({ contractId: contractId });
+
+    // If not found by contractId, try by _id (in case contractId param is actually an ObjectId)
+    if (!contract) {
+      try {
+        const mongoose = await import('mongoose');
+        if (mongoose.default.Types.ObjectId.isValid(contractId)) {
+          contract = await RentLockContract.findById(contractId);
+        }
+      } catch (error) {
+        // Continue to 404 error below
+      }
+    }
+
     if (!contract) {
       return res.status(404).json({ message: "Contract not found." });
     }
