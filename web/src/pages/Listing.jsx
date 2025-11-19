@@ -2148,27 +2148,46 @@ export default function Listing() {
             </div>
           )}
 
-          {/* Book Appointment Button */}
-          <div className="flex justify-center">
+          {/* Rent Property / Book Appointment Buttons */}
+          <div className="flex justify-center gap-4 flex-wrap">
             {currentUser && (listing.sellerId === currentUser._id || listing.userRef === currentUser._id) ? (
-              <div className="text-red-500 font-semibold text-lg py-3">You cannot book an appointment for your own property.</div>
+              <div className="text-red-500 font-semibold text-lg py-3">You cannot book an appointment or rent your own property.</div>
             ) : (
-              <button
-                onClick={() => {
-                  if (!currentUser) {
-                    toast.info('Please sign in to book appointments.');
-                    navigate('/sign-in');
-                    return;
-                  }
-                  const appointmentUrl = isAdminContext 
-                    ? `/admin/appointmentlisting?listingId=${listing._id}&propertyName=${encodeURIComponent(listing.name)}&propertyDescription=${encodeURIComponent(listing.description)}&listingType=${listing.type}`
-                    : `/user/appointment?listingId=${listing._id}&propertyName=${encodeURIComponent(listing.name)}&propertyDescription=${encodeURIComponent(listing.description)}&listingType=${listing.type}`;
-                  navigate(appointmentUrl);
-                }}
-                className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2"
-              >
-                📅 Book Appointment
-              </button>
+              <>
+                {/* Rent Property Button (only for rental properties) */}
+                {listing.type === "rent" && (
+                  <button
+                    onClick={() => {
+                      if (!currentUser) {
+                        toast.info('Please sign in to rent a property.');
+                        navigate('/sign-in');
+                        return;
+                      }
+                      navigate(`/user/rent-property?listingId=${listing._id}`);
+                    }}
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-8 py-3 rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2"
+                  >
+                    <FaLock className="inline" /> Rent This Property
+                  </button>
+                )}
+                {/* Book Appointment Button */}
+                <button
+                  onClick={() => {
+                    if (!currentUser) {
+                      toast.info('Please sign in to book appointments.');
+                      navigate('/sign-in');
+                      return;
+                    }
+                    const appointmentUrl = isAdminContext 
+                      ? `/admin/appointmentlisting?listingId=${listing._id}&propertyName=${encodeURIComponent(listing.name)}&propertyDescription=${encodeURIComponent(listing.description)}&listingType=${listing.type}`
+                      : `/user/appointment?listingId=${listing._id}&propertyName=${encodeURIComponent(listing.name)}&propertyDescription=${encodeURIComponent(listing.description)}&listingType=${listing.type}`;
+                    navigate(appointmentUrl);
+                  }}
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2"
+                >
+                  📅 Book Appointment
+                </button>
+              </>
             )}
           </div>
 
