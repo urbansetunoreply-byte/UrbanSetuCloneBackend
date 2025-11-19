@@ -404,20 +404,87 @@ export const updateContractStatus = async (req, res, next) => {
       // Map contract status to booking rentalStatus (available values: pending_contract, contract_signed, move_in_pending, active_rental, move_out_pending, completed, terminated)
       if (status === 'rejected') {
         booking.rentalStatus = 'terminated'; // Use 'terminated' as closest match for rejected contracts
+        if (booking.status !== 'rejected') {
+          booking.status = 'rejected';
+        }
       } else if (status === 'terminated') {
         booking.rentalStatus = 'terminated';
+        if (booking.status === 'accepted') {
+          booking.status = 'cancelled';
+        }
       } else if (status === 'active') {
         booking.rentalStatus = 'contract_signed';
       } else if (status === 'expired') {
         booking.rentalStatus = 'terminated'; // Use 'terminated' as closest match
       }
-      // If contract is rejected/terminated, also update booking status if needed
-      if (status === 'rejected' && booking.status !== 'rejected') {
-        booking.status = 'rejected';
-      } else if (status === 'terminated' && booking.status === 'accepted') {
-        booking.status = 'cancelled';
-      }
       await booking.save();
+    }
+
+    // Send notifications for rejected/terminated contracts
+    if ((status === 'rejected' || status === 'terminated') && contract.tenantId && contract.landlordId) {
+      const io = req.app.get('io');
+      const contractPopulated = await RentLockContract.findById(contract._id)
+        .populate('listingId', 'name address')
+        .populate('tenantId', 'username email')
+        .populate('landlordId', 'username email');
+
+      if (contractPopulated && io) {
+        const listing = contractPopulated.listingId;
+        const notificationType = status === 'rejected' ? 'rent_contract_rejected' : 'rent_contract_terminated';
+        const notificationTitle = status === 'rejected' ? 'Rental Contract Rejected' : 'Rental Contract Terminated';
+        const notificationMessage = status === 'rejected'
+          ? `Your rental contract for ${listing.name} has been rejected${reason ? `: ${reason}` : ''}.`
+          : `Your rental contract for ${listing.name} has been terminated${reason ? `: ${reason}` : ''}.`;
+
+        // Notify tenant
+        await sendRentalNotification({
+          userId: contractPopulated.tenantId._id,
+          type: notificationType,
+          title: notificationTitle,
+          message: notificationMessage,
+          meta: {
+            contractId: contract._id,
+            listingId: listing._id,
+            landlordId: contractPopulated.landlordId._id
+          },
+          actionUrl: `/user/rental-contracts?contractId=${contract._id}`,
+          io
+        });
+
+        // Notify landlord
+        await sendRentalNotification({
+          userId: contractPopulated.landlordId._id,
+          type: notificationType,
+          title: notificationTitle,
+          message: notificationMessage,
+          meta: {
+            contractId: contract._id,
+            listingId: listing._id,
+            tenantId: contractPopulated.tenantId._id
+          },
+          actionUrl: `/user/rental-contracts?contractId=${contract._id}`,
+          io
+        });
+
+        // Send emails
+        try {
+          const { sendContractRejectedEmail, sendContractTerminatedEmail } = await import('../utils/emailService.js');
+          const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+          
+          if (status === 'rejected' && contractPopulated.tenantId?.email) {
+            await sendContractRejectedEmail(contractPopulated.tenantId.email, {
+              contractId: contract.contractId || contract._id,
+              propertyName: listing.name,
+              rejectionReason: reason || 'Contract was rejected by admin',
+              rejectedBy: user?.username || 'Admin'
+            });
+          }
+          
+          // Note: sendContractTerminatedEmail would need to be implemented if not exists
+        } catch (emailError) {
+          console.error('Error sending contract status change emails:', emailError);
+        }
+      }
     }
 
     // Populate before returning
