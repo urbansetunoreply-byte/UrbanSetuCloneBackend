@@ -357,12 +357,27 @@ export default function RentProperty() {
   };
 
   const handleSignatureConfirm = async (signatureData) => {
-    if (!contract || !signingAs) {
+    if (!contract) {
       toast.error("Contract not found.");
       return;
     }
 
-    const isTenant = signingAs === 'tenant';
+    // Determine if user is tenant or landlord if signingAs is not set (e.g., inline signature)
+    let roleToSign = signingAs;
+    if (!roleToSign) {
+      const isTenantUser = currentUser?._id === contract.tenantId?._id || 
+                          currentUser?._id === contract.tenantId ||
+                          String(currentUser?._id) === String(contract.tenantId?._id) ||
+                          String(currentUser?._id) === String(contract.tenantId);
+      roleToSign = isTenantUser ? 'tenant' : 'landlord';
+    }
+
+    if (!roleToSign) {
+      toast.error("Unable to determine your role in this contract.");
+      return;
+    }
+
+    const isTenant = roleToSign === 'tenant';
 
     try {
       setLoading(true);
@@ -752,7 +767,10 @@ export default function RentProperty() {
                   <DigitalSignature
                     title="Tenant Signature"
                     userName={currentUser.username || currentUser.email}
-                    onSign={handleSignatureConfirm}
+                    onSign={(signatureData) => {
+                      setSigningAs('tenant');
+                      handleSignatureConfirm(signatureData);
+                    }}
                     disabled={loading}
                   />
                 )}
