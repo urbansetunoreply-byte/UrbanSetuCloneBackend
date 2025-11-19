@@ -119,7 +119,7 @@ const rentalRatingSchema = new mongoose.Schema({
 // Indexes
 rentalRatingSchema.index({ tenantId: 1 });
 rentalRatingSchema.index({ landlordId: 1 });
-rentalRatingSchema.index({ contractId: 1 });
+// contractId already has unique index from unique: true constraint
 
 // Generate ratingId before saving
 rentalRatingSchema.pre('save', async function(next) {
