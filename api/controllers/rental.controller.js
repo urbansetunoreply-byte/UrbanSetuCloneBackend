@@ -931,10 +931,10 @@ export const assessDamages = async (req, res, next) => {
       return res.status(404).json({ message: "Contract not found." });
     }
 
-    // Only landlord or admin can assess damages
+    // Only landlord or admin/rootadmin can assess damages
     if (contract.landlordId.toString() !== userId) {
       const user = await User.findById(userId);
-      if (user?.role !== 'admin') {
+      if (user?.role !== 'admin' && user?.role !== 'rootadmin') {
         return res.status(403).json({ message: "Unauthorized. Only landlord can assess damages." });
       }
     }
@@ -1193,9 +1193,9 @@ export const updateDisputeStatus = async (req, res, next) => {
     }
 
     const user = await User.findById(userId);
-    const isAdmin = user?.role === 'admin';
+    const isAdmin = user?.role === 'admin' || user?.role === 'rootadmin';
 
-    // Only admin can change status
+    // Only admin/rootadmin can change status
     if (!isAdmin) {
       return res.status(403).json({ message: "Unauthorized. Only admin can update dispute status." });
     }
@@ -1293,7 +1293,7 @@ export const resolveDispute = async (req, res, next) => {
     }
 
     const user = await User.findById(userId);
-    if (user?.role !== 'admin') {
+    if (user?.role !== 'admin' && user?.role !== 'rootadmin') {
       return res.status(403).json({ message: "Unauthorized. Only admin can resolve disputes." });
     }
 
@@ -1565,7 +1565,7 @@ export const approveVerification = async (req, res, next) => {
     const userId = req.user.id;
 
     const user = await User.findById(userId);
-    if (user?.role !== 'admin') {
+    if (user?.role !== 'admin' && user?.role !== 'rootadmin') {
       return res.status(403).json({ message: "Unauthorized. Only admin can approve verification." });
     }
 
@@ -1699,7 +1699,7 @@ export const rejectVerification = async (req, res, next) => {
     const userId = req.user.id;
 
     const user = await User.findById(userId);
-    if (user?.role !== 'admin') {
+    if (user?.role !== 'admin' && user?.role !== 'rootadmin') {
       return res.status(403).json({ message: "Unauthorized. Only admin can reject verification." });
     }
 
@@ -2385,7 +2385,7 @@ export const approveRentalLoan = async (req, res, next) => {
     const userId = req.user.id;
 
     const user = await User.findById(userId);
-    if (user?.role !== 'admin') {
+    if (user?.role !== 'admin' && user?.role !== 'rootadmin') {
       return res.status(403).json({ message: "Unauthorized. Only admin can approve loans." });
     }
 
@@ -2498,7 +2498,7 @@ export const rejectRentalLoan = async (req, res, next) => {
     const userId = req.user.id;
 
     const user = await User.findById(userId);
-    if (user?.role !== 'admin') {
+    if (user?.role !== 'admin' && user?.role !== 'rootadmin') {
       return res.status(403).json({ message: "Unauthorized. Only admin can reject loans." });
     }
 
@@ -2583,7 +2583,7 @@ export const disburseRentalLoan = async (req, res, next) => {
     const userId = req.user.id;
 
     const user = await User.findById(userId);
-    if (user?.role !== 'admin') {
+    if (user?.role !== 'admin' && user?.role !== 'rootadmin') {
       return res.status(403).json({ message: "Unauthorized. Only admin can disburse loans." });
     }
 
