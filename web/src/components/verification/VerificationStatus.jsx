@@ -1,17 +1,105 @@
-import React from 'react';
-import { FaCheckCircle, FaTimesCircle, FaClock, FaShieldAlt, FaFileAlt, FaMapMarkerAlt, FaImage, FaHome, FaTimes, FaDownload } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { FaCheckCircle, FaTimesCircle, FaClock, FaShieldAlt, FaFileAlt, FaMapMarkerAlt, FaImage, FaHome, FaTimes, FaDownload, FaSpinner } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 import ImagePreview from '../ImagePreview';
 
-export default function VerificationStatus({ verification, listing, currentUser, onUpdate, STATUS_COLORS, STATUS_LABELS, onClose }) {
-  const isAdmin = currentUser?.role === 'admin';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+export default function VerificationStatus({ verification, listing, currentUser, onUpdate, STATUS_COLORS, STATUS_LABELS, onClose, isAdminView = false }) {
+  const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'rootadmin';
   const isVerified = verification.status === 'verified';
   const isRejected = verification.status === 'rejected';
+  const [loading, setLoading] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [adminNotes, setAdminNotes] = useState('');
+  const [showRejectModal, setShowRejectModal] = useState(false);
 
   const getDocumentStatus = (doc) => {
     if (doc.verified) {
       return { icon: <FaCheckCircle className="text-green-600" />, text: 'Verified', color: 'text-green-700' };
     }
     return { icon: <FaClock className="text-yellow-600" />, text: 'Pending', color: 'text-yellow-700' };
+  };
+
+  const handleApprove = async () => {
+    if (!isAdmin) {
+      toast.error('Unauthorized. Only admin can approve verification.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/rental/verification/${verification._id}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          ownershipVerified: true,
+          identityVerified: true,
+          addressVerified: true,
+          photosVerified: true,
+          locationVerified: true,
+          amenitiesVerified: true,
+          adminNotes: adminNotes || 'All documents and property details verified successfully.'
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast.success('Verification approved successfully!');
+        if (onUpdate) onUpdate();
+        if (onClose) onClose();
+      } else {
+        toast.error(data.message || 'Failed to approve verification');
+      }
+    } catch (error) {
+      console.error('Error approving verification:', error);
+      toast.error('Failed to approve verification');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!isAdmin) {
+      toast.error('Unauthorized. Only admin can reject verification.');
+      return;
+    }
+
+    if (!rejectionReason.trim()) {
+      toast.error('Please provide a rejection reason');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/rental/verification/${verification._id}/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          rejectionReason: rejectionReason,
+          adminNotes: adminNotes || ''
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast.success('Verification rejected.');
+        setShowRejectModal(false);
+        setRejectionReason('');
+        setAdminNotes('');
+        if (onUpdate) onUpdate();
+        if (onClose) onClose();
+      } else {
+        toast.error(data.message || 'Failed to reject verification');
+      }
+    } catch (error) {
+      console.error('Error rejecting verification:', error);
+      toast.error('Failed to reject verification');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -238,6 +326,106 @@ export default function VerificationStatus({ verification, listing, currentUser,
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
           <h4 className="font-semibold text-gray-800 mb-2">Admin Notes</h4>
           <p className="text-sm text-gray-700">{verification.adminNotes}</p>
+        </div>
+      )}
+
+      {/* Admin Actions */}
+      {isAdmin && isAdminView && !isVerified && !isRejected && (
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+          <h4 className="font-semibold text-gray-800 mb-3">Admin Actions</h4>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Admin Notes (Optional)
+              </label>
+              <textarea
+                value={adminNotes}
+                onChange={(e) => setAdminNotes(e.target.value)}
+                placeholder="Add any notes about this verification..."
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                rows={3}
+              />
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={handleApprove}
+                disabled={loading}
+                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-semibold"
+              >
+                {loading ? (
+                  <>
+                    <FaSpinner className="animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <FaCheckCircle /> Approve Verification
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => setShowRejectModal(true)}
+                disabled={loading}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-semibold"
+              >
+                <FaTimesCircle /> Reject Verification
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Modal */}
+      {showRejectModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-red-700 mb-4 flex items-center gap-2">
+              <FaTimesCircle /> Reject Verification
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Rejection Reason <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  placeholder="Please provide a reason for rejection..."
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  rows={4}
+                  required
+                />
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowRejectModal(false);
+                    setRejectionReason('');
+                  }}
+                  disabled={loading}
+                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 disabled:opacity-50 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleReject}
+                  disabled={loading || !rejectionReason.trim()}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-semibold"
+                >
+                  {loading ? (
+                    <>
+                      <FaSpinner className="animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <FaTimesCircle /> Confirm Rejection
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

@@ -6,6 +6,47 @@ import { FaShieldAlt, FaCheckCircle, FaTimesCircle, FaClock, FaSearch, FaSpinner
 import { usePageTitle } from '../hooks/usePageTitle';
 import VerificationStatus from '../components/verification/VerificationStatus';
 
+// Verification Status Modal Component with scroll prevention
+const VerificationStatusModal = ({ verification, listing, currentUser, onUpdate, onClose, STATUS_COLORS, STATUS_LABELS }) => {
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
+  return (
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      style={{ overflow: 'hidden' }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div 
+        className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-6">
+          <VerificationStatus
+            verification={verification}
+            listing={listing}
+            currentUser={currentUser}
+            onUpdate={onUpdate}
+            STATUS_COLORS={STATUS_COLORS}
+            STATUS_LABELS={STATUS_LABELS}
+            onClose={onClose}
+            isAdminView={true}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const STATUS_COLORS = {
@@ -246,38 +287,19 @@ export default function AdminPropertyVerification() {
 
         {/* Verification Status Modal */}
         {showVerificationStatus && selectedVerification && selectedListing && (
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-            style={{ overflow: 'hidden' }}
-            onClick={(e) => {
-              if (e.target === e.currentTarget) {
-                setShowVerificationStatus(false);
-                setSelectedVerification(null);
-                setSelectedListing(null);
-              }
+          <VerificationStatusModal
+            verification={selectedVerification}
+            listing={selectedListing}
+            currentUser={currentUser}
+            onUpdate={handleVerificationUpdated}
+            onClose={() => {
+              setShowVerificationStatus(false);
+              setSelectedVerification(null);
+              setSelectedListing(null);
             }}
-          >
-            <div 
-              className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="p-6">
-                <VerificationStatus
-                  verification={selectedVerification}
-                  listing={selectedListing}
-                  currentUser={currentUser}
-                  onUpdate={handleVerificationUpdated}
-                  STATUS_COLORS={STATUS_COLORS}
-                  STATUS_LABELS={STATUS_LABELS}
-                  onClose={() => {
-                    setShowVerificationStatus(false);
-                    setSelectedVerification(null);
-                    setSelectedListing(null);
-                  }}
-                />
-              </div>
-            </div>
-          </div>
+            STATUS_COLORS={STATUS_COLORS}
+            STATUS_LABELS={STATUS_LABELS}
+          />
         )}
       </div>
     </div>

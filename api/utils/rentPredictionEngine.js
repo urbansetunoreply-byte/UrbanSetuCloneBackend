@@ -20,25 +20,72 @@ export const calculateRentPrediction = (listing, similarProperties = []) => {
   // Calculate market average from similar properties
   let marketAverageRent = baseRent;
   if (similarProperties.length > 0) {
-    const totalRent = similarProperties.reduce((sum, prop) => {
-      // Check multiple price fields for similar properties
+    const validProperties = similarProperties.filter(prop => {
       const propRent = prop.monthlyRent || prop.discountPrice || prop.regularPrice || 0;
-      return sum + propRent;
-    }, 0);
-    marketAverageRent = Math.round(totalRent / similarProperties.length);
+      return propRent > 0;
+    });
+    
+    if (validProperties.length > 0) {
+      const totalRent = validProperties.reduce((sum, prop) => {
+        // Check multiple price fields for similar properties
+        const propRent = prop.monthlyRent || prop.discountPrice || prop.regularPrice || 0;
+        return sum + propRent;
+      }, 0);
+      marketAverageRent = Math.round(totalRent / validProperties.length);
+    }
   }
 
-  // If no similar properties or market average is 0, use base rent as market average
-  // If base rent is also 0, estimate based on property attributes
-  if (marketAverageRent === 0) {
-    if (baseRent > 0) {
+  // If no similar properties or market average is 0, estimate based on property attributes
+  if (marketAverageRent === 0 || !marketAverageRent) {
+    // Estimate base rent from property attributes
+    // City-based rent per sqft (major Indian cities)
+    const cityRentPerSqft = {
+      'mumbai': 120, 'delhi': 90, 'bangalore': 80, 'hyderabad': 70,
+      'chennai': 70, 'pune': 75, 'kolkata': 65, 'ahmedabad': 55,
+      'jaipur': 50, 'lucknow': 45, 'kanpur': 40, 'nagpur': 45
+    };
+    
+    const city = (listing.city || '').toLowerCase();
+    const baseRentPerSqft = cityRentPerSqft[city] || 65; // Default to mid-range if city not found
+    
+    // Calculate estimated rent based on area
+    const area = listing.area || 1000; // Default to 1000 sqft if not provided
+    let estimatedRent = area * baseRentPerSqft;
+    
+    // Adjust for bedrooms (more bedrooms = higher rent per sqft efficiency)
+    const bedrooms = listing.bedrooms || 2;
+    if (bedrooms >= 3) {
+      estimatedRent *= 1.1; // 10% premium for 3+ bedrooms
+    }
+    
+    // Adjust for furnished (furnished = 15% premium)
+    if (listing.furnished) {
+      estimatedRent *= 1.15;
+    }
+    
+    // Adjust for parking (parking = 8% premium)
+    if (listing.parking) {
+      estimatedRent *= 1.08;
+    }
+    
+    // Round to nearest 100
+    marketAverageRent = Math.round(estimatedRent / 100) * 100;
+    
+    // Ensure minimum rent based on city
+    const minRent = {
+      'mumbai': 25000, 'delhi': 18000, 'bangalore': 15000, 'hyderabad': 12000,
+      'chennai': 12000, 'pune': 14000, 'kolkata': 10000, 'ahmedabad': 8000,
+      'jaipur': 7000, 'lucknow': 6000, 'kanpur': 5500, 'nagpur': 6000
+    };
+    
+    const minRentForCity = minRent[city] || 8000;
+    if (marketAverageRent < minRentForCity) {
+      marketAverageRent = minRentForCity;
+    }
+    
+    // Use base rent if it's higher than estimate
+    if (baseRent > 0 && baseRent > marketAverageRent) {
       marketAverageRent = baseRent;
-    } else {
-      // Estimate base rent from property attributes if no price is set
-      // Average rent per sqft in major Indian cities (approx ₹50-100 per sqft)
-      const estimatedRentPerSqft = 75; // Mid-range estimate
-      const estimatedBaseRent = (listing.area || 1000) * estimatedRentPerSqft;
-      marketAverageRent = Math.round(estimatedBaseRent / 100) * 100; // Round to nearest 100
     }
   }
 
