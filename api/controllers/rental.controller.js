@@ -2525,8 +2525,13 @@ export const generateRentPrediction = async (req, res, next) => {
       prediction.similarPropertiesCount = predictionData.similarPropertiesCount;
       prediction.updatedAt = new Date();
     } else {
-      // Create new prediction
-      prediction = await RentPrediction.create({
+      // Create new prediction - generate predictionId before create
+      const timestamp = Date.now();
+      const random = Math.random().toString(36).substring(2, 9).toUpperCase();
+      const predictionId = `PREDICT-${timestamp}-${random}`;
+      
+      prediction = new RentPrediction({
+        predictionId: predictionId,
         listingId: listing._id,
         predictedRent: predictionData.predictedRent,
         marketAverageRent: predictionData.marketAverageRent,
@@ -2540,6 +2545,7 @@ export const generateRentPrediction = async (req, res, next) => {
         accuracy: 85,
         modelVersion: '1.0'
       });
+      await prediction.save();
     }
 
     // Update listing with prediction reference

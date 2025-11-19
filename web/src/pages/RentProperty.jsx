@@ -42,7 +42,7 @@ export default function RentProperty() {
     const fetchListing = async () => {
       if (!listingId) {
         toast.error("Listing ID is required.");
-        navigate("/");
+        navigate("/user");
         return;
       }
 
@@ -52,34 +52,39 @@ export default function RentProperty() {
         });
 
         if (!res.ok) {
-          throw new Error("Failed to fetch listing");
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.message || "Failed to fetch listing");
         }
 
         const data = await res.json();
-        if (data.success && data.listing) {
-          const listingData = data.listing;
-          
-          // Only allow rental properties
-          if (listingData.type !== 'rent') {
-            toast.error("This property is not available for rent.");
-            navigate(`/listing/${listingId}`);
-            return;
-          }
+        
+        // Handle both response formats: {success, listing} or direct listing object
+        const listingData = data.listing || (data._id ? data : null);
+        
+        if (!listingData || !listingData._id) {
+          throw new Error("Listing not found");
+        }
+        
+        // Only allow rental properties
+        if (listingData.type !== 'rent') {
+          toast.error("This property is not available for rent.");
+          navigate(`/listing/${listingId}`);
+          return;
+        }
 
-          setListing(listingData);
-          
-          // Set default plan if available
-          if (listingData.rentLockPlans?.defaultPlan) {
-            setFormData(prev => ({
-              ...prev,
-              rentLockPlan: listingData.rentLockPlans.defaultPlan
-            }));
-          }
+        setListing(listingData);
+        
+        // Set default plan if available
+        if (listingData.rentLockPlans?.defaultPlan) {
+          setFormData(prev => ({
+            ...prev,
+            rentLockPlan: listingData.rentLockPlans.defaultPlan
+          }));
         }
       } catch (error) {
         console.error("Error fetching listing:", error);
-        toast.error("Failed to load property details.");
-        navigate("/");
+        toast.error(error.message || "Failed to load property details.");
+        navigate("/user");
       } finally {
         setLoading(false);
       }
@@ -314,10 +319,10 @@ export default function RentProperty() {
         <div className="text-center">
           <p className="text-red-600 mb-4">Property not found.</p>
           <button
-            onClick={() => navigate("/")}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            onClick={() => navigate("/user")}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 mx-auto"
           >
-            Go Home
+            <FaHome /> Go Home
           </button>
         </div>
       </div>

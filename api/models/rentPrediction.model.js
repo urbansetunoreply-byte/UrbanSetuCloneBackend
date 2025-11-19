@@ -5,7 +5,7 @@ const rentPredictionSchema = new mongoose.Schema({
   predictionId: {
     type: String,
     unique: true,
-    required: true,
+    required: false, // Can be auto-generated in pre-save hook or set manually
     index: true
   },
   listingId: {
