@@ -14,21 +14,32 @@ export const calculateRentPrediction = (listing, similarProperties = []) => {
     return null;
   }
 
-  // Base rent from listing (if available)
-  const baseRent = listing.monthlyRent || 0;
+  // Base rent from listing - check multiple fields (monthlyRent, discountPrice, regularPrice)
+  const baseRent = listing.monthlyRent || listing.discountPrice || listing.regularPrice || 0;
 
   // Calculate market average from similar properties
   let marketAverageRent = baseRent;
   if (similarProperties.length > 0) {
     const totalRent = similarProperties.reduce((sum, prop) => {
-      return sum + (prop.monthlyRent || prop.regularPrice || 0);
+      // Check multiple price fields for similar properties
+      const propRent = prop.monthlyRent || prop.discountPrice || prop.regularPrice || 0;
+      return sum + propRent;
     }, 0);
     marketAverageRent = Math.round(totalRent / similarProperties.length);
   }
 
-  // If no similar properties, use base rent as market average
-  if (marketAverageRent === 0 && baseRent > 0) {
-    marketAverageRent = baseRent;
+  // If no similar properties or market average is 0, use base rent as market average
+  // If base rent is also 0, estimate based on property attributes
+  if (marketAverageRent === 0) {
+    if (baseRent > 0) {
+      marketAverageRent = baseRent;
+    } else {
+      // Estimate base rent from property attributes if no price is set
+      // Average rent per sqft in major Indian cities (approx ₹50-100 per sqft)
+      const estimatedRentPerSqft = 75; // Mid-range estimate
+      const estimatedBaseRent = (listing.area || 1000) * estimatedRentPerSqft;
+      marketAverageRent = Math.round(estimatedBaseRent / 100) * 100; // Round to nearest 100
+    }
   }
 
   // Calculate predicted rent based on property features
@@ -86,8 +97,11 @@ export const calculateRentPrediction = (listing, similarProperties = []) => {
   let priceComparison = 'fair';
   let priceDifference = 0;
 
-  if (baseRent > 0) {
-    priceDifference = ((baseRent - marketAverageRent) / marketAverageRent) * 100;
+  // Use actual listing rent if available, otherwise use predicted rent
+  const actualRent = listing.monthlyRent || listing.discountPrice || listing.regularPrice || predictedRent;
+  
+  if (actualRent > 0 && marketAverageRent > 0) {
+    priceDifference = ((actualRent - marketAverageRent) / marketAverageRent) * 100;
     
     if (priceDifference > 15) {
       priceComparison = 'overpriced';
@@ -96,6 +110,10 @@ export const calculateRentPrediction = (listing, similarProperties = []) => {
     } else {
       priceComparison = 'fair';
     }
+  } else if (predictedRent > 0) {
+    // If no actual rent, use predicted rent (should be close to market average)
+    priceComparison = 'fair';
+    priceDifference = 0;
   }
 
   // Generate influencing factors
@@ -165,14 +183,22 @@ export const calculateRentPrediction = (listing, similarProperties = []) => {
  * @param {Object} neighborhoodData - Optional neighborhood data
  * @returns {Object} Locality score breakdown
  */
-export const calculateLocalityScore = (listing, neighborhoodData = {}) => {
+export const calculateLocalityScore = (listing, neighborhoodData = {}, analyticsData = {}) => {
   // Base scores (can be enhanced with actual data from APIs like Google Places, etc.)
   const baseScore = 5.0; // Default middle score
 
-  // Safety score (can be enhanced with crime data)
-  const safety = neighborhoodData.safetyScore || baseScore;
+  // Extract location data from analytics if available
+  const locationData = analyticsData?.locationData || {};
+  const amenities = locationData?.amenities || {};
+  const transportData = locationData?.transportData || {};
 
-  // Accessibility score (based on location and transport)
+  // Safety score (can be enhanced with crime data)
+  // Use neighborhood data first, then analytics, then default
+  const safety = neighborhoodData.safetyScore || 
+                 analyticsData.safetyScore || 
+                 (locationData.safety ? Math.min(10, locationData.safety) : baseScore);
+
+  // Accessibility score (based on location, transport, and city)
   let accessibility = baseScore;
   if (listing.city) {
     // Major cities have better accessibility
@@ -181,27 +207,104 @@ export const calculateLocalityScore = (listing, neighborhoodData = {}) => {
       accessibility = 7.5;
     }
   }
+  
+  // Enhance accessibility based on transport data
+  if (transportData.stations && Array.isArray(transportData.stations) && transportData.stations.length > 0) {
+    // More transport stations = better accessibility (max 9.5)
+    const stationCount = transportData.stations.length;
+    accessibility = Math.min(9.5, accessibility + (stationCount * 0.3));
+  }
 
-  // Water availability (default assumption)
-  const waterAvailability = neighborhoodData.waterAvailability || baseScore;
+  // Water availability (use neighborhood data or default)
+  const waterAvailability = neighborhoodData.waterAvailability || 
+                            analyticsData.waterAvailability || 
+                            (locationData.waterSupply ? Math.min(10, locationData.waterSupply) : baseScore);
 
-  // Schools (can be enhanced with actual school data)
-  const schools = neighborhoodData.schoolScore || baseScore;
+  // Schools (enhance with actual school data from analytics)
+  let schools = baseScore;
+  // Check schoolData first (from getSchoolData), then amenities
+  if (analyticsData?.schoolData?.schools && Array.isArray(analyticsData.schoolData.schools)) {
+    const schoolCount = analyticsData.schoolData.schools.length;
+    // More schools = better score (1 school = 6.0, 5+ schools = 9.0)
+    schools = Math.min(9.0, 5.0 + (schoolCount * 0.8));
+  } else if (amenities.school && Array.isArray(amenities.school)) {
+    const schoolCount = amenities.school.length;
+    // More schools = better score (1 school = 6.0, 5+ schools = 9.0)
+    schools = Math.min(9.0, 5.0 + (schoolCount * 0.8));
+  } else if (amenities.schools && Array.isArray(amenities.schools)) {
+    const schoolCount = amenities.schools.length;
+    schools = Math.min(9.0, 5.0 + (schoolCount * 0.8));
+  } else {
+    schools = neighborhoodData.schoolScore || neighborhoodData.schools || baseScore;
+  }
 
-  // Offices (can be enhanced with business district data)
-  const offices = neighborhoodData.offices || baseScore;
+  // Offices (enhance with actual office/business data)
+  let offices = baseScore;
+  if (amenities.office && Array.isArray(amenities.office)) {
+    const officeCount = amenities.office.length;
+    // More offices = better for professionals (1 office = 6.0, 5+ offices = 9.0)
+    offices = Math.min(9.0, 5.0 + (officeCount * 0.8));
+  } else if (amenities.business && Array.isArray(amenities.business)) {
+    const businessCount = amenities.business.length;
+    offices = Math.min(9.0, 5.0 + (businessCount * 0.8));
+  } else {
+    offices = neighborhoodData.offices || neighborhoodData.office || baseScore;
+  }
 
   // Traffic (inverse - less traffic is better)
-  const traffic = neighborhoodData.trafficScore ? (10 - neighborhoodData.trafficScore) : baseScore;
+  // Use traffic data from analytics or default
+  let traffic = baseScore;
+  if (locationData.traffic !== undefined) {
+    // Lower traffic score is better, so invert (traffic score 0-10, where 10 is worst)
+    traffic = Math.max(2.0, 10 - locationData.traffic);
+  } else if (neighborhoodData.trafficScore !== undefined) {
+    traffic = Math.max(2.0, 10 - neighborhoodData.trafficScore);
+  } else {
+    // Default: major cities have more traffic
+    const majorCities = ['mumbai', 'delhi', 'bangalore'];
+    if (listing.city && majorCities.includes(listing.city.toLowerCase())) {
+      traffic = 4.5; // Slightly worse traffic in major cities
+    }
+  }
 
-  // Grocery stores (default assumption)
-  const grocery = neighborhoodData.grocery || 6.0;
+  // Grocery stores (enhance with actual data)
+  let grocery = 6.0;
+  if (amenities.grocery && Array.isArray(amenities.grocery)) {
+    const groceryCount = amenities.grocery.length;
+    // More grocery stores = better (1 store = 6.5, 5+ stores = 9.0)
+    grocery = Math.min(9.0, 6.0 + (groceryCount * 0.6));
+  } else if (amenities.supermarket && Array.isArray(amenities.supermarket)) {
+    const marketCount = amenities.supermarket.length;
+    grocery = Math.min(9.0, 6.0 + (marketCount * 0.6));
+  } else {
+    grocery = neighborhoodData.grocery || neighborhoodData.groceryStores || 6.0;
+  }
 
-  // Medical facilities (default assumption)
-  const medical = neighborhoodData.medical || 6.0;
+  // Medical facilities (enhance with actual data)
+  let medical = 6.0;
+  if (amenities.hospital && Array.isArray(amenities.hospital)) {
+    const hospitalCount = amenities.hospital.length;
+    // More hospitals = better (1 hospital = 7.0, 3+ hospitals = 9.0)
+    medical = Math.min(9.0, 6.0 + (hospitalCount * 1.0));
+  } else if (amenities.medical && Array.isArray(amenities.medical)) {
+    const medicalCount = amenities.medical.length;
+    medical = Math.min(9.0, 6.0 + (medicalCount * 1.0));
+  } else {
+    medical = neighborhoodData.medical || neighborhoodData.hospitals || 6.0;
+  }
 
-  // Shopping (default assumption)
-  const shopping = neighborhoodData.shopping || 6.0;
+  // Shopping (enhance with actual data)
+  let shopping = 6.0;
+  if (amenities.shopping && Array.isArray(amenities.shopping)) {
+    const shoppingCount = amenities.shopping.length;
+    // More shopping centers = better (1 center = 6.5, 5+ centers = 9.0)
+    shopping = Math.min(9.0, 6.0 + (shoppingCount * 0.6));
+  } else if (amenities.mall && Array.isArray(amenities.mall)) {
+    const mallCount = amenities.mall.length;
+    shopping = Math.min(9.0, 6.0 + (mallCount * 0.8));
+  } else {
+    shopping = neighborhoodData.shopping || neighborhoodData.shoppingCenters || 6.0;
+  }
 
   // Calculate overall score using weighted average
   const weights = {

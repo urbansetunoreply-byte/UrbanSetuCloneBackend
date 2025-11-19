@@ -16,6 +16,7 @@ import {
   calculateLocalityScore, 
   findSimilarProperties 
 } from "../utils/rentPredictionEngine.js";
+import realTimeDataService from "../services/realTimeDataService.js";
 import { sendRentalNotification } from "../utils/rentalNotificationService.js";
 import { 
   sendContractSignedEmail,
@@ -2513,6 +2514,53 @@ export const generateRentPrediction = async (req, res, next) => {
 
     const similarProperties = findSimilarProperties(listing, allListings, 20);
 
+    // Fetch location intelligence data for locality scoring
+    let analyticsData = null;
+    try {
+      const location = {
+        city: listing.city,
+        district: listing.district,
+        state: listing.state,
+        address: listing.address,
+        type: listing.type,
+        bedrooms: listing.bedrooms,
+        latitude: listing.latitude,
+        longitude: listing.longitude
+      };
+
+      // Get location intelligence which includes amenities, schools, transport, etc.
+      const locationIntelligence = await realTimeDataService.getLocationIntelligence(location);
+      
+      if (locationIntelligence) {
+        // Format analytics data for locality score calculation
+        // Combine amenities.school with schoolData.schools
+        const amenities = locationIntelligence.amenities || {};
+        const schoolData = locationIntelligence.schoolData || {};
+        const transportData = locationIntelligence.transportData || {};
+        
+        // Merge school data from both sources
+        if (schoolData.schools && Array.isArray(schoolData.schools)) {
+          amenities.school = amenities.school || [];
+          amenities.school = [...amenities.school, ...schoolData.schools];
+        }
+        
+        analyticsData = {
+          locationData: {
+            amenities: amenities,
+            transportData: transportData,
+            safety: locationIntelligence.locationScore?.safety || null,
+            waterSupply: locationIntelligence.locationScore?.waterSupply || null,
+            traffic: locationIntelligence.locationScore?.traffic || null
+          },
+          schoolData: schoolData,
+          crimeData: locationIntelligence.crimeData || null
+        };
+      }
+    } catch (error) {
+      // Analytics fetch failed, continue without it
+      console.log('Could not fetch location intelligence for locality score:', error.message);
+    }
+
     // Calculate rent prediction
     const predictionData = calculateRentPrediction(listing, similarProperties);
 
@@ -2520,8 +2568,8 @@ export const generateRentPrediction = async (req, res, next) => {
       return res.status(400).json({ message: "Unable to generate rent prediction." });
     }
 
-    // Calculate locality score
-    const localityScore = calculateLocalityScore(listing, listing.neighborhood || {});
+    // Calculate locality score with analytics data if available
+    const localityScore = calculateLocalityScore(listing, listing.neighborhood || {}, analyticsData || {});
 
     // Find or create prediction
     let prediction = await RentPrediction.findOne({ listingId: listing._id });
@@ -2638,8 +2686,55 @@ export const getLocalityScore = async (req, res, next) => {
     const prediction = await RentPrediction.findOne({ listingId: listing._id });
 
     if (!prediction || !prediction.localityScore) {
-      // Calculate on the fly if not stored
-      const localityScore = calculateLocalityScore(listing, listing.neighborhood || {});
+      // Fetch location intelligence data for locality scoring
+      let analyticsData = null;
+      try {
+        const location = {
+          city: listing.city,
+          district: listing.district,
+          state: listing.state,
+          address: listing.address,
+          type: listing.type,
+          bedrooms: listing.bedrooms,
+          latitude: listing.latitude,
+          longitude: listing.longitude
+        };
+
+        // Get location intelligence which includes amenities, schools, transport, etc.
+        const locationIntelligence = await realTimeDataService.getLocationIntelligence(location);
+        
+        if (locationIntelligence) {
+          // Format analytics data for locality score calculation
+          // Combine amenities.school with schoolData.schools
+          const amenities = locationIntelligence.amenities || {};
+          const schoolData = locationIntelligence.schoolData || {};
+          const transportData = locationIntelligence.transportData || {};
+          
+          // Merge school data from both sources
+          if (schoolData.schools && Array.isArray(schoolData.schools)) {
+            amenities.school = amenities.school || [];
+            amenities.school = [...amenities.school, ...schoolData.schools];
+          }
+          
+          analyticsData = {
+            locationData: {
+              amenities: amenities,
+              transportData: transportData,
+              safety: locationIntelligence.locationScore?.safety || null,
+              waterSupply: locationIntelligence.locationScore?.waterSupply || null,
+              traffic: locationIntelligence.locationScore?.traffic || null
+            },
+            schoolData: schoolData,
+            crimeData: locationIntelligence.crimeData || null
+          };
+        }
+      } catch (error) {
+        // Analytics fetch failed, continue without it
+        console.log('Could not fetch location intelligence for locality score:', error.message);
+      }
+      
+      // Calculate on the fly if not stored, with analytics data if available
+      const localityScore = calculateLocalityScore(listing, listing.neighborhood || {}, analyticsData || {});
       return res.json({
         success: true,
         localityScore,
