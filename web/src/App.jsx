@@ -112,6 +112,7 @@ const RentalContracts = lazy(() => import('./pages/RentalContracts'));
 const DisputeResolution = lazy(() => import('./pages/DisputeResolution'));
 const PropertyVerification = lazy(() => import('./pages/PropertyVerification'));
 const RentalRatings = lazy(() => import('./pages/RentalRatings'));
+const RentalLoans = lazy(() => import('./pages/RentalLoans'));
 
 // Loading component
 const LoadingSpinner = () => (
@@ -649,6 +650,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/user/disputes" element={<DisputeResolution />} />
             <Route path="/user/property-verification" element={<PropertyVerification />} />
             <Route path="/user/rental-ratings" element={<RentalRatings />} />
+            <Route path="/user/rental-loans" element={<RentalLoans />} />
             <Route path="/user/wishlist" element={<WishList />} />
             <Route path="/user/watchlist" element={<Watchlist />} />
             <Route path="/user/appointment" element={<Appointment />} />

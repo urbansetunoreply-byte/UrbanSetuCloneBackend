@@ -27,7 +27,13 @@ import {
   submitRentalRating,
   getRentalRating,
   listRentalRatings,
-  getPropertyRatings
+  getPropertyRatings,
+  applyForRentalLoan,
+  getRentalLoan,
+  listRentalLoans,
+  approveRentalLoan,
+  rejectRentalLoan,
+  disburseRentalLoan
 } from '../controllers/rental.controller.js';
 
 const router = express.Router();
@@ -91,6 +97,14 @@ router.post("/ratings/:contractId", verifyToken, submitRentalRating);
 router.get("/ratings/:contractId", verifyToken, getRentalRating);
 router.get("/ratings", verifyToken, listRentalRatings);
 router.get("/ratings/property/:listingId", getPropertyRatings); // Public endpoint
+
+// Rental Loans Routes
+router.post("/loans/:contractId", verifyToken, applyForRentalLoan);
+router.get("/loans/:loanId", verifyToken, getRentalLoan);
+router.get("/loans", verifyToken, listRentalLoans);
+router.post("/loans/:loanId/approve", verifyToken, approveRentalLoan);
+router.post("/loans/:loanId/reject", verifyToken, rejectRentalLoan);
+router.post("/loans/:loanId/disburse", verifyToken, disburseRentalLoan);
 
 export default router;
 

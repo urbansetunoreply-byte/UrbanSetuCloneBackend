@@ -271,6 +271,27 @@ export default function RentProperty() {
 
   const handlePaymentSuccess = () => {
     toast.success("Payment successful! Redirecting to your appointments...");
+    // Suggest loan option after payment
+    setTimeout(() => {
+      toast.info(
+        <div>
+          <p className="mb-2">Need help with security deposit or rent?</p>
+          <button
+            onClick={() => {
+              if (contract?._id) {
+                navigate(`/user/rental-loans?contractId=${contract._id}`);
+              } else {
+                navigate('/user/rental-loans');
+              }
+            }}
+            className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm"
+          >
+            Apply for Rental Loan
+          </button>
+        </div>,
+        { autoClose: 10000 }
+      );
+    }, 1500);
     setTimeout(() => {
       navigate("/user/my-appointments");
     }, 2000);

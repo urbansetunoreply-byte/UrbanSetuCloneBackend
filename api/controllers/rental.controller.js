@@ -4,6 +4,7 @@ import MoveInOutChecklist from "../models/moveInOutChecklist.model.js";
 import Dispute from "../models/dispute.model.js";
 import PropertyVerification from "../models/propertyVerification.model.js";
 import RentalRating from "../models/rentalRating.model.js";
+import RentalLoan from "../models/rentalLoan.model.js";
 import Booking from "../models/booking.model.js";
 import Listing from "../models/listing.model.js";
 import User from "../models/user.model.js";
@@ -1641,6 +1642,321 @@ export const getPropertyRatings = async (req, res, next) => {
         averageLandlordRating: averageLandlordRating ? parseFloat(averageLandlordRating) : null,
         averageTenantRating: averageTenantRating ? parseFloat(averageTenantRating) : null
       }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Apply for Rental Loan
+export const applyForRentalLoan = async (req, res, next) => {
+  try {
+    const { contractId } = req.params;
+    const { 
+      loanType, 
+      loanAmount, 
+      interestRate, 
+      tenure, 
+      partnerName,
+      documents,
+      applicantIncome,
+      creditScore
+    } = req.body;
+    const userId = req.user.id;
+
+    // Verify contract exists and user is the tenant
+    const contract = await RentLockContract.findById(contractId)
+      .populate('tenantId')
+      .populate('landlordId');
+
+    if (!contract) {
+      return res.status(404).json({ message: "Contract not found." });
+    }
+
+    const isTenant = contract.tenantId._id.toString() === userId;
+    if (!isTenant) {
+      return res.status(403).json({ message: "Unauthorized. Only tenant can apply for rental loan." });
+    }
+
+    // Check if loan already exists for this contract and loan type
+    const existingLoan = await RentalLoan.findOne({
+      contractId: contract._id,
+      loanType,
+      status: { $in: ['pending', 'approved', 'disbursed'] }
+    });
+
+    if (existingLoan) {
+      return res.status(400).json({ 
+        message: `A ${loanType} loan already exists for this contract.`,
+        loan: existingLoan
+      });
+    }
+
+    // Calculate EMI
+    const monthlyRate = interestRate / 100 / 12;
+    const emi = (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, tenure)) / 
+                (Math.pow(1 + monthlyRate, tenure) - 1);
+
+    // Create loan application
+    const loan = await RentalLoan.create({
+      userId: userId,
+      contractId: contract._id,
+      loanType,
+      loanAmount,
+      interestRate,
+      tenure,
+      partnerName: partnerName || 'UrbanSetu Finance Partner',
+      emiAmount: Math.round(emi),
+      documents: documents || [],
+      eligibilityCheck: {
+        passed: false,
+        creditScore: creditScore || null,
+        incomeVerified: false,
+        employmentVerified: false,
+        eligibilityScore: null
+      },
+      totalRemaining: loanAmount,
+      status: 'pending'
+    });
+
+    // Generate EMI schedule
+    loan.generateEMISchedule();
+    await loan.save();
+
+    // Populate for response
+    await loan.populate('userId', 'username email');
+    await loan.populate('contractId', 'contractId listingId');
+
+    res.status(201).json({
+      success: true,
+      message: "Loan application submitted successfully.",
+      loan
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get Rental Loan
+export const getRentalLoan = async (req, res, next) => {
+  try {
+    const { loanId } = req.params;
+    const userId = req.user.id;
+
+    const loan = await RentalLoan.findById(loanId)
+      .populate('userId', 'username email avatar')
+      .populate('contractId', 'contractId listingId')
+      .populate('approvedBy', 'username')
+      .populate('rejectedBy', 'username');
+
+    if (!loan) {
+      return res.status(404).json({ message: "Loan not found." });
+    }
+
+    // Verify user has access (applicant or admin)
+    const user = await User.findById(userId);
+    const isAdmin = user?.role === 'admin';
+    
+    if (loan.userId._id.toString() !== userId && !isAdmin) {
+      return res.status(403).json({ message: "Unauthorized." });
+    }
+
+    res.json({
+      success: true,
+      loan
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// List Rental Loans
+export const listRentalLoans = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { status, loanType, contractId } = req.query;
+    const user = await User.findById(userId);
+    const isAdmin = user?.role === 'admin';
+
+    let query = {};
+
+    // If not admin, only show user's own loans
+    if (!isAdmin) {
+      query.userId = userId;
+    }
+
+    // Filter by status
+    if (status) {
+      query.status = status;
+    }
+
+    // Filter by loan type
+    if (loanType) {
+      query.loanType = loanType;
+    }
+
+    // Filter by contract
+    if (contractId) {
+      query.contractId = contractId;
+    }
+
+    const loans = await RentalLoan.find(query)
+      .populate('userId', 'username email avatar')
+      .populate('contractId', 'contractId listingId')
+      .populate('listingId', 'name address')
+      .populate('approvedBy', 'username')
+      .populate('rejectedBy', 'username')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      loans
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Approve Rental Loan (Admin only)
+export const approveRentalLoan = async (req, res, next) => {
+  try {
+    const { loanId } = req.params;
+    const { 
+      eligibilityCheck,
+      adminNotes,
+      disbursementDate
+    } = req.body;
+    const userId = req.user.id;
+
+    const user = await User.findById(userId);
+    if (user?.role !== 'admin') {
+      return res.status(403).json({ message: "Unauthorized. Only admin can approve loans." });
+    }
+
+    const loan = await RentalLoan.findById(loanId)
+      .populate('contractId');
+
+    if (!loan) {
+      return res.status(404).json({ message: "Loan not found." });
+    }
+
+    if (loan.status !== 'pending') {
+      return res.status(400).json({ message: `Loan cannot be approved. Current status: ${loan.status}` });
+    }
+
+    // Update eligibility check
+    if (eligibilityCheck) {
+      loan.eligibilityCheck = {
+        ...loan.eligibilityCheck,
+        ...eligibilityCheck,
+        checkedAt: new Date()
+      };
+    }
+
+    loan.status = 'approved';
+    loan.approvedAt = new Date();
+    loan.approvedBy = userId;
+
+    if (adminNotes) {
+      loan.adminNotes = adminNotes;
+    }
+
+    // If disbursement date is provided, set status to disbursed
+    if (disbursementDate) {
+      loan.status = 'disbursed';
+      loan.disbursedAt = new Date(disbursementDate);
+      loan.disbursedAmount = loan.loanAmount;
+      loan.disbursementReference = `DISB-${Date.now()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
+    }
+
+    await loan.save();
+
+    res.json({
+      success: true,
+      message: "Loan approved successfully.",
+      loan
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Reject Rental Loan (Admin only)
+export const rejectRentalLoan = async (req, res, next) => {
+  try {
+    const { loanId } = req.params;
+    const { rejectionReason, adminNotes } = req.body;
+    const userId = req.user.id;
+
+    const user = await User.findById(userId);
+    if (user?.role !== 'admin') {
+      return res.status(403).json({ message: "Unauthorized. Only admin can reject loans." });
+    }
+
+    const loan = await RentalLoan.findById(loanId);
+
+    if (!loan) {
+      return res.status(404).json({ message: "Loan not found." });
+    }
+
+    if (loan.status !== 'pending') {
+      return res.status(400).json({ message: `Loan cannot be rejected. Current status: ${loan.status}` });
+    }
+
+    loan.status = 'rejected';
+    loan.rejectionReason = rejectionReason || '';
+    loan.rejectedAt = new Date();
+    loan.rejectedBy = userId;
+
+    if (adminNotes) {
+      loan.adminNotes = adminNotes;
+    }
+
+    await loan.save();
+
+    res.json({
+      success: true,
+      message: "Loan rejected.",
+      loan
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Disburse Rental Loan (Admin only)
+export const disburseRentalLoan = async (req, res, next) => {
+  try {
+    const { loanId } = req.params;
+    const { disbursedAmount, disbursementReference } = req.body;
+    const userId = req.user.id;
+
+    const user = await User.findById(userId);
+    if (user?.role !== 'admin') {
+      return res.status(403).json({ message: "Unauthorized. Only admin can disburse loans." });
+    }
+
+    const loan = await RentalLoan.findById(loanId);
+
+    if (!loan) {
+      return res.status(404).json({ message: "Loan not found." });
+    }
+
+    if (loan.status !== 'approved') {
+      return res.status(400).json({ message: `Loan cannot be disbursed. Current status: ${loan.status}` });
+    }
+
+    loan.status = 'disbursed';
+    loan.disbursedAt = new Date();
+    loan.disbursedAmount = disbursedAmount || loan.loanAmount;
+    loan.disbursementReference = disbursementReference || `DISB-${Date.now()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
+
+    await loan.save();
+
+    res.json({
+      success: true,
+      message: "Loan disbursed successfully.",
+      loan
     });
   } catch (error) {
     next(error);
