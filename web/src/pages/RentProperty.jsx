@@ -210,6 +210,12 @@ export default function RentProperty() {
         return;
       }
 
+      // Validate move-in date is required
+      if (!formData.moveInDate || formData.moveInDate.trim() === '') {
+        toast.error("Please select a move-in date. You can modify it later if needed.");
+        return;
+      }
+
       // Create booking first
       try {
         setLoading(true);
@@ -659,13 +665,14 @@ export default function RentProperty() {
             <div className="mb-6">
               <label className="block text-gray-700 font-medium mb-2">
                 <FaCalendarAlt className="inline mr-2" />
-                Move-in Date (Optional)
+                Move-in Date <span className="text-gray-500 text-sm font-normal">(can be modified later)</span>
               </label>
               <input
                 type="date"
                 value={formData.moveInDate}
                 onChange={(e) => setFormData(prev => ({ ...prev, moveInDate: e.target.value }))}
                 min={new Date().toISOString().split('T')[0]}
+                required
                 className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -695,7 +702,7 @@ export default function RentProperty() {
 
             <button
               onClick={handleNext}
-              disabled={loading}
+              disabled={loading || !formData.moveInDate || formData.moveInDate.trim() === ''}
               className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
               {loading ? 'Processing...' : 'Continue to Contract Review'}
