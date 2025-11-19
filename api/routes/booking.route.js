@@ -1091,6 +1091,23 @@ router.patch('/:id/cancel', verifyToken, async (req, res) => {
         return res.status(400).json({ message: 'Reason is required for buyer cancellation.' });
       }
       bookingToCancel.status = 'cancelledByBuyer';
+      
+      // Auto-reject contract if purpose is 'rent'
+      if (bookingToCancel.purpose === 'rent' && bookingToCancel.contractId) {
+        try {
+          const { rejectContractForBooking } = await import('../controllers/rental.controller.js');
+          const result = await rejectContractForBooking(
+            bookingToCancel._id,
+            userId,
+            req.body.reason || 'Booking was cancelled by buyer'
+          );
+          if (result.success) {
+            console.log(`✅ Contract ${result.contract.contractId} rejected automatically for booking ${bookingToCancel._id}`);
+          }
+        } catch (contractError) {
+          console.error('Error auto-rejecting contract for booking:', contractError);
+        }
+      }
       bookingToCancel.cancelReason = reason;
       bookingToCancel.cancelledBy = 'buyer';
       await bookingToCancel.save();
@@ -1154,6 +1171,23 @@ router.patch('/:id/cancel', verifyToken, async (req, res) => {
         return res.status(400).json({ message: 'Reason is required for seller cancellation.' });
       }
       bookingToCancel.status = 'cancelledBySeller';
+      
+      // Auto-reject contract if purpose is 'rent'
+      if (bookingToCancel.purpose === 'rent' && bookingToCancel.contractId) {
+        try {
+          const { rejectContractForBooking } = await import('../controllers/rental.controller.js');
+          const result = await rejectContractForBooking(
+            bookingToCancel._id,
+            userId,
+            req.body.reason || 'Booking was cancelled by seller'
+          );
+          if (result.success) {
+            console.log(`✅ Contract ${result.contract.contractId} rejected automatically for booking ${bookingToCancel._id}`);
+          }
+        } catch (contractError) {
+          console.error('Error auto-rejecting contract for booking:', contractError);
+        }
+      }
       bookingToCancel.cancelReason = reason;
       bookingToCancel.cancelledBy = 'seller';
       await bookingToCancel.save();
@@ -1214,6 +1248,23 @@ router.patch('/:id/cancel', verifyToken, async (req, res) => {
         return res.status(400).json({ message: 'Reason is required for admin cancellation.' });
       }
       bookingToCancel.status = 'cancelledByAdmin';
+      
+      // Auto-reject contract if purpose is 'rent'
+      if (bookingToCancel.purpose === 'rent' && bookingToCancel.contractId) {
+        try {
+          const { rejectContractForBooking } = await import('../controllers/rental.controller.js');
+          const result = await rejectContractForBooking(
+            bookingToCancel._id,
+            userId,
+            req.body.reason || adminComment || 'Booking was cancelled by admin'
+          );
+          if (result.success) {
+            console.log(`✅ Contract ${result.contract.contractId} rejected automatically for booking ${bookingToCancel._id}`);
+          }
+        } catch (contractError) {
+          console.error('Error auto-rejecting contract for booking:', contractError);
+        }
+      }
       bookingToCancel.cancelReason = reason;
       bookingToCancel.cancelledBy = isRootAdmin ? 'rootadmin' : 'admin';
       await bookingToCancel.save();
