@@ -10030,5 +10030,538 @@ export const sendCallEndedEmail = async (toEmail, { callType, duration, callerNa
   }
 };
 
+// ========================================
+// RENTAL-RELATED EMAIL FUNCTIONS
+// ========================================
+
+// Send rent payment received email (to tenant)
+export const sendRentPaymentReceivedEmail = async (email, paymentDetails) => {
+  try {
+    const { 
+      paymentId, 
+      amount, 
+      propertyName, 
+      rentMonth, 
+      rentYear,
+      dueDate,
+      receiptUrl,
+      contractId,
+      walletUrl
+    } = paymentDetails;
+
+    const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+    const subject = `✅ Rent Payment Received - ${propertyName}`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Rent Payment Received - UrbanSetu</title>
+      </head>
+      <body>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+          <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);">
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold;">✓</span>
+              </div>
+              <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Rent Payment Received</h1>
+              <p style="color: #6b7280; margin: 10px 0 0 0;">Your payment is being held in escrow</p>
+            </div>
+            
+            <div style="background-color: #f0fdf4; padding: 25px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 25px;">
+              <h2 style="color: #065f46; margin: 0 0 15px 0; font-size: 20px;">Payment Details</h2>
+              <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Property:</strong> ${propertyName}</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Amount:</strong> ₹${amount}</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Period:</strong> ${rentMonth}/${rentYear}</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Payment ID:</strong> ${paymentId}</p>
+                ${dueDate ? `<p style="color: #4b5563; margin: 0;"><strong>Due Date:</strong> ${new Date(dueDate).toLocaleDateString()}</p>` : ''}
+              </div>
+              <p style="color: #065f46; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
+                Your rent payment has been received and is being held in escrow for 3 days. It will be automatically released to your landlord after this period, unless a dispute is raised.
+              </p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+              ${walletUrl ? `<a href="${walletUrl}" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; margin: 5px; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);">View Rent Wallet</a>` : ''}
+              ${receiptUrl ? `<a href="${receiptUrl}" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; margin: 5px; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);">Download Receipt</a>` : ''}
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending rent payment received email:', error);
+    throw error;
+  }
+};
+
+// Send rent payment received email to landlord
+export const sendRentPaymentReceivedToLandlordEmail = async (email, paymentDetails) => {
+  try {
+    const { 
+      paymentId, 
+      amount, 
+      propertyName, 
+      rentMonth, 
+      rentYear,
+      tenantName,
+      contractId,
+      walletUrl
+    } = paymentDetails;
+
+    const subject = `💰 Rent Payment Received from ${tenantName} - ${propertyName}`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Rent Payment Received - UrbanSetu</title>
+      </head>
+      <body>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+          <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #059669, #047857); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(5, 150, 105, 0.3);">
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold;">💰</span>
+              </div>
+              <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Rent Payment Received</h1>
+              <p style="color: #6b7280; margin: 10px 0 0 0;">Held in escrow for 3 days</p>
+            </div>
+            
+            <div style="background-color: #f0fdf4; padding: 25px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 25px;">
+              <h2 style="color: #065f46; margin: 0 0 15px 0; font-size: 20px;">Payment Details</h2>
+              <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Property:</strong> ${propertyName}</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Tenant:</strong> ${tenantName}</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Amount:</strong> ₹${amount}</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Period:</strong> ${rentMonth}/${rentYear}</p>
+                <p style="color: #4b5563; margin: 0;"><strong>Payment ID:</strong> ${paymentId}</p>
+              </div>
+              <p style="color: #065f46; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
+                The rent payment has been received from your tenant and is being held in escrow for 3 days. It will be automatically released to your account after this period, unless a dispute is raised.
+              </p>
+            </div>
+            
+            ${walletUrl ? `<div style="text-align: center; margin-top: 30px;">
+              <a href="${walletUrl}" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);">View Details</a>
+            </div>` : ''}
+            
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending rent payment received to landlord email:', error);
+    throw error;
+  }
+};
+
+// Send rent payment reminder email
+export const sendRentPaymentReminderEmail = async (email, reminderDetails) => {
+  try {
+    const { 
+      propertyName, 
+      amount, 
+      dueDate, 
+      daysLeft,
+      contractId,
+      walletUrl,
+      penaltyAmount
+    } = reminderDetails;
+
+    const subject = `⏰ Rent Payment Reminder - ${daysLeft} Day${daysLeft > 1 ? 's' : ''} Left`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Rent Payment Reminder - UrbanSetu</title>
+      </head>
+      <body>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+          <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(245, 158, 11, 0.3);">
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold;">⏰</span>
+              </div>
+              <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Payment Reminder</h1>
+              <p style="color: #6b7280; margin: 10px 0 0 0;">${daysLeft} day${daysLeft > 1 ? 's' : ''} until due date</p>
+            </div>
+            
+            <div style="background-color: #fffbeb; padding: 25px; border-radius: 8px; border-left: 4px solid #f59e0b; margin-bottom: 25px;">
+              <h2 style="color: #92400e; margin: 0 0 15px 0; font-size: 20px;">Payment Due Soon</h2>
+              <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Property:</strong> ${propertyName}</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Amount Due:</strong> ₹${amount}</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Due Date:</strong> ${new Date(dueDate).toLocaleDateString()}</p>
+                ${penaltyAmount ? `<p style="color: #dc2626; margin: 0;"><strong>Late Fee:</strong> ₹${penaltyAmount} (if paid after due date)</p>` : ''}
+              </div>
+              <p style="color: #92400e; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
+                Please ensure your payment is made on time to avoid late fees and penalties. You can pay directly from your rent wallet.
+              </p>
+            </div>
+            
+            ${walletUrl ? `<div style="text-align: center; margin-top: 30px;">
+              <a href="${walletUrl}" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);">Pay Now</a>
+            </div>` : ''}
+            
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated reminder from UrbanSetu.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending rent payment reminder email:', error);
+    throw error;
+  }
+};
+
+// Send rent payment overdue email
+export const sendRentPaymentOverdueEmail = async (email, overdueDetails) => {
+  try {
+    const { 
+      propertyName, 
+      totalOverdue, 
+      overdueCount,
+      contractId,
+      walletUrl
+    } = overdueDetails;
+
+    const subject = `⚠️ Rent Payment Overdue - ${propertyName}`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Rent Payment Overdue - UrbanSetu</title>
+      </head>
+      <body>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+          <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(239, 68, 68, 0.3);">
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold;">⚠️</span>
+              </div>
+              <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Payment Overdue</h1>
+              <p style="color: #6b7280; margin: 10px 0 0 0;">Immediate action required</p>
+            </div>
+            
+            <div style="background-color: #fef2f2; padding: 25px; border-radius: 8px; border-left: 4px solid #ef4444; margin-bottom: 25px;">
+              <h2 style="color: #991b1b; margin: 0 0 15px 0; font-size: 20px;">Overdue Payment Notice</h2>
+              <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Property:</strong> ${propertyName}</p>
+                <p style="color: #dc2626; margin: 0 0 10px 0; font-size: 18px; font-weight: bold;"><strong>Total Overdue:</strong> ₹${totalOverdue}</p>
+                <p style="color: #4b5563; margin: 0;"><strong>Overdue Payments:</strong> ${overdueCount}</p>
+              </div>
+              <p style="color: #991b1b; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
+                You have overdue rent payment(s). Please pay immediately to avoid further penalties and potential contract issues. Late fees may continue to accrue until payment is received.
+              </p>
+            </div>
+            
+            ${walletUrl ? `<div style="text-align: center; margin-top: 30px;">
+              <a href="${walletUrl}" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3);">Pay Now</a>
+            </div>` : ''}
+            
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending rent payment overdue email:', error);
+    throw error;
+  }
+};
+
+// Send escrow released email
+export const sendEscrowReleasedEmail = async (email, releaseDetails) => {
+  try {
+    const { 
+      paymentId, 
+      amount, 
+      propertyName, 
+      rentMonth, 
+      rentYear,
+      userRole, // 'tenant' or 'landlord'
+      tenantName,
+      landlordName,
+      contractId,
+      walletUrl
+    } = releaseDetails;
+
+    const isLandlord = userRole === 'landlord';
+    const subject = isLandlord 
+      ? `✅ Rent Payment Released - ${propertyName}`
+      : `✅ Rent Payment Released to Landlord - ${propertyName}`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Escrow Released - UrbanSetu</title>
+      </head>
+      <body>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+          <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);">
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold;">✅</span>
+              </div>
+              <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Escrow Released</h1>
+              <p style="color: #6b7280; margin: 10px 0 0 0;">${isLandlord ? 'Payment transferred to your account' : 'Payment released to landlord'}</p>
+            </div>
+            
+            <div style="background-color: #f0fdf4; padding: 25px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 25px;">
+              <h2 style="color: #065f46; margin: 0 0 15px 0; font-size: 20px;">Payment Details</h2>
+              <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Property:</strong> ${propertyName}</p>
+                ${isLandlord ? `<p style="color: #4b5563; margin: 0 0 10px 0;"><strong>From Tenant:</strong> ${tenantName}</p>` : `<p style="color: #4b5563; margin: 0 0 10px 0;"><strong>To Landlord:</strong> ${landlordName}</p>`}
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Amount:</strong> ₹${amount}</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Period:</strong> ${rentMonth}/${rentYear}</p>
+                <p style="color: #4b5563; margin: 0;"><strong>Payment ID:</strong> ${paymentId}</p>
+              </div>
+              <p style="color: #065f46; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
+                ${isLandlord 
+                  ? `The rent payment of ₹${amount} has been released from escrow and transferred to your account. The 3-day escrow period has completed without any disputes.`
+                  : `Your rent payment of ₹${amount} has been released from escrow to your landlord. The 3-day escrow period has completed without any disputes.`
+                }
+              </p>
+            </div>
+            
+            ${walletUrl ? `<div style="text-align: center; margin-top: 30px;">
+              <a href="${walletUrl}" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);">View Details</a>
+            </div>` : ''}
+            
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending escrow released email:', error);
+    throw error;
+  }
+};
+
+// Send contract signed email
+export const sendContractSignedEmail = async (email, contractDetails) => {
+  try {
+    const { 
+      contractId,
+      propertyName, 
+      tenantName,
+      landlordName,
+      rentAmount,
+      startDate,
+      endDate,
+      lockDuration,
+      userRole, // 'tenant' or 'landlord'
+      contractUrl
+    } = contractDetails;
+
+    const isLandlord = userRole === 'landlord';
+    const subject = `✅ Rental Contract Signed - ${propertyName}`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Contract Signed - UrbanSetu</title>
+      </head>
+      <body>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+          <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);">
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold;">✅</span>
+              </div>
+              <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Contract Signed</h1>
+              <p style="color: #6b7280; margin: 10px 0 0 0;">Your rental contract is now active</p>
+            </div>
+            
+            <div style="background-color: #f0fdf4; padding: 25px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 25px;">
+              <h2 style="color: #065f46; margin: 0 0 15px 0; font-size: 20px;">Contract Details</h2>
+              <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Property:</strong> ${propertyName}</p>
+                ${isLandlord ? `<p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Tenant:</strong> ${tenantName}</p>` : `<p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Landlord:</strong> ${landlordName}</p>`}
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Monthly Rent:</strong> ₹${rentAmount}</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Lock Duration:</strong> ${lockDuration} months</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Start Date:</strong> ${new Date(startDate).toLocaleDateString()}</p>
+                <p style="color: #4b5563; margin: 0;"><strong>End Date:</strong> ${new Date(endDate).toLocaleDateString()}</p>
+              </div>
+              <p style="color: #065f46; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
+                ${isLandlord 
+                  ? `Congratulations! The rental contract for ${propertyName} has been fully signed by both parties. The rent-lock period is now active.`
+                  : `Congratulations! Your rental contract for ${propertyName} has been fully signed by both parties. Your rent-lock period begins now.`
+                }
+              </p>
+            </div>
+            
+            ${contractUrl ? `<div style="text-align: center; margin-top: 30px;">
+              <a href="${contractUrl}" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);">View Contract</a>
+            </div>` : ''}
+            
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending contract signed email:', error);
+    throw error;
+  }
+};
+
+// Send contract expiring soon email
+export const sendContractExpiringSoonEmail = async (email, contractDetails) => {
+  try {
+    const { 
+      propertyName, 
+      endDate,
+      tenantName,
+      landlordName,
+      userRole,
+      contractUrl
+    } = contractDetails;
+
+    const isLandlord = userRole === 'landlord';
+    const subject = `⏰ Rental Contract Expiring Soon - ${propertyName}`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Contract Expiring Soon - UrbanSetu</title>
+      </head>
+      <body>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+          <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(245, 158, 11, 0.3);">
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold;">⏰</span>
+              </div>
+              <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Contract Expiring Soon</h1>
+              <p style="color: #6b7280; margin: 10px 0 0 0;">Renewal reminder</p>
+            </div>
+            
+            <div style="background-color: #fffbeb; padding: 25px; border-radius: 8px; border-left: 4px solid #f59e0b; margin-bottom: 25px;">
+              <h2 style="color: #92400e; margin: 0 0 15px 0; font-size: 20px;">Contract Expiration Notice</h2>
+              <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Property:</strong> ${propertyName}</p>
+                ${isLandlord ? `<p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Tenant:</strong> ${tenantName}</p>` : `<p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Landlord:</strong> ${landlordName}</p>`}
+                <p style="color: #4b5563; margin: 0;"><strong>Expiry Date:</strong> ${new Date(endDate).toLocaleDateString()}</p>
+              </div>
+              <p style="color: #92400e; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
+                ${isLandlord 
+                  ? `Your rental contract for ${propertyName} with tenant ${tenantName} will expire on ${new Date(endDate).toLocaleDateString()}. Please contact the tenant to discuss renewal or move-out arrangements.`
+                  : `Your rental contract for ${propertyName} will expire on ${new Date(endDate).toLocaleDateString()}. Please contact your landlord to discuss renewal or move-out arrangements.`
+                }
+              </p>
+            </div>
+            
+            ${contractUrl ? `<div style="text-align: center; margin-top: 30px;">
+              <a href="${contractUrl}" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);">View Contract</a>
+            </div>` : ''}
+            
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated reminder from UrbanSetu.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending contract expiring soon email:', error);
+    throw error;
+  }
+};
+
 // Export the current transporter (will be set during initialization)
 export default currentTransporter;

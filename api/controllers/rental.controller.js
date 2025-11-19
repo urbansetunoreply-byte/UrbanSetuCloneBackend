@@ -17,6 +17,7 @@ import {
   findSimilarProperties 
 } from "../utils/rentPredictionEngine.js";
 import { sendRentalNotification } from "../utils/rentalNotificationService.js";
+import { sendContractSignedEmail } from "../utils/emailService.js";
 
 // Payment reminder function (can be called by cron job)
 export const sendPaymentReminders = async () => {
@@ -368,6 +369,9 @@ export const signContract = async (req, res, next) => {
           io
         });
 
+        const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+        const contractUrl = `${clientUrl}/user/rental-contracts?contractId=${contract._id}`;
+
         // Notify landlord
         await sendRentalNotification({
           userId: contractPopulated.landlordId._id,
@@ -379,9 +383,44 @@ export const signContract = async (req, res, next) => {
             listingId: listing._id,
             tenantId: contractPopulated.tenantId._id
           },
-          actionUrl: `/user/rental-contracts?contractId=${contract._id}`,
+          actionUrl: contractUrl,
           io
         });
+
+        // Send emails to both parties
+        try {
+          // Email to tenant
+          await sendContractSignedEmail(contractPopulated.tenantId.email, {
+            contractId: contract._id,
+            propertyName: listing.name,
+            tenantName: contractPopulated.tenantId.username,
+            landlordName: contractPopulated.landlordId.username,
+            rentAmount: contract.rentAmount || contract.lockedRentAmount,
+            startDate: contract.startDate,
+            endDate: contract.endDate,
+            lockDuration: contract.lockDuration,
+            userRole: 'tenant',
+            contractUrl
+          });
+
+          // Email to landlord
+          await sendContractSignedEmail(contractPopulated.landlordId.email, {
+            contractId: contract._id,
+            propertyName: listing.name,
+            tenantName: contractPopulated.tenantId.username,
+            landlordName: contractPopulated.landlordId.username,
+            rentAmount: contract.rentAmount || contract.lockedRentAmount,
+            startDate: contract.startDate,
+            endDate: contract.endDate,
+            lockDuration: contract.lockDuration,
+            userRole: 'landlord',
+            contractUrl
+          });
+
+          console.log(`✅ Contract signed emails sent to tenant and landlord`);
+        } catch (emailError) {
+          console.error('Error sending contract signed emails:', emailError);
+        }
       }
     }
 

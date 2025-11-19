@@ -9,7 +9,7 @@ import Notification from "../models/notification.model.js";
 import { verifyToken } from '../utils/verify.js';
 import crypto from 'crypto';
 import { createPayPalOrder, capturePayPalOrder, getPayPalAccessToken } from '../controllers/paypalController.js';
-import { sendPaymentSuccessEmail, sendPaymentFailedEmail, sendSellerPaymentNotificationEmail, sendRefundRequestApprovedEmail, sendRefundRequestRejectedEmail } from '../utils/emailService.js';
+import { sendPaymentSuccessEmail, sendPaymentFailedEmail, sendSellerPaymentNotificationEmail, sendRefundRequestApprovedEmail, sendRefundRequestRejectedEmail, sendRentPaymentReceivedEmail, sendRentPaymentReceivedToLandlordEmail, sendEscrowReleasedEmail } from '../utils/emailService.js';
 import { sendRentalNotification } from '../utils/rentalNotificationService.js';
 import fetch from 'node-fetch';
 import PDFDocument from 'pdfkit';
@@ -568,6 +568,9 @@ router.post("/verify", verifyToken, async (req, res) => {
 
         if (contract) {
           const listing = contract.listingId;
+          const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+          const walletUrl = `${clientUrl}/user/rent-wallet?contractId=${contract._id}`;
+          const receiptUrl = payment.receiptUrl || `${clientUrl}/api/payments/${payment.paymentId}/receipt`;
           
           // Notify tenant
           await sendRentalNotification({
@@ -583,9 +586,27 @@ router.post("/verify", verifyToken, async (req, res) => {
               rentMonth: payment.rentMonth,
               rentYear: payment.rentYear
             },
-            actionUrl: `/user/rent-wallet?contractId=${contract._id}`,
+            actionUrl: walletUrl,
             io
           });
+
+          // Send email to tenant
+          try {
+            await sendRentPaymentReceivedEmail(contract.tenantId.email, {
+              paymentId: payment.paymentId,
+              amount: payment.amount,
+              propertyName: listing.name,
+              rentMonth: payment.rentMonth,
+              rentYear: payment.rentYear,
+              dueDate: payment.rentMonth && payment.rentYear ? new Date(payment.rentYear, payment.rentMonth - 1, 1) : null,
+              receiptUrl,
+              contractId: contract._id,
+              walletUrl
+            });
+            console.log(`✅ Rent payment received email sent to tenant ${contract.tenantId.email}`);
+          } catch (emailError) {
+            console.error('Error sending rent payment received email to tenant:', emailError);
+          }
 
           // Notify landlord
           await sendRentalNotification({
@@ -602,9 +623,26 @@ router.post("/verify", verifyToken, async (req, res) => {
               rentYear: payment.rentYear,
               tenantId: contract.tenantId._id
             },
-            actionUrl: `/user/rent-wallet?contractId=${contract._id}`,
+            actionUrl: walletUrl,
             io
           });
+
+          // Send email to landlord
+          try {
+            await sendRentPaymentReceivedToLandlordEmail(contract.landlordId.email, {
+              paymentId: payment.paymentId,
+              amount: payment.amount,
+              propertyName: listing.name,
+              rentMonth: payment.rentMonth,
+              rentYear: payment.rentYear,
+              tenantName: contract.tenantId.username,
+              contractId: contract._id,
+              walletUrl
+            });
+            console.log(`✅ Rent payment received email sent to landlord ${contract.landlordId.email}`);
+          } catch (emailError) {
+            console.error('Error sending rent payment received email to landlord:', emailError);
+          }
         }
       } catch (notifError) {
         console.error('Error sending rental payment notifications:', notifError);
@@ -794,6 +832,9 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
 
         if (contract) {
           const listing = contract.listingId;
+          const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+          const walletUrl = `${clientUrl}/user/rent-wallet?contractId=${contract._id}`;
+          const receiptUrl = payment.receiptUrl || `${clientUrl}/api/payments/${payment.paymentId}/receipt`;
           
           // Notify tenant
           await sendRentalNotification({
@@ -809,9 +850,27 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
               rentMonth: payment.rentMonth,
               rentYear: payment.rentYear
             },
-            actionUrl: `/user/rent-wallet?contractId=${contract._id}`,
+            actionUrl: walletUrl,
             io
           });
+
+          // Send email to tenant
+          try {
+            await sendRentPaymentReceivedEmail(contract.tenantId.email, {
+              paymentId: payment.paymentId,
+              amount: payment.amount,
+              propertyName: listing.name,
+              rentMonth: payment.rentMonth,
+              rentYear: payment.rentYear,
+              dueDate: payment.rentMonth && payment.rentYear ? new Date(payment.rentYear, payment.rentMonth - 1, 1) : null,
+              receiptUrl,
+              contractId: contract._id,
+              walletUrl
+            });
+            console.log(`✅ Rent payment received email sent to tenant ${contract.tenantId.email}`);
+          } catch (emailError) {
+            console.error('Error sending rent payment received email to tenant:', emailError);
+          }
 
           // Notify landlord
           await sendRentalNotification({
@@ -828,9 +887,26 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
               rentYear: payment.rentYear,
               tenantId: contract.tenantId._id
             },
-            actionUrl: `/user/rent-wallet?contractId=${contract._id}`,
+            actionUrl: walletUrl,
             io
           });
+
+          // Send email to landlord
+          try {
+            await sendRentPaymentReceivedToLandlordEmail(contract.landlordId.email, {
+              paymentId: payment.paymentId,
+              amount: payment.amount,
+              propertyName: listing.name,
+              rentMonth: payment.rentMonth,
+              rentYear: payment.rentYear,
+              tenantName: contract.tenantId.username,
+              contractId: contract._id,
+              walletUrl
+            });
+            console.log(`✅ Rent payment received email sent to landlord ${contract.landlordId.email}`);
+          } catch (emailError) {
+            console.error('Error sending rent payment received email to landlord:', emailError);
+          }
         }
       } catch (notifError) {
         console.error('Error sending rental payment notifications:', notifError);
@@ -1079,6 +1155,9 @@ router.post("/monthly-rent/release-escrow", verifyToken, async (req, res) => {
       if (contractPopulated) {
         const listing = contractPopulated.listingId;
         
+        const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+        const walletUrl = `${clientUrl}/user/rent-wallet?contractId=${contract._id}`;
+
         // Notify landlord
         await sendRentalNotification({
           userId: contractPopulated.landlordId._id,
@@ -1093,9 +1172,28 @@ router.post("/monthly-rent/release-escrow", verifyToken, async (req, res) => {
             rentMonth: payment.rentMonth,
             rentYear: payment.rentYear
           },
-          actionUrl: `/user/rent-wallet?contractId=${contract._id}`,
+          actionUrl: walletUrl,
           io
         });
+
+        // Send email to landlord
+        try {
+          await sendEscrowReleasedEmail(contractPopulated.landlordId.email, {
+            paymentId: payment.paymentId,
+            amount: payment.amount,
+            propertyName: listing.name,
+            rentMonth: payment.rentMonth,
+            rentYear: payment.rentYear,
+            userRole: 'landlord',
+            tenantName: contractPopulated.tenantId.username,
+            landlordName: contractPopulated.landlordId.username,
+            contractId: contract._id,
+            walletUrl
+          });
+          console.log(`✅ Escrow released email sent to landlord ${contractPopulated.landlordId.email}`);
+        } catch (emailError) {
+          console.error('Error sending escrow released email to landlord:', emailError);
+        }
 
         // Notify tenant
         await sendRentalNotification({
@@ -1111,9 +1209,28 @@ router.post("/monthly-rent/release-escrow", verifyToken, async (req, res) => {
             rentMonth: payment.rentMonth,
             rentYear: payment.rentYear
           },
-          actionUrl: `/user/rent-wallet?contractId=${contract._id}`,
+          actionUrl: walletUrl,
           io
         });
+
+        // Send email to tenant
+        try {
+          await sendEscrowReleasedEmail(contractPopulated.tenantId.email, {
+            paymentId: payment.paymentId,
+            amount: payment.amount,
+            propertyName: listing.name,
+            rentMonth: payment.rentMonth,
+            rentYear: payment.rentYear,
+            userRole: 'tenant',
+            tenantName: contractPopulated.tenantId.username,
+            landlordName: contractPopulated.landlordId.username,
+            contractId: contract._id,
+            walletUrl
+          });
+          console.log(`✅ Escrow released email sent to tenant ${contractPopulated.tenantId.email}`);
+        } catch (emailError) {
+          console.error('Error sending escrow released email to tenant:', emailError);
+        }
       }
     }
 

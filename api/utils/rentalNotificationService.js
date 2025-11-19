@@ -3,6 +3,15 @@ import RentWallet from '../models/rentWallet.model.js';
 import RentLockContract from '../models/rentLockContract.model.js';
 import Listing from '../models/listing.model.js';
 import User from '../models/user.model.js';
+import {
+  sendRentPaymentReceivedEmail,
+  sendRentPaymentReceivedToLandlordEmail,
+  sendRentPaymentReminderEmail,
+  sendRentPaymentOverdueEmail,
+  sendEscrowReleasedEmail,
+  sendContractSignedEmail,
+  sendContractExpiringSoonEmail
+} from './emailService.js';
 
 /**
  * Utility service for sending rental-related notifications
@@ -148,6 +157,10 @@ export const sendPaymentReminders = async ({ io = null, daysBefore = 3 }) => {
         ? 'rent_payment_reminder_3days' 
         : 'rent_payment_reminder_1day';
 
+      const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+      const walletUrl = `${clientUrl}/user/rent-wallet?contractId=${contract._id}`;
+
+      // Send notification
       await sendRentalNotification({
         userId: wallet.userId._id,
         type: notificationType,
@@ -162,9 +175,25 @@ export const sendPaymentReminders = async ({ io = null, daysBefore = 3 }) => {
           rentMonth: paymentEntry.month,
           rentYear: paymentEntry.year
         },
-        actionUrl: `/user/rent-wallet?contractId=${contract._id}`,
+        actionUrl: walletUrl,
         io
       });
+
+      // Send email
+      try {
+        await sendRentPaymentReminderEmail(tenant.email, {
+          propertyName: listing.name,
+          amount: paymentEntry.amount,
+          dueDate: paymentEntry.dueDate,
+          daysLeft: daysBefore,
+          contractId: contract._id,
+          walletUrl,
+          penaltyAmount: paymentEntry.penaltyAmount
+        });
+        console.log(`✅ Rent payment reminder email sent to ${tenant.email}`);
+      } catch (emailError) {
+        console.error('Error sending rent payment reminder email:', emailError);
+      }
     }
 
     return { sent: wallets.length };
@@ -209,6 +238,10 @@ export const sendOverduePaymentNotifications = async ({ io = null }) => {
       const listing = contract.listingId;
       const totalOverdue = overduePayments.reduce((sum, p) => sum + (p.amount + (p.penaltyAmount || 0)), 0);
 
+      const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+      const walletUrl = `${clientUrl}/user/rent-wallet?contractId=${contract._id}`;
+
+      // Send notification
       await sendRentalNotification({
         userId: wallet.userId._id,
         type: 'rent_payment_overdue',
@@ -221,9 +254,23 @@ export const sendOverduePaymentNotifications = async ({ io = null }) => {
           overdueCount: overduePayments.length,
           totalOverdue
         },
-        actionUrl: `/user/rent-wallet?contractId=${contract._id}`,
+        actionUrl: walletUrl,
         io
       });
+
+      // Send email
+      try {
+        await sendRentPaymentOverdueEmail(tenant.email, {
+          propertyName: listing.name,
+          totalOverdue,
+          overdueCount: overduePayments.length,
+          contractId: contract._id,
+          walletUrl
+        });
+        console.log(`✅ Rent payment overdue email sent to ${tenant.email}`);
+      } catch (emailError) {
+        console.error('Error sending rent payment overdue email:', emailError);
+      }
     }
 
     return { sent: wallets.length };
@@ -258,6 +305,8 @@ export const sendContractExpiryReminders = async ({ io = null, daysBefore = 30 }
 
     for (const contract of contracts) {
       const listing = contract.listingId;
+      const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+      const contractUrl = `${clientUrl}/user/rental-contracts?contractId=${contract._id}`;
       
       // Notify tenant
       await sendRentalNotification({
@@ -270,9 +319,24 @@ export const sendContractExpiryReminders = async ({ io = null, daysBefore = 30 }
           listingId: listing._id,
           endDate: contract.endDate
         },
-        actionUrl: `/user/rental-contracts?contractId=${contract._id}`,
+        actionUrl: contractUrl,
         io
       });
+
+      // Send email to tenant
+      try {
+        await sendContractExpiringSoonEmail(contract.tenantId.email, {
+          propertyName: listing.name,
+          endDate: contract.endDate,
+          tenantName: contract.tenantId.username,
+          landlordName: contract.landlordId.username,
+          userRole: 'tenant',
+          contractUrl
+        });
+        console.log(`✅ Contract expiring email sent to tenant ${contract.tenantId.email}`);
+      } catch (emailError) {
+        console.error('Error sending contract expiring email to tenant:', emailError);
+      }
 
       // Notify landlord
       await sendRentalNotification({
@@ -286,9 +350,24 @@ export const sendContractExpiryReminders = async ({ io = null, daysBefore = 30 }
           endDate: contract.endDate,
           tenantId: contract.tenantId._id
         },
-        actionUrl: `/user/rental-contracts?contractId=${contract._id}`,
+        actionUrl: contractUrl,
         io
       });
+
+      // Send email to landlord
+      try {
+        await sendContractExpiringSoonEmail(contract.landlordId.email, {
+          propertyName: listing.name,
+          endDate: contract.endDate,
+          tenantName: contract.tenantId.username,
+          landlordName: contract.landlordId.username,
+          userRole: 'landlord',
+          contractUrl
+        });
+        console.log(`✅ Contract expiring email sent to landlord ${contract.landlordId.email}`);
+      } catch (emailError) {
+        console.error('Error sending contract expiring email to landlord:', emailError);
+      }
     }
 
     return { sent: contracts.length * 2 }; // Both tenant and landlord
