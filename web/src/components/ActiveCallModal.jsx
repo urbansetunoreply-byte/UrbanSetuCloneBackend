@@ -443,17 +443,19 @@ const ActiveCallModal = ({
             ) : videoSwapped ? (
               // Local video in big view (when swapped)
               <>
-                <video
-                  key="local-large"
-                  ref={localVideoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="w-full h-full object-cover cursor-pointer max-w-full max-h-full"
-                  onLoadedMetadata={(e) => {
-                    e.target.play().catch(err => console.error('Error playing local video:', err));
-                  }}
-                />
+                <div className="w-full h-full bg-black relative flex items-center justify-center">
+                  <video
+                    key="local-large"
+                    ref={localVideoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-contain max-w-full max-h-full"
+                    onLoadedMetadata={(e) => {
+                      e.target.play().catch(err => console.error('Error playing local video:', err));
+                    }}
+                  />
+                </div>
                 {!isVideoEnabled && (
                   <div className="absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center cursor-pointer">
                     <div className="text-center text-white">
@@ -484,6 +486,7 @@ const ActiveCallModal = ({
                       e.target.play().catch(err => console.error('Error playing remote video:', err));
                     }}
                   />
+                </div>
                 {/* Remote video off indicator */}
                 {!remoteVideoEnabled && (
                   <div className="absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center cursor-pointer">
