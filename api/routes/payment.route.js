@@ -557,6 +557,60 @@ router.post("/verify", verifyToken, async (req, res) => {
       });
     }
 
+    // Send rental payment notifications if this is a monthly rent payment
+    if (payment.paymentType === 'monthly_rent' && payment.contractId && io) {
+      try {
+        const RentLockContract = (await import('../models/rentLockContract.model.js')).default;
+        const contract = await RentLockContract.findById(payment.contractId)
+          .populate('listingId', 'name address')
+          .populate('tenantId', 'username email')
+          .populate('landlordId', 'username email');
+
+        if (contract) {
+          const listing = contract.listingId;
+          
+          // Notify tenant
+          await sendRentalNotification({
+            userId: contract.tenantId._id,
+            type: 'rent_payment_received',
+            title: 'Rent Payment Received',
+            message: `Your rent payment of ₹${payment.amount} for ${listing.name} (${payment.rentMonth}/${payment.rentYear}) has been received and is being held in escrow.`,
+            meta: {
+              contractId: contract._id,
+              listingId: listing._id,
+              paymentId: payment.paymentId,
+              amount: payment.amount,
+              rentMonth: payment.rentMonth,
+              rentYear: payment.rentYear
+            },
+            actionUrl: `/user/rent-wallet?contractId=${contract._id}`,
+            io
+          });
+
+          // Notify landlord
+          await sendRentalNotification({
+            userId: contract.landlordId._id,
+            type: 'rent_payment_received',
+            title: 'Rent Payment Received from Tenant',
+            message: `A rent payment of ₹${payment.amount} for ${listing.name} (${payment.rentMonth}/${payment.rentYear}) has been received from ${contract.tenantId.username} and is being held in escrow. It will be released after 3 days.`,
+            meta: {
+              contractId: contract._id,
+              listingId: listing._id,
+              paymentId: payment.paymentId,
+              amount: payment.amount,
+              rentMonth: payment.rentMonth,
+              rentYear: payment.rentYear,
+              tenantId: contract.tenantId._id
+            },
+            actionUrl: `/user/rent-wallet?contractId=${contract._id}`,
+            io
+          });
+        }
+      } catch (notifError) {
+        console.error('Error sending rental payment notifications:', notifError);
+      }
+    }
+
     // Send payment success email to buyer
     try {
       await sendPaymentSuccessEmail(user.email, {
