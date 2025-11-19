@@ -2971,13 +2971,18 @@ export const rejectContractForBooking = async (bookingId, rejectedById, rejectio
     );
     
     // Send email to tenant
-    const { sendContractRejectedEmail } = await import("../utils/emailService.js");
-    await sendContractRejectedEmail(contract.tenantId.email, {
-      contractId: contract.contractId,
-      propertyName: contract.listingId?.name || 'a property',
-      rejectionReason: rejectionReason || 'Booking was rejected by seller',
-      rejectedBy: rejectedByUser?.username || 'Seller/Admin'
-    });
+    try {
+      const { sendContractRejectedEmail } = await import("../utils/emailService.js");
+      await sendContractRejectedEmail(contract.tenantId.email, {
+        contractId: contract.contractId,
+        propertyName: contract.listingId?.name || 'a property',
+        rejectionReason: rejectionReason || 'Booking was rejected by seller',
+        rejectedBy: rejectedByUser?.username || 'Seller/Admin'
+      });
+    } catch (emailError) {
+      console.error("Error sending contract rejection email:", emailError);
+      // Don't fail the function if email fails
+    }
     
     return { success: true, contract };
   } catch (error) {

@@ -10570,14 +10570,13 @@ export const sendContractRejectedEmail = async (email, contractDetails) => {
   `;
 
   try {
-    await sendBrevoEmail({
+    return await sendEmailWithRetry({
       to: email,
       subject: `Rental Contract Rejected - ${propertyName || 'Property'}`,
       html: htmlContent
     });
-    return { success: true, message: "Contract rejection email sent successfully" };
   } catch (error) {
-    console.error("Error sending contract rejection email:", error);
+    console.error('Error sending contract rejected email:', error);
     throw error;
   }
 };
