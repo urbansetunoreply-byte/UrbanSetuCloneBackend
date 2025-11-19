@@ -11,8 +11,7 @@ const disputeSchema = new mongoose.Schema({
   contractId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'RentLockContract',
-    required: true,
-    index: true
+    required: true
   },
   raisedBy: {
     type: mongoose.Schema.Types.ObjectId,

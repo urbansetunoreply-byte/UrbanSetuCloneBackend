@@ -11,8 +11,7 @@ const moveInOutChecklistSchema = new mongoose.Schema({
   contractId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'RentLockContract',
-    required: true,
-    index: true
+    required: true
   },
   type: {
     type: String,

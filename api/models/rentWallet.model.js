@@ -18,7 +18,6 @@ const rentWalletSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'RentLockContract',
     required: true,
-    index: true,
     unique: true
   },
   
