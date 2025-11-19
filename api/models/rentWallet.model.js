@@ -102,7 +102,15 @@ const rentWalletSchema = new mongoose.Schema({
       default: 0,
       min: 0
     },
-    remarks: String
+    remarks: String,
+    reminderSent3Days: {
+      type: Boolean,
+      default: false
+    },
+    reminderSent1Day: {
+      type: Boolean,
+      default: false
+    }
   }],
   
   // Notifications
