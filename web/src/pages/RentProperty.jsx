@@ -269,7 +269,14 @@ export default function RentProperty() {
 
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE_URL}/api/rental/contracts/${contract.contractId || contract._id}/sign`, {
+      
+      // Get contract ID - try contractId first, then _id
+      const contractId = contract.contractId || contract._id;
+      if (!contractId) {
+        throw new Error("Contract ID not found. Please refresh and try again.");
+      }
+
+      const res = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractId}/sign`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -283,7 +290,22 @@ export default function RentProperty() {
         throw new Error(data.message || "Failed to sign contract");
       }
 
-      setContract(data.contract);
+      // Refresh contract details after signing
+      if (data.contract) {
+        setContract(data.contract);
+      } else {
+        // If contract not in response, fetch it again
+        const contractRes = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractId}`, {
+          credentials: 'include'
+        });
+        if (contractRes.ok) {
+          const contractData = await contractRes.json();
+          if (contractData.success && contractData.contract) {
+            setContract(contractData.contract);
+          }
+        }
+      }
+      
       setShowSignatureModal(false);
       setSigningAs(null);
 

@@ -8,13 +8,37 @@ import UserAvatar from '../UserAvatar';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export default function DisputeDetail({ dispute, currentUser, onUpdate, getStatusColor, DISPUTE_CATEGORIES, DISPUTE_STATUS, PRIORITY_COLORS }) {
+export default function DisputeDetail({ 
+  dispute, 
+  currentUser, 
+  onUpdate, 
+  getStatusColor, 
+  DISPUTE_CATEGORIES, 
+  DISPUTE_STATUS, 
+  PRIORITY_COLORS,
+  isAdmin: propIsAdmin,
+  onUpdateStatus,
+  onResolve,
+  updatingStatus,
+  resolving
+}) {
   const [newMessage, setNewMessage] = useState('');
   const [uploading, setUploading] = useState(false);
   const [sending, setSending] = useState(false);
   const [attachments, setAttachments] = useState([]);
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [showResolveModal, setShowResolveModal] = useState(false);
+  const [statusForm, setStatusForm] = useState({
+    status: dispute.status || 'open',
+    priority: dispute.priority || 'medium',
+    escalationReason: ''
+  });
+  const [resolveForm, setResolveForm] = useState({
+    resolution: '',
+    resolutionNotes: ''
+  });
 
-  const isAdmin = currentUser?.role === 'admin';
+  const isAdmin = propIsAdmin || currentUser?.role === 'admin' || currentUser?.role === 'rootadmin';
   const isRaisedBy = dispute.raisedBy?._id === currentUser?._id || dispute.raisedBy === currentUser?._id;
   const isRaisedAgainst = dispute.raisedAgainst?._id === currentUser?._id || dispute.raisedAgainst === currentUser?._id;
   const canComment = isRaisedBy || isRaisedAgainst || isAdmin;
@@ -351,6 +375,150 @@ export default function DisputeDetail({ dispute, currentUser, onUpdate, getStatu
           </div>
         )}
       </div>
+
+      {/* Admin Actions */}
+      {isAdmin && dispute.status !== 'resolved' && dispute.status !== 'closed' && (
+        <div className="border-t pt-4 mt-6">
+          <h4 className="font-semibold text-gray-800 mb-3">Admin Actions</h4>
+          <div className="flex gap-3 flex-wrap">
+            <button
+              onClick={() => setShowStatusModal(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+            >
+              <FaEdit /> Update Status
+            </button>
+            <button
+              onClick={() => setShowResolveModal(true)}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
+            >
+              <FaCheckCircle /> Resolve Dispute
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Status Update Modal */}
+      {showStatusModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold mb-4">Update Dispute Status</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Status</label>
+                <select
+                  value={statusForm.status}
+                  onChange={(e) => setStatusForm({ ...statusForm, status: e.target.value })}
+                  className="w-full px-4 py-2 border rounded-lg"
+                >
+                  {Object.entries(DISPUTE_STATUS).map(([key, label]) => (
+                    <option key={key} value={key}>{label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Priority</label>
+                <select
+                  value={statusForm.priority}
+                  onChange={(e) => setStatusForm({ ...statusForm, priority: e.target.value })}
+                  className="w-full px-4 py-2 border rounded-lg"
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
+              {statusForm.status === 'escalated' && (
+                <div>
+                  <label className="block text-sm font-medium mb-2">Escalation Reason</label>
+                  <textarea
+                    value={statusForm.escalationReason}
+                    onChange={(e) => setStatusForm({ ...statusForm, escalationReason: e.target.value })}
+                    rows={3}
+                    className="w-full px-4 py-2 border rounded-lg"
+                    placeholder="Reason for escalation..."
+                  />
+                </div>
+              )}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    if (onUpdateStatus) {
+                      onUpdateStatus(dispute._id, statusForm.status, statusForm.priority, statusForm.escalationReason);
+                    }
+                    setShowStatusModal(false);
+                  }}
+                  disabled={updatingStatus}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {updatingStatus ? 'Updating...' : 'Update'}
+                </button>
+                <button
+                  onClick={() => setShowStatusModal(false)}
+                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Resolve Modal */}
+      {showResolveModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold mb-4">Resolve Dispute</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Resolution Decision</label>
+                <select
+                  value={resolveForm.resolution}
+                  onChange={(e) => setResolveForm({ ...resolveForm, resolution: e.target.value })}
+                  className="w-full px-4 py-2 border rounded-lg"
+                >
+                  <option value="">Select decision...</option>
+                  <option value="favor_raised_by">In favor of {dispute.raisedBy?.username || 'complainant'}</option>
+                  <option value="favor_raised_against">In favor of {dispute.raisedAgainst?.username || 'respondent'}</option>
+                  <option value="partial">Partial resolution</option>
+                  <option value="dismissed">Dismissed</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Resolution Notes</label>
+                <textarea
+                  value={resolveForm.resolutionNotes}
+                  onChange={(e) => setResolveForm({ ...resolveForm, resolutionNotes: e.target.value })}
+                  rows={4}
+                  className="w-full px-4 py-2 border rounded-lg"
+                  placeholder="Detailed resolution notes..."
+                />
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    if (onResolve && resolveForm.resolution) {
+                      onResolve(dispute._id, resolveForm.resolution, resolveForm.resolutionNotes);
+                    }
+                    setShowResolveModal(false);
+                  }}
+                  disabled={resolving || !resolveForm.resolution}
+                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                >
+                  {resolving ? 'Resolving...' : 'Resolve'}
+                </button>
+                <button
+                  onClick={() => setShowResolveModal(false)}
+                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

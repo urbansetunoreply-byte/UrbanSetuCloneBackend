@@ -1138,7 +1138,7 @@ export const listDisputes = async (req, res, next) => {
     const userId = req.user.id;
     const { status, category, contractId } = req.query;
     const user = await User.findById(userId);
-    const isAdmin = user?.role === 'admin';
+    const isAdmin = user?.role === 'admin' || user?.role === 'rootadmin';
 
     let query = {};
 

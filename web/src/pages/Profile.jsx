@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { FaEdit, FaUser, FaEnvelope, FaPhone, FaKey, FaTrash, FaSignOutAlt, FaHome, FaCalendarAlt, FaHeart, FaEye, FaCrown, FaTimes, FaCheck, FaStar, FaRoute, FaCreditCard, FaShieldAlt, FaTools, FaTruck, FaExclamationTriangle, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaBookOpen, FaQuestionCircle, FaChartLine, FaInfoCircle, FaCog } from "react-icons/fa";
+import { FaEdit, FaUser, FaEnvelope, FaPhone, FaKey, FaTrash, FaSignOutAlt, FaHome, FaCalendarAlt, FaHeart, FaEye, FaCrown, FaTimes, FaCheck, FaStar, FaRoute, FaCreditCard, FaShieldAlt, FaTools, FaTruck, FaExclamationTriangle, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaBookOpen, FaQuestionCircle, FaChartLine, FaInfoCircle, FaCog, FaFileContract, FaGavel } from "react-icons/fa";
 import UserAvatar from "../components/UserAvatar";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import RecaptchaWidget from "../components/RecaptchaWidget";
@@ -2128,6 +2128,13 @@ export default function Profile() {
                   <FaStar className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
                   <span className="font-medium text-xs sm:text-sm">Rental Ratings</span>
                 </Link>
+                <Link
+                  to="/admin/disputes"
+                  className={`bg-red-500 text-white p-3 rounded-lg hover:bg-red-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1500`}
+                >
+                  <FaGavel className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
+                  <span className="font-medium text-xs sm:text-sm">Disputes</span>
+                </Link>
               </>
             ) : null}
 
@@ -2189,6 +2196,20 @@ export default function Profile() {
                 >
                   <FaStar className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
                   <span className="font-medium text-xs sm:text-sm">Rental Ratings</span>
+                </Link>
+                <Link
+                  to="/user/rental-contracts"
+                  className={`bg-indigo-500 text-white p-3 rounded-lg hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1500`}
+                >
+                  <FaFileContract className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
+                  <span className="font-medium text-xs sm:text-sm">Rental Contracts</span>
+                </Link>
+                <Link
+                  to="/user/disputes"
+                  className={`bg-red-500 text-white p-3 rounded-lg hover:bg-red-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1550`}
+                >
+                  <FaGavel className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
+                  <span className="font-medium text-xs sm:text-sm">Disputes</span>
                 </Link>
               </>
             )}

@@ -303,7 +303,7 @@ export default function DisputeResolution() {
         {/* Dispute Form Modal */}
         {showDisputeForm && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full p-6 my-8">
+            <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full p-6 my-8 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl font-bold text-gray-800">Raise New Dispute</h2>
                 <button
@@ -331,7 +331,7 @@ export default function DisputeResolution() {
         {/* Dispute Detail Modal */}
         {showDisputeDetail && selectedDispute && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 my-8">
+            <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 my-8 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl font-bold text-gray-800">Dispute Details</h2>
                 <button
