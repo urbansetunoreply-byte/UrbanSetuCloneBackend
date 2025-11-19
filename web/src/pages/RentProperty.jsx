@@ -117,23 +117,48 @@ export default function RentProperty() {
                 setContract(existingContract);
                 setResumingContract(true);
                 
-                // Determine which step to resume from
+                // Determine which step to resume from based on contract status and signatures
                 let resumeStep = 1;
-                if (existingContract.status === 'pending_signature') {
-                  // Check signatures to determine step
-                  const isTenant = currentUser?._id === existingContract.tenantId?._id || currentUser?._id === existingContract.tenantId;
-                  const tenantSigned = existingContract.tenantSignature?.signed;
-                  const landlordSigned = existingContract.landlordSignature?.signed;
-                  
-                  if (!tenantSigned || !landlordSigned) {
-                    resumeStep = 3; // Signing step
+                const tenantSigned = existingContract.tenantSignature?.signed || false;
+                const landlordSigned = existingContract.landlordSignature?.signed || false;
+                const isTenant = currentUser?._id === existingContract.tenantId?._id || currentUser?._id === existingContract.tenantId;
+                
+                if (existingContract.status === 'draft') {
+                  // Draft contracts: start from plan selection (step 1) if plan not set, otherwise contract review (step 2)
+                  if (existingContract.rentLockPlan) {
+                    resumeStep = 2; // Contract review step
                   } else {
-                    resumeStep = 4; // Payment step
+                    resumeStep = 1; // Plan selection step
+                  }
+                } else if (existingContract.status === 'pending_signature') {
+                  // Pending signature: check who needs to sign
+                  if (isTenant && !tenantSigned) {
+                    // Tenant hasn't signed yet - go to signing step
+                    resumeStep = 3;
+                  } else if (!isTenant && !landlordSigned) {
+                    // Landlord hasn't signed yet - but this page is for tenant, so show signing status
+                    resumeStep = 3;
+                  } else if (!tenantSigned || !landlordSigned) {
+                    // One party hasn't signed - show signing step
+                    resumeStep = 3;
+                  } else {
+                    // Both signed - proceed to payment
+                    resumeStep = 4;
                   }
                 } else if (existingContract.status === 'active') {
-                  resumeStep = 5; // Move-in step
+                  // Active contract - check if payment was made (wallet exists)
+                  if (existingContract.walletId) {
+                    resumeStep = 5; // Move-in step (payment already done)
+                  } else {
+                    resumeStep = 4; // Payment step (contract signed but payment pending)
+                  }
+                } else if (existingContract.status === 'rejected' || existingContract.status === 'terminated') {
+                  // Already handled above, but just in case
+                  setLoading(false);
+                  return;
                 } else {
-                  resumeStep = 2; // Contract review step
+                  // Default to contract review step
+                  resumeStep = 2;
                 }
 
                 setStep(resumeStep);

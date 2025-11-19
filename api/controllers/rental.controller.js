@@ -321,9 +321,14 @@ export const signContract = async (req, res, next) => {
       return res.status(404).json({ message: "Contract not found." });
     }
 
+    // Ensure tenantId and landlordId are populated or accessible as ObjectIds
+    const tenantIdStr = contract.tenantId?.toString() || contract.tenantId?._id?.toString() || String(contract.tenantId);
+    const landlordIdStr = contract.landlordId?.toString() || contract.landlordId?._id?.toString() || String(contract.landlordId);
+    const userIdStr = String(userId);
+
     // Determine if user is tenant or landlord
-    const isTenant = contract.tenantId.toString() === userId;
-    const isLandlord = contract.landlordId.toString() === userId;
+    const isTenant = tenantIdStr === userIdStr;
+    const isLandlord = landlordIdStr === userIdStr;
 
     if (!isTenant && !isLandlord) {
       return res.status(403).json({ message: "Unauthorized. Only tenant or landlord can sign." });
