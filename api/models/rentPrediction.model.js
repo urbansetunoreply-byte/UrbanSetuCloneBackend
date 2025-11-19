@@ -12,7 +12,6 @@ const rentPredictionSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Listing',
     required: true,
-    index: true,
     unique: true
   },
   
