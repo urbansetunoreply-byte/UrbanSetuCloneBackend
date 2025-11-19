@@ -392,7 +392,6 @@ router.patch('/:id/status', verifyToken, async (req, res) => {
     // --- Auto-reject contract if booking is rejected and purpose is 'rent' ---
     if (status === 'rejected' && updated.purpose === 'rent' && bookingToUpdate.contractId) {
       try {
-        const { rejectContractForBooking } = await import('../controllers/rental.controller.js');
         const rejectionReason = req.body.rejectionReason || 'Booking was rejected by seller';
         const result = await rejectContractForBooking(
           bookingToUpdate._id,
