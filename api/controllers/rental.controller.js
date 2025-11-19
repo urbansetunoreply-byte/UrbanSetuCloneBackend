@@ -778,8 +778,14 @@ export const downloadContractPDF = async (req, res, next) => {
       return res.status(404).json({ message: "Contract not found." });
     }
 
-    // Verify user has access (tenant or landlord)
-    if (contract.tenantId._id.toString() !== userId && contract.landlordId._id.toString() !== userId) {
+    // Verify user has access (tenant, landlord, or admin)
+    const User = (await import('../models/user.model.js')).default;
+    const user = await User.findById(userId);
+    const isAdmin = user?.role === 'admin' || user?.role === 'rootadmin';
+    const tenantIdStr = contract.tenantId?._id?.toString() || contract.tenantId?.toString();
+    const landlordIdStr = contract.landlordId?._id?.toString() || contract.landlordId?.toString();
+    
+    if (!isAdmin && tenantIdStr !== userId && landlordIdStr !== userId) {
       return res.status(403).json({ message: "Unauthorized." });
     }
 
