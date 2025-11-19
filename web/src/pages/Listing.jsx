@@ -2329,16 +2329,18 @@ export default function Listing() {
                       
                       // Check if there's a pending contract for this listing
                       try {
-                        const res = await fetch(`${API_BASE_URL}/api/rental/contracts?status=pending_signature&status=draft`, {
+                        // Fetch all contracts and filter client-side for pending ones
+                        const res = await fetch(`${API_BASE_URL}/api/rental/contracts`, {
                           credentials: 'include'
                         });
                         
                         if (res.ok) {
                           const data = await res.json();
                           if (data.contracts && data.contracts.length > 0) {
-                            // Find contract for this listing
+                            // Find pending contract for this listing (pending_signature or draft status)
                             const pendingContract = data.contracts.find(
-                              c => (c.listingId?._id === listing._id || c.listingId === listing._id) &&
+                              c => (c.status === 'pending_signature' || c.status === 'draft') &&
+                                   (c.listingId?._id === listing._id || c.listingId === listing._id) &&
                                    (c.tenantId?._id === currentUser._id || c.tenantId === currentUser._id)
                             );
                             
