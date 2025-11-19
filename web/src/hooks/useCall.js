@@ -133,6 +133,35 @@ export const useCall = () => {
     }
   }, [activeCall]);
 
+  // Handle request to stop screen sharing (when remote person wants to share)
+  const handleStopRemoteScreenShare = useCallback(() => {
+    if (isScreenSharing) {
+      // Stop screen sharing when remote requests it
+      if (screenShareStreamRef.current) {
+        screenShareStreamRef.current.getTracks().forEach(track => track.stop());
+        screenShareStreamRef.current = null;
+      }
+      setIsScreenSharing(false);
+      setCameraStreamDuringScreenShare(null);
+      
+      // Restore camera video in peer connection
+      if (localStream && peerRef.current && originalCameraStreamRef.current) {
+        const originalVideoTrack = originalCameraStreamRef.current.getVideoTracks()[0];
+        if (originalVideoTrack) {
+          const sender = peerRef.current._pc.getSenders().find(s => 
+            s.track && s.track.kind === 'video'
+          );
+          if (sender && peerRef.current) {
+            sender.replaceTrack(originalVideoTrack).catch(err => {
+              console.error('Error restoring camera track:', err);
+            });
+          }
+        }
+      }
+      toast.info('Screen sharing stopped - other person is now sharing');
+    }
+  }, [isScreenSharing, localStream]);
+
   // Maintain local stream on localVideoRef whenever it changes
   useEffect(() => {
     if (!localStream || !localVideoRef.current) return;
@@ -497,6 +526,7 @@ export const useCall = () => {
     socket.on('webrtc-answer', handleWebRTCAnswer);
     socket.on('ice-candidate', handleICECandidate);
     socket.on('remote-status-update', handleRemoteStatusUpdate);
+    socket.on('stop-remote-screen-share', handleStopRemoteScreenShare);
     socket.on('call-error', (error) => {
       console.error('Call error:', error);
       toast.error(error.message || 'Call error occurred');
@@ -514,9 +544,10 @@ export const useCall = () => {
       socket.off('webrtc-answer', handleWebRTCAnswer);
       socket.off('ice-candidate', handleICECandidate);
       socket.off('remote-status-update', handleRemoteStatusUpdate);
+      socket.off('stop-remote-screen-share', handleStopRemoteScreenShare);
       socket.off('call-error');
     };
-  }, [handleWebRTCOffer, handleWebRTCAnswer, handleICECandidate, handleRemoteStatusUpdate, startCallTimer]);
+  }, [handleWebRTCOffer, handleWebRTCAnswer, handleICECandidate, handleRemoteStatusUpdate, handleStopRemoteScreenShare, startCallTimer]);
 
   // Enumerate available cameras
   const enumerateCameras = useCallback(async () => {
@@ -987,6 +1018,25 @@ export const useCall = () => {
   const toggleScreenShare = async () => {
     try {
       if (!isScreenSharing) {
+        // Check if remote is already screen sharing
+        if (remoteIsScreenSharing) {
+          // Ask user for confirmation
+          const confirmed = window.confirm(
+            'Other person is also sharing. Are you sure you want to share yours? (This will stop their screen share)'
+          );
+          
+          if (!confirmed) {
+            return; // User cancelled
+          }
+          
+          // Notify remote to stop screen sharing
+          if (activeCall?.callId) {
+            socket.emit('stop-remote-screen-share', {
+              callId: activeCall.callId
+            });
+          }
+        }
+        
         // Start screen sharing
         // First, store the original camera stream for the small "You" window
         if (localStream) {
@@ -1126,6 +1176,26 @@ export const useCall = () => {
             localVideoRef.current.play().catch(err => {
               console.error('Error playing local video after screen share:', err);
             });
+          }
+          
+          // Also force refresh the remote stream display when local stops sharing
+          // This ensures the other party's video shows up again in the large view
+          if (remoteVideoRef.current && remoteStream) {
+            setTimeout(() => {
+              if (remoteVideoRef.current && remoteVideoRef.current.srcObject === remoteStream) {
+                // Force refresh by temporarily unsetting and resetting
+                remoteVideoRef.current.srcObject = null;
+                setTimeout(() => {
+                  if (remoteVideoRef.current) {
+                    remoteVideoRef.current.srcObject = remoteStream;
+                    remoteVideoRef.current.muted = false;
+                    remoteVideoRef.current.play().catch(err => {
+                      console.error('Error playing remote video after local screen share stops:', err);
+                    });
+                  }
+                }, 50);
+              }
+            }, 50);
           }
         } else if (localStream && callType === 'video' && currentCameraId) {
           // Fallback: recreate camera stream if original not stored
