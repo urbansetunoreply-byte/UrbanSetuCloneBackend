@@ -10,6 +10,7 @@ import { verifyToken } from '../utils/verify.js';
 import crypto from 'crypto';
 import { createPayPalOrder, capturePayPalOrder, getPayPalAccessToken } from '../controllers/paypalController.js';
 import { sendPaymentSuccessEmail, sendPaymentFailedEmail, sendSellerPaymentNotificationEmail, sendRefundRequestApprovedEmail, sendRefundRequestRejectedEmail } from '../utils/emailService.js';
+import { sendRentalNotification } from '../utils/rentalNotificationService.js';
 import fetch from 'node-fetch';
 import PDFDocument from 'pdfkit';
 
@@ -728,6 +729,60 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
       });
     }
 
+    // Send rental payment notifications if this is a monthly rent payment
+    if (payment.paymentType === 'monthly_rent' && payment.contractId && io) {
+      try {
+        const RentLockContract = (await import('../models/rentLockContract.model.js')).default;
+        const contract = await RentLockContract.findById(payment.contractId)
+          .populate('listingId', 'name address')
+          .populate('tenantId', 'username email')
+          .populate('landlordId', 'username email');
+
+        if (contract) {
+          const listing = contract.listingId;
+          
+          // Notify tenant
+          await sendRentalNotification({
+            userId: contract.tenantId._id,
+            type: 'rent_payment_received',
+            title: 'Rent Payment Received',
+            message: `Your rent payment of ₹${payment.amount} for ${listing.name} (${payment.rentMonth}/${payment.rentYear}) has been received and is being held in escrow.`,
+            meta: {
+              contractId: contract._id,
+              listingId: listing._id,
+              paymentId: payment.paymentId,
+              amount: payment.amount,
+              rentMonth: payment.rentMonth,
+              rentYear: payment.rentYear
+            },
+            actionUrl: `/user/rent-wallet?contractId=${contract._id}`,
+            io
+          });
+
+          // Notify landlord
+          await sendRentalNotification({
+            userId: contract.landlordId._id,
+            type: 'rent_payment_received',
+            title: 'Rent Payment Received from Tenant',
+            message: `A rent payment of ₹${payment.amount} for ${listing.name} (${payment.rentMonth}/${payment.rentYear}) has been received from ${contract.tenantId.username} and is being held in escrow. It will be released after 3 days.`,
+            meta: {
+              contractId: contract._id,
+              listingId: listing._id,
+              paymentId: payment.paymentId,
+              amount: payment.amount,
+              rentMonth: payment.rentMonth,
+              rentYear: payment.rentYear,
+              tenantId: contract.tenantId._id
+            },
+            actionUrl: `/user/rent-wallet?contractId=${contract._id}`,
+            io
+          });
+        }
+      } catch (notifError) {
+        console.error('Error sending rental payment notifications:', notifError);
+      }
+    }
+
     // Send payment success email to buyer (reusing existing appointment, user, listing variables)
     try {
       await sendPaymentSuccessEmail(user.email, {
@@ -958,6 +1013,54 @@ router.post("/monthly-rent/release-escrow", verifyToken, async (req, res) => {
         contractId: contract._id,
         amount: payment.amount
       });
+    }
+
+    // Send notifications for escrow release
+    if (io) {
+      const contractPopulated = await RentLockContract.findById(contract._id)
+        .populate('listingId', 'name address')
+        .populate('tenantId', 'username email')
+        .populate('landlordId', 'username email');
+
+      if (contractPopulated) {
+        const listing = contractPopulated.listingId;
+        
+        // Notify landlord
+        await sendRentalNotification({
+          userId: contractPopulated.landlordId._id,
+          type: 'rent_escrow_released',
+          title: 'Rent Payment Released from Escrow',
+          message: `Your rent payment of ₹${payment.amount} for ${listing.name} (${payment.rentMonth}/${payment.rentYear}) has been released from escrow and transferred to your account.`,
+          meta: {
+            contractId: contract._id,
+            listingId: listing._id,
+            paymentId: payment.paymentId,
+            amount: payment.amount,
+            rentMonth: payment.rentMonth,
+            rentYear: payment.rentYear
+          },
+          actionUrl: `/user/rent-wallet?contractId=${contract._id}`,
+          io
+        });
+
+        // Notify tenant
+        await sendRentalNotification({
+          userId: contractPopulated.tenantId._id,
+          type: 'rent_escrow_released',
+          title: 'Rent Payment Released to Landlord',
+          message: `Your rent payment of ₹${payment.amount} for ${listing.name} (${payment.rentMonth}/${payment.rentYear}) has been released from escrow to the landlord.`,
+          meta: {
+            contractId: contract._id,
+            listingId: listing._id,
+            paymentId: payment.paymentId,
+            amount: payment.amount,
+            rentMonth: payment.rentMonth,
+            rentYear: payment.rentYear
+          },
+          actionUrl: `/user/rent-wallet?contractId=${contract._id}`,
+          io
+        });
+      }
     }
 
     res.json({

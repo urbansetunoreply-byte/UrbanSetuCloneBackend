@@ -16,6 +16,7 @@ import {
   calculateLocalityScore, 
   findSimilarProperties 
 } from "../utils/rentPredictionEngine.js";
+import { sendRentalNotification } from "../utils/rentalNotificationService.js";
 
 // Payment reminder function (can be called by cron job)
 export const sendPaymentReminders = async () => {
@@ -341,6 +342,47 @@ export const signContract = async (req, res, next) => {
         $set: { 'rentalProfile.isLandlord': true },
         $inc: { 'rentalProfile.activeContractsAsLandlord': 1 }
       });
+
+      // Send notifications to both parties
+      const io = req.app.get('io');
+      const contractPopulated = await RentLockContract.findById(contract._id)
+        .populate('listingId', 'name address')
+        .populate('tenantId', 'username firstName lastName')
+        .populate('landlordId', 'username firstName lastName');
+
+      if (contractPopulated) {
+        const listing = contractPopulated.listingId;
+        
+        // Notify tenant
+        await sendRentalNotification({
+          userId: contractPopulated.tenantId._id,
+          type: 'rent_contract_signed',
+          title: 'Rental Contract Signed Successfully',
+          message: `Your rental contract for ${listing.name} has been fully signed by both parties. Your rent-lock period begins now.`,
+          meta: {
+            contractId: contract._id,
+            listingId: listing._id,
+            landlordId: contractPopulated.landlordId._id
+          },
+          actionUrl: `/user/rental-contracts?contractId=${contract._id}`,
+          io
+        });
+
+        // Notify landlord
+        await sendRentalNotification({
+          userId: contractPopulated.landlordId._id,
+          type: 'rent_contract_signed',
+          title: 'Rental Contract Signed Successfully',
+          message: `The rental contract for ${listing.name} with tenant ${contractPopulated.tenantId.username} has been fully signed. The contract is now active.`,
+          meta: {
+            contractId: contract._id,
+            listingId: listing._id,
+            tenantId: contractPopulated.tenantId._id
+          },
+          actionUrl: `/user/rental-contracts?contractId=${contract._id}`,
+          io
+        });
+      }
     }
 
     await contract.save();
@@ -882,6 +924,35 @@ export const createDispute = async (req, res, next) => {
     await dispute.populate('raisedAgainst', 'username email avatar');
     await dispute.populate('contractId', 'contractId');
 
+    // Send notifications
+    const io = req.app.get('io');
+    const contractPopulated = await RentLockContract.findById(contract._id)
+      .populate('listingId', 'name address');
+
+    if (contractPopulated) {
+      const listing = contractPopulated.listingId;
+      
+      // Notify the party against whom dispute is raised
+      await sendRentalNotification({
+        userId: raisedAgainst,
+        type: 'rent_dispute_raised',
+        title: 'Dispute Raised Against You',
+        message: `A dispute has been raised regarding your rental contract for ${listing.name}. Please review and respond.`,
+        meta: {
+          contractId: contract._id,
+          listingId: listing._id,
+          disputeId: dispute._id,
+          raisedBy: userId
+        },
+        actionUrl: `/user/disputes?disputeId=${dispute._id}`,
+        io
+      });
+
+      // Notify admins (you can extend this to notify all admins)
+      // For now, we'll just log it
+      console.log(`Dispute ${dispute._id} raised for contract ${contract._id}`);
+    }
+
     res.status(201).json({
       success: true,
       message: "Dispute created successfully.",
@@ -1120,6 +1191,55 @@ export const resolveDispute = async (req, res, next) => {
 
     await dispute.save();
 
+    // Send notifications to both parties
+    const io = req.app.get('io');
+    const disputePopulated = await Dispute.findById(dispute._id)
+      .populate('contractId')
+      .populate('raisedBy', 'username')
+      .populate('raisedAgainst', 'username');
+
+    if (disputePopulated) {
+      const contract = await RentLockContract.findById(disputePopulated.contractId._id || disputePopulated.contractId)
+        .populate('listingId', 'name address');
+
+      if (contract) {
+        const listing = contract.listingId;
+
+        // Notify both parties
+        await sendRentalNotification({
+          userId: disputePopulated.raisedBy._id,
+          type: 'rent_dispute_resolved',
+          title: 'Dispute Resolved',
+          message: `Your dispute regarding ${listing.name} has been resolved. Decision: ${decision}.`,
+          meta: {
+            contractId: contract._id,
+            listingId: listing._id,
+            disputeId: dispute._id,
+            decision,
+            amount: amount || 0
+          },
+          actionUrl: `/user/disputes?disputeId=${dispute._id}`,
+          io
+        });
+
+        await sendRentalNotification({
+          userId: disputePopulated.raisedAgainst._id,
+          type: 'rent_dispute_resolved',
+          title: 'Dispute Resolved',
+          message: `The dispute regarding ${listing.name} has been resolved. Decision: ${decision}.`,
+          meta: {
+            contractId: contract._id,
+            listingId: listing._id,
+            disputeId: dispute._id,
+            decision,
+            amount: amount || 0
+          },
+          actionUrl: `/user/disputes?disputeId=${dispute._id}`,
+          io
+        });
+      }
+    }
+
     res.json({
       success: true,
       message: "Dispute resolved.",
@@ -1201,6 +1321,21 @@ export const requestVerification = async (req, res, next) => {
 
     await verification.populate('listingId', 'name address');
     await verification.populate('landlordId', 'username email');
+
+    // Send notification to landlord
+    const io = req.app.get('io');
+    await sendRentalNotification({
+      userId: userId,
+      type: 'rent_verification_requested',
+      title: 'Property Verification Request Submitted',
+      message: `Your verification request for ${verification.listingId.name} has been submitted and is under review. You will be notified once the verification is complete.`,
+      meta: {
+        listingId: listing._id,
+        verificationId: verification._id
+      },
+      actionUrl: `/user/property-verification?listingId=${listing._id}`,
+      io
+    });
 
     res.status(201).json({
       success: true,
@@ -1356,6 +1491,29 @@ export const approveVerification = async (req, res, next) => {
 
     await verification.save();
 
+    // Send notification if verification is complete
+    if (verification.status === 'verified') {
+      const io = req.app.get('io');
+      const verificationPopulated = await PropertyVerification.findById(verification._id)
+        .populate('listingId', 'name address')
+        .populate('landlordId', 'username email');
+
+      if (verificationPopulated) {
+        await sendRentalNotification({
+          userId: verificationPopulated.landlordId._id,
+          type: 'rent_verification_approved',
+          title: 'Property Verification Approved',
+          message: `Congratulations! Your property ${verificationPopulated.listingId.name} has been verified. A verification badge has been added to your listing.`,
+          meta: {
+            listingId: verificationPopulated.listingId._id,
+            verificationId: verification._id
+          },
+          actionUrl: `/user/property-verification?listingId=${verificationPopulated.listingId._id}`,
+          io
+        });
+      }
+    }
+
     res.json({
       success: true,
       message: "Verification updated successfully.",
@@ -1404,6 +1562,28 @@ export const rejectVerification = async (req, res, next) => {
     }
 
     await verification.save();
+
+    // Send notification to landlord
+    const io = req.app.get('io');
+    const verificationPopulated = await PropertyVerification.findById(verification._id)
+      .populate('listingId', 'name address')
+      .populate('landlordId', 'username email');
+
+    if (verificationPopulated) {
+      await sendRentalNotification({
+        userId: verificationPopulated.landlordId._id,
+        type: 'rent_verification_rejected',
+        title: 'Property Verification Rejected',
+        message: `Your verification request for ${verificationPopulated.listingId.name} has been rejected. Reason: ${rejectionReason || 'Please check admin notes for details'}.`,
+        meta: {
+          listingId: verificationPopulated.listingId._id,
+          verificationId: verification._id,
+          rejectionReason
+        },
+        actionUrl: `/user/property-verification?listingId=${verificationPopulated.listingId._id}`,
+        io
+      });
+    }
 
     res.json({
       success: true,
@@ -1489,6 +1669,32 @@ export const submitRentalRating = async (req, res, next) => {
     }
 
     await rating.save();
+
+    // Send notification to the rated party
+    const io = req.app.get('io');
+    const contractPopulated = await RentLockContract.findById(contract._id)
+      .populate('listingId', 'name address');
+
+    if (contractPopulated) {
+      const listing = contractPopulated.listingId;
+      const ratedUserId = role === 'tenant' ? contract.landlordId._id : contract.tenantId._id;
+      const raterUsername = role === 'tenant' ? contract.tenantId.username : contract.landlordId.username;
+
+      await sendRentalNotification({
+        userId: ratedUserId,
+        type: 'rent_rating_received',
+        title: 'New Rental Rating Received',
+        message: `You have received a new rating from ${raterUsername} for your rental contract at ${listing.name}.`,
+        meta: {
+          contractId: contract._id,
+          listingId: listing._id,
+          ratingId: rating._id,
+          ratedBy: userId
+        },
+        actionUrl: `/user/rental-ratings?contractId=${contract._id}`,
+        io
+      });
+    }
 
     // Populate for response
     await rating.populate('tenantId', 'username email avatar');
@@ -1733,6 +1939,29 @@ export const applyForRentalLoan = async (req, res, next) => {
     await loan.populate('userId', 'username email');
     await loan.populate('contractId', 'contractId listingId');
 
+    // Send notification to tenant
+    const io = req.app.get('io');
+    const contractPopulated = await RentLockContract.findById(contract._id)
+      .populate('listingId', 'name address');
+
+    if (contractPopulated) {
+      await sendRentalNotification({
+        userId: userId,
+        type: 'rent_loan_applied',
+        title: 'Rental Loan Application Submitted',
+        message: `Your ${loanType} loan application of ₹${loanAmount} for ${contractPopulated.listingId.name} has been submitted and is under review.`,
+        meta: {
+          contractId: contract._id,
+          listingId: contractPopulated.listingId._id,
+          loanId: loan._id,
+          loanType,
+          loanAmount
+        },
+        actionUrl: `/user/rental-loans?loanId=${loan._id}`,
+        io
+      });
+    }
+
     res.status(201).json({
       success: true,
       message: "Loan application submitted successfully.",
@@ -1877,6 +2106,38 @@ export const approveRentalLoan = async (req, res, next) => {
 
     await loan.save();
 
+    // Send notification to tenant
+    const io = req.app.get('io');
+    const loanPopulated = await RentalLoan.findById(loan._id)
+      .populate('userId', 'username email')
+      .populate('contractId');
+
+    if (loanPopulated) {
+      const contract = await RentLockContract.findById(loanPopulated.contractId._id || loanPopulated.contractId)
+        .populate('listingId', 'name address');
+
+      if (contract) {
+        await sendRentalNotification({
+          userId: loanPopulated.userId._id,
+          type: loan.status === 'disbursed' ? 'rent_loan_disbursed' : 'rent_loan_approved',
+          title: loan.status === 'disbursed' ? 'Rental Loan Disbursed' : 'Rental Loan Approved',
+          message: loan.status === 'disbursed' 
+            ? `Your ${loan.loanType} loan of ₹${loan.loanAmount} for ${contract.listingId.name} has been disbursed. Reference: ${loan.disbursementReference}`
+            : `Your ${loan.loanType} loan application of ₹${loan.loanAmount} for ${contract.listingId.name} has been approved.`,
+          meta: {
+            contractId: contract._id,
+            listingId: contract.listingId._id,
+            loanId: loan._id,
+            loanType: loan.loanType,
+            loanAmount: loan.loanAmount,
+            disbursementReference: loan.disbursementReference
+          },
+          actionUrl: `/user/rental-loans?loanId=${loan._id}`,
+          io
+        });
+      }
+    }
+
     res.json({
       success: true,
       message: "Loan approved successfully.",
@@ -1920,6 +2181,36 @@ export const rejectRentalLoan = async (req, res, next) => {
 
     await loan.save();
 
+    // Send notification to tenant
+    const io = req.app.get('io');
+    const loanPopulated = await RentalLoan.findById(loan._id)
+      .populate('userId', 'username email')
+      .populate('contractId');
+
+    if (loanPopulated) {
+      const contract = await RentLockContract.findById(loanPopulated.contractId._id || loanPopulated.contractId)
+        .populate('listingId', 'name address');
+
+      if (contract) {
+        await sendRentalNotification({
+          userId: loanPopulated.userId._id,
+          type: 'rent_loan_rejected',
+          title: 'Rental Loan Application Rejected',
+          message: `Your ${loan.loanType} loan application of ₹${loan.loanAmount} for ${contract.listingId.name} has been rejected. Reason: ${rejectionReason || 'Please check admin notes for details'}.`,
+          meta: {
+            contractId: contract._id,
+            listingId: contract.listingId._id,
+            loanId: loan._id,
+            loanType: loan.loanType,
+            loanAmount: loan.loanAmount,
+            rejectionReason
+          },
+          actionUrl: `/user/rental-loans?loanId=${loan._id}`,
+          io
+        });
+      }
+    }
+
     res.json({
       success: true,
       message: "Loan rejected.",
@@ -1958,6 +2249,36 @@ export const disburseRentalLoan = async (req, res, next) => {
     loan.disbursementReference = disbursementReference || `DISB-${Date.now()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
 
     await loan.save();
+
+    // Send notification to tenant
+    const io = req.app.get('io');
+    const loanPopulated = await RentalLoan.findById(loan._id)
+      .populate('userId', 'username email')
+      .populate('contractId');
+
+    if (loanPopulated) {
+      const contract = await RentLockContract.findById(loanPopulated.contractId._id || loanPopulated.contractId)
+        .populate('listingId', 'name address');
+
+      if (contract) {
+        await sendRentalNotification({
+          userId: loanPopulated.userId._id,
+          type: 'rent_loan_disbursed',
+          title: 'Rental Loan Disbursed',
+          message: `Your ${loan.loanType} loan of ₹${loan.disbursedAmount} for ${contract.listingId.name} has been disbursed. Reference: ${loan.disbursementReference}`,
+          meta: {
+            contractId: contract._id,
+            listingId: contract.listingId._id,
+            loanId: loan._id,
+            loanType: loan.loanType,
+            disbursedAmount: loan.disbursedAmount,
+            disbursementReference: loan.disbursementReference
+          },
+          actionUrl: `/user/rental-loans?loanId=${loan._id}`,
+          io
+        });
+      }
+    }
 
     res.json({
       success: true,
