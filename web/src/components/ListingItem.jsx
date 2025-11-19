@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { MdLocationOn } from 'react-icons/md';
 import { useWishlist } from '../WishlistContext';
-import { FaHeart, FaTrash } from 'react-icons/fa';
+import { FaHeart, FaTrash, FaCheckCircle } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import { maskAddress } from '../utils/addressMasking';
 import { toast } from 'react-toastify';
@@ -136,9 +136,16 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
         </div>
         <div className="p-3 sm:p-4">
           <div className="flex items-center justify-between">
-            <p className="text-gray-700 font-semibold text-base sm:text-lg truncate flex-1">
-              {listing.name}
-            </p>
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <p className="text-gray-700 font-semibold text-base sm:text-lg truncate">
+                {listing.name}
+              </p>
+              {listing.isVerified && (
+                <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-[10px] font-semibold flex items-center gap-1 whitespace-nowrap">
+                  <FaCheckCircle className="text-[10px]" /> Verified
+                </span>
+              )}
+            </div>
             {/* Remove Button - only show in watchlist context (hide for admins to avoid duplicate) */}
             {onDelete && !isAdminContext && (
               <button
