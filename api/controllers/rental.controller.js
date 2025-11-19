@@ -3,6 +3,7 @@ import RentWallet from "../models/rentWallet.model.js";
 import MoveInOutChecklist from "../models/moveInOutChecklist.model.js";
 import Dispute from "../models/dispute.model.js";
 import PropertyVerification from "../models/propertyVerification.model.js";
+import RentalRating from "../models/rentalRating.model.js";
 import Booking from "../models/booking.model.js";
 import Listing from "../models/listing.model.js";
 import User from "../models/user.model.js";
@@ -1401,6 +1402,245 @@ export const rejectVerification = async (req, res, next) => {
       success: true,
       message: "Verification rejected.",
       verification
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Submit Rental Rating (Tenant or Landlord)
+export const submitRentalRating = async (req, res, next) => {
+  try {
+    const { contractId } = req.params;
+    const { ratings, comment, role } = req.body; // role: 'tenant' or 'landlord'
+    const userId = req.user.id;
+
+    // Verify contract exists
+    const contract = await RentLockContract.findById(contractId)
+      .populate('tenantId')
+      .populate('landlordId');
+
+    if (!contract) {
+      return res.status(404).json({ message: "Contract not found." });
+    }
+
+    // Verify user is part of the contract
+    const isTenant = contract.tenantId._id.toString() === userId;
+    const isLandlord = contract.landlordId._id.toString() === userId;
+
+    if (!isTenant && !isLandlord) {
+      return res.status(403).json({ message: "Unauthorized. Only tenant or landlord can submit ratings." });
+    }
+
+    // Verify role matches user
+    if (role === 'tenant' && !isTenant) {
+      return res.status(403).json({ message: "Unauthorized. Only tenant can submit tenant rating." });
+    }
+
+    if (role === 'landlord' && !isLandlord) {
+      return res.status(403).json({ message: "Unauthorized. Only landlord can submit landlord rating." });
+    }
+
+    // Find or create rating
+    let rating = await RentalRating.findOne({ contractId: contract._id });
+
+    if (!rating) {
+      rating = await RentalRating.create({
+        contractId: contract._id,
+        tenantId: contract.tenantId._id,
+        landlordId: contract.landlordId._id
+      });
+    }
+
+    // Submit rating based on role
+    if (role === 'tenant') {
+      // Tenant rates landlord
+      if (rating.tenantToLandlordRating.overallRating !== null) {
+        return res.status(400).json({ message: "Tenant has already submitted a rating." });
+      }
+
+      rating.submitTenantRating({
+        overallRating: ratings.overallRating,
+        behaviorRating: ratings.behaviorRating,
+        maintenanceRating: ratings.maintenanceRating,
+        honestyRating: ratings.honestyRating,
+        communicationRating: ratings.communicationRating
+      }, comment);
+    } else {
+      // Landlord rates tenant
+      if (rating.landlordToTenantRating.overallRating !== null) {
+        return res.status(400).json({ message: "Landlord has already submitted a rating." });
+      }
+
+      rating.submitLandlordRating({
+        overallRating: ratings.overallRating,
+        cleanlinessRating: ratings.cleanlinessRating,
+        paymentPunctuality: ratings.paymentPunctuality,
+        behaviorRating: ratings.behaviorRating,
+        propertyCare: ratings.propertyCare
+      }, comment);
+    }
+
+    await rating.save();
+
+    // Populate for response
+    await rating.populate('tenantId', 'username email avatar');
+    await rating.populate('landlordId', 'username email avatar');
+    await rating.populate('contractId', 'contractId');
+
+    res.json({
+      success: true,
+      message: `${role === 'tenant' ? 'Tenant' : 'Landlord'} rating submitted successfully.`,
+      rating
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get Rental Rating
+export const getRentalRating = async (req, res, next) => {
+  try {
+    const { contractId } = req.params;
+    const userId = req.user.id;
+
+    // Verify contract exists
+    const contract = await RentLockContract.findById(contractId);
+    if (!contract) {
+      return res.status(404).json({ message: "Contract not found." });
+    }
+
+    // Verify user has access (tenant, landlord, or admin)
+    const isTenant = contract.tenantId.toString() === userId;
+    const isLandlord = contract.landlordId.toString() === userId;
+    const user = await User.findById(userId);
+    const isAdmin = user?.role === 'admin';
+
+    if (!isTenant && !isLandlord && !isAdmin) {
+      return res.status(403).json({ message: "Unauthorized." });
+    }
+
+    const rating = await RentalRating.findOne({ contractId: contract._id })
+      .populate('tenantId', 'username email avatar')
+      .populate('landlordId', 'username email avatar')
+      .populate('contractId', 'contractId listingId');
+
+    if (!rating) {
+      return res.json({
+        success: true,
+        rating: null,
+        message: "No rating found for this contract."
+      });
+    }
+
+    res.json({
+      success: true,
+      rating
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// List Rental Ratings (for a user or property)
+export const listRentalRatings = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { role, listingId } = req.query; // role: 'tenant' or 'landlord', listingId for property ratings
+
+    let query = {};
+
+    if (role === 'tenant') {
+      query.tenantId = userId;
+    } else if (role === 'landlord') {
+      query.landlordId = userId;
+    } else {
+      // Get ratings where user is either tenant or landlord
+      query.$or = [
+        { tenantId: userId },
+        { landlordId: userId }
+      ];
+    }
+
+    const ratings = await RentalRating.find(query)
+      .populate('contractId', 'contractId listingId')
+      .populate('listingId', 'name address')
+      .populate('tenantId', 'username email avatar')
+      .populate('landlordId', 'username email avatar')
+      .sort({ createdAt: -1 });
+
+    // If listingId is provided, filter by listing
+    let filteredRatings = ratings;
+    if (listingId) {
+      filteredRatings = ratings.filter(rating => {
+        const contract = rating.contractId;
+        return contract?.listingId?.toString() === listingId || 
+               (contract?.listingId?._id && contract.listingId._id.toString() === listingId);
+      });
+    }
+
+    res.json({
+      success: true,
+      ratings: filteredRatings
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get Property Ratings (Public - for listing page)
+export const getPropertyRatings = async (req, res, next) => {
+  try {
+    const { listingId } = req.params;
+
+    // Get all contracts for this listing
+    const contracts = await RentLockContract.find({ listingId })
+      .select('_id');
+
+    const contractIds = contracts.map(c => c._id);
+
+    // Get all ratings for these contracts
+    const ratings = await RentalRating.find({ contractId: { $in: contractIds } })
+      .populate('tenantId', 'username avatar')
+      .populate('landlordId', 'username avatar')
+      .populate('contractId', 'contractId')
+      .sort({ createdAt: -1 });
+
+    // Calculate average ratings
+    let totalLandlordRatings = 0;
+    let totalTenantRatings = 0;
+    let landlordRatingsCount = 0;
+    let tenantRatingsCount = 0;
+
+    ratings.forEach(rating => {
+      if (rating.tenantToLandlordRating?.overallRating) {
+        totalLandlordRatings += rating.tenantToLandlordRating.overallRating;
+        landlordRatingsCount++;
+      }
+      if (rating.landlordToTenantRating?.overallRating) {
+        totalTenantRatings += rating.landlordToTenantRating.overallRating;
+        tenantRatingsCount++;
+      }
+    });
+
+    const averageLandlordRating = landlordRatingsCount > 0 
+      ? (totalLandlordRatings / landlordRatingsCount).toFixed(2) 
+      : null;
+    
+    const averageTenantRating = tenantRatingsCount > 0 
+      ? (totalTenantRatings / tenantRatingsCount).toFixed(2) 
+      : null;
+
+    res.json({
+      success: true,
+      ratings,
+      statistics: {
+        totalRatings: ratings.length,
+        landlordRatings: landlordRatingsCount,
+        tenantRatings: tenantRatingsCount,
+        averageLandlordRating: averageLandlordRating ? parseFloat(averageLandlordRating) : null,
+        averageTenantRating: averageTenantRating ? parseFloat(averageTenantRating) : null
+      }
     });
   } catch (error) {
     next(error);

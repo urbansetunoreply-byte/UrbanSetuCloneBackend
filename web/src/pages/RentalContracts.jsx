@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FaFileContract, FaDownload, FaEye, FaCalendarAlt, FaMoneyBillWave, FaLock, FaCheckCircle, FaTimesCircle, FaSpinner, FaHome, FaUser, FaChevronRight, FaSignInAlt, FaSignOutAlt, FaGavel } from 'react-icons/fa';
+import { FaFileContract, FaDownload, FaEye, FaCalendarAlt, FaMoneyBillWave, FaLock, FaCheckCircle, FaTimesCircle, FaSpinner, FaHome, FaUser, FaChevronRight, FaSignInAlt, FaSignOutAlt, FaGavel, FaStar } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
 import ContractPreview from '../components/rental/ContractPreview';
 
@@ -272,6 +272,20 @@ export default function RentalContracts() {
                           className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center justify-center gap-2"
                         >
                           <FaGavel /> Raise Dispute
+                        </button>
+                        <button
+                          onClick={() => {
+                            const isTenant = contract.tenantId?._id === currentUser._id || contract.tenantId === currentUser._id;
+                            const isLandlord = contract.landlordId?._id === currentUser._id || contract.landlordId === currentUser._id;
+                            if (isTenant) {
+                              navigate(`/user/rental-ratings?contractId=${contract._id}&role=tenant`);
+                            } else if (isLandlord) {
+                              navigate(`/user/rental-ratings?contractId=${contract._id}&role=landlord`);
+                            }
+                          }}
+                          className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 flex items-center justify-center gap-2"
+                        >
+                          <FaStar /> Rate
                         </button>
                       </>
                     )}

@@ -6291,6 +6291,16 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           <FaGavel className="inline mr-1" />
                           Dispute
                         </Link>
+                        {appt.purpose === 'rent' && appt.contractId && (
+                          <Link
+                            to={`/user/rental-ratings?contractId=${appt.contractId._id || appt.contractId}&role=${isBuyer ? 'tenant' : 'landlord'}`}
+                            className="text-xs border rounded px-2 py-1 mt-1 text-yellow-600 hover:text-yellow-700 border-yellow-500 bg-yellow-50 hover:bg-yellow-100 transition"
+                            title="Rate Rental Experience"
+                          >
+                            <FaStar className="inline mr-1" />
+                            Rate
+                          </Link>
+                        )}
                       </>
                     )}
                   </>

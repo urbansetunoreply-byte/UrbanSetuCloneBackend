@@ -23,7 +23,11 @@ import {
   requestVerification,
   getVerificationStatus,
   approveVerification,
-  rejectVerification
+  rejectVerification,
+  submitRentalRating,
+  getRentalRating,
+  listRentalRatings,
+  getPropertyRatings
 } from '../controllers/rental.controller.js';
 
 const router = express.Router();
@@ -81,6 +85,12 @@ router.post("/verification/:listingId", verifyToken, requestVerification);
 router.get("/verification/:listingId", verifyToken, getVerificationStatus);
 router.post("/verification/:verificationId/approve", verifyToken, approveVerification);
 router.post("/verification/:verificationId/reject", verifyToken, rejectVerification);
+
+// Rental Ratings Routes
+router.post("/ratings/:contractId", verifyToken, submitRentalRating);
+router.get("/ratings/:contractId", verifyToken, getRentalRating);
+router.get("/ratings", verifyToken, listRentalRatings);
+router.get("/ratings/property/:listingId", getPropertyRatings); // Public endpoint
 
 export default router;
 
