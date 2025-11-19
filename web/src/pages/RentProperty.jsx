@@ -367,11 +367,13 @@ export default function RentProperty() {
     try {
       setLoading(true);
       
-      // Get contract ID - try contractId first, then _id
-      const contractId = contract.contractId || contract._id;
+      // Get contract ID - prefer contractId string field, then _id
+      const contractId = contract?.contractId || contract?._id;
       if (!contractId) {
         throw new Error("Contract ID not found. Please refresh and try again.");
       }
+
+      console.log('Signing contract with ID:', contractId, 'Contract:', contract);
 
       const res = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractId}/sign`, {
         method: 'POST',
