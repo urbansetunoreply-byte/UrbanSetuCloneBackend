@@ -30,6 +30,7 @@ export const useCall = () => {
   const [availableCameras, setAvailableCameras] = useState([]);
   const [currentCameraId, setCurrentCameraId] = useState(null);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [remoteIsScreenSharing, setRemoteIsScreenSharing] = useState(false); // Track if remote is screen sharing
   const [cameraStreamDuringScreenShare, setCameraStreamDuringScreenShare] = useState(null); // Camera stream for small window during screen share
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [connectionQuality, setConnectionQuality] = useState('good'); // 'excellent', 'good', 'fair', 'poor'
@@ -169,8 +170,16 @@ export const useCall = () => {
       if (remoteAudioRef.current) {
         remoteAudioRef.current.srcObject = null;
       }
+      setRemoteIsScreenSharing(false);
       return;
     }
+
+    // Detect if remote is screen sharing by checking video track label
+    const videoTracks = remoteStream.getVideoTracks();
+    const isRemoteScreenSharing = videoTracks.some(track => 
+      track.label && (track.label.includes('screen') || track.label.includes('Screen') || track.label.includes('display'))
+    );
+    setRemoteIsScreenSharing(isRemoteScreenSharing);
 
     // For video calls - attach to video element (video element handles both video and audio)
     if (activeCall.callType === 'video' && remoteVideoRef.current) {
@@ -1346,6 +1355,7 @@ export const useCall = () => {
     availableCameras,
     currentCameraId,
     isScreenSharing,
+    remoteIsScreenSharing,
     cameraStreamDuringScreenShare,
     screenShareStream: screenShareStreamRef.current,
     isFullscreen,

@@ -25,6 +25,7 @@ const ActiveCallModal = ({
   onToggleScreenShare,
   onToggleFullscreen,
   isScreenSharing,
+  remoteIsScreenSharing,
   cameraStreamDuringScreenShare,
   screenShareStream,
   isFullscreen,
@@ -48,6 +49,11 @@ const ActiveCallModal = ({
   const streamsRef = useRef({ local: null, remote: null }); // Store streams persistently
   const screenShareVideoRef = useRef(null); // Ref for screen share video element
   const cameraVideoSmallRef = useRef(null); // Ref for camera video in small window during screen share
+  const [videoZoom, setVideoZoom] = useState(1); // Zoom level for video (like Google Meet)
+  const [videoPanX, setVideoPanX] = useState(0); // Pan X offset for zoomed video
+  const [videoPanY, setVideoPanY] = useState(0); // Pan Y offset for zoomed video
+  const isPanningRef = useRef(false); // Track if user is panning
+  const lastPanPosRef = useRef({ x: 0, y: 0 }); // Last pan position
 
   useEffect(() => {
     setIsVisible(true);
@@ -88,8 +94,95 @@ const ActiveCallModal = ({
           localVideoRef.current.play().catch(err => console.error('Error playing local video after screen share:', err));
         }
       }
+      // Reset zoom/pan when screen sharing stops
+      setVideoZoom(1);
+      setVideoPanX(0);
+      setVideoPanY(0);
     }
   }, [isScreenSharing, screenShareStream, cameraStreamDuringScreenShare, localStream]);
+
+  // Reset zoom/pan when remote screen sharing state changes and ensure remote stream is attached
+  useEffect(() => {
+    if (!remoteIsScreenSharing) {
+      setVideoZoom(1);
+      setVideoPanX(0);
+      setVideoPanY(0);
+      
+      // When remote stops screen sharing, ensure remote video element is updated
+      if (remoteVideoRef.current && remoteStream) {
+        // Re-attach remote stream to ensure camera video shows
+        const currentSrcObject = remoteVideoRef.current.srcObject;
+        if (currentSrcObject !== remoteStream) {
+          remoteVideoRef.current.srcObject = remoteStream;
+          remoteVideoRef.current.muted = false;
+          remoteVideoRef.current.play().catch(err => {
+            console.error('Error playing remote video after screen share ends:', err);
+          });
+        } else {
+          // Even if same stream, ensure it's playing
+          remoteVideoRef.current.play().catch(err => {
+            console.error('Error playing remote video after screen share ends:', err);
+          });
+        }
+      }
+    }
+  }, [remoteIsScreenSharing, remoteStream]);
+
+  // Handle zoom with mouse wheel
+  const handleWheel = (e) => {
+    if (!isScreenSharing && !remoteIsScreenSharing) return;
+    
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    const newZoom = Math.max(1, Math.min(3, videoZoom * delta));
+    setVideoZoom(newZoom);
+    
+    // Center zoom on mouse position
+    if (newZoom > 1 && e.currentTarget) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width - 0.5) * 100;
+      const y = ((e.clientY - rect.top) / rect.height - 0.5) * 100;
+      setVideoPanX(prev => prev - x * (newZoom - videoZoom));
+      setVideoPanY(prev => prev - y * (newZoom - videoZoom));
+    }
+  };
+
+  // Handle mouse down for panning
+  const handleMouseDown = (e) => {
+    if (videoZoom > 1 && (isScreenSharing || remoteIsScreenSharing)) {
+      isPanningRef.current = true;
+      lastPanPosRef.current = { x: e.clientX, y: e.clientY };
+      e.preventDefault();
+    }
+  };
+
+  // Handle mouse move for panning
+  const handleMouseMove = (e) => {
+    if (isPanningRef.current && videoZoom > 1) {
+      const deltaX = e.clientX - lastPanPosRef.current.x;
+      const deltaY = e.clientY - lastPanPosRef.current.y;
+      setVideoPanX(prev => prev + (deltaX / window.innerWidth) * 100 * (1 / videoZoom));
+      setVideoPanY(prev => prev + (deltaY / window.innerHeight) * 100 * (1 / videoZoom));
+      lastPanPosRef.current = { x: e.clientX, y: e.clientY };
+    }
+  };
+
+  // Handle mouse up for panning
+  const handleMouseUp = () => {
+    isPanningRef.current = false;
+  };
+
+  // Add global mouse event listeners for panning
+  useEffect(() => {
+    if (videoZoom > 1) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [videoZoom]);
 
   // Maintain video streams when views are swapped
   useEffect(() => {
@@ -282,29 +375,70 @@ const ActiveCallModal = ({
       )}
       
       {/* Remote Video/Audio */}
-      <div className="flex-1 relative min-h-0 overflow-hidden" onClick={handleVideoClick}>
+      <div 
+        className="flex-1 relative min-h-0 overflow-hidden" 
+        onClick={handleVideoClick}
+        onWheel={handleWheel}
+        onMouseDown={handleMouseDown}
+        style={{ cursor: videoZoom > 1 ? (isPanningRef.current ? 'grabbing' : 'grab') : 'pointer' }}
+      >
         {callType === 'video' ? (
           <>
-            {/* Main video - Show screen share in large view when active, otherwise normal layout */}
-            {isScreenSharing && screenShareStream ? (
-              // Screen share in large view (when person is sharing)
+            {/* Main video - Logic:
+                1. If person is sharing: big window = screen share, small window = other party
+                2. If remote is sharing: big window = screen share (from remote), small window = yourself
+                3. Otherwise: normal layout */}
+            {(isScreenSharing && screenShareStream) || remoteIsScreenSharing ? (
+              // Screen share in large view (either local or remote)
               <>
-                <video
-                  key="screenshare-large"
-                  ref={screenShareVideoRef}
-                  srcObject={screenShareStream}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="w-full h-full object-contain cursor-pointer max-w-full max-h-full bg-black"
-                  onLoadedMetadata={(e) => {
-                    e.target.play().catch(err => console.error('Error playing screen share:', err));
+                <div 
+                  className="w-full h-full bg-black overflow-hidden relative"
+                  style={{
+                    transform: `scale(${videoZoom}) translate(${videoPanX}%, ${videoPanY}%)`,
+                    transformOrigin: 'center center',
+                    transition: isPanningRef.current ? 'none' : 'transform 0.1s ease-out'
                   }}
-                />
+                >
+                  {isScreenSharing && screenShareStream ? (
+                    <video
+                      key="screenshare-large-local"
+                      ref={screenShareVideoRef}
+                      srcObject={screenShareStream}
+                      autoPlay
+                      playsInline
+                      muted
+                      className="w-full h-full object-contain max-w-full max-h-full"
+                      onLoadedMetadata={(e) => {
+                        e.target.play().catch(err => console.error('Error playing screen share:', err));
+                      }}
+                    />
+                  ) : (
+                    <video
+                      key="screenshare-large-remote"
+                      ref={remoteVideoRef}
+                      autoPlay
+                      playsInline
+                      muted={false}
+                      className="w-full h-full object-contain max-w-full max-h-full"
+                      onLoadedMetadata={(e) => {
+                        e.target.muted = false;
+                        e.target.play().catch(err => console.error('Error playing remote screen share:', err));
+                      }}
+                    />
+                  )}
+                </div>
                 {/* Screen share label */}
                 <div className="absolute bottom-24 left-4 bg-black bg-opacity-70 rounded-full px-4 py-2 z-20">
-                  <p className="text-white text-sm font-medium">Screen Share</p>
+                  <p className="text-white text-sm font-medium">
+                    {isScreenSharing ? 'Screen Share (You)' : `${otherPartyName || 'Caller'}'s Screen Share`}
+                  </p>
                 </div>
+                {/* Zoom indicator */}
+                {videoZoom > 1 && (
+                  <div className="absolute top-16 left-4 bg-black bg-opacity-70 rounded-full px-4 py-2 z-20">
+                    <p className="text-white text-sm font-medium">{Math.round(videoZoom * 100)}%</p>
+                  </div>
+                )}
               </>
             ) : videoSwapped ? (
               // Local video in big view (when swapped)
@@ -335,20 +469,21 @@ const ActiveCallModal = ({
                 </div>
               </>
             ) : (
-              // Remote video in big view (default) - may show screen share if remote is sharing
+              // Remote video in big view (default) - camera video
               <>
-                <video
-                  key="remote-large"
-                  ref={remoteVideoRef}
-                  autoPlay
-                  playsInline
-                  muted={false}
-                  className="w-full h-full object-cover cursor-pointer max-w-full max-h-full"
-                  onLoadedMetadata={(e) => {
-                    e.target.muted = false; // Ensure audio is not muted
-                    e.target.play().catch(err => console.error('Error playing remote video:', err));
-                  }}
-                />
+                <div className="w-full h-full bg-black relative flex items-center justify-center">
+                  <video
+                    key="remote-large"
+                    ref={remoteVideoRef}
+                    autoPlay
+                    playsInline
+                    muted={false}
+                    className="w-full h-full object-contain max-w-full max-h-full"
+                    onLoadedMetadata={(e) => {
+                      e.target.muted = false; // Ensure audio is not muted
+                      e.target.play().catch(err => console.error('Error playing remote video:', err));
+                    }}
+                  />
                 {/* Remote video off indicator */}
                 {!remoteVideoEnabled && (
                   <div className="absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center cursor-pointer">
@@ -469,8 +604,77 @@ const ActiveCallModal = ({
             onClick={handleLocalVideoClick}
             title="Click to swap video views"
           >
-            {videoSwapped ? (
-              // Remote video in mini view (when swapped)
+            {/* Small window logic:
+                1. If person is sharing: show remote (other party) in small window
+                2. If remote is sharing: show local (yourself) in small window  
+                3. Otherwise: normal swap logic */}
+            {(isScreenSharing || remoteIsScreenSharing) ? (
+              // During screen share, show other party in small window
+              isScreenSharing ? (
+                // Person is sharing: show remote (other party) in small window
+                <>
+                  <video
+                    key="remote-small-screenshare"
+                    ref={remoteVideoRef}
+                    autoPlay
+                    playsInline
+                    muted={false}
+                    className="w-full h-full object-cover"
+                    onLoadedMetadata={(e) => {
+                      e.target.muted = false;
+                      e.target.play().catch(err => console.error('Error playing remote video:', err));
+                    }}
+                  />
+                  {!remoteVideoEnabled && (
+                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                      <FaVideoSlash className="text-white text-xl" />
+                    </div>
+                  )}
+                  <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 rounded-full px-3 py-1">
+                    <p className="text-white text-xs font-medium">{otherPartyName || 'Caller'}</p>
+                  </div>
+                </>
+              ) : (
+                // Remote is sharing: show local (yourself) in small window
+                <>
+                  {cameraStreamDuringScreenShare ? (
+                    <video
+                      key="local-small-remote-screenshare"
+                      ref={cameraVideoSmallRef}
+                      srcObject={cameraStreamDuringScreenShare}
+                      autoPlay
+                      playsInline
+                      muted
+                      className="w-full h-full object-cover"
+                      onLoadedMetadata={(e) => {
+                        e.target.play().catch(err => console.error('Error playing camera video:', err));
+                      }}
+                    />
+                  ) : (
+                    <video
+                      key="local-small-normal"
+                      ref={localVideoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      className="w-full h-full object-cover"
+                      onLoadedMetadata={(e) => {
+                        e.target.play().catch(err => console.error('Error playing local video:', err));
+                      }}
+                    />
+                  )}
+                  {!isVideoEnabled && (
+                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                      <FaVideoSlash className="text-white text-xl" />
+                    </div>
+                  )}
+                  <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 rounded-full px-3 py-1">
+                    <p className="text-white text-xs font-medium">You</p>
+                  </div>
+                </>
+              )
+            ) : videoSwapped ? (
+              // Remote video in mini view (when swapped, no screen share)
               <>
                 <video
                   key="remote-small"
@@ -480,7 +684,7 @@ const ActiveCallModal = ({
                   muted={false}
                   className="w-full h-full object-cover"
                   onLoadedMetadata={(e) => {
-                    e.target.muted = false; // Ensure audio is not muted
+                    e.target.muted = false;
                     e.target.play().catch(err => console.error('Error playing remote video:', err));
                   }}
                 />
@@ -489,46 +693,29 @@ const ActiveCallModal = ({
                     <FaVideoSlash className="text-white text-xl" />
                   </div>
                 )}
-                {/* Remote video label in mini view */}
                 <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 rounded-full px-3 py-1">
                   <p className="text-white text-xs font-medium">{otherPartyName || 'Caller'}</p>
                 </div>
               </>
             ) : (
-              // Local video in mini view (default) - Show camera stream during screen share
+              // Local video in mini view (default, no screen share)
               <>
-                {isScreenSharing && cameraStreamDuringScreenShare ? (
-                  <video
-                    key="camera-small-screenshare"
-                    ref={cameraVideoSmallRef}
-                    srcObject={cameraStreamDuringScreenShare}
-                    autoPlay
-                    playsInline
-                    muted
-                    className="w-full h-full object-cover"
-                    onLoadedMetadata={(e) => {
-                      e.target.play().catch(err => console.error('Error playing camera video during screen share:', err));
-                    }}
-                  />
-                ) : (
-                  <video
-                    key="local-small"
-                    ref={localVideoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    className="w-full h-full object-cover"
-                    onLoadedMetadata={(e) => {
-                      e.target.play().catch(err => console.error('Error playing local video:', err));
-                    }}
-                  />
-                )}
+                <video
+                  key="local-small"
+                  ref={localVideoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-full object-cover"
+                  onLoadedMetadata={(e) => {
+                    e.target.play().catch(err => console.error('Error playing local video:', err));
+                  }}
+                />
                 {!isVideoEnabled && (
                   <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                     <FaVideoSlash className="text-white text-xl" />
                   </div>
                 )}
-                {/* Local video label */}
                 <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 rounded-full px-3 py-1">
                   <p className="text-white text-xs font-medium">You</p>
                 </div>
