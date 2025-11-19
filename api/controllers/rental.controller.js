@@ -5,6 +5,90 @@ import Listing from "../models/listing.model.js";
 import User from "../models/user.model.js";
 import { errorHandler } from "../utils/error.js";
 
+// Payment reminder function (can be called by cron job)
+export const sendPaymentReminders = async () => {
+  try {
+    const now = new Date();
+    const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+    const oneDayFromNow = new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000);
+
+    // Find all active contracts with upcoming payments
+    const activeContracts = await RentLockContract.find({ status: 'active' })
+      .populate('tenantId', 'email username')
+      .populate('landlordId', 'email username')
+      .populate('listingId', 'name');
+
+    const reminders = [];
+
+    for (const contract of activeContracts) {
+      const wallet = await RentWallet.findOne({ contractId: contract._id, userId: contract.tenantId._id });
+      
+      if (!wallet || !wallet.paymentSchedule) continue;
+
+      // Find upcoming payments (3 days and 1 day before due date)
+      const upcomingPayments = wallet.paymentSchedule.filter(payment => {
+        if (payment.status === 'completed') return false;
+        
+        const dueDate = new Date(payment.dueDate);
+        const daysUntilDue = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        
+        return (daysUntilDue === 3 || daysUntilDue === 1) && dueDate >= now;
+      });
+
+      for (const payment of upcomingPayments) {
+        const dueDate = new Date(payment.dueDate);
+        const daysUntilDue = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+        // Send 3-day reminder
+        if (daysUntilDue === 3 && !payment.reminderSent3Days) {
+          reminders.push({
+            contract,
+            wallet,
+            payment,
+            daysUntilDue: 3,
+            tenantEmail: contract.tenantId.email,
+            propertyName: contract.listingId.name,
+            amount: payment.amount
+          });
+          payment.reminderSent3Days = true;
+        }
+
+        // Send 1-day reminder
+        if (daysUntilDue === 1 && !payment.reminderSent1Day) {
+          reminders.push({
+            contract,
+            wallet,
+            payment,
+            daysUntilDue: 1,
+            tenantEmail: contract.tenantId.email,
+            propertyName: contract.listingId.name,
+            amount: payment.amount
+          });
+          payment.reminderSent1Day = true;
+        }
+      }
+
+      // Save wallet if reminders were sent
+      if (upcomingPayments.some(p => p.reminderSent3Days || p.reminderSent1Day)) {
+        await wallet.save();
+      }
+    }
+
+    // TODO: Implement email sending for reminders
+    // For now, just log the reminders
+    console.log(`Payment reminders prepared: ${reminders.length}`);
+
+    return {
+      success: true,
+      remindersSent: reminders.length,
+      reminders
+    };
+  } catch (error) {
+    console.error("Error sending payment reminders:", error);
+    throw error;
+  }
+};
+
 // Create Rent-Lock Contract
 export const createContract = async (req, res, next) => {
   try {

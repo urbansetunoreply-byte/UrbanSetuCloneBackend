@@ -21,5 +21,26 @@ router.post("/contracts/:contractId/sign", verifyToken, signContract);
 router.get("/wallet/:contractId", verifyToken, getWallet);
 router.put("/wallet/:contractId/auto-debit", verifyToken, updateAutoDebit);
 
+// Payment Reminder Routes (can be called by cron job or manually)
+router.post("/reminders/send", verifyToken, async (req, res, next) => {
+  try {
+    // Only allow admin or cron job (with secret key) to trigger reminders
+    if (req.user.role !== 'admin' && req.body.secretKey !== process.env.CRON_SECRET_KEY) {
+      return res.status(403).json({ message: "Unauthorized." });
+    }
+
+    const { sendPaymentReminders } = await import('../controllers/rental.controller.js');
+    const result = await sendPaymentReminders();
+
+    res.json({
+      success: true,
+      message: "Payment reminders sent",
+      ...result
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;
 
