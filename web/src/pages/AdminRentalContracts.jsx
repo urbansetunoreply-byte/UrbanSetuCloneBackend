@@ -36,21 +36,19 @@ export default function AdminRentalContracts() {
       return;
     }
 
-    fetchAllContracts();
-  }, [currentUser, navigate, statusFilter]);
+    // Only fetch on initial load or user change, not on filter changes
+    if (contracts.length === 0) {
+      fetchAllContracts();
+    }
+  }, [currentUser, navigate]);
 
-  const fetchAllContracts = async () => {
+  const fetchAllContracts = async (showLoading = true) => {
     try {
-      setLoading(true);
-      const params = new URLSearchParams();
-      if (statusFilter !== 'all') {
-        params.set('status', statusFilter);
+      if (showLoading) {
+        setLoading(true);
       }
-      if (searchQuery) {
-        params.set('search', searchQuery);
-      }
-
-      const res = await fetch(`${API_BASE_URL}/api/rental/contracts/all?${params.toString()}`, {
+      // Always fetch all contracts, apply filters client-side
+      const res = await fetch(`${API_BASE_URL}/api/rental/contracts/all`, {
         credentials: 'include'
       });
 
@@ -64,25 +62,37 @@ export default function AdminRentalContracts() {
       console.error('Error fetching contracts:', error);
       toast.error('Failed to load contracts');
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   };
 
-  // Client-side filtering for search
+  // Client-side filtering for search and status
   const filteredContracts = React.useMemo(() => {
-    if (!searchQuery) return contracts;
+    let filtered = contracts;
     
-    const query = searchQuery.toLowerCase();
-    return contracts.filter(contract =>
-      contract.contractId?.toLowerCase().includes(query) ||
-      contract.listingId?.name?.toLowerCase().includes(query) ||
-      contract.listingId?.address?.toLowerCase().includes(query) ||
-      contract.tenantId?.username?.toLowerCase().includes(query) ||
-      contract.tenantId?.email?.toLowerCase().includes(query) ||
-      contract.landlordId?.username?.toLowerCase().includes(query) ||
-      contract.landlordId?.email?.toLowerCase().includes(query)
-    );
-  }, [contracts, searchQuery]);
+    // Filter by status
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(contract => contract.status === statusFilter);
+    }
+    
+    // Filter by search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(contract =>
+        contract.contractId?.toLowerCase().includes(query) ||
+        contract.listingId?.name?.toLowerCase().includes(query) ||
+        contract.listingId?.address?.toLowerCase().includes(query) ||
+        contract.tenantId?.username?.toLowerCase().includes(query) ||
+        contract.tenantId?.email?.toLowerCase().includes(query) ||
+        contract.landlordId?.username?.toLowerCase().includes(query) ||
+        contract.landlordId?.email?.toLowerCase().includes(query)
+      );
+    }
+    
+    return filtered;
+  }, [contracts, statusFilter, searchQuery]);
 
   const handleDownload = async (contract) => {
     try {
