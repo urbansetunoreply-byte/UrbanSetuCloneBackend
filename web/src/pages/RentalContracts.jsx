@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FaFileContract, FaDownload, FaEye, FaCalendarAlt, FaMoneyBillWave, FaLock, FaCheckCircle, FaTimesCircle, FaSpinner, FaHome, FaUser, FaChevronRight, FaSignInAlt, FaSignOutAlt, FaGavel, FaStar, FaCreditCard, FaPlayCircle } from 'react-icons/fa';
+import { FaFileContract, FaDownload, FaEye, FaCalendarAlt, FaMoneyBillWave, FaLock, FaCheckCircle, FaTimesCircle, FaSpinner, FaHome, FaUser, FaChevronRight, FaSignInAlt, FaSignOutAlt, FaGavel, FaStar, FaCreditCard, FaPlayCircle, FaCheck, FaTimes, FaPen, FaEraser, FaUndo } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
 import ContractPreview from '../components/rental/ContractPreview';
+import DigitalSignature from '../components/rental/DigitalSignature';
+import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -19,6 +21,10 @@ export default function RentalContracts() {
   const [filter, setFilter] = useState('all'); // 'all', 'active', 'pending_signature', 'expired', 'terminated', 'rejected'
   const [selectedContract, setSelectedContract] = useState(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [showSignatureModal, setShowSignatureModal] = useState(false);
+  const [signingContract, setSigningContract] = useState(null);
+  const [actionLoading, setActionLoading] = useState('');
 
   useEffect(() => {
     fetchContracts();
@@ -102,6 +108,165 @@ export default function RentalContracts() {
 
   const getStatusLabel = (status) => {
     return status?.replace('_', ' ').toUpperCase() || 'UNKNOWN';
+  };
+
+  // Determine if current user is tenant (buyer) or landlord (seller) for a contract
+  const getUserRole = (contract) => {
+    if (!contract || !currentUser) return null;
+    const isTenant = contract.tenantId?._id === currentUser._id || contract.tenantId === currentUser._id;
+    const isLandlord = contract.landlordId?._id === currentUser._id || contract.landlordId === currentUser._id;
+    
+    if (isTenant) return 'tenant';
+    if (isLandlord) return 'landlord';
+    return null;
+  };
+
+  // Handle contract review (for seller/landlord)
+  const handleReview = (contract) => {
+    setSigningContract(contract);
+    setShowReviewModal(true);
+  };
+
+  // Handle signature click (for seller/landlord review)
+  const handleSignatureClick = (contract) => {
+    // Check if already signed
+    if (contract.landlordSignature?.signed) {
+      toast.info("You have already signed this contract.");
+      return;
+    }
+    setSigningContract(contract);
+    setShowSignatureModal(true);
+  };
+
+  // Handle signature confirm (for seller/landlord)
+  const handleSignatureConfirm = async (signatureData) => {
+    if (!signingContract) {
+      toast.error("Contract not found.");
+      return;
+    }
+
+    try {
+      setActionLoading('signing');
+      
+      const contractId = signingContract.contractId || signingContract._id;
+      if (!contractId) {
+        throw new Error("Contract ID not found. Please refresh and try again.");
+      }
+
+      const res = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractId}/sign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          signatureData: signatureData
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to sign contract");
+      }
+
+      // Refresh contracts list
+      await fetchContracts();
+      
+      setShowSignatureModal(false);
+      setShowReviewModal(false);
+      setSigningContract(null);
+
+      if (data.isFullySigned) {
+        toast.success("Contract fully signed by both parties! Tenant can now proceed with payment.");
+      } else {
+        toast.success("Your signature added. Waiting for tenant to sign.");
+      }
+    } catch (error) {
+      console.error("Error signing contract:", error);
+      toast.error(error.message || "Failed to sign contract. Please try again.");
+    } finally {
+      setActionLoading('');
+    }
+  };
+
+  // Handle accept appointment (for seller/landlord)
+  const handleAcceptAppointment = async (contract) => {
+    if (!contract.bookingId?._id && !contract.bookingId) {
+      toast.error("Booking not found for this contract.");
+      return;
+    }
+
+    const bookingId = contract.bookingId?._id || contract.bookingId;
+    setActionLoading(`accept-${contract._id}`);
+
+    try {
+      const { data } = await axios.patch(
+        `${API_BASE_URL}/api/bookings/${bookingId}/status`,
+        { status: 'accepted' },
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+
+      // Refresh contracts
+      await fetchContracts();
+
+      toast.success("Appointment accepted successfully! Contact information is now visible to both parties.");
+    } catch (err) {
+      if (err.response?.status === 401) {
+        toast.error("Session expired or unauthorized. Please sign in again.");
+        navigate("/sign-in");
+        return;
+      }
+      toast.error(err.response?.data?.message || "Failed to accept appointment.");
+    } finally {
+      setActionLoading('');
+    }
+  };
+
+  // Handle reject appointment (for seller/landlord)
+  const handleRejectAppointment = async (contract) => {
+    if (!contract.bookingId?._id && !contract.bookingId) {
+      toast.error("Booking not found for this contract.");
+      return;
+    }
+
+    const bookingId = contract.bookingId?._id || contract.bookingId;
+    const rejectionReason = prompt("Please provide a reason for rejecting this appointment (optional):");
+    
+    if (rejectionReason === null) {
+      // User cancelled the prompt
+      return;
+    }
+
+    setActionLoading(`reject-${contract._id}`);
+
+    try {
+      const { data } = await axios.patch(
+        `${API_BASE_URL}/api/bookings/${bookingId}/status`,
+        { 
+          status: 'rejected',
+          rejectionReason: rejectionReason || 'Booking rejected by seller'
+        },
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+
+      // Refresh contracts (contract will be auto-rejected by backend)
+      await fetchContracts();
+
+      toast.success("Appointment rejected. The rental contract has been cancelled.");
+    } catch (err) {
+      if (err.response?.status === 401) {
+        toast.error("Session expired or unauthorized. Please sign in again.");
+        navigate("/sign-in");
+        return;
+      }
+      toast.error(err.response?.data?.message || "Failed to reject appointment.");
+    } finally {
+      setActionLoading('');
+    }
   };
 
   if (loading) {
@@ -235,21 +400,84 @@ export default function RentalContracts() {
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    {(contract.status === 'pending_signature' || contract.status === 'draft') && (
-                      <button
-                        onClick={() => {
-                          const listingId = contract.listingId?._id || contract.listingId;
-                          if (listingId) {
-                            navigate(`/user/rent-property?listingId=${listingId}&contractId=${contract.contractId || contract._id}`);
-                          } else {
-                            toast.error('Unable to continue contract. Listing not found.');
-                          }
-                        }}
-                        className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center justify-center gap-2"
-                      >
-                        <FaPlayCircle /> Continue Contract
-                      </button>
-                    )}
+                    {(() => {
+                      const userRole = getUserRole(contract);
+                      const isTenant = userRole === 'tenant';
+                      const isLandlord = userRole === 'landlord';
+                      
+                      // Buyer/Tenant actions
+                      if (isTenant && (contract.status === 'pending_signature' || contract.status === 'draft')) {
+                        return (
+                          <button
+                            onClick={() => {
+                              const listingId = contract.listingId?._id || contract.listingId;
+                              if (listingId) {
+                                navigate(`/user/rent-property?listingId=${listingId}&contractId=${contract.contractId || contract._id}`);
+                              } else {
+                                toast.error('Unable to continue contract. Listing not found.');
+                              }
+                            }}
+                            className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center justify-center gap-2"
+                          >
+                            <FaPlayCircle /> Continue Contract
+                          </button>
+                        );
+                      }
+                      
+                      // Seller/Landlord actions
+                      if (isLandlord && contract.status === 'pending_signature') {
+                        const booking = contract.bookingId;
+                        const appointmentStatus = booking?.status || 'pending';
+                        
+                        return (
+                          <>
+                            <button
+                              onClick={() => handleReview(contract)}
+                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
+                              disabled={actionLoading !== ''}
+                            >
+                              <FaEye /> Review Contract
+                            </button>
+                            {appointmentStatus === 'pending' && (
+                              <>
+                                <button
+                                  onClick={() => handleAcceptAppointment(contract)}
+                                  disabled={actionLoading === `accept-${contract._id}` || actionLoading !== ''}
+                                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  {actionLoading === `accept-${contract._id}` ? (
+                                    <>
+                                      <FaSpinner className="animate-spin" /> Accepting...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <FaCheck /> Accept
+                                    </>
+                                  )}
+                                </button>
+                                <button
+                                  onClick={() => handleRejectAppointment(contract)}
+                                  disabled={actionLoading === `reject-${contract._id}` || actionLoading !== ''}
+                                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  {actionLoading === `reject-${contract._id}` ? (
+                                    <>
+                                      <FaSpinner className="animate-spin" /> Rejecting...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <FaTimes /> Reject
+                                    </>
+                                  )}
+                                </button>
+                              </>
+                            )}
+                          </>
+                        );
+                      }
+                      
+                      return null;
+                    })()}
                     <button
                       onClick={() => handleView(contract)}
                       className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
@@ -346,6 +574,135 @@ export default function RentalContracts() {
               onDownload={() => {
                 handleDownload(selectedContract);
               }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Contract Review Modal (for seller/landlord) */}
+      {showReviewModal && signingContract && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 my-8 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-gray-800">Review Contract</h2>
+              <button
+                onClick={() => {
+                  setShowReviewModal(false);
+                  setSigningContract(null);
+                }}
+                className="text-gray-400 hover:text-gray-600 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            
+            <ContractPreview
+              contract={signingContract}
+              listing={signingContract.listingId}
+              tenant={signingContract.tenantId}
+              landlord={signingContract.landlordId}
+              onDownload={() => {
+                handleDownload(signingContract);
+              }}
+            />
+
+            {/* Signature Section for Landlord */}
+            {(() => {
+              const userRole = getUserRole(signingContract);
+              const isLandlord = userRole === 'landlord';
+              const landlordSigned = signingContract.landlordSignature?.signed;
+              
+              if (isLandlord && signingContract.status === 'pending_signature') {
+                return (
+                  <div className="mt-6 p-6 bg-gray-50 rounded-lg border-2 border-gray-200">
+                    <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                      <FaPen className="text-blue-600" /> Your Signature Required
+                    </h3>
+                    
+                    {landlordSigned ? (
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                        <div className="flex items-center gap-2 text-green-700">
+                          <FaCheckCircle /> You have already signed this contract.
+                        </div>
+                        {signingContract.landlordSignature?.signedAt && (
+                          <p className="text-sm text-green-600 mt-2">
+                            Signed on: {new Date(signingContract.landlordSignature.signedAt).toLocaleString('en-GB')}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="text-gray-600 mb-4">
+                          Please review the contract above. If you agree to the terms, please sign below to proceed.
+                        </p>
+                        <button
+                          onClick={() => handleSignatureClick(signingContract)}
+                          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 font-semibold"
+                        >
+                          <FaPen /> Sign Contract
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Signature Status */}
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="text-gray-600">Tenant Signature:</span>
+                          <span className={`ml-2 ${signingContract.tenantSignature?.signed ? 'text-green-600' : 'text-yellow-600'}`}>
+                            {signingContract.tenantSignature?.signed ? (
+                              <><FaCheckCircle /> Signed</>
+                            ) : (
+                              <><FaTimesCircle /> Pending</>
+                            )}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Your Signature:</span>
+                          <span className={`ml-2 ${landlordSigned ? 'text-green-600' : 'text-yellow-600'}`}>
+                            {landlordSigned ? (
+                              <><FaCheckCircle /> Signed</>
+                            ) : (
+                              <><FaTimesCircle /> Pending</>
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* Digital Signature Modal */}
+      {showSignatureModal && signingContract && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-gray-800">Sign Contract</h2>
+              <button
+                onClick={() => {
+                  setShowSignatureModal(false);
+                  setSigningContract(null);
+                }}
+                className="text-gray-400 hover:text-gray-600 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            <DigitalSignature
+              onSign={handleSignatureConfirm}
+              onCancel={() => {
+                setShowSignatureModal(false);
+                setSigningContract(null);
+              }}
+              title="Sign as Landlord"
+              userName={currentUser?.username || 'Landlord'}
+              disabled={actionLoading === 'signing'}
             />
           </div>
         </div>
