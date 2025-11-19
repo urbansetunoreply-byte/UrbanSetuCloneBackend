@@ -52,6 +52,7 @@ const ActiveCallModal = ({
   const [videoZoom, setVideoZoom] = useState(1); // Zoom level for video (like Google Meet)
   const [videoPanX, setVideoPanX] = useState(0); // Pan X offset for zoomed video
   const [videoPanY, setVideoPanY] = useState(0); // Pan Y offset for zoomed video
+  const [forceRender, setForceRender] = useState(0); // Force re-render when screen share state changes
   const isPanningRef = useRef(false); // Track if user is panning
   const lastPanPosRef = useRef({ x: 0, y: 0 }); // Last pan position
 
@@ -101,30 +102,30 @@ const ActiveCallModal = ({
     }
   }, [isScreenSharing, screenShareStream, cameraStreamDuringScreenShare, localStream]);
 
-  // Reset zoom/pan when remote screen sharing state changes and ensure remote stream is attached
+  // Reset zoom/pan and force UI update when remote screen sharing state changes
   useEffect(() => {
     if (!remoteIsScreenSharing) {
       setVideoZoom(1);
       setVideoPanX(0);
       setVideoPanY(0);
       
-      // When remote stops screen sharing, ensure remote video element is updated
+      // Force a re-render to update the UI layout immediately
+      setForceRender(prev => prev + 1);
+      
+      // When remote stops screen sharing, ensure the video element is updated
       if (remoteVideoRef.current && remoteStream) {
-        // Re-attach remote stream to ensure camera video shows
-        const currentSrcObject = remoteVideoRef.current.srcObject;
-        if (currentSrcObject !== remoteStream) {
+        // Ensure the video element is in sync with the remote stream
+        if (remoteVideoRef.current.srcObject !== remoteStream) {
           remoteVideoRef.current.srcObject = remoteStream;
           remoteVideoRef.current.muted = false;
           remoteVideoRef.current.play().catch(err => {
             console.error('Error playing remote video after screen share ends:', err);
           });
-        } else {
-          // Even if same stream, ensure it's playing
-          remoteVideoRef.current.play().catch(err => {
-            console.error('Error playing remote video after screen share ends:', err);
-          });
         }
       }
+    } else {
+      // When remote starts screen sharing, also force render
+      setForceRender(prev => prev + 1);
     }
   }, [remoteIsScreenSharing, remoteStream]);
 
@@ -388,7 +389,7 @@ const ActiveCallModal = ({
                 1. If person is sharing: big window = screen share, small window = other party
                 2. If remote is sharing: big window = screen share (from remote), small window = yourself
                 3. Otherwise: normal layout */}
-            {(isScreenSharing && screenShareStream) || remoteIsScreenSharing ? (
+            {((isScreenSharing && screenShareStream) || remoteIsScreenSharing) ? (
               // Screen share in large view (either local or remote)
               <>
                 <div 

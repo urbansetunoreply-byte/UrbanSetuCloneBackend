@@ -179,7 +179,28 @@ export const useCall = () => {
     const isRemoteScreenSharing = videoTracks.some(track => 
       track.label && (track.label.includes('screen') || track.label.includes('Screen') || track.label.includes('display'))
     );
+    
+    // Update remote screen sharing state
     setRemoteIsScreenSharing(isRemoteScreenSharing);
+    
+    // When remote switches from screen share to camera, force UI update
+    // This helps with the rendering issue when screen share stops on remote side
+    if (!isRemoteScreenSharing && remoteVideoRef.current) {
+      // Force the ref to update by briefly setting to null then back
+      setTimeout(() => {
+        if (remoteVideoRef.current && remoteVideoRef.current.srcObject === remoteStream) {
+          remoteVideoRef.current.srcObject = null;
+          setTimeout(() => {
+            if (remoteVideoRef.current) {
+              remoteVideoRef.current.srcObject = remoteStream;
+              remoteVideoRef.current.play().catch(err => {
+                console.error('Error playing remote video after screen share detection:', err);
+              });
+            }
+          }, 50);
+        }
+      }, 50);
+    }
 
     // For video calls - attach to video element (video element handles both video and audio)
     if (activeCall.callType === 'video' && remoteVideoRef.current) {
@@ -1015,7 +1036,30 @@ export const useCall = () => {
         
         // Stop screen sharing when user stops sharing from browser UI
         screenStream.getVideoTracks()[0].onended = () => {
-          toggleScreenShare(); // Will stop sharing
+          // Don't call toggleScreenShare to avoid showing dialog again
+          // Instead, just handle stopping directly
+          if (screenShareStreamRef.current) {
+            screenShareStreamRef.current.getTracks().forEach(track => track.stop());
+            screenShareStreamRef.current = null;
+          }
+          setIsScreenSharing(false);
+          
+          // Restore camera video in peer connection
+          if (localStream && peerRef.current && originalCameraStreamRef.current) {
+            const originalVideoTrack = originalCameraStreamRef.current.getVideoTracks()[0];
+            if (originalVideoTrack) {
+              const sender = peerRef.current._pc.getSenders().find(s => 
+                s.track && s.track.kind === 'video'
+              );
+              if (sender && peerRef.current) {
+                sender.replaceTrack(originalVideoTrack).catch(err => {
+                  console.error('Error restoring camera track:', err);
+                });
+              }
+            }
+          }
+          setCameraStreamDuringScreenShare(null);
+          toast.info('Screen sharing stopped');
         };
         
         toast.success('Screen sharing started');
