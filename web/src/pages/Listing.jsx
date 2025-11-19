@@ -23,6 +23,8 @@ import { useWishlist } from '../WishlistContext';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 import RatingDisplay from '../components/ratings/RatingDisplay';
+import RentPredictionDisplay from '../components/rental/RentPredictionDisplay';
+import LocalityScoreDisplay from '../components/rental/LocalityScoreDisplay';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function Listing() {
@@ -112,6 +114,12 @@ export default function Listing() {
   const [propertyRatings, setPropertyRatings] = useState(null);
   const [showPropertyRatings, setShowPropertyRatings] = useState(false);
   const [ratingsLoading, setRatingsLoading] = useState(false);
+  const [rentPrediction, setRentPrediction] = useState(null);
+  const [showRentPrediction, setShowRentPrediction] = useState(false);
+  const [predictionLoading, setPredictionLoading] = useState(false);
+  const [localityScore, setLocalityScore] = useState(null);
+  const [showLocalityScore, setShowLocalityScore] = useState(false);
+  const [localityLoading, setLocalityLoading] = useState(false);
   const refreshWatchlistCount = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/watchlist/count/${params.listingId}`, { credentials: 'include' });
@@ -2024,6 +2032,120 @@ export default function Listing() {
           {/* Smart Price Insights Section */}
           {showSmartPriceInsights && currentUser && (
             <EnhancedSmartPriceInsights listing={listing} currentUser={currentUser} />
+          )}
+
+          {/* AI Rent Prediction & Locality Score (for rental properties) */}
+          {listing.type === "rent" && (
+            <>
+              <div className="flex justify-center gap-4 mt-8 flex-wrap">
+                <button
+                  onClick={async () => {
+                    if (!showRentPrediction && !rentPrediction) {
+                      setPredictionLoading(true);
+                      try {
+                        const res = await fetch(`${API_BASE_URL}/api/rental/predictions/${listing._id}`);
+                        const data = await res.json();
+                        if (res.ok && data.success) {
+                          setRentPrediction(data.prediction);
+                        } else if (res.status === 404 || !data.prediction) {
+                          // Prediction doesn't exist, offer to generate
+                          if (currentUser) {
+                            const generateRes = await fetch(`${API_BASE_URL}/api/rental/predictions/${listing._id}`, {
+                              method: 'POST',
+                              credentials: 'include'
+                            });
+                            const generateData = await generateRes.json();
+                            if (generateRes.ok && generateData.success) {
+                              setRentPrediction(generateData.prediction);
+                            }
+                          }
+                        }
+                      } catch (error) {
+                        console.error('Error fetching prediction:', error);
+                      } finally {
+                        setPredictionLoading(false);
+                      }
+                    }
+                    setShowRentPrediction((prev) => !prev);
+                  }}
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2 hover:from-blue-600 hover:to-indigo-700 transition-all"
+                >
+                  {predictionLoading ? 'Loading...' : showRentPrediction ? 'Hide Rent Prediction' : 'Show AI Rent Prediction'}
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!showLocalityScore && !localityScore) {
+                      setLocalityLoading(true);
+                      try {
+                        const res = await fetch(`${API_BASE_URL}/api/rental/locality-score/${listing._id}`);
+                        const data = await res.json();
+                        if (res.ok && data.success) {
+                          setLocalityScore(data.localityScore);
+                        }
+                      } catch (error) {
+                        console.error('Error fetching locality score:', error);
+                      } finally {
+                        setLocalityLoading(false);
+                      }
+                    }
+                    setShowLocalityScore((prev) => !prev);
+                  }}
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2 hover:from-green-600 hover:to-emerald-700 transition-all"
+                >
+                  {localityLoading ? 'Loading...' : showLocalityScore ? 'Hide Locality Score' : 'Show Locality Score'}
+                </button>
+              </div>
+
+              {/* Rent Prediction Display */}
+              {showRentPrediction && (
+                <div className="mt-8 border-t border-gray-200 pt-8">
+                  <div className="bg-white rounded-xl shadow-lg p-6">
+                    <RentPredictionDisplay
+                      prediction={rentPrediction}
+                      loading={predictionLoading}
+                      onGenerate={async () => {
+                        if (!currentUser) {
+                          toast.info('Please sign in to generate predictions');
+                          navigate('/sign-in');
+                          return;
+                        }
+                        setPredictionLoading(true);
+                        try {
+                          const res = await fetch(`${API_BASE_URL}/api/rental/predictions/${listing._id}`, {
+                            method: 'POST',
+                            credentials: 'include'
+                          });
+                          const data = await res.json();
+                          if (res.ok && data.success) {
+                            setRentPrediction(data.prediction);
+                            toast.success('Rent prediction generated successfully');
+                          } else {
+                            toast.error(data.message || 'Failed to generate prediction');
+                          }
+                        } catch (error) {
+                          console.error('Error generating prediction:', error);
+                          toast.error('Failed to generate prediction');
+                        } finally {
+                          setPredictionLoading(false);
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Locality Score Display */}
+              {showLocalityScore && (
+                <div className="mt-8 border-t border-gray-200 pt-8">
+                  <div className="bg-white rounded-xl shadow-lg p-6">
+                    <LocalityScoreDisplay
+                      localityScore={localityScore}
+                      loading={localityLoading}
+                    />
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           {/* ESG Information Section */}

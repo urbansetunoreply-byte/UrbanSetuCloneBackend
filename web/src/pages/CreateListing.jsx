@@ -382,14 +382,22 @@ export default function CreateListing() {
       
       if (res.ok) {
         toast.success("Property Added Successfully!!");
-        // If rental property, suggest verification
+        const newListingId = data.listing?._id || data._id;
+        
+        // If rental property, suggest verification and auto-generate prediction
         if (formData.type === "rent") {
+          // Auto-generate rent prediction in background
+          fetch(`${API_BASE_URL}/api/rental/predictions/${newListingId}`, {
+            method: 'POST',
+            credentials: 'include'
+          }).catch(err => console.error('Error generating prediction:', err));
+          
           setTimeout(() => {
             toast.info(
               <div>
                 <p className="mb-2">Get your property verified to build trust!</p>
                 <button
-                  onClick={() => navigate(`/user/property-verification?listingId=${data.listing?._id || data._id}`)}
+                  onClick={() => navigate(`/user/property-verification?listingId=${newListingId}`)}
                   className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
                 >
                   Request Verification

@@ -33,7 +33,10 @@ import {
   listRentalLoans,
   approveRentalLoan,
   rejectRentalLoan,
-  disburseRentalLoan
+  disburseRentalLoan,
+  generateRentPrediction,
+  getRentPrediction,
+  getLocalityScore
 } from '../controllers/rental.controller.js';
 
 const router = express.Router();
@@ -105,6 +108,11 @@ router.get("/loans", verifyToken, listRentalLoans);
 router.post("/loans/:loanId/approve", verifyToken, approveRentalLoan);
 router.post("/loans/:loanId/reject", verifyToken, rejectRentalLoan);
 router.post("/loans/:loanId/disburse", verifyToken, disburseRentalLoan);
+
+// AI Rent Prediction & Locality Score Routes
+router.post("/predictions/:listingId", verifyToken, generateRentPrediction);
+router.get("/predictions/:listingId", getRentPrediction); // Public endpoint
+router.get("/locality-score/:listingId", getLocalityScore); // Public endpoint
 
 export default router;
 

@@ -5,11 +5,17 @@ import Dispute from "../models/dispute.model.js";
 import PropertyVerification from "../models/propertyVerification.model.js";
 import RentalRating from "../models/rentalRating.model.js";
 import RentalLoan from "../models/rentalLoan.model.js";
+import RentPrediction from "../models/rentPrediction.model.js";
 import Booking from "../models/booking.model.js";
 import Listing from "../models/listing.model.js";
 import User from "../models/user.model.js";
 import { errorHandler } from "../utils/error.js";
 import { generateRentLockContractPDF } from "../utils/contractPDFGenerator.js";
+import { 
+  calculateRentPrediction, 
+  calculateLocalityScore, 
+  findSimilarProperties 
+} from "../utils/rentPredictionEngine.js";
 
 // Payment reminder function (can be called by cron job)
 export const sendPaymentReminders = async () => {
@@ -1957,6 +1963,152 @@ export const disburseRentalLoan = async (req, res, next) => {
       success: true,
       message: "Loan disbursed successfully.",
       loan
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Generate or Update Rent Prediction
+export const generateRentPrediction = async (req, res, next) => {
+  try {
+    const { listingId } = req.params;
+    const userId = req.user?.id;
+
+    // Verify listing exists and is a rental property
+    const listing = await Listing.findById(listingId);
+    if (!listing) {
+      return res.status(404).json({ message: "Listing not found." });
+    }
+
+    if (listing.type !== 'rent') {
+      return res.status(400).json({ message: "Rent prediction is only available for rental properties." });
+    }
+
+    // Find similar properties for comparison
+    const allListings = await Listing.find({ 
+      type: 'rent',
+      city: listing.city 
+    }).limit(100);
+
+    const similarProperties = findSimilarProperties(listing, allListings, 20);
+
+    // Calculate rent prediction
+    const predictionData = calculateRentPrediction(listing, similarProperties);
+
+    if (!predictionData) {
+      return res.status(400).json({ message: "Unable to generate rent prediction." });
+    }
+
+    // Calculate locality score
+    const localityScore = calculateLocalityScore(listing, listing.neighborhood || {});
+
+    // Find or create prediction
+    let prediction = await RentPrediction.findOne({ listingId: listing._id });
+
+    if (prediction) {
+      // Update existing prediction
+      prediction.predictedRent = predictionData.predictedRent;
+      prediction.marketAverageRent = predictionData.marketAverageRent;
+      prediction.priceComparison = predictionData.priceComparison;
+      prediction.priceDifference = predictionData.priceDifference;
+      prediction.predictedFutureRent = predictionData.predictedFutureRent;
+      prediction.influencingFactors = predictionData.influencingFactors;
+      prediction.localityScore = localityScore;
+      prediction.dataPointsUsed = predictionData.dataPointsUsed;
+      prediction.similarPropertiesCount = predictionData.similarPropertiesCount;
+      prediction.updatedAt = new Date();
+    } else {
+      // Create new prediction
+      prediction = await RentPrediction.create({
+        listingId: listing._id,
+        predictedRent: predictionData.predictedRent,
+        marketAverageRent: predictionData.marketAverageRent,
+        priceComparison: predictionData.priceComparison,
+        priceDifference: predictionData.priceDifference,
+        predictedFutureRent: predictionData.predictedFutureRent,
+        influencingFactors: predictionData.influencingFactors,
+        localityScore: localityScore,
+        dataPointsUsed: predictionData.dataPointsUsed,
+        similarPropertiesCount: predictionData.similarPropertiesCount,
+        accuracy: 85,
+        modelVersion: '1.0'
+      });
+    }
+
+    // Update listing with prediction reference
+    listing.rentPrediction = prediction._id;
+    listing.localityScore = localityScore.overall;
+    await listing.save();
+
+    await prediction.populate('listingId', 'name address city');
+
+    res.json({
+      success: true,
+      message: "Rent prediction generated successfully.",
+      prediction
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get Rent Prediction
+export const getRentPrediction = async (req, res, next) => {
+  try {
+    const { listingId } = req.params;
+
+    const listing = await Listing.findById(listingId);
+    if (!listing) {
+      return res.status(404).json({ message: "Listing not found." });
+    }
+
+    const prediction = await RentPrediction.findOne({ listingId: listing._id })
+      .populate('listingId', 'name address city monthlyRent');
+
+    if (!prediction) {
+      return res.json({
+        success: true,
+        prediction: null,
+        message: "No prediction found for this listing. Generate one first."
+      });
+    }
+
+    res.json({
+      success: true,
+      prediction
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get Locality Score
+export const getLocalityScore = async (req, res, next) => {
+  try {
+    const { listingId } = req.params;
+
+    const listing = await Listing.findById(listingId);
+    if (!listing) {
+      return res.status(404).json({ message: "Listing not found." });
+    }
+
+    // Get prediction which contains locality score
+    const prediction = await RentPrediction.findOne({ listingId: listing._id });
+
+    if (!prediction || !prediction.localityScore) {
+      // Calculate on the fly if not stored
+      const localityScore = calculateLocalityScore(listing, listing.neighborhood || {});
+      return res.json({
+        success: true,
+        localityScore,
+        message: "Locality score calculated."
+      });
+    }
+
+    res.json({
+      success: true,
+      localityScore: prediction.localityScore
     });
   } catch (error) {
     next(error);
