@@ -32,21 +32,19 @@ export default function AdminRentalRatings() {
       return;
     }
 
-    fetchAllRatings();
-  }, [currentUser, navigate, roleFilter]);
+    // Only fetch on initial load or user change, not on filter changes
+    if (ratings.length === 0) {
+      fetchAllRatings();
+    }
+  }, [currentUser, navigate]);
 
-  const fetchAllRatings = async () => {
+  const fetchAllRatings = async (showLoading = true) => {
     try {
-      setLoading(true);
-      const params = new URLSearchParams();
-      if (roleFilter !== 'all') {
-        params.set('role', roleFilter);
+      if (showLoading) {
+        setLoading(true);
       }
-      if (searchQuery) {
-        params.set('search', searchQuery);
-      }
-
-      const res = await fetch(`${API_BASE_URL}/api/rental/ratings/all?${params.toString()}`, {
+      // Always fetch all ratings, apply filters client-side
+      const res = await fetch(`${API_BASE_URL}/api/rental/ratings/all`, {
         credentials: 'include'
       });
 
@@ -60,7 +58,9 @@ export default function AdminRentalRatings() {
       console.error('Error fetching ratings:', error);
       toast.error('Failed to load ratings');
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   };
 

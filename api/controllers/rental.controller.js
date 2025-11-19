@@ -2018,8 +2018,14 @@ export const listAllRatings = async (req, res, next) => {
     
     // Fetch all ratings
     let ratings = await RentalRating.find(query)
-      .populate('contractId', 'contractId listingId lockedRentAmount startDate endDate')
-      .populate('listingId', 'name address city state')
+      .populate({
+        path: 'contractId',
+        select: 'contractId listingId lockedRentAmount startDate endDate',
+        populate: {
+          path: 'listingId',
+          select: 'name address city state imageUrls type'
+        }
+      })
       .populate('tenantId', 'username email avatar')
       .populate('landlordId', 'username email avatar')
       .sort({ createdAt: -1 });

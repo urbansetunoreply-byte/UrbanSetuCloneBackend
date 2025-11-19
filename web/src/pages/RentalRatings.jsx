@@ -34,9 +34,12 @@ export default function RentalRatings() {
       navigate('/sign-in');
       return;
     }
-    fetchRatings();
+    // Only fetch on initial load or user change, not on filter changes
+    if (ratings.length === 0) {
+      fetchRatings();
+    }
     fetchContracts();
-  }, [currentUser, filters.role]);
+  }, [currentUser]);
 
   // Handle URL parameters
   useEffect(() => {
@@ -56,15 +59,13 @@ export default function RentalRatings() {
     }
   }, [location.search, contracts]);
 
-  const fetchRatings = async () => {
+  const fetchRatings = async (showLoading = true) => {
     try {
-      setLoading(true);
-      const params = new URLSearchParams();
-      if (filters.role !== 'all') {
-        params.set('role', filters.role);
+      if (showLoading) {
+        setLoading(true);
       }
-
-      const res = await fetch(`${API_BASE_URL}/api/rental/ratings?${params.toString()}`, {
+      // Fetch all ratings, apply filters client-side
+      const res = await fetch(`${API_BASE_URL}/api/rental/ratings`, {
         credentials: 'include'
       });
 
@@ -78,7 +79,9 @@ export default function RentalRatings() {
       console.error('Error fetching ratings:', error);
       toast.error('Failed to load ratings');
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   };
 
@@ -141,10 +144,26 @@ export default function RentalRatings() {
   };
 
   const filteredRatings = ratings.filter(rating => {
+    // Filter by role
+    if (filters.role !== 'all') {
+      if (filters.role === 'tenant' && !rating.tenantToLandlordRating?.overallRating) {
+        return false;
+      }
+      if (filters.role === 'landlord' && !rating.landlordToTenantRating?.overallRating) {
+        return false;
+      }
+    }
+    
+    // Filter by search
     const matchesSearch = filters.search === '' || 
       rating.contractId?.contractId?.toLowerCase().includes(filters.search.toLowerCase()) ||
+      rating.contractId?.listingId?.name?.toLowerCase().includes(filters.search.toLowerCase()) ||
+      rating.contractId?.listingId?.address?.toLowerCase().includes(filters.search.toLowerCase()) ||
       rating.tenantId?.username?.toLowerCase().includes(filters.search.toLowerCase()) ||
-      rating.landlordId?.username?.toLowerCase().includes(filters.search.toLowerCase());
+      rating.tenantId?.email?.toLowerCase().includes(filters.search.toLowerCase()) ||
+      rating.landlordId?.username?.toLowerCase().includes(filters.search.toLowerCase()) ||
+      rating.landlordId?.email?.toLowerCase().includes(filters.search.toLowerCase()) ||
+      rating.ratingId?.toLowerCase().includes(filters.search.toLowerCase());
     return matchesSearch;
   });
 
