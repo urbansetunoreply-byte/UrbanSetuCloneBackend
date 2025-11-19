@@ -7,7 +7,13 @@ import {
   signContract,
   getWallet,
   updateAutoDebit,
-  downloadContractPDF
+  downloadContractPDF,
+  createMoveInOutChecklist,
+  getMoveInOutChecklist,
+  updateMoveInCondition,
+  approveMoveInChecklist,
+  updateMoveOutCondition,
+  assessDamages
 } from '../controllers/rental.controller.js';
 
 const router = express.Router();
@@ -43,6 +49,14 @@ router.post("/reminders/send", verifyToken, async (req, res, next) => {
     next(error);
   }
 });
+
+// Move-In/Move-Out Checklist Routes
+router.post("/checklist/:contractId", verifyToken, createMoveInOutChecklist);
+router.get("/checklist/:contractId", verifyToken, getMoveInOutChecklist);
+router.put("/checklist/move-in/:checklistId", verifyToken, updateMoveInCondition);
+router.post("/checklist/move-in/:checklistId/approve", verifyToken, approveMoveInChecklist);
+router.put("/checklist/move-out/:checklistId", verifyToken, updateMoveOutCondition);
+router.post("/checklist/:contractId/assess-damages", verifyToken, assessDamages);
 
 export default router;
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { FaTrash, FaSearch, FaPen, FaCheck, FaTimes, FaUserShield, FaUser, FaEnvelope, FaPhone, FaVideo, FaArchive, FaUndo, FaCommentDots, FaCheckDouble, FaBan, FaPaperPlane, FaCalendar, FaLightbulb, FaCopy, FaEllipsisV, FaFlag, FaCircle, FaInfoCircle, FaSync, FaStar, FaRegStar, FaThumbtack, FaCalendarAlt, FaCheckSquare, FaDownload, FaDollarSign, FaCreditCard, FaSpinner, FaExclamationTriangle, FaMoneyBill, FaHistory, FaWallet } from "react-icons/fa";
+import { FaTrash, FaSearch, FaPen, FaCheck, FaTimes, FaUserShield, FaUser, FaEnvelope, FaPhone, FaVideo, FaArchive, FaUndo, FaCommentDots, FaCheckDouble, FaBan, FaPaperPlane, FaCalendar, FaLightbulb, FaCopy, FaEllipsisV, FaFlag, FaCircle, FaInfoCircle, FaSync, FaStar, FaRegStar, FaThumbtack, FaCalendarAlt, FaCheckSquare, FaDownload, FaDollarSign, FaCreditCard, FaSpinner, FaExclamationTriangle, FaMoneyBill, FaHistory, FaWallet, FaSignInAlt, FaSignOutAlt } from "react-icons/fa";
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
 import UserAvatar from '../components/UserAvatar';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
@@ -6263,6 +6263,27 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         <FaWallet className="inline mr-1" />
                         Rent Wallet
                       </Link>
+                    )}
+                    {/* Move-In/Move-Out Checklist buttons: show for rental appointments with contract */}
+                    {appt.purpose === 'rent' && appt.contractId && (
+                      <>
+                        <Link
+                          to={`/user/services?contractId=${appt.contractId._id || appt.contractId}&checklist=move_in`}
+                          className="text-xs border rounded px-2 py-1 mt-1 text-blue-600 hover:text-blue-700 border-blue-500 bg-blue-50 hover:bg-blue-100 transition"
+                          title="Move-In Checklist"
+                        >
+                          <FaSignInAlt className="inline mr-1" />
+                          Move-In
+                        </Link>
+                        <Link
+                          to={`/user/services?contractId=${appt.contractId._id || appt.contractId}&checklist=move_out`}
+                          className="text-xs border rounded px-2 py-1 mt-1 text-orange-600 hover:text-orange-700 border-orange-500 bg-orange-50 hover:bg-orange-100 transition"
+                          title="Move-Out Checklist"
+                        >
+                          <FaSignOutAlt className="inline mr-1" />
+                          Move-Out
+                        </Link>
+                      </>
                     )}
                   </>
                 )}

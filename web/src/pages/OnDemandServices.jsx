@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { FaBroom, FaBolt, FaWrench, FaBug, FaTools, FaTruckMoving, FaCalendarAlt, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaBroom, FaBolt, FaWrench, FaBug, FaTools, FaTruckMoving, FaCalendarAlt, FaMapMarkerAlt, FaHome, FaSignInAlt, FaSignOutAlt, FaCheckCircle, FaClock, FaTimesCircle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import ConditionImageUpload from '../components/rental/ConditionImageUpload';
+import ChecklistModal from '../components/rental/ChecklistModal';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const services = [
@@ -17,6 +20,8 @@ export default function OnDemandServices() {
   usePageTitle("On-Demand Services - Service Requests");
 
   const { currentUser } = useSelector((state) => state.user);
+  const location = useLocation();
+  const navigate = useNavigate();
   const [selected, setSelected] = useState([]);
   const [details, setDetails] = useState({ date: '', address: '', notes: '' });
   const [loading, setLoading] = useState(false);
@@ -27,6 +32,14 @@ export default function OnDemandServices() {
   const [moversSubmitting, setMoversSubmitting] = useState(false);
   const [myMoverRequests, setMyMoverRequests] = useState([]);
   const [moversFilters, setMoversFilters] = useState({ q: '', status: 'all' });
+  // Move-In/Move-Out Checklists
+  const [myContracts, setMyContracts] = useState([]);
+  const [selectedContract, setSelectedContract] = useState(null);
+  const [checklists, setChecklists] = useState({ moveIn: null, moveOut: null });
+  const [checklistType, setChecklistType] = useState('move_in');
+  const [showChecklistModal, setShowChecklistModal] = useState(false);
+  const [checklistForm, setChecklistForm] = useState({ rooms: [], amenities: [], notes: '' });
+  const [checklistFilters, setChecklistFilters] = useState({ q: '', status: 'all' });
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   const fetchMyRequests = async () => {
@@ -47,7 +60,63 @@ export default function OnDemandServices() {
     } catch (_) {}
   };
 
-  useEffect(() => { fetchMyRequests(); fetchMyMoverRequests(); }, [currentUser?._id]);
+  const fetchMyContracts = async () => {
+    if (!currentUser) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/rental/contracts`, { credentials: 'include' });
+      const data = await res.json();
+      if (data.success) {
+        setMyContracts(data.contracts || []);
+      }
+    } catch (_) {}
+  };
+
+  const fetchChecklists = async (contractId) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/rental/checklist/${contractId}`, { credentials: 'include' });
+      const data = await res.json();
+      if (data.success) {
+        const moveIn = data.checklists.find(c => c.type === 'move_in');
+        const moveOut = data.checklists.find(c => c.type === 'move_out');
+        setChecklists({ moveIn, moveOut });
+      }
+    } catch (error) {
+      toast.error('Failed to fetch checklists');
+    }
+  };
+
+  useEffect(() => { 
+    fetchMyRequests(); 
+    fetchMyMoverRequests();
+    fetchMyContracts();
+  }, [currentUser?._id]);
+
+  // Handle URL parameters for opening checklist modal
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const contractIdParam = searchParams.get('contractId');
+    const checklistParam = searchParams.get('checklist');
+    
+    if (contractIdParam && (checklistParam === 'move_in' || checklistParam === 'move_out')) {
+      // Find the contract
+      const contract = myContracts.find(c => 
+        (c._id === contractIdParam) || (c.contractId === contractIdParam)
+      );
+      
+      if (contract) {
+        const openModal = async () => {
+          setSelectedContract(contract);
+          setChecklistType(checklistParam);
+          await fetchChecklists(contract._id || contractIdParam);
+          setShowChecklistModal(true);
+          // Clean up URL
+          navigate('/user/services', { replace: true });
+        };
+        openModal();
+      }
+      // If contract not found but contracts have loaded, do nothing (contract might not exist)
+    }
+  }, [location.search, myContracts]);
 
   const toggleService = (key) => {
     setSelected(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
@@ -246,6 +315,176 @@ export default function OnDemandServices() {
           </div>
         )}
       </div>
+      {/* Move-In/Move-Out Checklists Section */}
+      {currentUser && (
+        <div className="mt-10 border-t border-gray-200 pt-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              <FaHome className="text-green-600"/> Move-In/Move-Out Checklists
+            </h2>
+          </div>
+          <p className="text-sm text-gray-600 mb-4">
+            Manage property condition checklists for your rental contracts. Upload images/videos at move-in and move-out to document property condition.
+          </p>
+
+          {myContracts.length === 0 ? (
+            <div className="bg-white rounded-xl shadow p-6 text-center">
+              <FaHome className="mx-auto text-4xl text-gray-400 mb-2" />
+              <p className="text-gray-600">No rental contracts found.</p>
+              <Link to="/user/rental-contracts" className="text-blue-600 hover:underline mt-2 inline-block">
+                View all rental contracts
+              </Link>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4">
+                <input 
+                  className="border rounded p-2 text-sm" 
+                  placeholder="Search by property name" 
+                  value={checklistFilters.q} 
+                  onChange={(e) => setChecklistFilters(f => ({ ...f, q: e.target.value }))} 
+                />
+                <select 
+                  className="border rounded p-2 text-sm" 
+                  value={checklistFilters.status} 
+                  onChange={(e) => setChecklistFilters(f => ({ ...f, status: e.target.value }))}
+                >
+                  <option value="all">All Status</option>
+                  <option value="active">Active Contracts</option>
+                  <option value="expired">Expired</option>
+                </select>
+                <button 
+                  className="px-3 py-2 bg-gray-100 rounded text-sm" 
+                  onClick={() => setChecklistFilters({ q: '', status: 'all' })}
+                >
+                  Clear
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {myContracts
+                  .filter(contract => {
+                    const matchQ = checklistFilters.q.trim() 
+                      ? (contract.listingId?.name || '').toLowerCase().includes(checklistFilters.q.toLowerCase())
+                      : true;
+                    const matchStatus = checklistFilters.status === 'all' 
+                      ? true 
+                      : checklistFilters.status === 'active' 
+                        ? contract.status === 'active' 
+                        : contract.status === 'expired';
+                    return matchQ && matchStatus;
+                  })
+                  .map(contract => (
+                    <div key={contract._id} className="bg-white rounded-xl shadow p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg">{contract.listingId?.name || 'Property'}</h3>
+                          <div className="text-sm text-gray-600 mt-1">
+                            <div>Contract ID: {contract.contractId}</div>
+                            <div>Rent: ₹{contract.lockedRentAmount?.toLocaleString()}/month</div>
+                            <div>Period: {new Date(contract.startDate).toLocaleDateString()} - {contract.endDate ? new Date(contract.endDate).toLocaleDateString() : 'Ongoing'}</div>
+                            <div className={`inline-block px-2 py-1 rounded text-xs mt-1 ${
+                              contract.status === 'active' ? 'bg-green-100 text-green-800' :
+                              contract.status === 'expired' ? 'bg-gray-100 text-gray-800' :
+                              'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {contract.status}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={async () => {
+                              setSelectedContract(contract);
+                              await fetchChecklists(contract._id);
+                              setChecklistType('move_in');
+                              setShowChecklistModal(true);
+                            }}
+                            className="px-3 py-1.5 bg-blue-50 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-100 flex items-center gap-1"
+                          >
+                            <FaSignInAlt /> Move-In
+                          </button>
+                          <button
+                            onClick={async () => {
+                              setSelectedContract(contract);
+                              await fetchChecklists(contract._id);
+                              setChecklistType('move_out');
+                              setShowChecklistModal(true);
+                            }}
+                            className="px-3 py-1.5 bg-orange-50 border border-orange-300 rounded text-sm text-orange-700 hover:bg-orange-100 flex items-center gap-1"
+                          >
+                            <FaSignOutAlt /> Move-Out
+                          </button>
+                          <Link
+                            to={`/user/rental-contracts?contractId=${contract._id}`}
+                            className="px-3 py-1.5 bg-gray-50 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-100"
+                          >
+                            View
+                          </Link>
+                        </div>
+                      </div>
+                      {/* Quick status */}
+                      <div className="mt-3 flex gap-4 text-xs">
+                        {checklists.moveIn ? (
+                          <span className={`flex items-center gap-1 ${
+                            checklists.moveIn.status === 'approved' ? 'text-green-600' :
+                            checklists.moveIn.status === 'pending_approval' ? 'text-yellow-600' :
+                            'text-gray-600'
+                          }`}>
+                            {checklists.moveIn.status === 'approved' ? <FaCheckCircle /> : 
+                             checklists.moveIn.status === 'pending_approval' ? <FaClock /> : 
+                             <FaTimesCircle />}
+                            Move-In: {checklists.moveIn.status}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">Move-In: Not started</span>
+                        )}
+                        {checklists.moveOut ? (
+                          <span className={`flex items-center gap-1 ${
+                            checklists.moveOut.status === 'completed' ? 'text-green-600' :
+                            checklists.moveOut.status === 'pending_approval' ? 'text-yellow-600' :
+                            'text-gray-600'
+                          }`}>
+                            {checklists.moveOut.status === 'completed' ? <FaCheckCircle /> : 
+                             checklists.moveOut.status === 'pending_approval' ? <FaClock /> : 
+                             <FaTimesCircle />}
+                            Move-Out: {checklists.moveOut.status}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">Move-Out: Not started</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Checklist Modal */}
+      {showChecklistModal && selectedContract && (
+        <ChecklistModal
+          contract={selectedContract}
+          checklist={checklists[checklistType === 'move_in' ? 'moveIn' : 'moveOut']}
+          checklistType={checklistType}
+          onClose={() => {
+            setShowChecklistModal(false);
+            setSelectedContract(null);
+            setChecklists({ moveIn: null, moveOut: null });
+            // Clean up URL if it has checklist params
+            const searchParams = new URLSearchParams(location.search);
+            if (searchParams.get('contractId') || searchParams.get('checklist')) {
+              navigate('/user/services', { replace: true });
+            }
+          }}
+          onUpdate={async () => {
+            await fetchChecklists(selectedContract._id);
+            fetchMyContracts();
+          }}
+        />
+      )}
+
       {/* My Requests */}
       {currentUser && (
         <div className="mt-6 sm:mt-8 bg-white rounded-xl shadow p-4">

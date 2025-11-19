@@ -1,5 +1,6 @@
 import RentLockContract from "../models/rentLockContract.model.js";
 import RentWallet from "../models/rentWallet.model.js";
+import MoveInOutChecklist from "../models/moveInOutChecklist.model.js";
 import Booking from "../models/booking.model.js";
 import Listing from "../models/listing.model.js";
 import User from "../models/user.model.js";
@@ -466,6 +467,362 @@ export const downloadContractPDF = async (req, res, next) => {
     doc.end();
   } catch (error) {
     console.error('Error downloading contract PDF:', error);
+    next(error);
+  }
+};
+
+// Create Move-In/Move-Out Checklist
+export const createMoveInOutChecklist = async (req, res, next) => {
+  try {
+    const { contractId } = req.params;
+    const { type } = req.body; // 'move_in' or 'move_out'
+    const userId = req.user.id;
+
+    // Verify contract exists and user has access
+    const contract = await RentLockContract.findById(contractId)
+      .populate('tenantId')
+      .populate('landlordId');
+
+    if (!contract) {
+      return res.status(404).json({ message: "Contract not found." });
+    }
+
+    const isTenant = contract.tenantId._id.toString() === userId;
+    const isLandlord = contract.landlordId._id.toString() === userId;
+
+    if (!isTenant && !isLandlord) {
+      return res.status(403).json({ message: "Unauthorized." });
+    }
+
+    // Check if checklist already exists
+    const existingChecklist = await MoveInOutChecklist.findOne({ 
+      contractId: contract._id, 
+      type 
+    });
+
+    if (existingChecklist) {
+      return res.status(400).json({ 
+        message: `${type === 'move_in' ? 'Move-in' : 'Move-out'} checklist already exists for this contract.`,
+        checklist: existingChecklist
+      });
+    }
+
+    // Create checklist
+    const checklist = await MoveInOutChecklist.create({
+      contractId: contract._id,
+      listingId: contract.listingId,
+      tenantId: contract.tenantId._id,
+      landlordId: contract.landlordId._id,
+      type,
+      status: 'in_progress'
+    });
+
+    res.status(201).json({
+      success: true,
+      message: `${type === 'move_in' ? 'Move-in' : 'Move-out'} checklist created.`,
+      checklist
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get Move-In/Move-Out Checklist
+export const getMoveInOutChecklist = async (req, res, next) => {
+  try {
+    const { contractId } = req.params;
+    const { type } = req.query; // 'move_in' or 'move_out'
+    const userId = req.user.id;
+
+    // Verify contract exists and user has access
+    const contract = await RentLockContract.findById(contractId);
+    if (!contract) {
+      return res.status(404).json({ message: "Contract not found." });
+    }
+
+    if (contract.tenantId.toString() !== userId && contract.landlordId.toString() !== userId) {
+      return res.status(403).json({ message: "Unauthorized." });
+    }
+
+    let query = { contractId: contract._id };
+    if (type) {
+      query.type = type;
+    }
+
+    const checklists = await MoveInOutChecklist.find(query)
+      .populate('tenantId', 'username email avatar')
+      .populate('landlordId', 'username email avatar')
+      .populate('listingId', 'name address')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      checklists
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Update Move-In Condition (Upload Images/Videos, Room Checklist)
+export const updateMoveInCondition = async (req, res, next) => {
+  try {
+    const { checklistId } = req.params;
+    const { images, videos, rooms, amenities, notes } = req.body;
+    const userId = req.user.id;
+
+    const checklist = await MoveInOutChecklist.findById(checklistId)
+      .populate('contractId');
+
+    if (!checklist) {
+      return res.status(404).json({ message: "Checklist not found." });
+    }
+
+    // Verify user has access (tenant or landlord)
+    const contract = await RentLockContract.findById(checklist.contractId._id);
+    if (contract.tenantId.toString() !== userId && contract.landlordId.toString() !== userId) {
+      return res.status(403).json({ message: "Unauthorized." });
+    }
+
+    if (checklist.type !== 'move_in') {
+      return res.status(400).json({ message: "This endpoint is for move-in checklists only." });
+    }
+
+    // Update images/videos
+    if (images && Array.isArray(images)) {
+      checklist.images = images.map(img => ({
+        ...img,
+        uploadedBy: userId
+      }));
+    }
+
+    if (videos && Array.isArray(videos)) {
+      checklist.videos = videos.map(vid => ({
+        ...vid,
+        uploadedBy: userId
+      }));
+    }
+
+    // Update rooms
+    if (rooms && Array.isArray(rooms)) {
+      checklist.rooms = rooms;
+    }
+
+    // Update amenities
+    if (amenities && Array.isArray(amenities)) {
+      checklist.amenities = amenities;
+    }
+
+    // Update notes
+    if (userId === contract.tenantId.toString()) {
+      checklist.tenantNotes = notes || checklist.tenantNotes;
+    } else {
+      checklist.landlordNotes = notes || checklist.landlordNotes;
+    }
+
+    await checklist.save();
+
+    res.json({
+      success: true,
+      message: "Move-in condition updated.",
+      checklist
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Approve Move-In Checklist
+export const approveMoveInChecklist = async (req, res, next) => {
+  try {
+    const { checklistId } = req.params;
+    const { notes } = req.body;
+    const userId = req.user.id;
+
+    const checklist = await MoveInOutChecklist.findById(checklistId)
+      .populate('contractId');
+
+    if (!checklist || checklist.type !== 'move_in') {
+      return res.status(404).json({ message: "Move-in checklist not found." });
+    }
+
+    const contract = await RentLockContract.findById(checklist.contractId._id);
+    const isTenant = contract.tenantId.toString() === userId;
+    const isLandlord = contract.landlordId.toString() === userId;
+
+    if (!isTenant && !isLandlord) {
+      return res.status(403).json({ message: "Unauthorized." });
+    }
+
+    // Update approval
+    if (isTenant) {
+      checklist.tenantApproved = true;
+      checklist.tenantApprovedAt = new Date();
+      checklist.tenantNotes = notes || checklist.tenantNotes;
+    } else {
+      checklist.landlordApproved = true;
+      checklist.landlordApprovedAt = new Date();
+      checklist.landlordNotes = notes || checklist.landlordNotes;
+    }
+
+    // If both approved, mark as completed
+    if (checklist.tenantApproved && checklist.landlordApproved) {
+      checklist.status = 'approved';
+      checklist.completedAt = new Date();
+
+      // Update booking move-in date if available
+      const booking = await Booking.findById(contract.bookingId);
+      if (booking && !booking.moveInDate) {
+        booking.moveInDate = new Date();
+        booking.rentalStatus = 'moved_in';
+        await booking.save();
+      }
+    } else {
+      checklist.status = 'pending_approval';
+    }
+
+    await checklist.save();
+
+    res.json({
+      success: true,
+      message: "Checklist approval updated.",
+      checklist
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Update Move-Out Condition (Upload Images/Videos, Room Checklist, Damages)
+export const updateMoveOutCondition = async (req, res, next) => {
+  try {
+    const { checklistId } = req.params;
+    const { images, videos, rooms, amenities, notes } = req.body;
+    const userId = req.user.id;
+
+    const checklist = await MoveInOutChecklist.findById(checklistId)
+      .populate('contractId');
+
+    if (!checklist) {
+      return res.status(404).json({ message: "Checklist not found." });
+    }
+
+    const contract = await RentLockContract.findById(checklist.contractId._id);
+    if (contract.tenantId.toString() !== userId && contract.landlordId.toString() !== userId) {
+      return res.status(403).json({ message: "Unauthorized." });
+    }
+
+    if (checklist.type !== 'move_out') {
+      return res.status(400).json({ message: "This endpoint is for move-out checklists only." });
+    }
+
+    // Update images/videos
+    if (images && Array.isArray(images)) {
+      checklist.images = images.map(img => ({
+        ...img,
+        uploadedBy: userId
+      }));
+    }
+
+    if (videos && Array.isArray(videos)) {
+      checklist.videos = videos.map(vid => ({
+        ...vid,
+        uploadedBy: userId
+      }));
+    }
+
+    // Update rooms (including damages)
+    if (rooms && Array.isArray(rooms)) {
+      checklist.rooms = rooms;
+    }
+
+    // Update amenities
+    if (amenities && Array.isArray(amenities)) {
+      checklist.amenities = amenities;
+    }
+
+    // Update notes
+    if (userId === contract.tenantId.toString()) {
+      checklist.tenantNotes = notes || checklist.tenantNotes;
+    } else {
+      checklist.landlordNotes = notes || checklist.landlordNotes;
+    }
+
+    await checklist.save();
+
+    res.json({
+      success: true,
+      message: "Move-out condition updated.",
+      checklist
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Assess Damages (Compare Move-In vs Move-Out)
+export const assessDamages = async (req, res, next) => {
+  try {
+    const { contractId } = req.params;
+    const { repairRequired, images, assessmentNotes, deductedFromDeposit } = req.body;
+    const userId = req.user.id;
+
+    const contract = await RentLockContract.findById(contractId);
+    if (!contract) {
+      return res.status(404).json({ message: "Contract not found." });
+    }
+
+    // Only landlord or admin can assess damages
+    if (contract.landlordId.toString() !== userId) {
+      const user = await User.findById(userId);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Unauthorized. Only landlord can assess damages." });
+      }
+    }
+
+    // Get move-in and move-out checklists
+    const moveInChecklist = await MoveInOutChecklist.findOne({ 
+      contractId: contract._id, 
+      type: 'move_in' 
+    });
+
+    const moveOutChecklist = await MoveInOutChecklist.findOne({ 
+      contractId: contract._id, 
+      type: 'move_out' 
+    });
+
+    if (!moveInChecklist || !moveOutChecklist) {
+      return res.status(400).json({ 
+        message: "Both move-in and move-out checklists are required for damage assessment." 
+      });
+    }
+
+    // Calculate total damage cost from move-out checklist
+    const totalDamageCost = moveOutChecklist.calculateTotalDamages();
+
+    // Update move-out checklist damage assessment
+    moveOutChecklist.damageAssessment = {
+      totalDamageCost,
+      deductedFromDeposit: deductedFromDeposit || Math.min(totalDamageCost, contract.securityDepositAmount || 0),
+      repairRequired: repairRequired || [],
+      images: images || [],
+      assessedBy: userId,
+      assessedAt: new Date(),
+      assessmentNotes: assessmentNotes || ''
+    };
+
+    moveOutChecklist.status = 'completed';
+    moveOutChecklist.completedAt = new Date();
+
+    await moveOutChecklist.save();
+
+    res.json({
+      success: true,
+      message: "Damage assessment completed.",
+      assessment: moveOutChecklist.damageAssessment,
+      checklist: moveOutChecklist
+    });
+  } catch (error) {
     next(error);
   }
 };
