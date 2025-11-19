@@ -39,9 +39,9 @@ export default function RentPredictionDisplay({ prediction, loading, onGenerate 
   const getPriceComparisonIcon = () => {
     switch (prediction.priceComparison) {
       case 'overpriced':
-        return <FaTrendingUp className="text-red-600" />;
+        return <TrendingUp className="text-red-600 w-5 h-5" />;
       case 'underpriced':
-        return <FaTrendingDown className="text-green-600" />;
+        return <TrendingDown className="text-green-600 w-5 h-5" />;
       default:
         return <FaEquals className="text-blue-600" />;
     }
@@ -121,7 +121,7 @@ export default function RentPredictionDisplay({ prediction, loading, onGenerate 
       {prediction.predictedFutureRent && prediction.predictedFutureRent.length > 0 && (
         <div>
           <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-            <FaTrendingUp /> Future Rent Predictions
+            <TrendingUp className="w-5 h-5" /> Future Rent Predictions
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {prediction.predictedFutureRent.map((future, index) => (
