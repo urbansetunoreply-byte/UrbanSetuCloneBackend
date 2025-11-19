@@ -13,7 +13,13 @@ import {
   updateMoveInCondition,
   approveMoveInChecklist,
   updateMoveOutCondition,
-  assessDamages
+  assessDamages,
+  createDispute,
+  getDispute,
+  listDisputes,
+  updateDisputeStatus,
+  addDisputeComment,
+  resolveDispute
 } from '../controllers/rental.controller.js';
 
 const router = express.Router();
@@ -57,6 +63,14 @@ router.put("/checklist/move-in/:checklistId", verifyToken, updateMoveInCondition
 router.post("/checklist/move-in/:checklistId/approve", verifyToken, approveMoveInChecklist);
 router.put("/checklist/move-out/:checklistId", verifyToken, updateMoveOutCondition);
 router.post("/checklist/:contractId/assess-damages", verifyToken, assessDamages);
+
+// Dispute Resolution Routes
+router.post("/disputes/:contractId", verifyToken, createDispute);
+router.get("/disputes", verifyToken, listDisputes);
+router.get("/disputes/:disputeId", verifyToken, getDispute);
+router.put("/disputes/:disputeId/status", verifyToken, updateDisputeStatus);
+router.post("/disputes/:disputeId/comments", verifyToken, addDisputeComment);
+router.post("/disputes/:disputeId/resolve", verifyToken, resolveDispute);
 
 export default router;
 

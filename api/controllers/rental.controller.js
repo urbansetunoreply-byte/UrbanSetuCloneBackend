@@ -1,6 +1,7 @@
 import RentLockContract from "../models/rentLockContract.model.js";
 import RentWallet from "../models/rentWallet.model.js";
 import MoveInOutChecklist from "../models/moveInOutChecklist.model.js";
+import Dispute from "../models/dispute.model.js";
 import Booking from "../models/booking.model.js";
 import Listing from "../models/listing.model.js";
 import User from "../models/user.model.js";
@@ -821,6 +822,299 @@ export const assessDamages = async (req, res, next) => {
       message: "Damage assessment completed.",
       assessment: moveOutChecklist.damageAssessment,
       checklist: moveOutChecklist
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Create Dispute
+export const createDispute = async (req, res, next) => {
+  try {
+    const { contractId } = req.params;
+    const { category, title, description, evidence, priority } = req.body;
+    const userId = req.user.id;
+
+    // Verify contract exists
+    const contract = await RentLockContract.findById(contractId)
+      .populate('tenantId')
+      .populate('landlordId');
+
+    if (!contract) {
+      return res.status(404).json({ message: "Contract not found." });
+    }
+
+    // Verify user is part of the contract
+    const isTenant = contract.tenantId._id.toString() === userId;
+    const isLandlord = contract.landlordId._id.toString() === userId;
+
+    if (!isTenant && !isLandlord) {
+      return res.status(403).json({ message: "Unauthorized. Only tenant or landlord can raise disputes." });
+    }
+
+    // Determine who the dispute is against
+    const raisedAgainst = isTenant ? contract.landlordId._id : contract.tenantId._id;
+
+    // Create dispute
+    const dispute = await Dispute.create({
+      contractId: contract._id,
+      raisedBy: userId,
+      raisedAgainst,
+      category: category || 'other',
+      title,
+      description,
+      evidence: evidence || [],
+      priority: priority || 'medium',
+      status: 'open'
+    });
+
+    // Populate for response
+    await dispute.populate('raisedBy', 'username email avatar');
+    await dispute.populate('raisedAgainst', 'username email avatar');
+    await dispute.populate('contractId', 'contractId');
+
+    res.status(201).json({
+      success: true,
+      message: "Dispute created successfully.",
+      dispute
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get Dispute by ID
+export const getDispute = async (req, res, next) => {
+  try {
+    const { disputeId } = req.params;
+    const userId = req.user.id;
+
+    const dispute = await Dispute.findById(disputeId)
+      .populate('contractId', 'contractId listingId tenantId landlordId')
+      .populate('listingId', 'name address')
+      .populate('tenantId', 'username email avatar')
+      .populate('landlordId', 'username email avatar')
+      .populate('raisedBy', 'username email avatar firstName lastName')
+      .populate('raisedAgainst', 'username email avatar firstName lastName')
+      .populate('messages.sender', 'username email avatar')
+      .populate('resolution.decidedBy', 'username email');
+
+    if (!dispute) {
+      return res.status(404).json({ message: "Dispute not found." });
+    }
+
+    // Verify user has access (tenant, landlord, or admin)
+    const contract = await RentLockContract.findById(dispute.contractId._id || dispute.contractId);
+    const isTenant = contract.tenantId.toString() === userId;
+    const isLandlord = contract.landlordId.toString() === userId;
+    const isRaisedBy = dispute.raisedBy._id.toString() === userId;
+    const isRaisedAgainst = dispute.raisedAgainst._id.toString() === userId;
+    const user = await User.findById(userId);
+    const isAdmin = user?.role === 'admin';
+
+    if (!isTenant && !isLandlord && !isAdmin) {
+      return res.status(403).json({ message: "Unauthorized." });
+    }
+
+    // Mark messages as read for this user
+    if (isRaisedBy || isRaisedAgainst || isAdmin) {
+      dispute.markAsRead(userId);
+      await dispute.save();
+    }
+
+    res.json({
+      success: true,
+      dispute
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// List Disputes
+export const listDisputes = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { status, category, contractId } = req.query;
+    const user = await User.findById(userId);
+    const isAdmin = user?.role === 'admin';
+
+    let query = {};
+
+    // Admin can see all disputes, others only their own
+    if (!isAdmin) {
+      query.$or = [
+        { raisedBy: userId },
+        { raisedAgainst: userId }
+      ];
+    }
+
+    if (status) {
+      query.status = status;
+    }
+
+    if (category) {
+      query.category = category;
+    }
+
+    if (contractId) {
+      query.contractId = contractId;
+    }
+
+    const disputes = await Dispute.find(query)
+      .populate('contractId', 'contractId listingId')
+      .populate('listingId', 'name')
+      .populate('raisedBy', 'username email avatar')
+      .populate('raisedAgainst', 'username email avatar')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      disputes
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Update Dispute Status
+export const updateDisputeStatus = async (req, res, next) => {
+  try {
+    const { disputeId } = req.params;
+    const { status, priority, escalationReason } = req.body;
+    const userId = req.user.id;
+
+    const dispute = await Dispute.findById(disputeId)
+      .populate('contractId');
+
+    if (!dispute) {
+      return res.status(404).json({ message: "Dispute not found." });
+    }
+
+    const user = await User.findById(userId);
+    const isAdmin = user?.role === 'admin';
+
+    // Only admin can change status
+    if (!isAdmin) {
+      return res.status(403).json({ message: "Unauthorized. Only admin can update dispute status." });
+    }
+
+    // Update status
+    if (status) {
+      dispute.status = status;
+      if (status === 'closed' || status === 'resolved') {
+        dispute.closedAt = new Date();
+        if (status === 'resolved' && !dispute.resolution.resolutionDate) {
+          dispute.resolution.resolutionDate = new Date();
+        }
+      }
+    }
+
+    // Update priority
+    if (priority) {
+      dispute.priority = priority;
+    }
+
+    // Handle escalation
+    if (status === 'escalated' && escalationReason) {
+      dispute.escalatedAt = new Date();
+      dispute.escalatedBy = userId;
+      dispute.escalationReason = escalationReason;
+    }
+
+    await dispute.save();
+
+    res.json({
+      success: true,
+      message: "Dispute status updated.",
+      dispute
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Add Dispute Comment/Message
+export const addDisputeComment = async (req, res, next) => {
+  try {
+    const { disputeId } = req.params;
+    const { message, attachments } = req.body;
+    const userId = req.user.id;
+
+    const dispute = await Dispute.findById(disputeId)
+      .populate('contractId');
+
+    if (!dispute) {
+      return res.status(404).json({ message: "Dispute not found." });
+    }
+
+    // Verify user has access
+    const contract = await RentLockContract.findById(dispute.contractId._id || dispute.contractId);
+    const isTenant = contract.tenantId.toString() === userId;
+    const isLandlord = contract.landlordId.toString() === userId;
+    const isRaisedBy = dispute.raisedBy.toString() === userId;
+    const isRaisedAgainst = dispute.raisedAgainst.toString() === userId;
+    const user = await User.findById(userId);
+    const isAdmin = user?.role === 'admin';
+
+    if (!isTenant && !isLandlord && !isAdmin) {
+      return res.status(403).json({ message: "Unauthorized." });
+    }
+
+    // Add message
+    dispute.addMessage(userId, message, attachments || []);
+    await dispute.save();
+
+    // Populate for response
+    await dispute.populate('messages.sender', 'username email avatar');
+
+    res.json({
+      success: true,
+      message: "Comment added.",
+      dispute
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Resolve Dispute (Admin only)
+export const resolveDispute = async (req, res, next) => {
+  try {
+    const { disputeId } = req.params;
+    const { decision, actionTaken, amount, notes } = req.body;
+    const userId = req.user.id;
+
+    const dispute = await Dispute.findById(disputeId);
+
+    if (!dispute) {
+      return res.status(404).json({ message: "Dispute not found." });
+    }
+
+    const user = await User.findById(userId);
+    if (user?.role !== 'admin') {
+      return res.status(403).json({ message: "Unauthorized. Only admin can resolve disputes." });
+    }
+
+    // Update resolution
+    dispute.resolution = {
+      decidedBy: userId,
+      decision,
+      resolutionDate: new Date(),
+      actionTaken: actionTaken || 'no_action',
+      amount: amount || 0,
+      notes: notes || ''
+    };
+
+    dispute.status = 'resolved';
+    dispute.closedAt = new Date();
+
+    await dispute.save();
+
+    res.json({
+      success: true,
+      message: "Dispute resolved.",
+      dispute
     });
   } catch (error) {
     next(error);

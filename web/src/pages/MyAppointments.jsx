@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { FaTrash, FaSearch, FaPen, FaCheck, FaTimes, FaUserShield, FaUser, FaEnvelope, FaPhone, FaVideo, FaArchive, FaUndo, FaCommentDots, FaCheckDouble, FaBan, FaPaperPlane, FaCalendar, FaLightbulb, FaCopy, FaEllipsisV, FaFlag, FaCircle, FaInfoCircle, FaSync, FaStar, FaRegStar, FaThumbtack, FaCalendarAlt, FaCheckSquare, FaDownload, FaDollarSign, FaCreditCard, FaSpinner, FaExclamationTriangle, FaMoneyBill, FaHistory, FaWallet, FaSignInAlt, FaSignOutAlt } from "react-icons/fa";
+import { FaTrash, FaSearch, FaPen, FaCheck, FaTimes, FaUserShield, FaUser, FaEnvelope, FaPhone, FaVideo, FaArchive, FaUndo, FaCommentDots, FaCheckDouble, FaBan, FaPaperPlane, FaCalendar, FaLightbulb, FaCopy, FaEllipsisV, FaFlag, FaCircle, FaInfoCircle, FaSync, FaStar, FaRegStar, FaThumbtack, FaCalendarAlt, FaCheckSquare, FaDownload, FaDollarSign, FaCreditCard, FaSpinner, FaExclamationTriangle, FaMoneyBill, FaHistory, FaWallet, FaSignInAlt, FaSignOutAlt, FaGavel } from "react-icons/fa";
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
 import UserAvatar from '../components/UserAvatar';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
@@ -6282,6 +6282,14 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         >
                           <FaSignOutAlt className="inline mr-1" />
                           Move-Out
+                        </Link>
+                        <Link
+                          to={`/user/disputes?contractId=${appt.contractId._id || appt.contractId}`}
+                          className="text-xs border rounded px-2 py-1 mt-1 text-red-600 hover:text-red-700 border-red-500 bg-red-50 hover:bg-red-100 transition"
+                          title="Raise Dispute"
+                        >
+                          <FaGavel className="inline mr-1" />
+                          Dispute
                         </Link>
                       </>
                     )}
