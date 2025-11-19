@@ -204,9 +204,10 @@ export const useCall = () => {
     }
 
     // Detect if remote is screen sharing by checking video track label
+    // Check for enabled tracks with screen share labels (enabled = true means track is actively streaming)
     const videoTracks = remoteStream.getVideoTracks();
     const isRemoteScreenSharing = videoTracks.some(track => 
-      track.label && (track.label.includes('screen') || track.label.includes('Screen') || track.label.includes('display'))
+      track.enabled && track.label && (track.label.includes('screen') || track.label.includes('Screen') || track.label.includes('display'))
     );
     
     // Update remote screen sharing state

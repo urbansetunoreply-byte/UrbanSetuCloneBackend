@@ -488,8 +488,8 @@ const ActiveCallModal = ({
                     }}
                   />
                 </div>
-                {/* Remote video off indicator */}
-                {!remoteVideoEnabled && (
+                {/* Remote video off indicator - only show when NOT screen sharing */}
+                {!remoteVideoEnabled && !remoteIsScreenSharing && (
                   <div className="absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center cursor-pointer">
                     <div className="text-center text-white">
                       <FaVideoSlash className="text-6xl mb-4 mx-auto opacity-50" />
