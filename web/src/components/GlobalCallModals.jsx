@@ -27,6 +27,8 @@ const GlobalCallModals = () => {
     availableCameras,
     currentCameraId,
     isScreenSharing,
+    cameraStreamDuringScreenShare,
+    screenShareStream,
     isFullscreen,
     connectionQuality,
     availableMicrophones,
@@ -156,6 +158,8 @@ const GlobalCallModals = () => {
           availableCameras={availableCameras}
           currentCameraId={currentCameraId}
           isScreenSharing={isScreenSharing}
+          cameraStreamDuringScreenShare={cameraStreamDuringScreenShare}
+          screenShareStream={screenShareStream}
           isFullscreen={isFullscreen}
           connectionQuality={connectionQuality}
           availableMicrophones={availableMicrophones}

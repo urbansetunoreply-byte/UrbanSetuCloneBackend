@@ -30,6 +30,7 @@ export const useCall = () => {
   const [availableCameras, setAvailableCameras] = useState([]);
   const [currentCameraId, setCurrentCameraId] = useState(null);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [cameraStreamDuringScreenShare, setCameraStreamDuringScreenShare] = useState(null); // Camera stream for small window during screen share
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [connectionQuality, setConnectionQuality] = useState('good'); // 'excellent', 'good', 'fair', 'poor'
   const [availableMicrophones, setAvailableMicrophones] = useState([]);
@@ -47,6 +48,7 @@ export const useCall = () => {
   const lastSecondRef = useRef(null);
   const pendingOfferRef = useRef(null); // Store offer if received before peer is created
   const screenShareStreamRef = useRef(null); // Store screen share stream
+  const originalCameraStreamRef = useRef(null); // Store original camera stream before screen share
   const containerRef = useRef(null); // For fullscreen
   const callingSoundRef = useRef(null); // Reference to calling sound audio element
   const ringtoneSoundRef = useRef(null); // Reference to ringtone sound audio element
@@ -956,6 +958,18 @@ export const useCall = () => {
     try {
       if (!isScreenSharing) {
         // Start screen sharing
+        // First, store the original camera stream for the small "You" window
+        if (localStream) {
+          const originalVideoTrack = localStream.getVideoTracks()[0];
+          if (originalVideoTrack) {
+            // Create a new stream with the original camera track for the small window
+            // We only need the video track for display in the small window
+            const originalCameraStream = new MediaStream([originalVideoTrack]);
+            originalCameraStreamRef.current = originalCameraStream;
+            setCameraStreamDuringScreenShare(originalCameraStream);
+          }
+        }
+        
         const screenStream = await navigator.mediaDevices.getDisplayMedia({
           video: { cursor: 'always' },
           audio: true
@@ -964,12 +978,12 @@ export const useCall = () => {
         screenShareStreamRef.current = screenStream;
         setIsScreenSharing(true);
         
-        // Replace video tracks in local stream
+        // Replace video track in peer connection (send screen share to remote)
         if (localStream && peerRef.current) {
           const videoTracks = screenStream.getVideoTracks();
           const audioTracks = screenStream.getAudioTracks();
           
-          // Add video track
+          // Replace video track in peer connection
           if (videoTracks.length > 0) {
             const sender = peerRef.current._pc.getSenders().find(s => 
               s.track && s.track.kind === 'video'
@@ -977,12 +991,9 @@ export const useCall = () => {
             if (sender) {
               await sender.replaceTrack(videoTracks[0]);
             }
-            // Also update local stream for UI
-            localStream.getVideoTracks().forEach(track => track.stop());
-            videoTracks.forEach(track => localStream.addTrack(track));
           }
           
-          // Add audio track if available
+          // Replace audio track if available (screen share audio)
           if (audioTracks.length > 0) {
             const sender = peerRef.current._pc.getSenders().find(s => 
               s.track && s.track.kind === 'audio'
@@ -990,7 +1001,6 @@ export const useCall = () => {
             if (sender && !isMuted) {
               await sender.replaceTrack(audioTracks[0]);
             }
-            audioTracks.forEach(track => localStream.addTrack(track));
           }
         }
         
@@ -1009,14 +1019,70 @@ export const useCall = () => {
         
         setIsScreenSharing(false);
         
-        // Restore camera video
-        if (localStream && callType === 'video' && currentCameraId) {
+        // Restore camera video in peer connection
+        if (localStream && peerRef.current && originalCameraStreamRef.current) {
+          const originalVideoTrack = originalCameraStreamRef.current.getVideoTracks()[0];
+          const originalAudioTrack = localStream.getAudioTracks()[0]; // Use original audio from localStream
+          
+          if (originalVideoTrack) {
+            const sender = peerRef.current._pc.getSenders().find(s => 
+              s.track && s.track.kind === 'video'
+            );
+            
+            if (sender && peerRef.current) {
+              await sender.replaceTrack(originalVideoTrack);
+            }
+          }
+          
+          // Restore original audio track
+          if (originalAudioTrack) {
+            const sender = peerRef.current._pc.getSenders().find(s => 
+              s.track && s.track.kind === 'audio'
+            );
+            if (sender && !isMuted) {
+              await sender.replaceTrack(originalAudioTrack);
+            }
+          }
+          
+          // Clean up original camera stream ref
+          if (originalCameraStreamRef.current) {
+            originalCameraStreamRef.current.getTracks().forEach(track => {
+              if (track.readyState !== 'ended') {
+                track.stop();
+              }
+            });
+            originalCameraStreamRef.current = null;
+          }
+          setCameraStreamDuringScreenShare(null);
+          
+          // Force update local video element to show camera again
+          if (localVideoRef.current && localStream) {
+            // Re-attach the local stream to ensure video shows
+            const currentSrcObject = localVideoRef.current.srcObject;
+            if (currentSrcObject) {
+              // Remove screen share tracks if any
+              currentSrcObject.getTracks().forEach(track => {
+                if (track.kind === 'video' && track.label.includes('screen')) {
+                  track.stop();
+                }
+              });
+            }
+            // Ensure local stream is attached
+            localVideoRef.current.srcObject = localStream;
+            localVideoRef.current.muted = true;
+            localVideoRef.current.play().catch(err => {
+              console.error('Error playing local video after screen share:', err);
+            });
+          }
+        } else if (localStream && callType === 'video' && currentCameraId) {
+          // Fallback: recreate camera stream if original not stored
           const cameraStream = await navigator.mediaDevices.getUserMedia({
             video: { deviceId: { exact: currentCameraId } },
             audio: true
           });
           
           const videoTrack = cameraStream.getVideoTracks()[0];
+          const audioTrack = cameraStream.getAudioTracks()[0];
           const sender = peerRef.current?._pc.getSenders().find(s => 
             s.track && s.track.kind === 'video'
           );
@@ -1025,12 +1091,29 @@ export const useCall = () => {
             await sender.replaceTrack(videoTrack);
           }
           
+          // Restore audio
+          const audioSender = peerRef.current?._pc.getSenders().find(s => 
+            s.track && s.track.kind === 'audio'
+          );
+          if (audioSender && audioTrack && !isMuted) {
+            await audioSender.replaceTrack(audioTrack);
+          }
+          
           // Update local stream
           localStream.getVideoTracks().forEach(track => track.stop());
           localStream.addTrack(videoTrack);
-          cameraStream.getAudioTracks().forEach(track => {
-            track.stop(); // Use original audio track
-          });
+          
+          // Update local video element
+          if (localVideoRef.current) {
+            localVideoRef.current.srcObject = localStream;
+            localVideoRef.current.muted = true;
+            localVideoRef.current.play().catch(err => {
+              console.error('Error playing local video after screen share:', err);
+            });
+          }
+          
+          // Stop the temporary camera stream audio (we use the original)
+          cameraStream.getAudioTracks().forEach(track => track.stop());
         }
         
         toast.info('Screen sharing stopped');
@@ -1263,6 +1346,8 @@ export const useCall = () => {
     availableCameras,
     currentCameraId,
     isScreenSharing,
+    cameraStreamDuringScreenShare,
+    screenShareStream: screenShareStreamRef.current,
     isFullscreen,
     connectionQuality,
     availableMicrophones,

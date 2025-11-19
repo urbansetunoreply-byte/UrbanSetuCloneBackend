@@ -25,6 +25,8 @@ const ActiveCallModal = ({
   onToggleScreenShare,
   onToggleFullscreen,
   isScreenSharing,
+  cameraStreamDuringScreenShare,
+  screenShareStream,
   isFullscreen,
   connectionQuality,
   availableMicrophones,
@@ -44,6 +46,8 @@ const ActiveCallModal = ({
   const containerRefLocal = useRef(null);
   const containerRef = containerRefProp || containerRefLocal; // Use prop if provided, otherwise use local ref
   const streamsRef = useRef({ local: null, remote: null }); // Store streams persistently
+  const screenShareVideoRef = useRef(null); // Ref for screen share video element
+  const cameraVideoSmallRef = useRef(null); // Ref for camera video in small window during screen share
 
   useEffect(() => {
     setIsVisible(true);
@@ -58,6 +62,34 @@ const ActiveCallModal = ({
       streamsRef.current.remote = remoteStream;
     }
   }, [localStream, remoteStream]);
+
+  // Handle screen share stream updates
+  useEffect(() => {
+    if (isScreenSharing) {
+      // When screen sharing starts, ensure streams are attached
+      if (screenShareStream && screenShareVideoRef.current) {
+        if (screenShareVideoRef.current.srcObject !== screenShareStream) {
+          screenShareVideoRef.current.srcObject = screenShareStream;
+          screenShareVideoRef.current.play().catch(err => console.error('Error playing screen share:', err));
+        }
+      }
+      if (cameraStreamDuringScreenShare && cameraVideoSmallRef.current) {
+        if (cameraVideoSmallRef.current.srcObject !== cameraStreamDuringScreenShare) {
+          cameraVideoSmallRef.current.srcObject = cameraStreamDuringScreenShare;
+          cameraVideoSmallRef.current.play().catch(err => console.error('Error playing camera stream:', err));
+        }
+      }
+    } else {
+      // When screen sharing stops, ensure local video shows camera again
+      if (localVideoRef.current && localStream) {
+        if (localVideoRef.current.srcObject !== localStream) {
+          localVideoRef.current.srcObject = localStream;
+          localVideoRef.current.muted = true;
+          localVideoRef.current.play().catch(err => console.error('Error playing local video after screen share:', err));
+        }
+      }
+    }
+  }, [isScreenSharing, screenShareStream, cameraStreamDuringScreenShare, localStream]);
 
   // Maintain video streams when views are swapped
   useEffect(() => {
@@ -253,8 +285,28 @@ const ActiveCallModal = ({
       <div className="flex-1 relative min-h-0 overflow-hidden" onClick={handleVideoClick}>
         {callType === 'video' ? (
           <>
-            {/* Main video (swappable between local and remote) */}
-            {videoSwapped ? (
+            {/* Main video - Show screen share in large view when active, otherwise normal layout */}
+            {isScreenSharing && screenShareStream ? (
+              // Screen share in large view (when person is sharing)
+              <>
+                <video
+                  key="screenshare-large"
+                  ref={screenShareVideoRef}
+                  srcObject={screenShareStream}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-full object-contain cursor-pointer max-w-full max-h-full bg-black"
+                  onLoadedMetadata={(e) => {
+                    e.target.play().catch(err => console.error('Error playing screen share:', err));
+                  }}
+                />
+                {/* Screen share label */}
+                <div className="absolute bottom-24 left-4 bg-black bg-opacity-70 rounded-full px-4 py-2 z-20">
+                  <p className="text-white text-sm font-medium">Screen Share</p>
+                </div>
+              </>
+            ) : videoSwapped ? (
               // Local video in big view (when swapped)
               <>
                 <video
@@ -283,7 +335,7 @@ const ActiveCallModal = ({
                 </div>
               </>
             ) : (
-              // Remote video in big view (default)
+              // Remote video in big view (default) - may show screen share if remote is sharing
               <>
                 <video
                   key="remote-large"
@@ -443,19 +495,34 @@ const ActiveCallModal = ({
                 </div>
               </>
             ) : (
-              // Local video in mini view (default)
+              // Local video in mini view (default) - Show camera stream during screen share
               <>
-                <video
-                  key="local-small"
-                  ref={localVideoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="w-full h-full object-cover"
-                  onLoadedMetadata={(e) => {
-                    e.target.play().catch(err => console.error('Error playing local video:', err));
-                  }}
-                />
+                {isScreenSharing && cameraStreamDuringScreenShare ? (
+                  <video
+                    key="camera-small-screenshare"
+                    ref={cameraVideoSmallRef}
+                    srcObject={cameraStreamDuringScreenShare}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover"
+                    onLoadedMetadata={(e) => {
+                      e.target.play().catch(err => console.error('Error playing camera video during screen share:', err));
+                    }}
+                  />
+                ) : (
+                  <video
+                    key="local-small"
+                    ref={localVideoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover"
+                    onLoadedMetadata={(e) => {
+                      e.target.play().catch(err => console.error('Error playing local video:', err));
+                    }}
+                  />
+                )}
                 {!isVideoEnabled && (
                   <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                     <FaVideoSlash className="text-white text-xl" />
