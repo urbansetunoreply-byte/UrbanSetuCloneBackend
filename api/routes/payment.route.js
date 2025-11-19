@@ -1428,6 +1428,7 @@ router.get("/history", verifyToken, async (req, res) => {
     const payments = await Payment.find(query)
       .populate('appointmentId', 'propertyName date status')
       .populate('listingId', 'name address')
+      .populate('contractId', 'contractId')
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);

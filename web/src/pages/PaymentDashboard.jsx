@@ -813,6 +813,24 @@ const PaymentDashboard = () => {
               {/* Payment Information Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="text-sm text-gray-600 mb-1">Payment Type</div>
+                  <div className="font-semibold text-gray-800">
+                    {selectedPayment.paymentType ? (
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                        selectedPayment.paymentType === 'monthly_rent' ? 'bg-green-100 text-green-700' :
+                        selectedPayment.paymentType === 'advance' ? 'bg-blue-100 text-blue-700' :
+                        selectedPayment.paymentType === 'security_deposit' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-gray-100 text-gray-700'
+                      }`}>
+                        {selectedPayment.paymentType === 'monthly_rent' ? 'Monthly Rent' :
+                         selectedPayment.paymentType === 'advance' ? 'Advance Payment' :
+                         selectedPayment.paymentType === 'security_deposit' ? 'Security Deposit' :
+                         selectedPayment.paymentType?.replace('_', ' ')}
+                      </span>
+                    ) : 'N/A'}
+                  </div>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-4">
                   <div className="text-sm text-gray-600 mb-1">Gateway</div>
                   <div className="font-semibold text-gray-800">{selectedPayment.gateway?.toUpperCase() || 'N/A'}</div>
                 </div>
@@ -820,6 +838,37 @@ const PaymentDashboard = () => {
                   <div className="text-sm text-gray-600 mb-1">Currency</div>
                   <div className="font-semibold text-gray-800">{selectedPayment.currency || 'N/A'}</div>
                 </div>
+                {selectedPayment.paymentType === 'monthly_rent' && selectedPayment.rentMonth && selectedPayment.rentYear && (
+                  <div className="bg-indigo-50 rounded-lg p-4">
+                    <div className="text-sm text-indigo-600 mb-1">Rent Period</div>
+                    <div className="font-semibold text-indigo-800">
+                      {new Date(selectedPayment.rentYear, selectedPayment.rentMonth - 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
+                    </div>
+                  </div>
+                )}
+                {selectedPayment.escrowStatus && (
+                  <div className={`rounded-lg p-4 ${
+                    selectedPayment.escrowStatus === 'released' ? 'bg-green-50' :
+                    selectedPayment.escrowStatus === 'held' ? 'bg-orange-50' :
+                    'bg-gray-50'
+                  }`}>
+                    <div className={`text-sm mb-1 ${
+                      selectedPayment.escrowStatus === 'released' ? 'text-green-600' :
+                      selectedPayment.escrowStatus === 'held' ? 'text-orange-600' :
+                      'text-gray-600'
+                    }`}>Escrow Status</div>
+                    <div className={`font-semibold ${
+                      selectedPayment.escrowStatus === 'released' ? 'text-green-800' :
+                      selectedPayment.escrowStatus === 'held' ? 'text-orange-800' :
+                      'text-gray-800'
+                    }`}>{selectedPayment.escrowStatus.charAt(0).toUpperCase() + selectedPayment.escrowStatus.slice(1)}</div>
+                    {selectedPayment.escrowReleasedAt && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        Released: {new Date(selectedPayment.escrowReleasedAt).toLocaleDateString('en-GB')}
+                      </div>
+                    )}
+                  </div>
+                )}
                 {selectedPayment.completedAt && (
                   <div className="bg-gray-50 rounded-lg p-4">
                     <div className="text-sm text-gray-600 mb-1">Paid Date</div>
