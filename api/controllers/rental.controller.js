@@ -276,7 +276,7 @@ export const getWallet = async (req, res, next) => {
       return res.status(403).json({ message: "Unauthorized. Only tenant can access wallet." });
     }
 
-    const wallet = await RentWallet.findOne({ contractId, userId })
+    const wallet = await RentWallet.findOne({ contractId: contract._id, userId })
       .populate('paymentSchedule.paymentId');
 
     if (!wallet) {
@@ -305,7 +305,7 @@ export const updateAutoDebit = async (req, res, next) => {
       return res.status(403).json({ message: "Unauthorized." });
     }
 
-    const wallet = await RentWallet.findOne({ contractId, userId });
+    const wallet = await RentWallet.findOne({ contractId: contract._id, userId });
     if (!wallet) {
       return res.status(404).json({ message: "Wallet not found." });
     }

@@ -519,10 +519,10 @@ export default function RentProperty() {
         {/* Payment Modal */}
         {showPaymentModal && step === 4 && booking && contract && (
           <PaymentModal
-            appointmentId={booking._id}
-            amount={totalAmount}
-            onSuccess={handlePaymentSuccess}
+            isOpen={showPaymentModal}
             onClose={() => setShowPaymentModal(false)}
+            appointment={booking}
+            onPaymentSuccess={handlePaymentSuccess}
           />
         )}
       </div>

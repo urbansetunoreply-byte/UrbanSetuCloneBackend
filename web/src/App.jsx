@@ -107,6 +107,7 @@ const CookiePolicy = lazy(() => import('./pages/CookiePolicy'));
 const InvestmentTools = lazy(() => import('./pages/InvestmentTools'));
 const Settings = lazy(() => import('./pages/Settings'));
 const RentProperty = lazy(() => import('./pages/RentProperty'));
+const RentWallet = lazy(() => import('./pages/RentWallet'));
 
 // Loading component
 const LoadingSpinner = () => (
@@ -639,6 +640,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path='/user/update-listing/:listingId' element={<EditListing />} />
             <Route path="/user/listing/:listingId" element={<Listing key={location.pathname} />} />
             <Route path="/user/rent-property" element={<RentProperty />} />
+            <Route path="/user/rent-wallet" element={<RentWallet />} />
             <Route path="/user/wishlist" element={<WishList />} />
             <Route path="/user/watchlist" element={<Watchlist />} />
             <Route path="/user/appointment" element={<Appointment />} />

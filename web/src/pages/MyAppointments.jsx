@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { FaTrash, FaSearch, FaPen, FaCheck, FaTimes, FaUserShield, FaUser, FaEnvelope, FaPhone, FaVideo, FaArchive, FaUndo, FaCommentDots, FaCheckDouble, FaBan, FaPaperPlane, FaCalendar, FaLightbulb, FaCopy, FaEllipsisV, FaFlag, FaCircle, FaInfoCircle, FaSync, FaStar, FaRegStar, FaThumbtack, FaCalendarAlt, FaCheckSquare, FaDownload, FaDollarSign, FaCreditCard, FaSpinner, FaExclamationTriangle, FaMoneyBill, FaHistory } from "react-icons/fa";
+import { FaTrash, FaSearch, FaPen, FaCheck, FaTimes, FaUserShield, FaUser, FaEnvelope, FaPhone, FaVideo, FaArchive, FaUndo, FaCommentDots, FaCheckDouble, FaBan, FaPaperPlane, FaCalendar, FaLightbulb, FaCopy, FaEllipsisV, FaFlag, FaCircle, FaInfoCircle, FaSync, FaStar, FaRegStar, FaThumbtack, FaCalendarAlt, FaCheckSquare, FaDownload, FaDollarSign, FaCreditCard, FaSpinner, FaExclamationTriangle, FaMoneyBill, FaHistory, FaWallet } from "react-icons/fa";
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
 import UserAvatar from '../components/UserAvatar';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
@@ -6253,6 +6253,17 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                       </div>
                       );
                     })()}
+                    {/* Rent Wallet button: show for rental appointments where user is tenant and contract exists */}
+                    {appt.purpose === 'rent' && isBuyer && appt.contractId && (
+                      <Link
+                        to={`/user/rent-wallet?contractId=${appt.contractId._id || appt.contractId}`}
+                        className="text-xs border rounded px-2 py-1 mt-1 text-green-600 hover:text-green-700 border-green-500 bg-green-50 hover:bg-green-100 transition"
+                        title="View Rent Wallet"
+                      >
+                        <FaWallet className="inline mr-1" />
+                        Rent Wallet
+                      </Link>
+                    )}
                   </>
                 )}
               </>

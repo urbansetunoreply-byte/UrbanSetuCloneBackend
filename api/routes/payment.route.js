@@ -780,50 +780,194 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
   }
 });
 
-// POST: Create monthly rent payment
+// POST: Create monthly rent payment (with escrow)
 router.post("/monthly-rent", verifyToken, async (req, res) => {
   try {
-    const { appointmentId, amount, month, year } = req.body;
+    const { contractId, walletId, scheduleIndex, amount, month, year, isAutoDebit } = req.body;
     const userId = req.user.id;
 
-    const appointment = await Booking.findById(appointmentId)
-      .populate('listingId', 'name regularPrice')
-      .populate('buyerId', 'username email');
+    // Import required models
+    const RentWallet = (await import('../models/rentWallet.model.js')).default;
+    const RentLockContract = (await import('../models/rentLockContract.model.js')).default;
+    const Booking = (await import('../models/booking.model.js')).default;
 
-    if (!appointment) {
-      return res.status(404).json({ message: "Appointment not found." });
+    // Verify contract and wallet
+    const contract = await RentLockContract.findById(contractId)
+      .populate('listingId', 'name')
+      .populate('tenantId', 'email username')
+      .populate('landlordId', 'email username');
+
+    if (!contract) {
+      return res.status(404).json({ message: "Contract not found." });
     }
 
-    if (appointment.buyerId._id.toString() !== userId) {
-      return res.status(403).json({ message: "Unauthorized" });
+    if (contract.tenantId._id.toString() !== userId) {
+      return res.status(403).json({ message: "Unauthorized. Only tenant can pay rent." });
     }
 
+    if (contract.status !== 'active') {
+      return res.status(400).json({ message: "Contract is not active." });
+    }
+
+    const wallet = await RentWallet.findOne({ contractId: contract._id, userId });
+    if (!wallet) {
+      return res.status(404).json({ message: "Wallet not found." });
+    }
+
+    // Find the payment schedule entry
+    const scheduleEntry = wallet.paymentSchedule.find((p, idx) => 
+      idx === scheduleIndex || (p.month === month && p.year === year)
+    );
+
+    if (!scheduleEntry) {
+      return res.status(404).json({ message: "Payment schedule entry not found." });
+    }
+
+    if (scheduleEntry.status === 'completed') {
+      return res.status(400).json({ message: "Payment already completed." });
+    }
+
+    // Get booking
+    const booking = await Booking.findById(contract.bookingId);
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found." });
+    }
+
+    // Calculate total amount (rent + maintenance + penalty)
+    const totalAmount = amount + (scheduleEntry.penaltyAmount || 0) + (contract.maintenanceCharges || 0);
+
+    // Create payment with escrow
     const payment = new Payment({
       paymentId: generatePaymentId(),
-      appointmentId,
+      appointmentId: booking._id,
       userId,
-      listingId: appointment.listingId._id,
-      amount,
+      listingId: contract.listingId._id,
+      contractId: contract._id,
+      walletId: wallet._id,
+      amount: totalAmount,
+      penaltyAmount: scheduleEntry.penaltyAmount || 0,
       paymentType: 'monthly_rent',
-      gateway: 'paypal',
+      gateway: isAutoDebit ? wallet.autoDebitMethod || 'razorpay' : 'razorpay',
       status: 'pending',
       receiptNumber: generateReceiptNumber(),
+      isAutoDebit: isAutoDebit || false,
+      escrowStatus: 'pending', // Start in escrow
+      rentMonth: month || scheduleEntry.month,
+      rentYear: year || scheduleEntry.year,
       metadata: {
-        month,
-        year,
-        rentType: 'monthly'
+        month: month || scheduleEntry.month,
+        year: year || scheduleEntry.year,
+        rentType: 'monthly',
+        contractId: contract._id.toString(),
+        walletId: wallet._id.toString()
       }
     });
 
     await payment.save();
 
+    // Update wallet payment schedule status
+    scheduleEntry.status = 'processing';
+    scheduleEntry.paymentId = payment._id;
+    await wallet.save();
+
     res.status(201).json({
-      message: "Monthly rent payment created",
+      success: true,
+      message: "Monthly rent payment created (held in escrow)",
       payment: payment
     });
   } catch (err) {
     console.error("Error creating monthly rent payment:", err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
+// POST: Release escrow payment to landlord (automatically after 3 days or manual)
+router.post("/monthly-rent/release-escrow", verifyToken, async (req, res) => {
+  try {
+    const { paymentId, autoRelease } = req.body;
+    const userId = req.user.id;
+
+    // Import required models
+    const RentLockContract = (await import('../models/rentLockContract.model.js')).default;
+    const RentWallet = (await import('../models/rentWallet.model.js')).default;
+
+    const payment = await Payment.findOne({ paymentId, paymentType: 'monthly_rent' })
+      .populate('contractId');
+
+    if (!payment) {
+      return res.status(404).json({ message: "Payment not found." });
+    }
+
+    // Check escrow status
+    if (payment.escrowStatus === 'released') {
+      return res.status(400).json({ message: "Payment already released." });
+    }
+
+    if (payment.status !== 'completed') {
+      return res.status(400).json({ message: "Payment not completed yet." });
+    }
+
+    // Verify user is landlord or admin (or auto-release after 3 days)
+    const contract = await RentLockContract.findById(payment.contractId);
+    if (!contract) {
+      return res.status(404).json({ message: "Contract not found." });
+    }
+
+    if (!autoRelease) {
+      // Manual release - verify user is landlord
+      if (contract.landlordId.toString() !== userId && req.user.role !== 'admin') {
+        return res.status(403).json({ message: "Unauthorized. Only landlord or admin can release escrow." });
+      }
+    } else {
+      // Auto-release after 3 days - check if 3 days have passed
+      const daysSincePayment = (Date.now() - new Date(payment.completedAt).getTime()) / (1000 * 60 * 60 * 24);
+      if (daysSincePayment < 3) {
+        return res.status(400).json({ message: "Auto-release only available after 3 days." });
+      }
+    }
+
+    // Release escrow
+    payment.escrowStatus = 'released';
+    payment.escrowReleasedAt = new Date();
+    await payment.save();
+
+    // Update wallet
+    const wallet = await RentWallet.findById(payment.walletId);
+    if (wallet) {
+      const scheduleEntry = wallet.paymentSchedule.find(
+        p => p.paymentId && p.paymentId.toString() === payment._id.toString()
+      );
+      if (scheduleEntry) {
+        scheduleEntry.status = 'completed';
+        scheduleEntry.paidAt = new Date();
+      }
+      wallet.totalPaid = (wallet.totalPaid || 0) + payment.amount;
+      wallet.totalDue = Math.max(0, (wallet.totalDue || 0) - payment.amount);
+      await wallet.save();
+    }
+
+    // Update contract
+    contract.lastPaymentDate = new Date();
+    await contract.save();
+
+    // Emit socket event
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('escrowReleased', { 
+        paymentId: payment.paymentId,
+        contractId: contract._id,
+        amount: payment.amount
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Escrow payment released to landlord",
+      payment
+    });
+  } catch (err) {
+    console.error("Error releasing escrow:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 });
 
