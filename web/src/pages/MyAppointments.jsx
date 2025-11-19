@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { FaTrash, FaSearch, FaPen, FaCheck, FaTimes, FaUserShield, FaUser, FaEnvelope, FaPhone, FaVideo, FaArchive, FaUndo, FaCommentDots, FaCheckDouble, FaBan, FaPaperPlane, FaCalendar, FaLightbulb, FaCopy, FaEllipsisV, FaFlag, FaCircle, FaInfoCircle, FaSync, FaStar, FaRegStar, FaThumbtack, FaCalendarAlt, FaCheckSquare, FaDownload, FaDollarSign, FaCreditCard, FaSpinner, FaExclamationTriangle, FaMoneyBill, FaHistory, FaWallet, FaSignInAlt, FaSignOutAlt, FaGavel } from "react-icons/fa";
+import { FaTrash, FaSearch, FaPen, FaCheck, FaTimes, FaUserShield, FaUser, FaEnvelope, FaPhone, FaVideo, FaArchive, FaUndo, FaCommentDots, FaCheckDouble, FaBan, FaPaperPlane, FaCalendar, FaLightbulb, FaCopy, FaEllipsisV, FaFlag, FaCircle, FaInfoCircle, FaSync, FaStar, FaRegStar, FaThumbtack, FaCalendarAlt, FaCheckSquare, FaDownload, FaDollarSign, FaCreditCard, FaSpinner, FaExclamationTriangle, FaMoneyBill, FaHistory, FaWallet, FaSignInAlt, FaSignOutAlt, FaGavel, FaFileContract } from "react-icons/fa";
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
 import UserAvatar from '../components/UserAvatar';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
@@ -6073,7 +6073,32 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
             )}
           </div>
         </td>
-        <td className="border p-2 capitalize">{appt.purpose}</td>
+        <td className="border p-2 capitalize">
+          <div className="flex flex-col gap-1">
+            <span>{appt.purpose}</span>
+            {/* Rental Status Badge */}
+            {appt.purpose === 'rent' && appt.rentalStatus && (
+              <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                appt.rentalStatus === 'active_rental' ? 'bg-green-100 text-green-700' :
+                appt.rentalStatus === 'contract_signed' ? 'bg-blue-100 text-blue-700' :
+                appt.rentalStatus === 'move_in_pending' ? 'bg-yellow-100 text-yellow-700' :
+                appt.rentalStatus === 'move_out_pending' ? 'bg-orange-100 text-orange-700' :
+                appt.rentalStatus === 'completed' ? 'bg-gray-100 text-gray-700' :
+                appt.rentalStatus === 'terminated' ? 'bg-red-100 text-red-700' :
+                'bg-purple-100 text-purple-700'
+              }`}>
+                {appt.rentalStatus === 'pending_contract' ? 'Contract Pending' :
+                 appt.rentalStatus === 'contract_signed' ? 'Contract Signed' :
+                 appt.rentalStatus === 'move_in_pending' ? 'Move-In Pending' :
+                 appt.rentalStatus === 'active_rental' ? 'Active Rental' :
+                 appt.rentalStatus === 'move_out_pending' ? 'Move-Out Pending' :
+                 appt.rentalStatus === 'completed' ? 'Completed' :
+                 appt.rentalStatus === 'terminated' ? 'Terminated' :
+                 appt.rentalStatus.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              </span>
+            )}
+          </div>
+        </td>
         <td className="border p-2 max-w-xs truncate">{appt.message || 'No message provided'}</td>
         <td className="border p-2 text-center">
           <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(appt.status)}`}>
@@ -6253,6 +6278,17 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                       </div>
                       );
                     })()}
+                    {/* View Contract button: show for rental appointments with contract */}
+                    {appt.purpose === 'rent' && appt.contractId && (
+                      <Link
+                        to={`/user/rental-contracts?contractId=${appt.contractId._id || appt.contractId}`}
+                        className="text-xs border rounded px-2 py-1 mt-1 text-indigo-600 hover:text-indigo-700 border-indigo-500 bg-indigo-50 hover:bg-indigo-100 transition"
+                        title="View Rental Contract"
+                      >
+                        <FaFileContract className="inline mr-1" />
+                        View Contract
+                      </Link>
+                    )}
                     {/* Rent Wallet button: show for rental appointments where user is tenant and contract exists */}
                     {appt.purpose === 'rent' && isBuyer && appt.contractId && (
                       <Link
