@@ -491,15 +491,20 @@ export const signContract = async (req, res, next) => {
         await booking.save();
       }
 
-      // Create rent wallet - use new + save to ensure pre-save hook runs
-      const wallet = new RentWallet({
-        userId: contract.tenantId,
-        contractId: contract._id
-      });
+      // Create rent wallet - check if wallet already exists first (to prevent duplicate key error)
+      let wallet = await RentWallet.findOne({ contractId: contract._id });
+      
+      if (!wallet) {
+        // Create rent wallet - use new + save to ensure pre-save hook runs
+        wallet = new RentWallet({
+          userId: contract.tenantId,
+          contractId: contract._id
+        });
 
-      // Generate payment schedule
-      wallet.generatePaymentSchedule(contract);
-      await wallet.save();
+        // Generate payment schedule
+        wallet.generatePaymentSchedule(contract);
+        await wallet.save();
+      }
 
       // Update booking with wallet ID
       if (booking) {
@@ -563,35 +568,51 @@ export const signContract = async (req, res, next) => {
 
         // Send emails to both parties
         try {
-          // Email to tenant
-          await sendContractSignedEmail(contractPopulated.tenantId.email, {
-            contractId: contract._id,
-            propertyName: listing.name,
-            tenantName: contractPopulated.tenantId.username,
-            landlordName: contractPopulated.landlordId.username,
-            rentAmount: contract.rentAmount || contract.lockedRentAmount,
-            startDate: contract.startDate,
-            endDate: contract.endDate,
-            lockDuration: contract.lockDuration,
-            userRole: 'tenant',
-            contractUrl
-          });
+          // Email to tenant - check if email exists
+          if (contractPopulated.tenantId?.email) {
+            try {
+              await sendContractSignedEmail(contractPopulated.tenantId.email, {
+                contractId: contract._id,
+                propertyName: listing.name,
+                tenantName: contractPopulated.tenantId.username,
+                landlordName: contractPopulated.landlordId.username,
+                rentAmount: contract.rentAmount || contract.lockedRentAmount,
+                startDate: contract.startDate,
+                endDate: contract.endDate,
+                lockDuration: contract.lockDuration,
+                userRole: 'tenant',
+                contractUrl
+              });
+              console.log(`✅ Contract signed email sent to tenant: ${contractPopulated.tenantId.email}`);
+            } catch (tenantEmailError) {
+              console.error('Error sending email to tenant:', tenantEmailError);
+            }
+          } else {
+            console.warn(`⚠️ Tenant email not found for contract ${contract._id}`);
+          }
 
-          // Email to landlord
-          await sendContractSignedEmail(contractPopulated.landlordId.email, {
-            contractId: contract._id,
-            propertyName: listing.name,
-            tenantName: contractPopulated.tenantId.username,
-            landlordName: contractPopulated.landlordId.username,
-            rentAmount: contract.rentAmount || contract.lockedRentAmount,
-            startDate: contract.startDate,
-            endDate: contract.endDate,
-            lockDuration: contract.lockDuration,
-            userRole: 'landlord',
-            contractUrl
-          });
-
-          console.log(`✅ Contract signed emails sent to tenant and landlord`);
+          // Email to landlord - check if email exists
+          if (contractPopulated.landlordId?.email) {
+            try {
+              await sendContractSignedEmail(contractPopulated.landlordId.email, {
+                contractId: contract._id,
+                propertyName: listing.name,
+                tenantName: contractPopulated.tenantId.username,
+                landlordName: contractPopulated.landlordId.username,
+                rentAmount: contract.rentAmount || contract.lockedRentAmount,
+                startDate: contract.startDate,
+                endDate: contract.endDate,
+                lockDuration: contract.lockDuration,
+                userRole: 'landlord',
+                contractUrl
+              });
+              console.log(`✅ Contract signed email sent to landlord: ${contractPopulated.landlordId.email}`);
+            } catch (landlordEmailError) {
+              console.error('Error sending email to landlord:', landlordEmailError);
+            }
+          } else {
+            console.warn(`⚠️ Landlord email not found for contract ${contract._id}`);
+          }
         } catch (emailError) {
           console.error('Error sending contract signed emails:', emailError);
         }
