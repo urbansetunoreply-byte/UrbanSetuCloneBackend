@@ -1453,8 +1453,8 @@ export const createDispute = async (req, res, next) => {
     // Determine who the dispute is against
     const raisedAgainst = isTenant ? contract.landlordId._id : contract.tenantId._id;
 
-    // Create dispute
-    const dispute = await Dispute.create({
+    // Create dispute - use new + save to ensure pre-save hook runs before validation
+    const dispute = new Dispute({
       contractId: contract._id,
       raisedBy: userId,
       raisedAgainst,
@@ -1465,6 +1465,7 @@ export const createDispute = async (req, res, next) => {
       priority: priority || 'medium',
       status: 'open'
     });
+    await dispute.save();
 
     // Populate for response
     await dispute.populate('raisedBy', 'username email avatar');
@@ -1531,10 +1532,22 @@ export const getDispute = async (req, res, next) => {
     const userId = req.user.id;
 
     const dispute = await Dispute.findById(disputeId)
-      .populate('contractId', 'contractId listingId tenantId landlordId')
-      .populate('listingId', 'name address')
-      .populate('tenantId', 'username email avatar')
-      .populate('landlordId', 'username email avatar')
+      .populate({
+        path: 'contractId',
+        select: 'contractId listingId tenantId landlordId',
+        populate: [{
+          path: 'listingId',
+          select: 'name address city state imageUrls',
+          strictPopulate: false
+        }, {
+          path: 'tenantId',
+          select: 'username email avatar'
+        }, {
+          path: 'landlordId',
+          select: 'username email avatar'
+        }],
+        strictPopulate: false
+      })
       .populate('raisedBy', 'username email avatar firstName lastName')
       .populate('raisedAgainst', 'username email avatar firstName lastName')
       .populate('messages.sender', 'username email avatar')
@@ -1546,14 +1559,23 @@ export const getDispute = async (req, res, next) => {
 
     // Verify user has access (tenant, landlord, or admin)
     const contract = await RentLockContract.findById(dispute.contractId._id || dispute.contractId);
-    const isTenant = contract.tenantId.toString() === userId;
-    const isLandlord = contract.landlordId.toString() === userId;
-    const isRaisedBy = dispute.raisedBy._id.toString() === userId;
-    const isRaisedAgainst = dispute.raisedAgainst._id.toString() === userId;
+    if (!contract) {
+      return res.status(404).json({ message: "Contract not found." });
+    }
+    
+    const contractTenantId = contract?.tenantId?._id?.toString() || contract?.tenantId?.toString();
+    const contractLandlordId = contract?.landlordId?._id?.toString() || contract?.landlordId?.toString();
+    const raisedById = dispute.raisedBy?._id?.toString() || dispute.raisedBy?.toString();
+    const raisedAgainstId = dispute.raisedAgainst?._id?.toString() || dispute.raisedAgainst?.toString();
+    
+    const isTenant = contractTenantId === userId.toString();
+    const isLandlord = contractLandlordId === userId.toString();
+    const isRaisedBy = raisedById === userId.toString();
+    const isRaisedAgainst = raisedAgainstId === userId.toString();
     const user = await User.findById(userId);
-    const isAdmin = user?.role === 'admin';
+    const isAdmin = user?.role === 'admin' || user?.role === 'rootadmin';
 
-    if (!isTenant && !isLandlord && !isAdmin) {
+    if (!isTenant && !isLandlord && !isRaisedBy && !isRaisedAgainst && !isAdmin) {
       return res.status(403).json({ message: "Unauthorized." });
     }
 
@@ -1603,8 +1625,16 @@ export const listDisputes = async (req, res, next) => {
     }
 
     const disputes = await Dispute.find(query)
-      .populate('contractId', 'contractId listingId')
-      .populate('listingId', 'name')
+      .populate({
+        path: 'contractId',
+        select: 'contractId listingId',
+        populate: {
+          path: 'listingId',
+          select: 'name address city state imageUrls',
+          strictPopulate: false // Don't fail if listingId is missing
+        },
+        strictPopulate: false // Don't fail if contractId is invalid
+      })
       .populate('raisedBy', 'username email avatar')
       .populate('raisedAgainst', 'username email avatar')
       .sort({ createdAt: -1 });
@@ -2410,8 +2440,16 @@ export const listRentalRatings = async (req, res, next) => {
     }
 
     const ratings = await RentalRating.find(query)
-      .populate('contractId', 'contractId listingId')
-      .populate('listingId', 'name address')
+      .populate({
+        path: 'contractId',
+        select: 'contractId listingId',
+        populate: {
+          path: 'listingId',
+          select: 'name address city state imageUrls',
+          strictPopulate: false // Don't fail if listingId is missing
+        },
+        strictPopulate: false // Don't fail if contractId is invalid
+      })
       .populate('tenantId', 'username email avatar')
       .populate('landlordId', 'username email avatar')
       .sort({ createdAt: -1 });
