@@ -52,63 +52,115 @@ export const sendPaymentReminders = async () => {
       
       if (!wallet || !wallet.paymentSchedule) continue;
 
-      // Find upcoming payments (3 days and 1 day before due date)
+      // Find upcoming payments (5 days before and each day until due date or overdue)
       const upcomingPayments = wallet.paymentSchedule.filter(payment => {
         if (payment.status === 'completed') return false;
         
         const dueDate = new Date(payment.dueDate);
         const daysUntilDue = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
         
-        return (daysUntilDue === 3 || daysUntilDue === 1) && dueDate >= now;
+        // Send reminders starting 5 days before, each day until paid
+        return daysUntilDue <= 5 && daysUntilDue >= -30; // Track up to 30 days overdue
       });
 
       for (const payment of upcomingPayments) {
         const dueDate = new Date(payment.dueDate);
         const daysUntilDue = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
-        // Send 3-day reminder
-        if (daysUntilDue === 3 && !payment.reminderSent3Days) {
-          reminders.push({
-            contract,
-            wallet,
-            payment,
-            daysUntilDue: 3,
-            tenantEmail: contract.tenantId.email,
-            propertyName: contract.listingId.name,
-            amount: payment.amount
-          });
-          payment.reminderSent3Days = true;
-        }
-
-        // Send 1-day reminder
-        if (daysUntilDue === 1 && !payment.reminderSent1Day) {
-          reminders.push({
-            contract,
-            wallet,
-            payment,
-            daysUntilDue: 1,
-            tenantEmail: contract.tenantId.email,
-            propertyName: contract.listingId.name,
-            amount: payment.amount
-          });
-          payment.reminderSent1Day = true;
+        // Check if reminder should be sent today
+        // Send reminder starting 5 days before and each day until paid
+        if (daysUntilDue <= 5) {
+          const today = new Date().toDateString();
+          const paymentKey = `${payment.month}-${payment.year}`;
+          
+          // Track last reminder date per payment (initialize if needed)
+          if (!wallet.paymentReminders) {
+            wallet.paymentReminders = {};
+          }
+          const lastPaymentReminder = wallet.paymentReminders[paymentKey] 
+            ? new Date(wallet.paymentReminders[paymentKey]).toDateString() 
+            : null;
+          
+          // Send reminder if:
+          // 1. 5 days before due (only once)
+          // 2. Daily reminder if overdue or 5 days or less until due and not sent today
+          const shouldSendReminder = 
+            (daysUntilDue === 5 && !payment.reminderSent3Days) || // 5 days before (use existing flag)
+            ((daysUntilDue < 0 || (daysUntilDue >= 0 && daysUntilDue < 5)) && lastPaymentReminder !== today); // Daily reminder if not sent today
+          
+          if (shouldSendReminder) {
+            reminders.push({
+              contract,
+              wallet,
+              payment,
+              daysUntilDue,
+              tenantEmail: contract.tenantId.email,
+              tenantName: contract.tenantId.username,
+              propertyName: contract.listingId.name,
+              amount: payment.amount,
+              contractId: contract.contractId,
+              isOverdue: daysUntilDue < 0,
+              paymentKey
+            });
+            
+            // Mark 5-day reminder sent
+            if (daysUntilDue === 5) {
+              payment.reminderSent3Days = true; // Reuse existing flag for 5-day reminder
+            }
+            
+            // Track last reminder date per payment
+            wallet.paymentReminders[paymentKey] = new Date();
+          }
         }
       }
 
       // Save wallet if reminders were sent
-      if (upcomingPayments.some(p => p.reminderSent3Days || p.reminderSent1Day)) {
+      if (reminders.length > 0 || upcomingPayments.some(p => p.reminderSent3Days || p.reminderSent1Day)) {
         await wallet.save();
       }
     }
 
-    // TODO: Implement email sending for reminders
-    // For now, just log the reminders
-    console.log(`Payment reminders prepared: ${reminders.length}`);
+    // Send email reminders
+    const { sendRentPaymentReminderEmail, sendRentPaymentOverdueEmail } = await import('../utils/emailService.js');
+    
+    for (const reminder of reminders) {
+      try {
+        const dueDate = new Date(reminder.payment.dueDate);
+        const daysLeft = Math.max(0, reminder.daysUntilDue);
+        const isOverdue = reminder.daysUntilDue < 0;
+        const daysOverdue = isOverdue ? Math.abs(reminder.daysUntilDue) : 0;
+        
+        if (isOverdue) {
+          // Send overdue email
+          await sendRentPaymentOverdueEmail(reminder.tenantEmail, {
+            propertyName: reminder.propertyName,
+            totalOverdue: reminder.amount + (reminder.payment.penaltyAmount || 0),
+            overdueCount: 1,
+            contractId: reminder.contractId,
+            walletUrl: `${process.env.FRONTEND_URL || 'https://urbansetu.vercel.app'}/user/rent-wallet?contractId=${reminder.contract._id}`,
+            daysOverdue
+          });
+        } else {
+          // Send reminder email
+          await sendRentPaymentReminderEmail(reminder.tenantEmail, {
+            propertyName: reminder.propertyName,
+            amount: reminder.amount,
+            dueDate: dueDate,
+            daysLeft: daysLeft,
+            contractId: reminder.contractId,
+            walletUrl: `${process.env.FRONTEND_URL || 'https://urbansetu.vercel.app'}/user/rent-wallet?contractId=${reminder.contract._id}`,
+            penaltyAmount: reminder.payment.penaltyAmount || 0
+          });
+        }
+      } catch (error) {
+        console.error(`Error sending reminder email to ${reminder.tenantEmail}:`, error);
+      }
+    }
 
     return {
       success: true,
-      remindersSent: reminders.length,
-      reminders
+      remindersSent: reminders.length + overduePayments.length,
+      reminders: [...reminders, ...overduePayments]
     };
   } catch (error) {
     console.error("Error sending payment reminders:", error);
@@ -2145,11 +2197,13 @@ export const submitRentalRating = async (req, res, next) => {
     let rating = await RentalRating.findOne({ contractId: contract._id });
 
     if (!rating) {
-      rating = await RentalRating.create({
+      // Use new + save to ensure pre-save hook runs before validation
+      rating = new RentalRating({
         contractId: contract._id,
         tenantId: contract.tenantId._id,
         landlordId: contract.landlordId._id
       });
+      await rating.save();
     }
 
     // Submit rating based on role

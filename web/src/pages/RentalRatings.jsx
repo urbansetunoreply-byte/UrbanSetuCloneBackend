@@ -515,9 +515,9 @@ export default function RentalRatings() {
         {/* Rating Form Modal */}
         {showRatingForm && selectedContract && ratingRole && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full p-6 my-8">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">
+            <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-6 my-4 max-h-[85vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4 sticky top-0 bg-white pb-2 border-b">
+                <h2 className="text-xl font-bold text-gray-800">
                   {ratingRole === 'tenant' ? 'Rate Landlord' : 'Rate Tenant'}
                 </h2>
                 <button
@@ -533,19 +533,21 @@ export default function RentalRatings() {
                   <FaTimes />
                 </button>
               </div>
-              <RatingForm
-                contract={selectedContract}
-                role={ratingRole}
-                currentUser={currentUser}
-                onSuccess={handleRatingSubmitted}
-                onCancel={() => {
-                  setShowRatingForm(false);
-                  setSelectedContract(null);
-                  setRatingRole(null);
-                  // Clean URL when modal is cancelled
-                  navigate('/user/rental-ratings', { replace: true });
-                }}
-              />
+              <div className="overflow-y-auto max-h-[calc(85vh-100px)]">
+                <RatingForm
+                  contract={selectedContract}
+                  role={ratingRole}
+                  currentUser={currentUser}
+                  onSuccess={handleRatingSubmitted}
+                  onCancel={() => {
+                    setShowRatingForm(false);
+                    setSelectedContract(null);
+                    setRatingRole(null);
+                    // Clean URL when modal is cancelled
+                    navigate('/user/rental-ratings', { replace: true });
+                  }}
+                />
+              </div>
             </div>
           </div>
         )}

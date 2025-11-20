@@ -898,7 +898,7 @@ export default function RentProperty() {
         )}
 
         {/* Step 4: Payment */}
-        {step === 4 && booking && contract && listing && (
+        {step === 4 && contract && listing && (
           <div className="bg-white rounded-xl shadow-lg p-6">
             <h2 className="text-2xl font-bold text-blue-700 mb-6 flex items-center gap-2">
               <FaMoneyBillWave /> Payment Required
