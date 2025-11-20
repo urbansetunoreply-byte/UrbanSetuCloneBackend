@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FaFileContract, FaDownload, FaEye, FaCalendarAlt, FaMoneyBillWave, FaLock, FaCheckCircle, FaTimesCircle, FaSpinner, FaHome, FaUser, FaChevronRight, FaSignInAlt, FaSignOutAlt, FaGavel, FaStar, FaCreditCard, FaPlayCircle, FaCheck, FaTimes, FaPen, FaEraser, FaUndo, FaClock } from 'react-icons/fa';
+import { FaFileContract, FaDownload, FaEye, FaCalendarAlt, FaMoneyBillWave, FaLock, FaCheckCircle, FaTimesCircle, FaSpinner, FaHome, FaUser, FaChevronRight, FaSignInAlt, FaSignOutAlt, FaGavel, FaStar, FaCreditCard, FaPlayCircle, FaCheck, FaTimes, FaPen, FaEraser, FaUndo, FaClock, FaWallet } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
 import ContractPreview from '../components/rental/ContractPreview';
 import DigitalSignature from '../components/rental/DigitalSignature';
@@ -563,12 +563,15 @@ export default function RentalContracts() {
                     >
                       <FaEye /> View Details
                     </button>
-                    <button
-                      onClick={() => handleDownload(contract)}
-                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2"
-                    >
-                      <FaDownload /> Download PDF
-                    </button>
+                    {contract.contractId && (
+                      <Link
+                        to={`/user/rent-wallet?contractId=${contract.contractId || contract._id}`}
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2"
+                        title="View Rent Wallet"
+                      >
+                        <FaWallet /> Rent Wallet
+                      </Link>
+                    )}
                     {contract.status === 'active' && contract.walletId && (
                       <button
                         onClick={() => navigate(`/user/rent-wallet?contractId=${contract._id}`)}
