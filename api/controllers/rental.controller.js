@@ -1174,6 +1174,87 @@ export const updateMoveOutCondition = async (req, res, next) => {
   }
 };
 
+// List All Checklists (Admin only)
+export const listAllChecklists = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    
+    const user = await User.findById(userId);
+    if (user?.role !== 'admin' && user?.role !== 'rootadmin') {
+      return res.status(403).json({ message: "Unauthorized. Only admin can access all checklists." });
+    }
+
+    const { type, status, search } = req.query;
+    
+    // Build query - no user filter for admin
+    let query = {};
+    if (type && type !== 'all') {
+      query.type = type;
+    }
+    if (status && status !== 'all') {
+      query.status = status;
+    }
+    
+    // Fetch all checklists
+    let checklists = await MoveInOutChecklist.find(query)
+      .populate('contractId', 'contractId listingId lockedRentAmount startDate endDate status')
+      .populate('tenantId', 'username email avatar firstName lastName')
+      .populate('landlordId', 'username email avatar firstName lastName')
+      .populate('listingId', 'name address city state')
+      .sort({ createdAt: -1 });
+
+    // Apply search filter if provided
+    if (search) {
+      const searchLower = search.toLowerCase();
+      checklists = checklists.filter(c => 
+        c.checklistId?.toLowerCase().includes(searchLower) ||
+        c.listingId?.name?.toLowerCase().includes(searchLower) ||
+        c.listingId?.address?.toLowerCase().includes(searchLower) ||
+        c.tenantId?.username?.toLowerCase().includes(searchLower) ||
+        c.tenantId?.email?.toLowerCase().includes(searchLower) ||
+        c.landlordId?.username?.toLowerCase().includes(searchLower) ||
+        c.landlordId?.email?.toLowerCase().includes(searchLower) ||
+        c.contractId?.contractId?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    res.json({
+      success: true,
+      checklists,
+      total: checklists.length
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Delete Checklist (Admin only)
+export const deleteChecklist = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { checklistId } = req.params;
+    
+    const user = await User.findById(userId);
+    if (user?.role !== 'admin' && user?.role !== 'rootadmin') {
+      return res.status(403).json({ message: "Unauthorized. Only admin can delete checklists." });
+    }
+
+    const checklist = await MoveInOutChecklist.findById(checklistId);
+    if (!checklist) {
+      return res.status(404).json({ message: "Checklist not found." });
+    }
+
+    await MoveInOutChecklist.findByIdAndDelete(checklistId);
+
+    res.json({
+      success: true,
+      message: "Checklist deleted successfully."
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Assess Damages (Compare Move-In vs Move-Out)
 export const assessDamages = async (req, res, next) => {
   try {

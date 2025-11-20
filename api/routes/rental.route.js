@@ -10,6 +10,8 @@ import {
   downloadContractPDF,
   createMoveInOutChecklist,
   getMoveInOutChecklist,
+  listAllChecklists,
+  deleteChecklist,
   updateMoveInCondition,
   approveMoveInChecklist,
   updateMoveOutCondition,
@@ -86,6 +88,8 @@ router.put("/checklist/move-in/:checklistId", verifyToken, updateMoveInCondition
 router.post("/checklist/move-in/:checklistId/approve", verifyToken, approveMoveInChecklist);
 router.put("/checklist/move-out/:checklistId", verifyToken, updateMoveOutCondition);
 router.post("/checklist/:contractId/assess-damages", verifyToken, assessDamages);
+router.get("/checklist/all", verifyToken, listAllChecklists); // Admin: List all checklists
+router.delete("/checklist/:checklistId", verifyToken, deleteChecklist); // Admin: Delete checklist
 
 // Dispute Resolution Routes
 router.post("/disputes/:contractId", verifyToken, createDispute);

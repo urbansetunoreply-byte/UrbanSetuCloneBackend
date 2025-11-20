@@ -2152,16 +2152,18 @@ export default function Profile() {
               </>
             ) : null}
 
+            {/* Services - visible to all users (user and admin) */}
+            <Link
+              to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? "/admin/services" : "/user/services"}
+              className={`bg-indigo-500 text-white p-3 rounded-lg hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-950`}
+            >
+              <FaTools className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
+              <span className="font-medium text-xs sm:text-sm">Services</span>
+            </Link>
+
             {/* User-specific quick actions */}
             {!(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
-              <>
-                <Link
-                  to="/user/services"
-                  className={`bg-indigo-500 text-white p-3 rounded-lg hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-950`}
-                >
-                  <FaTools className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
-                  <span className="font-medium text-xs sm:text-sm">Services</span>
-                </Link> 
+              <> 
                 <Link
                   to="/user/investment-tools"
                   className={`bg-green-500 text-white p-3 rounded-lg hover:bg-green-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1000`}
