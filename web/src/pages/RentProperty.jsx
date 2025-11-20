@@ -170,6 +170,25 @@ export default function RentProperty() {
                   bookingId: existingContract.bookingId?._id || existingContract.bookingId || prev.bookingId
                 }));
 
+                // Fetch booking if it exists
+                if (existingContract.bookingId) {
+                  try {
+                    const bookingId = existingContract.bookingId?._id || existingContract.bookingId;
+                    const bookingRes = await fetch(`${API_BASE_URL}/api/bookings/${bookingId}`, {
+                      credentials: 'include'
+                    });
+                    if (bookingRes.ok) {
+                      const bookingData = await bookingRes.json();
+                      const booking = bookingData.appointment || bookingData.booking || bookingData;
+                      if (booking && booking._id) {
+                        setBooking(booking);
+                      }
+                    }
+                  } catch (bookingError) {
+                    console.error("Error fetching booking:", bookingError);
+                  }
+                }
+
                 toast.info('Resuming your contract from where you left off.');
               }
             }
@@ -1023,20 +1042,27 @@ export default function RentProperty() {
         )}
 
         {/* Payment Modal */}
-        {showPaymentModal && step === 4 && booking && contract && (
-          <PaymentModal
-            isOpen={showPaymentModal}
-            onClose={() => setShowPaymentModal(false)}
-            appointment={{
+        <PaymentModal
+          isOpen={showPaymentModal && step === 4}
+          onClose={() => {
+            setShowPaymentModal(false);
+          }}
+          appointment={
+            booking && contract ? {
               ...booking,
               contractId: contract._id,
               isRentalPayment: true,
+              region: 'india', // Default to India for Razorpay
               securityDeposit: contract.securityDeposit || (listing?.monthlyRent || listing?.discountPrice || listing?.regularPrice || 0) * (listing?.securityDepositMonths || 2),
-              firstMonthRent: contract.lockedRentAmount || listing?.monthlyRent || listing?.discountPrice || listing?.regularPrice || 0
-            }}
-            onPaymentSuccess={handlePaymentSuccess}
-          />
-        )}
+              firstMonthRent: contract.lockedRentAmount || listing?.monthlyRent || listing?.discountPrice || listing?.regularPrice || 0,
+              propertyName: listing?.name || 'Property',
+              propertyDescription: listing?.address || '',
+              buyerId: contract.tenantId,
+              sellerId: contract.landlordId
+            } : null
+          }
+          onPaymentSuccess={handlePaymentSuccess}
+        />
 
         {/* Step 5: Move-in */}
         {step === 5 && contract && (
