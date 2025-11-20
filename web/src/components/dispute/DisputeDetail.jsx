@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { FaUser, FaClock, FaFileAlt, FaComments, FaCheckCircle, FaTimes, FaPaperPlane, FaSpinner, FaUpload, FaImage, FaVideo, FaFile, FaDownload, FaGavel, FaExclamationTriangle } from 'react-icons/fa';
+import { FaUser, FaClock, FaFileAlt, FaComments, FaCheckCircle, FaTimes, FaPaperPlane, FaSpinner, FaUpload, FaImage, FaVideo, FaFile, FaDownload, FaGavel, FaExclamationTriangle, FaEdit } from 'react-icons/fa';
 import ImagePreview from '../ImagePreview';
 import VideoPreview from '../VideoPreview';
 import UserAvatar from '../UserAvatar';
