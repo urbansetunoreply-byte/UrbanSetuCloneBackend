@@ -47,14 +47,19 @@ export default function RentalRatings() {
     const contractIdParam = searchParams.get('contractId');
     const roleParam = searchParams.get('role');
 
-    if (contractIdParam && roleParam) {
+    if (contractIdParam && roleParam && contracts.length > 0) {
       const contract = contracts.find(c => 
-        (c._id === contractIdParam) || (c.contractId === contractIdParam)
+        (c._id === contractIdParam) || (c.contractId === contractIdParam) ||
+        (c._id?.toString() === contractIdParam) || (c.contractId?.toString() === contractIdParam)
       );
       
       if (contract) {
-        handleSubmitRating(contract, roleParam);
-        navigate('/user/rental-ratings', { replace: true });
+        setSelectedContract(contract);
+        setRatingRole(roleParam);
+        setShowRatingForm(true);
+        // Update URL without navigation to keep modal state
+        const newUrl = `/user/rental-ratings?contractId=${contractIdParam}&role=${roleParam}`;
+        window.history.replaceState({}, '', newUrl);
       }
     }
   }, [location.search, contracts]);

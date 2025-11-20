@@ -2269,7 +2269,7 @@ export const listAllRatings = async (req, res, next) => {
       }
     }
     
-    // Fetch all ratings
+    // Fetch all ratings - add error handling for invalid ObjectIds
     let ratings = await RentalRating.find(query)
       .populate({
         path: 'contractId',
@@ -2277,11 +2277,16 @@ export const listAllRatings = async (req, res, next) => {
         populate: {
           path: 'listingId',
           select: 'name address city state imageUrls type'
-        }
+        },
+        options: { strictPopulate: false } // Don't fail if contractId is invalid
       })
       .populate('tenantId', 'username email avatar')
       .populate('landlordId', 'username email avatar')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean(); // Use lean() to avoid Mongoose casting issues
+    
+    // Filter out ratings with invalid contractIds after populate
+    ratings = ratings.filter(r => r.contractId && typeof r.contractId === 'object' && r.contractId._id);
 
     // Apply search filter if provided
     if (search) {

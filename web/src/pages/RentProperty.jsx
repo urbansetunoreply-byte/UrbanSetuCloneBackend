@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toast } from 'react-toastify';
-import { FaLock, FaCalendarAlt, FaMoneyBillWave, FaCheckCircle, FaChevronRight, FaHome, FaShieldAlt, FaFileContract, FaTimesCircle } from "react-icons/fa";
+import { FaLock, FaCalendarAlt, FaMoneyBillWave, FaCheckCircle, FaChevronRight, FaHome, FaShieldAlt, FaFileContract, FaTimesCircle, FaCreditCard, FaChevronLeft } from "react-icons/fa";
 import { usePageTitle } from '../hooks/usePageTitle';
 import PaymentModal from '../components/PaymentModal';
 import ContractPreview from '../components/rental/ContractPreview';
@@ -723,13 +723,25 @@ export default function RentProperty() {
             />
             
             <div className="bg-white rounded-xl shadow-lg p-6">
-              <button
-                onClick={handleNext}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 flex items-center justify-center"
-              >
-                Continue to Signing
-                <FaChevronRight className="ml-2" />
-              </button>
+              <div className="flex gap-4">
+                <button
+                  onClick={() => {
+                    if (step > 1) {
+                      setStep(step - 1);
+                    }
+                  }}
+                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 flex items-center gap-2"
+                >
+                  <FaChevronLeft /> Back
+                </button>
+                <button
+                  onClick={handleNext}
+                  className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 flex items-center justify-center"
+                >
+                  Continue to Signing
+                  <FaChevronRight className="ml-2" />
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -832,23 +844,35 @@ export default function RentProperty() {
               </div>
             )}
 
-            {contract.tenantSignature?.signed && (
+            <div className="flex gap-4">
               <button
                 onClick={() => {
-                  if (contract.landlordSignature?.signed) {
-                    setStep(4);
-                    setShowPaymentModal(true);
-                  } else {
-                    toast.info("Waiting for landlord to sign the contract.");
+                  if (step > 1) {
+                    setStep(step - 1);
                   }
                 }}
-                disabled={!contract.landlordSignature?.signed || loading}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 flex items-center gap-2"
               >
-                {contract.landlordSignature?.signed ? 'Proceed to Payment' : 'Waiting for Landlord Signature'}
-                {contract.landlordSignature?.signed && <FaChevronRight className="ml-2" />}
+                <FaChevronLeft /> Back
               </button>
-            )}
+              {contract.tenantSignature?.signed && (
+                <button
+                  onClick={() => {
+                    if (contract.landlordSignature?.signed) {
+                      setStep(4);
+                      setShowPaymentModal(true);
+                    } else {
+                      toast.info("Waiting for landlord to sign the contract.");
+                    }
+                  }}
+                  disabled={!contract.landlordSignature?.signed || loading}
+                  className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  {contract.landlordSignature?.signed ? 'Proceed to Payment' : 'Waiting for Landlord Signature'}
+                  {contract.landlordSignature?.signed && <FaChevronRight className="ml-2" />}
+                </button>
+              )}
+            </div>
           </div>
         )}
 
@@ -874,14 +898,71 @@ export default function RentProperty() {
         )}
 
         {/* Step 4: Payment */}
-        {step === 4 && booking && contract && (
+        {step === 4 && booking && contract && listing && (
           <div className="bg-white rounded-xl shadow-lg p-6">
             <h2 className="text-2xl font-bold text-blue-700 mb-6 flex items-center gap-2">
               <FaMoneyBillWave /> Payment Required
             </h2>
-            <p className="text-gray-600 mb-4">
-              Please complete the payment for security deposit and first month's rent to proceed with move-in.
+            
+            {/* Payment Summary */}
+            <div className="bg-blue-50 p-6 rounded-lg mb-6">
+              <h3 className="font-semibold text-lg mb-4">Payment Summary</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-700">Monthly Rent (Locked):</span>
+                  <span className="font-semibold">₹{(contract.lockedRentAmount || listing?.monthlyRent || listing?.discountPrice || listing?.regularPrice || 0).toLocaleString('en-IN')}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-700">Security Deposit ({(listing?.securityDepositMonths || 2)} months):</span>
+                  <span className="font-semibold">₹{(contract.securityDeposit || (listing?.monthlyRent || listing?.discountPrice || listing?.regularPrice || 0) * (listing?.securityDepositMonths || 2)).toLocaleString('en-IN')}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-700">First Month Rent:</span>
+                  <span className="font-semibold">₹{(contract.lockedRentAmount || listing?.monthlyRent || listing?.discountPrice || listing?.regularPrice || 0).toLocaleString('en-IN')}</span>
+                </div>
+                <div className="flex justify-between border-t pt-2 mt-2">
+                  <span className="font-semibold text-lg">Total Amount:</span>
+                  <span className="font-bold text-lg text-blue-600">₹{((contract.securityDeposit || (listing?.monthlyRent || listing?.discountPrice || listing?.regularPrice || 0) * (listing?.securityDepositMonths || 2)) + (contract.lockedRentAmount || listing?.monthlyRent || listing?.discountPrice || listing?.regularPrice || 0)).toLocaleString('en-IN')}</span>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-gray-600 mb-6">
+              Please complete the payment for security deposit and first month's rent to proceed with move-in. Choose your preferred payment method below.
             </p>
+
+            {/* Payment Options */}
+            <div className="bg-white border-2 border-blue-200 rounded-lg p-4 mb-6">
+              <p className="text-sm text-gray-600 mb-2">Payment methods available:</p>
+              <div className="flex items-center gap-4 text-sm">
+                <span className="flex items-center gap-2">
+                  <FaCreditCard className="text-blue-600" /> Razorpay
+                </span>
+                <span className="flex items-center gap-2">
+                  <FaCreditCard className="text-yellow-600" /> PayPal
+                </span>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => {
+                  if (step > 1) {
+                    setStep(step - 1);
+                  }
+                }}
+                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 flex items-center gap-2"
+              >
+                <FaChevronRight className="rotate-180" /> Back
+              </button>
+              <button
+                onClick={() => setShowPaymentModal(true)}
+                className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 flex items-center justify-center gap-2"
+              >
+                <FaMoneyBillWave /> Proceed to Payment
+                <FaChevronRight />
+              </button>
+            </div>
           </div>
         )}
 
@@ -894,8 +975,8 @@ export default function RentProperty() {
               ...booking,
               contractId: contract._id,
               isRentalPayment: true,
-              securityDeposit: contract.securityDeposit || 0,
-              firstMonthRent: contract.lockedRentAmount || 0
+              securityDeposit: contract.securityDeposit || (listing?.monthlyRent || listing?.discountPrice || listing?.regularPrice || 0) * (listing?.securityDepositMonths || 2),
+              firstMonthRent: contract.lockedRentAmount || listing?.monthlyRent || listing?.discountPrice || listing?.regularPrice || 0
             }}
             onPaymentSuccess={handlePaymentSuccess}
           />

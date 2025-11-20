@@ -64,14 +64,29 @@ export default function PropertyVerification() {
     const searchParams = new URLSearchParams(location.search);
     const listingIdParam = searchParams.get('listingId');
 
-    if (listingIdParam) {
-      const listing = myListings.find(l => l._id === listingIdParam);
+    if (listingIdParam && myListings.length > 0) {
+      const listing = myListings.find(l => l._id === listingIdParam || l._id?.toString() === listingIdParam);
       if (listing) {
-        handleViewVerification(listing);
-        navigate('/user/property-verification', { replace: true });
+        const verification = verifications[listing._id];
+        if (verification) {
+          // If verification exists, show status modal
+          setSelectedVerification(verification);
+          setSelectedListing(listing);
+          setShowVerificationStatus(true);
+          // Update URL to keep modal state
+          const newUrl = `/user/property-verification?listingId=${listingIdParam}`;
+          window.history.replaceState({}, '', newUrl);
+        } else {
+          // If no verification, show form modal
+          setSelectedListing(listing);
+          setShowVerificationForm(true);
+          // Update URL to keep modal state
+          const newUrl = `/user/property-verification?listingId=${listingIdParam}`;
+          window.history.replaceState({}, '', newUrl);
+        }
       }
     }
-  }, [location.search, myListings]);
+  }, [location.search, myListings, verifications]);
 
   const fetchMyListings = async () => {
     try {
@@ -123,6 +138,9 @@ export default function PropertyVerification() {
   const handleRequestVerification = (listing) => {
     setSelectedListing(listing);
     setShowVerificationForm(true);
+    // Update URL to reflect modal state
+    const newUrl = `/user/property-verification?listingId=${listing._id}`;
+    window.history.pushState({}, '', newUrl);
   };
 
   const handleViewVerification = async (listing) => {
@@ -310,6 +328,8 @@ export default function PropertyVerification() {
                   onCancel={() => {
                     setShowVerificationForm(false);
                     setSelectedListing(null);
+                    // Update URL to remove listingId param
+                    window.history.pushState({}, '', '/user/property-verification');
                   }}
                 />
               </div>
@@ -327,6 +347,8 @@ export default function PropertyVerification() {
                 setShowVerificationStatus(false);
                 setSelectedVerification(null);
                 setSelectedListing(null);
+                // Update URL to remove listingId param
+                window.history.pushState({}, '', '/user/property-verification');
               }
             }}
           >
@@ -346,6 +368,8 @@ export default function PropertyVerification() {
                     setShowVerificationStatus(false);
                     setSelectedVerification(null);
                     setSelectedListing(null);
+                    // Update URL to remove listingId param
+                    window.history.pushState({}, '', '/user/property-verification');
                   }}
                 />
               </div>
