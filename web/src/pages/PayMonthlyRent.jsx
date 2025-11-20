@@ -78,57 +78,60 @@ export default function PayMonthlyRent() {
 
       setContract(contractObj);
 
-      // Fetch wallet
-      if (contractObj.walletId) {
-        const walletRes = await fetch(`${API_BASE_URL}/api/rental/wallet/${contractId}`, {
-          credentials: 'include'
-        });
+      // Fetch wallet - try to fetch regardless of walletId field
+      // The API endpoint uses contractId to find the wallet
+      const walletRes = await fetch(`${API_BASE_URL}/api/rental/wallet/${contractId}`, {
+        credentials: 'include'
+      });
 
-        if (walletRes.ok) {
-          const walletData = await walletRes.json();
-          if (walletData.success && walletData.wallet) {
-            const walletObj = walletData.wallet;
-            setWallet(walletObj);
-
-            // Find pending payments
-            const pendingPayments = walletObj.paymentSchedule?.filter(p => p.status === 'pending' || p.status === 'overdue') || [];
-            
-            if (pendingPayments.length === 0) {
-              toast.info("All rent payments are up to date.");
-              navigate("/user/rental-contracts");
-              return;
-            }
-
-            // If scheduleIndex provided, use that payment
-            if (scheduleIndex !== null) {
-              const idx = parseInt(scheduleIndex);
-              const payment = walletObj.paymentSchedule?.[idx];
-              if (payment && (payment.status === 'pending' || payment.status === 'overdue')) {
-                setSelectedPayment({ ...payment, scheduleIndex: idx });
-              } else {
-                setSelectedPayment({ ...pendingPayments[0], scheduleIndex: walletObj.paymentSchedule.indexOf(pendingPayments[0]) });
-              }
-            } else {
-              // Use first pending payment (usually next due)
-              setSelectedPayment({ ...pendingPayments[0], scheduleIndex: walletObj.paymentSchedule.indexOf(pendingPayments[0]) });
-            }
-
-            // Fetch booking for payment modal
-            if (contractObj.bookingId) {
-              const bookingRes = await fetch(`${API_BASE_URL}/api/bookings/${contractObj.bookingId._id || contractObj.bookingId}`, {
-                credentials: 'include'
-              });
-              if (bookingRes.ok) {
-                const bookingData = await bookingRes.json();
-                setBooking(bookingData.booking || bookingData);
-              }
-            }
-          }
-        }
-      } else {
+      if (!walletRes.ok) {
         toast.error("Wallet not found for this contract.");
         navigate("/user/rental-contracts");
         return;
+      }
+
+      const walletData = await walletRes.json();
+      if (!walletData.success || !walletData.wallet) {
+        toast.error("Wallet not found for this contract.");
+        navigate("/user/rental-contracts");
+        return;
+      }
+
+      const walletObj = walletData.wallet;
+      setWallet(walletObj);
+
+      // Find pending payments
+      const pendingPayments = walletObj.paymentSchedule?.filter(p => p.status === 'pending' || p.status === 'overdue') || [];
+      
+      if (pendingPayments.length === 0) {
+        toast.info("All rent payments are up to date.");
+        navigate("/user/rental-contracts");
+        return;
+      }
+
+      // If scheduleIndex provided, use that payment
+      if (scheduleIndex !== null) {
+        const idx = parseInt(scheduleIndex);
+        const payment = walletObj.paymentSchedule?.[idx];
+        if (payment && (payment.status === 'pending' || payment.status === 'overdue')) {
+          setSelectedPayment({ ...payment, scheduleIndex: idx });
+        } else {
+          setSelectedPayment({ ...pendingPayments[0], scheduleIndex: walletObj.paymentSchedule.indexOf(pendingPayments[0]) });
+        }
+      } else {
+        // Use first pending payment (usually next due)
+        setSelectedPayment({ ...pendingPayments[0], scheduleIndex: walletObj.paymentSchedule.indexOf(pendingPayments[0]) });
+      }
+
+      // Fetch booking for payment modal
+      if (contractObj.bookingId) {
+        const bookingRes = await fetch(`${API_BASE_URL}/api/bookings/${contractObj.bookingId._id || contractObj.bookingId}`, {
+          credentials: 'include'
+        });
+        if (bookingRes.ok) {
+          const bookingData = await bookingRes.json();
+          setBooking(bookingData.booking || bookingData);
+        }
       }
     } catch (error) {
       console.error("Error fetching contract and wallet:", error);

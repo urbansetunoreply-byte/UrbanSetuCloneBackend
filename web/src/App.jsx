@@ -655,7 +655,6 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/user/rental-contracts" element={<RentalContracts />} />
             <Route path="/user/pay-monthly-rent" element={<PayMonthlyRent />} />
             <Route path="/user/disputes" element={<DisputeResolution />} />
-            <Route path="/admin/disputes" element={<AdminDisputeResolution />} />
             <Route path="/user/property-verification" element={<PropertyVerification />} />
             <Route path="/user/rental-ratings" element={<RentalRatings />} />
             <Route path="/user/rental-loans" element={<RentalLoans />} />
@@ -726,6 +725,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/admin/rental-ratings" element={<AdminRentalRatings />} />
             <Route path="/admin/rental-contracts" element={<AdminRentalContracts />} />
             <Route path="/admin/rental-loans" element={<AdminRentalLoans />} />
+            <Route path="/admin/disputes" element={<AdminDisputeResolution />} />
             <Route path="/admin/settings" element={<Settings />} />
             <Route path="/contact" element={<Navigate to="/admin/support" />} />
             <Route path="/support" element={<Navigate to="/admin/support" />} />
