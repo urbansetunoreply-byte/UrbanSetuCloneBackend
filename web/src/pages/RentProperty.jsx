@@ -30,7 +30,8 @@ export default function RentProperty() {
     rentLockPlan: '',
     customLockDuration: 12,
     moveInDate: '',
-    bookingId: null
+    bookingId: null,
+    depositPlan: 'standard' // 'standard', 'low', 'zero'
   });
   const [contract, setContract] = useState(null);
   const [resumingContract, setResumingContract] = useState(false);
@@ -167,7 +168,8 @@ export default function RentProperty() {
                   rentLockPlan: existingContract.rentLockPlan || prev.rentLockPlan,
                   customLockDuration: existingContract.lockDuration || prev.customLockDuration,
                   moveInDate: existingContract.moveInDate ? new Date(existingContract.moveInDate).toISOString().split('T')[0] : prev.moveInDate,
-                  bookingId: existingContract.bookingId?._id || existingContract.bookingId || prev.bookingId
+                  bookingId: existingContract.bookingId?._id || existingContract.bookingId || prev.bookingId,
+                  depositPlan: existingContract.depositPlan || prev.depositPlan || 'standard'
                 }));
 
                 // Fetch booking if it exists
@@ -294,7 +296,10 @@ export default function RentProperty() {
             endDate: endDate.toISOString(),
             paymentFrequency: 'monthly',
             dueDate: 1,
-            securityDeposit: (listing?.monthlyRent || listing?.discountPrice || listing?.regularPrice || 0) * (listing?.securityDepositMonths || 2),
+            securityDeposit: securityDeposit,
+            depositPlan: formData.depositPlan,
+            extraMonthlyCharge: depositDetails.extraMonthlyCharge,
+            insuranceFee: depositDetails.insuranceFee,
             maintenanceCharges: listing?.maintenanceCharges || 0,
             advanceRent: 0,
             moveInDate: startDate.toISOString()
@@ -627,8 +632,45 @@ export default function RentProperty() {
                             formData.customLockDuration || 12;
 
   const monthlyRent = listing.monthlyRent || listing.discountPrice || listing.regularPrice || 0;
-  const securityDeposit = monthlyRent * (listing.securityDepositMonths || 2);
-  const totalAmount = securityDeposit + monthlyRent; // Security deposit + first month rent
+  
+  // Calculate deposit and charges based on selected plan
+  const getDepositDetails = () => {
+    const baseDepositMonths = listing.securityDepositMonths || 2;
+    
+    switch (formData.depositPlan) {
+      case 'low':
+        // Low Deposit: 1 month rent + ₹750/month extra charge
+        return {
+          depositMonths: 1,
+          depositAmount: monthlyRent * 1,
+          extraMonthlyCharge: 750,
+          insuranceFee: 0,
+          planName: 'Low Deposit Plan'
+        };
+      case 'zero':
+        // Zero Deposit: ₹0 deposit + ₹300/month insurance
+        return {
+          depositMonths: 0,
+          depositAmount: 0,
+          extraMonthlyCharge: 0,
+          insuranceFee: 300,
+          planName: 'Zero Deposit Plan'
+        };
+      default: // 'standard'
+        // Standard: 2 months rent (default)
+        return {
+          depositMonths: baseDepositMonths,
+          depositAmount: monthlyRent * baseDepositMonths,
+          extraMonthlyCharge: 0,
+          insuranceFee: 0,
+          planName: 'Standard Deposit'
+        };
+    }
+  };
+
+  const depositDetails = getDepositDetails();
+  const securityDeposit = depositDetails.depositAmount;
+  const totalAmount = securityDeposit + monthlyRent; // Security deposit + first month rent (extra charges are monthly)
 
   return (
     <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-4 md:px-8">
@@ -750,27 +792,198 @@ export default function RentProperty() {
               />
             </div>
 
+            {/* Deposit Plan Selection */}
+            <div className="mb-6">
+              <label className="block text-gray-700 font-medium mb-3">
+                <FaShieldAlt className="inline mr-2" />
+                Select Deposit Plan
+              </label>
+              <div className="space-y-3">
+                {/* Standard Deposit */}
+                <label
+                  className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition ${
+                    formData.depositPlan === 'standard'
+                      ? 'border-blue-600 bg-blue-50'
+                      : 'border-gray-300 hover:border-blue-400'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="depositPlan"
+                    value="standard"
+                    checked={formData.depositPlan === 'standard'}
+                    onChange={(e) => setFormData(prev => ({ ...prev, depositPlan: e.target.value }))}
+                    className="mt-1 mr-3"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-lg">Standard Deposit (Default)</span>
+                      <span className="text-sm font-semibold text-blue-600">₹{depositDetails.depositAmount.toLocaleString('en-IN')}</span>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Security Deposit = {depositDetails.depositMonths} month{depositDetails.depositMonths !== 1 ? 's' : ''} rent
+                      <br />
+                      <span className="text-green-600">✓ Fully refundable</span>
+                    </p>
+                  </div>
+                </label>
+
+                {/* Low Deposit Plan */}
+                <label
+                  className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition ${
+                    formData.depositPlan === 'low'
+                      ? 'border-blue-600 bg-blue-50'
+                      : 'border-gray-300 hover:border-blue-400'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="depositPlan"
+                    value="low"
+                    checked={formData.depositPlan === 'low'}
+                    onChange={(e) => setFormData(prev => ({ ...prev, depositPlan: e.target.value }))}
+                    className="mt-1 mr-3"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-lg">Low Deposit Plan</span>
+                      <span className="text-sm font-semibold text-blue-600">₹{depositDetails.depositAmount.toLocaleString('en-IN')} + ₹{depositDetails.extraMonthlyCharge}/month</span>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Security Deposit = 1 month rent
+                      <br />
+                      <span className="text-amber-600">+ ₹{depositDetails.extraMonthlyCharge} extra monthly charge</span>
+                      <br />
+                      <span className="text-green-600">✓ Deposit fully refundable</span>
+                    </p>
+                  </div>
+                </label>
+
+                {/* Zero Deposit Plan */}
+                <label
+                  className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition ${
+                    formData.depositPlan === 'zero'
+                      ? 'border-blue-600 bg-blue-50'
+                      : 'border-gray-300 hover:border-blue-400'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="depositPlan"
+                    value="zero"
+                    checked={formData.depositPlan === 'zero'}
+                    onChange={(e) => setFormData(prev => ({ ...prev, depositPlan: e.target.value }))}
+                    className="mt-1 mr-3"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-lg">Zero Deposit Plan</span>
+                      <span className="text-sm font-semibold text-blue-600">₹0 + ₹{depositDetails.insuranceFee}/month</span>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Security Deposit = ₹0
+                      <br />
+                      <span className="text-amber-600">+ ₹{depositDetails.insuranceFee}/month insurance fee</span>
+                      <br />
+                      <span className="text-blue-600">ℹ️ Covers owner's risk; fully handled by platform</span>
+                    </p>
+                  </div>
+                </label>
+              </div>
+            </div>
+
             {/* Summary */}
-            <div className="bg-blue-50 p-4 rounded-lg mb-6">
-              <h4 className="font-semibold mb-2">Summary</h4>
-              <div className="space-y-1 text-sm">
+            <div className="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-200">
+              <h4 className="font-semibold mb-3 text-lg">Summary</h4>
+              <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span>Monthly Rent:</span>
+                  <span className="text-gray-700">Monthly Rent:</span>
                   <span className="font-semibold">₹{monthlyRent.toLocaleString('en-IN')}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Lock Duration:</span>
-                  <span className="font-semibold">{lockDurationMonths} months</span>
+                  <span className="text-gray-700">Lock Duration:</span>
+                  <span className="font-semibold">{lockDurationMonths} months (Rent stays fixed)</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Security Deposit ({listing.securityDepositMonths || 2} month{listing.securityDepositMonths !== 1 ? 's' : ''}):</span>
-                  <span className="font-semibold">₹{securityDeposit.toLocaleString('en-IN')}</span>
-                  <span className="text-xs text-gray-500">(Refundable)</span>
+                  <span className="text-gray-700">Selected Deposit Plan:</span>
+                  <span className="font-semibold text-blue-700">{depositDetails.planName}</span>
                 </div>
-                <div className="flex justify-between border-t pt-2 mt-2">
-                  <span className="font-semibold">Total (Security + 1st Month):</span>
-                  <span className="font-semibold text-blue-600">₹{totalAmount.toLocaleString('en-IN')}</span>
+                {formData.depositPlan === 'standard' && (
+                  <div className="flex justify-between pl-4 border-l-2 border-blue-300">
+                    <span className="text-gray-600">Security Deposit ({depositDetails.depositMonths} month{depositDetails.depositMonths !== 1 ? 's' : ''}):</span>
+                    <span className="font-semibold">₹{depositDetails.depositAmount.toLocaleString('en-IN')}</span>
+                  </div>
+                )}
+                {formData.depositPlan === 'low' && (
+                  <div className="pl-4 border-l-2 border-blue-300 space-y-1">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Security Deposit (1 month):</span>
+                      <span className="font-semibold">₹{depositDetails.depositAmount.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Extra Monthly Charge:</span>
+                      <span className="font-semibold text-amber-600">₹{depositDetails.extraMonthlyCharge}</span>
+                    </div>
+                  </div>
+                )}
+                {formData.depositPlan === 'zero' && (
+                  <div className="pl-4 border-l-2 border-blue-300 space-y-1">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Security Deposit:</span>
+                      <span className="font-semibold">₹0</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Insurance Fee (monthly):</span>
+                      <span className="font-semibold text-amber-600">₹{depositDetails.insuranceFee}</span>
+                    </div>
+                  </div>
+                )}
+                <div className="flex justify-between border-t pt-2 mt-2 font-semibold">
+                  <span className="text-gray-800">Total Payable Now:</span>
+                  <span className="text-blue-600 text-lg">
+                    {formData.depositPlan === 'zero' 
+                      ? `₹${(monthlyRent + depositDetails.insuranceFee).toLocaleString('en-IN')}`
+                      : `₹${totalAmount.toLocaleString('en-IN')}`
+                    }
+                  </span>
                 </div>
+              </div>
+
+              {/* Transparency Notes */}
+              <div className="mt-4 pt-4 border-t border-blue-200">
+                <p className="text-xs text-gray-600 mb-2">
+                  <FaShieldAlt className="inline mr-1" />
+                  <strong>Transparency Notes:</strong>
+                </p>
+                <ul className="text-xs text-gray-600 space-y-1 list-disc list-inside">
+                  <li>Security deposit is fully refundable during move-out</li>
+                  <li>No hidden charges</li>
+                  <li>Rent stays fixed for the entire lock duration</li>
+                  {formData.depositPlan === 'low' && (
+                    <li>Extra monthly charge compensates seller for lower deposit</li>
+                  )}
+                  {formData.depositPlan === 'zero' && (
+                    <li>Insurance fee covers owner's risk and is handled by platform</li>
+                  )}
+                </ul>
+              </div>
+
+              {/* Why am I paying this? */}
+              <div className="mt-4 pt-4 border-t border-blue-200 bg-blue-100 rounded-lg p-3">
+                <p className="text-xs font-semibold text-gray-800 mb-2">
+                  <FaMoneyBillWave className="inline mr-1" />
+                  Why am I paying this?
+                </p>
+                <ul className="text-xs text-gray-700 space-y-1">
+                  <li>• 1st Month Rent: Standard rental payment</li>
+                  <li>• Security Deposit: Refundable protection for property owner</li>
+                  {formData.depositPlan === 'zero' && (
+                    <li>• Insurance Fee: Covers owner risk (no deposit required)</li>
+                  )}
+                  {formData.depositPlan === 'low' && (
+                    <li>• Extra Monthly Charge: Compensates for lower deposit amount</li>
+                  )}
+                </ul>
               </div>
             </div>
 
@@ -986,19 +1199,50 @@ export default function RentProperty() {
                   <span className="text-gray-700">Monthly Rent (Locked):</span>
                   <span className="font-semibold">₹{(contract.lockedRentAmount || listing?.monthlyRent || listing?.discountPrice || listing?.regularPrice || 0).toLocaleString('en-IN')}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-700">Security Deposit ({(listing?.securityDepositMonths || 2)} month{(listing?.securityDepositMonths || 2) !== 1 ? 's' : ''}):</span>
-                  <span className="font-semibold">₹{(contract.securityDeposit || (listing?.monthlyRent || listing?.discountPrice || listing?.regularPrice || 0) * (listing?.securityDepositMonths || 2)).toLocaleString('en-IN')}</span>
-                  <span className="text-xs text-gray-500">(Refundable)</span>
-                </div>
+                {(contract.depositPlan !== 'zero') && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-700">Security Deposit:</span>
+                    <span className="font-semibold">₹{(contract.securityDeposit || 0).toLocaleString('en-IN')}</span>
+                    <span className="text-xs text-gray-500">(Refundable)</span>
+                  </div>
+                )}
+                {contract.depositPlan === 'low' && contract.extraMonthlyCharge > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-700">Extra Monthly Charge:</span>
+                    <span className="font-semibold text-amber-600">₹{contract.extraMonthlyCharge.toLocaleString('en-IN')}/month</span>
+                  </div>
+                )}
+                {contract.depositPlan === 'zero' && contract.insuranceFee > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-700">Insurance Fee (monthly):</span>
+                    <span className="font-semibold text-amber-600">₹{contract.insuranceFee.toLocaleString('en-IN')}/month</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-gray-700">First Month Rent:</span>
                   <span className="font-semibold">₹{(contract.lockedRentAmount || listing?.monthlyRent || listing?.discountPrice || listing?.regularPrice || 0).toLocaleString('en-IN')}</span>
                 </div>
                 <div className="flex justify-between border-t pt-2 mt-2">
                   <span className="font-semibold text-lg">Total Amount:</span>
-                  <span className="font-bold text-lg text-blue-600">₹{((contract.securityDeposit || (listing?.monthlyRent || listing?.discountPrice || listing?.regularPrice || 0) * (listing?.securityDepositMonths || 2)) + (contract.lockedRentAmount || listing?.monthlyRent || listing?.discountPrice || listing?.regularPrice || 0)).toLocaleString('en-IN')}</span>
+                  <span className="font-bold text-lg text-blue-600">
+                    ₹{(
+                      (contract.securityDeposit || 0) + 
+                      (contract.lockedRentAmount || listing?.monthlyRent || listing?.discountPrice || listing?.regularPrice || 0) +
+                      (contract.depositPlan === 'zero' ? (contract.insuranceFee || 0) : 0)
+                    ).toLocaleString('en-IN')}
+                  </span>
                 </div>
+                {contract.depositPlan && contract.depositPlan !== 'standard' && (
+                  <div className="mt-2 pt-2 border-t border-blue-200">
+                    <p className="text-xs text-gray-600">
+                      <span className="font-semibold">Deposit Plan:</span> {
+                        contract.depositPlan === 'low' ? 'Low Deposit (Extra ₹' + (contract.extraMonthlyCharge || 0) + '/month)' :
+                        contract.depositPlan === 'zero' ? 'Zero Deposit (Insurance ₹' + (contract.insuranceFee || 0) + '/month)' :
+                        'Standard'
+                      }
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1053,8 +1297,11 @@ export default function RentProperty() {
               contractId: contract._id,
               isRentalPayment: true,
               region: 'india', // Default to India for Razorpay
-              securityDeposit: contract.securityDeposit || (listing?.monthlyRent || listing?.discountPrice || listing?.regularPrice || 0) * (listing?.securityDepositMonths || 2),
+              securityDeposit: contract.securityDeposit || 0,
               firstMonthRent: contract.lockedRentAmount || listing?.monthlyRent || listing?.discountPrice || listing?.regularPrice || 0,
+              insuranceFee: contract.insuranceFee || 0,
+              extraMonthlyCharge: contract.extraMonthlyCharge || 0,
+              depositPlan: contract.depositPlan || 'standard',
               propertyName: listing?.name || 'Property',
               propertyDescription: listing?.address || '',
               buyerId: contract.tenantId,
