@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FaFileContract, FaDownload, FaEye, FaCalendarAlt, FaMoneyBillWave, FaLock, FaCheckCircle, FaTimesCircle, FaSpinner, FaSearch, FaBan, FaCheck, FaUser, FaHome, FaGavel, FaWallet, FaCreditCard, FaExclamationTriangle, FaClock } from 'react-icons/fa';
+import { FaFileContract, FaDownload, FaEye, FaCalendarAlt, FaMoneyBillWave, FaLock, FaCheckCircle, FaTimesCircle, FaSpinner, FaSearch, FaBan, FaCheck, FaUser, FaHome, FaGavel, FaWallet, FaCreditCard, FaExclamationTriangle, FaClock, FaTimes } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
 import ContractPreview from '../components/rental/ContractPreview';
 
@@ -41,6 +41,26 @@ export default function AdminRentalContracts() {
       fetchAllContracts();
     }
   }, [currentUser, navigate]);
+
+  // Listen for payment status updates
+  useEffect(() => {
+    const handlePaymentUpdate = (event) => {
+      const { contractId, paymentId, paymentConfirmed } = event.detail || {};
+      if (contractId || paymentConfirmed) {
+        // Refresh contracts when payment status is updated
+        fetchAllContracts(false); // Don't show loading spinner on refresh
+      }
+    };
+
+    // Listen for both payment status events
+    window.addEventListener('paymentStatusUpdated', handlePaymentUpdate);
+    window.addEventListener('rentalPaymentStatusUpdated', handlePaymentUpdate);
+
+    return () => {
+      window.removeEventListener('paymentStatusUpdated', handlePaymentUpdate);
+      window.removeEventListener('rentalPaymentStatusUpdated', handlePaymentUpdate);
+    };
+  }, []);
 
   const fetchAllContracts = async (showLoading = true) => {
     try {
@@ -387,6 +407,65 @@ export default function AdminRentalContracts() {
                         )}
                       </div>
                     </div>
+
+                    {/* Payment Status - Show monthly payment status for active contracts */}
+                    {contract.status === 'active' && contract.wallet?.paymentSchedule && contract.wallet.paymentSchedule.length > 0 && (
+                      <div className="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                          <FaMoneyBillWave className="text-green-600" /> Payment Status
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {contract.wallet.paymentSchedule
+                            .sort((a, b) => {
+                              if (a.year !== b.year) return a.year - b.year;
+                              return a.month - b.month;
+                            })
+                            .slice(0, 6) // Show first 6 months
+                            .map((payment, idx) => (
+                              <div
+                                key={idx}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 ${
+                                  payment.status === 'completed'
+                                    ? 'bg-green-100 text-green-700 border border-green-300'
+                                    : payment.status === 'overdue'
+                                    ? 'bg-red-100 text-red-700 border border-red-300'
+                                    : payment.status === 'processing'
+                                    ? 'bg-yellow-100 text-yellow-700 border border-yellow-300'
+                                    : 'bg-gray-100 text-gray-600 border border-gray-300'
+                                }`}
+                                title={`${payment.status === 'completed' ? 'Paid' : payment.status === 'overdue' ? 'Overdue' : payment.status === 'processing' ? 'Processing' : 'Pending'} - Month ${payment.month}/${payment.year}`}
+                              >
+                                {payment.status === 'completed' && <FaCheckCircle className="text-xs" />}
+                                {payment.status === 'overdue' && <FaTimesCircle className="text-xs" />}
+                                {payment.status === 'processing' && <FaSpinner className="text-xs animate-spin" />}
+                                {!payment.status || payment.status === 'pending' ? (
+                                  <>
+                                    <FaClock className="text-xs" />
+                                    Month {idx + 1}
+                                  </>
+                                ) : (
+                                  <>
+                                    {payment.status === 'completed' ? 'Paid' : payment.status === 'overdue' ? 'Overdue' : 'Processing'} - Month {idx + 1}
+                                  </>
+                                )}
+                              </div>
+                            ))}
+                          {contract.wallet.paymentSchedule.length > 6 && (
+                            <div className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-300">
+                              +{contract.wallet.paymentSchedule.length - 6} more
+                            </div>
+                          )}
+                        </div>
+                        {contract.wallet.totalPaid > 0 && (
+                          <div className="mt-2 text-xs text-gray-600">
+                            Total Paid: <span className="font-semibold text-green-600">₹{contract.wallet.totalPaid.toLocaleString('en-IN')}</span>
+                            {contract.wallet.totalDue > 0 && (
+                              <> | Pending: <span className="font-semibold text-yellow-600">₹{contract.wallet.totalDue.toLocaleString('en-IN')}</span></>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex flex-col gap-2">

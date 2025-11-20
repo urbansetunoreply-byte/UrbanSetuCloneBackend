@@ -338,9 +338,35 @@ export const listContracts = async (req, res, next) => {
       .populate('bookingId', 'status purpose propertyName')
       .sort({ createdAt: -1 });
 
+    // For active contracts, fetch wallet and payment schedule for payment status display
+    const contractsWithPaymentStatus = await Promise.all(
+      contracts.map(async (contract) => {
+        if (contract.status === 'active' && contract.walletId) {
+          try {
+            const wallet = await RentWallet.findById(contract.walletId)
+              .select('paymentSchedule totalPaid totalDue');
+            
+            if (wallet) {
+              // Add payment status summary to contract
+              const contractObj = contract.toObject();
+              contractObj.wallet = {
+                paymentSchedule: wallet.paymentSchedule || [],
+                totalPaid: wallet.totalPaid || 0,
+                totalDue: wallet.totalDue || 0
+              };
+              return contractObj;
+            }
+          } catch (error) {
+            console.error(`Error fetching wallet for contract ${contract._id}:`, error);
+          }
+        }
+        return contract;
+      })
+    );
+
     res.json({
       success: true,
-      contracts
+      contracts: contractsWithPaymentStatus
     });
   } catch (error) {
     next(error);
@@ -387,10 +413,36 @@ export const listAllContracts = async (req, res, next) => {
       );
     }
 
+    // For active contracts, fetch wallet and payment schedule for payment status display (admin)
+    const contractsWithPaymentStatus = await Promise.all(
+      contracts.map(async (contract) => {
+        if (contract.status === 'active' && contract.walletId) {
+          try {
+            const wallet = await RentWallet.findById(contract.walletId)
+              .select('paymentSchedule totalPaid totalDue');
+            
+            if (wallet) {
+              // Add payment status summary to contract
+              const contractObj = contract.toObject();
+              contractObj.wallet = {
+                paymentSchedule: wallet.paymentSchedule || [],
+                totalPaid: wallet.totalPaid || 0,
+                totalDue: wallet.totalDue || 0
+              };
+              return contractObj;
+            }
+          } catch (error) {
+            console.error(`Error fetching wallet for contract ${contract._id}:`, error);
+          }
+        }
+        return contract;
+      })
+    );
+
     res.json({
       success: true,
-      contracts,
-      total: contracts.length
+      contracts: contractsWithPaymentStatus,
+      total: contractsWithPaymentStatus.length
     });
   } catch (error) {
     next(error);

@@ -558,7 +558,9 @@ router.post("/verify", verifyToken, async (req, res) => {
 
     // Update appointment status/payment flags
     await Booking.findByIdAndUpdate(payment.appointmentId, {
-      paymentConfirmed: true
+      paymentConfirmed: true,
+      visibleToBuyer: true,
+      visibleToSeller: true
     });
 
     // Generate receipt URL (mock). Fall back to API URL if CLIENT_URL missing
@@ -567,15 +569,84 @@ router.post("/verify", verifyToken, async (req, res) => {
     payment.receiptUrl = receiptUrl;
     await payment.save();
 
+    // Handle rental security deposit payment (PayPal)
+    if (payment.paymentType === 'security_deposit' && payment.contractId) {
+      try {
+        const RentLockContract = (await import('../models/rentLockContract.model.js')).default;
+        const RentWallet = (await import('../models/rentWallet.model.js')).default;
+        
+        const contract = await RentLockContract.findById(payment.contractId)
+          .populate('listingId', 'name address')
+          .populate('tenantId', 'username email')
+          .populate('landlordId', 'username email');
+        
+        if (contract) {
+          // Mark security deposit as paid
+          contract.securityDepositPaid = true;
+          
+          // Create/update rent wallet if it doesn't exist
+          let wallet = await RentWallet.findOne({ contractId: contract._id, userId: contract.tenantId._id });
+          if (!wallet) {
+            wallet = new RentWallet({
+              userId: contract.tenantId._id,
+              contractId: contract._id
+            });
+            wallet.generatePaymentSchedule(contract);
+            await wallet.save();
+          }
+          
+          // Update booking with wallet ID
+          await Booking.findByIdAndUpdate(payment.appointmentId, { walletId: wallet._id });
+          
+          // Update contract with wallet ID
+          if (!contract.walletId) {
+            contract.walletId = wallet._id;
+          }
+          
+          await contract.save();
+          
+          // Emit socket events for rental contract update
+          const io = req.app.get('io');
+          if (io) {
+            io.emit('rentalPaymentStatusUpdated', {
+              contractId: contract._id,
+              paymentId: payment.paymentId,
+              paymentType: 'security_deposit',
+              paymentConfirmed: true
+            });
+            io.to(`user_${contract.tenantId._id}`).emit('rentalPaymentStatusUpdated', {
+              contractId: contract._id,
+              paymentId: payment.paymentId,
+              paymentType: 'security_deposit',
+              paymentConfirmed: true
+            });
+            io.to(`user_${contract.landlordId._id}`).emit('rentalPaymentStatusUpdated', {
+              contractId: contract._id,
+              paymentId: payment.paymentId,
+              paymentType: 'security_deposit',
+              paymentConfirmed: true
+            });
+          }
+        }
+      } catch (rentalError) {
+        console.error('Error handling rental security deposit payment:', rentalError);
+        // Don't fail the payment verification if rental update fails
+      }
+    }
+
     // Emit socket event for real-time payment status update
     const io = req.app.get('io');
     if (io) {
       io.emit('paymentStatusUpdated', { 
-        appointmentId: payment.appointmentId, 
+        appointmentId: payment.appointmentId,
+        paymentId: payment.paymentId,
+        contractId: payment.contractId,
         paymentConfirmed: true 
       });
       io.to(`user_${user._id}`).emit('paymentStatusUpdated', { 
-        appointmentId: payment.appointmentId, 
+        appointmentId: payment.appointmentId,
+        paymentId: payment.paymentId,
+        contractId: payment.contractId,
         paymentConfirmed: true 
       });
     }
@@ -824,22 +895,95 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
     payment.userAgent = userAgent || req.headers['user-agent'];
     await payment.save();
 
-    await Booking.findByIdAndUpdate(payment.appointmentId, { paymentConfirmed: true });
+    await Booking.findByIdAndUpdate(payment.appointmentId, { 
+      paymentConfirmed: true,
+      visibleToBuyer: true,
+      visibleToSeller: true
+    });
 
     const base = `${req.protocol}://${req.get('host')}`;
     const receiptUrl = `${base}/api/payments/${payment.paymentId}/receipt`;
     payment.receiptUrl = receiptUrl;
     await payment.save();
 
+    // Handle rental security deposit payment
+    if (payment.paymentType === 'security_deposit' && payment.contractId) {
+      try {
+        const RentLockContract = (await import('../models/rentLockContract.model.js')).default;
+        const RentWallet = (await import('../models/rentWallet.model.js')).default;
+        
+        const contract = await RentLockContract.findById(payment.contractId)
+          .populate('listingId', 'name address')
+          .populate('tenantId', 'username email')
+          .populate('landlordId', 'username email');
+        
+        if (contract) {
+          // Mark security deposit as paid
+          contract.securityDepositPaid = true;
+          
+          // Create/update rent wallet if it doesn't exist
+          let wallet = await RentWallet.findOne({ contractId: contract._id, userId: contract.tenantId._id });
+          if (!wallet) {
+            wallet = new RentWallet({
+              userId: contract.tenantId._id,
+              contractId: contract._id
+            });
+            wallet.generatePaymentSchedule(contract);
+            await wallet.save();
+          }
+          
+          // Update booking with wallet ID
+          await Booking.findByIdAndUpdate(payment.appointmentId, { walletId: wallet._id });
+          
+          // Update contract with wallet ID
+          if (!contract.walletId) {
+            contract.walletId = wallet._id;
+          }
+          
+          await contract.save();
+          
+          // Emit socket events for rental contract update
+          const io = req.app.get('io');
+          if (io) {
+            io.emit('rentalPaymentStatusUpdated', {
+              contractId: contract._id,
+              paymentId: payment.paymentId,
+              paymentType: 'security_deposit',
+              paymentConfirmed: true
+            });
+            io.to(`user_${contract.tenantId._id}`).emit('rentalPaymentStatusUpdated', {
+              contractId: contract._id,
+              paymentId: payment.paymentId,
+              paymentType: 'security_deposit',
+              paymentConfirmed: true
+            });
+            io.to(`user_${contract.landlordId._id}`).emit('rentalPaymentStatusUpdated', {
+              contractId: contract._id,
+              paymentId: payment.paymentId,
+              paymentType: 'security_deposit',
+              paymentConfirmed: true
+            });
+          }
+        }
+      } catch (rentalError) {
+        console.error('Error handling rental security deposit payment:', rentalError);
+        // Don't fail the payment verification if rental update fails
+      }
+    }
+
     // Emit socket event for real-time payment status update
     const io = req.app.get('io');
     if (io) {
       io.emit('paymentStatusUpdated', { 
-        appointmentId: payment.appointmentId, 
+        appointmentId: payment.appointmentId,
+        paymentId: payment.paymentId,
+        contractId: payment.contractId,
         paymentConfirmed: true 
       });
       io.to(`user_${user._id}`).emit('paymentStatusUpdated', { 
-        appointmentId: payment.appointmentId, 
+        appointmentId: payment.appointmentId,
+        paymentId: payment.paymentId,
+        contractId: payment.contractId,
         paymentConfirmed: true 
       });
     }

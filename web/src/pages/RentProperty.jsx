@@ -451,7 +451,7 @@ export default function RentProperty() {
     }
   };
 
-  const handlePaymentSuccess = async () => {
+  const handlePaymentSuccess = async (payment) => {
     // Make booking visible after payment succeeds
     if (booking?._id) {
       try {
@@ -461,7 +461,8 @@ export default function RentProperty() {
           credentials: 'include',
           body: JSON.stringify({
             visibleToBuyer: true,
-            visibleToSeller: true
+            visibleToSeller: true,
+            paymentConfirmed: true
           })
         });
       } catch (error) {
@@ -469,10 +470,54 @@ export default function RentProperty() {
       }
     }
 
+    // Update contract payment status if rental payment
+    if (contract?._id && payment?.contractId) {
+      try {
+        // Refresh contract to get updated payment status
+        const contractRes = await fetch(`${API_BASE_URL}/api/rental/contracts/${contract._id}`, {
+          credentials: 'include'
+        });
+        if (contractRes.ok) {
+          const contractData = await contractRes.json();
+          const updatedContract = contractData.contract || contractData;
+          setContract(updatedContract);
+        }
+      } catch (error) {
+        console.error("Error refreshing contract:", error);
+      }
+    }
+
+    // Dispatch event to update MyPayments page if it's open
+    if (payment?.paymentId) {
+      window.dispatchEvent(new CustomEvent('paymentStatusUpdated', {
+        detail: { 
+          paymentId: payment.paymentId,
+          paymentConfirmed: true,
+          appointmentId: booking?._id,
+          contractId: contract?._id
+        }
+      }));
+    }
+
     toast.success("Payment successful! Proceeding to Move-in step...");
     // Move to step 5 (Move-in)
     setStep(5);
     setShowPaymentModal(false);
+    
+    // Refresh booking and contract data
+    if (booking?._id) {
+      try {
+        const bookingRes = await fetch(`${API_BASE_URL}/api/bookings/${booking._id}`, {
+          credentials: 'include'
+        });
+        if (bookingRes.ok) {
+          const bookingData = await bookingRes.json();
+          setBooking(bookingData.appointment || bookingData.booking || bookingData);
+        }
+      } catch (error) {
+        console.error("Error refreshing booking:", error);
+      }
+    }
   };
 
   if (loading && !listing) {
@@ -574,7 +619,16 @@ export default function RentProperty() {
           <div className="flex items-center justify-between mb-6">
             {[1, 2, 3, 4, 5].map((s) => (
               <React.Fragment key={s}>
-                <div className="flex flex-col items-center">
+                <div 
+                  className="flex flex-col items-center cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => {
+                    // Allow navigation to step if already completed or current step, or if going back
+                    if (step >= s || (step > s)) {
+                      setStep(s);
+                    }
+                  }}
+                  title={step > s ? 'Click to go back to this step' : step === s ? 'Current step' : 'Complete previous steps first'}
+                >
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                     step >= s ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'
                   }`}>
@@ -690,8 +744,9 @@ export default function RentProperty() {
                   <span className="font-semibold">{lockDurationMonths} months</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Security Deposit ({listing.securityDepositMonths || 2} months):</span>
+                  <span>Security Deposit ({listing.securityDepositMonths || 2} month{listing.securityDepositMonths !== 1 ? 's' : ''}):</span>
                   <span className="font-semibold">₹{securityDeposit.toLocaleString('en-IN')}</span>
+                  <span className="text-xs text-gray-500">(Refundable)</span>
                 </div>
                 <div className="flex justify-between border-t pt-2 mt-2">
                   <span className="font-semibold">Total (Security + 1st Month):</span>
@@ -913,8 +968,9 @@ export default function RentProperty() {
                   <span className="font-semibold">₹{(contract.lockedRentAmount || listing?.monthlyRent || listing?.discountPrice || listing?.regularPrice || 0).toLocaleString('en-IN')}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-700">Security Deposit ({(listing?.securityDepositMonths || 2)} months):</span>
+                  <span className="text-gray-700">Security Deposit ({(listing?.securityDepositMonths || 2)} month{(listing?.securityDepositMonths || 2) !== 1 ? 's' : ''}):</span>
                   <span className="font-semibold">₹{(contract.securityDeposit || (listing?.monthlyRent || listing?.discountPrice || listing?.regularPrice || 0) * (listing?.securityDepositMonths || 2)).toLocaleString('en-IN')}</span>
+                  <span className="text-xs text-gray-500">(Refundable)</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-700">First Month Rent:</span>

@@ -641,18 +641,21 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
     try {
       setLoading(true);
       
-      // Check appointment status before creating payment intent
-      if (appointment.status === 'rejected') {
-        toast.error('This appointment has been rejected by the seller. Payment cannot be processed. Please book a new appointment or explore other alternatives.');
-        onClose();
-        return;
-      }
-      
-      // Allow payment for pending or accepted appointments (not yet paid)
-      if (appointment.status !== 'pending' && appointment.status !== 'accepted') {
-        toast.error('This appointment is not in a payable status. Payment cannot be processed at this time.');
-        onClose();
-        return;
+      // For rental payments, skip appointment status check (contract is the source of truth)
+      if (!appointment.isRentalPayment) {
+        // Check appointment status before creating payment intent (only for non-rental payments)
+        if (appointment.status === 'rejected') {
+          toast.error('This appointment has been rejected by the seller. Payment cannot be processed. Please book a new appointment or explore other alternatives.');
+          onClose();
+          return;
+        }
+        
+        // Allow payment for pending or accepted appointments (not yet paid)
+        if (appointment.status !== 'pending' && appointment.status !== 'accepted') {
+          toast.error('This appointment is not in a payable status. Payment cannot be processed at this time.');
+          onClose();
+          return;
+        }
       }
       
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/create-intent`, {

@@ -87,17 +87,43 @@ const PaymentDashboard = () => {
 
   // Listen for payment status updates to refresh stats
   useEffect(() => {
-    if (!socket) return;
-    
-    const handlePaymentStatusUpdate = () => {
-      // Refresh stats when payment status changes
-      fetchPaymentStats();
+    const handlePaymentStatusUpdate = (event) => {
+      const { paymentId, paymentConfirmed, contractId } = event.detail || {};
+      if (paymentId || paymentConfirmed) {
+        // Refresh stats and payments when payment status changes
+        fetchPaymentStats();
+        fetchAdminPayments();
+      }
     };
-    
-    const handlePaymentCreated = () => {
-      // Refresh stats when new payment is created
-      fetchPaymentStats();
+
+    const handleRentalPaymentStatusUpdate = (event) => {
+      const { contractId, paymentId, paymentConfirmed } = event.detail || {};
+      if (contractId || paymentId || paymentConfirmed) {
+        // Refresh stats and payments when rental payment status changes
+        fetchPaymentStats();
+        fetchAdminPayments();
+      }
     };
+
+    // Listen for both payment status events (socket and window events)
+    if (socket) {
+      socket.on('paymentStatusUpdated', handlePaymentStatusUpdate);
+      socket.on('rentalPaymentStatusUpdated', handleRentalPaymentStatusUpdate);
+    }
+    
+    // Also listen for window custom events
+    window.addEventListener('paymentStatusUpdated', handlePaymentStatusUpdate);
+    window.addEventListener('rentalPaymentStatusUpdated', handleRentalPaymentStatusUpdate);
+
+    return () => {
+      if (socket) {
+        socket.off('paymentStatusUpdated', handlePaymentStatusUpdate);
+        socket.off('rentalPaymentStatusUpdated', handleRentalPaymentStatusUpdate);
+      }
+      window.removeEventListener('paymentStatusUpdated', handlePaymentStatusUpdate);
+      window.removeEventListener('rentalPaymentStatusUpdated', handleRentalPaymentStatusUpdate);
+    };
+  }, [socket]);
     
     socket.on('paymentStatusUpdated', handlePaymentStatusUpdate);
     socket.on('paymentCreated', handlePaymentCreated);

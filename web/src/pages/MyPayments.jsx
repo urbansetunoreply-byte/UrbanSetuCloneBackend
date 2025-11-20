@@ -44,6 +44,26 @@ const MyPayments = () => {
 
   useEffect(() => { fetchPayments(); }, [filters]);
 
+  // Listen for payment status updates
+  useEffect(() => {
+    const handlePaymentUpdate = (event) => {
+      const { paymentId, paymentConfirmed, contractId } = event.detail || {};
+      if (paymentId || paymentConfirmed) {
+        // Refresh payments when payment status is updated
+        fetchPayments();
+      }
+    };
+
+    // Listen for both payment status events
+    window.addEventListener('paymentStatusUpdated', handlePaymentUpdate);
+    window.addEventListener('rentalPaymentStatusUpdated', handlePaymentUpdate);
+
+    return () => {
+      window.removeEventListener('paymentStatusUpdated', handlePaymentUpdate);
+      window.removeEventListener('rentalPaymentStatusUpdated', handlePaymentUpdate);
+    };
+  }, []);
+
   const fetchPayments = async () => {
     try {
       setLoading(true);
