@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaUpload, FaTrash, FaImage, FaVideo, FaSpinner } from 'react-icons/fa';
+import { FaUpload, FaTrash, FaImage, FaVideo, FaSpinner, FaExpand } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import ImagePreview from '../ImagePreview';
 import VideoPreview from '../VideoPreview';
@@ -27,6 +27,9 @@ export default function ConditionImageUpload({
   const [images, setImages] = useState(existingImages || []);
   const [videos, setVideos] = useState(existingVideos || []);
   const [uploading, setUploading] = useState(false);
+  const [previewImages, setPreviewImages] = useState([]);
+  const [previewIndex, setPreviewIndex] = useState(0);
+  const [showImagePreview, setShowImagePreview] = useState(false);
 
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
@@ -168,8 +171,31 @@ export default function ConditionImageUpload({
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
             {images.map((img, index) => (
               <div key={index} className="border rounded-lg p-2 space-y-2">
-                <div className="relative aspect-square bg-gray-100 rounded">
-                  <ImagePreview imageUrl={img.url} />
+                <div className="relative aspect-square bg-gray-100 rounded overflow-hidden group">
+                  <img 
+                    src={img.url} 
+                    alt={`Property condition ${index + 1}`}
+                    className="w-full h-full object-cover cursor-pointer"
+                    onClick={() => {
+                      setPreviewImages(images.map(i => i.url || i));
+                      setPreviewIndex(index);
+                      setShowImagePreview(true);
+                    }}
+                    onError={(e) => {
+                      e.target.src = 'https://via.placeholder.com/300x300?text=Image+Error';
+                    }}
+                  />
+                  <button
+                    onClick={() => {
+                      setPreviewImages(images.map(i => i.url || i));
+                      setPreviewIndex(index);
+                      setShowImagePreview(true);
+                    }}
+                    className="absolute top-1 left-1 bg-blue-500 text-white p-1 rounded-full hover:bg-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Preview image"
+                  >
+                    <FaExpand className="text-xs" />
+                  </button>
                   {!readOnly && (
                     <button
                       onClick={() => removeImage(index)}
@@ -281,6 +307,20 @@ export default function ConditionImageUpload({
           </div>
         )}
       </div>
+
+      {/* Image Preview Modal */}
+      {showImagePreview && previewImages.length > 0 && (
+        <ImagePreview
+          isOpen={showImagePreview}
+          onClose={() => {
+            setShowImagePreview(false);
+            setPreviewImages([]);
+            setPreviewIndex(0);
+          }}
+          images={previewImages}
+          initialIndex={previewIndex}
+        />
+      )}
     </div>
   );
 }

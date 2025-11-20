@@ -79,9 +79,20 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
   // Use image favorites context
   const { isFavorite, toggleFavorite } = useImageFavorites();
 
-  // Get current image URL and check if it's favorited
-  const currentImageUrl = images[currentIndex];
+  // Ensure images is an array and handle undefined/null
+  const imagesArray = Array.isArray(images) ? images : (images ? [images] : []);
+  
+  // Ensure currentIndex is within bounds
+  const safeIndex = Math.max(0, Math.min(currentIndex || 0, imagesArray.length - 1));
+  const currentImageUrl = imagesArray[safeIndex] || imagesArray[0] || null;
   const isCurrentImageFavorited = currentImageUrl ? isFavorite(currentImageUrl) : false;
+
+  // Update currentIndex if it's out of bounds
+  useEffect(() => {
+    if (safeIndex !== currentIndex && imagesArray.length > 0) {
+      setCurrentIndex(safeIndex);
+    }
+  }, [imagesArray.length, safeIndex, currentIndex]);
 
   // Handle favorite toggle
   const handleToggleFavorite = async () => {
@@ -139,9 +150,9 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
 
   // Slideshow functionality
   useEffect(() => {
-    if (isSlideshow && images.length > 1) {
+    if (isSlideshow && imagesArray.length > 1) {
       slideshowRef.current = setInterval(() => {
-        setCurrentIndex(prev => (prev + 1) % images.length);
+        setCurrentIndex(prev => (prev + 1) % imagesArray.length);
       }, slideshowSpeed);
     }
 
@@ -150,7 +161,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         clearInterval(slideshowRef.current);
       }
     };
-  }, [isSlideshow, slideshowSpeed, images.length]);
+  }, [isSlideshow, slideshowSpeed, imagesArray.length]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -164,10 +175,10 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
           onClose();
           break;
         case 'ArrowLeft':
-          setCurrentIndex(prev => prev > 0 ? prev - 1 : images.length - 1);
+          setCurrentIndex(prev => prev > 0 ? prev - 1 : imagesArray.length - 1);
           break;
         case 'ArrowRight':
-          setCurrentIndex(prev => prev < images.length - 1 ? prev + 1 : 0);
+          setCurrentIndex(prev => prev < imagesArray.length - 1 ? prev + 1 : 0);
           break;
         case '+':
         case '=':
@@ -243,7 +254,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('click', handleClickOutside);
     };
-      }, [isOpen, images.length, onClose, showControls, showSettings, showInfo]);
+      }, [isOpen, imagesArray.length, onClose, showControls, showSettings, showInfo]);
 
   useEffect(() => {
     if (isOpen) {
@@ -334,7 +345,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
     if (isDownloading) return;
     
     setIsDownloading(true);
-    const imageUrl = images[currentIndex];
+    const imageUrl = imagesArray[safeIndex] || imagesArray[0];
     
     // Validate image URL first
     if (!imageUrl || typeof imageUrl !== 'string') {
@@ -507,7 +518,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
     e.stopPropagation();
   };
 
-  if (!isOpen || !images || images.length === 0) return null;
+  if (!isOpen || !imagesArray || imagesArray.length === 0) return null;
 
   return (
     <div 
@@ -529,10 +540,10 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
       </button>
 
       {/* Navigation Arrows */}
-      {images.length > 1 && (
+      {imagesArray.length > 1 && (
         <>
           <button
-            onClick={() => setCurrentIndex(prev => prev > 0 ? prev - 1 : images.length - 1)}
+            onClick={() => setCurrentIndex(prev => prev > 0 ? prev - 1 : imagesArray.length - 1)}
             className={`absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-blue-300 z-10 bg-black bg-opacity-70 rounded-full p-4 transition-all duration-300 hover:bg-opacity-90 hover:scale-110 ${
               showControls ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'
             }`}
@@ -542,7 +553,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
             </svg>
           </button>
           <button
-            onClick={() => setCurrentIndex(prev => prev < images.length - 1 ? prev + 1 : 0)}
+            onClick={() => setCurrentIndex(prev => prev < imagesArray.length - 1 ? prev + 1 : 0)}
             className={`absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-blue-300 z-10 bg-black bg-opacity-70 rounded-full p-4 transition-all duration-300 hover:bg-opacity-90 hover:scale-110 ${
               showControls ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2'
             }`}
@@ -573,7 +584,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
 
         <img
           ref={imageRef}
-          src={images[currentIndex]}
+          src={currentImageUrl}
           alt={`Property image ${currentIndex + 1}`}
           className={`max-w-full max-h-full object-contain cursor-move transition-opacity duration-300 ${
             imageLoading ? 'opacity-0' : 'opacity-100'
@@ -912,7 +923,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span>Image:</span>
-              <span>{currentIndex + 1} of {images.length}</span>
+              <span>{currentIndex + 1} of {imagesArray.length}</span>
             </div>
             <div className="flex justify-between">
               <span>Zoom:</span>
@@ -933,12 +944,12 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
       )}
 
       {/* Image Counter */}
-      {images.length > 1 && (
+      {imagesArray.length > 1 && (
         <div className={`absolute top-4 left-4 text-white bg-black bg-opacity-70 backdrop-blur-sm rounded-lg px-3 py-2 transition-all duration-300 ${
           showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
         }`}>
           <span className="font-medium">{currentIndex + 1}</span>
-          <span className="text-gray-300"> / {images.length}</span>
+          <span className="text-gray-300"> / {imagesArray.length}</span>
         </div>
       )}
 
@@ -978,7 +989,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
       <SocialSharePanel
         isOpen={showSocialShare}
         onClose={() => setShowSocialShare(false)}
-        url={images[currentIndex]}
+        url={currentImageUrl}
         title="Check out this property image!"
         description="Amazing property image from our listing"
       />

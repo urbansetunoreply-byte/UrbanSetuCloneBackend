@@ -393,28 +393,34 @@ export default function OnDemandServices() {
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          <button
-                            onClick={async () => {
-                              setSelectedContract(contract);
-                              await fetchChecklists(contract._id);
-                              setChecklistType('move_in');
-                              setShowChecklistModal(true);
-                            }}
-                            className="px-3 py-1.5 bg-blue-50 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-100 flex items-center gap-1"
-                          >
-                            <FaSignInAlt /> Move-In
-                          </button>
-                          <button
-                            onClick={async () => {
-                              setSelectedContract(contract);
-                              await fetchChecklists(contract._id);
-                              setChecklistType('move_out');
-                              setShowChecklistModal(true);
-                            }}
-                            className="px-3 py-1.5 bg-orange-50 border border-orange-300 rounded text-sm text-orange-700 hover:bg-orange-100 flex items-center gap-1"
-                          >
-                            <FaSignOutAlt /> Move-Out
-                          </button>
+                          {/* Only show Move-In/Move-Out buttons for tenants */}
+                          {(contract.tenantId?._id === currentUser?._id || contract.tenantId === currentUser?._id) && (
+                            <>
+                              <button
+                                onClick={async () => {
+                                  setSelectedContract(contract);
+                                  await fetchChecklists(contract._id);
+                                  setChecklistType('move_in');
+                                  setShowChecklistModal(true);
+                                }}
+                                className="px-3 py-1.5 bg-blue-50 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-100 flex items-center gap-1"
+                              >
+                                <FaSignInAlt /> Move-In
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  setSelectedContract(contract);
+                                  await fetchChecklists(contract._id);
+                                  setChecklistType('move_out');
+                                  setShowChecklistModal(true);
+                                }}
+                                className="px-3 py-1.5 bg-orange-50 border border-orange-300 rounded text-sm text-orange-700 hover:bg-orange-100 flex items-center gap-1"
+                              >
+                                <FaSignOutAlt /> Move-Out
+                              </button>
+                            </>
+                          )}
+                          {/* View button - visible to both tenant and landlord */}
                           <Link
                             to={`/user/rental-contracts?contractId=${contract._id}`}
                             className="px-3 py-1.5 bg-gray-50 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-100"

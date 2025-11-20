@@ -920,7 +920,8 @@ export const createMoveInOutChecklist = async (req, res, next) => {
     }
 
     // Create checklist
-    const checklist = await MoveInOutChecklist.create({
+    // Use new + save to ensure pre-save hook runs before validation
+    const checklist = new MoveInOutChecklist({
       contractId: contract._id,
       listingId: contract.listingId,
       tenantId: contract.tenantId._id,
@@ -928,6 +929,7 @@ export const createMoveInOutChecklist = async (req, res, next) => {
       type,
       status: 'in_progress'
     });
+    await checklist.save();
 
     res.status(201).json({
       success: true,
