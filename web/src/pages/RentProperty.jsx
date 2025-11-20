@@ -1005,6 +1005,16 @@ export default function RentProperty() {
             <div className="flex gap-4">
               <button
                 onClick={() => {
+                  if (step > 1) {
+                    setStep(step - 1);
+                  }
+                }}
+                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 flex items-center gap-2"
+              >
+                <FaChevronLeft /> Back
+              </button>
+              <button
+                onClick={() => {
                   const contractId = contract.contractId || contract._id;
                   navigate(`/user/services?contractId=${contractId}&checklist=move_in`);
                 }}

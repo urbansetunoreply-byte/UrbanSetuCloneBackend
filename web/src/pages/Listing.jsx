@@ -2643,7 +2643,9 @@ export default function Listing() {
                             <div className="mb-4 pb-4 border-b">
                               <div className="flex items-center gap-2 mb-2">
                                 <FaUser className="text-blue-600" />
-                                <span className="font-semibold text-gray-800">Tenant rated Landlord</span>
+                                <span className="font-semibold text-gray-800">
+                                  {rating.tenantId?.username || 'Tenant'} rated {rating.landlordId?.username || 'Landlord'}
+                                </span>
                                 <div className="flex items-center gap-1 ml-auto">
                                   {[...Array(5)].map((_, i) => (
                                     <FaStar
@@ -2663,13 +2665,18 @@ export default function Listing() {
                               {rating.tenantToLandlordRating.comment && (
                                 <p className="text-sm text-gray-700">{rating.tenantToLandlordRating.comment}</p>
                               )}
+                              <p className="text-xs text-gray-500 mt-2">
+                                Rated on {rating.tenantToLandlordRating?.ratedAt ? new Date(rating.tenantToLandlordRating.ratedAt).toLocaleDateString('en-GB') : 'N/A'}
+                              </p>
                             </div>
                           )}
                           {rating.landlordToTenantRating?.overallRating && (
                             <div>
                               <div className="flex items-center gap-2 mb-2">
                                 <FaUser className="text-green-600" />
-                                <span className="font-semibold text-gray-800">Landlord rated Tenant</span>
+                                <span className="font-semibold text-gray-800">
+                                  {rating.landlordId?.username || 'Landlord'} rated {rating.tenantId?.username || 'Tenant'}
+                                </span>
                                 <div className="flex items-center gap-1 ml-auto">
                                   {[...Array(5)].map((_, i) => (
                                     <FaStar
@@ -2689,6 +2696,9 @@ export default function Listing() {
                               {rating.landlordToTenantRating.comment && (
                                 <p className="text-sm text-gray-700">{rating.landlordToTenantRating.comment}</p>
                               )}
+                              <p className="text-xs text-gray-500 mt-2">
+                                Rated on {rating.landlordToTenantRating?.ratedAt ? new Date(rating.landlordToTenantRating.ratedAt).toLocaleDateString('en-GB') : 'N/A'}
+                              </p>
                             </div>
                           )}
                         </div>
