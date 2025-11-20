@@ -1043,7 +1043,7 @@ export default function RentProperty() {
 
         {/* Payment Modal */}
         <PaymentModal
-          isOpen={showPaymentModal && step === 4}
+          isOpen={showPaymentModal && step === 4 && booking && contract}
           onClose={() => {
             setShowPaymentModal(false);
           }}
@@ -1059,7 +1059,11 @@ export default function RentProperty() {
               propertyDescription: listing?.address || '',
               buyerId: contract.tenantId,
               sellerId: contract.landlordId
-            } : null
+            } : {
+              _id: null,
+              region: 'india',
+              isRentalPayment: true
+            }
           }
           onPaymentSuccess={handlePaymentSuccess}
         />
