@@ -124,15 +124,6 @@ const PaymentDashboard = () => {
       window.removeEventListener('rentalPaymentStatusUpdated', handleRentalPaymentStatusUpdate);
     };
   }, [socket]);
-    
-    socket.on('paymentStatusUpdated', handlePaymentStatusUpdate);
-    socket.on('paymentCreated', handlePaymentCreated);
-    
-    return () => {
-      socket.off('paymentStatusUpdated', handlePaymentStatusUpdate);
-      socket.off('paymentCreated', handlePaymentCreated);
-    };
-  }, []);
 
   const fetchPaymentStats = async () => {
     try {
