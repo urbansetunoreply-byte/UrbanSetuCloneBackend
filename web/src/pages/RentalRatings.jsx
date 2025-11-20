@@ -41,13 +41,14 @@ export default function RentalRatings() {
     fetchContracts();
   }, [currentUser]);
 
-  // Handle URL parameters
+  // Handle URL parameters - auto-open rating modal
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const contractIdParam = searchParams.get('contractId');
     const roleParam = searchParams.get('role');
 
-    if (contractIdParam && roleParam && contracts.length > 0) {
+    if (contractIdParam && roleParam) {
+      // First try to find contract in loaded contracts
       const contract = contracts.find(c => 
         (c._id === contractIdParam) || (c.contractId === contractIdParam) ||
         (c._id?.toString() === contractIdParam) || (c.contractId?.toString() === contractIdParam)
@@ -60,9 +61,70 @@ export default function RentalRatings() {
         // Update URL without navigation to keep modal state
         const newUrl = `/user/rental-ratings?contractId=${contractIdParam}&role=${roleParam}`;
         window.history.replaceState({}, '', newUrl);
+      } else if (contracts.length > 0) {
+        // If contracts loaded but contract not found, try to fetch it directly
+        fetchContractById(contractIdParam, roleParam);
+      } else {
+        // If contracts haven't loaded yet, wait for them or fetch directly
+        const timer = setTimeout(() => {
+          if (contracts.length === 0) {
+            fetchContractById(contractIdParam, roleParam);
+          }
+        }, 1000);
+        
+        return () => clearTimeout(timer);
       }
     }
   }, [location.search, contracts]);
+
+  // Fetch contract by ID if not in the list
+  const fetchContractById = async (contractId, role) => {
+    try {
+      // Try fetching by _id first (MongoDB ObjectId format)
+      let res = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractId}`, {
+        credentials: 'include'
+      });
+      
+      let data = await res.json();
+      
+      // If not found, try with contractId field instead
+      if (!res.ok || !data.success || !data.contract) {
+        // The endpoint should handle both _id and contractId, but let's also try the contractId field format
+        const contracts = await fetch(`${API_BASE_URL}/api/rental/contracts?status=active,expired`, {
+          credentials: 'include'
+        });
+        const contractsData = await contracts.json();
+        
+        if (contractsData.success && contractsData.contracts) {
+          const foundContract = contractsData.contracts.find(c => 
+            (c._id === contractId) || (c.contractId === contractId) ||
+            (c._id?.toString() === contractId) || (c.contractId?.toString() === contractId)
+          );
+          
+          if (foundContract) {
+            setSelectedContract(foundContract);
+            setRatingRole(role);
+            setShowRatingForm(true);
+            return;
+          }
+        }
+      } else if (data.contract) {
+        setSelectedContract(data.contract);
+        setRatingRole(role);
+        setShowRatingForm(true);
+        return;
+      }
+      
+      toast.error('Contract not found');
+      // Clean URL if contract not found
+      navigate('/user/rental-ratings', { replace: true });
+    } catch (error) {
+      console.error('Error fetching contract:', error);
+      toast.error('Failed to load contract');
+      // Clean URL on error
+      navigate('/user/rental-ratings', { replace: true });
+    }
+  };
 
   const fetchRatings = async (showLoading = true) => {
     try {
@@ -137,8 +199,12 @@ export default function RentalRatings() {
     setShowRatingForm(false);
     setSelectedContract(null);
     setRatingRole(null);
+    // Clean URL after submission
+    navigate('/user/rental-ratings', { replace: true });
+    // Refresh ratings list
     fetchRatings();
-    toast.success('Rating submitted successfully');
+    // Refetch contracts to update rating status
+    fetchContracts();
   };
 
   const handleRatingUpdated = () => {
@@ -459,6 +525,8 @@ export default function RentalRatings() {
                     setShowRatingForm(false);
                     setSelectedContract(null);
                     setRatingRole(null);
+                    // Clean URL when modal is closed
+                    navigate('/user/rental-ratings', { replace: true });
                   }}
                   className="text-gray-400 hover:text-gray-600 text-2xl"
                 >
@@ -474,6 +542,8 @@ export default function RentalRatings() {
                   setShowRatingForm(false);
                   setSelectedContract(null);
                   setRatingRole(null);
+                  // Clean URL when modal is cancelled
+                  navigate('/user/rental-ratings', { replace: true });
                 }}
               />
             </div>

@@ -2712,14 +2712,21 @@ export default function Listing() {
                   )}
                   {currentUser && (
                     <div className="mt-6 flex flex-wrap justify-center gap-3">
-                      {userActiveContract && (
-                        <Link
-                          to={`/user/rental-ratings?contractId=${userActiveContract._id}`}
-                          className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 inline-block font-semibold"
-                        >
-                          Rate Your Experience
-                        </Link>
-                      )}
+                      {userActiveContract && (() => {
+                        // Determine if current user is tenant or landlord
+                        const isTenant = userActiveContract.tenantId?._id === currentUser._id || userActiveContract.tenantId === currentUser._id;
+                        const isLandlord = userActiveContract.landlordId?._id === currentUser._id || userActiveContract.landlordId === currentUser._id;
+                        const userRole = isTenant ? 'tenant' : (isLandlord ? 'landlord' : null);
+                        
+                        return userRole ? (
+                          <Link
+                            to={`/user/rental-ratings?contractId=${userActiveContract._id}&role=${userRole}`}
+                            className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 inline-block font-semibold"
+                          >
+                            Rate Your Experience
+                          </Link>
+                        ) : null;
+                      })()}
                       <Link
                         to="/user/rental-ratings"
                         className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 inline-block"
