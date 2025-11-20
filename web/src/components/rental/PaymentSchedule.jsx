@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { FaCalendarAlt, FaCheckCircle, FaClock, FaExclamationTriangle, FaMoneyBillWave } from "react-icons/fa";
 import { toast } from 'react-toastify';
 import PaymentModal from '../PaymentModal';
@@ -6,6 +7,7 @@ import PaymentModal from '../PaymentModal';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function PaymentSchedule({ wallet, contract }) {
+  const navigate = useNavigate();
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
@@ -61,7 +63,7 @@ export default function PaymentSchedule({ wallet, contract }) {
 
       // Navigate to PayMonthlyRent page instead of opening modal directly
       // This provides better UX with 5-step flow
-      window.location.href = `/user/pay-monthly-rent?contractId=${contract._id}&scheduleIndex=${scheduleIndex}`;
+      navigate(`/user/pay-monthly-rent?contractId=${contract._id}&scheduleIndex=${scheduleIndex}`);
     } catch (error) {
       console.error("Error preparing payment:", error);
       toast.error("Failed to prepare payment. Please try again.");
