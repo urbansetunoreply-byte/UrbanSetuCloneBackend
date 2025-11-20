@@ -41,21 +41,31 @@ export default function PaymentSchedule({ wallet, contract }) {
   };
 
   const handlePayNow = async (payment) => {
-    if (!contract || !payment) {
+    if (!contract || !payment || !wallet) {
       toast.error("Payment information not available.");
       return;
     }
 
-    // Create a temporary booking object for PaymentModal
-    const bookingForPayment = {
-      _id: contract.bookingId,
-      listingId: contract.listingId,
-      buyerId: contract.tenantId,
-      sellerId: contract.landlordId
-    };
+    try {
+      // Find the schedule index
+      const scheduleIndex = wallet.paymentSchedule.findIndex(p => 
+        p.month === payment.month && 
+        p.year === payment.year && 
+        p.dueDate === payment.dueDate
+      );
 
-    setSelectedPayment({ ...payment, booking: bookingForPayment });
-    setShowPaymentModal(true);
+      if (scheduleIndex === -1) {
+        toast.error("Payment schedule entry not found.");
+        return;
+      }
+
+      // Navigate to PayMonthlyRent page instead of opening modal directly
+      // This provides better UX with 5-step flow
+      window.location.href = `/user/pay-monthly-rent?contractId=${contract._id}&scheduleIndex=${scheduleIndex}`;
+    } catch (error) {
+      console.error("Error preparing payment:", error);
+      toast.error("Failed to prepare payment. Please try again.");
+    }
   };
 
   const handlePaymentSuccess = () => {

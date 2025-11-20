@@ -577,6 +577,18 @@ export default function RentalContracts() {
                         <FaMoneyBillWave /> Rent Wallet
                       </button>
                     )}
+                    {contract.status === 'active' && (contract.tenantId?._id === currentUser._id || contract.tenantId === currentUser._id) && contract.wallet && contract.wallet.paymentSchedule && contract.wallet.paymentSchedule.filter(p => p.status === 'pending' || p.status === 'overdue').length > 0 && (
+                      <button
+                        onClick={() => {
+                          const nextPending = contract.wallet.paymentSchedule.find((p, idx) => p.status === 'pending' || p.status === 'overdue');
+                          const nextIndex = contract.wallet.paymentSchedule.indexOf(nextPending);
+                          navigate(`/user/pay-monthly-rent?contractId=${contract._id}&scheduleIndex=${nextIndex}`);
+                        }}
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2"
+                      >
+                        <FaMoneyBillWave /> Pay Next Rent
+                      </button>
+                    )}
                     {contract.status === 'active' && (
                       <>
                         <button
