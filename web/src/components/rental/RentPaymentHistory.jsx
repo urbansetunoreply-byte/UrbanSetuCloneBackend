@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
-import { FaHistory, FaDownload, FaFilter, FaSearch, FaCheckCircle, FaTimesCircle, FaClock, FaExclamationTriangle } from "react-icons/fa";
+import { FaHistory, FaDownload, FaFilter, FaSearch, FaCheckCircle, FaTimesCircle, FaClock, FaExclamationTriangle, FaFileExcel, FaFilePdf } from "react-icons/fa";
 import { toast } from 'react-toastify';
+import jsPDF from 'jspdf';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -79,6 +80,217 @@ export default function RentPaymentHistory({ wallet, contract }) {
     } catch (error) {
       console.error("Error downloading receipt:", error);
       toast.error("Failed to download receipt.");
+    }
+  };
+
+  const exportToCSV = () => {
+    try {
+      if (!payments || payments.length === 0) {
+        toast.warning("No payments to export.");
+        return;
+      }
+
+      // Prepare CSV headers
+      const headers = ['Date', 'Due Date', 'Amount (₹)', 'Penalty (₹)', 'Total (₹)', 'Status', 'Paid Date', 'Payment ID', 'Remarks'];
+      
+      // Prepare CSV rows
+      const rows = payments.map(payment => {
+        const dueDate = new Date(payment.dueDate);
+        const paidDate = payment.paidAt ? new Date(payment.paidAt) : null;
+        
+        return [
+          dueDate.toLocaleDateString('en-GB'),
+          dueDate.toLocaleDateString('en-GB'),
+          payment.amount.toFixed(2),
+          (payment.penaltyAmount || 0).toFixed(2),
+          (payment.amount + (payment.penaltyAmount || 0)).toFixed(2),
+          payment.status,
+          paidDate ? paidDate.toLocaleDateString('en-GB') + ' ' + paidDate.toLocaleTimeString('en-GB') : '',
+          typeof payment.paymentId === 'object' ? (payment.paymentId?.paymentId || '') : (payment.paymentId || ''),
+          payment.remarks || ''
+        ];
+      });
+
+      // Escape CSV values
+      const escapeCSV = (value) => {
+        if (value === null || value === undefined) return '';
+        const stringValue = String(value);
+        if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+          return `"${stringValue.replace(/"/g, '""')}"`;
+        }
+        return stringValue;
+      };
+
+      // Build CSV content
+      const csvContent = [
+        headers.map(escapeCSV).join(','),
+        ...rows.map(row => row.map(escapeCSV).join(','))
+      ].join('\n');
+
+      // Add BOM for UTF-8 Excel compatibility
+      const BOM = '\uFEFF';
+      const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      const contractIdStr = contract?.contractId || contract?._id || 'rent-wallet';
+      const fileName = `rent_payment_history_${contractIdStr}_${new Date().toISOString().split('T')[0]}.csv`;
+      link.download = fileName;
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success("Payment history exported to CSV successfully!");
+    } catch (error) {
+      console.error("Error exporting to CSV:", error);
+      toast.error("Failed to export payment history to CSV.");
+    }
+  };
+
+  const exportToPDF = () => {
+    try {
+      if (!payments || payments.length === 0) {
+        toast.warning("No payments to export.");
+        return;
+      }
+
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 15;
+      let yPosition = margin;
+      
+      // Helper function to add a new page if needed
+      const checkPageBreak = (requiredHeight) => {
+        if (yPosition + requiredHeight > pageHeight - margin) {
+          doc.addPage();
+          yPosition = margin;
+          return true;
+        }
+        return false;
+      };
+
+      // Title
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Rent Payment History', margin, yPosition);
+      yPosition += 10;
+
+      // Contract information
+      if (contract) {
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        const contractInfo = `Contract ID: ${contract.contractId || contract._id || 'N/A'}`;
+        if (contract.listingId?.name) {
+          doc.text(`Property: ${contract.listingId.name}`, margin, yPosition);
+          yPosition += 6;
+        }
+        doc.text(contractInfo, margin, yPosition);
+        yPosition += 6;
+        
+        const exportDate = `Exported on: ${new Date().toLocaleDateString('en-GB')} ${new Date().toLocaleTimeString('en-GB')}`;
+        doc.text(exportDate, margin, yPosition);
+        yPosition += 10;
+      }
+
+      // Statistics
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Summary', margin, yPosition);
+      yPosition += 8;
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Total Payments: ${stats.total}`, margin, yPosition);
+      yPosition += 6;
+      doc.text(`Completed: ${stats.completed}`, margin, yPosition);
+      yPosition += 6;
+      doc.text(`Pending: ${stats.pending}`, margin, yPosition);
+      yPosition += 6;
+      doc.text(`Total Paid: ₹${stats.totalPaid.toLocaleString('en-IN')}`, margin, yPosition);
+      yPosition += 6;
+      doc.text(`Total Due: ₹${stats.totalDue.toLocaleString('en-IN')}`, margin, yPosition);
+      yPosition += 10;
+
+      // Table header
+      checkPageBreak(10);
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Payment Details', margin, yPosition);
+      yPosition += 8;
+
+      // Table headers
+      const colWidths = [25, 25, 25, 25, 25, 25, 40];
+      const headers = ['Date', 'Amount', 'Penalty', 'Total', 'Status', 'Paid Date', 'Payment ID'];
+      let xPosition = margin;
+      
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      headers.forEach((header, index) => {
+        doc.text(header, xPosition, yPosition);
+        xPosition += colWidths[index];
+      });
+      yPosition += 6;
+
+      // Table rows
+      doc.setFont('helvetica', 'normal');
+      payments.forEach((payment, index) => {
+        checkPageBreak(20);
+        
+        const dueDate = new Date(payment.dueDate);
+        const paidDate = payment.paidAt ? new Date(payment.paidAt) : null;
+        const amount = payment.amount.toFixed(2);
+        const penalty = (payment.penaltyAmount || 0).toFixed(2);
+        const total = (payment.amount + (payment.penaltyAmount || 0)).toFixed(2);
+        const status = payment.status.charAt(0).toUpperCase() + payment.status.slice(1);
+        const paidDateStr = paidDate ? paidDate.toLocaleDateString('en-GB') : '-';
+        const paymentId = typeof payment.paymentId === 'object' ? (payment.paymentId?.paymentId || '-') : (payment.paymentId || '-');
+        
+        xPosition = margin;
+        const rowData = [
+          dueDate.toLocaleDateString('en-GB'),
+          `₹${amount}`,
+          `₹${penalty}`,
+          `₹${total}`,
+          status,
+          paidDateStr,
+          paymentId.substring(0, 10) + (paymentId.length > 10 ? '...' : '')
+        ];
+        
+        doc.setFontSize(7);
+        rowData.forEach((cell, colIndex) => {
+          const text = doc.splitTextToSize(String(cell), colWidths[colIndex] - 2);
+          doc.text(text, xPosition, yPosition);
+          xPosition += colWidths[colIndex];
+        });
+        yPosition += 6;
+        
+        // Add remarks if present
+        if (payment.remarks) {
+          checkPageBreak(8);
+          doc.setFontSize(6);
+          doc.setTextColor(128, 128, 128);
+          const remarks = doc.splitTextToSize(`Note: ${payment.remarks}`, pageWidth - 2 * margin);
+          doc.text(remarks, margin + 5, yPosition);
+          yPosition += remarks.length * 3;
+          doc.setTextColor(0, 0, 0);
+        }
+        
+        yPosition += 2;
+      });
+
+      // Save PDF
+      const contractIdStr = contract?.contractId || contract?._id || 'rent-wallet';
+      const fileName = `rent_payment_history_${contractIdStr}_${new Date().toISOString().split('T')[0]}.pdf`;
+      doc.save(fileName);
+      
+      toast.success("Payment history exported to PDF successfully!");
+    } catch (error) {
+      console.error("Error exporting to PDF:", error);
+      toast.error("Failed to export payment history to PDF.");
     }
   };
 
@@ -262,17 +474,24 @@ export default function RentPaymentHistory({ wallet, contract }) {
         )}
       </div>
 
-      {/* Export Button */}
+      {/* Export Buttons */}
       {payments.length > 0 && (
-        <div className="mt-6 text-center">
+        <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center items-center">
           <button
-            onClick={() => {
-              toast.info("Export feature coming soon!");
-            }}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition flex items-center gap-2 mx-auto"
+            onClick={exportToCSV}
+            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold transition flex items-center gap-2"
+            title="Export to Excel (CSV)"
           >
-            <FaDownload />
-            Export Payment History
+            <FaFileExcel />
+            Export to Excel
+          </button>
+          <button
+            onClick={exportToPDF}
+            className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold transition flex items-center gap-2"
+            title="Export to PDF"
+          >
+            <FaFilePdf />
+            Export to PDF
           </button>
         </div>
       )}
