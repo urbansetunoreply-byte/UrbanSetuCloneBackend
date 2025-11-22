@@ -65,21 +65,19 @@ export default function AdminDisputeResolution() {
       return;
     }
     
-    fetchDisputes();
-  }, [currentUser, filters.status, filters.category, filters.priority]);
+    // Only fetch on initial load, not on filter changes
+    if (disputes.length === 0) {
+      fetchDisputes();
+    }
+  }, [currentUser, navigate]);
 
-  const fetchDisputes = async () => {
+  const fetchDisputes = async (showLoading = true) => {
     try {
-      setLoading(true);
-      const params = new URLSearchParams();
-      if (filters.status !== 'all') {
-        params.set('status', filters.status);
+      if (showLoading) {
+        setLoading(true);
       }
-      if (filters.category !== 'all') {
-        params.set('category', filters.category);
-      }
-
-      const res = await fetch(`${API_BASE_URL}/api/rental/disputes?${params.toString()}`, {
+      // Fetch all disputes, apply filters client-side
+      const res = await fetch(`${API_BASE_URL}/api/rental/disputes`, {
         credentials: 'include'
       });
 
@@ -93,7 +91,9 @@ export default function AdminDisputeResolution() {
       console.error('Error fetching disputes:', error);
       toast.error('Failed to load disputes');
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   };
 

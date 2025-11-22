@@ -23,7 +23,7 @@ export default function DisputeDetail({
   resolving
 }) {
   const [newMessage, setNewMessage] = useState('');
-  const [uploading, setUploading] = useState(false);
+  const [uploading, setUploading] = useState({ image: false, video: false, document: false });
   const [sending, setSending] = useState(false);
   const [attachments, setAttachments] = useState([]);
   const [showStatusModal, setShowStatusModal] = useState(false);
@@ -82,7 +82,7 @@ export default function DisputeDetail({
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
-    setUploading(true);
+    setUploading(prev => ({ ...prev, [type]: true }));
     try {
       const uploadPromises = files.map(async (file) => {
         const formData = new FormData();
@@ -120,7 +120,7 @@ export default function DisputeDetail({
       toast.error('Failed to upload files');
       console.error(error);
     } finally {
-      setUploading(false);
+      setUploading(prev => ({ ...prev, [type]: false }));
     }
   };
 
@@ -326,8 +326,10 @@ export default function DisputeDetail({
 
             {/* Upload Buttons */}
             <div className="flex items-center gap-2 mb-3">
-              <label className="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-300 rounded-lg cursor-pointer hover:bg-blue-100 text-sm">
-                {uploading ? <FaSpinner className="animate-spin" /> : <FaImage />}
+              <label className={`flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-300 rounded-lg text-sm ${
+                uploading.image ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-blue-100'
+              }`}>
+                {uploading.image ? <FaSpinner className="animate-spin" /> : <FaImage />}
                 <span className="text-blue-700">Image</span>
                 <input
                   type="file"
@@ -335,11 +337,13 @@ export default function DisputeDetail({
                   multiple
                   className="hidden"
                   onChange={(e) => handleAttachmentUpload(e, 'image')}
-                  disabled={uploading}
+                  disabled={uploading.image || uploading.video || uploading.document}
                 />
               </label>
-              <label className="flex items-center gap-2 px-3 py-2 bg-purple-50 border border-purple-300 rounded-lg cursor-pointer hover:bg-purple-100 text-sm">
-                {uploading ? <FaSpinner className="animate-spin" /> : <FaVideo />}
+              <label className={`flex items-center gap-2 px-3 py-2 bg-purple-50 border border-purple-300 rounded-lg text-sm ${
+                uploading.video ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-purple-100'
+              }`}>
+                {uploading.video ? <FaSpinner className="animate-spin" /> : <FaVideo />}
                 <span className="text-purple-700">Video</span>
                 <input
                   type="file"
@@ -347,11 +351,13 @@ export default function DisputeDetail({
                   multiple
                   className="hidden"
                   onChange={(e) => handleAttachmentUpload(e, 'video')}
-                  disabled={uploading}
+                  disabled={uploading.image || uploading.video || uploading.document}
                 />
               </label>
-              <label className="flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-300 rounded-lg cursor-pointer hover:bg-green-100 text-sm">
-                {uploading ? <FaSpinner className="animate-spin" /> : <FaFile />}
+              <label className={`flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-300 rounded-lg text-sm ${
+                uploading.document ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-green-100'
+              }`}>
+                {uploading.document ? <FaSpinner className="animate-spin" /> : <FaFile />}
                 <span className="text-green-700">Document</span>
                 <input
                   type="file"
@@ -359,7 +365,7 @@ export default function DisputeDetail({
                   multiple
                   className="hidden"
                   onChange={(e) => handleAttachmentUpload(e, 'document')}
-                  disabled={uploading}
+                  disabled={uploading.image || uploading.video || uploading.document}
                 />
               </label>
             </div>

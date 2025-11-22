@@ -59,8 +59,11 @@ export default function DisputeResolution() {
       navigate('/sign-in');
       return;
     }
-    fetchDisputes();
-  }, [currentUser, filters.status, filters.category]);
+    // Only fetch on initial load, not on filter changes
+    if (disputes.length === 0) {
+      fetchDisputes();
+    }
+  }, [currentUser, navigate]);
 
   // Handle URL parameters for opening dispute form or detail
   useEffect(() => {
@@ -89,18 +92,13 @@ export default function DisputeResolution() {
     }
   }, [location.search]);
 
-  const fetchDisputes = async () => {
+  const fetchDisputes = async (showLoading = true) => {
     try {
-      setLoading(true);
-      const params = new URLSearchParams();
-      if (filters.status !== 'all') {
-        params.set('status', filters.status);
+      if (showLoading) {
+        setLoading(true);
       }
-      if (filters.category !== 'all') {
-        params.set('category', filters.category);
-      }
-
-      const res = await fetch(`${API_BASE_URL}/api/rental/disputes?${params.toString()}`, {
+      // Fetch all disputes, apply filters client-side
+      const res = await fetch(`${API_BASE_URL}/api/rental/disputes`, {
         credentials: 'include'
       });
 
@@ -114,9 +112,27 @@ export default function DisputeResolution() {
       console.error('Error fetching disputes:', error);
       toast.error('Failed to load disputes');
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   };
+
+  // Client-side filtering
+  const filteredDisputes = React.useMemo(() => {
+    return disputes.filter(dispute => {
+      const matchesSearch = filters.search === '' || 
+        dispute.title?.toLowerCase().includes(filters.search.toLowerCase()) ||
+        dispute.disputeId?.toLowerCase().includes(filters.search.toLowerCase()) ||
+        dispute.raisedBy?.username?.toLowerCase().includes(filters.search.toLowerCase()) ||
+        dispute.raisedAgainst?.username?.toLowerCase().includes(filters.search.toLowerCase());
+      
+      const matchesStatus = filters.status === 'all' || dispute.status === filters.status;
+      const matchesCategory = filters.category === 'all' || dispute.category === filters.category;
+      
+      return matchesSearch && matchesStatus && matchesCategory;
+    });
+  }, [disputes, filters]);
 
   const fetchContract = async (contractId) => {
     try {
@@ -181,12 +197,6 @@ export default function DisputeResolution() {
     }
   };
 
-  const filteredDisputes = disputes.filter(dispute => {
-    const matchesSearch = filters.search === '' || 
-      dispute.title.toLowerCase().includes(filters.search.toLowerCase()) ||
-      dispute.disputeId.toLowerCase().includes(filters.search.toLowerCase());
-    return matchesSearch;
-  });
 
   const getStatusColor = (status) => {
     switch (status) {

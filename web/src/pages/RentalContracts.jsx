@@ -27,8 +27,11 @@ export default function RentalContracts() {
   const [actionLoading, setActionLoading] = useState('');
 
   useEffect(() => {
-    fetchContracts();
-  }, [filter]);
+    // Only fetch on initial load, not on filter changes
+    if (contracts.length === 0) {
+      fetchContracts();
+    }
+  }, [currentUser]);
 
   // Listen for payment status updates
   useEffect(() => {
@@ -50,15 +53,13 @@ export default function RentalContracts() {
     };
   }, []);
 
-  const fetchContracts = async () => {
+  const fetchContracts = async (showLoading = true) => {
     try {
-      setLoading(true);
-      const params = new URLSearchParams();
-      if (filter !== 'all') {
-        params.set('status', filter);
+      if (showLoading) {
+        setLoading(true);
       }
-      
-      const res = await fetch(`${API_BASE_URL}/api/rental/contracts?${params.toString()}`, {
+      // Fetch all contracts, apply filters client-side
+      const res = await fetch(`${API_BASE_URL}/api/rental/contracts`, {
         credentials: 'include'
       });
 
@@ -72,9 +73,17 @@ export default function RentalContracts() {
       console.error("Error fetching contracts:", error);
       toast.error("Failed to load contracts");
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   };
+
+  // Client-side filtering
+  const filteredContracts = React.useMemo(() => {
+    if (filter === 'all') return contracts;
+    return contracts.filter(contract => contract.status === filter);
+  }, [contracts, filter]);
 
   const handleDownload = async (contract) => {
     try {
@@ -346,7 +355,7 @@ export default function RentalContracts() {
           </div>
         ) : (
           <div className="space-y-4">
-            {contracts.map((contract) => (
+            {filteredContracts.map((contract) => (
               <div
                 key={contract._id}
                 className={`bg-white rounded-xl shadow-lg p-6 border-2 ${getStatusColor(contract.status)}`}

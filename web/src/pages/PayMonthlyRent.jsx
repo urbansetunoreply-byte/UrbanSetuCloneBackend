@@ -163,6 +163,7 @@ export default function PayMonthlyRent() {
     const baseAmount = selectedPayment.amount || contract.lockedRentAmount || 0;
     const penalty = selectedPayment.penaltyAmount || 0;
     const maintenance = contract.maintenanceCharges || 0;
+    // Note: Security deposit is paid upfront during contract creation, not in monthly rent payments
     return baseAmount + penalty + maintenance;
   };
 
@@ -486,8 +487,29 @@ export default function PayMonthlyRent() {
               <h3 className="font-semibold text-lg mb-4">Payment Summary</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
+                  <span>Monthly Rent:</span>
+                  <span className="font-semibold">₹{(selectedPayment?.amount || contract?.lockedRentAmount || 0).toLocaleString('en-IN')}</span>
+                </div>
+                {selectedPayment?.penaltyAmount > 0 && (
+                  <div className="flex justify-between text-red-600">
+                    <span>Late Fee:</span>
+                    <span className="font-semibold">₹{selectedPayment.penaltyAmount.toLocaleString('en-IN')}</span>
+                  </div>
+                )}
+                {contract?.maintenanceCharges > 0 && (
+                  <div className="flex justify-between">
+                    <span>Maintenance:</span>
+                    <span className="font-semibold">₹{contract.maintenanceCharges.toLocaleString('en-IN')}</span>
+                  </div>
+                )}
+                {contract?.securityDeposit > 0 && contract?.depositPlan !== 'zero' && (
+                  <div className="flex justify-between pt-2 border-t border-blue-200">
+                    <span className="text-gray-600 italic">Note: Security deposit (₹{contract.securityDeposit.toLocaleString('en-IN')}) was paid upfront</span>
+                  </div>
+                )}
+                <div className="flex justify-between border-t pt-2 mt-2 font-bold text-lg">
                   <span>Total Amount:</span>
-                  <span className="font-bold text-lg text-blue-600">₹{getTotalAmount().toLocaleString('en-IN')}</span>
+                  <span className="text-blue-600">₹{getTotalAmount().toLocaleString('en-IN')}</span>
                 </div>
               </div>
             </div>

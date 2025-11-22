@@ -58,9 +58,12 @@ export default function RentalLoans() {
       navigate('/sign-in');
       return;
     }
-    fetchLoans();
+    // Only fetch on initial load, not on filter changes
+    if (loans.length === 0) {
+      fetchLoans();
+    }
     fetchContracts();
-  }, [currentUser, filters.status, filters.loanType]);
+  }, [currentUser, navigate]);
 
   // Handle URL parameters
   useEffect(() => {
@@ -79,18 +82,13 @@ export default function RentalLoans() {
     }
   }, [location.search, contracts]);
 
-  const fetchLoans = async () => {
+  const fetchLoans = async (showLoading = true) => {
     try {
-      setLoading(true);
-      const params = new URLSearchParams();
-      if (filters.status !== 'all') {
-        params.set('status', filters.status);
+      if (showLoading) {
+        setLoading(true);
       }
-      if (filters.loanType !== 'all') {
-        params.set('loanType', filters.loanType);
-      }
-
-      const res = await fetch(`${API_BASE_URL}/api/rental/loans?${params.toString()}`, {
+      // Fetch all loans, apply filters client-side
+      const res = await fetch(`${API_BASE_URL}/api/rental/loans`, {
         credentials: 'include'
       });
 
@@ -104,9 +102,39 @@ export default function RentalLoans() {
       console.error('Error fetching loans:', error);
       toast.error('Failed to load loans');
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   };
+
+  // Client-side filtering
+  const filteredLoans = React.useMemo(() => {
+    let filtered = loans;
+    
+    // Filter by status
+    if (filters.status !== 'all') {
+      filtered = filtered.filter(loan => loan.status === filters.status);
+    }
+    
+    // Filter by loanType
+    if (filters.loanType !== 'all') {
+      filtered = filtered.filter(loan => loan.loanType === filters.loanType);
+    }
+    
+    // Filter by search query
+    if (filters.search) {
+      const query = filters.search.toLowerCase();
+      filtered = filtered.filter(loan =>
+        loan.loanId?.toLowerCase().includes(query) ||
+        loan.contractId?.contractId?.toLowerCase().includes(query) ||
+        loan.contractId?.listingId?.name?.toLowerCase().includes(query) ||
+        loan.contractId?.listingId?.address?.toLowerCase().includes(query)
+      );
+    }
+    
+    return filtered;
+  }, [loans, filters]);
 
   const fetchContracts = async () => {
     try {

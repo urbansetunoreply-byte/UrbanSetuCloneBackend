@@ -8,6 +8,30 @@ import ContractPreview from '../components/rental/ContractPreview';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+// Modal wrapper component to prevent background scrolling
+const ContractModalWrapper = ({ children, onClose }) => {
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
+  return (
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      style={{ overflow: 'hidden' }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      {children}
+    </div>
+  );
+};
+
 export default function AdminRentalContracts() {
   usePageTitle("Admin Rental Contracts - UrbanSetu");
 
@@ -527,7 +551,10 @@ export default function AdminRentalContracts() {
 
       {/* Contract Preview Modal */}
       {showPreviewModal && selectedContract && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <ContractModalWrapper onClose={() => {
+          setShowPreviewModal(false);
+          setSelectedContract(null);
+        }}>
           <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 my-8 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold text-gray-800">Contract Details</h2>

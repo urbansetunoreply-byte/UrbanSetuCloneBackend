@@ -88,13 +88,19 @@ export default function AdminPropertyVerification() {
       return;
     }
 
-    fetchAllVerifications();
-  }, [currentUser, navigate, statusFilter]);
+    // Only fetch on initial load, not on filter changes
+    if (verifications.length === 0) {
+      fetchAllVerifications();
+    }
+  }, [currentUser, navigate]);
 
-  const fetchAllVerifications = async () => {
+  const fetchAllVerifications = async (showLoading = true) => {
     try {
-      setLoading(true);
-      const res = await fetch(`${API_BASE_URL}/api/rental/verification?status=${statusFilter}&search=${searchQuery}`, {
+      if (showLoading) {
+        setLoading(true);
+      }
+      // Fetch all verifications, apply filters client-side
+      const res = await fetch(`${API_BASE_URL}/api/rental/verification`, {
         credentials: 'include'
       });
 
@@ -108,7 +114,9 @@ export default function AdminPropertyVerification() {
       console.error('Error fetching verifications:', error);
       toast.error('Failed to load verifications');
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   };
 
@@ -180,11 +188,6 @@ export default function AdminPropertyVerification() {
                 placeholder="Search properties, landlords, verification ID..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    fetchAllVerifications();
-                  }
-                }}
                 className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>

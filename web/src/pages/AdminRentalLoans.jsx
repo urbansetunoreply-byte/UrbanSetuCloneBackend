@@ -79,21 +79,19 @@ export default function AdminRentalLoans() {
       return;
     }
 
-    fetchAllLoans();
-  }, [currentUser, navigate, statusFilter, loanTypeFilter]);
+    // Only fetch on initial load, not on filter changes
+    if (loans.length === 0) {
+      fetchAllLoans();
+    }
+  }, [currentUser, navigate]);
 
-  const fetchAllLoans = async () => {
+  const fetchAllLoans = async (showLoading = true) => {
     try {
-      setLoading(true);
-      const params = new URLSearchParams();
-      if (statusFilter !== 'all') {
-        params.set('status', statusFilter);
+      if (showLoading) {
+        setLoading(true);
       }
-      if (loanTypeFilter !== 'all') {
-        params.set('loanType', loanTypeFilter);
-      }
-
-      const res = await fetch(`${API_BASE_URL}/api/rental/loans?${params.toString()}`, {
+      // Fetch all loans, apply filters client-side
+      const res = await fetch(`${API_BASE_URL}/api/rental/loans`, {
         credentials: 'include'
       });
 
@@ -107,24 +105,41 @@ export default function AdminRentalLoans() {
       console.error('Error fetching loans:', error);
       toast.error('Failed to load loans');
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   };
 
-  // Client-side filtering for search
+  // Client-side filtering for search, status, and loanType
   const filteredLoans = React.useMemo(() => {
-    if (!searchQuery) return loans;
+    let filtered = loans;
     
-    const query = searchQuery.toLowerCase();
-    return loans.filter(loan =>
-      loan.loanId?.toLowerCase().includes(query) ||
-      loan.userId?.username?.toLowerCase().includes(query) ||
-      loan.userId?.email?.toLowerCase().includes(query) ||
-      loan.contractId?.contractId?.toLowerCase().includes(query) ||
-      loan.contractId?.listingId?.name?.toLowerCase().includes(query) ||
-      loan.contractId?.listingId?.address?.toLowerCase().includes(query)
-    );
-  }, [loans, searchQuery]);
+    // Filter by status
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(loan => loan.status === statusFilter);
+    }
+    
+    // Filter by loanType
+    if (loanTypeFilter !== 'all') {
+      filtered = filtered.filter(loan => loan.loanType === loanTypeFilter);
+    }
+    
+    // Filter by search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(loan =>
+        loan.loanId?.toLowerCase().includes(query) ||
+        loan.userId?.username?.toLowerCase().includes(query) ||
+        loan.userId?.email?.toLowerCase().includes(query) ||
+        loan.contractId?.contractId?.toLowerCase().includes(query) ||
+        loan.contractId?.listingId?.name?.toLowerCase().includes(query) ||
+        loan.contractId?.listingId?.address?.toLowerCase().includes(query)
+      );
+    }
+    
+    return filtered;
+  }, [loans, searchQuery, statusFilter, loanTypeFilter]);
 
   const handleViewLoan = async (loan) => {
     try {

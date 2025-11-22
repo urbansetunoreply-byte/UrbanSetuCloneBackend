@@ -201,13 +201,32 @@ export default function PaymentSchedule({ wallet, contract }) {
                             </p>
                           )}
                         </div>
-                        {payment.status === 'pending' && (
+                        {(payment.status === 'pending' || payment.status === 'overdue') && (
                           <button
                             onClick={() => handlePayNow(payment)}
                             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition"
                           >
                             <FaMoneyBillWave className="inline mr-1" />
                             Pay Now
+                          </button>
+                        )}
+                        {payment.status === 'processing' && (
+                          <button
+                            onClick={() => {
+                              // If stuck in processing, allow retry by navigating to payment page
+                              const scheduleIndex = wallet.paymentSchedule.findIndex(p => 
+                                p.month === payment.month && 
+                                p.year === payment.year && 
+                                p.dueDate === payment.dueDate
+                              );
+                              if (scheduleIndex !== -1) {
+                                navigate(`/user/pay-monthly-rent?contractId=${contract._id}&scheduleIndex=${scheduleIndex}`);
+                              }
+                            }}
+                            className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 font-semibold transition"
+                          >
+                            <FaMoneyBillWave className="inline mr-1" />
+                            Retry Payment
                           </button>
                         )}
                         {payment.status === 'completed' && payment.paymentId && (

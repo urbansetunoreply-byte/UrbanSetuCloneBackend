@@ -107,11 +107,12 @@ router.post("/verification/:verificationId/approve", verifyToken, approveVerific
 router.post("/verification/:verificationId/reject", verifyToken, rejectVerification);
 
 // Rental Ratings Routes
+// IMPORTANT: More specific routes must come before parameterized routes
 router.post("/ratings/:contractId", verifyToken, submitRentalRating);
+router.get("/ratings/all", verifyToken, listAllRatings); // Admin: List all ratings - must come before :contractId
+router.get("/ratings/property/:listingId", getPropertyRatings); // Public endpoint - must come before :contractId
 router.get("/ratings/:contractId", verifyToken, getRentalRating);
 router.get("/ratings", verifyToken, listRentalRatings);
-router.get("/ratings/all", verifyToken, listAllRatings); // Admin: List all ratings
-router.get("/ratings/property/:listingId", getPropertyRatings); // Public endpoint
 
 // Rental Loans Routes
 router.post("/loans/:contractId", verifyToken, applyForRentalLoan);
