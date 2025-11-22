@@ -578,7 +578,7 @@ export default function AdminRentalContracts() {
               }}
             />
           </div>
-        </div>
+        </ContractModalWrapper>
       )}
 
       {/* Status Update Modal */}
