@@ -109,7 +109,7 @@ export default function RentalLoans() {
   };
 
   // Client-side filtering
-  const filteredLoans = React.useMemo(() => {
+  const memoizedFilteredLoans = React.useMemo(() => {
     let filtered = loans;
     
     // Filter by status
@@ -135,6 +135,7 @@ export default function RentalLoans() {
     
     return filtered;
   }, [loans, filters]);
+  const filteredLoans = memoizedFilteredLoans;
 
   const fetchContracts = async () => {
     try {
@@ -190,14 +191,6 @@ export default function RentalLoans() {
       handleViewLoan(selectedLoan);
     }
   };
-
-  const filteredLoans = loans.filter(loan => {
-    const matchesSearch = filters.search === '' || 
-      loan.loanId?.toLowerCase().includes(filters.search.toLowerCase()) ||
-      loan.contractId?.contractId?.toLowerCase().includes(filters.search.toLowerCase()) ||
-      loan.contractId?.listingId?.name?.toLowerCase().includes(filters.search.toLowerCase());
-    return matchesSearch;
-  });
 
   const formatCurrency = (amount) => {
     return `₹${amount?.toLocaleString('en-IN') || 0}`;
