@@ -2728,7 +2728,7 @@ export default function Listing() {
                         ) : null;
                       })()}
                       <Link
-                        to="/user/rental-ratings"
+                        to={isAdmin ? "/admin/rental-ratings" : "/user/rental-ratings"}
                         className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 inline-block"
                       >
                         View All Rental Ratings
