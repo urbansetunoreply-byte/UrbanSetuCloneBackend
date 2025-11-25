@@ -12,6 +12,7 @@ import { useState as useLocalState } from "react";
 import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { toast, ToastContainer } from 'react-toastify';
 import { socket } from "../utils/socket";
+import SimplePeer from 'simple-peer';
 import { useSoundEffects } from "../components/SoundEffects";
 import { exportEnhancedChatToPDF } from '../utils/pdfExport';
 import ExportChatModal from '../components/ExportChatModal';
@@ -2888,6 +2889,21 @@ function AdminAppointmentRow({
   const [selectedCallForInfo, setSelectedCallForInfo] = useLocalState(null);
   // Live call monitor modal state (admin view)
   const [showLiveMonitorModal, setShowLiveMonitorModal] = useLocalState(false);
+
+  // Live monitor WebRTC state for admin (receive-only)
+  const [monitorCallId, setMonitorCallId] = useLocalState(null);
+  const [buyerMonitorStream, setBuyerMonitorStream] = useLocalState(null);
+  const [sellerMonitorStream, setSellerMonitorStream] = useLocalState(null);
+  const buyerMonitorVideoRef = React.useRef(null);
+  const sellerMonitorVideoRef = React.useRef(null);
+  const monitorPeersRef = React.useRef({ caller: null, receiver: null });
+
+  // STUN servers for admin WebRTC monitor (same as participant side)
+  const MONITOR_STUN_SERVERS = React.useMemo(() => ([
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' },
+    { urls: 'stun:stun2.l.google.com:19302' }
+  ]), []);
   
   // Detect potentially active calls for this appointment based on call history status
   const activeLiveCall = React.useMemo(() => {
@@ -2897,6 +2913,190 @@ function AdminAppointmentRow({
       ["initiated", "ringing", "accepted"].includes(call.status)
     ) || null;
   }, [callHistory]);
+
+  // Map call roles (caller/receiver) to buyer/seller for labeling streams
+  const monitorRoles = React.useMemo(() => {
+    if (!activeLiveCall || !appt?.buyerId?._id || !appt?.sellerId?._id) return { buyerRole: null, sellerRole: null };
+
+    const normalizeId = (val) => {
+      if (!val) return null;
+      if (typeof val === 'string') return val;
+      if (val._id) return val._id.toString();
+      return val.toString?.() || null;
+    };
+
+    const callerId = normalizeId(activeLiveCall.callerId);
+    const receiverId = normalizeId(activeLiveCall.receiverId);
+    const buyerId = normalizeId(appt.buyerId);
+    const sellerId = normalizeId(appt.sellerId);
+
+    let buyerRole = null;
+    let sellerRole = null;
+
+    if (callerId && receiverId && buyerId && sellerId) {
+      if (callerId === buyerId && receiverId === sellerId) {
+        buyerRole = 'caller';
+        sellerRole = 'receiver';
+      } else if (callerId === sellerId && receiverId === buyerId) {
+        buyerRole = 'receiver';
+        sellerRole = 'caller';
+      }
+    }
+
+    return { buyerRole, sellerRole };
+  }, [activeLiveCall, appt]);
+
+  // Attach monitor streams to video elements
+  React.useEffect(() => {
+    if (buyerMonitorVideoRef.current) {
+      if (buyerMonitorStream) {
+        if (buyerMonitorVideoRef.current.srcObject !== buyerMonitorStream) {
+          buyerMonitorVideoRef.current.srcObject = buyerMonitorStream;
+        }
+        buyerMonitorVideoRef.current.muted = false;
+        buyerMonitorVideoRef.current.play().catch((err) => {
+          console.error('Error playing buyer monitor stream:', err);
+        });
+      } else {
+        buyerMonitorVideoRef.current.srcObject = null;
+      }
+    }
+  }, [buyerMonitorStream]);
+
+  React.useEffect(() => {
+    if (sellerMonitorVideoRef.current) {
+      if (sellerMonitorStream) {
+        if (sellerMonitorVideoRef.current.srcObject !== sellerMonitorStream) {
+          sellerMonitorVideoRef.current.srcObject = sellerMonitorStream;
+        }
+        sellerMonitorVideoRef.current.muted = false;
+        sellerMonitorVideoRef.current.play().catch((err) => {
+          console.error('Error playing seller monitor stream:', err);
+        });
+      } else {
+        sellerMonitorVideoRef.current.srcObject = null;
+      }
+    }
+  }, [sellerMonitorStream]);
+
+  const cleanupMonitorPeers = React.useCallback(() => {
+    Object.keys(monitorPeersRef.current).forEach((role) => {
+      const peer = monitorPeersRef.current[role];
+      if (peer) {
+        try {
+          peer.destroy();
+        } catch (err) {
+          console.error('[Admin Monitor] Error destroying peer for role', role, err);
+        }
+        monitorPeersRef.current[role] = null;
+      }
+    });
+    setBuyerMonitorStream(null);
+    setSellerMonitorStream(null);
+    setMonitorCallId(null);
+  }, [setBuyerMonitorStream, setSellerMonitorStream, setMonitorCallId]);
+
+  // Listen for monitor signaling events relevant to this appointment
+  React.useEffect(() => {
+    if (!socket) return;
+
+    const handleAdminMonitorStarted = ({ callId, appointmentId }) => {
+      if (!appt?._id || appointmentId !== appt._id.toString()) return;
+      setMonitorCallId(callId);
+    };
+
+    const handleMonitorOffer = ({ callId, fromRole, offer }) => {
+      if (!showLiveMonitorModal || !activeLiveCall || callId !== activeLiveCall.callId) return;
+      const role = fromRole === 'caller' ? 'caller' : 'receiver';
+
+      let peer = monitorPeersRef.current[role];
+      if (!peer) {
+        // Admin is non-initiator; we only receive streams
+        peer = new SimplePeer({
+          initiator: false,
+          trickle: true,
+          config: {
+            iceServers: MONITOR_STUN_SERVERS
+          }
+        });
+
+        peer.on('signal', (data) => {
+          if (data.type === 'answer') {
+            socket.emit('webrtc-answer-monitor', {
+              callId,
+              targetRole: role,
+              answer: data
+            });
+          } else if (data.type === 'candidate') {
+            socket.emit('ice-candidate-monitor', {
+              callId,
+              candidate: data,
+              from: 'admin',
+              targetRole: role
+            });
+          }
+        });
+
+        peer.on('stream', (remoteStream) => {
+          if (role === monitorRoles.buyerRole) {
+            setBuyerMonitorStream(remoteStream);
+          } else if (role === monitorRoles.sellerRole) {
+            setSellerMonitorStream(remoteStream);
+          }
+        });
+
+        peer.on('error', (err) => {
+          console.error('[Admin Monitor] Peer error for role', role, err);
+        });
+
+        peer.on('close', () => {
+          if (role === 'caller' || role === 'receiver') {
+            if (role === monitorRoles.buyerRole) setBuyerMonitorStream(null);
+            if (role === monitorRoles.sellerRole) setSellerMonitorStream(null);
+          }
+          monitorPeersRef.current[role] = null;
+        });
+
+        monitorPeersRef.current[role] = peer;
+      }
+
+      try {
+        peer.signal(offer);
+      } catch (err) {
+        console.error('[Admin Monitor] Error signaling offer to peer for role', role, err);
+      }
+    };
+
+    const handleMonitorICECandidate = ({ callId, fromRole, candidate }) => {
+      if (!showLiveMonitorModal || !activeLiveCall || callId !== activeLiveCall.callId) return;
+      const role = fromRole === 'caller' ? 'caller' : 'receiver';
+      const peer = monitorPeersRef.current[role];
+      if (peer && candidate) {
+        try {
+          peer.signal(candidate);
+        } catch (err) {
+          console.error('[Admin Monitor] Error signaling ICE candidate for role', role, err);
+        }
+      }
+    };
+
+    const handleCallEndedForMonitor = ({ callId }) => {
+      if (!activeLiveCall || callId !== activeLiveCall.callId) return;
+      cleanupMonitorPeers();
+    };
+
+    socket.on('admin-monitor-started', handleAdminMonitorStarted);
+    socket.on('webrtc-offer-monitor', handleMonitorOffer);
+    socket.on('ice-candidate-monitor', handleMonitorICECandidate);
+    socket.on('call-ended', handleCallEndedForMonitor);
+
+    return () => {
+      socket.off('admin-monitor-started', handleAdminMonitorStarted);
+      socket.off('webrtc-offer-monitor', handleMonitorOffer);
+      socket.off('ice-candidate-monitor', handleMonitorICECandidate);
+      socket.off('call-ended', handleCallEndedForMonitor);
+    };
+  }, [appt?._id, activeLiveCall, showLiveMonitorModal, MONITOR_STUN_SERVERS, cleanupMonitorPeers, setMonitorCallId]);
   // Persist draft per appointment when chat is open
   React.useEffect(() => {
     if (!showChatModal || !appt?._id || !currentUser?._id) return;
@@ -6731,6 +6931,23 @@ function AdminAppointmentRow({
                           </div>
                         )}
                       </div>
+                      {/* Live Call Monitor button (admin view) */}
+                      <button
+                        className="hidden sm:inline-flex items-center gap-1 text-red-500 hover:text-red-600 bg-red-50/80 hover:bg-red-100 rounded-full px-3 py-1.5 transition-all duration-300 transform hover:scale-110 shadow"
+                        onClick={() => {
+                          if (activeLiveCall && activeLiveCall.callId) {
+                            // Request to join live monitor for this active call
+                            socket.emit('admin-monitor-join', { callId: activeLiveCall.callId });
+                          }
+                          setShowLiveMonitorModal(true);
+                        }}
+                        title="Live audio/video monitor"
+                        aria-label="Live audio/video monitor"
+                      >
+                        <FaCircle className={`text-[10px] ${activeLiveCall ? 'animate-pulse' : ''}`} />
+                        <span className="text-[10px] font-semibold uppercase tracking-wide">Live</span>
+                      </button>
+
                       {/* Tips & Guidelines popup */}
                       {showShortcutTip && (
                         <div className="absolute top-full right-0 mt-2 bg-gray-800 text-white text-xs rounded-lg px-3 py-2 shadow-lg z-20 max-w-xs animate-fadeIn">
@@ -10736,7 +10953,10 @@ function AdminAppointmentRow({
                 </span>
               </div>
               <button
-                onClick={() => setShowLiveMonitorModal(false)}
+                onClick={() => {
+                  setShowLiveMonitorModal(false);
+                  cleanupMonitorPeers();
+                }}
                 className="text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors shadow"
                 title="Close live monitor"
                 aria-label="Close live monitor"
@@ -10746,7 +10966,7 @@ function AdminAppointmentRow({
             </div>
 
             {/* Body */}
-            {activeLiveCall ? (
+            {activeLiveCall && monitorCallId === activeLiveCall.callId ? (
               <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 {/* Buyer side */}
                 <div className="flex flex-col h-full rounded-2xl bg-white/5 border border-white/10 p-4 sm:p-5">
@@ -10765,21 +10985,30 @@ function AdminAppointmentRow({
                       <span className="text-[10px] text-white/60 uppercase tracking-wide">Buyer Side</span>
                     </div>
                   </div>
-                  <div className="flex-1 rounded-xl bg-gradient-to-br from-blue-500/30 via-blue-900/40 to-black/60 flex flex-col items-center justify-center border border-white/10 relative overflow-hidden">
-                    <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top,_#ffffff33_0,_transparent_60%)]" />
-                    <div className="relative flex flex-col items-center justify-center text-center px-4">
-                      {activeLiveCall.callType === 'video' ? (
-                        <FaVideo className="text-4xl sm:text-5xl text-white mb-3 animate-pulse" />
-                      ) : (
-                        <FaPhone className="text-4xl sm:text-5xl text-white mb-3 animate-pulse" />
-                      )}
-                      <p className="text-white text-sm sm:text-base font-semibold">
-                        Live {activeLiveCall.callType === 'video' ? 'video' : 'audio'} call in progress
-                      </p>
-                      <p className="mt-2 text-xs sm:text-sm text-white/70 max-w-xs">
-                        Admin is monitoring this side of the conversation. Actual media streams remain between buyer and seller.
-                      </p>
-                    </div>
+                  <div className="flex-1 rounded-xl bg-black/60 flex flex-col items-center justify-center border border-white/10 relative overflow-hidden">
+                    {buyerMonitorStream ? (
+                      <video
+                        ref={buyerMonitorVideoRef}
+                        autoPlay
+                        playsInline
+                        muted={false}
+                        className="w-full h-full object-contain bg-black"
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center text-center px-4">
+                        {activeLiveCall.callType === 'video' ? (
+                          <FaVideo className="text-4xl sm:text-5xl text-white mb-3 animate-pulse" />
+                        ) : (
+                          <FaPhone className="text-4xl sm:text-5xl text-white mb-3 animate-pulse" />
+                        )}
+                        <p className="text-white text-sm sm:text-base font-semibold">
+                          Waiting for buyer stream a0 b7 a0Live {activeLiveCall.callType === 'video' ? 'video' : 'audio'} call
+                        </p>
+                        <p className="mt-2 text-xs sm:text-sm text-white/70 max-w-xs">
+                          As soon as the buyer's device is streaming, the live feed will appear here.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -10800,21 +11029,30 @@ function AdminAppointmentRow({
                       <span className="text-[10px] text-white/60 uppercase tracking-wide">Seller Side</span>
                     </div>
                   </div>
-                  <div className="flex-1 rounded-xl bg-gradient-to-br from-purple-500/30 via-purple-900/40 to-black/60 flex flex-col items-center justify-center border border-white/10 relative overflow-hidden">
-                    <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top,_#ffffff33_0,_transparent_60%)]" />
-                    <div className="relative flex flex-col items-center justify-center text-center px-4">
-                      {activeLiveCall.callType === 'video' ? (
-                        <FaVideo className="text-4xl sm:text-5xl text-white mb-3 animate-pulse" />
-                      ) : (
-                        <FaPhone className="text-4xl sm:text-5xl text-white mb-3 animate-pulse" />
-                      )}
-                      <p className="text-white text-sm sm:text-base font-semibold">
-                        Mirrored {activeLiveCall.callType === 'video' ? 'video' : 'audio'} feed
-                      </p>
-                      <p className="mt-2 text-xs sm:text-sm text-white/70 max-w-xs">
-                        Visual representation of the seller side while preserving end-to-end media privacy.
-                      </p>
-                    </div>
+                  <div className="flex-1 rounded-xl bg-black/60 flex flex-col items-center justify-center border border-white/10 relative overflow-hidden">
+                    {sellerMonitorStream ? (
+                      <video
+                        ref={sellerMonitorVideoRef}
+                        autoPlay
+                        playsInline
+                        muted={false}
+                        className="w-full h-full object-contain bg-black"
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center text-center px-4">
+                        {activeLiveCall.callType === 'video' ? (
+                          <FaVideo className="text-4xl sm:text-5xl text-white mb-3 animate-pulse" />
+                        ) : (
+                          <FaPhone className="text-4xl sm:text-5xl text-white mb-3 animate-pulse" />
+                        )}
+                        <p className="text-white text-sm sm:text-base font-semibold">
+                          Waiting for seller stream a0 b7 a0Mirrored {activeLiveCall.callType === 'video' ? 'video' : 'audio'} feed
+                        </p>
+                        <p className="mt-2 text-xs sm:text-sm text-white/70 max-w-xs">
+                          Once the seller's device is streaming, their live feed will be visible here.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

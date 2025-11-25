@@ -59,13 +59,18 @@ export const useCall = () => {
   const incomingCallRef = useRef(null);
   const activeCallRef = useRef(null);
   const callStateRef = useRef(null);
+  const localStreamRef = useRef(null); // Ref for localStream to access in monitor peer handlers
+  
+  // Admin monitor peers: Map of adminSocketId -> SimplePeer instance
+  const monitorPeersRef = useRef(new Map());
   
   // Update refs when state changes (so handlers can access current values)
   useEffect(() => {
     incomingCallRef.current = incomingCall;
     activeCallRef.current = activeCall;
     callStateRef.current = callState;
-  }, [incomingCall, activeCall, callState]);
+    localStreamRef.current = localStream;
+  }, [incomingCall, activeCall, callState, localStream]);
 
   // Handle WebRTC offer
   const handleWebRTCOffer = useCallback(({ callId, offer }) => {
@@ -534,6 +539,95 @@ export const useCall = () => {
       endCall();
     });
 
+    // ===== Admin Monitor Request Handler (Participant Side) =====
+    // When admin wants to monitor, we create a separate peer that sends our localStream to them
+    const handleAdminMonitorRequest = async ({ callId, adminSocketId }) => {
+      try {
+        if (!activeCallRef.current || activeCallRef.current.callId !== callId) {
+          return;
+        }
+        if (!localStreamRef.current) {
+          console.warn('[Monitor] No local stream available for admin monitor');
+          return;
+        }
+
+        // Create a monitor peer as initiator (we send offer to admin)
+        const monitorPeer = new SimplePeer({
+          initiator: true,
+          trickle: true,
+          stream: localStreamRef.current, // Send our local stream to admin
+          config: {
+            iceServers: STUN_SERVERS
+          }
+        });
+
+        monitorPeer.on('signal', (data) => {
+          if (data.type === 'offer') {
+            socket.emit('webrtc-offer-monitor', {
+              callId,
+              adminSocketId,
+              offer: data
+            });
+          } else if (data.type === 'candidate') {
+            socket.emit('ice-candidate-monitor', {
+              callId,
+              adminSocketId,
+              candidate: data,
+              from: 'participant'
+            });
+          }
+        });
+
+        monitorPeer.on('connect', () => {
+          console.log('[Monitor] Connected to admin monitor peer');
+        });
+
+        monitorPeer.on('error', (err) => {
+          console.error('[Monitor] Peer error:', err);
+          monitorPeersRef.current.delete(adminSocketId);
+        });
+
+        monitorPeer.on('close', () => {
+          console.log('[Monitor] Peer closed');
+          monitorPeersRef.current.delete(adminSocketId);
+        });
+
+        monitorPeersRef.current.set(adminSocketId, monitorPeer);
+      } catch (err) {
+        console.error('[Monitor] Error creating admin monitor peer:', err);
+      }
+    };
+
+    // Admin answers our monitor offer
+    const handleWebRTCAnswerMonitor = ({ callId, adminSocketId, answer }) => {
+      if (!activeCallRef.current || activeCallRef.current.callId !== callId) return;
+      const monitorPeer = monitorPeersRef.current.get(adminSocketId);
+      if (monitorPeer && answer) {
+        try {
+          monitorPeer.signal(answer);
+        } catch (err) {
+          console.error('[Monitor] Error signaling answer to monitor peer:', err);
+        }
+      }
+    };
+
+    // Admin sends ICE candidates for monitor connection
+    const handleICECandidateMonitor = ({ callId, adminSocketId, candidate }) => {
+      if (!activeCallRef.current || activeCallRef.current.callId !== callId) return;
+      const monitorPeer = monitorPeersRef.current.get(adminSocketId);
+      if (monitorPeer && candidate) {
+        try {
+          monitorPeer.signal(candidate);
+        } catch (err) {
+          console.error('[Monitor] Error signaling ICE candidate to monitor peer:', err);
+        }
+      }
+    };
+
+    socket.on('admin-monitor-request', handleAdminMonitorRequest);
+    socket.on('webrtc-answer-monitor', handleWebRTCAnswerMonitor);
+    socket.on('ice-candidate-monitor', handleICECandidateMonitor);
+
     return () => {
       socket.off('incoming-call', handleIncomingCall);
       socket.off('call-accepted', handleCallAccepted);
@@ -547,6 +641,9 @@ export const useCall = () => {
       socket.off('remote-status-update', handleRemoteStatusUpdate);
       socket.off('stop-remote-screen-share', handleStopRemoteScreenShare);
       socket.off('call-error');
+      socket.off('admin-monitor-request');
+      socket.off('webrtc-answer-monitor');
+      socket.off('ice-candidate-monitor');
     };
   }, [handleWebRTCOffer, handleWebRTCAnswer, handleICECandidate, handleRemoteStatusUpdate, handleStopRemoteScreenShare, startCallTimer]);
 
@@ -908,6 +1005,18 @@ export const useCall = () => {
     if (peerRef.current) {
       peerRef.current.destroy();
       peerRef.current = null;
+    }
+    
+    // Destroy all monitor peers
+    if (monitorPeersRef.current.size > 0) {
+      monitorPeersRef.current.forEach((peer) => {
+        try {
+          peer.destroy();
+        } catch (err) {
+          console.error('[Monitor] Error destroying monitor peer:', err);
+        }
+      });
+      monitorPeersRef.current.clear();
     }
     
     // Stop all timers
