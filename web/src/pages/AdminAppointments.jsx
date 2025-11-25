@@ -6933,7 +6933,11 @@ function AdminAppointmentRow({
                       </div>
                       {/* Live Call Monitor button (admin view) */}
                       <button
-                        className="hidden sm:inline-flex items-center gap-1 text-red-500 hover:text-red-600 bg-red-50/80 hover:bg-red-100 rounded-full px-3 py-1.5 transition-all duration-300 transform hover:scale-110 shadow"
+                        className={`hidden sm:inline-flex items-center gap-1 rounded-full px-3 py-1.5 transition-all duration-300 transform hover:scale-110 shadow ${
+                          activeLiveCall
+                            ? 'text-red-500 hover:text-red-600 bg-red-50/80 hover:bg-red-100'
+                            : 'text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200'
+                        }`}
                         onClick={() => {
                           if (activeLiveCall && activeLiveCall.callId) {
                             // Request to join live monitor for this active call
@@ -6941,11 +6945,17 @@ function AdminAppointmentRow({
                           }
                           setShowLiveMonitorModal(true);
                         }}
-                        title="Live audio/video monitor"
+                        title={activeLiveCall ? 'Live audio/video monitor' : 'Not live - no active call'}
                         aria-label="Live audio/video monitor"
                       >
-                        <FaCircle className={`text-[10px] ${activeLiveCall ? 'animate-pulse' : ''}`} />
-                        <span className="text-[10px] font-semibold uppercase tracking-wide">Live</span>
+                        <FaCircle
+                          className={`text-[10px] ${
+                            activeLiveCall ? 'animate-pulse text-red-500' : 'text-gray-400'
+                          }`}
+                        />
+                        <span className="text-[10px] font-semibold uppercase tracking-wide">
+                          {activeLiveCall ? 'Live' : 'Not Live'}
+                        </span>
                       </button>
 
                       {/* Tips & Guidelines popup */}
@@ -6992,16 +7002,6 @@ function AdminAppointmentRow({
                           <div className="absolute -top-1 right-4 w-2 h-2 bg-gray-800 transform rotate-45"></div>
                         </div>
                       )}
-                      {/* Live Call Monitor button (admin view) */}
-                      <button
-                        className="hidden sm:inline-flex items-center gap-1 text-red-500 hover:text-red-600 bg-red-50/80 hover:bg-red-100 rounded-full px-3 py-1.5 transition-all duration-300 transform hover:scale-110 shadow"
-                        onClick={() => setShowLiveMonitorModal(true)}
-                        title="Live audio/video monitor"
-                        aria-label="Live audio/video monitor"
-                      >
-                        <FaCircle className={`text-[10px] ${activeLiveCall ? 'animate-pulse' : ''}`} />
-                        <span className="text-[10px] font-semibold uppercase tracking-wide">Live</span>
-                      </button>
                       {/* Scroll to bottom button when there are unread messages */}
                       {unreadNewMessages > 0 && !isAtBottom && (
                         <button
