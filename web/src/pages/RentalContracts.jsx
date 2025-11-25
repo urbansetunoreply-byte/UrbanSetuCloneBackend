@@ -2,13 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FaFileContract, FaDownload, FaEye, FaCalendarAlt, FaMoneyBillWave, FaLock, FaCheckCircle, FaTimesCircle, FaSpinner, FaHome, FaUser, FaChevronRight, FaSignInAlt, FaSignOutAlt, FaGavel, FaStar, FaCreditCard, FaPlayCircle, FaCheck, FaTimes, FaPen, FaEraser, FaUndo, FaClock, FaWallet } from 'react-icons/fa';
+import { FaFileContract, FaDownload, FaEye, FaCalendarAlt, FaMoneyBillWave, FaLock, FaCheckCircle, FaTimesCircle, FaSpinner, FaHome, FaUser, FaChevronRight, FaSignInAlt, FaSignOutAlt, FaGavel, FaStar, FaCreditCard, FaPlayCircle, FaCheck, FaTimes, FaPen, FaEraser, FaUndo, FaClock, FaWallet, FaExternalLinkAlt } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
 import ContractPreview from '../components/rental/ContractPreview';
 import DigitalSignature from '../components/rental/DigitalSignature';
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const PUBLIC_APP_URL = import.meta.env.VITE_PUBLIC_APP_URL || 'https://urbansetu.vercel.app';
+
+const buildPayMonthlyRentUrl = (contractId) => {
+  const runtimeOrigin = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : PUBLIC_APP_URL;
+  return `${runtimeOrigin}/user/pay-monthly-rent?contractId=${contractId}&scheduleIndex=0`;
+};
 
 export default function RentalContracts() {
   usePageTitle("My Rental Contracts - UrbanSetu");
@@ -355,7 +361,18 @@ export default function RentalContracts() {
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredContracts.map((contract) => (
+            {filteredContracts.map((contract) => {
+              const userRole = getUserRole(contract);
+              const isTenant = userRole === 'tenant';
+              const isLandlord = userRole === 'landlord';
+              const now = new Date();
+              const contractStartDate = contract.startDate ? new Date(contract.startDate) : null;
+              const hasContractStarted = contractStartDate ? now >= contractStartDate : false;
+              const contractIdentifier = contract.contractId || contract._id;
+              const payMonthlyRentUrl = buildPayMonthlyRentUrl(contractIdentifier);
+              const showMoveInChecklist = contract.status === 'active' && !hasContractStarted;
+
+              return (
               <div
                 key={contract._id}
                 className={`bg-white rounded-xl shadow-lg p-6 border-2 ${getStatusColor(contract.status)}`}
@@ -489,10 +506,6 @@ export default function RentalContracts() {
 
                   <div className="flex flex-col gap-2">
                     {(() => {
-                      const userRole = getUserRole(contract);
-                      const isTenant = userRole === 'tenant';
-                      const isLandlord = userRole === 'landlord';
-                      
                       // Buyer/Tenant actions
                       if (isTenant && (contract.status === 'pending_signature' || contract.status === 'draft')) {
                         return (
@@ -516,6 +529,7 @@ export default function RentalContracts() {
                       if (isLandlord && contract.status === 'pending_signature') {
                         const booking = contract.bookingId;
                         const appointmentStatus = booking?.status || 'pending';
+                        const paymentConfirmed = !!booking?.paymentConfirmed;
                         
                         return (
                           <>
@@ -530,8 +544,9 @@ export default function RentalContracts() {
                               <>
                                 <button
                                   onClick={() => handleAcceptAppointment(contract)}
-                                  disabled={actionLoading === `accept-${contract._id}` || actionLoading !== ''}
+                                  disabled={!paymentConfirmed || actionLoading === `accept-${contract._id}` || actionLoading !== ''}
                                   className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                  title={!paymentConfirmed ? 'Waiting for tenant to complete payment' : undefined}
                                 >
                                   {actionLoading === `accept-${contract._id}` ? (
                                     <>
@@ -543,6 +558,11 @@ export default function RentalContracts() {
                                     </>
                                   )}
                                 </button>
+                                {!paymentConfirmed && (
+                                  <p className="text-xs text-gray-600 flex items-center gap-1">
+                                    <FaClock className="text-yellow-600" /> Awaiting tenant payment confirmation
+                                  </p>
+                                )}
                                 <button
                                   onClick={() => handleRejectAppointment(contract)}
                                   disabled={actionLoading === `reject-${contract._id}` || actionLoading !== ''}
@@ -572,51 +592,63 @@ export default function RentalContracts() {
                     >
                       <FaEye /> View Details
                     </button>
-                    {contract.contractId && (
+                    {isTenant && contract.contractId && (
                       <Link
-                        to={`/user/rent-wallet?contractId=${contract.contractId || contract._id}`}
+                        to={`/user/rent-wallet?contractId=${contractIdentifier}`}
                         className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2"
                         title="View Rent Wallet"
                       >
                         <FaWallet /> Rent Wallet
                       </Link>
                     )}
-                    {contract.status === 'active' && contract.walletId && (
+                    {isTenant && contract.status === 'active' && contract.walletId && (
                       <button
-                        onClick={() => navigate(`/user/rent-wallet?contractId=${contract._id}`)}
+                        onClick={() => navigate(`/user/rent-wallet?contractId=${contractIdentifier}`)}
                         className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center justify-center gap-2"
                       >
                         <FaMoneyBillWave /> Rent Wallet
                       </button>
                     )}
-                    {contract.status === 'active' && (contract.tenantId?._id === currentUser._id || contract.tenantId === currentUser._id) && contract.wallet && contract.wallet.paymentSchedule && contract.wallet.paymentSchedule.filter(p => p.status === 'pending' || p.status === 'overdue').length > 0 && (
+                    {contract.status === 'active' && isTenant && contract.wallet && contract.wallet.paymentSchedule && contract.wallet.paymentSchedule.filter(p => p.status === 'pending' || p.status === 'overdue').length > 0 && (
                       <button
                         onClick={() => {
                           const nextPending = contract.wallet.paymentSchedule.find((p, idx) => p.status === 'pending' || p.status === 'overdue');
                           const nextIndex = contract.wallet.paymentSchedule.indexOf(nextPending);
-                          navigate(`/user/pay-monthly-rent?contractId=${contract._id}&scheduleIndex=${nextIndex}`);
+                          navigate(`/user/pay-monthly-rent?contractId=${contractIdentifier}&scheduleIndex=${nextIndex}`);
                         }}
                         className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2"
                       >
                         <FaMoneyBillWave /> Pay Next Rent
                       </button>
                     )}
+                    {contract.status === 'active' && isTenant && (
+                      <a
+                        href={payMonthlyRentUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 flex items-center justify-center gap-2"
+                      >
+                        <FaExternalLinkAlt /> Pay Monthly Rent Page
+                      </a>
+                    )}
                     {contract.status === 'active' && (
                       <>
+                        {showMoveInChecklist && (
+                          <button
+                            onClick={() => navigate(`/user/services?contractId=${contractIdentifier}&checklist=move_in`)}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
+                          >
+                            <FaSignInAlt /> Move-In Checklist
+                          </button>
+                        )}
                         <button
-                          onClick={() => navigate(`/user/services?contractId=${contract._id}&checklist=move_in`)}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
-                        >
-                          <FaSignInAlt /> Move-In Checklist
-                        </button>
-                        <button
-                          onClick={() => navigate(`/user/services?contractId=${contract._id}&checklist=move_out`)}
+                          onClick={() => navigate(`/user/services?contractId=${contractIdentifier}&checklist=move_out`)}
                           className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center justify-center gap-2"
                         >
                           <FaSignOutAlt /> Move-Out Checklist
                         </button>
                         <button
-                          onClick={() => navigate(`/user/disputes?contractId=${contract._id}`)}
+                          onClick={() => navigate(`/user/disputes?contractId=${contractIdentifier}`)}
                           className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center justify-center gap-2"
                         >
                           <FaGavel /> Raise Dispute
@@ -626,18 +658,18 @@ export default function RentalContracts() {
                             const isTenant = contract.tenantId?._id === currentUser._id || contract.tenantId === currentUser._id;
                             const isLandlord = contract.landlordId?._id === currentUser._id || contract.landlordId === currentUser._id;
                             if (isTenant) {
-                              navigate(`/user/rental-ratings?contractId=${contract._id}&role=tenant`);
+                              navigate(`/user/rental-ratings?contractId=${contractIdentifier}&role=tenant`);
                             } else if (isLandlord) {
-                              navigate(`/user/rental-ratings?contractId=${contract._id}&role=landlord`);
+                              navigate(`/user/rental-ratings?contractId=${contractIdentifier}&role=landlord`);
                             }
                           }}
                           className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 flex items-center justify-center gap-2"
                         >
                           <FaStar /> Rate
                         </button>
-                        {contract.status === 'active' && (contract.tenantId?._id === currentUser._id || contract.tenantId === currentUser._id) && (
+                        {contract.status === 'active' && isTenant && (
                           <button
-                            onClick={() => navigate(`/user/rental-loans?contractId=${contract._id}`)}
+                            onClick={() => navigate(`/user/rental-loans?contractId=${contractIdentifier}`)}
                             className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center justify-center gap-2"
                           >
                             <FaCreditCard /> Apply for Loan
@@ -648,7 +680,7 @@ export default function RentalContracts() {
                   </div>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
         )}
       </div>

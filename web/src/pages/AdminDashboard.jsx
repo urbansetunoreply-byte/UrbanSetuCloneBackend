@@ -88,6 +88,14 @@ export default function AdminDashboard() {
     engagement: {
       avgViewsPerListing: 0
     },
+    availabilityStats: {
+      available: 0,
+      reserved: 0,
+      under_contract: 0,
+      rented: 0,
+      sold: 0,
+      suspended: 0
+    },
     // New enhanced analytics
     revenue: {
       totalRevenue: 0,
@@ -179,6 +187,10 @@ export default function AdminDashboard() {
   const [pendingDelete, setPendingDelete] = useState({ id: null, ownerId: null });
   const [fraudStats, setFraudStats] = useState({ suspiciousListings: 0, suspectedFakeReviews: 0, lastScan: null });
   const [securityStats, setSecurityStats] = useState({ activeOtpLockouts: 0, passwordLockouts: 0, totalOtpRequests: 0, totalFailedAttempts: 0 });
+
+  const rentLockStats = analytics.availabilityStats || {};
+  const rentLockedTotal = (rentLockStats.reserved || 0) + (rentLockStats.under_contract || 0);
+  const activeRentalCount = rentLockStats.rented || 0;
 
   // Lock body scroll when deletion modals are open on dashboard
   useEffect(() => {
@@ -373,6 +385,19 @@ export default function AdminDashboard() {
         rent: listingsData.filter(l => l.type === 'rent').length,
         offer: listingsData.filter(l => l.offer).length
       };
+
+      const availabilityStats = listingsData.reduce((acc, listing) => {
+        const status = listing.availabilityStatus || 'available';
+        acc[status] = (acc[status] || 0) + 1;
+        return acc;
+      }, {
+        available: 0,
+        reserved: 0,
+        under_contract: 0,
+        rented: 0,
+        sold: 0,
+        suspended: 0
+      });
 
       const topProperties = listingsData
         .filter(l => l.averageRating > 0)
@@ -675,6 +700,7 @@ export default function AdminDashboard() {
         pendingReviews: reviewsData.pendingReviews,
         averageRating: reviewsData.averageRating,
         listingStats,
+        availabilityStats,
         topProperties,
         topCities,
         recentListings,
@@ -1125,7 +1151,7 @@ export default function AdminDashboard() {
             <span className="text-xs sm:text-sm text-gray-500">(Essential for Platform Health)</span>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
             {/* Users Card */}
             <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-blue-200">
               <div className="flex items-center justify-between mb-4">
@@ -1198,6 +1224,33 @@ export default function AdminDashboard() {
               </div>
               <div className="text-xs text-gray-500">
                 Average views per property listing
+              </div>
+            </div>
+
+            {/* Rent Lock Card */}
+            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-indigo-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-600 mb-1">Rent-Locked Deals</p>
+                  <p className="text-3xl font-bold text-indigo-600 group-hover:scale-105 transition-transform duration-200">{rentLockedTotal}</p>
+                </div>
+                <div className="bg-gradient-to-r from-indigo-100 to-indigo-200 p-3 rounded-xl group-hover:from-indigo-200 group-hover:to-indigo-300 transition-all duration-300">
+                  <FaLock className="text-2xl text-indigo-600" />
+                </div>
+              </div>
+              <div className="space-y-1 text-xs text-gray-600">
+                <div className="flex items-center justify-between">
+                  <span>Reserved</span>
+                  <span className="font-semibold text-gray-800">{rentLockStats.reserved || 0}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Under Contract</span>
+                  <span className="font-semibold text-gray-800">{rentLockStats.under_contract || 0}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Active Rentals</span>
+                  <span className="font-semibold text-gray-800">{activeRentalCount}</span>
+                </div>
               </div>
             </div>
           </div>
