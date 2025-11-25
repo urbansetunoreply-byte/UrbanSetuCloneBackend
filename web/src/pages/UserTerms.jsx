@@ -39,10 +39,18 @@ export default function UserTerms() {
           <li>Notifications for price drops, new listings, and appointments.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">5. Liability</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">5. Property & Transaction Responsibilities</h2>
         <ul className="list-disc ml-6 space-y-3">
-          <li>We are not party to property transactions between users.</li>
-          <li>We are not responsible for third-party actions.</li>
+          <li><strong>Truthful Listings:</strong> If you post a property, all details (price, location, size, photos) must be accurate and not misleading.</li>
+          <li><strong>Viewing & Visits:</strong> Coordinate property visits safely and comply with local rules (society rules, visiting hours, safety norms).</li>
+          <li><strong>Contracts:</strong> All purchase or rental agreements are between buyer and seller/landlord. You should seek independent legal advice where needed.</li>
+          <li><strong>Payments:</strong> Use secure payment methods and follow platform guidance for deposits, booking amounts, and rent security.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">6. Liability</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li>We facilitate discovery, communication, and certain payment flows, but we are not a party to the underlying real estate contract.</li>
+          <li>We are not responsible for third‑party actions, misrepresentations, or disputes between users, except where required by applicable law.</li>
         </ul>
 
         <p className="mt-6 text-sm text-gray-600">Last updated: {new Date().toLocaleDateString(`en-IN`, {

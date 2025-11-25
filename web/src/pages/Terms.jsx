@@ -105,7 +105,77 @@ export default function Terms() {
           <li><strong>Damages:</strong> Our liability is limited to the maximum extent permitted by law.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">12. Changes to Terms</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">12. Property Transactions & Escrow</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Escrow Services:</strong> We may hold deposits in trust during property transactions. All escrow accounts are maintained in accordance with applicable real estate laws and regulations.</li>
+          <li><strong>Transaction Timeline:</strong> Property purchases and sales follow agreed timelines. Any deviation requires mutual consent in writing.</li>
+          <li><strong>Contingencies:</strong> Transaction contingencies (inspection, appraisal, financing) must be clearly documented and communicated to all parties.</li>
+          <li><strong>Earnest Money:</strong> Earnest money deposits are held in escrow and released according to transaction terms or applicable law.</li>
+          <li><strong>Title & Documentation:</strong> All property documentation, title insurance, and legal paperwork are the responsibility of the transacting parties and their legal representatives.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">13. Fair Housing & Non-Discrimination</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Legal Compliance:</strong> We comply with the Fair Housing Act and applicable fair housing laws in all jurisdictions.</li>
+          <li><strong>No Discrimination:</strong> Discrimination in property sales, rentals, or services based on race, color, national origin, religion, sex, familial status, disability, sexual orientation, or gender identity is strictly prohibited.</li>
+          <li><strong>Reporting Violations:</strong> Users may report fair housing violations through our platform for investigation and action.</li>
+          <li><strong>Accessibility:</strong> All properties and services must be made accessible to individuals with disabilities to the extent legally required.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">14. Broker Commissions & Fees</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Transparency:</strong> All commissions and fees must be disclosed upfront and agreed upon before services are rendered.</li>
+          <li><strong>Commission Structure:</strong> Standard commissions (typically 5-6% split between buyer and seller agents) may vary by transaction and agreement.</li>
+          <li><strong>Flat Fees:</strong> Alternative fee arrangements (flat fees, hourly rates) are permitted if mutually agreed in writing.</li>
+          <li><strong>Broker Responsibilities:</strong> Licensed brokers are responsible for managing escrow accounts, regulatory compliance, and agent conduct.</li>
+          <li><strong>Dispute Resolution:</strong> Commission disputes are resolved through negotiation, mediation, or arbitration as agreed.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">15. Property Disclosures & Representations</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Seller Obligations:</strong> Sellers must disclose known material defects, property condition, title issues, and environmental concerns.</li>
+          <li><strong>Latent Defects:</strong> Sellers must disclose latent defects (not readily apparent) that would affect property value or habitability.</li>
+          <li><strong>Property Condition Report:</strong> Many jurisdictions require detailed property condition reports; sellers must comply with local requirements.</li>
+          <li><strong>Honest Representations:</strong> All representations about property condition, improvements, or compliance must be truthful and based on actual knowledge.</li>
+          <li><strong>Consequences of Misrepresentation:</strong> Deliberate misrepresentation may result in legal liability, financial damages, or criminal charges.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">16. Insurance & Risk Management</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Homeowners Insurance:</strong> Buyers are required to obtain homeowners insurance before closing. Proof of insurance is required by lenders.</li>
+          <li><strong>Title Insurance:</strong> Title insurance protects against ownership disputes and is typically paid by the seller at closing.</li>
+          <li><strong>Platform Liability:</strong> We maintain insurance for our operations but do not insure individual transactions or properties.</li>
+          <li><strong>User Responsibility:</strong> Users should obtain appropriate insurance for their properties and activities.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">17. Regional Compliance & Regulations</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>India Real Estate Laws:</strong> Transactions comply with the Real Estate (Regulation and Development) Act (RERA) and state-specific regulations.</li>
+          <li><strong>GST Compliance:</strong> Goods and Services Tax (GST) is applied per applicable rates and regulations.</li>
+          <li><strong>Local Laws:</strong> All transactions adhere to municipal, state, and national property laws and regulations.</li>
+          <li><strong>GDPR/Privacy Laws:</strong> International transactions follow GDPR and applicable data protection regulations.</li>
+          <li><strong>Currency & Taxation:</strong> International transactions include currency conversion details and applicable tax reporting.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">18. Dispute Resolution & Mediation</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Negotiation First:</strong> All disputes should first be resolved through direct negotiation between parties.</li>
+          <li><strong>Mediation:</strong> If negotiation fails, parties agree to attempt mediation through a neutral third party.</li>
+          <li><strong>Arbitration:</strong> Unresolved disputes may be submitted to binding arbitration per applicable laws and agreements.</li>
+          <li><strong>Legal Remedies:</strong> Parties retain the right to pursue legal remedies through courts if mediation/arbitration fails.</li>
+          <li><strong>Admin Role:</strong> Admins may provide mediation services but are not party to disputes and maintain impartiality.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">19. Fraud Prevention & Security</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Identity Verification:</strong> All users must provide verified identity documentation for high-value transactions.</li>
+          <li><strong>Fraud Detection:</strong> We employ AI and manual monitoring to detect and prevent fraudulent activities.</li>
+          <li><strong>Reporting Fraud:</strong> Users should immediately report suspected fraud to our support team.</li>
+          <li><strong>Escrow Protection:</strong> Escrow accounts protect buyers from fraud during transaction periods.</li>
+          <li><strong>Consequences:</strong> Fraudulent activities result in account termination, legal referral, and potential criminal prosecution.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">20. Changes to Terms</h2>
         <p className="ml-6">We may update these terms from time to time. Significant changes will be communicated through email or platform notifications. Continued use of the platform constitutes acceptance of the updated terms.</p>
 
         <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200">

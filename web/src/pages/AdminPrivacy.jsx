@@ -48,6 +48,28 @@ export default function AdminPrivacy() {
           <li>Despite safeguards, no system is perfect—use admin tools responsibly.</li>
         </ul>
 
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">6. Real Estate Data & Transaction Access</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Scoped Access:</strong> Admins may view transaction histories, rent locks, wallet activity, and call/chat logs only for legitimate operational reasons.</li>
+          <li><strong>Document Handling:</strong> Access to sale/rent agreements, KYC files, and ownership documents is restricted to senior or compliance-approved admins.</li>
+          <li><strong>Screen Monitoring:</strong> Any use of "live" monitoring tools is strictly for fraud prevention, dispute resolution, and safety review—not for personal surveillance.</li>
+          <li><strong>Download Controls:</strong> Downloading or exporting sensitive documents must follow internal policies and legal obligations.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">7. Audit Logs & Monitoring</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Action Logs:</strong> Critical admin actions (approvals, removals, refunds, locks/unlocks) are logged with timestamp, IP, and admin identity.</li>
+          <li><strong>Review & Oversight:</strong> Logs may be periodically reviewed by senior admins or compliance teams.</li>
+          <li><strong>Misuse Detection:</strong> Unusual viewing or export patterns may trigger internal review.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">8. Data Retention & Legal Compliance</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Retention:</strong> Admin activity logs, moderation records, and escalation notes may be retained for extended periods for legal, audit, and fraud‑prevention purposes.</li>
+          <li><strong>Access on Need Basis:</strong> Only authorized roles (e.g., compliance, legal, founders) may access historical admin logs.</li>
+          <li><strong>Lawful Requests:</strong> Where required, relevant admin activity data may be shared with regulators, law‑enforcement, or courts.</li>
+        </ul>
+
         <div className="mt-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-800 mb-2">Related Policies</h3>
           <p className="text-gray-700 mb-3">For information about how we use cookies and similar technologies, please review our:</p>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { createPortal } from 'react-dom';
-import { FaTrash, FaSearch, FaPen, FaPaperPlane, FaUser, FaEnvelope, FaCalendar, FaPhone, FaVideo, FaUserShield, FaArchive, FaUndo, FaCommentDots, FaCheck, FaCheckDouble, FaBan, FaTimes, FaLightbulb, FaCopy, FaEllipsisV, FaInfoCircle, FaSync, FaStar, FaRegStar, FaFlag, FaCalendarAlt, FaCheckSquare, FaDownload, FaSpinner, FaDollarSign, FaHistory } from "react-icons/fa";
+import { FaTrash, FaSearch, FaPen, FaPaperPlane, FaUser, FaEnvelope, FaCalendar, FaPhone, FaVideo, FaUserShield, FaArchive, FaUndo, FaCommentDots, FaCheck, FaCheckDouble, FaBan, FaTimes, FaLightbulb, FaCopy, FaEllipsisV, FaInfoCircle, FaSync, FaStar, FaRegStar, FaFlag, FaCalendarAlt, FaCheckSquare, FaDownload, FaSpinner, FaDollarSign, FaHistory, FaCircle } from "react-icons/fa";
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
 import UserAvatar from '../components/UserAvatar';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
@@ -2886,6 +2886,17 @@ function AdminAppointmentRow({
   // Call info modal state
   const [showCallInfoModal, setShowCallInfoModal] = useLocalState(false);
   const [selectedCallForInfo, setSelectedCallForInfo] = useLocalState(null);
+  // Live call monitor modal state (admin view)
+  const [showLiveMonitorModal, setShowLiveMonitorModal] = useLocalState(false);
+  
+  // Detect potentially active calls for this appointment based on call history status
+  const activeLiveCall = React.useMemo(() => {
+    if (!Array.isArray(callHistory) || callHistory.length === 0) return null;
+    // Treat calls that are ringing / initiated / accepted as potentially live
+    return callHistory.find(call =>
+      ["initiated", "ringing", "accepted"].includes(call.status)
+    ) || null;
+  }, [callHistory]);
   // Persist draft per appointment when chat is open
   React.useEffect(() => {
     if (!showChatModal || !appt?._id || !currentUser?._id) return;
@@ -3308,10 +3319,23 @@ function AdminAppointmentRow({
     };
   }, [showPasswordModal]);
 
-  // Ensure password modal closes once chat unlocks
+  // Ensure password modal closes once chat unlocks - with proper timing
   React.useEffect(() => {
     if (showChatModal && showPasswordModal) {
-      setShowPasswordModal(false);
+      // Add small delay to ensure state updates properly
+      const timer = setTimeout(() => {
+        setShowPasswordModal(false);
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [showChatModal]);
+
+  // Emergency modal close trigger - ensure modal doesn't stay open
+  React.useEffect(() => {
+    if (!showChatModal && showPasswordModal) {
+      // Password modal should only be visible if chat is NOT showing
+      // This prevents overlap and ensures clean state transitions
+      return;
     }
   }, [showChatModal, showPasswordModal]);
 
@@ -6751,6 +6775,16 @@ function AdminAppointmentRow({
                           <div className="absolute -top-1 right-4 w-2 h-2 bg-gray-800 transform rotate-45"></div>
                         </div>
                       )}
+                      {/* Live Call Monitor button (admin view) */}
+                      <button
+                        className="hidden sm:inline-flex items-center gap-1 text-red-500 hover:text-red-600 bg-red-50/80 hover:bg-red-100 rounded-full px-3 py-1.5 transition-all duration-300 transform hover:scale-110 shadow"
+                        onClick={() => setShowLiveMonitorModal(true)}
+                        title="Live audio/video monitor"
+                        aria-label="Live audio/video monitor"
+                      >
+                        <FaCircle className={`text-[10px] ${activeLiveCall ? 'animate-pulse' : ''}`} />
+                        <span className="text-[10px] font-semibold uppercase tracking-wide">Live</span>
+                      </button>
                       {/* Scroll to bottom button when there are unread messages */}
                       {unreadNewMessages > 0 && !isAtBottom && (
                         <button
@@ -10682,6 +10716,129 @@ function AdminAppointmentRow({
                 Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Live Call Monitor Modal (admin observer view) */}
+      {showLiveMonitorModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-[90] p-3">
+          <div className="bg-gradient-to-br from-gray-900 via-blue-950 to-purple-900 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden relative">
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-white/10">
+              <div className="flex items-center gap-2 text-white">
+                <span className="flex items-center gap-2 px-3 py-1 rounded-full bg-red-600/90 text-xs font-semibold uppercase tracking-wide">
+                  <FaCircle className={`text-[10px] ${activeLiveCall ? 'animate-pulse' : ''}`} />
+                  <span>Live Monitor</span>
+                </span>
+                <span className="hidden sm:inline text-xs sm:text-sm text-white/70">
+                  {appt.propertyName || 'Appointment'} • {appt.date ? new Date(appt.date).toLocaleDateString('en-IN') : ''}
+                </span>
+              </div>
+              <button
+                onClick={() => setShowLiveMonitorModal(false)}
+                className="text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors shadow"
+                title="Close live monitor"
+                aria-label="Close live monitor"
+              >
+                <FaTimes className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Body */}
+            {activeLiveCall ? (
+              <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                {/* Buyer side */}
+                <div className="flex flex-col h-full rounded-2xl bg-white/5 border border-white/10 p-4 sm:p-5">
+                  <div className="flex items-center gap-3 mb-4">
+                    <UserAvatar
+                      user={{ username: appt.buyerId?.username, avatar: appt.buyerId?.avatar }}
+                      size="w-12 h-12"
+                      textSize="text-lg"
+                      showBorder={true}
+                      className="border-2 border-white/60 shadow-lg"
+                    />
+                    <div className="flex flex-col">
+                      <span className="text-sm sm:text-base font-semibold text-white">
+                        {appt.buyerId?.username || 'Buyer'}
+                      </span>
+                      <span className="text-[10px] text-white/60 uppercase tracking-wide">Buyer Side</span>
+                    </div>
+                  </div>
+                  <div className="flex-1 rounded-xl bg-gradient-to-br from-blue-500/30 via-blue-900/40 to-black/60 flex flex-col items-center justify-center border border-white/10 relative overflow-hidden">
+                    <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top,_#ffffff33_0,_transparent_60%)]" />
+                    <div className="relative flex flex-col items-center justify-center text-center px-4">
+                      {activeLiveCall.callType === 'video' ? (
+                        <FaVideo className="text-4xl sm:text-5xl text-white mb-3 animate-pulse" />
+                      ) : (
+                        <FaPhone className="text-4xl sm:text-5xl text-white mb-3 animate-pulse" />
+                      )}
+                      <p className="text-white text-sm sm:text-base font-semibold">
+                        Live {activeLiveCall.callType === 'video' ? 'video' : 'audio'} call in progress
+                      </p>
+                      <p className="mt-2 text-xs sm:text-sm text-white/70 max-w-xs">
+                        Admin is monitoring this side of the conversation. Actual media streams remain between buyer and seller.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Seller side */}
+                <div className="flex flex-col h-full rounded-2xl bg-white/5 border border-white/10 p-4 sm:p-5">
+                  <div className="flex items-center gap-3 mb-4">
+                    <UserAvatar
+                      user={{ username: appt.sellerId?.username, avatar: appt.sellerId?.avatar }}
+                      size="w-12 h-12"
+                      textSize="text-lg"
+                      showBorder={true}
+                      className="border-2 border-white/60 shadow-lg"
+                    />
+                    <div className="flex flex-col">
+                      <span className="text-sm sm:text-base font-semibold text-white">
+                        {appt.sellerId?.username || 'Seller'}
+                      </span>
+                      <span className="text-[10px] text-white/60 uppercase tracking-wide">Seller Side</span>
+                    </div>
+                  </div>
+                  <div className="flex-1 rounded-xl bg-gradient-to-br from-purple-500/30 via-purple-900/40 to-black/60 flex flex-col items-center justify-center border border-white/10 relative overflow-hidden">
+                    <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top,_#ffffff33_0,_transparent_60%)]" />
+                    <div className="relative flex flex-col items-center justify-center text-center px-4">
+                      {activeLiveCall.callType === 'video' ? (
+                        <FaVideo className="text-4xl sm:text-5xl text-white mb-3 animate-pulse" />
+                      ) : (
+                        <FaPhone className="text-4xl sm:text-5xl text-white mb-3 animate-pulse" />
+                      )}
+                      <p className="text-white text-sm sm:text-base font-semibold">
+                        Mirrored {activeLiveCall.callType === 'video' ? 'video' : 'audio'} feed
+                      </p>
+                      <p className="mt-2 text-xs sm:text-sm text-white/70 max-w-xs">
+                        Visual representation of the seller side while preserving end-to-end media privacy.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center p-8 sm:p-12 text-center text-white">
+                <FaVideo className="text-4xl sm:text-5xl text-white/60 mb-4" />
+                <p className="text-lg sm:text-xl font-semibold mb-2">
+                  Live call or video is not initiated by other parties
+                </p>
+                <p className="text-xs sm:text-sm text-white/70 mb-6 max-w-xl">
+                  When a buyer or seller starts an audio or video call from this appointment, you can monitor it here in real time.
+                </p>
+                <button
+                  onClick={() => {
+                    navigate('/admin/call-history');
+                    setShowLiveMonitorModal(false);
+                  }}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-blue-700 font-semibold text-xs sm:text-sm shadow-lg hover:bg-blue-50 transition-colors"
+                >
+                  <FaHistory className="text-sm" />
+                  Go to Admin Call History
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

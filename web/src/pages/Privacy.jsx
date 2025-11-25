@@ -84,7 +84,34 @@ export default function Privacy() {
         <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">9. Children's Privacy</h2>
         <p className="ml-6">Our platform is not intended for users under 18 years of age. We do not knowingly collect personal information from children.</p>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">10. Changes to This Policy</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">10. Real Estate Transaction & Document Data</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Transaction Records:</strong> We store records of property inquiries, offers, negotiations, appointments, and completed transactions.</li>
+          <li><strong>Legal Documents:</strong> Copies of sale/rent agreements, KYC documents, ownership proofs, and supporting documents may be stored as required by law.</li>
+          <li><strong>Verification Data:</strong> PAN, Aadhaar or other ID details (where applicable) may be processed via secure providers for KYC and anti‑fraud checks.</li>
+          <li><strong>Document Retention:</strong> Real estate transaction documents may be retained for extended periods to comply with tax, audit, and property law requirements.</li>
+          <li><strong>Access Controls:</strong> Access to legal and property documents is restricted to authorized personnel and relevant parties only.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">11. Payments, Wallets & Escrow Data</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Payment Details:</strong> We process limited payment information (transaction IDs, masked card or UPI details) via PCI‑DSS compliant payment gateways.</li>
+          <li><strong>Escrow & Deposits:</strong> Booking amounts, deposits, and rent locks may be held in escrow accounts with detailed transaction logs.</li>
+          <li><strong>Refund Information:</strong> Refunds, chargebacks, and settlement information are recorded for compliance and dispute resolution.</li>
+          <li><strong>Wallet/Balance Data:</strong> Any in‑platform wallets or rent wallets store balance, ledger, and withdrawal history.</li>
+          <li><strong>No Card Storage:</strong> We do not store full card numbers, CVV, or sensitive authentication data on our servers.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">12. Legal Basis & Regulatory Compliance</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Contractual Necessity:</strong> We process data to perform our obligations under user agreements, bookings, and property transactions.</li>
+          <li><strong>Legitimate Interest:</strong> We use data to prevent fraud, improve services, and secure the platform while respecting your rights.</li>
+          <li><strong>Consent:</strong> For marketing, advanced analytics, and certain cookies, we rely on your explicit consent.</li>
+          <li><strong>Compliance with Laws:</strong> We process and retain data as required by real estate, tax, anti‑money‑laundering, and data‑protection laws (including RERA and applicable data privacy laws).</li>
+          <li><strong>International Transfers:</strong> When data is transferred outside your country, we implement appropriate safeguards such as contractual clauses and vetted vendors.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">13. Changes to This Policy</h2>
         <p className="ml-6">We may update this privacy policy from time to time. We will notify you of significant changes through email or platform notifications. Continued use of the platform constitutes acceptance of the updated policy.</p>
 
         <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
