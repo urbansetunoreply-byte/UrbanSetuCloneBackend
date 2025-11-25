@@ -103,6 +103,13 @@ export default function Listing() {
   const [showSmartPriceInsightsTooltip, setShowSmartPriceInsightsTooltip] = useState(false);
   const [showReviewsTooltip, setShowReviewsTooltip] = useState(false);
   const [showRentalRatingsTooltip, setShowRentalRatingsTooltip] = useState(false);
+  const [showRentPredictionTooltip, setShowRentPredictionTooltip] = useState(false);
+  const [showLocalityScoreTooltip, setShowLocalityScoreTooltip] = useState(false);
+  const [showRentTooltip, setShowRentTooltip] = useState(false);
+  const [showBookAppointmentTooltip, setShowBookAppointmentTooltip] = useState(false);
+  const [showLocationTooltip, setShowLocationTooltip] = useState(false);
+  const [showWishlistTooltip, setShowWishlistTooltip] = useState(false);
+  const [showEsgTooltip, setShowEsgTooltip] = useState(false);
   const [confirmModal, setConfirmModal] = useState({ open: false, type: null, propertyId: null, origin: null, message: '' });
   const [showSocialShare, setShowSocialShare] = useState(false);
   const [showComparisonSocialShare, setShowComparisonSocialShare] = useState(false);
@@ -763,6 +770,13 @@ export default function Listing() {
     setShowComparisonTooltip(false);
     setShowReviewsTooltip(false);
     setShowRentalRatingsTooltip(false);
+    setShowRentPredictionTooltip(false);
+    setShowLocalityScoreTooltip(false);
+    setShowRentTooltip(false);
+    setShowBookAppointmentTooltip(false);
+    setShowLocationTooltip(false);
+    setShowWishlistTooltip(false);
+    setShowEsgTooltip(false);
     
     // Show the specific tooltip
     switch(tooltipType) {
@@ -789,6 +803,34 @@ export default function Listing() {
       case 'rentalRatings':
         setShowRentalRatingsTooltip(true);
         setTimeout(() => setShowRentalRatingsTooltip(false), 3000);
+        break;
+      case 'rentPrediction':
+        setShowRentPredictionTooltip(true);
+        setTimeout(() => setShowRentPredictionTooltip(false), 3000);
+        break;
+      case 'localityScore':
+        setShowLocalityScoreTooltip(true);
+        setTimeout(() => setShowLocalityScoreTooltip(false), 3000);
+        break;
+      case 'rent':
+        setShowRentTooltip(true);
+        setTimeout(() => setShowRentTooltip(false), 3000);
+        break;
+      case 'appointment':
+        setShowBookAppointmentTooltip(true);
+        setTimeout(() => setShowBookAppointmentTooltip(false), 3000);
+        break;
+      case 'location':
+        setShowLocationTooltip(true);
+        setTimeout(() => setShowLocationTooltip(false), 3000);
+        break;
+      case 'wishlist':
+        setShowWishlistTooltip(true);
+        setTimeout(() => setShowWishlistTooltip(false), 3000);
+        break;
+      case 'esg':
+        setShowEsgTooltip(true);
+        setTimeout(() => setShowEsgTooltip(false), 3000);
         break;
       default:
         break;
@@ -1501,30 +1543,34 @@ export default function Listing() {
                 )}
                 {/* Wishlist Heart Icon - hide for admins */}
                 {(!currentUser || (currentUser && !(currentUser.role === 'admin' || currentUser.role === 'rootadmin'))) && (
-                  <button
-                    onClick={() => {
-                      if (!currentUser) {
-                        toast.info('Please sign in to add properties to your wishlist.');
-                        navigate('/sign-in');
-                        return;
-                      }
-                      if (isInWishlist(listing._id)) {
-                        removeFromWishlist(listing._id);
-                        // Update wishlist count
-                        setWishlistCount(prev => Math.max(0, prev - 1));
-                      } else {
-                        addToWishlist(listing);
-                        // Update wishlist count
-                        setWishlistCount(prev => prev + 1);
-                        //toast.success('Property added to your wishlist.');
-                      }
-                    }}
-                    className={`ml-2 p-2 rounded-full transition z-20 ${isInWishlist(listing._id) ? 'bg-red-500 text-white' : 'bg-gray-200 text-red-500 hover:text-red-600'} focus:outline-none`}
-                    title={isInWishlist(listing._id) ? 'Remove from wishlist' : 'Add to wishlist'}
-                    style={{ lineHeight: 0 }}
-                  >
-                    <FaHeart className="text-base sm:text-lg" />
-                  </button>
+                  <div className="ml-2 relative inline-block">
+                    <button
+                      onClick={() => {
+                        if (!currentUser) {
+                          showSignInPrompt('wishlist');
+                          return;
+                        }
+                        if (isInWishlist(listing._id)) {
+                          removeFromWishlist(listing._id);
+                          setWishlistCount(prev => Math.max(0, prev - 1));
+                        } else {
+                          addToWishlist(listing);
+                          setWishlistCount(prev => prev + 1);
+                        }
+                      }}
+                      className={`p-2 rounded-full transition z-20 ${isInWishlist(listing._id) ? 'bg-red-500 text-white' : 'bg-gray-200 text-red-500 hover:text-red-600'} focus:outline-none`}
+                      title={isInWishlist(listing._id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                      style={{ lineHeight: 0 }}
+                    >
+                      <FaHeart className="text-base sm:text-lg" />
+                    </button>
+                    {showWishlistTooltip && (
+                      <div className="absolute bottom-full right-0 mb-2 bg-red-600 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap shadow-lg">
+                        Please login to save properties
+                        <div className="absolute top-full right-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
+                      </div>
+                    )}
+                  </div>
                 )}
                 
                 {/* Watchlist Eye Icon - for users only */}
@@ -1613,12 +1659,20 @@ export default function Listing() {
 
             {listing.locationLink && !shouldShowLocationLink(!!currentUser) && (
               <div className="mb-4">
-                <button
-                  onClick={() => navigate('/sign-in')}
-                  className="inline-block bg-gradient-to-r from-gray-500 to-gray-600 text-white px-6 py-3 rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all transform hover:scale-105 shadow-lg font-semibold"
-                >
-                  {getLocationLinkText(!!currentUser)}
-                </button>
+                <div className="inline-block relative">
+                  <button
+                    onClick={() => showSignInPrompt('location')}
+                    className="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-6 py-3 rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all transform hover:scale-105 shadow-lg font-semibold"
+                  >
+                    {getLocationLinkText(!!currentUser)}
+                  </button>
+                  {showLocationTooltip && (
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap shadow-lg">
+                      Please login to view location
+                      <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-red-600 transform rotate-45"></div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
@@ -2076,8 +2130,13 @@ export default function Listing() {
           {listing.type === "rent" && (
             <>
               <div className="flex justify-center gap-4 mt-8 flex-wrap">
-                <button
-                  onClick={async () => {
+                <div className="relative">
+                  <button
+                    onClick={async () => {
+                      if (!currentUser) {
+                        showSignInPrompt('rentPrediction');
+                        return;
+                      }
                     if (!showRentPrediction && !rentPrediction) {
                       setPredictionLoading(true);
                       try {
@@ -2106,12 +2165,24 @@ export default function Listing() {
                     }
                     setShowRentPrediction((prev) => !prev);
                   }}
-                  className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2 hover:from-blue-600 hover:to-indigo-700 transition-all"
-                >
-                  {predictionLoading ? 'Loading...' : showRentPrediction ? 'Hide Rent Prediction' : 'Show AI Rent Prediction'}
-                </button>
-                <button
-                  onClick={async () => {
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2 hover:from-blue-600 hover:to-indigo-700 transition-all"
+                  >
+                    {predictionLoading ? 'Loading...' : showRentPrediction ? 'Hide Rent Prediction' : 'Show AI Rent Prediction'}
+                  </button>
+                  {showRentPredictionTooltip && (
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-red-600 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap shadow-lg">
+                      Please login to view AI rent predictions
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-red-600 transform rotate-45"></div>
+                    </div>
+                  )}
+                </div>
+                <div className="relative">
+                  <button
+                    onClick={async () => {
+                      if (!currentUser) {
+                        showSignInPrompt('localityScore');
+                        return;
+                      }
                     if (!showLocalityScore && !localityScore) {
                       setLocalityLoading(true);
                       try {
@@ -2128,10 +2199,17 @@ export default function Listing() {
                     }
                     setShowLocalityScore((prev) => !prev);
                   }}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2 hover:from-green-600 hover:to-emerald-700 transition-all"
-                >
-                  {localityLoading ? 'Loading...' : showLocalityScore ? 'Hide Locality Score' : 'Show Locality Score'}
-                </button>
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2 hover:from-green-600 hover:to-emerald-700 transition-all"
+                  >
+                    {localityLoading ? 'Loading...' : showLocalityScore ? 'Hide Locality Score' : 'Show Locality Score'}
+                  </button>
+                  {showLocalityScoreTooltip && (
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-red-600 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap shadow-lg">
+                      Please login to view locality scores
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-red-600 transform rotate-45"></div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Rent Prediction Display */}
@@ -2143,8 +2221,7 @@ export default function Listing() {
                       loading={predictionLoading}
                       onGenerate={async () => {
                         if (!currentUser) {
-                          toast.info('Please sign in to generate predictions');
-                          navigate('/sign-in');
+                          showSignInPrompt('rentPrediction');
                           return;
                         }
                         setPredictionLoading(true);
@@ -2188,8 +2265,18 @@ export default function Listing() {
 
           {/* ESG Information Section */}
           {listing.esg ? (
-            <div className="p-6 bg-white shadow-md rounded-lg mb-6">
-              <ESGDisplay esg={listing.esg} />
+            <div className="p-6 bg-white shadow-md rounded-lg mb-6 relative">
+              {showEsgTooltip && (
+                <div className="absolute -top-3 right-4 -translate-y-full bg-red-600 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap shadow-lg">
+                  Please login to expand ESG insights
+                  <div className="absolute top-full right-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
+                </div>
+              )}
+              <ESGDisplay
+                esg={listing.esg}
+                isAuthenticated={!!currentUser}
+                onAuthRequired={() => showSignInPrompt('esg')}
+              />
             </div>
           ) : (
             <div className="p-6 bg-gray-50 shadow-md rounded-lg mb-6">
@@ -2325,68 +2412,79 @@ export default function Listing() {
               <>
                 {/* Rent Property Button (only for rental properties) */}
                 {listing.type === "rent" && (
-                  <button
-                    onClick={async () => {
-                      if (!currentUser) {
-                        toast.info('Please sign in to rent a property.');
-                        navigate('/sign-in');
-                        return;
-                      }
-                      
-                      // Check if there's a pending contract for this listing
-                      try {
-                        // Fetch all contracts and filter client-side for pending ones
-                        const res = await fetch(`${API_BASE_URL}/api/rental/contracts`, {
-                          credentials: 'include'
-                        });
+                  <div className="relative">
+                    <button
+                      onClick={async () => {
+                        if (!currentUser) {
+                          showSignInPrompt('rent');
+                          return;
+                        }
                         
-                        if (res.ok) {
-                          const data = await res.json();
-                          if (data.contracts && data.contracts.length > 0) {
-                            // Find pending contract for this listing (pending_signature or draft status)
-                            const pendingContract = data.contracts.find(
-                              c => (c.status === 'pending_signature' || c.status === 'draft') &&
-                                   (c.listingId?._id === listing._id || c.listingId === listing._id) &&
-                                   (c.tenantId?._id === currentUser._id || c.tenantId === currentUser._id)
-                            );
-                            
-                            if (pendingContract) {
-                              toast.info('You have a pending contract. Resuming from where you left off.');
-                              navigate(`/user/rent-property?listingId=${listing._id}&contractId=${pendingContract.contractId || pendingContract._id}`);
-                              return;
+                        try {
+                          const res = await fetch(`${API_BASE_URL}/api/rental/contracts`, {
+                            credentials: 'include'
+                          });
+                          
+                          if (res.ok) {
+                            const data = await res.json();
+                            if (data.contracts && data.contracts.length > 0) {
+                              const pendingContract = data.contracts.find(
+                                c => (c.status === 'pending_signature' || c.status === 'draft') &&
+                                     (c.listingId?._id === listing._id || c.listingId === listing._id) &&
+                                     (c.tenantId?._id === currentUser._id || c.tenantId === currentUser._id)
+                              );
+                              
+                              if (pendingContract) {
+                                toast.info('You have a pending contract. Resuming from where you left off.');
+                                navigate(`/user/rent-property?listingId=${listing._id}&contractId=${pendingContract.contractId || pendingContract._id}`);
+                                return;
+                              }
                             }
                           }
+                        } catch (error) {
+                          console.error('Error checking pending contracts:', error);
                         }
-                      } catch (error) {
-                        console.error('Error checking pending contracts:', error);
-                        // Continue with normal flow if check fails
-                      }
-                      
-                      // Normal flow - start new rental process
-                      navigate(`/user/rent-property?listingId=${listing._id}`);
-                    }}
-                    className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-8 py-3 rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2"
-                  >
-                    <FaLock className="inline" /> Rent This Property
-                  </button>
+                        
+                        navigate(`/user/rent-property?listingId=${listing._id}`);
+                      }}
+                      className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-8 py-3 rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2"
+                    >
+                      <FaLock className="inline" /> Rent This Property
+                    </button>
+                    {showRentTooltip && (
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-red-600 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap shadow-lg">
+                        Please login to rent this property
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-red-600 transform rotate-45"></div>
+                      </div>
+                    )}
+                  </div>
                 )}
                 {/* Book Appointment Button */}
-                <button
-                  onClick={() => {
-                    if (!currentUser) {
-                      toast.info('Please sign in to book appointments.');
-                      navigate('/sign-in');
-                      return;
-                    }
-                    const appointmentUrl = isAdminContext 
-                      ? `/admin/appointmentlisting?listingId=${listing._id}&propertyName=${encodeURIComponent(listing.name)}&propertyDescription=${encodeURIComponent(listing.description)}&listingType=${listing.type}`
-                      : `/user/appointment?listingId=${listing._id}&propertyName=${encodeURIComponent(listing.name)}&propertyDescription=${encodeURIComponent(listing.description)}&listingType=${listing.type}`;
-                    navigate(appointmentUrl);
-                  }}
-                  className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2"
-                >
-                  📅 Book Appointment
-                </button>
+                {listing.type !== "rent" && (
+                  <div className="relative">
+                    <button
+                      onClick={() => {
+                        if (!currentUser) {
+                          showSignInPrompt('appointment');
+                          return;
+                        }
+                        const appointmentUrl = isAdminContext 
+                          ? `/admin/appointmentlisting?listingId=${listing._id}&propertyName=${encodeURIComponent(listing.name)}&propertyDescription=${encodeURIComponent(listing.description)}&listingType=${listing.type}`
+                          : `/user/appointment?listingId=${listing._id}&propertyName=${encodeURIComponent(listing.name)}&propertyDescription=${encodeURIComponent(listing.description)}&listingType=${listing.type}`;
+                        navigate(appointmentUrl);
+                      }}
+                      className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2"
+                    >
+                      📅 Book Appointment
+                    </button>
+                    {showBookAppointmentTooltip && (
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-red-600 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap shadow-lg">
+                        Please login to book appointments
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-red-600 transform rotate-45"></div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </>
             )}
           </div>
