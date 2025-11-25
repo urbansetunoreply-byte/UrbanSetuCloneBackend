@@ -65,7 +65,9 @@ export default function PublicSearch() {
             setLoading(true);
             setError(null);
             try {
-                const res = await fetch(`${API_BASE_URL}/api/listing/get?${urlParams.toString()}`);
+                const fetchParams = new URLSearchParams(urlParams);
+                fetchParams.set('visibility', 'public');
+                const res = await fetch(`${API_BASE_URL}/api/listing/get?${fetchParams.toString()}`);
                 if (!res.ok) {
                     throw new Error(`HTTP error! status: ${res.status}`);
                 }
@@ -128,6 +130,7 @@ export default function PublicSearch() {
         try {
             const urlParams = new URLSearchParams(location.search);
             urlParams.set("startIndex", listings.length);
+            urlParams.set("visibility", "public");
             const res = await fetch(`${API_BASE_URL}/api/listing/get?${urlParams.toString()}`);
             if (!res.ok) {
                 throw new Error(`HTTP error! status: ${res.status}`);

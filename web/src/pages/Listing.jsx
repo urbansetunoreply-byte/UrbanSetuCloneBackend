@@ -27,6 +27,25 @@ import RentPredictionDisplay from '../components/rental/RentPredictionDisplay';
 import LocalityScoreDisplay from '../components/rental/LocalityScoreDisplay';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+const UNAVAILABLE_STATUSES = ['reserved', 'under_contract', 'rented', 'sold', 'suspended'];
+const AVAILABILITY_LABELS = {
+  reserved: 'Reserved - Deal In Progress',
+  under_contract: 'Under Rent-Lock Review',
+  rented: 'Currently Rented',
+  sold: 'Sold / Not Available',
+  suspended: 'Temporarily On Hold'
+};
+const LOCK_REASON_MESSAGES = {
+  booking_pending: 'An active booking is already in progress for this property.',
+  awaiting_payment: 'We are waiting for the existing buyer/tenant to finish payment formalities.',
+  contract_in_progress: 'A rent-lock contract is currently being processed for this property.',
+  active_rental: 'This property is secured under an active rent-lock contract.',
+  sale_in_progress: 'A sale transaction for this property is currently being finalized.',
+  admin_hold: 'Our admin team has temporarily paused new bookings for this property.',
+  sold: 'This property is no longer available.',
+  default: 'This property is temporarily unavailable. Please check back later.'
+};
+
 export default function Listing() {
   // Set page title
   usePageTitle("Property Details - View Listing");
@@ -129,6 +148,19 @@ export default function Listing() {
   const [localityScore, setLocalityScore] = useState(null);
   const [showLocalityScore, setShowLocalityScore] = useState(false);
   const [localityLoading, setLocalityLoading] = useState(false);
+
+  const listingAvailabilityStatus = listing?.availabilityStatus;
+  const isListingUnavailable = listing && UNAVAILABLE_STATUSES.includes(listingAvailabilityStatus);
+  const availabilityLabel = listing
+    ? AVAILABILITY_LABELS[listingAvailabilityStatus] || 'Temporarily Unavailable'
+    : 'Temporarily Unavailable';
+  const availabilityMessage = listing
+    ? listing.availabilityMeta?.lockDescription ||
+      LOCK_REASON_MESSAGES[listing?.availabilityMeta?.lockReason] ||
+      LOCK_REASON_MESSAGES[listingAvailabilityStatus] ||
+      LOCK_REASON_MESSAGES.default
+    : '';
+  const availabilityLockedAt = listing?.availabilityMeta?.lockedAt;
   const refreshWatchlistCount = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/watchlist/count/${params.listingId}`, { credentials: 'include' });
@@ -554,7 +586,7 @@ export default function Listing() {
     
     setLoadingSimilar(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/listing/get?type=${listing.type}&city=${listing.city}&limit=4&exclude=${listing._id}`);
+      const res = await fetch(`${API_BASE_URL}/api/listing/get?type=${listing.type}&city=${listing.city}&limit=4&exclude=${listing._id}&visibility=public`);
       if (res.ok) {
         const data = await res.json();
         setSimilarProperties(data.filter(prop => prop._id !== listing._id).slice(0, 3));
@@ -694,8 +726,12 @@ export default function Listing() {
 
     setSearchLoading(true);
     try {
+      if (!listing) {
+        setSearchResults([]);
+        return;
+      }
       // Search across all properties, not just same location
-      const res = await fetch(`${API_BASE_URL}/api/listing/get?limit=50`);
+      const res = await fetch(`${API_BASE_URL}/api/listing/get?limit=50&visibility=public`);
       if (res.ok) {
         const data = await res.json();
         
@@ -2404,14 +2440,33 @@ export default function Listing() {
             </div>
           )}
 
+          {listing && isListingUnavailable && (
+            <div className="w-full bg-amber-50 border border-amber-200 rounded-lg p-4 flex gap-3 items-start mb-6">
+              <FaLock className="text-amber-600 text-xl mt-1 flex-shrink-0" />
+              <div>
+                <p className="font-semibold text-amber-900">{availabilityLabel}</p>
+                <p className="text-sm text-amber-800">{availabilityMessage}</p>
+                {availabilityLockedAt && (
+                  <p className="text-xs text-amber-600 mt-2">
+                    Locked since {new Date(availabilityLockedAt).toLocaleString()}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Rent Property / Book Appointment Buttons */}
           <div className="flex justify-center gap-4 flex-wrap">
-            {currentUser && (listing.sellerId === currentUser._id || listing.userRef === currentUser._id) ? (
+            {currentUser && listing && (listing.sellerId === currentUser._id || listing.userRef === currentUser._id) ? (
               <div className="text-red-500 font-semibold text-lg py-3">You cannot book an appointment or rent your own property.</div>
+            ) : isListingUnavailable ? (
+              <div className="text-amber-800 font-semibold text-center py-3 max-w-2xl">
+                Booking and rent actions are temporarily disabled until the current deal is resolved.
+              </div>
             ) : (
               <>
                 {/* Rent Property Button (only for rental properties) */}
-                {listing.type === "rent" && (
+                {listing?.type === "rent" && (
                   <div className="relative">
                     <button
                       onClick={async () => {
@@ -2460,7 +2515,7 @@ export default function Listing() {
                   </div>
                 )}
                 {/* Book Appointment Button */}
-                {listing.type !== "rent" && (
+                {listing?.type !== "rent" && (
                   <div className="relative">
                     <button
                       onClick={() => {

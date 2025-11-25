@@ -79,7 +79,9 @@ export default function AdminExplore() {
     const fetchListings = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/get?${urlParams.toString()}`);
+        const fetchParams = new URLSearchParams(urlParams);
+        fetchParams.set('visibility', 'public');
+        const res = await fetch(`${API_BASE_URL}/api/listing/get?${fetchParams.toString()}`);
         const data = await res.json();
         setListings(data);
         setShowMoreListing(data.length > 8);
@@ -674,6 +676,7 @@ export default function AdminExplore() {
   const showMoreListingClick = async () => {
     const urlParams = new URLSearchParams(location.search);
     urlParams.set("startIndex", listings.length);
+    urlParams.set("visibility", "public");
     const res = await fetch(`${API_BASE_URL}/api/listing/get?${urlParams.toString()}`);
     const data = await res.json();
     setListings((prev) => [...prev, ...data]);

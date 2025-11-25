@@ -559,6 +559,45 @@ export const getListings=async (req,res,next)=>{
         if (bedrooms) query.bedrooms = bedrooms;
         if (bathrooms) query.bathrooms = bathrooms;
 
+        const visibility = req.query.visibility || 'all';
+        const availabilityFilter = req.query.availabilityStatus;
+        const excludeAvailabilityFilter = req.query.excludeAvailabilityStatus;
+        const availabilityConditions = [];
+
+        if (visibility === 'public') {
+            availabilityConditions.push({
+                $or: [
+                    { availabilityStatus: { $exists: false } },
+                    { availabilityStatus: 'available' }
+                ]
+            });
+        } else if (availabilityFilter) {
+            const statuses = availabilityFilter.split(',').map((s) => s.trim()).filter(Boolean);
+            if (statuses.length) {
+                const orConditions = [
+                    { availabilityStatus: { $in: statuses } }
+                ];
+                if (statuses.includes('available')) {
+                    orConditions.push({ availabilityStatus: { $exists: false } });
+                }
+                availabilityConditions.push({ $or: orConditions });
+            }
+        } else if (excludeAvailabilityFilter) {
+            const statuses = excludeAvailabilityFilter.split(',').map((s) => s.trim()).filter(Boolean);
+            if (statuses.length) {
+                availabilityConditions.push({
+                    $or: [
+                        { availabilityStatus: { $exists: false } },
+                        { availabilityStatus: { $nin: statuses } }
+                    ]
+                });
+            }
+        }
+
+        if (availabilityConditions.length) {
+            query.$and = [...(query.$and || []), ...availabilityConditions];
+        }
+
         const listings=await Listing.find(query)
             .sort({[sortField]:sortOrder})
             .limit(limit)

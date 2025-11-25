@@ -20,6 +20,12 @@ import {
 } from '../utils/emailService.js';
 import { rejectContractForBooking } from '../controllers/rental.controller.js';
 import bcryptjs from 'bcryptjs';
+import { 
+  isListingUnavailable, 
+  getAvailabilityGuardMessage, 
+  lockListingForBooking, 
+  releaseListingLock 
+} from '../utils/listingAvailability.js';
 
 const router = express.Router();
 
@@ -39,6 +45,19 @@ router.post("/", verifyToken, async (req, res) => {
     const seller = await User.findById(listing.userRef);
     if (!seller) {
       return res.status(404).json({ message: "Property owner not found. Please contact support." });
+    }
+    if (isListingUnavailable(listing)) {
+      return res.status(400).json({
+        message: getAvailabilityGuardMessage(listing),
+        code: 'PROPERTY_LOCKED'
+      });
+    }
+
+    if (isListingUnavailable(listing)) {
+      return res.status(400).json({
+        message: getAvailabilityGuardMessage(listing),
+        code: 'PROPERTY_LOCKED'
+      });
     }
 
     // Get buyer details
@@ -98,6 +117,15 @@ router.post("/", verifyToken, async (req, res) => {
     });
     
     await newBooking.save();
+    try {
+      await lockListingForBooking({
+        listingId,
+        bookingId: newBooking._id,
+        lockReason: purpose === 'rent' ? 'awaiting_payment' : 'booking_pending'
+      });
+    } catch (lockError) {
+      console.error('Failed to lock listing after booking creation:', lockError);
+    }
     // Emit socket.io event for real-time new appointment
     const io = req.app.get('io');
     if (io) {
@@ -422,6 +450,18 @@ router.patch('/:id/status', verifyToken, async (req, res) => {
       io.emit('appointmentUpdate', { appointmentId: id, updatedAppointment: updated });
       // Also emit to admin rooms for real-time updates
       io.to('admin_*').emit('appointmentUpdate', { appointmentId: id, updatedAppointment: updated });
+    }
+
+    if (status === 'rejected') {
+      try {
+        await releaseListingLock({
+          listingId: bookingToUpdate.listingId,
+          bookingId: bookingToUpdate._id,
+          releaseReason: 'booking_rejected'
+        });
+      } catch (releaseError) {
+        console.error('Failed to release listing after rejection:', releaseError);
+      }
     }
 
     res.status(200).json(updated);
@@ -1165,6 +1205,15 @@ router.patch('/:id/cancel', verifyToken, async (req, res) => {
           console.error('Error sending cancellation email to seller:', emailError);
         }
       }
+      try {
+        await releaseListingLock({
+          listingId: bookingToCancel.listingId,
+          bookingId: bookingToCancel._id,
+          releaseReason: 'cancelled_by_buyer'
+        });
+      } catch (releaseError) {
+        console.error('Failed to release listing after buyer cancellation:', releaseError);
+      }
       return res.status(200).json(bookingToCancel);
     }
 
@@ -1244,6 +1293,15 @@ router.patch('/:id/cancel', verifyToken, async (req, res) => {
         } catch (emailError) {
           console.error('Error sending cancellation email to buyer:', emailError);
         }
+      }
+      try {
+        await releaseListingLock({
+          listingId: bookingToCancel.listingId,
+          bookingId: bookingToCancel._id,
+          releaseReason: 'cancelled_by_seller'
+        });
+      } catch (releaseError) {
+        console.error('Failed to release listing after seller cancellation:', releaseError);
       }
       return res.status(200).json(bookingToCancel);
     }
@@ -1346,6 +1404,15 @@ router.patch('/:id/cancel', verifyToken, async (req, res) => {
           console.error('Error sending admin cancellation emails:', emailError);
         }
       }
+      try {
+        await releaseListingLock({
+          listingId: bookingToCancel.listingId,
+          bookingId: bookingToCancel._id,
+          releaseReason: 'cancelled_by_admin'
+        });
+      } catch (releaseError) {
+        console.error('Failed to release listing after admin cancellation:', releaseError);
+      }
       return res.status(200).json(bookingToCancel);
     }
 
@@ -1379,6 +1446,17 @@ router.patch('/:id/reinitiate', verifyToken, async (req, res) => {
       return res.status(400).json({ message: 'Only appointments cancelled by admin can be reinitiated.' });
     }
 
+    const listing = await Listing.findById(bookingToReinitiate.listingId);
+    if (!listing) {
+      return res.status(404).json({ message: 'Listing associated with this appointment no longer exists.' });
+    }
+    if (
+      isListingUnavailable(listing) &&
+      (!listing.availabilityMeta?.bookingId || listing.availabilityMeta.bookingId.toString() !== bookingToReinitiate._id.toString())
+    ) {
+      return res.status(400).json({ message: getAvailabilityGuardMessage(listing) });
+    }
+
     // Reset the appointment to pending status
     bookingToReinitiate.status = 'pending';
     bookingToReinitiate.cancelReason = '';
@@ -1386,6 +1464,15 @@ router.patch('/:id/reinitiate', verifyToken, async (req, res) => {
     bookingToReinitiate.cancelledBy = undefined;
     
     await bookingToReinitiate.save();
+    try {
+      await lockListingForBooking({
+        listingId: bookingToReinitiate.listingId,
+        bookingId: bookingToReinitiate._id,
+        lockReason: 'booking_pending'
+      });
+    } catch (lockError) {
+      console.error('Failed to relock listing after admin reinitiation:', lockError);
+    }
 
     // Populate the updated booking for response
     const updated = await booking.findById(id)
@@ -1750,6 +1837,18 @@ router.post('/reinitiate', verifyToken, async (req, res) => {
     if (!buyer || !seller) {
       return res.status(400).json({ message: 'Cannot reinitiate: one of the parties no longer exists.' });
     }
+
+    const listing = await Listing.findById(original.listingId);
+    if (!listing) {
+      return res.status(404).json({ message: 'Listing associated with this appointment no longer exists.' });
+    }
+    if (
+      isListingUnavailable(listing) &&
+      (!listing.availabilityMeta?.bookingId || listing.availabilityMeta.bookingId.toString() !== original._id.toString())
+    ) {
+      return res.status(400).json({ message: getAvailabilityGuardMessage(listing) });
+    }
+
     // Update the same booking: set new date/time/message, status to pending, increment correct count, add to history
     original.date = date;
     original.time = time;
@@ -1763,6 +1862,15 @@ router.post('/reinitiate', verifyToken, async (req, res) => {
     original.visibleToBuyer = true;
     original.visibleToSeller = true;
     await original.save();
+    try {
+      await lockListingForBooking({
+        listingId: original.listingId,
+        bookingId: original._id,
+        lockReason: 'booking_pending'
+      });
+    } catch (lockError) {
+      console.error('Failed to relock listing after user reinitiation:', lockError);
+    }
     // Notify the opposite party when appointment is reinitiated by buyer or seller
     try {
       let notifyUserId, notifyRole;
@@ -2152,6 +2260,15 @@ router.post("/admin", verifyToken, async (req, res) => {
       propertyDescription,
     });
     await newBooking.save();
+    try {
+      await lockListingForBooking({
+        listingId,
+        bookingId: newBooking._id,
+        lockReason: purpose === 'rent' ? 'awaiting_payment' : 'booking_pending'
+      });
+    } catch (lockError) {
+      console.error('Failed to lock listing after admin booking creation:', lockError);
+    }
     // Emit socket.io event for real-time new appointment
     const io = req.app.get('io');
     if (io) {

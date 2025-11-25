@@ -31,6 +31,7 @@ import {
   sendLoanRejectedEmail,
   sendLoanDisbursedEmail
 } from "../utils/emailService.js";
+import { markListingUnderContract, markListingAsRented, releaseListingLock } from "../utils/listingAvailability.js";
 
 // Payment reminder function (can be called by cron job)
 export const sendPaymentReminders = async () => {
@@ -249,6 +250,16 @@ export const createContract = async (req, res, next) => {
     booking.contractId = contract._id;
     booking.rentalStatus = 'pending_contract';
     await booking.save();
+
+    try {
+      await markListingUnderContract({
+        listingId: booking.listingId._id || booking.listingId,
+        bookingId,
+        contractId: contract._id
+      });
+    } catch (lockError) {
+      console.error('Failed to mark listing under contract:', lockError);
+    }
 
     res.status(201).json({
       success: true,
@@ -524,6 +535,43 @@ export const updateContractStatus = async (req, res, next) => {
       await booking.save();
     }
 
+    const listingIdValue = contract.listingId?._id || contract.listingId;
+    if (listingIdValue) {
+      if (status === 'active') {
+        try {
+          await markListingAsRented({
+            listingId: listingIdValue,
+            contractId: contract._id,
+            bookingId: contract.bookingId
+          });
+        } catch (lockError) {
+          console.error('Failed to mark listing as rented during contract status update:', lockError);
+        }
+      } else if (['terminated', 'rejected', 'expired'].includes(status)) {
+        try {
+          await releaseListingLock({
+            listingId: listingIdValue,
+            contractId: contract._id,
+            bookingId: contract.bookingId,
+            releaseReason: status,
+            force: true
+          });
+        } catch (releaseError) {
+          console.error('Failed to release listing during contract status update:', releaseError);
+        }
+      } else if (status === 'pending_signature') {
+        try {
+          await markListingUnderContract({
+            listingId: listingIdValue,
+            bookingId: contract.bookingId,
+            contractId: contract._id
+          });
+        } catch (lockError) {
+          console.error('Failed to mark listing under contract during status update:', lockError);
+        }
+      }
+    }
+
     // Send notifications for rejected/terminated contracts
     if ((status === 'rejected' || status === 'terminated') && contract.tenantId && contract.landlordId) {
       const io = req.app.get('io');
@@ -716,6 +764,19 @@ export const signContract = async (req, res, next) => {
         $set: { 'rentalProfile.isLandlord': true },
         $inc: { 'rentalProfile.activeContractsAsLandlord': 1 }
       });
+
+      const listingIdValue = (booking && (booking.listingId?._id || booking.listingId)) || (contract.listingId?._id || contract.listingId);
+      if (listingIdValue) {
+        try {
+          await markListingAsRented({
+            listingId: listingIdValue,
+            contractId: contract._id,
+            bookingId: contract.bookingId
+          });
+        } catch (lockError) {
+          console.error('Failed to mark listing as rented after contract activation:', lockError);
+        }
+      }
 
       // Send notifications to both parties
       const io = req.app.get('io');
@@ -3431,6 +3492,18 @@ export const rejectContractForBooking = async (bookingId, rejectedById, rejectio
     contract.rejectedBy = rejectedById;
     contract.rejectionReason = rejectionReason || 'Booking was rejected/cancelled by seller';
     await contract.save();
+
+    try {
+      await releaseListingLock({
+        listingId: contract.listingId?._id || contract.listingId,
+        bookingId,
+        contractId: contract._id,
+        releaseReason: 'contract_rejected',
+        force: true
+      });
+    } catch (releaseError) {
+      console.error('Failed to release listing after contract rejection:', releaseError);
+    }
     
     // Send notification to tenant
     await sendRentalNotification(

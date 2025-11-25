@@ -1,5 +1,40 @@
 import mongoose from "mongoose";
 
+const availabilityMetaSchema = new mongoose.Schema({
+    lockReason: {
+        type: String,
+        enum: ['booking_pending', 'awaiting_payment', 'contract_in_progress', 'active_rental', 'sale_in_progress', 'admin_hold', 'sold'],
+        default: null
+    },
+    lockDescription: {
+        type: String,
+        default: null,
+        maxlength: 400
+    },
+    lockedAt: {
+        type: Date,
+        default: null
+    },
+    releasedAt: {
+        type: Date,
+        default: null
+    },
+    releaseReason: {
+        type: String,
+        default: null
+    },
+    bookingId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Booking',
+        default: null
+    },
+    contractId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'RentLockContract',
+        default: null
+    }
+}, { _id: false });
+
 const listingSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -98,6 +133,17 @@ const listingSchema = new mongoose.Schema({
     viewCount: {
         type: Number,
         default: 0
+    },
+    // Availability & deal-locking metadata
+    availabilityStatus: {
+        type: String,
+        enum: ['available', 'reserved', 'under_contract', 'rented', 'sold', 'suspended'],
+        default: 'available',
+        index: true
+    },
+    availabilityMeta: {
+        type: availabilityMetaSchema,
+        default: () => ({})
     },
     userRef: {
         type: mongoose.Schema.Types.ObjectId,
