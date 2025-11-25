@@ -429,28 +429,20 @@ export default function Profile() {
 
       if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
         // Fetch admin-specific stats
-        // For admins: fetch ALL listings count (same as /admin/listings page which uses /api/listing/get)
-        // Use a large limit to get count, or adjust based on API response
-        const [listingsRes, appointmentsRes] = await Promise.all([
-          authenticatedFetch(`${API_BASE_URL}/api/listing/get?limit=999999&startIndex=0`),
+        // For admins: fetch Reviews count (same as /admin/reviews page which uses /api/review/admin/stats)
+        const [reviewsRes, appointmentsRes] = await Promise.all([
+          authenticatedFetch(`${API_BASE_URL}/api/review/admin/stats`),
           authenticatedFetch(`${API_BASE_URL}/api/bookings/`)
         ]);
 
-        const listingsData = await listingsRes.json();
+        const reviewsData = await reviewsRes.json();
         const appointmentsData = await appointmentsRes.json();
 
-        // For admins, count ALL listings from /api/listing/get endpoint (same as /admin/listings page)
-        let listingsCount = 0;
-        if (Array.isArray(listingsData)) {
-          // API returns array of listings - count them
-          listingsCount = listingsData.length;
-        } else if (typeof listingsData === 'object') {
-          // If response is an object, try to get count property
-          listingsCount = listingsData.count || listingsData.total || 0;
-        }
+        // For admins, get totalReviews from /api/review/admin/stats endpoint (same as /admin/reviews page)
+        const reviewsCount = reviewsData?.totalReviews || 0;
 
         setUserStats(prev => ({
-          listings: listingsCount,
+          listings: reviewsCount, // Store reviews count in listings field for admins
           appointments: Array.isArray(appointmentsData) ? appointmentsData.length : 0,
           wishlist: prev.wishlist, // Keep the wishlist count from context
           watchlist: watchlistCount
@@ -1953,12 +1945,18 @@ export default function Profile() {
         <div className={`grid grid-cols-1 md:grid-cols-2 ${isAdmin ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-4 mb-6`}>
           <div className={`bg-white rounded-xl shadow-lg p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-450' : 'opacity-0 scale-95'}`}>
             <div className={`bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-blue-200 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
-              <FaHome className="w-5 h-5 text-blue-600 group-hover:text-blue-700 transition-colors duration-300" />
+              {isAdmin ? (
+                <FaStar className="w-5 h-5 text-blue-600 group-hover:text-blue-700 transition-colors duration-300" />
+              ) : (
+                <FaHome className="w-5 h-5 text-blue-600 group-hover:text-blue-700 transition-colors duration-300" />
+              )}
             </div>
             <h3 className="text-xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors duration-300">
               {statsAnimated ? <AnimatedCounter end={userStats.listings} delay={500} /> : userStats.listings}
             </h3>
-            <p className="text-sm text-gray-600 group-hover:text-blue-500 transition-colors duration-300">My Listings</p>
+            <p className="text-sm text-gray-600 group-hover:text-blue-500 transition-colors duration-300">
+              {isAdmin ? 'Reviews' : 'My Listings'}
+            </p>
           </div>
           <div className={`bg-white rounded-xl shadow-lg ${isAdmin ? 'p-6' : 'p-4'} text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-600' : 'opacity-0 scale-95'}`}>
             <div className={`bg-green-100 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-green-200 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>

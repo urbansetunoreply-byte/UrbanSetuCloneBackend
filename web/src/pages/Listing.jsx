@@ -102,6 +102,7 @@ export default function Listing() {
   const [showInsightsTooltip, setShowInsightsTooltip] = useState(false);
   const [showSmartPriceInsightsTooltip, setShowSmartPriceInsightsTooltip] = useState(false);
   const [showReviewsTooltip, setShowReviewsTooltip] = useState(false);
+  const [showRentalRatingsTooltip, setShowRentalRatingsTooltip] = useState(false);
   const [confirmModal, setConfirmModal] = useState({ open: false, type: null, propertyId: null, origin: null, message: '' });
   const [showSocialShare, setShowSocialShare] = useState(false);
   const [showComparisonSocialShare, setShowComparisonSocialShare] = useState(false);
@@ -761,6 +762,7 @@ export default function Listing() {
     setShowSmartPriceInsightsTooltip(false);
     setShowComparisonTooltip(false);
     setShowReviewsTooltip(false);
+    setShowRentalRatingsTooltip(false);
     
     // Show the specific tooltip
     switch(tooltipType) {
@@ -783,6 +785,10 @@ export default function Listing() {
       case 'reviews':
         setShowReviewsTooltip(true);
         setTimeout(() => setShowReviewsTooltip(false), 3000);
+        break;
+      case 'rentalRatings':
+        setShowRentalRatingsTooltip(true);
+        setTimeout(() => setShowRentalRatingsTooltip(false), 3000);
         break;
       default:
         break;
@@ -2561,33 +2567,45 @@ export default function Listing() {
           {listing.type === "rent" && (
             <>
               <div className="flex justify-center mt-8">
-                <button
-                  onClick={async () => {
-                    if (!showPropertyRatings && !propertyRatings) {
-                      setRatingsLoading(true);
-                      try {
-                        const res = await fetch(`${API_BASE_URL}/api/rental/ratings/property/${listing._id}`);
-                        const data = await res.json();
-                        if (res.ok && data.success) {
-                          setPropertyRatings(data);
-                        }
-                      } catch (error) {
-                        console.error('Error fetching property ratings:', error);
-                      } finally {
-                        setRatingsLoading(false);
+                <div className="relative">
+                  <button
+                    onClick={async () => {
+                      if (!currentUser) {
+                        showSignInPrompt('rentalRatings');
+                        return;
                       }
-                    }
-                    setShowPropertyRatings((prev) => !prev);
-                  }}
-                  className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2 hover:from-blue-600 hover:to-indigo-700 transition-all"
-                >
-                  {ratingsLoading ? 'Loading...' : showPropertyRatings ? 'Hide Rental Ratings' : 'Show Rental Ratings'}
-                  {propertyRatings?.statistics?.totalRatings > 0 && (
-                    <span className="ml-2 bg-white text-blue-700 rounded-full px-2 py-0.5 text-xs font-bold">
-                      {propertyRatings.statistics.totalRatings}
-                    </span>
+                      if (!showPropertyRatings && !propertyRatings) {
+                        setRatingsLoading(true);
+                        try {
+                          const res = await fetch(`${API_BASE_URL}/api/rental/ratings/property/${listing._id}`);
+                          const data = await res.json();
+                          if (res.ok && data.success) {
+                            setPropertyRatings(data);
+                          }
+                        } catch (error) {
+                          console.error('Error fetching property ratings:', error);
+                        } finally {
+                          setRatingsLoading(false);
+                        }
+                      }
+                      setShowPropertyRatings((prev) => !prev);
+                    }}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2 hover:from-blue-600 hover:to-indigo-700 transition-all"
+                  >
+                    {ratingsLoading ? 'Loading...' : showPropertyRatings ? 'Hide Rental Ratings' : 'Show Rental Ratings'}
+                    {propertyRatings?.statistics?.totalRatings > 0 && (
+                      <span className="ml-2 bg-white text-blue-700 rounded-full px-2 py-0.5 text-xs font-bold">
+                        {propertyRatings.statistics.totalRatings}
+                      </span>
+                    )}
+                  </button>
+                  {showRentalRatingsTooltip && (
+                    <div className="absolute bottom-full left-0 mb-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
+                      Please login to show reviews
+                      <div className="absolute -bottom-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
+                    </div>
                   )}
-                </button>
+                </div>
               </div>
               {showPropertyRatings && propertyRatings && (
                 <div className="mt-8 border-t border-gray-200 pt-8">
