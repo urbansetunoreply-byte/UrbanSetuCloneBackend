@@ -3308,6 +3308,13 @@ function AdminAppointmentRow({
     };
   }, [showPasswordModal]);
 
+  // Ensure password modal closes once chat unlocks
+  React.useEffect(() => {
+    if (showChatModal && showPasswordModal) {
+      setShowPasswordModal(false);
+    }
+  }, [showChatModal, showPasswordModal]);
+
   // Handle notification-triggered chat opening (from URL or notification)
   useEffect(() => {
     if (shouldOpenChatFromNotification && activeChatAppointmentId === appt._id) {

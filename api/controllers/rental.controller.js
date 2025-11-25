@@ -2904,8 +2904,14 @@ export const listRentalLoans = async (req, res, next) => {
 
     const loans = await RentalLoan.find(query)
       .populate('userId', 'username email avatar')
-      .populate('contractId', 'contractId listingId')
-      .populate('listingId', 'name address')
+      .populate({
+        path: 'contractId',
+        select: 'contractId listingId tenantId landlordId status lockDuration startDate endDate lockedRentAmount rentLockPlan bookingId',
+        populate: {
+          path: 'listingId',
+          select: 'name address city state imageUrls sellerId userRef'
+        }
+      })
       .populate('approvedBy', 'username')
       .populate('rejectedBy', 'username')
       .sort({ createdAt: -1 });
