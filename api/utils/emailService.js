@@ -8695,6 +8695,91 @@ export const sendPropertyListingPublishedEmail = async (email, listingDetails, i
   }
 };
 
+export const sendOwnerDeassignedEmail = async (email, details = {}) => {
+  const {
+    propertyName,
+    propertyId,
+    reason,
+    adminName,
+    ownerName
+  } = details;
+
+  const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const propertyUrl = propertyId ? `${clientUrl}/listing/${propertyId}` : clientUrl;
+  const supportUrl = `${clientUrl}/contact`;
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Property Ownership Update</title>
+      <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f8fafc; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08); }
+        .header { background: linear-gradient(135deg, #ea580c, #c2410c); color: white; padding: 30px 25px; text-align: center; }
+        .content { padding: 30px 25px; color: #1f2937; }
+        .reason-box { background-color: #fff7ed; border-left: 4px solid #ea580c; padding: 20px; border-radius: 8px; margin: 20px 0; color: #7c2d12; }
+        .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 30px 0; }
+        .btn { flex: 1; min-width: 180px; text-align: center; padding: 14px 20px; border-radius: 30px; font-weight: 600; text-decoration: none; border: none; }
+        .btn-primary { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; }
+        .btn-outline { border: 2px solid #2563eb; color: #2563eb; background: white; }
+        .footer { background-color: #f1f5f9; padding: 20px; text-align: center; color: #94a3b8; font-size: 13px; }
+      </style>
+    </head>
+    <body>
+      <div style="padding: 30px 15px; background-color: #f8fafc;">
+        <div class="container">
+          <div class="header">
+            <h1 style="margin: 0; font-size: 26px;">Property Ownership Update</h1>
+          </div>
+          <div class="content">
+            <p style="font-size: 16px; line-height: 1.6;">
+              Hello ${ownerName || 'there'},
+            </p>
+            <p style="font-size: 16px; line-height: 1.6;">
+              This is to inform you that you have been removed as the owner of
+              <strong>${propertyName || 'a property on UrbanSetu'}</strong>.
+            </p>
+            <div class="reason-box">
+              <strong>Provided Reason:</strong>
+              <p style="margin: 10px 0 0;">${reason || 'No reason was provided.'}</p>
+            </div>
+            <p style="font-size: 15px; line-height: 1.6; color: #475569;">
+              ${adminName ? `This action was performed by ${adminName}.` : 'This action was completed by an administrator.'}
+              If you have questions about this update or believe it was made in error, please reach out to us.
+            </p>
+            <div class="actions">
+              <a href="${propertyUrl}" class="btn btn-primary">View Property</a>
+              <a href="${supportUrl}" class="btn btn-outline">Contact Support</a>
+            </div>
+            <p style="font-size: 14px; color: #475569; margin-top: 30px;">
+              We appreciate your contributions to the UrbanSetu community. You can continue to manage or list other
+              properties from your dashboard.
+            </p>
+          </div>
+          <div class="footer">
+            <p style="margin: 0;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  try {
+    return await sendEmailWithRetry({
+      to: email,
+      subject: `Ownership Update - ${propertyName || 'UrbanSetu Property'}`,
+      html
+    });
+  } catch (error) {
+    console.error('Error sending owner deassigned email:', error);
+    throw error;
+  }
+};
+
 // New Properties Matching Search Email
 export const sendNewPropertiesMatchingSearchEmail = async (email, searchDetails) => {
   try {

@@ -277,21 +277,33 @@ export default function RentalLoans() {
                   return !hasActiveLoan;
                 })
                 .slice(0, 5)
-                .map(contract => (
-                  <div key={contract._id} className="border rounded-lg p-4 flex items-center justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-800">{contract.listingId?.name || 'Property'}</h3>
-                      <p className="text-sm text-gray-600">Contract ID: {contract.contractId}</p>
-                      <p className="text-sm text-gray-600">Rent: {formatCurrency(contract.lockedRentAmount)}/month</p>
+                .map(contract => {
+                  const listingId = contract.listingId?._id || contract.listingId;
+                  const listingName = contract.listingId?.name || 'Property';
+                  return (
+                    <div key={contract._id} className="border rounded-lg p-4 flex items-center justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-800">
+                          {listingId ? (
+                            <Link to={`/listing/${listingId}`} className="text-blue-600 hover:text-blue-800 hover:underline">
+                              {listingName}
+                            </Link>
+                          ) : (
+                            listingName
+                          )}
+                        </h3>
+                        <p className="text-sm text-gray-600">Contract ID: {contract.contractId}</p>
+                        <p className="text-sm text-gray-600">Rent: {formatCurrency(contract.lockedRentAmount)}/month</p>
+                      </div>
+                      <button
+                        onClick={() => handleApplyForLoan(contract)}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                      >
+                        <FaCreditCard /> Apply for Loan
+                      </button>
                     </div>
-                    <button
-                      onClick={() => handleApplyForLoan(contract)}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
-                    >
-                      <FaCreditCard /> Apply for Loan
-                    </button>
-                  </div>
-                ))}
+                  );
+                })}
             </div>
           </div>
         )}
@@ -320,6 +332,8 @@ export default function RentalLoans() {
             {filteredLoans.map((loan) => {
               const status = loan.status;
               const contract = loan.contractId;
+              const listingId = contract?.listingId?._id || contract?.listingId;
+              const listingName = contract?.listingId?.name || 'Property';
 
               return (
                 <div
@@ -338,7 +352,14 @@ export default function RentalLoans() {
                       </div>
                       <p className="text-sm text-gray-600 font-mono mb-2">Loan ID: {loan.loanId}</p>
                       <p className="text-sm text-gray-600 mb-3">
-                        Property: {contract?.listingId?.name || 'Unknown'}
+                        Property:{' '}
+                        {listingId ? (
+                          <Link to={`/listing/${listingId}`} className="text-blue-600 hover:text-blue-800 hover:underline">
+                            {listingName || 'Unknown'}
+                          </Link>
+                        ) : (
+                          listingName || 'Unknown'
+                        )}
                       </p>
                       <p className="text-sm text-gray-600 mb-3">
                         Contract: {contract?.contractId || 'Unknown'}

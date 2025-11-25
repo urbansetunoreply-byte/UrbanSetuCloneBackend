@@ -1,5 +1,5 @@
 import express from 'express'
-import { createListing,deleteListing,updateListing,getListing,getListings,getUserListings,reassignPropertyOwner } from '../controllers/listing.controller.js'
+import { createListing,deleteListing,updateListing,getListing,getListings,getUserListings,reassignPropertyOwner, deassignPropertyOwner } from '../controllers/listing.controller.js'
 import { verifyToken } from '../utils/verify.js'
 import User from '../models/user.model.js'
 import Listing from '../models/listing.model.js'
@@ -164,6 +164,7 @@ router.post("/test-milestone-email/:listingId", async (req, res, next) => {
 });
 
 router.post("/reassign-owner/:listingId",verifyToken,reassignPropertyOwner)
+router.post("/deassign-owner/:listingId",verifyToken,deassignPropertyOwner)
 router.post("/report/:listingId",verifyToken,async (req, res, next) => {
   try {
     const { listingId } = req.params;

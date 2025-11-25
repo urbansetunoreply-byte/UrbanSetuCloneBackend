@@ -457,7 +457,8 @@ router.patch('/:id/status', verifyToken, async (req, res) => {
         await releaseListingLock({
           listingId: bookingToUpdate.listingId,
           bookingId: bookingToUpdate._id,
-          releaseReason: 'booking_rejected'
+          releaseReason: 'booking_rejected',
+          force: true
         });
       } catch (releaseError) {
         console.error('Failed to release listing after rejection:', releaseError);
@@ -1209,7 +1210,8 @@ router.patch('/:id/cancel', verifyToken, async (req, res) => {
         await releaseListingLock({
           listingId: bookingToCancel.listingId,
           bookingId: bookingToCancel._id,
-          releaseReason: 'cancelled_by_buyer'
+          releaseReason: 'cancelled_by_buyer',
+          force: true
         });
       } catch (releaseError) {
         console.error('Failed to release listing after buyer cancellation:', releaseError);
@@ -1298,7 +1300,8 @@ router.patch('/:id/cancel', verifyToken, async (req, res) => {
         await releaseListingLock({
           listingId: bookingToCancel.listingId,
           bookingId: bookingToCancel._id,
-          releaseReason: 'cancelled_by_seller'
+          releaseReason: 'cancelled_by_seller',
+          force: true
         });
       } catch (releaseError) {
         console.error('Failed to release listing after seller cancellation:', releaseError);
@@ -1408,7 +1411,8 @@ router.patch('/:id/cancel', verifyToken, async (req, res) => {
         await releaseListingLock({
           listingId: bookingToCancel.listingId,
           bookingId: bookingToCancel._id,
-          releaseReason: 'cancelled_by_admin'
+          releaseReason: 'cancelled_by_admin',
+          force: true
         });
       } catch (releaseError) {
         console.error('Failed to release listing after admin cancellation:', releaseError);

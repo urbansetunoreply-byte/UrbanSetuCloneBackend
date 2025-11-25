@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FaCreditCard, FaSpinner, FaSearch, FaTimes, FaCheckCircle, FaClock, FaTimesCircle, FaHome, FaUser, FaMoneyBillWave, FaCheck, FaBan, FaDownload, FaFile } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -427,6 +427,8 @@ export default function AdminRentalLoans() {
             {filteredLoans.map((loan) => {
               const status = loan.status;
               const contract = loan.contractId;
+              const listingId = contract?.listingId?._id || contract?.listingId;
+              const listingName = contract?.listingId?.name || 'Unknown';
 
               return (
                 <div
@@ -465,7 +467,14 @@ export default function AdminRentalLoans() {
                       {contract && (
                         <div className="mt-3 p-3 bg-gray-50 rounded-lg">
                           <p className="text-sm text-gray-600 mb-1">
-                            <FaHome className="inline mr-1" /> Property: {contract.listingId?.name || 'Unknown'}
+                            <FaHome className="inline mr-1" /> Property:{' '}
+                            {listingId ? (
+                              <Link to={`/listing/${listingId}`} className="text-blue-600 hover:text-blue-800 hover:underline">
+                                {listingName}
+                              </Link>
+                            ) : (
+                              listingName
+                            )}
                           </p>
                           <p className="text-sm text-gray-600">
                             <FaFile className="inline mr-1" /> Contract: {contract.contractId || 'Unknown'}

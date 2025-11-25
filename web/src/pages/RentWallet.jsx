@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toast } from 'react-toastify';
@@ -27,60 +27,75 @@ export default function RentWallet() {
   const [contract, setContract] = useState(null);
   const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'schedule', 'history', 'settings'
 
+  const fetchWalletDetails = useCallback(async () => {
+    if (!contractId) {
+      toast.error("Contract ID is required.");
+      navigate("/user/my-appointments");
+      return;
+    }
+
+    if (!currentUser) {
+      toast.error("Please sign in to access your rent wallet.");
+      navigate("/sign-in");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      // Fetch wallet
+      const walletRes = await fetch(`${API_BASE_URL}/api/rental/wallet/${contractId}`, {
+        credentials: 'include'
+      });
+
+      if (!walletRes.ok) {
+        throw new Error("Failed to fetch wallet");
+      }
+
+      const walletData = await walletRes.json();
+      if (walletData.success && walletData.wallet) {
+        setWallet(walletData.wallet);
+      }
+
+      // Fetch contract
+      const contractRes = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractId}`, {
+        credentials: 'include'
+      });
+
+      if (contractRes.ok) {
+        const contractData = await contractRes.json();
+        if (contractData.success && contractData.contract) {
+          setContract(contractData.contract);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching wallet:", error);
+      toast.error("Failed to load wallet details.");
+      navigate("/user/my-appointments");
+    } finally {
+      setLoading(false);
+    }
+  }, [contractId, currentUser, navigate]);
+
   // Fetch wallet details
   useEffect(() => {
-    const fetchWallet = async () => {
-      if (!contractId) {
-        toast.error("Contract ID is required.");
-        navigate("/user/my-appointments");
-        return;
-      }
+    fetchWalletDetails();
+  }, [fetchWalletDetails]);
 
-      if (!currentUser) {
-        toast.error("Please sign in to access your rent wallet.");
-        navigate("/sign-in");
-        return;
-      }
-
-      try {
-        setLoading(true);
-        
-        // Fetch wallet
-        const walletRes = await fetch(`${API_BASE_URL}/api/rental/wallet/${contractId}`, {
-          credentials: 'include'
-        });
-
-        if (!walletRes.ok) {
-          throw new Error("Failed to fetch wallet");
-        }
-
-        const walletData = await walletRes.json();
-        if (walletData.success && walletData.wallet) {
-          setWallet(walletData.wallet);
-        }
-
-        // Fetch contract
-        const contractRes = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractId}`, {
-          credentials: 'include'
-        });
-
-        if (contractRes.ok) {
-          const contractData = await contractRes.json();
-          if (contractData.success && contractData.contract) {
-            setContract(contractData.contract);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching wallet:", error);
-        toast.error("Failed to load wallet details.");
-        navigate("/user/my-appointments");
-      } finally {
-        setLoading(false);
+  useEffect(() => {
+    const normalizedId = contractId?.toString();
+    const handlePaymentUpdate = (event) => {
+      const updatedId = event.detail?.contractId;
+      if (!updatedId || !normalizedId || updatedId.toString() === normalizedId) {
+        fetchWalletDetails();
       }
     };
 
-    fetchWallet();
-  }, [contractId, currentUser, navigate]);
+    window.addEventListener('rentalPaymentStatusUpdated', handlePaymentUpdate);
+    return () => {
+      window.removeEventListener('rentalPaymentStatusUpdated', handlePaymentUpdate);
+    };
+  }, [contractId, fetchWalletDetails]);
 
   if (loading) {
     return (

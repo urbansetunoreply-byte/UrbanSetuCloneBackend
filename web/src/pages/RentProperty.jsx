@@ -42,6 +42,7 @@ export default function RentProperty() {
   const [booking, setBooking] = useState(null);
   const [showSignatureModal, setShowSignatureModal] = useState(false);
   const [signingAs, setSigningAs] = useState(null); // 'tenant' or 'landlord'
+  const readyForPayment = !!(contract?.tenantSignature?.signed && contract?.landlordSignature?.signed);
 
   // Fetch listing details and resume contract if contractId is provided
   useEffect(() => {
@@ -235,6 +236,41 @@ export default function RentProperty() {
       }));
     }
   }, [booking]);
+
+  useEffect(() => {
+    const contractIdentifier = contract?.contractId || contract?._id;
+    if (step !== 3 || !contractIdentifier || contract?.landlordSignature?.signed) {
+      return;
+    }
+
+    let cancelled = false;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractIdentifier}`, {
+          credentials: 'include'
+        });
+        if (!res.ok) {
+          return;
+        }
+        const data = await res.json();
+        const updatedContract = data.contract || data;
+        if (updatedContract && !cancelled) {
+          const landlordJustSigned = updatedContract.landlordSignature?.signed && !contract.landlordSignature?.signed;
+          setContract(updatedContract);
+          if (landlordJustSigned) {
+            toast.success('Landlord signed the contract. You can proceed to payment.');
+          }
+        }
+      } catch (error) {
+        console.error('Error refreshing contract status:', error);
+      }
+    }, 5000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [step, contract?.contractId, contract?._id, contract?.landlordSignature?.signed, contract?.tenantSignature?.signed]);
 
   const handlePlanChange = (plan) => {
     setFormData(prev => ({
@@ -1251,18 +1287,16 @@ export default function RentProperty() {
               {contract.tenantSignature?.signed && (
                 <button
                   onClick={() => {
-                    if (contract.landlordSignature?.signed) {
+                    if (readyForPayment) {
                       setStep(4);
                       setShowPaymentModal(true);
-                    } else {
-                      toast.info("Waiting for landlord to sign the contract.");
                     }
                   }}
-                  disabled={!contract.landlordSignature?.signed || loading}
-                  className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  disabled={!readyForPayment || loading}
+                  className={`flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center ${readyForPayment ? 'hover:bg-blue-700' : 'opacity-50 cursor-not-allowed'}`}
                 >
-                  {contract.landlordSignature?.signed ? 'Proceed to Payment' : 'Waiting for Landlord Signature'}
-                  {contract.landlordSignature?.signed && <FaChevronRight className="ml-2" />}
+                  {readyForPayment ? 'Proceed to Payment' : 'Waiting for Landlord Signature'}
+                  {readyForPayment && <FaChevronRight className="ml-2" />}
                 </button>
               )}
             </div>

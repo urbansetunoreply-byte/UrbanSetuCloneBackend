@@ -349,10 +349,21 @@ export default function RentalRatings() {
                   const canRateAsTenant = isTenant && !existingRating?.tenantToLandlordRating?.overallRating;
                   const canRateAsLandlord = isLandlord && !existingRating?.landlordToTenantRating?.overallRating;
 
+                  const listingId = contract.listingId?._id || contract.listingId;
+                  const listingName = contract.listingId?.name || 'Property';
+
                   return (
                     <div key={contract._id} className="border rounded-lg p-4 flex items-center justify-between">
                       <div className="flex-1">
-                        <h3 className="font-semibold text-gray-800">{contract.listingId?.name || 'Property'}</h3>
+                        <h3 className="font-semibold text-gray-800">
+                          {listingId ? (
+                            <Link to={`/listing/${listingId}`} className="text-blue-600 hover:text-blue-800 hover:underline">
+                              {listingName}
+                            </Link>
+                          ) : (
+                            listingName
+                          )}
+                        </h3>
                         <p className="text-sm text-gray-600">Contract ID: {contract.contractId}</p>
                         <p className="text-sm text-gray-600">Rent: ₹{contract.lockedRentAmount?.toLocaleString()}/month</p>
                       </div>
@@ -414,6 +425,8 @@ export default function RentalRatings() {
               const tenantRating = rating.tenantToLandlordRating;
               const landlordRating = rating.landlordToTenantRating;
               const contract = rating.contractId;
+              const listingId = contract?.listingId?._id || contract?.listingId;
+              const listingName = contract?.listingId?.name || 'Property';
 
               return (
                 <div
@@ -424,7 +437,13 @@ export default function RentalRatings() {
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="text-xl font-bold text-gray-800">
-                          {contract?.listingId?.name || 'Property'}
+                          {listingId ? (
+                            <Link to={`/listing/${listingId}`} className="text-blue-600 hover:text-blue-800 hover:underline">
+                              {listingName}
+                            </Link>
+                          ) : (
+                            listingName
+                          )}
                         </h3>
                         {rating.bothRated && (
                           <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-semibold flex items-center gap-1">

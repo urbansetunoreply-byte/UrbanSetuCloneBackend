@@ -5,7 +5,7 @@ import { notifyWatchersOnChange } from "./propertyWatchlist.controller.js"
 import User from "../models/user.model.js"
 import Notification from "../models/notification.model.js"
 import { errorHandler } from "../utils/error.js"
-import { sendPropertyListingPublishedEmail, sendPropertyEditNotificationEmail, sendPropertyDeletionConfirmationEmail } from "../utils/emailService.js"
+import { sendPropertyListingPublishedEmail, sendPropertyEditNotificationEmail, sendPropertyDeletionConfirmationEmail, sendOwnerDeassignedEmail } from "../utils/emailService.js"
 import DeletedListing from "../models/deletedListing.model.js"
 import crypto from 'crypto'
 
@@ -685,5 +685,84 @@ export const reassignPropertyOwner = async (req, res, next) => {
   } catch (error) {
     console.error('Error reassigning property owner:', error);
     return next(errorHandler(500, 'Failed to reassign property ownership'));
+  }
+};
+
+export const deassignPropertyOwner = async (req, res, next) => {
+  try {
+    const { listingId } = req.params;
+    const { reason } = req.body;
+
+    if (req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
+      return next(errorHandler(401, 'Only admins can deassign property ownership'));
+    }
+
+    if (!reason || !reason.trim()) {
+      return next(errorHandler(400, 'Reason is required to deassign owner'));
+    }
+
+    const listing = await Listing.findById(listingId);
+    if (!listing) {
+      return next(errorHandler(404, 'Listing not found'));
+    }
+
+    if (!listing.userRef) {
+      return next(errorHandler(400, 'This property does not have an assigned owner.'));
+    }
+
+    const previousOwnerId = listing.userRef;
+    let previousOwner = null;
+    try {
+      previousOwner = await User.findById(previousOwnerId);
+    } catch (error) {
+      console.error('Failed to fetch previous owner:', error);
+    }
+
+    listing.userRef = null;
+    await listing.save();
+
+    if (previousOwner) {
+      try {
+        const notification = new Notification({
+          userId: previousOwner._id,
+          type: 'property_deassigned',
+          title: 'Property Ownership Removed',
+          message: `You have been removed as the owner of "${listing.name}". Reason: ${reason}`,
+          listingId: listing._id,
+          adminId: req.user.id,
+          meta: {
+            reason,
+            listingId: listing._id,
+            listingName: listing.name
+          }
+        });
+        await notification.save();
+      } catch (notificationError) {
+        console.error('Failed to create deassign notification:', notificationError);
+      }
+
+      if (previousOwner.email) {
+        try {
+          await sendOwnerDeassignedEmail(previousOwner.email, {
+            propertyName: listing.name,
+            propertyId: listing._id,
+            reason,
+            adminName: req.user.username || req.user.email || 'Admin',
+            ownerName: previousOwner.username || previousOwner.name || previousOwner.email
+          });
+        } catch (emailError) {
+          console.error('Failed to send owner deassigned email:', emailError);
+        }
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Property owner deassigned successfully.',
+      listingId: listing._id
+    });
+  } catch (error) {
+    console.error('Error deassigning property owner:', error);
+    return next(errorHandler(500, 'Failed to deassign property owner'));
   }
 };

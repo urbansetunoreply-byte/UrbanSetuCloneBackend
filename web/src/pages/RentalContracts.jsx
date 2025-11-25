@@ -319,7 +319,7 @@ export default function RentalContracts() {
     <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-4 md:px-8">
       <div className="max-w-6xl mx-auto">
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
                 <FaFileContract className="text-blue-600" />
@@ -327,6 +327,13 @@ export default function RentalContracts() {
               </h1>
               <p className="text-gray-600 mt-2">View and manage your rent-lock contracts</p>
             </div>
+            <button
+              onClick={() => navigate('/user/my-appointments')}
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-semibold flex items-center gap-2"
+            >
+              <FaCalendarAlt />
+              My Appointments
+            </button>
           </div>
 
           {/* Filters */}
@@ -371,6 +378,8 @@ export default function RentalContracts() {
               const contractIdentifier = contract.contractId || contract._id;
               const payMonthlyRentUrl = buildPayMonthlyRentUrl(contractIdentifier);
               const showMoveInChecklist = contract.status === 'active' && !hasContractStarted;
+              const listingId = contract.listingId?._id || contract.listingId;
+              const listingName = contract.listingId?.name || 'Property Contract';
 
               return (
               <div
@@ -383,7 +392,16 @@ export default function RentalContracts() {
                       <FaFileContract className="text-2xl text-blue-600" />
                       <div>
                         <h3 className="text-xl font-bold text-gray-800">
-                          {contract.listingId?.name || 'Property Contract'}
+                          {listingId ? (
+                            <Link
+                              to={`/listing/${listingId}`}
+                              className="text-blue-600 hover:text-blue-800 hover:underline"
+                            >
+                              {listingName}
+                            </Link>
+                          ) : (
+                            listingName
+                          )}
                         </h3>
                         <p className="text-sm text-gray-600 font-mono">
                           {contract.contractId}

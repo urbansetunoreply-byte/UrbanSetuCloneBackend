@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FaFileContract, FaDownload, FaEye, FaCalendarAlt, FaMoneyBillWave, FaLock, FaCheckCircle, FaTimesCircle, FaSpinner, FaSearch, FaBan, FaCheck, FaUser, FaHome, FaGavel, FaWallet, FaCreditCard, FaExclamationTriangle, FaClock, FaTimes } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -362,7 +362,10 @@ export default function AdminRentalContracts() {
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredContracts.map((contract) => (
+            {filteredContracts.map((contract) => {
+              const listingId = contract.listingId?._id || contract.listingId;
+              const listingName = contract.listingId?.name || 'Property Contract';
+              return (
               <div
                 key={contract._id}
                 className={`bg-white rounded-xl shadow-lg p-6 border-2 ${getStatusColor(contract.status)}`}
@@ -373,7 +376,13 @@ export default function AdminRentalContracts() {
                       <FaFileContract className="text-2xl text-blue-600" />
                       <div>
                         <h3 className="text-xl font-bold text-gray-800">
-                          {contract.listingId?.name || 'Property Contract'}
+                          {listingId ? (
+                            <Link to={`/listing/${listingId}`} className="text-blue-600 hover:text-blue-800 hover:underline">
+                              {listingName}
+                            </Link>
+                          ) : (
+                            listingName
+                          )}
                         </h3>
                         <p className="text-sm text-gray-600 font-mono">
                           {contract.contractId}
@@ -544,7 +553,8 @@ export default function AdminRentalContracts() {
                   </div>
                 </div>
               </div>
-            ))}
+            );
+            })}
           </div>
         )}
       </div>

@@ -5,7 +5,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import { Navigation } from "swiper/modules";
-import { FaBath, FaBed, FaChair, FaMapMarkerAlt, FaParking, FaShare, FaEdit, FaTrash, FaArrowLeft, FaStar, FaLock, FaHeart, FaExpand, FaCheckCircle, FaFlag, FaRuler, FaBuilding, FaTree, FaWifi, FaSwimmingPool, FaCar, FaShieldAlt, FaClock, FaPhone, FaEnvelope, FaCalendarAlt, FaEye, FaThumbsUp, FaThumbsDown, FaRegThumbsUp, FaRegThumbsDown, FaComments, FaCalculator, FaChartLine, FaHome, FaUtensils, FaHospital, FaSchool, FaShoppingCart, FaPlane, FaUser, FaTimes, FaSearch, FaTable, FaRocket, FaQuestionCircle, FaChevronDown, FaChevronUp, FaBookOpen, FaTag, FaCompass, FaInfoCircle, FaCalendar, FaRobot } from "react-icons/fa";
+import { FaBath, FaBed, FaChair, FaMapMarkerAlt, FaParking, FaShare, FaEdit, FaTrash, FaArrowLeft, FaStar, FaLock, FaHeart, FaExpand, FaCheckCircle, FaFlag, FaRuler, FaBuilding, FaTree, FaWifi, FaSwimmingPool, FaCar, FaShieldAlt, FaClock, FaPhone, FaEnvelope, FaCalendarAlt, FaEye, FaThumbsUp, FaThumbsDown, FaRegThumbsUp, FaRegThumbsDown, FaComments, FaCalculator, FaChartLine, FaHome, FaUtensils, FaHospital, FaSchool, FaShoppingCart, FaPlane, FaUser, FaTimes, FaSearch, FaTable, FaRocket, FaQuestionCircle, FaChevronDown, FaChevronUp, FaBookOpen, FaTag, FaCompass, FaInfoCircle, FaCalendar, FaRobot, FaBan } from "react-icons/fa";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import ReviewForm from "../components/ReviewForm.jsx";
 import ReviewList from "../components/ReviewList.jsx";
@@ -86,6 +86,10 @@ export default function Listing() {
   const [assignOwnerLoading, setAssignOwnerLoading] = useState(false);
   const [selectedNewOwner, setSelectedNewOwner] = useState("");
   const [ownerStatus, setOwnerStatus] = useState({ isActive: false, owner: null });
+  const [showDeassignModal, setShowDeassignModal] = useState(false);
+  const [deassignReason, setDeassignReason] = useState('');
+  const [deassignLoading, setDeassignLoading] = useState(false);
+  const [deassignError, setDeassignError] = useState('');
   const [neighborhood, setNeighborhood] = useState(null);
   
   // Report property states
@@ -170,6 +174,76 @@ export default function Listing() {
       }
     } catch (e) {}
   };
+
+  const renderReviewsToggleButton = () => (
+    <div className="relative">
+      <button
+        onClick={() => {
+          if (!currentUser) {
+            showSignInPrompt('reviews');
+            return;
+          }
+          setShowReviews((prev) => !prev);
+        }}
+        className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2 hover:from-yellow-500 hover:to-yellow-700 transition-all"
+      >
+        {showReviews ? 'Hide Reviews' : 'Show Reviews'}
+        {listing?.reviewCount > 0 && (
+          <span className="ml-2 bg-white text-yellow-700 rounded-full px-2 py-0.5 text-xs font-bold">
+            {listing.reviewCount}
+          </span>
+        )}
+      </button>
+      {showReviewsTooltip && (
+        <div className="absolute bottom-full left-0 mb-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
+          Please sign in to view reviews
+          <div className="absolute -bottom-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderRentalRatingsToggleButton = () => (
+    <div className="relative">
+      <button
+        onClick={async () => {
+          if (!currentUser) {
+            showSignInPrompt('rentalRatings');
+            return;
+          }
+          if (!showPropertyRatings && !propertyRatings) {
+            setRatingsLoading(true);
+            try {
+              const res = await fetch(`${API_BASE_URL}/api/rental/ratings/property/${listing._id}`);
+              const data = await res.json();
+              if (res.ok && data.success) {
+                setPropertyRatings(data);
+              }
+            } catch (error) {
+              console.error('Error fetching property ratings:', error);
+            } finally {
+              setRatingsLoading(false);
+            }
+          }
+          setShowPropertyRatings((prev) => !prev);
+        }}
+        className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2 hover:from-blue-600 hover:to-indigo-700 transition-all"
+      >
+        {ratingsLoading ? 'Loading...' : showPropertyRatings ? 'Hide Rental Ratings' : 'Show Rental Ratings'}
+        {propertyRatings?.statistics?.totalRatings > 0 && (
+          <span className="ml-2 bg-white text-blue-700 rounded-full px-2 py-0.5 text-xs font-bold">
+            {propertyRatings.statistics.totalRatings}
+          </span>
+        )}
+      </button>
+      {showRentalRatingsTooltip && (
+        <div className="absolute bottom-full left-0 mb-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
+          Please login to show reviews
+          <div className="absolute -bottom-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
+        </div>
+      )}
+    </div>
+  );
 
   const fetchWishlistCount = async () => {
     try {
@@ -356,7 +430,7 @@ export default function Listing() {
 
    // Lock body scroll when deletion/assign/report/calculator/comparison/search/AI recommendation modals are open
    useEffect(() => {
-     const shouldLock = showReasonModal || showPasswordModal || showAssignOwnerModal || showReportModal || showCalculatorModal || showComparisonModal || showPropertySearch || showAIRecommendations;
+     const shouldLock = showReasonModal || showPasswordModal || showAssignOwnerModal || showDeassignModal || showReportModal || showCalculatorModal || showComparisonModal || showPropertySearch || showAIRecommendations;
      if (shouldLock) {
        document.body.classList.add('modal-open');
      } else {
@@ -365,7 +439,7 @@ export default function Listing() {
      return () => {
        document.body.classList.remove('modal-open');
      };
-   }, [showReasonModal, showPasswordModal, showAssignOwnerModal, showReportModal, showCalculatorModal, showComparisonModal, showPropertySearch, showAIRecommendations]);
+   }, [showReasonModal, showPasswordModal, showAssignOwnerModal, showDeassignModal, showReportModal, showCalculatorModal, showComparisonModal, showPropertySearch, showAIRecommendations]);
  
    // Check if user is admin
   const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'rootadmin';
@@ -509,6 +583,45 @@ export default function Listing() {
         console.error('Error fetching available users:', error);
       }
     };
+
+  const openDeassignOwnerModal = () => {
+    setDeassignReason('');
+    setDeassignError('');
+    setShowDeassignModal(true);
+  };
+
+  const handleDeassignOwnerSubmit = async (e) => {
+    e.preventDefault();
+    if (!deassignReason.trim()) {
+      setDeassignError('Reason is required');
+      return;
+    }
+    setDeassignLoading(true);
+    setDeassignError('');
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/listing/deassign-owner/${listing._id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ reason: deassignReason.trim() })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to deassign owner');
+      }
+      toast.success(data.message || 'Owner removed from this property');
+      setOwnerDetails(null);
+      setOwnerStatus({ isActive: false, owner: null });
+      setOwnerError('No owner assigned yet');
+      setListing((prev) => (prev ? { ...prev, userRef: null } : prev));
+      setShowDeassignModal(false);
+    } catch (error) {
+      console.error('Error deassigning owner:', error);
+      setDeassignError(error.message || 'Failed to deassign owner');
+    } finally {
+      setDeassignLoading(false);
+    }
+  };
 
   // Function to handle property report
   const handleReportProperty = async () => {
@@ -2390,10 +2503,31 @@ export default function Listing() {
                       </div>
                     </div>
                     {isAdmin && (
-                      <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                        <p className="text-blue-700 text-sm font-medium">
-                          ℹ️ Owner account is active and accessible. No reassignment needed.
-                        </p>
+                      <div className="mt-4 flex flex-col gap-3">
+                        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                          <p className="text-blue-700 text-sm font-medium">
+                            ℹ️ Owner account is active and accessible.
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={openDeassignOwnerModal}
+                            className="px-4 py-2 rounded-lg bg-red-100 text-red-700 font-semibold hover:bg-red-200 transition-colors flex items-center gap-2"
+                          >
+                            <FaBan /> Deassign Owner
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              fetchAvailableUsers();
+                              setShowAssignOwnerModal(true);
+                            }}
+                            className="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
+                          >
+                            <FaEdit /> Assign New Owner
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -2652,34 +2786,17 @@ export default function Listing() {
             </div>
           )}
 
-          {/* Reviews Section Toggle Button */}
-          <div className="flex justify-center mt-8">
-            <div className="relative">
-              <button
-                onClick={() => {
-                  if (!currentUser) {
-                    showSignInPrompt('reviews');
-                    return;
-                  }
-                  setShowReviews((prev) => !prev);
-                }}
-                className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2 hover:from-yellow-500 hover:to-yellow-700 transition-all"
-              >
-                {showReviews ? 'Hide Reviews' : 'Show Reviews'}
-                {listing.reviewCount > 0 && (
-                  <span className="ml-2 bg-white text-yellow-700 rounded-full px-2 py-0.5 text-xs font-bold">
-                    {listing.reviewCount}
-                  </span>
-                )}
-              </button>
-              {showReviewsTooltip && (
-                <div className="absolute bottom-full left-0 mb-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
-                  Please sign in to view reviews
-                  <div className="absolute -bottom-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
-                </div>
-              )}
+          {/* Reviews / Ratings Toggle Buttons */}
+          {listing.type === 'rent' ? (
+            <div className="flex flex-wrap justify-center gap-4 mt-8">
+              {renderReviewsToggleButton()}
+              {renderRentalRatingsToggleButton()}
             </div>
-          </div>
+          ) : (
+            <div className="flex justify-center mt-8">
+              {renderReviewsToggleButton()}
+            </div>
+          )}
           {/* Reviews Section (collapsible) */}
           {showReviews && currentUser && (
             <div className="mt-8">
@@ -2717,198 +2834,86 @@ export default function Listing() {
           )}
 
           {/* Rental Ratings Section (for rental properties) */}
-          {listing.type === "rent" && (
-            <>
-              <div className="flex justify-center mt-8">
-                <div className="relative">
-                  <button
-                    onClick={async () => {
-                      if (!currentUser) {
-                        showSignInPrompt('rentalRatings');
-                        return;
-                      }
-                      if (!showPropertyRatings && !propertyRatings) {
-                        setRatingsLoading(true);
-                        try {
-                          const res = await fetch(`${API_BASE_URL}/api/rental/ratings/property/${listing._id}`);
-                          const data = await res.json();
-                          if (res.ok && data.success) {
-                            setPropertyRatings(data);
-                          }
-                        } catch (error) {
-                          console.error('Error fetching property ratings:', error);
-                        } finally {
-                          setRatingsLoading(false);
-                        }
-                      }
-                      setShowPropertyRatings((prev) => !prev);
-                    }}
-                    className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2 hover:from-blue-600 hover:to-indigo-700 transition-all"
-                  >
-                    {ratingsLoading ? 'Loading...' : showPropertyRatings ? 'Hide Rental Ratings' : 'Show Rental Ratings'}
-                    {propertyRatings?.statistics?.totalRatings > 0 && (
-                      <span className="ml-2 bg-white text-blue-700 rounded-full px-2 py-0.5 text-xs font-bold">
-                        {propertyRatings.statistics.totalRatings}
-                      </span>
-                    )}
-                  </button>
-                  {showRentalRatingsTooltip && (
-                    <div className="absolute bottom-full left-0 mb-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
-                      Please login to show reviews
-                      <div className="absolute -bottom-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
+          {listing.type === "rent" && showPropertyRatings && propertyRatings && (
+            <div className="mt-8 border-t border-gray-200 pt-8">
+              <div className="mb-6">
+                <h3 className="text-2xl font-bold text-gray-800 flex items-center mb-4">
+                  <FaStar className="text-blue-500 mr-2" />
+                  Rental Ratings
+                </h3>
+                {propertyRatings.statistics && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <p className="text-sm text-blue-700 mb-1">Total Ratings</p>
+                      <p className="text-2xl font-bold text-blue-800">{propertyRatings.statistics.totalRatings}</p>
                     </div>
-                  )}
-                </div>
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <p className="text-sm text-green-700 mb-1">Landlord Ratings</p>
+                      <p className="text-2xl font-bold text-green-800">
+                        {propertyRatings.statistics.landlordRatings || 0}
+                      </p>
+                      {propertyRatings.statistics.averageLandlordRating && (
+                        <p className="text-xs text-green-600 mt-1">
+                          Avg: {propertyRatings.statistics.averageLandlordRating.toFixed(1)} ⭐
+                        </p>
+                      )}
+                    </div>
+                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                      <p className="text-sm text-purple-700 mb-1">Tenant Ratings</p>
+                      <p className="text-2xl font-bold text-purple-800">
+                        {propertyRatings.statistics.tenantRatings || 0}
+                      </p>
+                      {propertyRatings.statistics.averageTenantRating && (
+                        <p className="text-xs text-purple-600 mt-1">
+                          Avg: {propertyRatings.statistics.averageTenantRating.toFixed(1)} ⭐
+                        </p>
+                      )}
+                    </div>
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <p className="text-sm text-yellow-700 mb-1">Overall Average</p>
+                      <p className="text-2xl font-bold text-yellow-800">
+                        {propertyRatings.statistics.overallAverage?.toFixed(1) || '0.0'} ⭐
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
-              {showPropertyRatings && propertyRatings && (
-                <div className="mt-8 border-t border-gray-200 pt-8">
-                  <div className="mb-6">
-                    <h3 className="text-2xl font-bold text-gray-800 flex items-center mb-4">
-                      <FaStar className="text-blue-500 mr-2" />
-                      Rental Ratings
-                    </h3>
-                    {propertyRatings.statistics && (
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                          <p className="text-sm text-blue-700 mb-1">Total Ratings</p>
-                          <p className="text-2xl font-bold text-blue-800">{propertyRatings.statistics.totalRatings}</p>
-                        </div>
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                          <p className="text-sm text-green-700 mb-1">Landlord Ratings</p>
-                          <p className="text-2xl font-bold text-green-800">
-                            {propertyRatings.statistics.landlordRatings || 0}
-                          </p>
-                          {propertyRatings.statistics.averageLandlordRating && (
-                            <p className="text-xs text-green-600 mt-1">
-                              Avg: {propertyRatings.statistics.averageLandlordRating.toFixed(1)} ⭐
-                            </p>
-                          )}
-                        </div>
-                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                          <p className="text-sm text-purple-700 mb-1">Tenant Ratings</p>
-                          <p className="text-2xl font-bold text-purple-800">
-                            {propertyRatings.statistics.tenantRatings || 0}
-                          </p>
-                          {propertyRatings.statistics.averageTenantRating && (
-                            <p className="text-xs text-purple-600 mt-1">
-                              Avg: {propertyRatings.statistics.averageTenantRating.toFixed(1)} ⭐
-                            </p>
-                          )}
-                        </div>
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                          <p className="text-sm text-yellow-700 mb-1">Overall Average</p>
-                          <p className="text-2xl font-bold text-yellow-800">
-                            {propertyRatings.statistics.averageLandlordRating && propertyRatings.statistics.averageTenantRating
-                              ? ((propertyRatings.statistics.averageLandlordRating + propertyRatings.statistics.averageTenantRating) / 2).toFixed(1)
-                              : propertyRatings.statistics.averageLandlordRating?.toFixed(1) || propertyRatings.statistics.averageTenantRating?.toFixed(1) || 'N/A'}
-                          </p>
-                        </div>
-                      </div>
+              
+              {propertyRatings.detailedRatings && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                    <h4 className="font-semibold text-gray-800 mb-3">Tenant Feedback Highlights</h4>
+                    {propertyRatings.detailedRatings.tenantHighlights?.length > 0 ? (
+                      <ul className="space-y-2 text-sm text-gray-700">
+                        {propertyRatings.detailedRatings.tenantHighlights.map((highlight, idx) => (
+                          <li key={idx} className="flex items-start gap-2">
+                            <span className="text-blue-500">•</span>
+                            <span>{highlight}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-gray-500 text-sm">No tenant highlights available.</p>
                     )}
                   </div>
-                  {propertyRatings.ratings && propertyRatings.ratings.length > 0 ? (
-                    <div className="space-y-4">
-                      {propertyRatings.ratings.map((rating) => (
-                        <div key={rating._id} className="bg-white border rounded-lg p-4">
-                          {rating.tenantToLandlordRating?.overallRating && (
-                            <div className="mb-4 pb-4 border-b">
-                              <div className="flex items-center gap-2 mb-2">
-                                <FaUser className="text-blue-600" />
-                                <span className="font-semibold text-gray-800">
-                                  {rating.tenantId?.username || 'Tenant'} rated {rating.landlordId?.username || 'Landlord'}
-                                </span>
-                                <div className="flex items-center gap-1 ml-auto">
-                                  {[...Array(5)].map((_, i) => (
-                                    <FaStar
-                                      key={i}
-                                      className={`text-sm ${
-                                        i < (rating.tenantToLandlordRating.overallRating || 0)
-                                          ? 'text-yellow-400 fill-current'
-                                          : 'text-gray-300'
-                                      }`}
-                                    />
-                                  ))}
-                                  <span className="ml-2 text-sm text-gray-600">
-                                    {rating.tenantToLandlordRating.overallRating.toFixed(1)}
-                                  </span>
-                                </div>
-                              </div>
-                              {rating.tenantToLandlordRating.comment && (
-                                <p className="text-sm text-gray-700">{rating.tenantToLandlordRating.comment}</p>
-                              )}
-                              <p className="text-xs text-gray-500 mt-2">
-                                Rated on {rating.tenantToLandlordRating?.ratedAt ? new Date(rating.tenantToLandlordRating.ratedAt).toLocaleDateString('en-GB') : 'N/A'}
-                              </p>
-                            </div>
-                          )}
-                          {rating.landlordToTenantRating?.overallRating && (
-                            <div>
-                              <div className="flex items-center gap-2 mb-2">
-                                <FaUser className="text-green-600" />
-                                <span className="font-semibold text-gray-800">
-                                  {rating.landlordId?.username || 'Landlord'} rated {rating.tenantId?.username || 'Tenant'}
-                                </span>
-                                <div className="flex items-center gap-1 ml-auto">
-                                  {[...Array(5)].map((_, i) => (
-                                    <FaStar
-                                      key={i}
-                                      className={`text-sm ${
-                                        i < (rating.landlordToTenantRating.overallRating || 0)
-                                          ? 'text-yellow-400 fill-current'
-                                          : 'text-gray-300'
-                                      }`}
-                                    />
-                                  ))}
-                                  <span className="ml-2 text-sm text-gray-600">
-                                    {rating.landlordToTenantRating.overallRating.toFixed(1)}
-                                  </span>
-                                </div>
-                              </div>
-                              {rating.landlordToTenantRating.comment && (
-                                <p className="text-sm text-gray-700">{rating.landlordToTenantRating.comment}</p>
-                              )}
-                              <p className="text-xs text-gray-500 mt-2">
-                                Rated on {rating.landlordToTenantRating?.ratedAt ? new Date(rating.landlordToTenantRating.ratedAt).toLocaleDateString('en-GB') : 'N/A'}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      <FaStar className="text-4xl text-gray-300 mx-auto mb-2" />
-                      <p>No rental ratings yet</p>
-                    </div>
-                  )}
-                  {currentUser && (
-                    <div className="mt-6 flex flex-wrap justify-center gap-3">
-                      {userActiveContract && (() => {
-                        // Determine if current user is tenant or landlord
-                        const isTenant = userActiveContract.tenantId?._id === currentUser._id || userActiveContract.tenantId === currentUser._id;
-                        const isLandlord = userActiveContract.landlordId?._id === currentUser._id || userActiveContract.landlordId === currentUser._id;
-                        const userRole = isTenant ? 'tenant' : (isLandlord ? 'landlord' : null);
-                        
-                        return userRole ? (
-                          <Link
-                            to={`/user/rental-ratings?contractId=${userActiveContract._id}&role=${userRole}`}
-                            className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 inline-block font-semibold"
-                          >
-                            Rate Your Experience
-                          </Link>
-                        ) : null;
-                      })()}
-                      <Link
-                        to={isAdmin ? "/admin/rental-ratings" : "/user/rental-ratings"}
-                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 inline-block"
-                      >
-                        View All Rental Ratings
-                      </Link>
-                    </div>
-                  )}
+                  <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                    <h4 className="font-semibold text-gray-800 mb-3">Landlord Feedback Highlights</h4>
+                    {propertyRatings.detailedRatings.landlordHighlights?.length > 0 ? (
+                      <ul className="space-y-2 text-sm text-gray-700">
+                        {propertyRatings.detailedRatings.landlordHighlights.map((highlight, idx) => (
+                          <li key={idx} className="flex items-start gap-2">
+                            <span className="text-purple-500">•</span>
+                            <span>{highlight}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-gray-500 text-sm">No landlord highlights available.</p>
+                    )}
+                  </div>
                 </div>
               )}
-            </>
+            </div>
           )}
 
           {/* FAQ Section */}
@@ -3301,6 +3306,65 @@ export default function Listing() {
           </div>
         </div>
       )}
+      {/* Deassign Owner Modal */}
+      {showDeassignModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50 p-4">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-bold text-red-700 flex items-center gap-2">
+                <FaBan /> Remove Property Owner
+              </h3>
+              <button
+                onClick={() => setShowDeassignModal(false)}
+                className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <form onSubmit={handleDeassignOwnerSubmit} className="px-6 py-5 space-y-4">
+              <p className="text-sm text-gray-600">
+                This note will be shared with the previous owner via email. Please be clear and professional.
+              </p>
+              <textarea
+                value={deassignReason}
+                onChange={(e) => setDeassignReason(e.target.value)}
+                rows={4}
+                className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-300 focus:border-red-400"
+                placeholder="Example: Owner unresponsive to tenant support despite repeated reminders."
+                disabled={deassignLoading}
+              />
+              {deassignError && <p className="text-sm text-red-600">{deassignError}</p>}
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowDeassignModal(false)}
+                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold"
+                  disabled={deassignLoading}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={deassignLoading || !deassignReason.trim()}
+                  className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {deassignLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Removing...
+                    </>
+                  ) : (
+                    <>
+                      <FaBan /> Confirm Deassign
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Assign New Owner Modal */}
       {showAssignOwnerModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">

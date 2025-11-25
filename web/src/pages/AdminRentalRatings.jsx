@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FaStar, FaUser, FaHome, FaSpinner, FaSearch, FaCheckCircle, FaClock, FaFileAlt } from 'react-icons/fa';
+import { FaStar, FaUser, FaHome, FaSpinner, FaSearch, FaCheckCircle, FaClock, FaFileAlt, FaTimes } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
 import RatingDisplay from '../components/ratings/RatingDisplay';
 
@@ -347,6 +347,20 @@ export default function AdminRentalRatings() {
               className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                  <FaStar className="text-yellow-500" /> Rating Details
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowRatingDisplay(false);
+                    setSelectedRating(null);
+                  }}
+                  className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
+                >
+                  <FaTimes />
+                </button>
+              </div>
               <div className="p-6">
                 <RatingDisplay
                   rating={selectedRating}

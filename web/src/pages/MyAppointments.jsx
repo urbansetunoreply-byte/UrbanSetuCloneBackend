@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { FaTrash, FaSearch, FaPen, FaCheck, FaTimes, FaUserShield, FaUser, FaEnvelope, FaPhone, FaVideo, FaArchive, FaUndo, FaCommentDots, FaCheckDouble, FaBan, FaPaperPlane, FaCalendar, FaLightbulb, FaCopy, FaEllipsisV, FaFlag, FaCircle, FaInfoCircle, FaSync, FaStar, FaRegStar, FaThumbtack, FaCalendarAlt, FaCheckSquare, FaDownload, FaDollarSign, FaCreditCard, FaSpinner, FaExclamationTriangle, FaMoneyBill, FaHistory, FaWallet, FaSignInAlt, FaSignOutAlt, FaGavel, FaFileContract } from "react-icons/fa";
+import { FaTrash, FaSearch, FaPen, FaCheck, FaTimes, FaUserShield, FaUser, FaEnvelope, FaPhone, FaVideo, FaArchive, FaUndo, FaCommentDots, FaCheckDouble, FaBan, FaPaperPlane, FaCalendar, FaLightbulb, FaCopy, FaEllipsisV, FaFlag, FaCircle, FaInfoCircle, FaSync, FaStar, FaRegStar, FaThumbtack, FaCalendarAlt, FaCheckSquare, FaDownload, FaDollarSign, FaCreditCard, FaSpinner, FaExclamationTriangle, FaMoneyBill, FaHistory, FaWallet, FaFileContract } from "react-icons/fa";
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
 import UserAvatar from '../components/UserAvatar';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
@@ -6299,45 +6299,6 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         <FaWallet className="inline mr-1" />
                         Rent Wallet
                       </Link>
-                    )}
-                    {/* Move-In/Move-Out Checklist buttons: show for rental appointments with contract */}
-                    {appt.purpose === 'rent' && appt.contractId && (
-                      <>
-                        <Link
-                          to={`/user/services?contractId=${appt.contractId._id || appt.contractId}&checklist=move_in`}
-                          className="text-xs border rounded px-2 py-1 mt-1 text-blue-600 hover:text-blue-700 border-blue-500 bg-blue-50 hover:bg-blue-100 transition"
-                          title="Move-In Checklist"
-                        >
-                          <FaSignInAlt className="inline mr-1" />
-                          Move-In
-                        </Link>
-                        <Link
-                          to={`/user/services?contractId=${appt.contractId._id || appt.contractId}&checklist=move_out`}
-                          className="text-xs border rounded px-2 py-1 mt-1 text-orange-600 hover:text-orange-700 border-orange-500 bg-orange-50 hover:bg-orange-100 transition"
-                          title="Move-Out Checklist"
-                        >
-                          <FaSignOutAlt className="inline mr-1" />
-                          Move-Out
-                        </Link>
-                        <Link
-                          to={`/user/disputes?contractId=${appt.contractId._id || appt.contractId}`}
-                          className="text-xs border rounded px-2 py-1 mt-1 text-red-600 hover:text-red-700 border-red-500 bg-red-50 hover:bg-red-100 transition"
-                          title="Raise Dispute"
-                        >
-                          <FaGavel className="inline mr-1" />
-                          Dispute
-                        </Link>
-                        {appt.purpose === 'rent' && appt.contractId && (
-                          <Link
-                            to={`/user/rental-ratings?contractId=${appt.contractId._id || appt.contractId}&role=${isBuyer ? 'tenant' : 'landlord'}`}
-                            className="text-xs border rounded px-2 py-1 mt-1 text-yellow-600 hover:text-yellow-700 border-yellow-500 bg-yellow-50 hover:bg-yellow-100 transition"
-                            title="Rate Rental Experience"
-                          >
-                            <FaStar className="inline mr-1" />
-                            Rate
-                          </Link>
-                        )}
-                      </>
                     )}
                   </>
                 )}
