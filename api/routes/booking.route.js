@@ -53,13 +53,6 @@ router.post("/", verifyToken, async (req, res) => {
       });
     }
 
-    if (isListingUnavailable(listing)) {
-      return res.status(400).json({
-        message: getAvailabilityGuardMessage(listing),
-        code: 'PROPERTY_LOCKED'
-      });
-    }
-
     // Get buyer details
     const buyer = await User.findById(buyerId);
     if (!buyer) {
