@@ -5,13 +5,14 @@ import { useWishlist } from '../WishlistContext';
 import { FaHeart, FaTrash, FaCheckCircle } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import { maskAddress } from '../utils/addressMasking';
-import { toast } from 'react-toastify';
 import PrimaryButton from "./ui/PrimaryButton";
 import { MapPin, Bath, BedDouble, Tag } from "lucide-react";
 
 export default function ListingItem({ listing, onDelete, onWishToggle }) {
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const [isInWishlistState, setIsInWishlistState] = useState(false);
+  const [showAppointmentTooltip, setShowAppointmentTooltip] = useState(false);
+  const [showWishlistTooltip, setShowWishlistTooltip] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { currentUser } = useSelector((state) => state.user);
@@ -26,8 +27,8 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
 
   const handleWishList = async () => {
     if (!currentUser) {
-      toast.info('Please sign in to add properties to your wishlist.');
-      navigate('/sign-in');
+      setShowWishlistTooltip(true);
+      setTimeout(() => setShowWishlistTooltip(false), 3000);
       return;
     }
     
@@ -44,8 +45,8 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
 
   const onHandleAppointment = () => {
     if (!currentUser) {
-      toast.info('Please sign in to book appointments.');
-      navigate('/sign-in');
+      setShowAppointmentTooltip(true);
+      setTimeout(() => setShowAppointmentTooltip(false), 3000);
       return;
     }
     
@@ -98,15 +99,25 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
           </button>
         ) : null
       ) : (
-        <button
-          onClick={handleWishList}
-          className={`absolute top-2 sm:top-4 right-2 sm:right-4 p-2 rounded-full transition z-20 ${
-            isInWishlistState ? 'bg-red-500 text-white' : 'bg-gray-200 text-red-500'
-          }`}
-          title={isInWishlistState ? 'Remove from wishlist' : 'Add to wishlist'}
-        >
-          <FaHeart className="text-base sm:text-lg" />
-        </button>
+        <div className="absolute top-2 sm:top-4 right-2 sm:right-4 z-20">
+          <div className="relative">
+            <button
+              onClick={handleWishList}
+              className={`p-2 rounded-full transition ${
+                isInWishlistState ? 'bg-red-500 text-white' : 'bg-gray-200 text-red-500'
+              }`}
+              title={isInWishlistState ? 'Remove from wishlist' : 'Add to wishlist'}
+            >
+              <FaHeart className="text-base sm:text-lg" />
+            </button>
+            {showWishlistTooltip && (
+              <div className="absolute top-full right-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap shadow-lg">
+                Please login to save properties
+                <div className="absolute -top-1 right-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
 
@@ -238,9 +249,17 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
             You cannot book an appointment for your own property.
           </div>
         ) : (
-          <PrimaryButton variant="blue" type="button" onClick={onHandleAppointment} className="!py-2 sm:!py-3">
-            📅 Book Appointment
-          </PrimaryButton>
+          <div className="relative flex justify-center">
+            <PrimaryButton variant="blue" type="button" onClick={onHandleAppointment} className="!py-2 sm:!py-3">
+              📅 Book Appointment
+            </PrimaryButton>
+            {showAppointmentTooltip && (
+              <div className="absolute bottom-full mb-2 bg-red-600 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap shadow-lg">
+                Please login to book appointments
+                <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-red-600 transform rotate-45"></div>
+              </div>
+            )}
+          </div>
         )}
       </div>
     </div>

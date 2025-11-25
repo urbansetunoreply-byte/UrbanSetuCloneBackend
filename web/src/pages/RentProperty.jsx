@@ -31,7 +31,10 @@ export default function RentProperty() {
     customLockDuration: 12,
     moveInDate: '',
     bookingId: null,
-    depositPlan: 'standard' // 'standard', 'low', 'zero'
+    depositPlan: 'standard', // 'standard', 'low', 'zero'
+    appointmentTime: '',
+    appointmentMessage: '',
+    appointmentPurpose: 'rent'
   });
   const [contract, setContract] = useState(null);
   const [resumingContract, setResumingContract] = useState(false);
@@ -162,6 +165,10 @@ export default function RentProperty() {
                   resumeStep = 2;
                 }
 
+                const bookingDetails = existingContract.bookingId && typeof existingContract.bookingId === 'object'
+                  ? existingContract.bookingId
+                  : null;
+
                 setStep(resumeStep);
                 setFormData(prev => ({
                   ...prev,
@@ -169,7 +176,10 @@ export default function RentProperty() {
                   customLockDuration: existingContract.lockDuration || prev.customLockDuration,
                   moveInDate: existingContract.moveInDate ? new Date(existingContract.moveInDate).toISOString().split('T')[0] : prev.moveInDate,
                   bookingId: existingContract.bookingId?._id || existingContract.bookingId || prev.bookingId,
-                  depositPlan: existingContract.depositPlan || prev.depositPlan || 'standard'
+                  depositPlan: existingContract.depositPlan || prev.depositPlan || 'standard',
+                  appointmentTime: bookingDetails?.time || prev.appointmentTime,
+                  appointmentMessage: bookingDetails?.message || prev.appointmentMessage,
+                  appointmentPurpose: bookingDetails?.purpose || prev.appointmentPurpose || 'rent'
                 }));
 
                 // Fetch booking if it exists
@@ -211,10 +221,32 @@ export default function RentProperty() {
     fetchListingAndContract();
   }, [listingId, contractIdParam, currentUser, navigate]);
 
+  useEffect(() => {
+    if (booking) {
+      const normalizedDate = booking.date
+        ? new Date(booking.date).toISOString().split('T')[0]
+        : null;
+      setFormData(prev => ({
+        ...prev,
+        moveInDate: normalizedDate || prev.moveInDate,
+        appointmentTime: booking.time || prev.appointmentTime,
+        appointmentMessage: booking.message || prev.appointmentMessage,
+        appointmentPurpose: booking.purpose || prev.appointmentPurpose || 'rent'
+      }));
+    }
+  }, [booking]);
+
   const handlePlanChange = (plan) => {
     setFormData(prev => ({
       ...prev,
       rentLockPlan: plan
+    }));
+  };
+
+  const handleAppointmentFieldChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
     }));
   };
 
@@ -237,6 +269,16 @@ export default function RentProperty() {
         return;
       }
 
+      if (!formData.appointmentTime) {
+        toast.error("Please select a preferred appointment time.");
+        return;
+      }
+
+      if (!formData.appointmentPurpose) {
+        toast.error("Please choose the purpose of this visit.");
+        return;
+      }
+
       // Create booking first
       try {
         setLoading(true);
@@ -247,9 +289,11 @@ export default function RentProperty() {
           body: JSON.stringify({
             listingId,
             date: formData.moveInDate || new Date().toISOString().split('T')[0],
-            time: '12:00',
-            message: `Rent-Lock Plan: ${formData.rentLockPlan}`,
-            purpose: 'rent',
+            time: formData.appointmentTime || '12:00',
+            message: formData.appointmentMessage?.trim()
+              ? formData.appointmentMessage
+              : `Rent-Lock Plan: ${formData.rentLockPlan}`,
+            purpose: formData.appointmentPurpose || 'rent',
             propertyName: listing?.name || '',
             propertyDescription: listing?.description || '',
             rentLockPlanSelected: formData.rentLockPlan,
@@ -271,7 +315,13 @@ export default function RentProperty() {
         }
 
         setBooking(booking);
-        setFormData(prev => ({ ...prev, bookingId: booking._id }));
+        setFormData(prev => ({
+          ...prev,
+          bookingId: booking._id,
+          appointmentTime: booking.time || prev.appointmentTime,
+          appointmentMessage: booking.message || prev.appointmentMessage,
+          appointmentPurpose: booking.purpose || prev.appointmentPurpose || 'rent'
+        }));
         
         // Create contract
         const lockDuration = formData.rentLockPlan === '1_year' ? 12 :
@@ -780,7 +830,7 @@ export default function RentProperty() {
             <div className="mb-6">
               <label className="block text-gray-700 font-medium mb-2">
                 <FaCalendarAlt className="inline mr-2" />
-                Move-in Date <span className="text-gray-500 text-sm font-normal">(can be modified later)</span>
+                Preferred Visit / Move-in Date <span className="text-gray-500 text-sm font-normal">(can be modified later)</span>
               </label>
               <input
                 type="date"
@@ -790,6 +840,62 @@ export default function RentProperty() {
                 required
                 className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+            </div>
+
+            {/* Appointment style inputs */}
+            <div className="mb-6 border border-gray-200 rounded-lg p-4">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Schedule Your Visit</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Time</label>
+                  <select
+                    value={formData.appointmentTime}
+                    onChange={(e) => handleAppointmentFieldChange('appointmentTime', e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  >
+                    <option value="">Select Time (9 AM - 7 PM)</option>
+                    {Array.from({ length: 21 }, (_, i) => {
+                      const totalMinutes = 9 * 60 + i * 30;
+                      const hour = Math.floor(totalMinutes / 60);
+                      const minutes = totalMinutes % 60;
+                      const timeStr = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                      const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+                      const period = hour >= 12 ? 'PM' : 'AM';
+                      const displayStr = `${displayHour}:${minutes.toString().padStart(2, '0')} ${period}`;
+                      return (
+                        <option key={timeStr} value={timeStr}>
+                          {displayStr}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Purpose</label>
+                  <select
+                    value={formData.appointmentPurpose}
+                    onChange={(e) => handleAppointmentFieldChange('appointmentPurpose', e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  >
+                    <option value="">Select Purpose</option>
+                    <option value="rent">Rent Discussion</option>
+                    <option value="inspection">Property Inspection</option>
+                    <option value="followup">Follow-up Visit</option>
+                  </select>
+                </div>
+              </div>
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Message (optional)</label>
+                <textarea
+                  value={formData.appointmentMessage}
+                  onChange={(e) => handleAppointmentFieldChange('appointmentMessage', e.target.value)}
+                  rows="4"
+                  placeholder="Tell the owner about your requirements, preferred slots, or anything else they'd need to know before the visit."
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                ></textarea>
+              </div>
             </div>
 
             {/* Deposit Plan Selection */}

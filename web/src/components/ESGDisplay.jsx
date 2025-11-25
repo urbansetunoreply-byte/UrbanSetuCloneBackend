@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import { FaLeaf, FaUsers, FaShieldAlt, FaStar, FaChartLine, FaInfoCircle, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 
-const ESGDisplay = ({ esg, className = "" }) => {
+const ESGDisplay = ({
+    esg,
+    className = "",
+    isAuthenticated = true,
+    onAuthRequired,
+}) => {
     const [expandedSection, setExpandedSection] = useState(null);
 
     if (!esg) {
@@ -37,6 +42,12 @@ const ESGDisplay = ({ esg, className = "" }) => {
     };
 
     const toggleSection = (section) => {
+        if (!isAuthenticated) {
+            if (typeof onAuthRequired === 'function') {
+                onAuthRequired(section);
+            }
+            return;
+        }
         setExpandedSection(expandedSection === section ? null : section);
     };
 
