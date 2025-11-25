@@ -10944,9 +10944,23 @@ function AdminAppointmentRow({
             {/* Header */}
             <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-white/10">
               <div className="flex items-center gap-2 text-white">
-                <span className="flex items-center gap-2 px-3 py-1 rounded-full bg-red-600/90 text-xs font-semibold uppercase tracking-wide">
-                  <FaCircle className={`text-[10px] ${activeLiveCall ? 'animate-pulse' : ''}`} />
-                  <span>Live Monitor</span>
+                <span
+                  className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide ${
+                    activeLiveCall && monitorCallId === activeLiveCall.callId
+                      ? 'bg-red-600/90'
+                      : 'bg-gray-600/80'
+                  }`}
+                >
+                  <FaCircle
+                    className={`text-[10px] ${
+                      activeLiveCall && monitorCallId === activeLiveCall.callId
+                        ? 'animate-pulse text-red-100'
+                        : 'text-gray-300'
+                    }`}
+                  />
+                  <span>
+                    {activeLiveCall && monitorCallId === activeLiveCall.callId ? 'Live Monitor' : 'Not Live'}
+                  </span>
                 </span>
                 <span className="hidden sm:inline text-xs sm:text-sm text-white/70">
                   {appt.propertyName || 'Appointment'} • {appt.date ? new Date(appt.date).toLocaleDateString('en-IN') : ''}
