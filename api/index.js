@@ -846,6 +846,150 @@ io.on('connection', (socket) => {
     }
   });
 
+  // ===== Admin Live Monitor Support (multi-party WebRTC for admin observers) =====
+
+  // Admin joins an existing active call as a read-only monitor
+  socket.on('admin-monitor-join', async ({ callId }) => {
+    try {
+      const adminUser = socket.user;
+      if (!adminUser || (adminUser.role !== 'admin' && adminUser.role !== 'rootadmin')) {
+        return socket.emit('call-monitor-error', { message: 'Unauthorized' });
+      }
+
+      const call = await CallHistory.findOne({ callId });
+      if (!call || call.status !== 'accepted') {
+        return socket.emit('call-monitor-error', { message: 'Call is not currently active' });
+      }
+
+      const activeCall = activeCalls.get(callId);
+      if (!activeCall || !activeCall.callerSocketId || !activeCall.receiverSocketId) {
+        return socket.emit('call-monitor-error', { message: 'Call peers are not ready for monitoring' });
+      }
+
+      // Track monitor sockets for this call
+      if (!activeCall.monitors) {
+        activeCall.monitors = new Set();
+      }
+      activeCall.monitors.add(socket.id);
+      activeCalls.set(callId, activeCall);
+
+      // Notify admin with basic context (used for labeling in UI)
+      socket.emit('admin-monitor-started', {
+        callId,
+        appointmentId: call.appointmentId.toString(),
+        callerId: call.callerId.toString(),
+        receiverId: call.receiverId.toString(),
+        callType: call.callType
+      });
+
+      // Ask both participants to start sending a mirror of their local stream to this admin
+      io.to(activeCall.callerSocketId).emit('admin-monitor-request', {
+        callId,
+        adminSocketId: socket.id
+      });
+      io.to(activeCall.receiverSocketId).emit('admin-monitor-request', {
+        callId,
+        adminSocketId: socket.id
+      });
+    } catch (err) {
+      console.error('Error handling admin-monitor-join:', err);
+      socket.emit('call-monitor-error', { message: 'Failed to join live monitor' });
+    }
+  });
+
+  // Participant -> Admin: offer for monitor peer connection
+  socket.on('webrtc-offer-monitor', ({ callId, adminSocketId, offer }) => {
+    const activeCall = activeCalls.get(callId);
+    if (!activeCall || !offer) return;
+
+    // Ensure this socket is one of the main call peers
+    if (socket.id !== activeCall.callerSocketId && socket.id !== activeCall.receiverSocketId) {
+      return;
+    }
+
+    if (!activeCall.monitors || !activeCall.monitors.has(adminSocketId)) {
+      return;
+    }
+
+    const fromRole = socket.id === activeCall.callerSocketId ? 'caller' : 'receiver';
+
+    // Forward offer to admin so they can create a receive-only peer
+    io.to(adminSocketId).emit('webrtc-offer-monitor', {
+      callId,
+      fromRole,
+      offer
+    });
+  });
+
+  // Admin -> Participant: answer for monitor peer
+  socket.on('webrtc-answer-monitor', ({ callId, targetRole, answer }) => {
+    const activeCall = activeCalls.get(callId);
+    if (!activeCall || !answer) return;
+
+    // Ensure this socket is a monitor for the call
+    if (!activeCall.monitors || !activeCall.monitors.has(socket.id)) {
+      return;
+    }
+
+    let targetSocketId = null;
+    if (targetRole === 'caller') {
+      targetSocketId = activeCall.callerSocketId;
+    } else if (targetRole === 'receiver') {
+      targetSocketId = activeCall.receiverSocketId;
+    }
+    if (!targetSocketId) return;
+
+    io.to(targetSocketId).emit('webrtc-answer-monitor', {
+      callId,
+      adminSocketId: socket.id,
+      answer
+    });
+  });
+
+  // ICE candidates for monitor peers in both directions
+  socket.on('ice-candidate-monitor', ({ callId, adminSocketId, candidate, from, targetRole }) => {
+    const activeCall = activeCalls.get(callId);
+    if (!activeCall || !candidate) return;
+
+    // Participant -> Admin
+    if (from === 'participant') {
+      if (socket.id !== activeCall.callerSocketId && socket.id !== activeCall.receiverSocketId) {
+        return;
+      }
+      if (!activeCall.monitors || !activeCall.monitors.has(adminSocketId)) {
+        return;
+      }
+
+      const fromRole = socket.id === activeCall.callerSocketId ? 'caller' : 'receiver';
+      io.to(adminSocketId).emit('ice-candidate-monitor', {
+        callId,
+        fromRole,
+        candidate
+      });
+      return;
+    }
+
+    // Admin -> Participant
+    if (from === 'admin') {
+      if (!activeCall.monitors || !activeCall.monitors.has(socket.id)) {
+        return;
+      }
+      let targetSocketId = null;
+      if (targetRole === 'caller') {
+        targetSocketId = activeCall.callerSocketId;
+      } else if (targetRole === 'receiver') {
+        targetSocketId = activeCall.receiverSocketId;
+      }
+      if (!targetSocketId) return;
+
+      io.to(targetSocketId).emit('ice-candidate-monitor', {
+        callId,
+        adminSocketId: socket.id,
+        candidate
+      });
+    }
+  });
+
 });
 
 // Health check endpoint for Render deployment
