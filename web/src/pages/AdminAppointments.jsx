@@ -5915,7 +5915,7 @@ function AdminAppointmentRow({
           <FaCommentDots size={22} className="group-hover:animate-pulse" />
           <div className="absolute inset-0 bg-white rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
         </button>
-        {showPasswordModal && (
+        {showPasswordModal && !showChatModal && (
           <div className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs relative flex flex-col items-center">
               <button
