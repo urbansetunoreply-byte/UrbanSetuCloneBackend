@@ -8805,8 +8805,8 @@ export const sendOwnerAssignedEmail = async (email, details = {}) => {
         .header { background: linear-gradient(135deg, #0891b2, #0ea5e9); color: white; padding: 30px 25px; text-align: center; }
         .content { padding: 30px 25px; color: #0f172a; }
         .highlight { background-color: #ecfeff; border-left: 4px solid #0ea5e9; padding: 20px; border-radius: 8px; margin: 20px 0; color: #0c4a6e; }
-        .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 30px 0; }
-        .btn { flex: 1; min-width: 180px; text-align: center; padding: 14px 20px; border-radius: 30px; font-weight: 600; text-decoration: none; border: none; }
+        .actions { display: flex; flex-direction: column; gap: 12px; margin: 30px 0; }
+        .btn { width: 100%; text-align: center; padding: 14px 20px; border-radius: 30px; font-weight: 600; text-decoration: none; border: none; }
         .btn-primary { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; }
         .btn-outline { border: 2px solid #2563eb; color: #2563eb; background: white; }
         .footer { background-color: #e0f2fe; padding: 20px; text-align: center; color: #475569; font-size: 13px; }
