@@ -348,16 +348,9 @@ export default function MyAppointments() {
   // Listen for notification clicks when already on MyAppointments page
   useEffect(() => {
     const handleNotificationClick = (e) => {
-      const { appointmentId, preferUnread } = e.detail || {};
+      const { appointmentId } = e.detail || {};
       if (appointmentId) {
-        // Find the appointment and set the state directly
-        const appointment = appointments.find(appt => appt._id === appointmentId);
-        if (appointment) {
-          setNotificationChatData(appointment);
-          setShouldOpenChatFromNotification(true);
-          setActiveChatAppointmentId(appointmentId);
-          if (preferUnread) setPreferUnreadForAppointmentId(appointmentId);
-        }
+        navigate(`/user/my-appointments/chat/${appointmentId}`, { replace: false });
       }
     };
     
@@ -365,7 +358,7 @@ export default function MyAppointments() {
     return () => {
       window.removeEventListener('openChatFromNotification', handleNotificationClick);
     };
-  }, [appointments]);
+  }, [navigate]);
 
   // Listen for highlightAppointment events (from MyPayments page)
   useEffect(() => {
@@ -562,100 +555,117 @@ export default function MyAppointments() {
 
   // Handle navigation state when coming from notification or direct chat link
   const location = useLocation();
-  const { chatId } = useParams();
   const params = useParams();
-  const chatResolveRef = useRef(false);
-  const chatIntervalRef = useRef(null);
-  const chatTimeoutRef = useRef(null);
+  const chatRouteResolvedRef = useRef(null);
   
   useEffect(() => {
-    // Clear any previous timers when dependencies change
-    if (chatIntervalRef.current) {
-      clearInterval(chatIntervalRef.current);
-      chatIntervalRef.current = null;
+    const chatIdFromUrl = params.chatId;
+
+    if (!chatIdFromUrl) {
+      chatRouteResolvedRef.current = null;
+      setMissingChatbookError(null);
+      return;
     }
-    if (chatTimeoutRef.current) {
-      clearTimeout(chatTimeoutRef.current);
-      chatTimeoutRef.current = null;
+
+    setMissingChatbookError(null);
+
+    if (chatRouteResolvedRef.current === chatIdFromUrl) {
+      return;
     }
-    chatResolveRef.current = false;
 
-    // Handle direct chat link via URL parameter
-    if (params.chatId) {
-      const chatIdFromUrl = params.chatId;
+    let cancelled = false;
 
-      const tryResolveChat = () => {
-        const appointment = appointments.find(appt => appt._id === chatIdFromUrl);
-        if (appointment) {
-          chatResolveRef.current = true;
-          setNotificationChatData(appointment);
-          setShouldOpenChatFromNotification(true);
-          setActiveChatAppointmentId(chatIdFromUrl);
-          if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
-          if (chatTimeoutRef.current) clearTimeout(chatTimeoutRef.current);
-        }
-      };
+    const openChatForAppointment = (appointment) => {
+      if (!appointment || cancelled) return;
+      chatRouteResolvedRef.current = appointment._id;
+      setNotificationChatData(appointment);
+      setShouldOpenChatFromNotification(true);
+      setActiveChatAppointmentId(appointment._id);
+      setMissingChatbookError(null);
+    };
 
-      if (appointments.length > 0) {
-        tryResolveChat();
-      } else {
-        // Poll until appointments are available
-        chatIntervalRef.current = setInterval(() => {
-          if (appointments.length > 0) {
-            tryResolveChat();
-            if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
-          }
-        }, 100);
+    const resolveChatRoute = async () => {
+      const findLocalAppointment = () =>
+        appointments.find((appt) => appt._id === chatIdFromUrl) ||
+        allAppointments.find((appt) => appt._id === chatIdFromUrl);
+
+      let appointment = findLocalAppointment();
+      if (appointment) {
+        openChatForAppointment(appointment);
+        return;
       }
 
-      // Fallback after 5s if still unresolved
-      chatTimeoutRef.current = setTimeout(() => {
-        if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
-        if (!chatResolveRef.current) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/bookings/${chatIdFromUrl}`, {
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            if (!cancelled) setMissingChatbookError(chatIdFromUrl);
+            return;
+          }
+          throw new Error('Failed to fetch appointment details');
+        }
+
+        const data = await response.json();
+        appointment = data.booking || data;
+
+        if (!appointment?._id) {
+          throw new Error('Invalid appointment payload');
+        }
+
+        if (currentUser?._id) {
+          const userId = currentUser._id.toString();
+          if (appointment.buyerId && (appointment.buyerId._id === userId || appointment.buyerId === userId)) {
+            appointment.role = 'buyer';
+          } else if (appointment.sellerId && (appointment.sellerId._id === userId || appointment.sellerId === userId)) {
+            appointment.role = 'seller';
+          }
+        }
+
+        setAllAppointments((prev) => {
+          const existingIndex = prev.findIndex((appt) => appt._id === appointment._id);
+          if (existingIndex !== -1) {
+            const next = [...prev];
+            next[existingIndex] = { ...next[existingIndex], ...appointment };
+            return next;
+          }
+          return [appointment, ...prev];
+        });
+
+        setAppointments((prev) => {
+          const existingIndex = prev.findIndex((appt) => appt._id === appointment._id);
+          if (existingIndex !== -1) {
+            const next = [...prev];
+            next[existingIndex] = { ...next[existingIndex], ...appointment };
+            return next;
+          }
+          return [appointment, ...prev];
+        });
+
+        openChatForAppointment(appointment);
+      } catch (error) {
+        if (!cancelled) {
+          console.error('Failed to resolve chat via link:', error);
           setMissingChatbookError(chatIdFromUrl);
         }
-      }, 5000);
-    } else if (location.state?.fromNotification && location.state?.openChatForAppointment) {
-      // Handle notification-triggered chat opening
-      const appointmentId = location.state.openChatForAppointment;
-
-      const tryResolveNotified = () => {
-        const appointment = appointments.find(appt => appt._id === appointmentId);
-        if (appointment) {
-          chatResolveRef.current = true;
-          setNotificationChatData(appointment);
-          setShouldOpenChatFromNotification(true);
-          setActiveChatAppointmentId(appointmentId);
-          navigate(location.pathname, { replace: true });
-          if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
-          if (chatTimeoutRef.current) clearTimeout(chatTimeoutRef.current);
-        }
-      };
-
-      if (appointments.length > 0) {
-        tryResolveNotified();
-      } else {
-        chatIntervalRef.current = setInterval(() => {
-          if (appointments.length > 0) {
-            tryResolveNotified();
-            if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
-          }
-        }, 100);
       }
+    };
 
-      chatTimeoutRef.current = setTimeout(() => {
-        if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
-        if (!chatResolveRef.current) {
-          setMissingChatbookError(appointmentId);
-        }
-      }, 5000);
-    }
+    resolveChatRoute();
 
     return () => {
-      if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
-      if (chatTimeoutRef.current) clearTimeout(chatTimeoutRef.current);
+      cancelled = true;
     };
-  }, [location.state, navigate, appointments, currentUser?._id, params.chatId]);
+  }, [params.chatId, appointments, allAppointments, currentUser?._id]);
+
+  useEffect(() => {
+    if (location.state?.fromNotification && location.state?.openChatForAppointment) {
+      const appointmentId = location.state.openChatForAppointment;
+      navigate(`/user/my-appointments/chat/${appointmentId}`, { replace: true, state: {} });
+    }
+  }, [location.state, navigate]);
 
   // Handle highlightAppointmentId from location.state (must be after location declaration)
   useEffect(() => {
@@ -3866,8 +3876,15 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   // Add function to check if appointment is upcoming
   const isUpcoming = new Date(appt.date) > new Date() || (new Date(appt.date).toDateString() === new Date().toDateString() && (!appt.time || appt.time > new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })));
   
-  // Chat availability: keep chat open for all but block sending for certain statuses
-  const isChatSendBlocked = !isUpcoming || appt.status === 'rejected' || appt.status === 'cancelledByAdmin' || appt.status === 'cancelledByBuyer' || appt.status === 'cancelledBySeller' || appt.status === 'deletedByAdmin';
+  const frozenStatuses = ['rejected', 'cancelledByAdmin', 'cancelledByBuyer', 'cancelledBySeller', 'deletedByAdmin'];
+  const hasMoveOutCompleted =
+    appt.purpose === 'rent' &&
+    ['move_out_pending', 'completed', 'terminated'].includes(appt.rentalStatus);
+
+  // Chat availability: allow outdated sales & rentals until move-out is completed
+  const isChatSendBlocked =
+    frozenStatuses.includes(appt.status) ||
+    (appt.purpose === 'rent' ? (!isUpcoming && hasMoveOutCompleted) : false);
   
   // Status indicators: hide for pending and frozen appointments
   const isStatusHidden = appt.status === 'pending' || appt.status === 'rejected' || appt.status === 'cancelledByAdmin' || appt.status === 'cancelledByBuyer' || appt.status === 'cancelledBySeller' || appt.status === 'deletedByAdmin';

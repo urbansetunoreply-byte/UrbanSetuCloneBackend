@@ -148,7 +148,8 @@ const listingSchema = new mongoose.Schema({
     userRef: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true
+        required: false,
+        default: null
     },
     // Review-related fields
     averageRating: {

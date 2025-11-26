@@ -497,41 +497,14 @@ function AppRoutes({ bootstrapped }) {
         // Show notification for new message
         try { playNotification(); } catch (_) {}
         
-        if (isOnMyAppointments) {
-          // If on MyAppointments page, dispatch custom event to open chat
-          toast.info(`New message from ${senderName}`, {
-            onClick: () => {
-              // Dispatch custom event to MyAppointments page to open the specific chat
-              window.dispatchEvent(new CustomEvent('openChatFromNotification', {
-                detail: {
-                  appointmentId: data.appointmentId,
-                  fromNotification: true,
-                  preferUnread: true
-                }
-              }));
-            },
-            autoClose: 5000,
-            closeOnClick: true,
-            pauseOnHover: false
-          });
-        } else {
-          // If not on MyAppointments page, navigate to it
-          toast.info(`New message from ${senderName}`, {
-            onClick: () => {
-              // Navigate to MyAppointments page when notification is clicked
-              // and pass the appointment ID to open the specific chat
-              navigate('/user/my-appointments', { 
-                state: { 
-                  openChatForAppointment: data.appointmentId,
-                  fromNotification: true 
-                } 
-              });
-            },
-            autoClose: 5000,
-            closeOnClick: true,
-            pauseOnHover: false
-          });
-        }
+        toast.info(`New message from ${senderName}`, {
+          onClick: () => {
+            navigate(`/user/my-appointments/chat/${data.appointmentId}`, { replace: false });
+          },
+          autoClose: 5000,
+          closeOnClick: true,
+          pauseOnHover: false
+        });
       }
     };
 

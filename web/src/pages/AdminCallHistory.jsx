@@ -103,8 +103,6 @@ const AdminCallHistory = () => {
 
   const totalPages = Math.ceil(filteredCalls.length / itemsPerPage) || 1;
 
-  const formatDuration = (seconds) => {
-    if (!seconds || seconds === 0) return 'N/A';
   const stats = React.useMemo(() => {
     const total = filteredCalls.length;
     const audio = filteredCalls.filter(call => call.callType === 'audio').length;
@@ -117,6 +115,9 @@ const AdminCallHistory = () => {
 
     return { total, audio, video, missed, averageDuration };
   }, [filteredCalls]);
+
+  const formatDuration = (seconds) => {
+    if (!seconds || seconds === 0) return 'N/A';
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;

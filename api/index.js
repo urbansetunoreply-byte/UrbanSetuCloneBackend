@@ -990,6 +990,70 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Admin: force terminate an active call (fraud / abuse intervention)
+  socket.on('admin-force-end-call', async ({ callId, reason }) => {
+    try {
+      const adminUser = socket.user;
+      if (!adminUser || (adminUser.role !== 'admin' && adminUser.role !== 'rootadmin')) {
+        return socket.emit('call-force-end-error', { message: 'Unauthorized' });
+      }
+
+      const activeCall = activeCalls.get(callId);
+      if (!activeCall) {
+        return socket.emit('call-force-end-error', { message: 'Call is not currently active' });
+      }
+
+      const terminationMessage = reason?.trim()
+        ? reason.trim()
+        : 'Call terminated by admin for policy violation.';
+
+      try {
+        const call = await CallHistory.findOne({ callId });
+        if (call) {
+          const endTime = new Date();
+          call.status = 'ended';
+          call.endTime = endTime;
+          if (call.startTime) {
+            call.duration = Math.max(0, Math.floor((endTime - call.startTime) / 1000));
+          }
+          call.endedBy = adminUser._id;
+          const notePrefix = `[${new Date().toISOString()}] Force terminated by ${adminUser.username || adminUser.email || 'Admin'}`;
+          call.adminNotes = call.adminNotes
+            ? `${call.adminNotes}\n${notePrefix} - ${terminationMessage}`
+            : `${notePrefix} - ${terminationMessage}`;
+          await call.save();
+        }
+      } catch (err) {
+        console.error('Error persisting force-ended call:', err);
+      }
+
+      const payload = {
+        callId,
+        forceEnded: true,
+        terminatedBy: 'admin',
+        reason: terminationMessage
+      };
+
+      if (activeCall.callerSocketId) {
+        io.to(activeCall.callerSocketId).emit('call-ended', payload);
+      }
+      if (activeCall.receiverSocketId) {
+        io.to(activeCall.receiverSocketId).emit('call-ended', payload);
+      }
+      if (activeCall.monitors?.size) {
+        activeCall.monitors.forEach((monitorSocketId) => {
+          io.to(monitorSocketId).emit('call-ended', payload);
+        });
+      }
+
+      activeCalls.delete(callId);
+      socket.emit('call-force-end-success', { callId });
+    } catch (err) {
+      console.error('Error force-ending call:', err);
+      socket.emit('call-force-end-error', { message: 'Failed to terminate call' });
+    }
+  });
+
 });
 
 // Health check endpoint for Render deployment

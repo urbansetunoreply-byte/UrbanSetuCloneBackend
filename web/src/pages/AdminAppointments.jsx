@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { createPortal } from 'react-dom';
-import { FaTrash, FaSearch, FaPen, FaPaperPlane, FaUser, FaEnvelope, FaCalendar, FaPhone, FaVideo, FaUserShield, FaArchive, FaUndo, FaCommentDots, FaCheck, FaCheckDouble, FaBan, FaTimes, FaLightbulb, FaCopy, FaEllipsisV, FaInfoCircle, FaSync, FaStar, FaRegStar, FaFlag, FaCalendarAlt, FaCheckSquare, FaDownload, FaSpinner, FaDollarSign, FaHistory, FaCircle } from "react-icons/fa";
+import { FaTrash, FaSearch, FaPen, FaPaperPlane, FaUser, FaEnvelope, FaCalendar, FaPhone, FaVideo, FaUserShield, FaArchive, FaUndo, FaCommentDots, FaCheck, FaCheckDouble, FaBan, FaTimes, FaLightbulb, FaCopy, FaEllipsisV, FaInfoCircle, FaSync, FaStar, FaRegStar, FaFlag, FaCalendarAlt, FaCheckSquare, FaDownload, FaSpinner, FaDollarSign, FaHistory, FaCircle, FaVolumeUp, FaVolumeMute, FaEye, FaEyeSlash, FaExpand, FaCompress, FaPowerOff } from "react-icons/fa";
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
 import UserAvatar from '../components/UserAvatar';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
@@ -2897,6 +2897,12 @@ function AdminAppointmentRow({
   const buyerMonitorVideoRef = React.useRef(null);
   const sellerMonitorVideoRef = React.useRef(null);
   const monitorPeersRef = React.useRef({ caller: null, receiver: null });
+  const [focusedMonitorView, setFocusedMonitorView] = useLocalState(null);
+  const [monitorAudioMuted, setMonitorAudioMuted] = useLocalState({ buyer: true, seller: true });
+  const [monitorVideoHidden, setMonitorVideoHidden] = useLocalState({ buyer: false, seller: false });
+  const [showForceTerminateModal, setShowForceTerminateModal] = useLocalState(false);
+  const [forceTerminateReason, setForceTerminateReason] = useLocalState('');
+  const [forceTerminateLoading, setForceTerminateLoading] = useLocalState(false);
 
   // STUN servers for admin WebRTC monitor (same as participant side)
   const MONITOR_STUN_SERVERS = React.useMemo(() => ([
@@ -2904,6 +2910,29 @@ function AdminAppointmentRow({
     { urls: 'stun:stun1.l.google.com:19302' },
     { urls: 'stun:stun2.l.google.com:19302' }
   ]), []);
+  
+  const toggleMonitorAudio = useCallback((roleKey) => {
+    setMonitorAudioMuted((prev) => ({ ...prev, [roleKey]: !prev[roleKey] }));
+  }, [setMonitorAudioMuted]);
+
+  const toggleMonitorVideo = useCallback((roleKey) => {
+    setMonitorVideoHidden((prev) => ({ ...prev, [roleKey]: !prev[roleKey] }));
+  }, [setMonitorVideoHidden]);
+
+  const toggleFocusView = useCallback((roleKey) => {
+    setFocusedMonitorView((prev) => (prev === roleKey ? null : roleKey));
+  }, [setFocusedMonitorView]);
+
+  const handleForceTerminateCall = useCallback(() => {
+    if (!socket || !activeLiveCall) {
+      return;
+    }
+    setForceTerminateLoading(true);
+    socket.emit('admin-force-end-call', {
+      callId: activeLiveCall.callId,
+      reason: forceTerminateReason.trim()
+    });
+  }, [socket, activeLiveCall, forceTerminateReason, setForceTerminateLoading]);
   
   // Detect potentially active calls for this appointment based on call history status
   const activeLiveCall = React.useMemo(() => {
@@ -2953,7 +2982,7 @@ function AdminAppointmentRow({
         if (buyerMonitorVideoRef.current.srcObject !== buyerMonitorStream) {
           buyerMonitorVideoRef.current.srcObject = buyerMonitorStream;
         }
-        buyerMonitorVideoRef.current.muted = false;
+        buyerMonitorVideoRef.current.muted = monitorAudioMuted.buyer;
         buyerMonitorVideoRef.current.play().catch((err) => {
           console.error('Error playing buyer monitor stream:', err);
         });
@@ -2961,7 +2990,7 @@ function AdminAppointmentRow({
         buyerMonitorVideoRef.current.srcObject = null;
       }
     }
-  }, [buyerMonitorStream]);
+  }, [buyerMonitorStream, monitorAudioMuted.buyer]);
 
   React.useEffect(() => {
     if (sellerMonitorVideoRef.current) {
@@ -2969,7 +2998,7 @@ function AdminAppointmentRow({
         if (sellerMonitorVideoRef.current.srcObject !== sellerMonitorStream) {
           sellerMonitorVideoRef.current.srcObject = sellerMonitorStream;
         }
-        sellerMonitorVideoRef.current.muted = false;
+        sellerMonitorVideoRef.current.muted = monitorAudioMuted.seller;
         sellerMonitorVideoRef.current.play().catch((err) => {
           console.error('Error playing seller monitor stream:', err);
         });
@@ -2977,7 +3006,7 @@ function AdminAppointmentRow({
         sellerMonitorVideoRef.current.srcObject = null;
       }
     }
-  }, [sellerMonitorStream]);
+  }, [sellerMonitorStream, monitorAudioMuted.seller]);
 
   const cleanupMonitorPeers = React.useCallback(() => {
     Object.keys(monitorPeersRef.current).forEach((role) => {
@@ -2994,7 +3023,10 @@ function AdminAppointmentRow({
     setBuyerMonitorStream(null);
     setSellerMonitorStream(null);
     setMonitorCallId(null);
-  }, [setBuyerMonitorStream, setSellerMonitorStream, setMonitorCallId]);
+    setFocusedMonitorView(null);
+    setMonitorAudioMuted({ buyer: true, seller: true });
+    setMonitorVideoHidden({ buyer: false, seller: false });
+  }, [setBuyerMonitorStream, setSellerMonitorStream, setMonitorCallId, setFocusedMonitorView, setMonitorAudioMuted, setMonitorVideoHidden]);
 
   // Listen for monitor signaling events relevant to this appointment
   React.useEffect(() => {
@@ -3103,6 +3135,46 @@ function AdminAppointmentRow({
       cleanupMonitorPeers();
     }
   }, [showLiveMonitorModal, cleanupMonitorPeers]);
+
+  React.useEffect(() => {
+    if (!activeLiveCall) {
+      setFocusedMonitorView(null);
+    }
+  }, [activeLiveCall, setFocusedMonitorView]);
+
+  React.useEffect(() => {
+    if (!socket) return;
+
+    const handleForceEndSuccess = ({ callId }) => {
+      setForceTerminateLoading(false);
+      setShowForceTerminateModal(false);
+      if (monitorCallId && callId === monitorCallId) {
+        toast.success('Live call terminated successfully.');
+        setShowLiveMonitorModal(false);
+        cleanupMonitorPeers();
+      }
+    };
+
+    const handleForceEndError = ({ message }) => {
+      setForceTerminateLoading(false);
+      toast.error(message || 'Failed to terminate live call.');
+    };
+
+    socket.on('call-force-end-success', handleForceEndSuccess);
+    socket.on('call-force-end-error', handleForceEndError);
+    return () => {
+      socket.off('call-force-end-success', handleForceEndSuccess);
+      socket.off('call-force-end-error', handleForceEndError);
+    };
+  }, [socket, monitorCallId, cleanupMonitorPeers, setShowLiveMonitorModal, setForceTerminateLoading, setShowForceTerminateModal]);
+
+  React.useEffect(() => {
+    if (!showChatModal) {
+      setShowPasswordModal(false);
+      setAdminPassword("");
+      setPasswordError("");
+    }
+  }, [showChatModal, setShowPasswordModal, setAdminPassword, setPasswordError]);
   // Persist draft per appointment when chat is open
   React.useEffect(() => {
     if (!showChatModal || !appt?._id || !currentUser?._id) return;
@@ -11122,9 +11194,90 @@ function AdminAppointmentRow({
 
             {/* Body */}
             {activeLiveCall && monitorCallId === activeLiveCall.callId ? (
-              <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              <>
+                <div className="px-4 sm:px-6 py-3 border-b border-white/10 bg-white/5 space-y-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[10px] uppercase tracking-wide text-white/60">Layout</span>
+                    <button
+                      onClick={() => setFocusedMonitorView(null)}
+                      className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full border ${
+                        focusedMonitorView === null
+                          ? 'bg-blue-600 text-white border-blue-600'
+                          : 'bg-transparent text-white/70 border-white/30 hover:border-white/70'
+                      }`}
+                    >
+                      <FaExpand className="text-[10px]" /> Split View
+                    </button>
+                    <button
+                      onClick={() => toggleFocusView('buyer')}
+                      className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full border ${
+                        focusedMonitorView === 'buyer'
+                          ? 'bg-yellow-500 text-black border-yellow-400'
+                          : 'bg-transparent text-white/70 border-white/30 hover:border-white/70'
+                      }`}
+                    >
+                      <FaUser className="text-[10px]" /> Focus Buyer
+                    </button>
+                    <button
+                      onClick={() => toggleFocusView('seller')}
+                      className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full border ${
+                        focusedMonitorView === 'seller'
+                          ? 'bg-yellow-500 text-black border-yellow-400'
+                          : 'bg-transparent text-white/70 border-white/30 hover:border-white/70'
+                      }`}
+                    >
+                      <FaUserShield className="text-[10px]" /> Focus Seller
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[10px] uppercase tracking-wide text-white/60">Controls</span>
+                    <button
+                      onClick={() => toggleMonitorAudio('buyer')}
+                      className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full ${
+                        monitorAudioMuted.buyer ? 'bg-gray-700 text-white' : 'bg-green-500 text-white'
+                      }`}
+                    >
+                      {monitorAudioMuted.buyer ? <FaVolumeMute className="text-[11px]" /> : <FaVolumeUp className="text-[11px]" />}
+                      Buyer Audio
+                    </button>
+                    <button
+                      onClick={() => toggleMonitorAudio('seller')}
+                      className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full ${
+                        monitorAudioMuted.seller ? 'bg-gray-700 text-white' : 'bg-green-500 text-white'
+                      }`}
+                    >
+                      {monitorAudioMuted.seller ? <FaVolumeMute className="text-[11px]" /> : <FaVolumeUp className="text-[11px]" />}
+                      Seller Audio
+                    </button>
+                    <button
+                      onClick={() => toggleMonitorVideo('buyer')}
+                      className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full ${
+                        monitorVideoHidden.buyer ? 'bg-purple-600 text-white' : 'bg-blue-600 text-white'
+                      }`}
+                    >
+                      {monitorVideoHidden.buyer ? <FaEyeSlash className="text-[11px]" /> : <FaEye className="text-[11px]" />}
+                      Buyer Video
+                    </button>
+                    <button
+                      onClick={() => toggleMonitorVideo('seller')}
+                      className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full ${
+                        monitorVideoHidden.seller ? 'bg-purple-600 text-white' : 'bg-blue-600 text-white'
+                      }`}
+                    >
+                      {monitorVideoHidden.seller ? <FaEyeSlash className="text-[11px]" /> : <FaEye className="text-[11px]" />}
+                      Seller Video
+                    </button>
+                    <button
+                      onClick={() => setShowForceTerminateModal(true)}
+                      className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors"
+                    >
+                      <FaPowerOff className="text-[11px]" /> Terminate Call
+                    </button>
+                  </div>
+                </div>
+                <div className={`p-4 sm:p-6 grid ${focusedMonitorView ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'} gap-4 sm:gap-6`}>
                 {/* Buyer side */}
-                <div className="flex flex-col h-full rounded-2xl bg-white/5 border border-white/10 p-4 sm:p-5">
+                <div className={`flex flex-col h-full rounded-2xl bg-white/5 border border-white/10 p-4 sm:p-5 ${focusedMonitorView === 'buyer' ? 'ring-2 ring-yellow-300' : ''}`}>
                   <div className="flex items-center gap-3 mb-4">
                     <UserAvatar
                       user={{ username: appt.buyerId?.username, avatar: appt.buyerId?.avatar }}
@@ -11137,7 +11290,16 @@ function AdminAppointmentRow({
                       <span className="text-sm sm:text-base font-semibold text-white">
                         {appt.buyerId?.username || 'Buyer'}
                       </span>
-                      <span className="text-[10px] text-white/60 uppercase tracking-wide">Buyer Side</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-white/60 uppercase tracking-wide">Buyer Side</span>
+                        <span
+                          className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full ${
+                            monitorAudioMuted.buyer ? 'bg-gray-700 text-white' : 'bg-green-600 text-white'
+                          }`}
+                        >
+                          {monitorAudioMuted.buyer ? <FaVolumeMute /> : <FaVolumeUp />} {monitorAudioMuted.buyer ? 'Muted' : 'Audio'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                   <div className="flex-1 rounded-xl bg-black/60 flex flex-col items-center justify-center border border-white/10 relative overflow-hidden">
@@ -11146,9 +11308,15 @@ function AdminAppointmentRow({
                         ref={buyerMonitorVideoRef}
                         autoPlay
                         playsInline
-                        muted={false}
-                        className="w-full h-full object-contain bg-black"
+                        muted={monitorAudioMuted.buyer}
+                        className={`w-full h-full object-contain bg-black transition-all ${monitorVideoHidden.buyer ? 'opacity-30 blur-sm' : ''}`}
                       />
+                      {monitorVideoHidden.buyer && (
+                        <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white gap-2 text-xs sm:text-sm">
+                          <FaEyeSlash className="text-lg" />
+                          <span>Buyer video hidden locally</span>
+                        </div>
+                      )}
                     ) : (
                       <div className="flex flex-col items-center justify-center text-center px-4">
                         {activeLiveCall.callType === 'video' ? (
@@ -11168,7 +11336,7 @@ function AdminAppointmentRow({
                 </div>
 
                 {/* Seller side */}
-                <div className="flex flex-col h-full rounded-2xl bg-white/5 border border-white/10 p-4 sm:p-5">
+                <div className={`flex flex-col h-full rounded-2xl bg-white/5 border border-white/10 p-4 sm:p-5 ${focusedMonitorView === 'seller' ? 'ring-2 ring-yellow-300' : ''}`}>
                   <div className="flex items-center gap-3 mb-4">
                     <UserAvatar
                       user={{ username: appt.sellerId?.username, avatar: appt.sellerId?.avatar }}
@@ -11181,7 +11349,16 @@ function AdminAppointmentRow({
                       <span className="text-sm sm:text-base font-semibold text-white">
                         {appt.sellerId?.username || 'Seller'}
                       </span>
-                      <span className="text-[10px] text-white/60 uppercase tracking-wide">Seller Side</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-white/60 uppercase tracking-wide">Seller Side</span>
+                        <span
+                          className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full ${
+                            monitorAudioMuted.seller ? 'bg-gray-700 text-white' : 'bg-green-600 text-white'
+                          }`}
+                        >
+                          {monitorAudioMuted.seller ? <FaVolumeMute /> : <FaVolumeUp />} {monitorAudioMuted.seller ? 'Muted' : 'Audio'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                   <div className="flex-1 rounded-xl bg-black/60 flex flex-col items-center justify-center border border-white/10 relative overflow-hidden">
@@ -11190,9 +11367,15 @@ function AdminAppointmentRow({
                         ref={sellerMonitorVideoRef}
                         autoPlay
                         playsInline
-                        muted={false}
-                        className="w-full h-full object-contain bg-black"
+                        muted={monitorAudioMuted.seller}
+                        className={`w-full h-full object-contain bg-black transition-all ${monitorVideoHidden.seller ? 'opacity-30 blur-sm' : ''}`}
                       />
+                      {monitorVideoHidden.seller && (
+                        <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white gap-2 text-xs sm:text-sm">
+                          <FaEyeSlash className="text-lg" />
+                          <span>Seller video hidden locally</span>
+                        </div>
+                      )}
                     ) : (
                       <div className="flex flex-col items-center justify-center text-center px-4">
                         {activeLiveCall.callType === 'video' ? (
@@ -11210,7 +11393,7 @@ function AdminAppointmentRow({
                     )}
                   </div>
                 </div>
-              </div>
+              </>
             ) : (
               <div className="flex flex-col items-center justify-center p-8 sm:p-12 text-center text-white">
                 <FaVideo className="text-4xl sm:text-5xl text-white/60 mb-4" />
@@ -11232,6 +11415,78 @@ function AdminAppointmentRow({
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {showForceTerminateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[95] p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900">Force Terminate Live Call</h3>
+                <p className="text-sm text-gray-500">
+                  Use this action only when fraud, abuse, or policy violations are detected.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  if (!forceTerminateLoading) {
+                    setShowForceTerminateModal(false);
+                    setForceTerminateReason('');
+                  }
+                }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-700">Reason (optional)</label>
+              <textarea
+                value={forceTerminateReason}
+                onChange={(e) => setForceTerminateReason(e.target.value)}
+                rows={4}
+                placeholder="Example: Buyer attempted to solicit payments outside the platform."
+                className="mt-1 w-full rounded-lg border border-gray-300 p-3 focus:outline-none focus:ring-2 focus:ring-red-200"
+                disabled={forceTerminateLoading}
+              />
+            </div>
+
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+              Both parties will be disconnected immediately and notified that the session was terminated by an administrator.
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  if (!forceTerminateLoading) {
+                    setShowForceTerminateModal(false);
+                    setForceTerminateReason('');
+                  }
+                }}
+                className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200"
+                disabled={forceTerminateLoading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleForceTerminateCall}
+                className="px-4 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 flex items-center gap-2 disabled:opacity-60"
+                disabled={forceTerminateLoading}
+              >
+                {forceTerminateLoading ? (
+                  <>
+                    <FaSpinner className="animate-spin" /> Terminating...
+                  </>
+                ) : (
+                  <>
+                    <FaPowerOff /> Terminate Now
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

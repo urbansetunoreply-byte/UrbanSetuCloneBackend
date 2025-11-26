@@ -8721,8 +8721,8 @@ export const sendOwnerDeassignedEmail = async (email, details = {}) => {
         .header { background: linear-gradient(135deg, #ea580c, #c2410c); color: white; padding: 30px 25px; text-align: center; }
         .content { padding: 30px 25px; color: #1f2937; }
         .reason-box { background-color: #fff7ed; border-left: 4px solid #ea580c; padding: 20px; border-radius: 8px; margin: 20px 0; color: #7c2d12; }
-        .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 30px 0; }
-        .btn { flex: 1; min-width: 180px; text-align: center; padding: 14px 20px; border-radius: 30px; font-weight: 600; text-decoration: none; border: none; }
+                 .actions { display: flex; flex-direction: column; gap: 12px; margin: 30px 0; }
+                 .btn { width: 100%; text-align: center; padding: 14px 20px; border-radius: 30px; font-weight: 600; text-decoration: none; border: none; }
         .btn-primary { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; }
         .btn-outline { border: 2px solid #2563eb; color: #2563eb; background: white; }
         .footer { background-color: #f1f5f9; padding: 20px; text-align: center; color: #94a3b8; font-size: 13px; }
