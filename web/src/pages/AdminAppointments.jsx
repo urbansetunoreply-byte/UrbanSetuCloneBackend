@@ -11304,19 +11304,21 @@ function AdminAppointmentRow({
                   </div>
                   <div className="flex-1 rounded-xl bg-black/60 flex flex-col items-center justify-center border border-white/10 relative overflow-hidden">
                     {buyerMonitorStream ? (
-                      <video
-                        ref={buyerMonitorVideoRef}
-                        autoPlay
-                        playsInline
-                        muted={monitorAudioMuted.buyer}
-                        className={`w-full h-full object-contain bg-black transition-all ${monitorVideoHidden.buyer ? 'opacity-30 blur-sm' : ''}`}
-                      />
-                      {monitorVideoHidden.buyer && (
-                        <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white gap-2 text-xs sm:text-sm">
-                          <FaEyeSlash className="text-lg" />
-                          <span>Buyer video hidden locally</span>
-                        </div>
-                      )}
+                      <>
+                        <video
+                          ref={buyerMonitorVideoRef}
+                          autoPlay
+                          playsInline
+                          muted={monitorAudioMuted.buyer}
+                          className={`w-full h-full object-contain bg-black transition-all ${monitorVideoHidden.buyer ? 'opacity-30 blur-sm' : ''}`}
+                        />
+                        {monitorVideoHidden.buyer && (
+                          <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white gap-2 text-xs sm:text-sm">
+                            <FaEyeSlash className="text-lg" />
+                            <span>Buyer video hidden locally</span>
+                          </div>
+                        )}
+                      </>
                     ) : (
                       <div className="flex flex-col items-center justify-center text-center px-4">
                         {activeLiveCall.callType === 'video' ? (
@@ -11325,7 +11327,7 @@ function AdminAppointmentRow({
                           <FaPhone className="text-4xl sm:text-5xl text-white mb-3 animate-pulse" />
                         )}
                         <p className="text-white text-sm sm:text-base font-semibold">
-                          Waiting for buyer stream a0 b7 a0Live {activeLiveCall.callType === 'video' ? 'video' : 'audio'} call
+                          Waiting for buyer stream - Live {activeLiveCall.callType === 'video' ? 'video' : 'audio'} call
                         </p>
                         <p className="mt-2 text-xs sm:text-sm text-white/70 max-w-xs">
                           As soon as the buyer's device is streaming, the live feed will appear here.
@@ -11363,19 +11365,21 @@ function AdminAppointmentRow({
                   </div>
                   <div className="flex-1 rounded-xl bg-black/60 flex flex-col items-center justify-center border border-white/10 relative overflow-hidden">
                     {sellerMonitorStream ? (
-                      <video
-                        ref={sellerMonitorVideoRef}
-                        autoPlay
-                        playsInline
-                        muted={monitorAudioMuted.seller}
-                        className={`w-full h-full object-contain bg-black transition-all ${monitorVideoHidden.seller ? 'opacity-30 blur-sm' : ''}`}
-                      />
-                      {monitorVideoHidden.seller && (
-                        <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white gap-2 text-xs sm:text-sm">
-                          <FaEyeSlash className="text-lg" />
-                          <span>Seller video hidden locally</span>
-                        </div>
-                      )}
+                      <>
+                        <video
+                          ref={sellerMonitorVideoRef}
+                          autoPlay
+                          playsInline
+                          muted={monitorAudioMuted.seller}
+                          className={`w-full h-full object-contain bg-black transition-all ${monitorVideoHidden.seller ? 'opacity-30 blur-sm' : ''}`}
+                        />
+                        {monitorVideoHidden.seller && (
+                          <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white gap-2 text-xs sm:text-sm">
+                            <FaEyeSlash className="text-lg" />
+                            <span>Seller video hidden locally</span>
+                          </div>
+                        )}
+                      </>
                     ) : (
                       <div className="flex flex-col items-center justify-center text-center px-4">
                         {activeLiveCall.callType === 'video' ? (
@@ -11384,7 +11388,7 @@ function AdminAppointmentRow({
                           <FaPhone className="text-4xl sm:text-5xl text-white mb-3 animate-pulse" />
                         )}
                         <p className="text-white text-sm sm:text-base font-semibold">
-                          Waiting for seller stream a0 b7 a0Mirrored {activeLiveCall.callType === 'video' ? 'video' : 'audio'} feed
+                          Waiting for seller stream - Mirrored {activeLiveCall.callType === 'video' ? 'video' : 'audio'} feed
                         </p>
                         <p className="mt-2 text-xs sm:text-sm text-white/70 max-w-xs">
                           Once the seller's device is streaming, their live feed will be visible here.
@@ -11392,6 +11396,7 @@ function AdminAppointmentRow({
                       </div>
                     )}
                   </div>
+                </div>
                 </div>
               </>
             ) : (
