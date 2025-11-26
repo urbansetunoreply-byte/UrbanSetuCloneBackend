@@ -89,6 +89,73 @@ router.get("/history/:appointmentId", verifyToken, async (req, res) => {
   }
 });
 
+// DELETE: Delete all call history for a specific appointment (permanent)
+router.delete("/history/:appointmentId", verifyToken, async (req, res) => {
+  try {
+    const { appointmentId } = req.params;
+    const userId = req.user.id;
+
+    const appointment = await Booking.findById(appointmentId);
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    if (
+      appointment.buyerId.toString() !== userId &&
+      appointment.sellerId.toString() !== userId &&
+      req.user.role !== "admin" &&
+      req.user.role !== "rootadmin"
+    ) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    await CallHistory.deleteMany({ appointmentId });
+
+    res.json({ success: true, message: "Call history deleted for this appointment." });
+  } catch (err) {
+    console.error("Error deleting appointment call history:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// DELETE: Delete a single call history record for an appointment (permanent)
+router.delete("/history/:appointmentId/:callId", verifyToken, async (req, res) => {
+  try {
+    const { appointmentId, callId } = req.params;
+    const userId = req.user.id;
+
+    const appointment = await Booking.findById(appointmentId);
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    if (
+      appointment.buyerId.toString() !== userId &&
+      appointment.sellerId.toString() !== userId &&
+      req.user.role !== "admin" &&
+      req.user.role !== "rootadmin"
+    ) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    const call = await CallHistory.findOne({
+      appointmentId,
+      $or: [{ _id: callId }, { callId }],
+    });
+
+    if (!call) {
+      return res.status(404).json({ message: "Call history record not found" });
+    }
+
+    await CallHistory.deleteOne({ _id: call._id });
+
+    res.json({ success: true, message: "Call history record deleted." });
+  } catch (err) {
+    console.error("Error deleting single call history record:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 // GET: Admin - Get all call history with stats
 router.get("/admin/history", verifyToken, async (req, res) => {
   try {

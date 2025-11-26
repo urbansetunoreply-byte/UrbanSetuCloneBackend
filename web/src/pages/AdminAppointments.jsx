@@ -7036,142 +7036,6 @@ function AdminAppointmentRow({
                           {activeLiveCall ? 'Live' : 'Not Live'}
                         </span>
                       </button>
-
-                      {/* Tips & Guidelines popup */}
-        {showLiveMonitorModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-[1200] p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-6 py-4">
-                <div>
-                  <p className="text-sm text-gray-500 uppercase tracking-wide font-semibold">Live Call Monitor</p>
-                  <h3 className="text-2xl font-bold text-gray-900">
-                    {activeLiveCall ? (activeLiveCall.callType === 'video' ? 'Video Call' : 'Audio Call') : 'No Active Session'}
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    {activeLiveCall ? `Monitoring ${appt.propertyName || 'property appointment'}` : 'Live call or video is not initiated yet.'}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => {
-                      setShowLiveMonitorModal(false);
-                      cleanupMonitorPeers();
-                      navigate('/admin/call-history');
-                    }}
-                    className="px-4 py-2 rounded-full border border-blue-200 text-blue-600 font-semibold hover:bg-blue-50 transition-colors text-sm"
-                  >
-                    Go to Call History
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowLiveMonitorModal(false);
-                      cleanupMonitorPeers();
-                    }}
-                    className="px-4 py-2 rounded-full bg-gray-900 text-white font-semibold hover:bg-gray-800 transition-colors text-sm"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-              {activeLiveCall ? (
-                <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-                  {!monitorCallId && (
-                    <div className="bg-blue-50 text-blue-800 text-sm px-4 py-3 rounded-lg border border-blue-100 flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-blue-500 animate-ping"></div>
-                      Requesting real-time feeds from buyer and seller...
-                    </div>
-                  )}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-slate-900 rounded-2xl p-4 text-white relative">
-                      <div className="flex items-center justify-between text-xs text-slate-200 mb-2 uppercase tracking-wide">
-                        <span>Buyer Feed</span>
-                        <span>{monitorRoles.buyerRole === 'caller' ? 'Caller' : monitorRoles.buyerRole === 'receiver' ? 'Receiver' : ''}</span>
-                      </div>
-                      <div className="relative rounded-xl overflow-hidden bg-black h-64">
-                        <video
-                          ref={buyerMonitorVideoRef}
-                          className="w-full h-full object-cover"
-                          playsInline
-                          autoPlay
-                          controls={false}
-                        />
-                        {!buyerMonitorStream && (
-                          <div className="absolute inset-0 flex flex-col items-center justify-center text-xs text-slate-300 gap-2 bg-black bg-opacity-60">
-                            <FaVideo className="text-lg opacity-80" />
-                            Waiting for buyer stream...
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="bg-slate-900 rounded-2xl p-4 text-white relative">
-                      <div className="flex items-center justify-between text-xs text-slate-200 mb-2 uppercase tracking-wide">
-                        <span>Seller Feed</span>
-                        <span>{monitorRoles.sellerRole === 'caller' ? 'Caller' : monitorRoles.sellerRole === 'receiver' ? 'Receiver' : ''}</span>
-                      </div>
-                      <div className="relative rounded-xl overflow-hidden bg-black h-64">
-                        <video
-                          ref={sellerMonitorVideoRef}
-                          className="w-full h-full object-cover"
-                          playsInline
-                          autoPlay
-                          controls={false}
-                        />
-                        {!sellerMonitorStream && (
-                          <div className="absolute inset-0 flex flex-col items-center justify-center text-xs text-slate-300 gap-2 bg-black bg-opacity-60">
-                            <FaVideo className="text-lg opacity-80" />
-                            Waiting for seller stream...
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
-                    <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
-                      <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Status</p>
-                      <p className="font-semibold text-gray-800 capitalize">{activeLiveCall.status || 'pending'}</p>
-                    </div>
-                    <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
-                      <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Started At</p>
-                      <p className="font-semibold text-gray-800">
-                        {activeLiveCall.startTime
-                          ? new Date(activeLiveCall.startTime).toLocaleString()
-                          : 'Awaiting acceptance'}
-                      </p>
-                    </div>
-                    <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
-                      <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Call ID</p>
-                      <p className="font-mono text-gray-800 text-xs break-all">{activeLiveCall.callId}</p>
-                    </div>
-                  </div>
-                  {activeLiveCall.callType === 'audio' && (
-                    <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-xl px-4 py-3 text-sm">
-                      Audio-only session detected. Video placeholders will remain blank while audio streams play in the background.
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center p-8">
-                  <FaPhone className="text-4xl text-gray-400" />
-                  <div>
-                    <p className="text-lg font-semibold text-gray-700">No live audio or video session detected</p>
-                    <p className="text-gray-500 text-sm mt-2">
-                      Ask the buyer or seller to initiate a call from their chatbox. You can review past calls anytime from the call history dashboard.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setShowLiveMonitorModal(false);
-                      navigate('/admin/call-history');
-                    }}
-                    className="px-4 py-2 rounded-full bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors text-sm"
-                  >
-                    Open Admin Call History
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
         {showShortcutTip && (
                         <div className="absolute top-full right-0 mt-2 bg-gray-800 text-white text-xs rounded-lg px-3 py-2 shadow-lg z-20 max-w-xs animate-fadeIn">
                           <div className="font-semibold mb-2">⌨️ Keyboard Shortcuts:</div>
@@ -11153,7 +11017,7 @@ function AdminAppointmentRow({
       {/* Live Call Monitor Modal (admin observer view) */}
       {showLiveMonitorModal && (
         <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-[90] p-3">
-          <div className="bg-gradient-to-br from-gray-900 via-blue-950 to-purple-900 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden relative">
+          <div className="bg-gradient-to-br from-gray-900 via-blue-950 to-purple-900 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden relative">
             {/* Header */}
             <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-white/10">
               <div className="flex items-center gap-2 text-white">
@@ -11249,24 +11113,28 @@ function AdminAppointmentRow({
                       {monitorAudioMuted.seller ? <FaVolumeMute className="text-[11px]" /> : <FaVolumeUp className="text-[11px]" />}
                       Seller Audio
                     </button>
-                    <button
-                      onClick={() => toggleMonitorVideo('buyer')}
-                      className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full ${
-                        monitorVideoHidden.buyer ? 'bg-purple-600 text-white' : 'bg-blue-600 text-white'
-                      }`}
-                    >
-                      {monitorVideoHidden.buyer ? <FaEyeSlash className="text-[11px]" /> : <FaEye className="text-[11px]" />}
-                      Buyer Video
-                    </button>
-                    <button
-                      onClick={() => toggleMonitorVideo('seller')}
-                      className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full ${
-                        monitorVideoHidden.seller ? 'bg-purple-600 text-white' : 'bg-blue-600 text-white'
-                      }`}
-                    >
-                      {monitorVideoHidden.seller ? <FaEyeSlash className="text-[11px]" /> : <FaEye className="text-[11px]" />}
-                      Seller Video
-                    </button>
+                    {activeLiveCall?.callType === 'video' && (
+                      <>
+                        <button
+                          onClick={() => toggleMonitorVideo('buyer')}
+                          className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full ${
+                            monitorVideoHidden.buyer ? 'bg-purple-600 text-white' : 'bg-blue-600 text-white'
+                          }`}
+                        >
+                          {monitorVideoHidden.buyer ? <FaEyeSlash className="text-[11px]" /> : <FaEye className="text-[11px]" />}
+                          Buyer Video
+                        </button>
+                        <button
+                          onClick={() => toggleMonitorVideo('seller')}
+                          className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full ${
+                            monitorVideoHidden.seller ? 'bg-purple-600 text-white' : 'bg-blue-600 text-white'
+                          }`}
+                        >
+                          {monitorVideoHidden.seller ? <FaEyeSlash className="text-[11px]" /> : <FaEye className="text-[11px]" />}
+                          Seller Video
+                        </button>
+                      </>
+                    )}
                     <button
                       onClick={() => setShowForceTerminateModal(true)}
                       className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors"
@@ -11275,6 +11143,7 @@ function AdminAppointmentRow({
                     </button>
                   </div>
                 </div>
+                <div className="flex-1 overflow-y-auto">
                 <div className={`p-4 sm:p-6 grid ${focusedMonitorView ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'} gap-4 sm:gap-6`}>
                 {/* Buyer side */}
                 <div className={`flex flex-col h-full rounded-2xl bg-white/5 border border-white/10 p-4 sm:p-5 ${focusedMonitorView === 'buyer' ? 'ring-2 ring-yellow-300' : ''}`}>
@@ -11312,7 +11181,7 @@ function AdminAppointmentRow({
                           muted={monitorAudioMuted.buyer}
                           className={`w-full h-full object-contain bg-black transition-all ${monitorVideoHidden.buyer ? 'opacity-30 blur-sm' : ''}`}
                         />
-                        {monitorVideoHidden.buyer && (
+                        {activeLiveCall?.callType === 'video' && monitorVideoHidden.buyer && (
                           <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white gap-2 text-xs sm:text-sm">
                             <FaEyeSlash className="text-lg" />
                             <span>Buyer video hidden locally</span>
@@ -11373,7 +11242,7 @@ function AdminAppointmentRow({
                           muted={monitorAudioMuted.seller}
                           className={`w-full h-full object-contain bg-black transition-all ${monitorVideoHidden.seller ? 'opacity-30 blur-sm' : ''}`}
                         />
-                        {monitorVideoHidden.seller && (
+                        {activeLiveCall?.callType === 'video' && monitorVideoHidden.seller && (
                           <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white gap-2 text-xs sm:text-sm">
                             <FaEyeSlash className="text-lg" />
                             <span>Seller video hidden locally</span>
@@ -11396,6 +11265,7 @@ function AdminAppointmentRow({
                       </div>
                     )}
                   </div>
+                </div>
                 </div>
                 </div>
               </>

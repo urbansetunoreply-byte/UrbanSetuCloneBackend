@@ -41,22 +41,47 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
     }
   };
 
-  const handleDeleteAll = () => {
-    // Local deletion - remove all calls from view (for users only)
-    setCalls([]);
-    toast.success('All call history removed from your view');
-    setShowDeleteAllModal(false);
+  const handleDeleteAll = async () => {
+    if (!appointmentId) return;
+    try {
+      setLoading(true);
+      await axios.delete(
+        `${API_BASE_URL}/api/calls/history/${appointmentId}`,
+        { withCredentials: true }
+      );
+      setCalls([]);
+      toast.success('All call history deleted.');
+      setShowDeleteAllModal(false);
+    } catch (err) {
+      console.error('Error deleting all call history:', err);
+      toast.error(err.response?.data?.message || 'Failed to delete call history.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDeleteSingle = () => {
+  const handleDeleteSingle = async () => {
     if (!callToDelete) return;
-    // Local deletion - remove single call from view (for users only)
-    setCalls(prev => prev.filter(call => 
-      (call._id || call.callId) !== (callToDelete._id || callToDelete.callId)
-    ));
-    toast.success('Call history removed from your view');
-    setShowDeleteSingleModal(false);
-    setCallToDelete(null);
+    const id = callToDelete._id || callToDelete.callId;
+    if (!id) return;
+    try {
+      setLoading(true);
+      await axios.delete(
+        `${API_BASE_URL}/api/calls/history/${appointmentId}/${id}`,
+        { withCredentials: true }
+      );
+      setCalls(prev => prev.filter(call =>
+        (call._id || call.callId) !== id
+      ));
+      toast.success('Call history entry deleted.');
+      setShowDeleteSingleModal(false);
+      setCallToDelete(null);
+    } catch (err) {
+      console.error('Error deleting call history entry:', err);
+      toast.error(err.response?.data?.message || 'Failed to delete call history entry.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const formatDuration = (seconds) => {
