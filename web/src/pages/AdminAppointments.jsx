@@ -19,7 +19,7 @@ import ExportChatModal from '../components/ExportChatModal';
 import CallHistoryModal from '../components/CallHistoryModal';
 import axios from 'axios';
 import { usePageTitle } from '../hooks/usePageTitle';
-import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from "../redux/user/userSlice";
+import { useSignout } from '../hooks/useSignout';
 // Note: Do not import server-only libs here
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -31,6 +31,7 @@ export default function AdminAppointments() {
   const { currentUser } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { signout } = useSignout();
   
   // Handle navigation state when coming from direct chat link
   const location = useLocation();
@@ -5657,23 +5658,13 @@ function AdminAppointmentRow({
         setShowPasswordModal(false);
         setAdminPassword("");
         setPasswordError("");
-        toast.error("Too many incorrect attempts. You've been signed out for security.");
-        dispatch(signoutUserStart());
-        try {
-          const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
-          const signoutData = await signoutRes.json();
-          if (signoutData.success === false) {
-            dispatch(signoutUserFailure(signoutData.message));
-          } else {
-            dispatch(signoutUserSuccess(signoutData));
-          }
-        } catch (signoutErr) {
-          dispatch(signoutUserFailure(signoutErr.message));
-        }
-        setTimeout(() => {
-          navigate('/sign-in');
-        }, 800);
         setPasswordLoading(false);
+        toast.error("Too many incorrect attempts. You've been signed out for security.");
+        await signout({
+          showToast: false,
+          navigateTo: "/sign-in",
+          delay: 100
+        });
         return;
       } else {
         // Keep modal open and show remaining attempts
@@ -11019,7 +11010,7 @@ function AdminAppointmentRow({
         <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-[90] p-3">
           <div className="bg-gradient-to-br from-gray-900 via-blue-950 to-purple-900 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden relative">
             {/* Header */}
-            <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-white/10">
+              <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-white/10">
               <div className="flex items-center gap-2 text-white">
                 <span
                   className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide ${
@@ -11043,6 +11034,7 @@ function AdminAppointmentRow({
                   {appt.propertyName || 'Appointment'} • {appt.date ? new Date(appt.date).toLocaleDateString('en-IN') : ''}
                 </span>
               </div>
+              <div className="flex items-center gap-2">
               <button
                 onClick={() => {
                   setShowLiveMonitorModal(false);
@@ -11054,6 +11046,22 @@ function AdminAppointmentRow({
               >
                 <FaTimes className="w-4 h-4" />
               </button>
+              <button
+                onClick={() => {
+                  // Re-request monitor connection for the current active call
+                  if (activeLiveCall && activeLiveCall.callId) {
+                    socket.emit('admin-monitor-join', { callId: activeLiveCall.callId });
+                  } else {
+                    toast.info('No active call detected for this appointment.');
+                  }
+                }}
+                className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 ml-2"
+                title="Refresh live monitor"
+              >
+                <FaSync className="w-3 h-3" />
+                Refresh
+              </button>
+              </div>
             </div>
 
             {/* Body */}
