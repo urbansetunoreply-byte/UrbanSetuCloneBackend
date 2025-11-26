@@ -266,6 +266,21 @@ function AppRoutes({ bootstrapped }) {
   const navigate = useNavigate(); // Fix: ensure navigate is defined
   const { playNotification } = useSoundEffects();
 
+  // Apply persisted theme (light/dark) globally on initial load
+  useEffect(() => {
+    try {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    } catch (_) {
+      // If localStorage is unavailable, fall back to default light theme
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
+
   // Do not show header on /appointments admin route
   const hideHeaderRoutes = ["/appointments"];
 
