@@ -178,6 +178,30 @@ export default function Terms() {
         <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">20. Changes to Terms</h2>
         <p className="ml-6">We may update these terms from time to time. Significant changes will be communicated through email or platform notifications. Continued use of the platform constitutes acceptance of the updated terms.</p>
 
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">21. Rent-Lock & Booking Governance</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Lock Windows:</strong> When a rent-lock contract is issued, listings automatically exit public search until the contract is signed, cancelled or expires.</li>
+          <li><strong>Call & Chat Monitoring:</strong> Audio/video calls initiated through UrbanSetu may be mirrored in admin dashboards to resolve disputes and enforce safety policies.</li>
+          <li><strong>Appointment Conduct:</strong> Abusive behavior during chats or calls can trigger instant suspension and notification to relevant authorities.</li>
+          <li><strong>Multi-deal Prevention:</strong> Users cannot hold overlapping rent-locks on the same property unless explicitly approved by the property owner and UrbanSetu.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">22. Fees, Taxes & Payouts</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Payout Verification:</strong> Sellers/landlords must complete KYC and banking verification before receiving any payout.</li>
+          <li><strong>Tax Responsibility:</strong> Users are responsible for reporting rental income, capital gains, GST, or other taxes applicable in their jurisdiction.</li>
+          <li><strong>Chargeback Handling:</strong> If a buyer or tenant initiates a chargeback, UrbanSetu may temporarily freeze payouts and request additional evidence.</li>
+          <li><strong>Service Bundles:</strong> Optional services (movers, cleaning, legal, staging) are billed separately and subject to their own cancellation windows.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">23. Support, Audits & Enforcement</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Ticket SLA:</strong> Critical issues (payment failures, fraud, safety) receive responses within 6 business hours; standard requests follow a 24–48 hour SLA.</li>
+          <li><strong>Evidence Preservation:</strong> We may preserve chat transcripts, call recordings, and checklist media for at least 18 months for legal or compliance purposes.</li>
+          <li><strong>Regulatory Cooperation:</strong> UrbanSetu may share relevant information with regulators or law enforcement when legally compelled.</li>
+          <li><strong>Account Termination:</strong> Severe violations (fraud, harassment, repeated policy abuse) can result in immediate termination without refund.</li>
+        </ul>
+
         <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
           <h3 className="text-lg font-semibold text-blue-800 mb-2">Contact Information</h3>
           <p className="text-gray-700">For questions about these terms or our services, please contact us:</p>

@@ -467,7 +467,7 @@ router.patch('/:id/status', verifyToken, async (req, res) => {
 // POST: Add a comment to an appointment
 router.post('/:id/comment', verifyToken, async (req, res) => {
   try {
-    const { message, replyTo, imageUrl, videoUrl, documentUrl, documentName, documentMimeType, audioUrl, audioName, audioMimeType, type } = req.body;
+    const { message, replyTo, imageUrl, videoUrl, documentUrl, documentName, documentMimeType, audioUrl, audioName, audioMimeType, type, previewDismissed } = req.body;
     const { id } = req.params;
     const userId = req.user.id;
     
@@ -505,6 +505,7 @@ router.post('/:id/comment', verifyToken, async (req, res) => {
       ...(documentUrl ? { documentUrl, documentName: documentName || null, documentMimeType: documentMimeType || null } : {}),
       ...(audioUrl ? { audioUrl, audioName: audioName || null, audioMimeType: audioMimeType || null } : {}),
       ...(type ? { type } : {}),
+      ...(typeof previewDismissed === 'boolean' ? { previewDismissed } : {}),
     };
     
     const updated = await booking.findByIdAndUpdate(

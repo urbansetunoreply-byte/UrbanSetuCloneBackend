@@ -5,7 +5,7 @@ import { notifyWatchersOnChange } from "./propertyWatchlist.controller.js"
 import User from "../models/user.model.js"
 import Notification from "../models/notification.model.js"
 import { errorHandler } from "../utils/error.js"
-import { sendPropertyListingPublishedEmail, sendPropertyEditNotificationEmail, sendPropertyDeletionConfirmationEmail, sendOwnerDeassignedEmail } from "../utils/emailService.js"
+import { sendPropertyListingPublishedEmail, sendPropertyEditNotificationEmail, sendPropertyDeletionConfirmationEmail, sendOwnerDeassignedEmail, sendOwnerAssignedEmail } from "../utils/emailService.js"
 import DeletedListing from "../models/deletedListing.model.js"
 import crypto from 'crypto'
 
@@ -674,6 +674,19 @@ export const reassignPropertyOwner = async (req, res, next) => {
     } catch (notificationError) {
       // Log notification error but don't fail the ownership update
       console.error('Failed to create notification:', notificationError);
+    }
+
+    if (newOwner?.email) {
+      try {
+        await sendOwnerAssignedEmail(newOwner.email, {
+          propertyName: listing.name,
+          propertyId: listing._id,
+          adminName: req.user.username || req.user.email || 'Admin',
+          ownerName: newOwner.username || newOwner.name || newOwner.email
+        });
+      } catch (emailError) {
+        console.error('Failed to send owner assigned email:', emailError);
+      }
     }
 
     res.status(200).json({

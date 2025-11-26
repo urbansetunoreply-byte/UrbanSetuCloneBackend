@@ -78,6 +78,22 @@ export default function AdminTerms() {
           <li>Admins engaging in misconduct face disciplinary action up to termination and legal referral.</li>
         </ul>
 
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">10. Call, Chat & Live Monitor Oversight</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li>Only authorized admins may join live audio/video sessions. Passive monitoring is limited to dispute resolution, safety, or compliance reviews.</li>
+          <li>Screen recordings, call audio, and chat transcripts captured for audits must be stored securely and deleted per retention policies.</li>
+          <li>Admins must never disclose user conversations, screenshots, or evidence outside sanctioned workflows.</li>
+          <li>Live-monitor access may be revoked immediately if misused or accessed without a valid ticket reference.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">11. Incident Response & Escalations</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li>Security, fraud, or harassment incidents must be logged with timestamp, user IDs, and supporting evidence.</li>
+          <li>Critical incidents require notifying the security/compliance lead within one business hour.</li>
+          <li>Admins must cooperate with regulatory or law-enforcement requests and preserve evidence exactly as collected.</li>
+          <li>After every major incident, document remediation steps and lessons learned to prevent recurrence.</li>
+        </ul>
+
         <p className="mt-6 text-sm text-gray-600">Last updated: {new Date().toLocaleDateString(`en-IN`, {
           year: 'numeric',
           month: 'long',

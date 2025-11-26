@@ -70,6 +70,22 @@ export default function AdminPrivacy() {
           <li><strong>Lawful Requests:</strong> Where required, relevant admin activity data may be shared with regulators, law‑enforcement, or courts.</li>
         </ul>
 
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">9. Live Monitor & Recording Data</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Limited Use:</strong> Live call monitoring, screen sharing, or remote assistance tools are restricted to dispute handling, fraud reviews, or urgent safety escalations.</li>
+          <li><strong>Secure Storage:</strong> Any captured audio/video snippets or screenshots are stored in encrypted evidence vaults with strict access logging.</li>
+          <li><strong>Redaction:</strong> Sensitive user identifiers (PAN, Aadhaar, banking) must be redacted before sharing internally.</li>
+          <li><strong>Retention Windows:</strong> Monitoring artifacts are deleted once a case is closed unless regulators require longer retention.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">10. Incident Response & Notifications</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Logging:</strong> Security incidents, unauthorized access attempts, or data-export anomalies must be logged immediately.</li>
+          <li><strong>User Notification:</strong> If an incident impacts users, admins must coordinate with the security team to notify affected parties per applicable breach laws.</li>
+          <li><strong>Post-Mortems:</strong> Significant incidents require a root-cause analysis and documented preventive actions.</li>
+          <li><strong>Continuous Training:</strong> Admins participate in periodic privacy and security trainings to maintain compliance.</li>
+        </ul>
+
         <div className="mt-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-800 mb-2">Related Policies</h3>
           <p className="text-gray-700 mb-3">For information about how we use cookies and similar technologies, please review our:</p>

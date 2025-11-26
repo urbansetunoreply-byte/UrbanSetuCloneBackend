@@ -2517,16 +2517,6 @@ export default function Listing() {
                           >
                             <FaBan /> Deassign Owner
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              fetchAvailableUsers();
-                              setShowAssignOwnerModal(true);
-                            }}
-                            className="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
-                          >
-                            <FaEdit /> Assign New Owner
-                          </button>
                         </div>
                       </div>
                     )}

@@ -114,6 +114,22 @@ export default function Privacy() {
         <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">13. Changes to This Policy</h2>
         <p className="ml-6">We may update this privacy policy from time to time. We will notify you of significant changes through email or platform notifications. Continued use of the platform constitutes acceptance of the updated policy.</p>
 
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">14. Call, Chat & Live Monitor Data</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Audio/Video Streams:</strong> Calls initiated on UrbanSetu may be monitored or recorded for dispute resolution, training, and fraud prevention. Streams are encrypted and retained per legal requirements.</li>
+          <li><strong>Chat Transcripts:</strong> Buyer–seller chats, admin interventions, and file attachments are stored securely and may be exported for audits when legally required.</li>
+          <li><strong>Redaction:</strong> Sensitive data (PAN, bank details) shared in chats may be automatically redacted in admin views to reduce exposure.</li>
+          <li><strong>Access:</strong> Only authorized support or compliance personnel can access call/chat data, and only for legitimate business reasons.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">15. Your Choices & Escalations</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Notification Preferences:</strong> Manage marketing, reminder, or product-update messages from notification settings. Critical security or transaction alerts cannot be disabled.</li>
+          <li><strong>Data Requests:</strong> Submit right-to-access or deletion requests via privacy@urbansetu.com. We may verify identity before fulfilling requests.</li>
+          <li><strong>Regulatory Complaints:</strong> If you believe we have not addressed a privacy concern, you may escalate to the relevant data-protection authority in your jurisdiction.</li>
+          <li><strong>Cookies & Tracking:</strong> See the Cookie Policy for granular choices regarding analytics, advertising, and functional cookies.</li>
+        </ul>
+
         <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
           <h3 className="text-lg font-semibold text-blue-800 mb-2">Contact Us</h3>
           <p className="text-gray-700">If you have any questions about this privacy policy or our data practices, please contact us:</p>

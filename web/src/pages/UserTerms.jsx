@@ -53,6 +53,30 @@ export default function UserTerms() {
           <li>We are not responsible for third‑party actions, misrepresentations, or disputes between users, except where required by applicable law.</li>
         </ul>
 
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">7. Renting & Appointments</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li>Only schedule property visits you can attend. No-showing multiple times may restrict new bookings.</li>
+          <li>During rent-lock, complete signatures and rent payments within the displayed deadline to keep the property reserved for you.</li>
+          <li>Use in-app chat, audio, and video responsibly. Harassment, threats, or sharing contact details publicly is prohibited.</li>
+          <li>Move-in/move-out checklists and inspection photos must reflect the true condition of the property.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">8. Payments & Wallet</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li>Maintain sufficient funds before triggering rent or deposit payments. Failed charges can pause your contract.</li>
+          <li>Auto-debit settings can be managed from the rent wallet; turn them off at least two business days before the due date.</li>
+          <li>Refund timelines vary by service (appointments, movers, rent). Track refund status in your wallet or email updates.</li>
+          <li>Fraudulent chargebacks or payment reversals may lead to account review and recovery of due amounts.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">9. Disputes & Safety</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li>Use the “Raise Dispute” option with screenshots, receipts, or checklist references so our support team can assist faster.</li>
+          <li>All evidence (photos, calls, chats) should stay on-platform for audit purposes.</li>
+          <li>Report fraud or safety issues immediately. We may freeze chats or funds while investigating.</li>
+          <li>In emergencies, contact local authorities first and then notify UrbanSetu with the case number.</li>
+        </ul>
+
         <p className="mt-6 text-sm text-gray-600">Last updated: {new Date().toLocaleDateString(`en-IN`, {
           year: 'numeric',
           month: 'long',

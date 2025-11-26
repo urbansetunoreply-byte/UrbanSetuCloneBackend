@@ -147,14 +147,20 @@ export default function AdminRentalLoans() {
         credentials: 'include'
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (res.ok && data.success) {
         setSelectedLoan(data.loan);
         setShowLoanDisplay(true);
+      } else {
+        setSelectedLoan(loan);
+        setShowLoanDisplay(true);
+        toast.error(data.message || 'Unable to fetch latest loan details. Showing cached data.');
       }
     } catch (error) {
       console.error('Error fetching loan:', error);
-      toast.error('Failed to fetch loan details');
+      setSelectedLoan(loan);
+      setShowLoanDisplay(true);
+      toast.error('Failed to reach server. Showing cached data.');
     }
   };
 

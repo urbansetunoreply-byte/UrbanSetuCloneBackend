@@ -3097,6 +3097,12 @@ function AdminAppointmentRow({
       socket.off('call-ended', handleCallEndedForMonitor);
     };
   }, [appt?._id, activeLiveCall, showLiveMonitorModal, MONITOR_STUN_SERVERS, cleanupMonitorPeers, setMonitorCallId]);
+
+  React.useEffect(() => {
+    if (!showLiveMonitorModal) {
+      cleanupMonitorPeers();
+    }
+  }, [showLiveMonitorModal, cleanupMonitorPeers]);
   // Persist draft per appointment when chat is open
   React.useEffect(() => {
     if (!showChatModal || !appt?._id || !currentUser?._id) return;
@@ -4986,7 +4992,8 @@ function AdminAppointmentRow({
         const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, 
           { 
             message: messageContent, 
-            ...(replyToId ? { replyTo: replyToId } : {}) 
+            ...(replyToId ? { replyTo: replyToId } : {}),
+            ...(previewDismissed ? { previewDismissed: true } : {})
           },
           { 
             withCredentials: true,
@@ -6933,7 +6940,7 @@ function AdminAppointmentRow({
                       </div>
                       {/* Live Call Monitor button (admin view) */}
                       <button
-                        className={`hidden sm:inline-flex items-center gap-1 rounded-full px-3 py-1.5 transition-all duration-300 transform hover:scale-110 shadow ${
+                        className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 transition-all duration-300 transform hover:scale-110 shadow text-[10px] ${
                           activeLiveCall
                             ? 'text-red-500 hover:text-red-600 bg-red-50/80 hover:bg-red-100'
                             : 'text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200'
@@ -6959,7 +6966,141 @@ function AdminAppointmentRow({
                       </button>
 
                       {/* Tips & Guidelines popup */}
-                      {showShortcutTip && (
+        {showLiveMonitorModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-[1200] p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-6 py-4">
+                <div>
+                  <p className="text-sm text-gray-500 uppercase tracking-wide font-semibold">Live Call Monitor</p>
+                  <h3 className="text-2xl font-bold text-gray-900">
+                    {activeLiveCall ? (activeLiveCall.callType === 'video' ? 'Video Call' : 'Audio Call') : 'No Active Session'}
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    {activeLiveCall ? `Monitoring ${appt.propertyName || 'property appointment'}` : 'Live call or video is not initiated yet.'}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      setShowLiveMonitorModal(false);
+                      cleanupMonitorPeers();
+                      navigate('/admin/call-history');
+                    }}
+                    className="px-4 py-2 rounded-full border border-blue-200 text-blue-600 font-semibold hover:bg-blue-50 transition-colors text-sm"
+                  >
+                    Go to Call History
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowLiveMonitorModal(false);
+                      cleanupMonitorPeers();
+                    }}
+                    className="px-4 py-2 rounded-full bg-gray-900 text-white font-semibold hover:bg-gray-800 transition-colors text-sm"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+              {activeLiveCall ? (
+                <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+                  {!monitorCallId && (
+                    <div className="bg-blue-50 text-blue-800 text-sm px-4 py-3 rounded-lg border border-blue-100 flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-blue-500 animate-ping"></div>
+                      Requesting real-time feeds from buyer and seller...
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-slate-900 rounded-2xl p-4 text-white relative">
+                      <div className="flex items-center justify-between text-xs text-slate-200 mb-2 uppercase tracking-wide">
+                        <span>Buyer Feed</span>
+                        <span>{monitorRoles.buyerRole === 'caller' ? 'Caller' : monitorRoles.buyerRole === 'receiver' ? 'Receiver' : ''}</span>
+                      </div>
+                      <div className="relative rounded-xl overflow-hidden bg-black h-64">
+                        <video
+                          ref={buyerMonitorVideoRef}
+                          className="w-full h-full object-cover"
+                          playsInline
+                          autoPlay
+                          controls={false}
+                        />
+                        {!buyerMonitorStream && (
+                          <div className="absolute inset-0 flex flex-col items-center justify-center text-xs text-slate-300 gap-2 bg-black bg-opacity-60">
+                            <FaVideo className="text-lg opacity-80" />
+                            Waiting for buyer stream...
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="bg-slate-900 rounded-2xl p-4 text-white relative">
+                      <div className="flex items-center justify-between text-xs text-slate-200 mb-2 uppercase tracking-wide">
+                        <span>Seller Feed</span>
+                        <span>{monitorRoles.sellerRole === 'caller' ? 'Caller' : monitorRoles.sellerRole === 'receiver' ? 'Receiver' : ''}</span>
+                      </div>
+                      <div className="relative rounded-xl overflow-hidden bg-black h-64">
+                        <video
+                          ref={sellerMonitorVideoRef}
+                          className="w-full h-full object-cover"
+                          playsInline
+                          autoPlay
+                          controls={false}
+                        />
+                        {!sellerMonitorStream && (
+                          <div className="absolute inset-0 flex flex-col items-center justify-center text-xs text-slate-300 gap-2 bg-black bg-opacity-60">
+                            <FaVideo className="text-lg opacity-80" />
+                            Waiting for seller stream...
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+                    <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                      <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Status</p>
+                      <p className="font-semibold text-gray-800 capitalize">{activeLiveCall.status || 'pending'}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                      <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Started At</p>
+                      <p className="font-semibold text-gray-800">
+                        {activeLiveCall.startTime
+                          ? new Date(activeLiveCall.startTime).toLocaleString()
+                          : 'Awaiting acceptance'}
+                      </p>
+                    </div>
+                    <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                      <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Call ID</p>
+                      <p className="font-mono text-gray-800 text-xs break-all">{activeLiveCall.callId}</p>
+                    </div>
+                  </div>
+                  {activeLiveCall.callType === 'audio' && (
+                    <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-xl px-4 py-3 text-sm">
+                      Audio-only session detected. Video placeholders will remain blank while audio streams play in the background.
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center p-8">
+                  <FaPhone className="text-4xl text-gray-400" />
+                  <div>
+                    <p className="text-lg font-semibold text-gray-700">No live audio or video session detected</p>
+                    <p className="text-gray-500 text-sm mt-2">
+                      Ask the buyer or seller to initiate a call from their chatbox. You can review past calls anytime from the call history dashboard.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowLiveMonitorModal(false);
+                      navigate('/admin/call-history');
+                    }}
+                    className="px-4 py-2 rounded-full bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors text-sm"
+                  >
+                    Open Admin Call History
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        {showShortcutTip && (
                         <div className="absolute top-full right-0 mt-2 bg-gray-800 text-white text-xs rounded-lg px-3 py-2 shadow-lg z-20 max-w-xs animate-fadeIn">
                           <div className="font-semibold mb-2">⌨️ Keyboard Shortcuts:</div>
                           <div className="mb-2">• Press Ctrl + F to quickly focus and type your message</div>

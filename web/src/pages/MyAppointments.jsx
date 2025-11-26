@@ -4097,7 +4097,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, 
           { 
             message: messageContent, 
-            ...(replyToId ? { replyTo: replyToId } : {}) 
+            ...(replyToId ? { replyTo: replyToId } : {}),
+            ...(previewDismissed ? { previewDismissed: true } : {})
           },
           {
             withCredentials: true,

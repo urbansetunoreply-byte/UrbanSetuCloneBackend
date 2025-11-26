@@ -6,20 +6,14 @@ import { usePageTitle } from '../hooks/usePageTitle';
 const AdminCallHistory = () => {
   // Set page title
   usePageTitle("Call History - Admin Panel");
-  const [calls, setCalls] = useState([]);
-  const [allCalls, setAllCalls] = useState([]); // Store all calls for pagination
+  const [visibleCalls, setVisibleCalls] = useState([]);
+  const [allCalls, setAllCalls] = useState([]);
+  const [filteredCalls, setFilteredCalls] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     callType: 'all',
     status: 'all',
     dateRange: 'all'
-  });
-  const [stats, setStats] = useState({
-    total: 0,
-    audio: 0,
-    video: 0,
-    missed: 0,
-    averageDuration: 0
   });
   const [currentPage, setCurrentPage] = useState(1);
   
@@ -27,20 +21,29 @@ const AdminCallHistory = () => {
 
   useEffect(() => {
     fetchAllCallHistory();
-  }, [filters]);
+  }, []);
 
   useEffect(() => {
     // Apply pagination when allCalls or currentPage changes
+    applyFilters();
+  }, [filters, allCalls]);
+
+  useEffect(() => {
     applyPagination();
-  }, [allCalls, currentPage]);
+  }, [filteredCalls, currentPage]);
+
+  useEffect(() => {
+    const safeTotal = Math.max(1, Math.ceil(filteredCalls.length / itemsPerPage) || 1);
+    if (currentPage > safeTotal) {
+      setCurrentPage(safeTotal);
+    }
+  }, [filteredCalls.length]);
 
   const fetchAllCallHistory = async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
-      if (filters.callType !== 'all') params.append('callType', filters.callType);
-      if (filters.status !== 'all') params.append('status', filters.status);
-      params.append('limit', '1000'); // Fetch all calls for client-side pagination
+      params.append('limit', '1000');
 
       const response = await fetch(`${API_BASE_URL}/api/calls/admin/history?${params}`, {
         credentials: 'include'
@@ -48,14 +51,9 @@ const AdminCallHistory = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setAllCalls(data.calls || []);
-        setStats(data.stats || {
-          total: 0,
-          audio: 0,
-          video: 0,
-          missed: 0,
-          averageDuration: 0
-        });
+        const callsData = data.calls || [];
+        setAllCalls(callsData);
+        setFilteredCalls(callsData);
         setCurrentPage(1); // Reset to first page when filter changes
       }
     } catch (error) {
@@ -65,17 +63,60 @@ const AdminCallHistory = () => {
     }
   };
 
+  const applyFilters = () => {
+    let filtered = allCalls;
+
+    if (filters.callType !== 'all') {
+      filtered = filtered.filter(call => call.callType === filters.callType);
+    }
+
+    if (filters.status !== 'all') {
+      filtered = filtered.filter(call => call.status === filters.status);
+    }
+
+    if (filters.dateRange && filters.dateRange !== 'all') {
+      const now = Date.now();
+      const rangeMsMap = {
+        '24h': 24 * 60 * 60 * 1000,
+        '7d': 7 * 24 * 60 * 60 * 1000,
+        '30d': 30 * 24 * 60 * 60 * 1000
+      };
+      const rangeMs = rangeMsMap[filters.dateRange];
+      if (rangeMs) {
+        filtered = filtered.filter(call => {
+          const startTime = new Date(call.startTime).getTime();
+          return now - startTime <= rangeMs;
+        });
+      }
+    }
+
+    setFilteredCalls(filtered);
+    setCurrentPage(1);
+  };
+
   const applyPagination = () => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const paginatedCalls = allCalls.slice(startIndex, endIndex);
-    setCalls(paginatedCalls);
+    const paginatedCalls = filteredCalls.slice(startIndex, endIndex);
+    setVisibleCalls(paginatedCalls);
   };
 
-  const totalPages = Math.ceil(allCalls.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredCalls.length / itemsPerPage) || 1;
 
   const formatDuration = (seconds) => {
     if (!seconds || seconds === 0) return 'N/A';
+  const stats = React.useMemo(() => {
+    const total = filteredCalls.length;
+    const audio = filteredCalls.filter(call => call.callType === 'audio').length;
+    const video = filteredCalls.filter(call => call.callType === 'video').length;
+    const missed = filteredCalls.filter(call => call.status === 'missed').length;
+    const endedCalls = filteredCalls.filter(call => call.status === 'ended' && call.duration > 0);
+    const averageDuration = endedCalls.length > 0
+      ? Math.floor(endedCalls.reduce((sum, call) => sum + call.duration, 0) / endedCalls.length)
+      : 0;
+
+    return { total, audio, video, missed, averageDuration };
+  }, [filteredCalls]);
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
@@ -139,8 +180,9 @@ const AdminCallHistory = () => {
 
         {/* Call List Table */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <div className="overflow-x-auto">
+            <table className="min-w-[900px] w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Call Type</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Caller</th>
@@ -151,17 +193,17 @@ const AdminCallHistory = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {loading ? (
-                <tr>
-                  <td colSpan="7" className="px-6 py-4 text-center">Loading...</td>
-                </tr>
-              ) : calls.length === 0 ? (
-                <tr>
-                  <td colSpan="7" className="px-6 py-4 text-center">No calls found</td>
-                </tr>
-              ) : (
-                calls.map((call) => (
+              <tbody className="bg-white divide-y divide-gray-200">
+                {loading ? (
+                  <tr>
+                    <td colSpan="7" className="px-6 py-4 text-center">Loading...</td>
+                  </tr>
+                ) : visibleCalls.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" className="px-6 py-4 text-center">No calls found</td>
+                  </tr>
+                ) : (
+                  visibleCalls.map((call) => (
                   <tr key={call._id}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {call.callType === 'video' ? (
@@ -189,18 +231,19 @@ const AdminCallHistory = () => {
                       </span>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
-            <div className="text-sm text-gray-700">
-              Page {currentPage} of {totalPages}
-            </div>
+          <div className="text-sm text-gray-700">
+            Page {currentPage} of {totalPages}
+          </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <button
                 onClick={() => {

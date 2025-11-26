@@ -64,6 +64,20 @@ export default function UserPrivacy() {
           <li>We monitor watchlist prices to send helpful alerts.</li>
         </ul>
 
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">8. Payments, Wallets & Refunds</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li>We store transaction IDs, payment status, and refund references but not full card numbers or CVV.</li>
+          <li>Rent-wallet balances, autopay preferences, and escrow release logs are retained for compliance.</li>
+          <li>Chargebacks, disputes, or suspicious payment activity may be shared with card networks or authorities.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">9. Support, Disputes & Safety</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li>Support tickets, dispute evidence, and call snippets are stored while the case is open and for a limited period afterward.</li>
+          <li>Emergency reports (fraud, harassment, safety) may be escalated internally and, if required, to law enforcement.</li>
+          <li>You can request redaction of sensitive information from chat logs by writing to privacy@urbansetu.com.</li>
+        </ul>
+
         <div className="mt-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-800 mb-2">Related Policies</h3>
           <p className="text-gray-700 mb-3">For information about how we use cookies and similar technologies, please review our:</p>

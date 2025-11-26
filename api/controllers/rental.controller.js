@@ -1371,16 +1371,29 @@ export const listAllChecklists = async (req, res, next) => {
     // Apply search filter if provided
     if (search) {
       const searchLower = search.toLowerCase();
-      checklists = checklists.filter(c => 
-        c.checklistId?.toLowerCase().includes(searchLower) ||
-        c.listingId?.name?.toLowerCase().includes(searchLower) ||
-        c.listingId?.address?.toLowerCase().includes(searchLower) ||
-        c.tenantId?.username?.toLowerCase().includes(searchLower) ||
-        c.tenantId?.email?.toLowerCase().includes(searchLower) ||
-        c.landlordId?.username?.toLowerCase().includes(searchLower) ||
-        c.landlordId?.email?.toLowerCase().includes(searchLower) ||
-        c.contractId?.contractId?.toLowerCase().includes(searchLower)
-      );
+      const includesSearch = (value = '') => value.includes(searchLower);
+
+      checklists = checklists.filter(c => {
+        const checklistId = c.checklistId ? c.checklistId.toLowerCase() : '';
+        const listingName = c.listingId?.name ? c.listingId.name.toLowerCase() : '';
+        const listingAddress = c.listingId?.address ? c.listingId.address.toLowerCase() : '';
+        const tenantName = c.tenantId?.username ? c.tenantId.username.toLowerCase() : '';
+        const tenantEmail = c.tenantId?.email ? c.tenantId.email.toLowerCase() : '';
+        const landlordName = c.landlordId?.username ? c.landlordId.username.toLowerCase() : '';
+        const landlordEmail = c.landlordId?.email ? c.landlordId.email.toLowerCase() : '';
+        const contractCode = c.contractId?.contractId ? c.contractId.contractId.toLowerCase() : '';
+
+        return (
+          includesSearch(checklistId) ||
+          includesSearch(listingName) ||
+          includesSearch(listingAddress) ||
+          includesSearch(tenantName) ||
+          includesSearch(tenantEmail) ||
+          includesSearch(landlordName) ||
+          includesSearch(landlordEmail) ||
+          includesSearch(contractCode)
+        );
+      });
     }
 
     res.json({
@@ -2049,7 +2062,7 @@ export const getVerificationStatus = async (req, res, next) => {
 
     // Verify user has access (owner or admin)
     const user = await User.findById(userId);
-    const isAdmin = user?.role === 'admin';
+    const isAdmin = user?.role === 'admin' || user?.role === 'rootadmin';
     
     if (listing.userRef.toString() !== userId && !isAdmin) {
       return res.status(403).json({ message: "Unauthorized." });

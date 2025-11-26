@@ -100,6 +100,8 @@ const bookingSchema = new mongoose.Schema({
       audioUrl: { type: String, default: null },
       audioName: { type: String, default: null },
       audioMimeType: { type: String, default: null },
+      // Link preview suppression
+      previewDismissed: { type: Boolean, default: false },
       type: { type: String, enum: ['text', 'image', 'video', 'document', 'audio'], default: 'text' },
       // Message pinning functionality
       pinned: { type: Boolean, default: false },
