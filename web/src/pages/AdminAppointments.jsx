@@ -2923,6 +2923,15 @@ function AdminAppointmentRow({
     setFocusedMonitorView((prev) => (prev === roleKey ? null : roleKey));
   }, [setFocusedMonitorView]);
 
+  // Detect potentially active calls for this appointment based on call history status
+  const activeLiveCall = React.useMemo(() => {
+    if (!Array.isArray(callHistory) || callHistory.length === 0) return null;
+    // Treat calls that are ringing / initiated / accepted as potentially live
+    return callHistory.find(call =>
+      ["initiated", "ringing", "accepted"].includes(call.status)
+    ) || null;
+  }, [callHistory]);
+
   const handleForceTerminateCall = useCallback(() => {
     if (!socket || !activeLiveCall) {
       return;
@@ -2933,15 +2942,6 @@ function AdminAppointmentRow({
       reason: forceTerminateReason.trim()
     });
   }, [socket, activeLiveCall, forceTerminateReason, setForceTerminateLoading]);
-  
-  // Detect potentially active calls for this appointment based on call history status
-  const activeLiveCall = React.useMemo(() => {
-    if (!Array.isArray(callHistory) || callHistory.length === 0) return null;
-    // Treat calls that are ringing / initiated / accepted as potentially live
-    return callHistory.find(call =>
-      ["initiated", "ringing", "accepted"].includes(call.status)
-    ) || null;
-  }, [callHistory]);
 
   // Map call roles (caller/receiver) to buyer/seller for labeling streams
   const monitorRoles = React.useMemo(() => {

@@ -13,6 +13,21 @@ const moveInOutChecklistSchema = new mongoose.Schema({
     ref: 'RentLockContract',
     required: true
   },
+  listingId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Listing',
+    required: false
+  },
+  tenantId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: false
+  },
+  landlordId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: false
+  },
   type: {
     type: String,
     enum: ['move_in', 'move_out'],
