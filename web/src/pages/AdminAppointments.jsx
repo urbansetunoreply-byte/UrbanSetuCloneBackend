@@ -2933,6 +2933,27 @@ function AdminAppointmentRow({
     ) || null;
   }, [callHistory]);
 
+  // Helper to fetch latest call history for this appointment and return active call
+  const fetchLatestActiveCall = React.useCallback(async () => {
+    if (!appt?._id) return null;
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/calls/history/${appt._id}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) return null;
+      const data = await response.json();
+      if (Array.isArray(data.calls)) {
+        setCallHistory(data.calls);
+        return data.calls.find(call =>
+          ["initiated", "ringing", "accepted"].includes(call.status)
+        ) || null;
+      }
+    } catch (err) {
+      console.error('Error fetching latest call history for live monitor:', err);
+    }
+    return null;
+  }, [appt?._id]);
+
   const handleForceTerminateCall = useCallback(() => {
     if (!socket || !activeLiveCall) {
       return;
@@ -3118,18 +3139,27 @@ function AdminAppointmentRow({
       cleanupMonitorPeers();
     };
 
+    const handleMonitorError = ({ message }) => {
+      console.error('[Admin Monitor] Error:', message);
+      toast.error(message || 'Unable to start live monitor for this call.');
+      cleanupMonitorPeers();
+      setShowLiveMonitorModal(false);
+    };
+
     socket.on('admin-monitor-started', handleAdminMonitorStarted);
     socket.on('webrtc-offer-monitor', handleMonitorOffer);
     socket.on('ice-candidate-monitor', handleMonitorICECandidate);
     socket.on('call-ended', handleCallEndedForMonitor);
+    socket.on('call-monitor-error', handleMonitorError);
 
     return () => {
       socket.off('admin-monitor-started', handleAdminMonitorStarted);
       socket.off('webrtc-offer-monitor', handleMonitorOffer);
       socket.off('ice-candidate-monitor', handleMonitorICECandidate);
       socket.off('call-ended', handleCallEndedForMonitor);
+      socket.off('call-monitor-error', handleMonitorError);
     };
-  }, [appt?._id, activeLiveCall, showLiveMonitorModal, MONITOR_STUN_SERVERS, cleanupMonitorPeers, setMonitorCallId]);
+  }, [appt?._id, activeLiveCall, showLiveMonitorModal, MONITOR_STUN_SERVERS, cleanupMonitorPeers, setMonitorCallId, setShowLiveMonitorModal]);
 
   React.useEffect(() => {
     if (!showLiveMonitorModal) {
@@ -7008,11 +7038,19 @@ function AdminAppointmentRow({
                             ? 'text-red-500 hover:text-red-600 bg-red-50/80 hover:bg-red-100'
                             : 'text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200'
                         }`}
-                        onClick={() => {
-                          if (activeLiveCall && activeLiveCall.callId) {
-                            // Request to join live monitor for this active call
-                            socket.emit('admin-monitor-join', { callId: activeLiveCall.callId });
+                        onClick={async () => {
+                          // Always fetch the latest active call just before opening the monitor
+                          let latestActive = activeLiveCall;
+                          if (!latestActive || !latestActive.callId) {
+                            latestActive = await fetchLatestActiveCall();
                           }
+
+                          if (latestActive && latestActive.callId) {
+                            socket.emit('admin-monitor-join', { callId: latestActive.callId });
+                          } else {
+                            toast.info('No active audio/video call found for this appointment.');
+                          }
+
                           setShowLiveMonitorModal(true);
                         }}
                         title={activeLiveCall ? 'Live audio/video monitor' : 'Not live - no active call'}
@@ -11047,12 +11085,18 @@ function AdminAppointmentRow({
                 <FaTimes className="w-4 h-4" />
               </button>
               <button
-                onClick={() => {
-                  // Re-request monitor connection for the current active call
-                  if (activeLiveCall && activeLiveCall.callId) {
-                    socket.emit('admin-monitor-join', { callId: activeLiveCall.callId });
+                onClick={async () => {
+                  // Re-fetch latest active call before refreshing monitor
+                  let latestActive = activeLiveCall;
+                  if (!latestActive || !latestActive.callId) {
+                    latestActive = await fetchLatestActiveCall();
+                  }
+
+                  if (latestActive && latestActive.callId) {
+                    socket.emit('admin-monitor-join', { callId: latestActive.callId });
                   } else {
                     toast.info('No active call detected for this appointment.');
+                    cleanupMonitorPeers();
                   }
                 }}
                 className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 ml-2"
