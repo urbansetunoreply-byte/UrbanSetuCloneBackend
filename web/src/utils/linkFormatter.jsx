@@ -1,17 +1,127 @@
 import React, { useState, useEffect, useRef } from 'react';
 
+// Helper function to process text segments for links, mentions, and search highlighting
+const processTextSegment = (text, isSentMessage, searchQuery) => {
+  if (!text) return null;
+
+  // Regex patterns
+  const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
+  const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?|(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
+
+  // First, handle property mentions
+  let processedText = text;
+  const mentionMatches = [...text.matchAll(mentionRegex)];
+
+  const mentionPlaceholders = [];
+  mentionMatches.forEach((match, index) => {
+    const [full, name, listingId] = match;
+    const placeholder = `__MENTION_${index}__`;
+    processedText = processedText.replace(full, placeholder);
+    mentionPlaceholders.push({ placeholder, name, listingId, full });
+  });
+
+  // Then handle URLs
+  const urlMatches = [...processedText.matchAll(urlRegex)];
+  const urlPlaceholders = [];
+  urlMatches.forEach((match, index) => {
+    const [url] = match;
+    const placeholder = `__URL_${index}__`;
+    processedText = processedText.replace(url, placeholder);
+    urlPlaceholders.push({ placeholder, url });
+  });
+
+  // Split by placeholders
+  const allPlaceholders = [...mentionPlaceholders, ...urlPlaceholders];
+  let parts;
+  if (allPlaceholders.length > 0) {
+    const placeholderRegex = new RegExp(`(${allPlaceholders.map(p => p.placeholder).join('|')})`, 'g');
+    parts = processedText.split(placeholderRegex);
+  } else {
+    parts = [processedText];
+  }
+
+  return parts.map((subPart, index) => {
+    if (!subPart) return null;
+
+    // Check if it's a placeholder
+    const mentionPlaceholder = mentionPlaceholders.find(p => p.placeholder === subPart);
+    if (mentionPlaceholder) {
+      const { name, listingId } = mentionPlaceholder;
+      const basePrefix = window.location.pathname.includes('/admin') ? '/admin/listing/' : '/user/listing/';
+      const href = `${basePrefix}${listingId}`;
+      const linkClasses = isSentMessage
+        ? "text-white underline decoration-dotted hover:text-blue-200 cursor-pointer"
+        : "text-blue-600 underline decoration-dotted hover:text-blue-800 cursor-pointer";
+
+      return (
+        <a
+          key={`mention-${index}`}
+          href={href}
+          onClick={(e) => e.stopPropagation()}
+          className={linkClasses}
+          title={`Open ${name}`}
+        >
+          @{name}
+        </a>
+      );
+    }
+
+    const urlPlaceholder = urlPlaceholders.find(p => p.placeholder === subPart);
+    if (urlPlaceholder) {
+      const { url } = urlPlaceholder;
+      let finalUrl = url;
+      if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+        finalUrl = 'https://' + finalUrl;
+      }
+
+      const linkClasses = isSentMessage
+        ? "text-white hover:text-blue-200 underline transition-colors duration-200 cursor-pointer"
+        : "text-blue-600 hover:text-blue-800 underline transition-colors duration-200 cursor-pointer";
+
+      return (
+        <a
+          key={`url-${index}`}
+          href={finalUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={linkClasses}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {url}
+        </a>
+      );
+    }
+
+    // Check for search highlighting
+    if (searchQuery && searchQuery.trim()) {
+      const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+      const searchParts = subPart.split(regex);
+
+      return searchParts.map((searchPart, searchIndex) => {
+        if (regex.test(searchPart)) {
+          return (
+            <span key={`search-${index}-${searchIndex}`} className="search-text-highlight bg-yellow-200 text-black px-1 rounded">
+              {searchPart}
+            </span>
+          );
+        }
+        return searchPart;
+      });
+    }
+
+    return subPart;
+  });
+};
+
 // Utility function to format markdown text
-const formatMarkdown = (text, isSentMessage = false) => {
+// Now also handles links, mentions, and search highlighting
+const formatText = (text, isSentMessage = false, searchQuery = "") => {
   if (!text || typeof text !== 'string') return text;
 
   const lines = text.split('\n');
   const result = [];
 
-  // Create a map to store processed parts for each line
-  const lineProcessedParts = new Map();
-
   lines.forEach((line, lineIndex) => {
-    // Ensure line is a string and not null/undefined
     if (!line || typeof line !== 'string') {
       return;
     }
@@ -19,380 +129,162 @@ const formatMarkdown = (text, isSentMessage = false) => {
     // Check if this is a list item first
     const isNumberedList = line.trim().match(/^(\d+)\.\s+/);
     const isBulletList = line.trim().match(/^[-•]\s+/);
+    const isQuote = line.trim().match(/^>\s+/);
 
     if (isNumberedList || isBulletList) {
-      // For list items, only process the content part, not the entire line
+      // For list items, only process the content part
       let content = '';
+      let prefix = '';
+      let indent = '';
+
       if (isNumberedList) {
         const listMatch = line.match(/^(\s*)(\d+)\.\s+(.*)$/);
         if (listMatch) {
-          content = listMatch[3]; // Only the content part
+          indent = listMatch[1];
+          prefix = `${listMatch[2]}.`;
+          content = listMatch[3];
         }
       } else if (isBulletList) {
         const listMatch = line.match(/^(\s*)[-•]\s+(.*)$/);
         if (listMatch) {
-          content = listMatch[2]; // Only the content part
+          indent = listMatch[1];
+          prefix = '•';
+          content = listMatch[2];
         }
       }
 
-      // Process markdown formatting only on the content part
-      let processedLine = content;
-      const parts = [];
-      let lastIndex = 0;
+      // Process content
+      const processedContent = processLineContent(content, isSentMessage, searchQuery, lineIndex);
 
-      // Process markdown formatting in order of precedence
-      const patterns = [
-        { regex: /\*\*(.*?)\*\*/g, tag: 'strong' }, // Bold
-        { regex: /\*(.*?)\*/g, tag: 'em' }, // Italic
-        { regex: /__(.*?)__/g, tag: 'u' }, // Underline
-        { regex: /~~(.*?)~~/g, tag: 'del' }, // Strikethrough
-      ];
+      const listColor = isSentMessage ? "text-blue-200" : "text-blue-600";
 
-      // Find all markdown patterns
-      const matches = [];
-      patterns.forEach(pattern => {
-        let match;
-        while ((match = pattern.regex.exec(processedLine)) !== null) {
-          matches.push({
-            start: match.index,
-            end: match.index + match[0].length,
-            content: match[1],
-            tag: pattern.tag,
-            full: match[0]
-          });
-        }
-      });
-
-      // Sort matches by position
-      matches.sort((a, b) => a.start - b.start);
-
-      // Process non-overlapping matches
-      const validMatches = [];
-      matches.forEach(match => {
-        const overlaps = validMatches.some(vm =>
-          (match.start >= vm.start && match.start < vm.end) ||
-          (match.end > vm.start && match.end <= vm.end)
-        );
-        if (!overlaps) {
-          validMatches.push(match);
-        }
-      });
-
-      // Build the formatted line
-      validMatches.sort((a, b) => a.start - b.start);
-      let currentIndex = 0;
-
-      validMatches.forEach((match, idx) => {
-        // Add text before the match
-        if (match.start > currentIndex) {
-          parts.push(processedLine.slice(currentIndex, match.start));
-        }
-
-        // Add the formatted element
-        const TagName = match.tag;
-        parts.push(
-          <TagName key={`${lineIndex}-${idx}`} className={match.tag === 'u' ? 'underline' : ''}>
-            {match.content}
-          </TagName>
-        );
-
-        currentIndex = match.end;
-      });
-
-      // Add remaining text
-      if (currentIndex < processedLine.length) {
-        parts.push(processedLine.slice(currentIndex));
-      }
-
-      // Store the processed parts in the map
-      lineProcessedParts.set(lineIndex, parts);
-    } else {
-      // For non-list items, process the entire line as before
-      let processedLine = line;
-      const parts = [];
-      let lastIndex = 0;
-
-      // Process markdown formatting in order of precedence
-      const patterns = [
-        { regex: /\*\*(.*?)\*\*/g, tag: 'strong' }, // Bold
-        { regex: /\*(.*?)\*/g, tag: 'em' }, // Italic
-        { regex: /__(.*?)__/g, tag: 'u' }, // Underline
-        { regex: /~~(.*?)~~/g, tag: 'del' }, // Strikethrough
-      ];
-
-      // Find all markdown patterns
-      const matches = [];
-      patterns.forEach(pattern => {
-        let match;
-        while ((match = pattern.regex.exec(processedLine)) !== null) {
-          matches.push({
-            start: match.index,
-            end: match.index + match[0].length,
-            content: match[1],
-            tag: pattern.tag,
-            full: match[0]
-          });
-        }
-      });
-
-      // Sort matches by position
-      matches.sort((a, b) => a.start - b.start);
-
-      // Process non-overlapping matches
-      const validMatches = [];
-      matches.forEach(match => {
-        const overlaps = validMatches.some(vm =>
-          (match.start >= vm.start && match.start < vm.end) ||
-          (match.end > vm.start && match.end <= vm.end)
-        );
-        if (!overlaps) {
-          validMatches.push(match);
-        }
-      });
-
-      // Build the formatted line
-      validMatches.sort((a, b) => a.start - b.start);
-      let currentIndex = 0;
-
-      validMatches.forEach((match, idx) => {
-        // Add text before the match
-        if (match.start > currentIndex) {
-          parts.push(processedLine.slice(currentIndex, match.start));
-        }
-
-        // Add the formatted element
-        const TagName = match.tag;
-        parts.push(
-          <TagName key={`${lineIndex}-${idx}`} className={match.tag === 'u' ? 'underline' : ''}>
-            {match.content}
-          </TagName>
-        );
-
-        currentIndex = match.end;
-      });
-
-      // Add remaining text
-      if (currentIndex < processedLine.length) {
-        parts.push(processedLine.slice(currentIndex));
-      }
-
-      // Store the processed parts in the map
-      lineProcessedParts.set(lineIndex, parts);
-    }
-
-    // Handle list items
-    if (line.trim().match(/^(\d+)\.\s+/)) {
-      // Numbered list
-      const listMatch = line.match(/^(\s*)(\d+)\.\s+(.*)$/);
-      if (listMatch) {
-        const [, indent, num, content] = listMatch;
-        // Use different colors for sent vs received messages
-        const listColor = isSentMessage ? "text-blue-200" : "text-blue-600";
-        const processedParts = lineProcessedParts.get(lineIndex);
-        result.push(
-          <div key={lineIndex} className={`${indent ? 'ml-4' : ''} mb-1`}>
-            <span className={`font-medium ${listColor}`}>{num}.</span> {processedParts && processedParts.length > 0 ? processedParts : content}
-          </div>
-        );
-        return;
-      }
-    } else if (line.trim().match(/^[-•]\s+/)) {
-      // Bullet list
-      const listMatch = line.match(/^(\s*)[-•]\s+(.*)$/);
-      if (listMatch) {
-        const [, indent, content] = listMatch;
-        // Use different colors for sent vs received messages
-        const listColor = isSentMessage ? "text-blue-200" : "text-blue-600";
-        const processedParts = lineProcessedParts.get(lineIndex);
-        result.push(
-          <div key={lineIndex} className={`${indent ? 'ml-4' : ''} mb-1`}>
-            <span className={listColor}>•</span> {processedParts && processedParts.length > 0 ? processedParts : content}
-          </div>
-        );
-        return;
-      }
-    } else if (line.trim().match(/^>\s+/)) {
-      // Quote
+      result.push(
+        <div key={lineIndex} className={`${indent ? 'ml-4' : ''} mb-1`}>
+          <span className={`font-medium ${listColor}`}>{prefix}</span> {processedContent}
+        </div>
+      );
+    } else if (isQuote) {
       const quoteMatch = line.match(/^>\s+(.*)$/);
-      if (quoteMatch) {
-        const content = quoteMatch[1];
-        // Use different text colors for sent vs received messages
-        const textColor = isSentMessage ? "text-gray-200" : "text-gray-600";
-        const borderColor = isSentMessage ? "border-gray-400" : "border-gray-300";
-        const processedParts = lineProcessedParts.get(lineIndex);
-        result.push(
-          <div key={lineIndex} className={`border-l-4 ${borderColor} pl-3 ml-2 italic ${textColor} mb-1`}>
-            {processedParts && processedParts.length > 0 ? processedParts : content}
-          </div>
-        );
-        return;
+      const content = quoteMatch ? quoteMatch[1] : line.replace(/^>\s+/, '');
+
+      const processedContent = processLineContent(content, isSentMessage, searchQuery, lineIndex);
+
+      const textColor = isSentMessage ? "text-gray-200" : "text-gray-600";
+      const borderColor = isSentMessage ? "border-gray-400" : "border-gray-300";
+
+      result.push(
+        <div key={lineIndex} className={`border-l-4 ${borderColor} pl-3 ml-2 italic ${textColor} mb-1`}>
+          {processedContent}
+        </div>
+      );
+    } else {
+      // Regular line
+      const processedContent = processLineContent(line, isSentMessage, searchQuery, lineIndex);
+
+      // For regular lines, we return them as an array of elements if possible to avoid extra spans,
+      // but to support newlines we might need a wrapper or just push elements.
+      // However, FormattedTextWithLinks expects a container.
+
+      if (processedContent && processedContent.length > 0) {
+        // We wrap in a span to keep the line together, especially for line-clamp
+        result.push(<span key={lineIndex}>{processedContent}</span>);
+      } else if (line.trim()) {
+        result.push(<span key={lineIndex}>{line}</span>);
       }
-    }
 
-    // Regular line
-    const processedParts = lineProcessedParts.get(lineIndex);
-    if (processedParts && processedParts.length > 0) {
-      result.push(<span key={lineIndex}>{processedParts}</span>);
-    } else if (line.trim()) {
-      result.push(<span key={lineIndex}>{line}</span>);
-    }
-
-    // Add line break if not last line and line is not empty
-    if (lineIndex < lines.length - 1 && line.trim()) {
-      result.push(<br key={`br-${lineIndex}`} />);
+      // Add line break if not last line and line is not empty
+      if (lineIndex < lines.length - 1 && line.trim()) {
+        result.push(<br key={`br-${lineIndex}`} />);
+      }
     }
   });
 
   return result;
 };
 
-// Utility function to detect and format links in text
-export const formatLinksInText = (text, isSentMessage = false) => {
-  if (!text || typeof text !== 'string') return text || '';
+// Helper to process a single line's content (markdown + links)
+const processLineContent = (content, isSentMessage, searchQuery, lineIndex) => {
+  const parts = [];
+  let processedLine = content;
 
-  // URL regex pattern to match various link formats
-  const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?|(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
+  // Process markdown formatting in order of precedence
+  const patterns = [
+    { regex: /\*\*(.*?)\*\*/g, tag: 'strong' }, // Bold
+    { regex: /\*(.*?)\*/g, tag: 'em' }, // Italic
+    { regex: /__(.*?)__/g, tag: 'u' }, // Underline
+    { regex: /~~(.*?)~~/g, tag: 'del' }, // Strikethrough
+  ];
 
-  const parts = text.split(urlRegex);
+  // Find all markdown patterns
+  const matches = [];
+  patterns.forEach(pattern => {
+    let match;
+    // Reset lastIndex for global regex
+    pattern.regex.lastIndex = 0;
+    while ((match = pattern.regex.exec(processedLine)) !== null) {
+      matches.push({
+        start: match.index,
+        end: match.index + match[0].length,
+        content: match[1],
+        tag: pattern.tag,
+        full: match[0]
+      });
+    }
+  });
 
-  return parts.map((part, index) => {
-    // Check if this part is a URL - create a new regex instance to avoid global flag side effects
-    const testRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?|(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
-    if (testRegex.test(part)) {
-      // Ensure URL has protocol
-      let url = part;
-      if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        url = 'https://' + url;
-      }
+  // Sort matches by position
+  matches.sort((a, b) => a.start - b.start);
 
-      // Different styling for sent vs received messages
-      const linkClasses = isSentMessage
-        ? "text-white hover:text-blue-200 underline transition-colors duration-200 cursor-pointer" // White for sent messages (blue background)
-        : "text-blue-600 hover:text-blue-800 underline transition-colors duration-200 cursor-pointer"; // Blue for received messages (white/gray background)
+  // Process non-overlapping matches
+  const validMatches = [];
+  matches.forEach(match => {
+    const overlaps = validMatches.some(vm =>
+      (match.start >= vm.start && match.start < vm.end) ||
+      (match.end > vm.start && match.end <= vm.end)
+    );
+    if (!overlaps) {
+      validMatches.push(match);
+    }
+  });
 
-      return (
-        <a
-          key={index}
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={linkClasses}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {part}
-        </a>
-      );
+  validMatches.sort((a, b) => a.start - b.start);
+  let currentIndex = 0;
+
+  validMatches.forEach((match, idx) => {
+    // Add text before the match
+    if (match.start > currentIndex) {
+      const textBefore = processedLine.slice(currentIndex, match.start);
+      parts.push(...(processTextSegment(textBefore, isSentMessage, searchQuery) || []));
     }
 
-    return part;
+    // Add the formatted element (recursively process content inside tags)
+    const TagName = match.tag;
+    const contentInside = processTextSegment(match.content, isSentMessage, searchQuery);
+
+    parts.push(
+      <TagName key={`${lineIndex}-${idx}`} className={match.tag === 'u' ? 'underline' : ''}>
+        {contentInside}
+      </TagName>
+    );
+
+    currentIndex = match.end;
   });
+
+  // Add remaining text
+  if (currentIndex < processedLine.length) {
+    const textAfter = processedLine.slice(currentIndex);
+    parts.push(...(processTextSegment(textAfter, isSentMessage, searchQuery) || []));
+  }
+
+  return parts;
 };
 
 // Component wrapper for formatted text with links
-export const FormattedTextWithLinks = ({ text, isSentMessage = false, className = "", style = {}, textRef = null }) => {
+export const FormattedTextWithLinks = ({ text, isSentMessage = false, className = "", style = {}, textRef = null, searchQuery = "" }) => {
   if (!text || typeof text !== 'string') return <div className={className} style={style} ref={textRef}>{text}</div>;
 
-  // First apply markdown formatting
-  const markdownFormatted = formatMarkdown(text, isSentMessage);
-
-  // Then apply link formatting to text parts
-  const finalFormatted = markdownFormatted.map((part, partIndex) => {
-    if (typeof part === 'string') {
-      // Handle property mentions first, then URLs
-      const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
-      const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?|(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
-
-      // First, handle property mentions
-      let processedText = part;
-      const mentionMatches = [...part.matchAll(mentionRegex)];
-
-      // Replace property mentions with placeholders to avoid conflicts with URL detection
-      const mentionPlaceholders = [];
-      mentionMatches.forEach((match, index) => {
-        const [full, name, listingId] = match;
-        const placeholder = `__MENTION_${partIndex}_${index}__`;
-        processedText = processedText.replace(full, placeholder);
-        mentionPlaceholders.push({ placeholder, name, listingId, full });
-      });
-
-      // Then handle URLs
-      const urlMatches = [...processedText.matchAll(urlRegex)];
-      const urlPlaceholders = [];
-      urlMatches.forEach((match, index) => {
-        const [url] = match;
-        const placeholder = `__URL_${partIndex}_${index}__`;
-        processedText = processedText.replace(url, placeholder);
-        urlPlaceholders.push({ placeholder, url });
-      });
-
-      // Split by placeholders and process
-      const allPlaceholders = [...mentionPlaceholders, ...urlPlaceholders];
-      let parts;
-      if (allPlaceholders.length > 0) {
-        const placeholderRegex = new RegExp(`(${allPlaceholders.map(p => p.placeholder).join('|')})`, 'g');
-        parts = processedText.split(placeholderRegex);
-      } else {
-        parts = [processedText];
-      }
-
-      return parts.map((subPart, index) => {
-        if (!subPart) return null;
-
-        // Check if it's a placeholder
-        const mentionPlaceholder = mentionPlaceholders.find(p => p.placeholder === subPart);
-        if (mentionPlaceholder) {
-          const { name, listingId } = mentionPlaceholder;
-          const basePrefix = window.location.pathname.includes('/admin') ? '/admin/listing/' : '/user/listing/';
-          const href = `${basePrefix}${listingId}`;
-          const linkClasses = isSentMessage
-            ? "text-white underline decoration-dotted hover:text-blue-200 cursor-pointer"
-            : "text-blue-600 underline decoration-dotted hover:text-blue-800 cursor-pointer";
-
-          return (
-            <a
-              key={`mention-${partIndex}-${index}`}
-              href={href}
-              onClick={(e) => e.stopPropagation()}
-              className={linkClasses}
-              title={`Open ${name}`}
-            >
-              @{name}
-            </a>
-          );
-        }
-
-        const urlPlaceholder = urlPlaceholders.find(p => p.placeholder === subPart);
-        if (urlPlaceholder) {
-          const { url } = urlPlaceholder;
-          let finalUrl = url;
-          if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
-            finalUrl = 'https://' + finalUrl;
-          }
-
-          const linkClasses = isSentMessage
-            ? "text-white hover:text-blue-200 underline transition-colors duration-200 cursor-pointer"
-            : "text-blue-600 hover:text-blue-800 underline transition-colors duration-200 cursor-pointer";
-
-          return (
-            <a
-              key={`url-${partIndex}-${index}`}
-              href={finalUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={linkClasses}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {url}
-            </a>
-          );
-        }
-
-        return subPart;
-      });
-    }
-    // If it's already a React element (from markdown formatting), return it as is
-    return part;
-  });
+  // Apply formatting (Markdown + Links + Search)
+  const finalFormatted = formatText(text, isSentMessage, searchQuery);
 
   return (
     <div className={className} style={style} ref={textRef}>
@@ -402,6 +294,11 @@ export const FormattedTextWithLinks = ({ text, isSentMessage = false, className 
 };
 
 // Component wrapper for formatted text with links and search highlighting
+// This is now just an alias for FormattedTextWithLinks since we consolidated logic
+export const FormattedTextWithLinksAndSearch = (props) => {
+  return <FormattedTextWithLinks {...props} />;
+};
+
 // Component wrapper with read more functionality for long messages
 export const FormattedTextWithReadMore = ({ text, isSentMessage = false, className = "", searchQuery = "", maxLines = 4 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -410,23 +307,16 @@ export const FormattedTextWithReadMore = ({ text, isSentMessage = false, classNa
 
   useEffect(() => {
     if (textRef.current) {
-      // Check if content overflows
       const element = textRef.current;
-      // We check if scrollHeight is greater than clientHeight.
-      // Note: This check works best when line-clamp is applied.
-      // If expanded, clientHeight will equal scrollHeight, so we rely on state persistence or check only when collapsed.
       if (!isExpanded) {
         setShouldShowReadMore(element.scrollHeight > element.clientHeight);
       }
     }
   }, [text, maxLines, isExpanded]);
 
-  // Use the appropriate component based on search query
-  const FormattedComponent = searchQuery && searchQuery.trim() ? FormattedTextWithLinksAndSearch : FormattedTextWithLinks;
-
   return (
     <div className="relative">
-      <FormattedComponent
+      <FormattedTextWithLinks
         text={text}
         isSentMessage={isSentMessage}
         className={className}
@@ -471,130 +361,11 @@ export const FormattedTextWithReadMore = ({ text, isSentMessage = false, classNa
   );
 };
 
-export const FormattedTextWithLinksAndSearch = ({ text, isSentMessage = false, className = "", searchQuery = "", style = {}, textRef = null }) => {
-  if (!text || typeof text !== 'string') return <div className={className} style={style} ref={textRef}>{text}</div>;
-
-  // First apply markdown formatting
-  const markdownFormatted = formatMarkdown(text, isSentMessage);
-
-  // Then apply link formatting and search highlighting
-  const finalFormatted = markdownFormatted.map((part, partIndex) => {
-    if (typeof part === 'string') {
-      // Handle property mentions first, then URLs
-      const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
-      const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?|(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
-
-      // First, handle property mentions
-      let processedText = part;
-      const mentionMatches = [...part.matchAll(mentionRegex)];
-
-      // Replace property mentions with placeholders to avoid conflicts with URL detection
-      const mentionPlaceholders = [];
-      mentionMatches.forEach((match, index) => {
-        const [full, name, listingId] = match;
-        const placeholder = `__MENTION_${partIndex}_${index}__`;
-        processedText = processedText.replace(full, placeholder);
-        mentionPlaceholders.push({ placeholder, name, listingId, full });
-      });
-
-      // Then handle URLs
-      const urlMatches = [...processedText.matchAll(urlRegex)];
-      const urlPlaceholders = [];
-      urlMatches.forEach((match, index) => {
-        const [url] = match;
-        const placeholder = `__URL_${partIndex}_${index}__`;
-        processedText = processedText.replace(url, placeholder);
-        urlPlaceholders.push({ placeholder, url });
-      });
-
-      // Split by placeholders and process
-      const allPlaceholders = [...mentionPlaceholders, ...urlPlaceholders];
-      let parts;
-      if (allPlaceholders.length > 0) {
-        const placeholderRegex = new RegExp(`(${allPlaceholders.map(p => p.placeholder).join('|')})`, 'g');
-        parts = processedText.split(placeholderRegex);
-      } else {
-        parts = [processedText];
-      }
-
-      return parts.map((subPart, index) => {
-        if (!subPart) return null;
-
-        // Check if it's a placeholder
-        const mentionPlaceholder = mentionPlaceholders.find(p => p.placeholder === subPart);
-        if (mentionPlaceholder) {
-          const { name, listingId } = mentionPlaceholder;
-          const basePrefix = window.location.pathname.includes('/admin') ? '/admin/listing/' : '/user/listing/';
-          const href = `${basePrefix}${listingId}`;
-          const linkClasses = isSentMessage
-            ? "text-white underline decoration-dotted hover:text-blue-200 cursor-pointer"
-            : "text-blue-600 underline decoration-dotted hover:text-blue-800 cursor-pointer";
-
-          return (
-            <a
-              key={`mention-${partIndex}-${index}`}
-              href={href}
-              onClick={(e) => e.stopPropagation()}
-              className={linkClasses}
-              title={`Open ${name}`}
-            >
-              @{name}
-            </a>
-          );
-        }
-
-        const urlPlaceholder = urlPlaceholders.find(p => p.placeholder === subPart);
-        if (urlPlaceholder) {
-          const { url } = urlPlaceholder;
-          let finalUrl = url;
-          if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
-            finalUrl = 'https://' + finalUrl;
-          }
-
-          const linkClasses = isSentMessage
-            ? "text-white hover:text-blue-200 underline transition-colors duration-200 cursor-pointer"
-            : "text-blue-600 hover:text-blue-800 underline transition-colors duration-200 cursor-pointer";
-
-          return (
-            <a
-              key={`url-${partIndex}-${index}`}
-              href={finalUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={linkClasses}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {url}
-            </a>
-          );
-        }
-
-        // Check for search highlighting
-        if (searchQuery && searchQuery.trim()) {
-          const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-          const searchParts = subPart.split(regex);
-
-          return searchParts.map((searchPart, searchIndex) => {
-            if (regex.test(searchPart)) {
-              return (
-                <span key={`search-${partIndex}-${index}-${searchIndex}`} className="search-text-highlight bg-yellow-200 text-black px-1 rounded">
-                  {searchPart}
-                </span>
-              );
-            }
-            return searchPart;
-          });
-        }
-
-        return subPart;
-      });
-    }
-    return part;
-  });
-
-  return (
-    <div className={className} style={style} ref={textRef}>
-      {finalFormatted}
-    </div>
-  );
+// Export formatLinksInText for backward compatibility if used elsewhere, 
+// though it's now redundant with processTextSegment logic.
+export const formatLinksInText = (text, isSentMessage = false) => {
+  const segments = processTextSegment(text, isSentMessage, "");
+  // Return as an array of elements or string if single
+  if (!segments) return text;
+  return segments;
 };
