@@ -15,11 +15,11 @@ export default function PayMonthlyRent() {
   const { currentUser } = useSelector((state) => state.user);
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   const searchParams = new URLSearchParams(location.search);
   const contractId = searchParams.get('contractId');
   const scheduleIndex = searchParams.get('scheduleIndex');
-  
+
   const [loading, setLoading] = useState(true);
   const [step, setStep] = useState(1); // 1: Select Month, 2: Review Details, 3: Contract Review, 4: Payment, 5: Confirmation
   const [contract, setContract] = useState(null);
@@ -61,7 +61,7 @@ export default function PayMonthlyRent() {
 
       const contractData = await contractRes.json();
       const contractObj = contractData.contract || contractData;
-      
+
       // Verify user is tenant
       const isTenant = contractObj.tenantId?._id === currentUser._id || contractObj.tenantId === currentUser._id;
       if (!isTenant) {
@@ -102,7 +102,7 @@ export default function PayMonthlyRent() {
 
       // Find pending payments
       const pendingPayments = walletObj.paymentSchedule?.filter(p => p.status === 'pending' || p.status === 'overdue') || [];
-      
+
       if (pendingPayments.length === 0) {
         toast.info("All rent payments are up to date.");
         navigate("/user/rental-contracts");
@@ -146,7 +146,7 @@ export default function PayMonthlyRent() {
     setPaymentCompleted(true);
     setStep(5);
     setShowPaymentModal(false);
-    
+
     // Refresh contract and wallet
     setTimeout(() => {
       fetchContractAndWallet();
@@ -193,7 +193,7 @@ export default function PayMonthlyRent() {
       });
 
       const data = await res.json();
-      
+
       if (!res.ok || !data.success) {
         throw new Error(data.message || "Failed to create payment");
       }
@@ -265,25 +265,24 @@ export default function PayMonthlyRent() {
 
         {/* Progress Steps */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 overflow-x-auto pb-2">
             {[1, 2, 3, 4, 5].map((s) => (
               <React.Fragment key={s}>
-                <div className="flex flex-col items-center cursor-pointer" onClick={() => {
+                <div className="flex flex-col items-center cursor-pointer min-w-[50px]" onClick={() => {
                   if (step > s || paymentCompleted) {
                     setStep(s);
                   }
                 }}>
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    step >= s ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'
-                  }`}>
+                  <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-sm md:text-base ${step >= s ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'
+                    }`}>
                     {step > s || paymentCompleted ? <FaCheckCircle /> : s}
                   </div>
-                  <span className="text-xs mt-2 text-gray-600 text-center">
-                    {s === 1 ? 'Select Month' : s === 2 ? 'Review Details' : s === 3 ? 'Contract' : s === 4 ? 'Pay' : 'Confirm'}
+                  <span className="text-[10px] md:text-xs mt-1 md:mt-2 text-gray-600 text-center whitespace-nowrap">
+                    {s === 1 ? 'Select' : s === 2 ? 'Review' : s === 3 ? 'Contract' : s === 4 ? 'Pay' : 'Confirm'}
                   </span>
                 </div>
                 {s < 5 && (
-                  <div className={`flex-1 h-1 mx-2 ${step > s ? 'bg-blue-600' : 'bg-gray-300'}`} />
+                  <div className={`flex-1 h-0.5 md:h-1 mx-1 md:mx-2 ${step > s ? 'bg-blue-600' : 'bg-gray-300'}`} />
                 )}
               </React.Fragment>
             ))}
@@ -296,7 +295,7 @@ export default function PayMonthlyRent() {
             <h2 className="text-2xl font-bold text-blue-700 mb-6 flex items-center gap-2">
               <FaCalendarAlt /> Select Payment Month
             </h2>
-            
+
             <div className="space-y-4">
               {wallet.paymentSchedule
                 .filter(p => p.status === 'pending' || p.status === 'overdue')
@@ -305,7 +304,7 @@ export default function PayMonthlyRent() {
                   const originalIdx = wallet.paymentSchedule.indexOf(payment);
                   const payDueDate = new Date(payment.dueDate);
                   const isPayOverdue = payment.status === 'overdue' || (payment.status === 'pending' && payDueDate < new Date());
-                  
+
                   return (
                     <div
                       key={idx}
@@ -313,11 +312,10 @@ export default function PayMonthlyRent() {
                         setSelectedPayment({ ...payment, scheduleIndex: originalIdx });
                         setStep(2);
                       }}
-                      className={`border-2 rounded-lg p-4 cursor-pointer transition ${
-                        selectedPayment?.scheduleIndex === originalIdx
+                      className={`border-2 rounded-lg p-4 cursor-pointer transition ${selectedPayment?.scheduleIndex === originalIdx
                           ? 'border-blue-600 bg-blue-50'
                           : 'border-gray-200 hover:border-blue-300'
-                      } ${isPayOverdue ? 'bg-red-50 border-red-300' : ''}`}
+                        } ${isPayOverdue ? 'bg-red-50 border-red-300' : ''}`}
                     >
                       <div className="flex items-center justify-between">
                         <div>
@@ -455,7 +453,7 @@ export default function PayMonthlyRent() {
                 listing={contract.listingId}
                 tenant={contract.tenantId}
                 landlord={contract.landlordId}
-                onDownload={() => {}}
+                onDownload={() => { }}
               />
             </div>
 

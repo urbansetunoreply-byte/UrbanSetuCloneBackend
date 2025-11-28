@@ -17,12 +17,12 @@ export default function RentProperty() {
   const { currentUser } = useSelector((state) => state.user);
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   // Get listing information from URL params
   const searchParams = new URLSearchParams(location.search);
   const listingId = searchParams.get('listingId');
   const contractIdParam = searchParams.get('contractId'); // For resuming contracts
-  
+
   const [loading, setLoading] = useState(true);
   const [listing, setListing] = useState(null);
   const [step, setStep] = useState(1); // 1: Plan Selection, 2: Contract Review, 3: Signing, 4: Payment, 5: Move-in
@@ -67,14 +67,14 @@ export default function RentProperty() {
         }
 
         const data = await res.json();
-        
+
         // Handle both response formats: {success, listing} or direct listing object
         const listingData = data.listing || (data._id ? data : null);
-        
+
         if (!listingData || !listingData._id) {
           throw new Error("Listing not found");
         }
-        
+
         // Only allow rental properties
         if (listingData.type !== 'rent') {
           toast.error("This property is not available for rent.");
@@ -83,7 +83,7 @@ export default function RentProperty() {
         }
 
         setListing(listingData);
-        
+
         // Set default plan if available
         if (listingData.rentLockPlans?.defaultPlan) {
           setFormData(prev => ({
@@ -102,32 +102,32 @@ export default function RentProperty() {
             if (contractRes.ok) {
               const contractData = await contractRes.json();
               const existingContract = contractData.contract || contractData;
-              
+
               if (existingContract && existingContract._id) {
                 // Check if contract is rejected or terminated
                 if (existingContract.status === 'rejected' || existingContract.status === 'terminated') {
                   setContract(existingContract);
                   setResumingContract(true);
                   setLoading(false);
-                  
+
                   // Show rejection message
                   const rejectionMessage = existingContract.status === 'rejected'
                     ? `This contract was rejected by the seller${existingContract.rejectionReason ? `: ${existingContract.rejectionReason}` : ''}. Please try booking a new one.`
                     : `This contract was terminated${existingContract.terminationReason ? `: ${existingContract.terminationReason}` : ''}. Please try booking a new one.`;
-                  
+
                   toast.error(rejectionMessage);
                   return; // Stop further processing
                 }
-                
+
                 setContract(existingContract);
                 setResumingContract(true);
-                
+
                 // Determine which step to resume from based on contract status and signatures
                 let resumeStep = 1;
                 const tenantSigned = existingContract.tenantSignature?.signed || false;
                 const landlordSigned = existingContract.landlordSignature?.signed || false;
                 const isTenant = currentUser?._id === existingContract.tenantId?._id || currentUser?._id === existingContract.tenantId;
-                
+
                 if (existingContract.status === 'draft') {
                   // Draft contracts: start from plan selection (step 1) if plan not set, otherwise contract review (step 2)
                   if (existingContract.rentLockPlan) {
@@ -293,7 +293,7 @@ export default function RentProperty() {
         toast.error("Please select a rent-lock plan.");
         return;
       }
-      
+
       if (formData.rentLockPlan === 'custom' && (!formData.customLockDuration || formData.customLockDuration < 1 || formData.customLockDuration > 60)) {
         toast.error("Custom lock duration must be between 1 and 60 months.");
         return;
@@ -358,12 +358,12 @@ export default function RentProperty() {
           appointmentMessage: booking.message || prev.appointmentMessage,
           appointmentPurpose: booking.purpose || prev.appointmentPurpose || 'rent'
         }));
-        
+
         // Create contract
         const lockDuration = formData.rentLockPlan === '1_year' ? 12 :
-                           formData.rentLockPlan === '3_year' ? 36 :
-                           formData.rentLockPlan === '5_year' ? 60 :
-                           formData.customLockDuration;
+          formData.rentLockPlan === '3_year' ? 36 :
+            formData.rentLockPlan === '5_year' ? 60 :
+              formData.customLockDuration;
 
         const startDate = formData.moveInDate ? new Date(formData.moveInDate) : new Date();
         const endDate = new Date(startDate);
@@ -414,7 +414,7 @@ export default function RentProperty() {
           const fullContractRes = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractId}`, {
             credentials: 'include'
           });
-          
+
           if (fullContractRes.ok) {
             const fullContractData = await fullContractRes.json();
             if (fullContractData.success && fullContractData.contract) {
@@ -434,7 +434,7 @@ export default function RentProperty() {
           // Fallback to contract from create response
           setContract(contract);
         }
-        
+
         setStep(2); // Move to contract review
       } catch (error) {
         console.error("Error creating booking/contract:", error);
@@ -467,7 +467,7 @@ export default function RentProperty() {
       toast.info("Landlord has already signed this contract.");
       return;
     }
-    
+
     setSigningAs(isTenant ? 'tenant' : 'landlord');
     setShowSignatureModal(true);
   };
@@ -481,10 +481,10 @@ export default function RentProperty() {
     // Determine if user is tenant or landlord if signingAs is not set (e.g., inline signature)
     let roleToSign = signingAs;
     if (!roleToSign) {
-      const isTenantUser = currentUser?._id === contract.tenantId?._id || 
-                          currentUser?._id === contract.tenantId ||
-                          String(currentUser?._id) === String(contract.tenantId?._id) ||
-                          String(currentUser?._id) === String(contract.tenantId);
+      const isTenantUser = currentUser?._id === contract.tenantId?._id ||
+        currentUser?._id === contract.tenantId ||
+        String(currentUser?._id) === String(contract.tenantId?._id) ||
+        String(currentUser?._id) === String(contract.tenantId);
       roleToSign = isTenantUser ? 'tenant' : 'landlord';
     }
 
@@ -497,7 +497,7 @@ export default function RentProperty() {
 
     try {
       setLoading(true);
-      
+
       // Get contract ID - prefer contractId string field, then _id
       const contractId = contract?.contractId || contract?._id;
       if (!contractId) {
@@ -535,7 +535,7 @@ export default function RentProperty() {
           }
         }
       }
-      
+
       setShowSignatureModal(false);
       setSigningAs(null);
 
@@ -546,7 +546,7 @@ export default function RentProperty() {
         setShowPaymentModal(true);
       } else {
         toast.success(isTenant ? "Your signature added. Waiting for landlord to sign." : "Your signature added. Waiting for tenant to sign.");
-        
+
         // If landlord signs and tenant already signed, move to payment
         if (!isTenant && contract.tenantSignature?.signed) {
           setStep(4);
@@ -600,7 +600,7 @@ export default function RentProperty() {
     // Dispatch event to update MyPayments page if it's open
     if (payment?.paymentId) {
       window.dispatchEvent(new CustomEvent('paymentStatusUpdated', {
-        detail: { 
+        detail: {
           paymentId: payment.paymentId,
           paymentConfirmed: true,
           appointmentId: booking?._id,
@@ -613,7 +613,7 @@ export default function RentProperty() {
     // Move to step 5 (Move-in)
     setStep(5);
     setShowPaymentModal(false);
-    
+
     // Refresh booking and contract data
     if (booking?._id) {
       try {
@@ -669,7 +669,7 @@ export default function RentProperty() {
                 {contract.status === 'rejected' ? 'Contract Rejected' : 'Contract Terminated'}
               </h2>
               <p className="text-gray-600 mb-4">
-                {contract.status === 'rejected' 
+                {contract.status === 'rejected'
                   ? 'This contract was rejected by the seller before completion.'
                   : 'This contract was terminated before completion.'}
               </p>
@@ -713,16 +713,16 @@ export default function RentProperty() {
   }
 
   const lockDurationMonths = formData.rentLockPlan === '1_year' ? 12 :
-                            formData.rentLockPlan === '3_year' ? 36 :
-                            formData.rentLockPlan === '5_year' ? 60 :
-                            formData.customLockDuration || 12;
+    formData.rentLockPlan === '3_year' ? 36 :
+      formData.rentLockPlan === '5_year' ? 60 :
+        formData.customLockDuration || 12;
 
   const monthlyRent = listing.monthlyRent || listing.discountPrice || listing.regularPrice || 0;
-  
+
   // Calculate deposit and charges based on selected plan
   const getDepositDetails = () => {
     const baseDepositMonths = listing.securityDepositMonths || 2;
-    
+
     switch (formData.depositPlan) {
       case 'low':
         // Low Deposit: 1 month rent + ₹750/month extra charge
@@ -763,11 +763,11 @@ export default function RentProperty() {
       <div className="max-w-4xl mx-auto">
         {/* Progress Steps */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-6 overflow-x-auto pb-2">
             {[1, 2, 3, 4, 5].map((s) => (
               <React.Fragment key={s}>
-                <div 
-                  className="flex flex-col items-center cursor-pointer hover:opacity-80 transition-opacity"
+                <div
+                  className="flex flex-col items-center cursor-pointer hover:opacity-80 transition-opacity min-w-[50px]"
                   onClick={() => {
                     // Allow navigation to step if already completed or current step, or if going back
                     if (step >= s || (step > s)) {
@@ -776,17 +776,16 @@ export default function RentProperty() {
                   }}
                   title={step > s ? 'Click to go back to this step' : step === s ? 'Current step' : 'Complete previous steps first'}
                 >
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    step >= s ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'
-                  }`}>
+                  <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-sm md:text-base ${step >= s ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'
+                    }`}>
                     {step > s ? <FaCheckCircle /> : s}
                   </div>
-                  <span className="text-xs mt-2 text-gray-600 text-center">
-                    {s === 1 ? 'Select Plan' : s === 2 ? 'Review Contract' : s === 3 ? 'Sign' : s === 4 ? 'Pay' : 'Move-in'}
+                  <span className="text-[10px] md:text-xs mt-1 md:mt-2 text-gray-600 text-center whitespace-nowrap">
+                    {s === 1 ? 'Select Plan' : s === 2 ? 'Review' : s === 3 ? 'Sign' : s === 4 ? 'Pay' : 'Move-in'}
                   </span>
                 </div>
                 {s < 5 && (
-                  <div className={`flex-1 h-1 mx-2 ${step > s ? 'bg-blue-600' : 'bg-gray-300'}`} />
+                  <div className={`flex-1 h-0.5 md:h-1 mx-1 md:mx-2 ${step > s ? 'bg-blue-600' : 'bg-gray-300'}`} />
                 )}
               </React.Fragment>
             ))}
@@ -797,7 +796,7 @@ export default function RentProperty() {
         {step === 1 && (
           <div className="bg-white rounded-xl shadow-lg p-6">
             <h2 className="text-2xl font-bold text-blue-700 mb-6">Select Rent-Lock Plan</h2>
-            
+
             {/* Property Summary */}
             <div className="bg-gray-50 p-4 rounded-lg mb-6">
               <h3 className="font-semibold text-lg mb-2">{listing.name}</h3>
@@ -810,11 +809,10 @@ export default function RentProperty() {
               {(listing.rentLockPlans?.availablePlans || ['1_year', '3_year', '5_year']).map((plan) => (
                 <label
                   key={plan}
-                  className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition ${
-                    formData.rentLockPlan === plan
+                  className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition ${formData.rentLockPlan === plan
                       ? 'border-blue-600 bg-blue-50'
                       : 'border-gray-300 hover:border-blue-400'
-                  }`}
+                    }`}
                 >
                   <input
                     type="radio"
@@ -829,16 +827,16 @@ export default function RentProperty() {
                       <FaLock className="text-blue-600 mr-2" />
                       <span className="font-semibold text-lg">
                         {plan === '1_year' ? '1 Year Rent-Lock' :
-                         plan === '3_year' ? '3 Year Rent-Lock' :
-                         plan === '5_year' ? '5 Year Secure Plan' :
-                         'Custom Duration'}
+                          plan === '3_year' ? '3 Year Rent-Lock' :
+                            plan === '5_year' ? '5 Year Secure Plan' :
+                              'Custom Duration'}
                       </span>
                     </div>
                     <p className="text-sm text-gray-600 mt-1">
                       {plan === '1_year' ? 'Rent locked for 12 months' :
-                       plan === '3_year' ? 'Rent locked for 36 months' :
-                       plan === '5_year' ? 'Rent locked for 60 months' :
-                       'Custom lock duration'}
+                        plan === '3_year' ? 'Rent locked for 36 months' :
+                          plan === '5_year' ? 'Rent locked for 60 months' :
+                            'Custom lock duration'}
                     </p>
                   </div>
                 </label>
@@ -943,11 +941,10 @@ export default function RentProperty() {
               <div className="space-y-3">
                 {/* Standard Deposit */}
                 <label
-                  className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition ${
-                    formData.depositPlan === 'standard'
+                  className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition ${formData.depositPlan === 'standard'
                       ? 'border-blue-600 bg-blue-50'
                       : 'border-gray-300 hover:border-blue-400'
-                  }`}
+                    }`}
                 >
                   <input
                     type="radio"
@@ -972,11 +969,10 @@ export default function RentProperty() {
 
                 {/* Low Deposit Plan */}
                 <label
-                  className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition ${
-                    formData.depositPlan === 'low'
+                  className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition ${formData.depositPlan === 'low'
                       ? 'border-blue-600 bg-blue-50'
                       : 'border-gray-300 hover:border-blue-400'
-                  }`}
+                    }`}
                 >
                   <input
                     type="radio"
@@ -1003,11 +999,10 @@ export default function RentProperty() {
 
                 {/* Zero Deposit Plan */}
                 <label
-                  className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition ${
-                    formData.depositPlan === 'zero'
+                  className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition ${formData.depositPlan === 'zero'
                       ? 'border-blue-600 bg-blue-50'
                       : 'border-gray-300 hover:border-blue-400'
-                  }`}
+                    }`}
                 >
                   <input
                     type="radio"
@@ -1083,7 +1078,7 @@ export default function RentProperty() {
                 <div className="flex justify-between border-t pt-2 mt-2 font-semibold">
                   <span className="text-gray-800">Total Payable Now:</span>
                   <span className="text-blue-600 text-lg">
-                    {formData.depositPlan === 'zero' 
+                    {formData.depositPlan === 'zero'
                       ? `₹${(monthlyRent + depositDetails.insuranceFee).toLocaleString('en-IN')}`
                       : `₹${totalAmount.toLocaleString('en-IN')}`
                     }
@@ -1143,14 +1138,14 @@ export default function RentProperty() {
         {/* Step 2: Contract Review */}
         {step === 2 && contract && listing && (
           <div className="space-y-6">
-            <ContractPreview 
-              contract={contract} 
+            <ContractPreview
+              contract={contract}
               listing={listing}
               tenant={currentUser}
               landlord={contract.landlordId}
               onDownload={() => toast.success("Contract PDF downloaded!")}
             />
-            
+
             <div className="bg-white rounded-xl shadow-lg p-6">
               <div className="flex gap-4">
                 <button
@@ -1181,7 +1176,7 @@ export default function RentProperty() {
             <h2 className="text-2xl font-bold text-blue-700 mb-6 flex items-center gap-2">
               <FaFileContract /> Sign Contract
             </h2>
-            
+
             <div className="space-y-6 mb-6">
               {/* Tenant Signature */}
               <div>
@@ -1203,9 +1198,9 @@ export default function RentProperty() {
                       Signed on {new Date(contract.tenantSignature.signedAt).toLocaleString('en-GB')}
                     </p>
                     {contract.tenantSignature.signatureData && (
-                      <img 
-                        src={contract.tenantSignature.signatureData} 
-                        alt="Tenant signature" 
+                      <img
+                        src={contract.tenantSignature.signatureData}
+                        alt="Tenant signature"
                         className="mt-2 border border-gray-300 rounded bg-white"
                         style={{ maxHeight: '80px' }}
                       />
@@ -1246,9 +1241,9 @@ export default function RentProperty() {
                       Signed on {new Date(contract.landlordSignature.signedAt).toLocaleString('en-GB')}
                     </p>
                     {contract.landlordSignature.signatureData && (
-                      <img 
-                        src={contract.landlordSignature.signatureData} 
-                        alt="Landlord signature" 
+                      <img
+                        src={contract.landlordSignature.signatureData}
+                        alt="Landlord signature"
                         className="mt-2 border border-gray-300 rounded bg-white"
                         style={{ maxHeight: '80px' }}
                       />
@@ -1330,7 +1325,7 @@ export default function RentProperty() {
             <h2 className="text-2xl font-bold text-blue-700 mb-6 flex items-center gap-2">
               <FaMoneyBillWave /> Payment Required
             </h2>
-            
+
             {/* Payment Summary */}
             <div className="bg-blue-50 p-6 rounded-lg mb-6">
               <h3 className="font-semibold text-lg mb-4">Payment Summary</h3>
@@ -1366,7 +1361,7 @@ export default function RentProperty() {
                   <span className="font-semibold text-lg">Total Amount:</span>
                   <span className="font-bold text-lg text-blue-600">
                     ₹{(
-                      (contract.securityDeposit || 0) + 
+                      (contract.securityDeposit || 0) +
                       (contract.lockedRentAmount || listing?.monthlyRent || listing?.discountPrice || listing?.regularPrice || 0) +
                       (contract.depositPlan === 'zero' ? (contract.insuranceFee || 0) : 0)
                     ).toLocaleString('en-IN')}
@@ -1377,8 +1372,8 @@ export default function RentProperty() {
                     <p className="text-xs text-gray-600">
                       <span className="font-semibold">Deposit Plan:</span> {
                         contract.depositPlan === 'low' ? 'Low Deposit (Extra ₹' + (contract.extraMonthlyCharge || 0) + '/month)' :
-                        contract.depositPlan === 'zero' ? 'Zero Deposit (Insurance ₹' + (contract.insuranceFee || 0) + '/month)' :
-                        'Standard'
+                          contract.depositPlan === 'zero' ? 'Zero Deposit (Insurance ₹' + (contract.insuranceFee || 0) + '/month)' :
+                            'Standard'
                       }
                     </p>
                   </div>
