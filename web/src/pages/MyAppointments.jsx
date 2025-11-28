@@ -1096,6 +1096,14 @@ export default function MyAppointments() {
             >
               Refresh
             </button>
+            <button
+              onClick={() => setShowChatSettings(true)}
+              className="bg-gradient-to-r from-gray-600 to-gray-700 text-white px-2.5 py-1.5 rounded-md hover:from-gray-700 hover:to-gray-800 transition-all font-semibold shadow-md text-xs sm:text-base sm:px-3 sm:py-1.5 sm:rounded-md flex items-center gap-2"
+              title="Chat Settings"
+            >
+              <FaCog />
+              <span className="hidden sm:inline">Settings</span>
+            </button>
             {/* Archived appointments toggle for all users */}
             <button
               onClick={() => {
