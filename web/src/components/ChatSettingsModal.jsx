@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaTimes, FaPalette, FaFont, FaExpandAlt, FaVolumeUp, FaKeyboard, FaClock, FaArrowDown, FaCog } from 'react-icons/fa';
+import { FaTimes, FaPalette, FaFont, FaExpandAlt, FaVolumeUp, FaKeyboard, FaClock, FaArrowDown, FaCog, FaChartBar, FaBug, FaUniversalAccess, FaEye, FaRunning, FaBlind, FaTextHeight } from 'react-icons/fa';
 
 const ChatSettingsModal = ({ isOpen, onClose, settings, updateSetting }) => {
     if (!isOpen) return null;
@@ -38,19 +38,36 @@ const ChatSettingsModal = ({ isOpen, onClose, settings, updateSetting }) => {
                         </h4>
 
                         <div className="space-y-5">
-                            {/* Theme Toggle */}
-                            {/* <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-medium">Dark Mode</div>
-                  <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Use dark theme for chat</div>
-                </div>
-                <button
-                  onClick={() => updateSetting('theme', isDarkMode ? 'light' : 'dark')}
-                  className={getToggleSwitchClasses(isDarkMode)}
-                >
-                  <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-200 ${isDarkMode ? 'translate-x-6' : 'translate-x-0.5'} mt-0.5`} />
-                </button>
-              </div> */}
+                            {/* Dark Mode Toggle */}
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <div className="font-medium">Dark Mode</div>
+                                    <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Use dark theme for chat</div>
+                                </div>
+                                <button
+                                    onClick={() => updateSetting('theme', isDarkMode ? 'light' : 'dark')}
+                                    className={getToggleSwitchClasses(isDarkMode)}
+                                >
+                                    <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-200 ${isDarkMode ? 'translate-x-6' : 'translate-x-0.5'} mt-0.5`} />
+                                </button>
+                            </div>
+
+                            {/* Theme Color */}
+                            <div>
+                                <div className="font-medium mb-3">Theme Color</div>
+                                <div className="grid grid-cols-5 gap-3">
+                                    {['blue', 'green', 'purple', 'orange', 'red', 'indigo', 'teal', 'pink', 'yellow', 'cyan'].map((color) => (
+                                        <button
+                                            key={color}
+                                            onClick={() => updateSetting('themeColor', color)}
+                                            className={`w-8 h-8 rounded-full border-2 transition-all duration-200 ${settings.themeColor === color ? 'border-gray-400 scale-110' : 'border-gray-200 hover:scale-105'
+                                                }`}
+                                            style={{ backgroundColor: color }}
+                                            title={color.charAt(0).toUpperCase() + color.slice(1)}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
 
                             {/* Font Size */}
                             <div className="flex items-center justify-between">
@@ -183,6 +200,126 @@ const ChatSettingsModal = ({ isOpen, onClose, settings, updateSetting }) => {
                                     className={getToggleSwitchClasses(settings.soundEnabled)}
                                 >
                                     <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-200 ${settings.soundEnabled ? 'translate-x-6' : 'translate-x-0.5'} mt-0.5`} />
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Privacy & Data Section */}
+                    <section>
+                        <h4 className={`text-sm font-semibold uppercase tracking-wider mb-4 flex items-center gap-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                            <FaChartBar className="text-xs" /> Privacy & Data
+                        </h4>
+
+                        <div className="space-y-5">
+                            {/* Analytics */}
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <FaChartBar className="text-gray-400" />
+                                    <div>
+                                        <div className="font-medium">Analytics</div>
+                                        <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Share usage data</div>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => updateSetting('enableAnalytics', !settings.enableAnalytics)}
+                                    className={getToggleSwitchClasses(settings.enableAnalytics)}
+                                >
+                                    <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-200 ${settings.enableAnalytics ? 'translate-x-6' : 'translate-x-0.5'} mt-0.5`} />
+                                </button>
+                            </div>
+
+                            {/* Error Reporting */}
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <FaBug className="text-gray-400" />
+                                    <div>
+                                        <div className="font-medium">Error Reporting</div>
+                                        <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Send crash reports</div>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => updateSetting('enableErrorReporting', !settings.enableErrorReporting)}
+                                    className={getToggleSwitchClasses(settings.enableErrorReporting)}
+                                >
+                                    <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-200 ${settings.enableErrorReporting ? 'translate-x-6' : 'translate-x-0.5'} mt-0.5`} />
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Accessibility Section */}
+                    <section>
+                        <h4 className={`text-sm font-semibold uppercase tracking-wider mb-4 flex items-center gap-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                            <FaUniversalAccess className="text-xs" /> Accessibility
+                        </h4>
+
+                        <div className="space-y-5">
+                            {/* High Contrast */}
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <FaEye className="text-gray-400" />
+                                    <div>
+                                        <div className="font-medium">High Contrast</div>
+                                        <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Increase contrast</div>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => updateSetting('highContrast', !settings.highContrast)}
+                                    className={getToggleSwitchClasses(settings.highContrast)}
+                                >
+                                    <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-200 ${settings.highContrast ? 'translate-x-6' : 'translate-x-0.5'} mt-0.5`} />
+                                </button>
+                            </div>
+
+                            {/* Reduced Motion */}
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <FaRunning className="text-gray-400" />
+                                    <div>
+                                        <div className="font-medium">Reduced Motion</div>
+                                        <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Minimize animations</div>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => updateSetting('reducedMotion', !settings.reducedMotion)}
+                                    className={getToggleSwitchClasses(settings.reducedMotion)}
+                                >
+                                    <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-200 ${settings.reducedMotion ? 'translate-x-6' : 'translate-x-0.5'} mt-0.5`} />
+                                </button>
+                            </div>
+
+                            {/* Screen Reader Support */}
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <FaBlind className="text-gray-400" />
+                                    <div>
+                                        <div className="font-medium">Screen Reader Support</div>
+                                        <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Optimize for screen readers</div>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => updateSetting('screenReaderSupport', !settings.screenReaderSupport)}
+                                    className={getToggleSwitchClasses(settings.screenReaderSupport)}
+                                >
+                                    <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-200 ${settings.screenReaderSupport ? 'translate-x-6' : 'translate-x-0.5'} mt-0.5`} />
+                                </button>
+                            </div>
+
+                            {/* Large Text */}
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <FaTextHeight className="text-gray-400" />
+                                    <div>
+                                        <div className="font-medium">Large Text</div>
+                                        <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Increase text size</div>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => updateSetting('largeText', !settings.largeText)}
+                                    className={getToggleSwitchClasses(settings.largeText)}
+                                >
+                                    <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-200 ${settings.largeText ? 'translate-x-6' : 'translate-x-0.5'} mt-0.5`} />
                                 </button>
                             </div>
                         </div>

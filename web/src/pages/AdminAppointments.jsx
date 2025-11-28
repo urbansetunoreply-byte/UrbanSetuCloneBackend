@@ -98,6 +98,10 @@ export default function AdminAppointments() {
   const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [showUnarchiveModal, setShowUnarchiveModal] = useState(false);
 
+  // Chat settings
+  const { settings, updateSetting } = useChatSettings('admin_appointments_chat_settings');
+  const [showChatSettings, setShowChatSettings] = useState(false);
+
   // Reactions state
   const [showReactionsBar, setShowReactionsBar] = useState(false);
   const [reactionsMessageId, setReactionsMessageId] = useState(null);

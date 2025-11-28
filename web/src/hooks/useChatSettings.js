@@ -8,7 +8,14 @@ export const useChatSettings = (storageKeyPrefix = 'chat_settings') => {
         showTimestamps: true,
         soundEnabled: true,
         enterToSend: true,
-        theme: 'light' // light, dark (local override)
+        theme: 'light', // light, dark (local override)
+        themeColor: 'blue',
+        enableAnalytics: true,
+        enableErrorReporting: true,
+        highContrast: false,
+        reducedMotion: false,
+        screenReaderSupport: false,
+        largeText: false
     });
 
     useEffect(() => {

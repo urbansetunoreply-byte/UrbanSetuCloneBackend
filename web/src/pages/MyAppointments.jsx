@@ -148,6 +148,10 @@ export default function MyAppointments() {
     toggleVideo
   } = useCallContext();
 
+  // Chat settings
+  const { settings, updateSetting } = useChatSettings('myappointments_chat_settings');
+  const [showChatSettings, setShowChatSettings] = useState(false);
+
   // Handle initiate call
   const handleInitiateCall = async (appointment, callType, receiverId) => {
     if (!appointment || !appointment._id) {
