@@ -11665,3 +11665,10 @@ function AdminAppointmentRow({
   );
 }
 
+// Export ChatSettingsModal in the main component that uses it
+// Add this before the final export
+const AdminAppointmentsWithSettings = () => {
+  // This wrapper ensures ChatSettingsModal is available where needed
+  return <AdminAppointments />;
+};
+

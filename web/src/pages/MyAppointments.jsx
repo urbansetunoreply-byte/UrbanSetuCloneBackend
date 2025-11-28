@@ -13108,6 +13108,14 @@ function PaymentStatusCell({ appointment, isBuyer }) {
         </div>
       )}
 
+      {/* Chat Settings Modal */}
+      <ChatSettingsModal
+        isOpen={showChatSettings}
+        onClose={() => setShowChatSettings(false)}
+        settings={settings}
+        updateSetting={updateSetting}
+      />
+
     </div>
   );
 }
