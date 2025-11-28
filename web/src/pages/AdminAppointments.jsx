@@ -21,6 +21,7 @@ import axios from 'axios';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useSignout } from '../hooks/useSignout';
 // Note: Do not import server-only libs here
+import { useAudioActivity } from '../hooks/useAudioActivity';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -32,7 +33,7 @@ export default function AdminAppointments() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { signout } = useSignout();
-  
+
   // Handle navigation state when coming from direct chat link
   const location = useLocation();
   const params = useParams();
@@ -47,7 +48,7 @@ export default function AdminAppointments() {
   const handlePhoneClick = (phoneNumber) => {
     // Check if it's a mobile device
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
+
     if (isMobile) {
       // For mobile devices, open phone dialer
       window.location.href = `tel:${phoneNumber}`;
@@ -85,7 +86,7 @@ export default function AdminAppointments() {
   const [showArchived, setShowArchived] = useState(false);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  
+
   // State for appointment action modals
   const [appointmentToHandle, setAppointmentToHandle] = useState(null);
   const [cancelReason, setCancelReason] = useState('');
@@ -93,8 +94,8 @@ export default function AdminAppointments() {
   const [showReinitiateModal, setShowReinitiateModal] = useState(false);
   const [reinitiatePaymentStatus, setReinitiatePaymentStatus] = useState(null);
   const [showArchiveModal, setShowArchiveModal] = useState(false);
-      const [showUnarchiveModal, setShowUnarchiveModal] = useState(false);
-  
+  const [showUnarchiveModal, setShowUnarchiveModal] = useState(false);
+
   // Reactions state
   const [showReactionsBar, setShowReactionsBar] = useState(false);
   const [reactionsMessageId, setReactionsMessageId] = useState(null);
@@ -700,11 +701,11 @@ export default function AdminAppointments() {
     if (!searchTerm.trim()) {
       return emojiData.map(item => item.emoji);
     }
-    
+
     const lowercaseSearch = searchTerm.toLowerCase();
     return emojiData
-      .filter(item => 
-        item.keywords.some(keyword => 
+      .filter(item =>
+        item.keywords.some(keyword =>
           keyword.toLowerCase().includes(lowercaseSearch)
         )
       )
@@ -721,102 +722,102 @@ export default function AdminAppointments() {
   const [showCallHistoryModal, setShowCallHistoryModal] = useState(false);
   const [callHistoryAppointmentId, setCallHistoryAppointmentId] = useState(null);
 
-   // Lock body scroll when admin action modals are open (cancel, reinitiate, archive, unarchive)
-   useEffect(() => {
-     const shouldLock = showCancelModal || showReinitiateModal || showArchiveModal || showUnarchiveModal;
-     if (shouldLock) {
-       document.body.classList.add('modal-open');
-     } else {
-       document.body.classList.remove('modal-open');
-     }
-     return () => {
-       document.body.classList.remove('modal-open');
-     };
-   }, [showCancelModal, showReinitiateModal, showArchiveModal, showUnarchiveModal]);
+  // Lock body scroll when admin action modals are open (cancel, reinitiate, archive, unarchive)
+  useEffect(() => {
+    const shouldLock = showCancelModal || showReinitiateModal || showArchiveModal || showUnarchiveModal;
+    if (shouldLock) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, [showCancelModal, showReinitiateModal, showArchiveModal, showUnarchiveModal]);
 
-   // Close audio menus when clicking outside
-   useEffect(() => {
-     const handleClickOutside = (event) => {
-       if (!event.target.closest('[data-audio-menu]') && 
-           !event.target.closest('[data-audio-speed-menu]') && 
-           !event.target.closest('[data-audio-controls-menu]') && 
-           !event.target.closest('button[title="Audio options"]')) {
-         document.querySelectorAll('[data-audio-menu]').forEach(menu => {
-           menu.classList.add('hidden');
-         });
-         document.querySelectorAll('[data-audio-speed-menu]').forEach(menu => {
-           menu.classList.add('hidden');
-         });
-         document.querySelectorAll('[data-audio-controls-menu]').forEach(menu => {
-           menu.classList.add('hidden');
-         });
-       }
-     };
+  // Close audio menus when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('[data-audio-menu]') &&
+        !event.target.closest('[data-audio-speed-menu]') &&
+        !event.target.closest('[data-audio-controls-menu]') &&
+        !event.target.closest('button[title="Audio options"]')) {
+        document.querySelectorAll('[data-audio-menu]').forEach(menu => {
+          menu.classList.add('hidden');
+        });
+        document.querySelectorAll('[data-audio-speed-menu]').forEach(menu => {
+          menu.classList.add('hidden');
+        });
+        document.querySelectorAll('[data-audio-controls-menu]').forEach(menu => {
+          menu.classList.add('hidden');
+        });
+      }
+    };
 
-     document.addEventListener('click', handleClickOutside);
-     return () => {
-       document.removeEventListener('click', handleClickOutside);
-     };
-   }, []);
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
 
-   // Handle direct chat link via URL parameter
-   useEffect(() => {
-     // Clear any previous timers when dependencies change
-     if (chatIntervalRef.current) {
-       clearInterval(chatIntervalRef.current);
-       chatIntervalRef.current = null;
-     }
-     if (chatTimeoutRef.current) {
-       clearTimeout(chatTimeoutRef.current);
-       chatTimeoutRef.current = null;
-     }
-     chatResolveRef.current = false;
+  // Handle direct chat link via URL parameter
+  useEffect(() => {
+    // Clear any previous timers when dependencies change
+    if (chatIntervalRef.current) {
+      clearInterval(chatIntervalRef.current);
+      chatIntervalRef.current = null;
+    }
+    if (chatTimeoutRef.current) {
+      clearTimeout(chatTimeoutRef.current);
+      chatTimeoutRef.current = null;
+    }
+    chatResolveRef.current = false;
 
-     // Handle direct chat link via URL parameter
-     if (params.chatId) {
-       const chatIdFromUrl = params.chatId;
+    // Handle direct chat link via URL parameter
+    if (params.chatId) {
+      const chatIdFromUrl = params.chatId;
 
-       const tryResolveChat = () => {
-         const appointment = appointments.find(appt => appt._id === chatIdFromUrl);
-         if (appointment) {
-           chatResolveRef.current = true;
-           setShouldOpenChatFromNotification(true);
-           setActiveChatAppointmentId(chatIdFromUrl);
-           if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
-           if (chatTimeoutRef.current) clearTimeout(chatTimeoutRef.current);
-         }
-       };
+      const tryResolveChat = () => {
+        const appointment = appointments.find(appt => appt._id === chatIdFromUrl);
+        if (appointment) {
+          chatResolveRef.current = true;
+          setShouldOpenChatFromNotification(true);
+          setActiveChatAppointmentId(chatIdFromUrl);
+          if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
+          if (chatTimeoutRef.current) clearTimeout(chatTimeoutRef.current);
+        }
+      };
 
-       if (appointments.length > 0) {
-         tryResolveChat();
-       } else {
-         // Poll until appointments are available
-         chatIntervalRef.current = setInterval(() => {
-           if (appointments.length > 0) {
-             tryResolveChat();
-             if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
-           }
-         }, 100);
-       }
+      if (appointments.length > 0) {
+        tryResolveChat();
+      } else {
+        // Poll until appointments are available
+        chatIntervalRef.current = setInterval(() => {
+          if (appointments.length > 0) {
+            tryResolveChat();
+            if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
+          }
+        }, 100);
+      }
 
-       // Fallback after 5s if still unresolved
-       chatTimeoutRef.current = setTimeout(() => {
-         if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
-         if (!chatResolveRef.current) {
-           setMissingChatbookError(chatIdFromUrl);
-         }
-       }, 5000);
-     }
+      // Fallback after 5s if still unresolved
+      chatTimeoutRef.current = setTimeout(() => {
+        if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
+        if (!chatResolveRef.current) {
+          setMissingChatbookError(chatIdFromUrl);
+        }
+      }, 5000);
+    }
 
-     return () => {
-       if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
-       if (chatTimeoutRef.current) clearTimeout(chatTimeoutRef.current);
-     };
-   }, [params.chatId, appointments]);
- 
-   // Add state to track updated comments for each appointment
+    return () => {
+      if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
+      if (chatTimeoutRef.current) clearTimeout(chatTimeoutRef.current);
+    };
+  }, [params.chatId, appointments]);
+
+  // Add state to track updated comments for each appointment
   // REMOVED: updatedComments state - no longer needed, using appointments array directly
-  
+
   // Add ref to prevent infinite loops in comment updates
   const isUpdatingCommentsRef = useRef(false);
 
@@ -826,7 +827,7 @@ export default function AdminAppointments() {
     if (isUpdatingCommentsRef.current) {
       return;
     }
-    
+
     // CRITICAL FIX: Update appointments array directly instead of separate updatedComments state
     setAppointments(prev => {
       const updated = prev.map(appt => {
@@ -835,12 +836,12 @@ export default function AdminAppointments() {
           if (JSON.stringify(appt.comments) !== JSON.stringify(comments)) {
             // Set flag to prevent infinite loops
             isUpdatingCommentsRef.current = true;
-            
+
             // Reset flag after a short delay
             setTimeout(() => {
               isUpdatingCommentsRef.current = false;
             }, 100);
-            
+
             return { ...appt, comments };
           }
         }
@@ -848,7 +849,7 @@ export default function AdminAppointments() {
       });
       return updated;
     });
-    
+
     // Also update archived appointments if needed
     setArchivedAppointments(prev => {
       const updated = prev.map(appt => {
@@ -868,8 +869,8 @@ export default function AdminAppointments() {
   const fetchAppointments = useCallback(async () => {
     try {
       // Fetch all appointments without pagination
-      const { data } = await axios.get(`${API_BASE_URL}/api/bookings`, { 
-        withCredentials: true 
+      const { data } = await axios.get(`${API_BASE_URL}/api/bookings`, {
+        withCredentials: true
       });
       const allAppts = data.appointments || data;
       setAllAppointments(allAppts);
@@ -899,33 +900,33 @@ export default function AdminAppointments() {
   useEffect(() => {
     // Join admin appointments room to receive real-time updates
     if (socket.connected && currentUser) {
-      socket.emit('adminAppointmentsActive', { 
+      socket.emit('adminAppointmentsActive', {
         adminId: currentUser._id,
-        role: currentUser.role 
+        role: currentUser.role
       });
     }
 
     // Emit adminAppointmentsActive periodically to stay subscribed (reduced frequency)
     const adminInterval = setInterval(() => {
       if (currentUser) {
-        socket.emit('adminAppointmentsActive', { 
+        socket.emit('adminAppointmentsActive', {
           adminId: currentUser._id,
-          role: currentUser.role 
+          role: currentUser.role
         });
       }
     }, 30000); // Changed from 1000ms to 30000ms (30 seconds)
-    
+
     fetchAppointments();
     fetchArchivedAppointments();
     // Removed periodic refresh interval - appointments are updated via socket events in real-time
     // No need to poll every 5 seconds, which was causing unnecessary message refreshes in chatbox
     // Real-time updates are handled by socket events (commentUpdate, appointmentUpdate, etc.)
-    
+
     // Listen for profile updates to update user info in appointments
     const handleProfileUpdate = (profileData) => {
       setAppointments(prevAppointments => prevAppointments.map(appt => {
         const updated = { ...appt };
-        
+
         // Update buyer info if the updated user is the buyer
         if (appt.buyerId && (appt.buyerId._id === profileData.userId || appt.buyerId === profileData.userId)) {
           updated.buyerId = {
@@ -936,7 +937,7 @@ export default function AdminAppointments() {
             avatar: profileData.avatar
           };
         }
-        
+
         // Update seller info if the updated user is the seller
         if (appt.sellerId && (appt.sellerId._id === profileData.userId || appt.sellerId === profileData.userId)) {
           updated.sellerId = {
@@ -947,13 +948,13 @@ export default function AdminAppointments() {
             avatar: profileData.avatar
           };
         }
-        
+
         return updated;
       }));
-      
+
       setArchivedAppointments(prevArchived => prevArchived.map(appt => {
         const updated = { ...appt };
-        
+
         // Update buyer info if the updated user is the buyer
         if (appt.buyerId && (appt.buyerId._id === profileData.userId || appt.buyerId === profileData.userId)) {
           updated.buyerId = {
@@ -964,7 +965,7 @@ export default function AdminAppointments() {
             avatar: profileData.avatar
           };
         }
-        
+
         // Update seller info if the updated user is the seller
         if (appt.sellerId && (appt.sellerId._id === profileData.userId || appt.sellerId === profileData.userId)) {
           updated.sellerId = {
@@ -975,7 +976,7 @@ export default function AdminAppointments() {
             avatar: profileData.avatar
           };
         }
-        
+
         return updated;
       }));
     };
@@ -988,9 +989,9 @@ export default function AdminAppointments() {
       if (data.comment.senderEmail === currentUser?.email) {
         return;
       }
-      
+
       // Update the specific appointment's comments in real-time
-      setAppointments(prev => 
+      setAppointments(prev =>
         prev.map(appt => {
           if (appt._id === data.appointmentId) {
             // Find if comment already exists
@@ -999,8 +1000,8 @@ export default function AdminAppointments() {
               // Update existing comment - only if there are actual changes
               // and preserve starred status and media URLs for deleted messages
               const existingComment = appt.comments[existingCommentIndex];
-              const updatedComment = { 
-                ...data.comment, 
+              const updatedComment = {
+                ...data.comment,
                 starredBy: existingComment.starredBy || [],
                 // Preserve media URLs if the message is being deleted and they're not in the update
                 videoUrl: data.comment.videoUrl || existingComment.videoUrl,
@@ -1014,23 +1015,23 @@ export default function AdminAppointments() {
               if (JSON.stringify(existingComment) !== JSON.stringify(updatedComment)) {
                 const updatedComments = [...(appt.comments || [])];
                 updatedComments[existingCommentIndex] = updatedComment;
-                try { playMessageReceived(); } catch(_) {}
+                try { playMessageReceived(); } catch (_) { }
                 return { ...appt, comments: updatedComments };
               }
               return appt; // No changes needed
             } else {
               // Add new comment - this is a new user message
               const updatedComments = [...(appt.comments || []), data.comment];
-              try { playMessageReceived(); } catch(_) {}
+              try { playMessageReceived(); } catch (_) { }
               return { ...appt, comments: updatedComments };
             }
           }
           return appt;
         })
       );
-      
+
       // Also update archived appointments if needed
-      setArchivedAppointments(prev => 
+      setArchivedAppointments(prev =>
         prev.map(appt => {
           if (appt._id === data.appointmentId) {
             const existingCommentIndex = appt.comments?.findIndex(c => c._id === data.comment._id);
@@ -1038,8 +1039,8 @@ export default function AdminAppointments() {
               // Update existing comment - only if there are actual changes
               // and preserve starred status and media URLs for deleted messages
               const existingComment = appt.comments[existingCommentIndex];
-              const updatedComment = { 
-                ...data.comment, 
+              const updatedComment = {
+                ...data.comment,
                 starredBy: existingComment.starredBy || [],
                 // Preserve media URLs if the message is being deleted and they're not in the update
                 videoUrl: data.comment.videoUrl || existingComment.videoUrl,
@@ -1053,14 +1054,14 @@ export default function AdminAppointments() {
               if (JSON.stringify(existingComment) !== JSON.stringify(updatedComment)) {
                 const updatedComments = [...(appt.comments || [])];
                 updatedComments[existingCommentIndex] = updatedComment;
-                try { playMessageReceived(); } catch(_) {}
+                try { playMessageReceived(); } catch (_) { }
                 return { ...appt, comments: updatedComments };
               }
               return appt; // No changes needed
             } else {
               // Add new comment
               const updatedComments = [...(appt.comments || []), data.comment];
-              try { playMessageReceived(); } catch(_) {}
+              try { playMessageReceived(); } catch (_) { }
               return { ...appt, comments: updatedComments };
             }
           }
@@ -1075,32 +1076,32 @@ export default function AdminAppointments() {
 
     // Listen for appointment updates
     const handleAppointmentUpdate = (data) => {
-      setAppointments(prev => 
-        prev.map(appt => 
+      setAppointments(prev =>
+        prev.map(appt =>
           appt._id === data.appointmentId ? { ...appt, ...data.updatedAppointment } : appt
         )
       );
-      setArchivedAppointments(prev => 
-        prev.map(appt => 
+      setArchivedAppointments(prev =>
+        prev.map(appt =>
           appt._id === data.appointmentId ? { ...appt, ...data.updatedAppointment } : appt
         )
       );
     };
-    
+
     // Listen for payment status updates
     const handlePaymentStatusUpdate = (data) => {
-      setAppointments(prev => 
-        prev.map(appt => 
+      setAppointments(prev =>
+        prev.map(appt =>
           appt._id === data.appointmentId ? { ...appt, paymentConfirmed: data.paymentConfirmed } : appt
         )
       );
-      setArchivedAppointments(prev => 
-        prev.map(appt => 
+      setArchivedAppointments(prev =>
+        prev.map(appt =>
           appt._id === data.appointmentId ? { ...appt, paymentConfirmed: data.paymentConfirmed } : appt
         )
       );
     };
-    
+
     socket.on('appointmentUpdate', handleAppointmentUpdate);
     socket.on('paymentStatusUpdated', handlePaymentStatusUpdate);
 
@@ -1116,9 +1117,9 @@ export default function AdminAppointments() {
       // Re-join admin appointments rooms on reconnect to receive real-time updates
       // The interval will handle periodic emissions, so we only emit once on reconnect
       if (currentUser) {
-        socket.emit('adminAppointmentsActive', { 
+        socket.emit('adminAppointmentsActive', {
           adminId: currentUser._id,
-          role: currentUser.role 
+          role: currentUser.role
         });
       }
     };
@@ -1127,7 +1128,7 @@ export default function AdminAppointments() {
     };
     socket.on('connect', handleConnect);
     socket.on('disconnect', handleDisconnect);
-    
+
     return () => {
       // Interval removed - no cleanup needed
       clearInterval(adminInterval);
@@ -1144,74 +1145,74 @@ export default function AdminAppointments() {
   // Separate useEffect for pagination and filtering
   useEffect(() => {
     if (allAppointments.length === 0) return;
-    
+
     // Apply filters
     let filteredAppts = allAppointments.filter((appt) => {
       const isOutdated = new Date(appt.date) < new Date() || (new Date(appt.date).toDateString() === new Date().toDateString() && appt.time && appt.time < new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
       const matchesStatus =
         statusFilter === "all" ? true :
-        statusFilter === "outdated" ? isOutdated :
-        appt.status === statusFilter;
+          statusFilter === "outdated" ? isOutdated :
+            appt.status === statusFilter;
       const matchesSearch =
         appt.buyerId?.email?.toLowerCase().includes(search.toLowerCase()) ||
         appt.sellerId?.email?.toLowerCase().includes(search.toLowerCase()) ||
         appt.buyerId?.username?.toLowerCase().includes(search.toLowerCase()) ||
         appt.sellerId?.username?.toLowerCase().includes(search.toLowerCase()) ||
         appt.propertyName?.toLowerCase().includes(search.toLowerCase());
-      const matchesDateRange = 
+      const matchesDateRange =
         (!startDate || new Date(appt.date) >= new Date(startDate)) &&
         (!endDate || new Date(appt.date) <= new Date(endDate));
-      
+
       return matchesStatus && matchesSearch && matchesDateRange;
     });
-    
+
     // Calculate pagination
     const itemsPerPage = 10;
     const totalPages = Math.ceil(filteredAppts.length / itemsPerPage);
     setTotalPages(totalPages);
-    
+
     // Get current page items
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const currentPageAppts = filteredAppts.slice(startIndex, endIndex);
-    
+
     setAppointments(currentPageAppts);
   }, [allAppointments, currentPage, search, statusFilter, startDate, endDate]);
 
   // Separate useEffect for archived appointments pagination and filtering
   useEffect(() => {
     if (archivedAppointments.length === 0) return;
-    
+
     // Apply filters to archived appointments
     let filteredArchivedAppts = archivedAppointments.filter((appt) => {
       const isOutdated = new Date(appt.date) < new Date() || (new Date(appt.date).toDateString() === new Date().toDateString() && appt.time && appt.time < new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
       const matchesStatus =
         statusFilter === "all" ? true :
-        statusFilter === "outdated" ? isOutdated :
-        appt.status === statusFilter;
+          statusFilter === "outdated" ? isOutdated :
+            appt.status === statusFilter;
       const matchesSearch =
         appt.buyerId?.email?.toLowerCase().includes(search.toLowerCase()) ||
         appt.sellerId?.email?.toLowerCase().includes(search.toLowerCase()) ||
         appt.buyerId?.username?.toLowerCase().includes(search.toLowerCase()) ||
         appt.sellerId?.username?.toLowerCase().includes(search.toLowerCase()) ||
         appt.propertyName?.toLowerCase().includes(search.toLowerCase());
-      const matchesDateRange = 
+      const matchesDateRange =
         (!startDate || new Date(appt.date) >= new Date(startDate)) &&
         (!endDate || new Date(appt.date) <= new Date(endDate));
-      
+
       return matchesStatus && matchesSearch && matchesDateRange;
     });
-    
+
     // Calculate pagination for archived appointments
     const itemsPerPage = 10;
     const totalPages = Math.ceil(filteredArchivedAppts.length / itemsPerPage);
     setArchivedTotalPages(totalPages);
-    
+
     // Get current page items for archived appointments
     const startIndex = (archivedCurrentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const currentPageArchivedAppts = filteredArchivedAppts.slice(startIndex, endIndex);
-    
+
     setFilteredArchivedAppointments(currentPageArchivedAppts);
   }, [archivedAppointments, archivedCurrentPage, search, statusFilter, startDate, endDate]);
 
@@ -1232,7 +1233,7 @@ export default function AdminAppointments() {
     if (!currentUser) return;
     setAppointments(prevAppointments => prevAppointments.map(appt => {
       const updated = { ...appt };
-      
+
       // Update buyer info if current user is the buyer
       if (appt.buyerId && (appt.buyerId._id === currentUser._id || appt.buyerId === currentUser._id)) {
         updated.buyerId = {
@@ -1243,7 +1244,7 @@ export default function AdminAppointments() {
           avatar: currentUser.avatar
         };
       }
-      
+
       // Update seller info if current user is the seller
       if (appt.sellerId && (appt.sellerId._id === currentUser._id || appt.sellerId === currentUser._id)) {
         updated.sellerId = {
@@ -1254,13 +1255,13 @@ export default function AdminAppointments() {
           avatar: currentUser.avatar
         };
       }
-      
+
       return updated;
     }));
-    
+
     setArchivedAppointments(prevArchived => prevArchived.map(appt => {
       const updated = { ...appt };
-      
+
       // Update buyer info if current user is the buyer
       if (appt.buyerId && (appt.buyerId._id === currentUser._id || appt.buyerId === currentUser._id)) {
         updated.buyerId = {
@@ -1271,7 +1272,7 @@ export default function AdminAppointments() {
           avatar: currentUser.avatar
         };
       }
-      
+
       // Update seller info if current user is the seller
       if (appt.sellerId && (appt.sellerId._id === currentUser._id || appt.sellerId === currentUser._id)) {
         updated.sellerId = {
@@ -1282,7 +1283,7 @@ export default function AdminAppointments() {
           avatar: currentUser.avatar
         };
       }
-      
+
       return updated;
     }));
   }, [currentUser]);
@@ -1301,21 +1302,21 @@ export default function AdminAppointments() {
       toast.error('Please provide a reason for cancelling this appointment.');
       return;
     }
-    
+
     try {
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appointmentToHandle}/cancel`, 
+      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appointmentToHandle}/cancel`,
         { reason: cancelReason },
-        { 
+        {
           withCredentials: true,
           headers: { "Content-Type": "application/json" }
         }
       );
-      
+
       setAppointments((prev) =>
         prev.map((appt) => (appt._id === appointmentToHandle ? { ...appt, status: "cancelledByAdmin", cancelReason: cancelReason } : appt))
       );
       toast.success("Appointment cancelled successfully. Both buyer and seller have been notified of the cancellation.");
-      
+
       // Close modal and reset state
       setShowCancelModal(false);
       setAppointmentToHandle(null);
@@ -1354,7 +1355,7 @@ export default function AdminAppointments() {
   const confirmReinitiate = async () => {
     // Get the appointment to check status
     const appt = appointments.find(a => a._id === appointmentToHandle);
-    
+
     // Check if payment is refunded for cancelled appointment
     if (appt && (appt.status === 'cancelledByBuyer' || appt.status === 'cancelledBySeller' || appt.status === 'cancelledByAdmin')) {
       if (reinitiatePaymentStatus && (reinitiatePaymentStatus.status === 'refunded' || reinitiatePaymentStatus.status === 'partially_refunded')) {
@@ -1367,19 +1368,19 @@ export default function AdminAppointments() {
     }
 
     try {
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appointmentToHandle}/reinitiate`, 
+      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appointmentToHandle}/reinitiate`,
         {},
-        { 
+        {
           withCredentials: true,
           headers: { "Content-Type": "application/json" }
         }
       );
-      
+
       setAppointments((prev) =>
         prev.map((appt) => (appt._id === appointmentToHandle ? { ...appt, status: "pending", cancelReason: "" } : appt))
       );
       toast.success("Appointment reinitiated successfully. Both buyer and seller have been notified.");
-      
+
       // Close modal and reset state
       setShowReinitiateModal(false);
       setAppointmentToHandle(null);
@@ -1400,14 +1401,14 @@ export default function AdminAppointments() {
 
   const confirmArchive = async () => {
     try {
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appointmentToHandle}/archive`, 
+      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appointmentToHandle}/archive`,
         {},
-        { 
+        {
           withCredentials: true,
           headers: { "Content-Type": "application/json" }
         }
       );
-      
+
       // Remove from active appointments and add to archived
       const archivedAppt = appointments.find(appt => appt._id === appointmentToHandle);
       if (archivedAppt) {
@@ -1415,7 +1416,7 @@ export default function AdminAppointments() {
         setArchivedAppointments((prev) => [{ ...archivedAppt, archivedByAdmin: true, archivedAt: new Date() }, ...prev]);
       }
       toast.success("Appointment archived successfully.");
-      
+
       // Close modal and reset state
       setShowArchiveModal(false);
       setAppointmentToHandle(null);
@@ -1435,14 +1436,14 @@ export default function AdminAppointments() {
 
   const confirmUnarchive = async () => {
     try {
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appointmentToHandle}/unarchive`, 
+      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appointmentToHandle}/unarchive`,
         {},
-        { 
+        {
           withCredentials: true,
           headers: { "Content-Type": "application/json" }
         }
       );
-      
+
       // Remove from archived appointments and add back to active
       const unarchivedAppt = archivedAppointments.find(appt => appt._id === appointmentToHandle);
       if (unarchivedAppt) {
@@ -1450,7 +1451,7 @@ export default function AdminAppointments() {
         setAppointments((prev) => [{ ...unarchivedAppt, archivedByAdmin: false, archivedAt: undefined }, ...prev]);
       }
       toast.success("Appointment unarchived successfully.");
-      
+
       // Close modal and reset state
       setShowUnarchiveModal(false);
       setAppointmentToHandle(null);
@@ -1465,7 +1466,7 @@ export default function AdminAppointments() {
       toast.error("User ID not available");
       return;
     }
-    
+
     setUserLoading(true);
     setShowUserModal(true);
     // Close reactions bar when user modal opens
@@ -1499,13 +1500,13 @@ export default function AdminAppointments() {
   const handleManualRefresh = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get(`${API_BASE_URL}/api/bookings`, { 
-        withCredentials: true 
+      const { data } = await axios.get(`${API_BASE_URL}/api/bookings`, {
+        withCredentials: true
       });
       setAppointments(data);
-      
-      const { data: archivedData } = await axios.get(`${API_BASE_URL}/api/bookings/archived`, { 
-        withCredentials: true 
+
+      const { data: archivedData } = await axios.get(`${API_BASE_URL}/api/bookings/archived`, {
+        withCredentials: true
       });
       setArchivedAppointments(Array.isArray(archivedData) ? archivedData : []);
     } catch (err) {
@@ -1521,7 +1522,7 @@ export default function AdminAppointments() {
       toast.error('No message to copy');
       return;
     }
-    
+
     // Try modern clipboard API first
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(messageText)
@@ -1554,7 +1555,7 @@ export default function AdminAppointments() {
       textArea.select();
       const success = document.execCommand('copy');
       document.body.removeChild(textArea);
-      
+
       if (success) {
         toast.success('Copied', {
           autoClose: 2000,
@@ -1591,7 +1592,7 @@ export default function AdminAppointments() {
   const [adminReportsLoading, setAdminReportsLoading] = useState(false);
   const [adminReportsError, setAdminReportsError] = useState('');
   const [adminReportsFilter, setAdminReportsFilter] = useState('message'); // 'message' | 'chat'
-  
+
   // Admin Reports Filters
   const [adminReportsFilters, setAdminReportsFilters] = useState({
     dateFrom: '',
@@ -1609,7 +1610,7 @@ export default function AdminAppointments() {
         setAdminReportsLoading(true);
       }
       setAdminReportsError('');
-      
+
       // Build query parameters
       const params = new URLSearchParams();
       if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
@@ -1619,9 +1620,9 @@ export default function AdminAppointments() {
       if (filters.search) params.append('search', filters.search);
       params.append('sortBy', filters.sortBy);
       params.append('sortOrder', filters.sortOrder);
-      
-      const res = await fetch(`${API_BASE_URL}/api/notifications/reports?${params.toString()}`, { 
-        credentials: 'include' 
+
+      const res = await fetch(`${API_BASE_URL}/api/notifications/reports?${params.toString()}`, {
+        credentials: 'include'
       });
       const data = await res.json();
       if (data?.success) setAdminReports(data.reports || []);
@@ -1642,7 +1643,7 @@ export default function AdminAppointments() {
   // Debounced filter application for admin reports
   useEffect(() => {
     if (!showAdminReportsModal) return;
-    
+
     const timeoutId = setTimeout(() => {
       fetchAdminReports(adminReportsFilters, false); // Don't show loading for debounced calls
     }, 500); // 500ms delay
@@ -1689,7 +1690,7 @@ export default function AdminAppointments() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100 py-10 px-2 md:px-8">
-        <div className="max-w-7xl mx-auto mb-4 flex justify-end">
+      <div className="max-w-7xl mx-auto mb-4 flex justify-end">
         <a href="/admin/payments" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M2 7a2 2 0 012-2h16a2 2 0 012 2v3H2V7z" /><path d="M2 12h20v5a2 2 0 01-2 2H4a2 2 0 01-2-2v-5zm4 3a1 1 0 100 2h6a1 1 0 100-2H6z" /></svg>
           Go to Payments
@@ -1708,7 +1709,7 @@ export default function AdminAppointments() {
         {/* Responsive button group: compact on mobile, original on desktop */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-6">
           <h3 className="text-2xl sm:text-3xl font-extrabold text-blue-700 drop-shadow">
-            {showArchived 
+            {showArchived
               ? `Archived Appointments (${archivedAppointmentsWithComments.length})`
               : `All Appointments (${appointmentsWithComments.length})`}
           </h3>
@@ -1738,11 +1739,10 @@ export default function AdminAppointments() {
                 setCurrentPage(1); // Reset to first page when switching
                 setArchivedCurrentPage(1); // Reset archived page to first page when switching
               }}
-              className={`bg-gradient-to-r text-white px-2.5 py-1.5 rounded-md transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1 sm:gap-2 text-xs sm:text-base w-1/2 sm:w-auto sm:px-6 sm:py-3 sm:rounded-lg justify-center ${
-                showArchived 
-                  ? 'from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600' 
-                  : 'from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700'
-              }`}
+              className={`bg-gradient-to-r text-white px-2.5 py-1.5 rounded-md transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1 sm:gap-2 text-xs sm:text-base w-1/2 sm:w-auto sm:px-6 sm:py-3 sm:rounded-lg justify-center ${showArchived
+                ? 'from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600'
+                : 'from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700'
+                }`}
             >
               {showArchived ? (
                 <>
@@ -1756,9 +1756,9 @@ export default function AdminAppointments() {
             </button>
           </div>
         </div>
-        
+
         <p className="text-center text-gray-600 mb-6">
-          {showArchived 
+          {showArchived
             ? "View and manage archived appointments. You can unarchive them to move them back to active appointments."
             : "💡 High data traffic may cause this page to slow down or stop working. Please refresh to continue using it normally.⚠️ Chats are encrypted and secure. View only for valid purposes like disputes or fraud checks. Unauthorized access or sharing is prohibited and will be logged."
           }
@@ -1819,92 +1819,92 @@ export default function AdminAppointments() {
             </div>
           </div>
         </div>
-        
+
         {showArchived ? (
           // Archived Appointments Section
-            archivedAppointmentsWithComments.length === 0 ? (
-              <div className="text-center text-gray-500 text-lg">No archived appointments found.</div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse rounded-lg overflow-hidden">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-gray-100 to-gray-200">
-                      <th className="border p-2">Date & Time</th>
-                      <th className="border p-2">Property</th>
-                      <th className="border p-2">Payment</th>
-                      <th className="border p-2">Buyer</th>
-                      <th className="border p-2">Seller</th>
-                      <th className="border p-2">Purpose</th>
-                      <th className="border p-2">Message</th>
-                      <th className="border p-2">Status</th>
-                      <th className="border p-2">Actions</th>
-                      <th className="border p-2">Connect</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {archivedAppointmentsWithComments.map((appt) => (
-                      <AdminAppointmentRow
-                        key={appt._id}
-                        appt={appt}
-                        currentUser={currentUser}
-                        handleAdminCancel={handleAdminCancel}
-                        handleReinitiateAppointment={handleReinitiateAppointment}
-                        handleArchiveAppointment={handleArchiveAppointment}
-                        handleUnarchiveAppointment={handleUnarchiveAppointment}
-                        onUserClick={handleUserClick}
-                        isArchived={true}
-                        copyMessageToClipboard={copyMessageToClipboard}
-                        updateAppointmentComments={updateAppointmentComments}
-                        // Modal states
-                        showCancelModal={showCancelModal}
-                        setShowCancelModal={setShowCancelModal}
-                        showReinitiateModal={showReinitiateModal}
-                        setShowReinitiateModal={setShowReinitiateModal}
-                        showArchiveModal={showArchiveModal}
-                        setShowArchiveModal={setShowArchiveModal}
-                        showUnarchiveModal={showUnarchiveModal}
-                        setShowUnarchiveModal={setShowUnarchiveModal}
-                        appointmentToHandle={appointmentToHandle}
-                        setAppointmentToHandle={setAppointmentToHandle}
-                        cancelReason={cancelReason}
-                        setCancelReason={setCancelReason}
-                        confirmAdminCancel={confirmAdminCancel}
-                        confirmReinitiate={confirmReinitiate}
-                        confirmArchive={confirmArchive}
-                        confirmUnarchive={confirmUnarchive}
-                        // Reactions props
-                        showReactionsBar={showReactionsBar}
-                        setShowReactionsBar={setShowReactionsBar}
-                        reactionsMessageId={reactionsMessageId}
-                        setReactionsMessageId={setReactionsMessageId}
-                        showReactionsEmojiPicker={showReactionsEmojiPicker}
-                        setShowReactionsEmojiPicker={setShowReactionsEmojiPicker}
-                        reactionEmojiSearchTerm={reactionEmojiSearchTerm}
-                        setReactionEmojiSearchTerm={setReactionEmojiSearchTerm}
-                        getFilteredEmojis={getFilteredEmojis}
-                        toggleReactionsBar={toggleReactionsBar}
-                        toggleReactionsEmojiPicker={toggleReactionsEmojiPicker}
-                        onExportChat={(appointment, comments, callHistory) => {
-                          setExportAppointment(appointment);
-                          setExportComments(comments);
-                          setExportCallHistory(callHistory || []);
-                          setShowExportModal(true);
-                        }}
-                        activeChatAppointmentId={activeChatAppointmentId}
-                        shouldOpenChatFromNotification={shouldOpenChatFromNotification}
-                        onChatOpened={() => {
-                          setShouldOpenChatFromNotification(false);
-                          setActiveChatAppointmentId(null);
-                        }}
-                        // Call History Modal props
-                        setShowCallHistoryModal={setShowCallHistoryModal}
-                        setCallHistoryAppointmentId={setCallHistoryAppointmentId}
-                      />
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )
+          archivedAppointmentsWithComments.length === 0 ? (
+            <div className="text-center text-gray-500 text-lg">No archived appointments found.</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse rounded-lg overflow-hidden">
+                <thead>
+                  <tr className="bg-gradient-to-r from-gray-100 to-gray-200">
+                    <th className="border p-2">Date & Time</th>
+                    <th className="border p-2">Property</th>
+                    <th className="border p-2">Payment</th>
+                    <th className="border p-2">Buyer</th>
+                    <th className="border p-2">Seller</th>
+                    <th className="border p-2">Purpose</th>
+                    <th className="border p-2">Message</th>
+                    <th className="border p-2">Status</th>
+                    <th className="border p-2">Actions</th>
+                    <th className="border p-2">Connect</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {archivedAppointmentsWithComments.map((appt) => (
+                    <AdminAppointmentRow
+                      key={appt._id}
+                      appt={appt}
+                      currentUser={currentUser}
+                      handleAdminCancel={handleAdminCancel}
+                      handleReinitiateAppointment={handleReinitiateAppointment}
+                      handleArchiveAppointment={handleArchiveAppointment}
+                      handleUnarchiveAppointment={handleUnarchiveAppointment}
+                      onUserClick={handleUserClick}
+                      isArchived={true}
+                      copyMessageToClipboard={copyMessageToClipboard}
+                      updateAppointmentComments={updateAppointmentComments}
+                      // Modal states
+                      showCancelModal={showCancelModal}
+                      setShowCancelModal={setShowCancelModal}
+                      showReinitiateModal={showReinitiateModal}
+                      setShowReinitiateModal={setShowReinitiateModal}
+                      showArchiveModal={showArchiveModal}
+                      setShowArchiveModal={setShowArchiveModal}
+                      showUnarchiveModal={showUnarchiveModal}
+                      setShowUnarchiveModal={setShowUnarchiveModal}
+                      appointmentToHandle={appointmentToHandle}
+                      setAppointmentToHandle={setAppointmentToHandle}
+                      cancelReason={cancelReason}
+                      setCancelReason={setCancelReason}
+                      confirmAdminCancel={confirmAdminCancel}
+                      confirmReinitiate={confirmReinitiate}
+                      confirmArchive={confirmArchive}
+                      confirmUnarchive={confirmUnarchive}
+                      // Reactions props
+                      showReactionsBar={showReactionsBar}
+                      setShowReactionsBar={setShowReactionsBar}
+                      reactionsMessageId={reactionsMessageId}
+                      setReactionsMessageId={setReactionsMessageId}
+                      showReactionsEmojiPicker={showReactionsEmojiPicker}
+                      setShowReactionsEmojiPicker={setShowReactionsEmojiPicker}
+                      reactionEmojiSearchTerm={reactionEmojiSearchTerm}
+                      setReactionEmojiSearchTerm={setReactionEmojiSearchTerm}
+                      getFilteredEmojis={getFilteredEmojis}
+                      toggleReactionsBar={toggleReactionsBar}
+                      toggleReactionsEmojiPicker={toggleReactionsEmojiPicker}
+                      onExportChat={(appointment, comments, callHistory) => {
+                        setExportAppointment(appointment);
+                        setExportComments(comments);
+                        setExportCallHistory(callHistory || []);
+                        setShowExportModal(true);
+                      }}
+                      activeChatAppointmentId={activeChatAppointmentId}
+                      shouldOpenChatFromNotification={shouldOpenChatFromNotification}
+                      onChatOpened={() => {
+                        setShouldOpenChatFromNotification(false);
+                        setActiveChatAppointmentId(null);
+                      }}
+                      // Call History Modal props
+                      setShowCallHistoryModal={setShowCallHistoryModal}
+                      setCallHistoryAppointmentId={setCallHistoryAppointmentId}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
         ) : (
           // Active Appointments Section
           appointmentsWithComments.length === 0 ? (
@@ -2023,208 +2023,208 @@ export default function AdminAppointments() {
           </div>
         )}
 
-  {/* Reports Modal - Admin-wide (styled like Starred Messages) */}
-  {showAdminReportsModal && createPortal((
-    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[95vh] sm:h-[90vh] overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 bg-gradient-to-r from-red-50 to-rose-50 flex-shrink-0">
-          <h3 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
-            <FaFlag className="text-red-500" /> Reported Items
-          </h3>
-          <div className="flex items-center gap-1 sm:gap-2">
-            <div className="flex items-center bg-white border border-red-200 rounded-lg overflow-hidden mr-1 sm:mr-2">
-              <button
-                className={`px-2 sm:px-3 py-1.5 text-xs font-medium ${adminReportsFilter === 'message' ? 'bg-red-500 text-white' : 'text-red-600 hover:bg-red-50'}`}
-                onClick={() => setAdminReportsFilter('message')}
-              >
-                Message Reports
-              </button>
-              <button
-                className={`px-2 sm:px-3 py-1.5 text-xs font-medium border-l border-red-200 ${adminReportsFilter === 'chat' ? 'bg-red-500 text-white' : 'text-red-600 hover:bg-red-50'}`}
-                onClick={() => setAdminReportsFilter('chat')}
-              >
-                Chat Reports
-              </button>
-            </div>
-            <button
-              onClick={() => fetchAdminReports(adminReportsFilters, true)}
-              disabled={adminReportsLoading}
-              className="p-2 text-red-600 hover:text-red-700 bg-red-100 hover:bg-red-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Refresh reports"
-            >
-              {adminReportsLoading ? (
-                <div className="w-4 h-4 border-2 border-red-600 border-top-transparent rounded-full animate-spin"></div>
-              ) : (
-                <FaSync className="w-4 h-4" />
-              )}
-            </button>
-            <button
-              onClick={() => setShowAdminReportsModal(false)}
-              className="px-2 sm:px-3 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium text-xs sm:text-sm"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-
-        {/* Filters Section - Mobile Optimized */}
-        <div className="p-2 sm:p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0 sticky top-0 z-10">
-          <div className="space-y-3">
-            {/* Primary filters - compact on mobile */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">From Date</label>
-                <input
-                  type="date"
-                  value={adminReportsFilters.dateFrom}
-                  onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
-                  className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">To Date</label>
-                <input
-                  type="date"
-                  value={adminReportsFilters.dateTo}
-                  onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, dateTo: e.target.value }))}
-                  className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Reporter</label>
-                <input
-                  type="text"
-                  placeholder="Reporter"
-                  value={adminReportsFilters.reporter}
-                  onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, reporter: e.target.value }))}
-                  className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
-                <select
-                  value={adminReportsFilters.status}
-                  onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, status: e.target.value }))}
-                  className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
-                >
-                  <option value="all">All Status</option>
-                  <option value="pending">Pending</option>
-                  <option value="resolved">Resolved</option>
-                </select>
-              </div>
-            </div>
-            
-            {/* Secondary controls - compact on mobile */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-stretch sm:items-center justify-between">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  value={adminReportsFilters.search}
-                  onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, search: e.target.value }))}
-                  className="flex-1 px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
-                />
-                <select
-                  value={adminReportsFilters.sortBy}
-                  onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, sortBy: e.target.value }))}
-                  className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
-                >
-                  <option value="date">Date</option>
-                  <option value="user">User</option>
-                  <option value="type">Type</option>
-                </select>
-                <select
-                  value={adminReportsFilters.sortOrder}
-                  onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, sortOrder: e.target.value }))}
-                  className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
-                >
-                  <option value="desc">↓</option>
-                  <option value="asc">↑</option>
-                </select>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setAdminReportsFilters({
-                    dateFrom: '',
-                    dateTo: '',
-                    reporter: '',
-                    status: 'all',
-                    search: '',
-                    sortBy: 'date',
-                    sortOrder: 'desc'
-                  })}
-                  className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
-                >
-                  Clear
-                </button>
-                <button
-                  onClick={() => fetchAdminReports(adminReportsFilters, true)}
-                  className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm bg-red-500 text-white rounded-md hover:bg-red-600 transition"
-                >
-                  Apply
-                </button>
-              </div>
-            </div>
-            
-            {/* Report count - compact on mobile */}
-            <div className="text-xs text-gray-600 text-center sm:text-left">
-              Showing {adminReports.length} reports
-            </div>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-3 sm:p-6">
-          {adminReportsLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
-              <span className="ml-3 text-gray-600">Loading reports...</span>
-            </div>
-          ) : adminReportsError ? (
-            <div className="text-sm text-red-600">{adminReportsError}</div>
-          ) : (adminReports || []).length === 0 ? (
-            <div className="text-center py-12">
-              <FaFlag className="mx-auto text-6xl text-gray-300 mb-4" />
-              <h4 className="text-xl font-semibold text-gray-600 mb-2">No Reports</h4>
-              <p className="text-gray-500">There are no reports matching your filters.</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {(adminReports || []).filter(r => adminReportsFilter === 'message' ? r.type === 'message' : r.type !== 'message').map((r, idx) => (
-                <div key={r.notificationId || idx} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-                      <FaFlag className="text-red-500" /> {r.type === 'message' ? 'Message Report' : 'Chat Report'}
-                    </div>
-                    <div className="text-xs text-gray-500">{new Date(r.createdAt).toLocaleString()}</div>
+        {/* Reports Modal - Admin-wide (styled like Starred Messages) */}
+        {showAdminReportsModal && createPortal((
+          <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[95vh] sm:h-[90vh] overflow-hidden flex flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 bg-gradient-to-r from-red-50 to-rose-50 flex-shrink-0">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
+                  <FaFlag className="text-red-500" /> Reported Items
+                </h3>
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <div className="flex items-center bg-white border border-red-200 rounded-lg overflow-hidden mr-1 sm:mr-2">
+                    <button
+                      className={`px-2 sm:px-3 py-1.5 text-xs font-medium ${adminReportsFilter === 'message' ? 'bg-red-500 text-white' : 'text-red-600 hover:bg-red-50'}`}
+                      onClick={() => setAdminReportsFilter('message')}
+                    >
+                      Message Reports
+                    </button>
+                    <button
+                      className={`px-2 sm:px-3 py-1.5 text-xs font-medium border-l border-red-200 ${adminReportsFilter === 'chat' ? 'bg-red-500 text-white' : 'text-red-600 hover:bg-red-50'}`}
+                      onClick={() => setAdminReportsFilter('chat')}
+                    >
+                      Chat Reports
+                    </button>
                   </div>
-                  <div className="mt-2 text-sm text-gray-700 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
-                    {r.reporter && (<div><span className="font-medium">Reporter:</span> {r.reporter}</div>)}
-                    {r.appointmentRef && (<div><span className="font-medium">Appointment:</span> {r.appointmentRef}</div>)}
-                    {r.between && (<div><span className="font-medium">Between:</span> {r.between}</div>)}
-                    {r.reason && (<div><span className="font-medium">Reason:</span> {r.reason}</div>)}
-                    {r.details && (<div className="md:col-span-2"><span className="font-medium">Details:</span> {r.details}</div>)}
-                    {r.messageId && (<div><span className="font-medium">Message ID:</span> {r.messageId}</div>)}
-                    {r.messageExcerpt && (
-                      <div className="md:col-span-2 italic text-gray-600">
-                        <span className="font-medium not-italic">Excerpt:</span> "{r.messageExcerpt}"
-                      </div>
+                  <button
+                    onClick={() => fetchAdminReports(adminReportsFilters, true)}
+                    disabled={adminReportsLoading}
+                    className="p-2 text-red-600 hover:text-red-700 bg-red-100 hover:bg-red-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Refresh reports"
+                  >
+                    {adminReportsLoading ? (
+                      <div className="w-4 h-4 border-2 border-red-600 border-top-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <FaSync className="w-4 h-4" />
                     )}
-                    {r.totalMessages != null && (<div><span className="font-medium">Total Messages:</span> {r.totalMessages}</div>)}
-                    {r.appointmentDate && (<div><span className="font-medium">Appointment Date:</span> {r.appointmentDate}</div>)}
-                    {r.property && (<div><span className="font-medium">Property:</span> {r.property}</div>)}
+                  </button>
+                  <button
+                    onClick={() => setShowAdminReportsModal(false)}
+                    className="px-2 sm:px-3 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium text-xs sm:text-sm"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+
+              {/* Filters Section - Mobile Optimized */}
+              <div className="p-2 sm:p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0 sticky top-0 z-10">
+                <div className="space-y-3">
+                  {/* Primary filters - compact on mobile */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">From Date</label>
+                      <input
+                        type="date"
+                        value={adminReportsFilters.dateFrom}
+                        onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
+                        className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">To Date</label>
+                      <input
+                        type="date"
+                        value={adminReportsFilters.dateTo}
+                        onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, dateTo: e.target.value }))}
+                        className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Reporter</label>
+                      <input
+                        type="text"
+                        placeholder="Reporter"
+                        value={adminReportsFilters.reporter}
+                        onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, reporter: e.target.value }))}
+                        className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                      <select
+                        value={adminReportsFilters.status}
+                        onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, status: e.target.value }))}
+                        className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                      >
+                        <option value="all">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="resolved">Resolved</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Secondary controls - compact on mobile */}
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-stretch sm:items-center justify-between">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Search..."
+                        value={adminReportsFilters.search}
+                        onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, search: e.target.value }))}
+                        className="flex-1 px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                      />
+                      <select
+                        value={adminReportsFilters.sortBy}
+                        onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, sortBy: e.target.value }))}
+                        className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                      >
+                        <option value="date">Date</option>
+                        <option value="user">User</option>
+                        <option value="type">Type</option>
+                      </select>
+                      <select
+                        value={adminReportsFilters.sortOrder}
+                        onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, sortOrder: e.target.value }))}
+                        className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                      >
+                        <option value="desc">↓</option>
+                        <option value="asc">↑</option>
+                      </select>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setAdminReportsFilters({
+                          dateFrom: '',
+                          dateTo: '',
+                          reporter: '',
+                          status: 'all',
+                          search: '',
+                          sortBy: 'date',
+                          sortOrder: 'desc'
+                        })}
+                        className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
+                      >
+                        Clear
+                      </button>
+                      <button
+                        onClick={() => fetchAdminReports(adminReportsFilters, true)}
+                        className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm bg-red-500 text-white rounded-md hover:bg-red-600 transition"
+                      >
+                        Apply
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Report count - compact on mobile */}
+                  <div className="text-xs text-gray-600 text-center sm:text-left">
+                    Showing {adminReports.length} reports
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  ), document.body)}
+              </div>
 
-  
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-3 sm:p-6">
+                {adminReportsLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+                    <span className="ml-3 text-gray-600">Loading reports...</span>
+                  </div>
+                ) : adminReportsError ? (
+                  <div className="text-sm text-red-600">{adminReportsError}</div>
+                ) : (adminReports || []).length === 0 ? (
+                  <div className="text-center py-12">
+                    <FaFlag className="mx-auto text-6xl text-gray-300 mb-4" />
+                    <h4 className="text-xl font-semibold text-gray-600 mb-2">No Reports</h4>
+                    <p className="text-gray-500">There are no reports matching your filters.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {(adminReports || []).filter(r => adminReportsFilter === 'message' ? r.type === 'message' : r.type !== 'message').map((r, idx) => (
+                      <div key={r.notificationId || idx} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                            <FaFlag className="text-red-500" /> {r.type === 'message' ? 'Message Report' : 'Chat Report'}
+                          </div>
+                          <div className="text-xs text-gray-500">{new Date(r.createdAt).toLocaleString()}</div>
+                        </div>
+                        <div className="mt-2 text-sm text-gray-700 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
+                          {r.reporter && (<div><span className="font-medium">Reporter:</span> {r.reporter}</div>)}
+                          {r.appointmentRef && (<div><span className="font-medium">Appointment:</span> {r.appointmentRef}</div>)}
+                          {r.between && (<div><span className="font-medium">Between:</span> {r.between}</div>)}
+                          {r.reason && (<div><span className="font-medium">Reason:</span> {r.reason}</div>)}
+                          {r.details && (<div className="md:col-span-2"><span className="font-medium">Details:</span> {r.details}</div>)}
+                          {r.messageId && (<div><span className="font-medium">Message ID:</span> {r.messageId}</div>)}
+                          {r.messageExcerpt && (
+                            <div className="md:col-span-2 italic text-gray-600">
+                              <span className="font-medium not-italic">Excerpt:</span> "{r.messageExcerpt}"
+                            </div>
+                          )}
+                          {r.totalMessages != null && (<div><span className="font-medium">Total Messages:</span> {r.totalMessages}</div>)}
+                          {r.appointmentDate && (<div><span className="font-medium">Appointment Date:</span> {r.appointmentDate}</div>)}
+                          {r.property && (<div><span className="font-medium">Property:</span> {r.property}</div>)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ), document.body)}
+
+
 
         {/* Pagination for archived appointments */}
         {showArchived && archivedTotalPages > 1 && (
@@ -2283,9 +2283,9 @@ export default function AdminAppointments() {
                 <div className="flex flex-col items-center justify-center bg-gradient-to-r from-blue-100 to-purple-100 rounded-t-2xl px-6 py-6 border-b border-gray-200 sticky top-[env(safe-area-inset-top,0px)] z-20">
                   <div className="flex items-center gap-4">
                     <div className="relative">
-                      <UserAvatar 
-                        user={{ username: selectedUser.username, avatar: selectedUser.avatar }} 
-                        size="w-16 h-16" 
+                      <UserAvatar
+                        user={{ username: selectedUser.username, avatar: selectedUser.avatar }}
+                        size="w-16 h-16"
                         textSize="text-lg"
                         showBorder={true}
                         className="border-4 border-white shadow-lg"
@@ -2310,13 +2310,12 @@ export default function AdminAppointments() {
                           {selectedUser.role || 'User'}
                         </p>
                         {selectedUser.adminApprovalStatus && (
-                          <p className={`text-xs font-medium px-2 py-1 rounded-full ${
-                            selectedUser.adminApprovalStatus === 'approved' 
-                              ? 'bg-green-100 text-green-700' 
-                              : selectedUser.adminApprovalStatus === 'pending'
+                          <p className={`text-xs font-medium px-2 py-1 rounded-full ${selectedUser.adminApprovalStatus === 'approved'
+                            ? 'bg-green-100 text-green-700'
+                            : selectedUser.adminApprovalStatus === 'pending'
                               ? 'bg-yellow-100 text-yellow-700'
                               : 'bg-red-100 text-red-700'
-                          }`}>
+                            }`}>
                             {selectedUser.adminApprovalStatus}
                           </p>
                         )}
@@ -2341,7 +2340,7 @@ export default function AdminAppointments() {
                         </a>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 border-green-500">
                       <FaPhone className="text-green-500 w-5 h-5 flex-shrink-0" />
                       <div className="flex-1">
@@ -2365,10 +2364,10 @@ export default function AdminAppointments() {
                       <div>
                         <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Member Since</p>
                         <p className="text-gray-800 font-medium">
-                          {new Date(selectedUser.createdAt).toLocaleDateString('en-US', { 
-                            year: 'numeric', 
-                            month: 'long', 
-                            day: 'numeric' 
+                          {new Date(selectedUser.createdAt).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
                           })}
                         </p>
                       </div>
@@ -2401,9 +2400,9 @@ export default function AdminAppointments() {
             toast.info('Generating PDF...', { autoClose: 2000 });
             const otherParty = exportAppointment?.buyerId?._id === currentUser._id ? exportAppointment?.sellerId : exportAppointment?.buyerId;
             const result = await exportEnhancedChatToPDF(
-              exportAppointment, 
-              exportComments, 
-              currentUser, 
+              exportAppointment,
+              exportComments,
+              currentUser,
               otherParty,
               includeMedia,
               exportCallHistory
@@ -2532,7 +2531,7 @@ function AdminPaymentStatusCell({ appointmentId, appointment }) {
       >
         {toggling ? 'Updating...' : 'Change Status'}
       </button>
-      
+
       {showStatusOptions && (
         <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 min-w-[120px]">
           {!appointment?.paymentConfirmed ? (
@@ -2562,11 +2561,10 @@ function AdminPaymentStatusCell({ appointmentId, appointment }) {
   if (!payment) {
     return (
       <div className="flex flex-col items-center gap-1">
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-          appointment?.paymentConfirmed 
-            ? 'bg-green-100 text-green-800' 
-            : 'bg-yellow-100 text-yellow-800'
-        }`}>
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${appointment?.paymentConfirmed
+          ? 'bg-green-100 text-green-800'
+          : 'bg-yellow-100 text-yellow-800'
+          }`}>
           {appointment?.paymentConfirmed ? 'Paid (Admin)' : 'Pending'}
         </span>
         {appointment?.paymentConfirmed && (
@@ -2582,31 +2580,31 @@ function AdminPaymentStatusCell({ appointmentId, appointment }) {
   const color = payment.status === 'completed'
     ? 'bg-green-100 text-green-800'
     : isAdminMarked
-    ? 'bg-green-100 text-green-800'
-    : payment.status === 'pending'
-    ? 'bg-yellow-100 text-yellow-800'
-    : payment.status === 'failed'
-    ? 'bg-red-100 text-red-800'
-    : payment.status === 'refunded'
-    ? 'bg-blue-100 text-blue-800'
-    : payment.status === 'partially_refunded'
-    ? 'bg-orange-100 text-orange-800'
-    : 'bg-gray-100 text-gray-800';
+      ? 'bg-green-100 text-green-800'
+      : payment.status === 'pending'
+        ? 'bg-yellow-100 text-yellow-800'
+        : payment.status === 'failed'
+          ? 'bg-red-100 text-red-800'
+          : payment.status === 'refunded'
+            ? 'bg-blue-100 text-blue-800'
+            : payment.status === 'partially_refunded'
+              ? 'bg-orange-100 text-orange-800'
+              : 'bg-gray-100 text-gray-800';
 
   // Priority: User payment first, then admin marking
   const label = payment.status === 'completed'
     ? 'Paid'
     : isAdminMarked
-    ? 'Paid (Admin)'
-    : payment.status === 'pending'
-    ? 'Pending'
-    : payment.status === 'failed'
-    ? 'Failed'
-    : payment.status === 'refunded'
-    ? 'Refunded'
-    : payment.status === 'partially_refunded'
-    ? 'Partial Refund'
-    : payment.status;
+      ? 'Paid (Admin)'
+      : payment.status === 'pending'
+        ? 'Pending'
+        : payment.status === 'failed'
+          ? 'Failed'
+          : payment.status === 'refunded'
+            ? 'Refunded'
+            : payment.status === 'partially_refunded'
+              ? 'Partial Refund'
+              : payment.status;
 
   return (
     <div className="flex flex-col items-center gap-1">
@@ -2638,14 +2636,14 @@ function AdminPaymentStatusCell({ appointmentId, appointment }) {
   );
 }
 
-function AdminAppointmentRow({ 
-  appt, 
-  currentUser, 
-  handleAdminCancel, 
-  handleReinitiateAppointment, 
-  handleArchiveAppointment, 
-  handleUnarchiveAppointment, 
-  onUserClick, 
+function AdminAppointmentRow({
+  appt,
+  currentUser,
+  handleAdminCancel,
+  handleReinitiateAppointment,
+  handleArchiveAppointment,
+  handleUnarchiveAppointment,
+  onUserClick,
   isArchived,
   copyMessageToClipboard,
   updateAppointmentComments,
@@ -2689,11 +2687,11 @@ function AdminAppointmentRow({
 }) {
   const navigate = useNavigate();
   const params = useParams();
-  
+
   // Use parent comments directly for real-time sync, with local state for UI interactions
   const [localComments, setLocalComments] = React.useState(appt.comments || []);
   const [callHistory, setCallHistory] = React.useState([]);
-  
+
   // Initialize starred messages when comments are loaded
   React.useEffect(() => {
     if (localComments.length > 0) {
@@ -2745,7 +2743,7 @@ function AdminAppointmentRow({
   const [reportsLoading, setReportsLoading] = useLocalState(false);
   const [reportsError, setReportsError] = useLocalState('');
   const [reportsFilter, setReportsFilter] = useLocalState('message'); // 'message' | 'chat'
-  
+
   // Appointment Reports Filters
   const [reportsFilters, setReportsFilters] = useLocalState({
     dateFrom: '',
@@ -2759,7 +2757,7 @@ function AdminAppointmentRow({
 
   // Reported message IDs for current appointment (to flag in UI)
   const [reportedMessageIds, setReportedMessageIds] = useLocalState([]);
-  
+
   // Report details tooltip state
   const [reportTooltip, setReportTooltip] = useLocalState({
     show: false,
@@ -2774,7 +2772,7 @@ function AdminAppointmentRow({
         setReportsLoading(true);
       }
       setReportsError('');
-      
+
       // Build query parameters
       const params = new URLSearchParams();
       if (appointmentId) params.append('appointmentId', appointmentId);
@@ -2785,9 +2783,9 @@ function AdminAppointmentRow({
       if (filters.search) params.append('search', filters.search);
       params.append('sortBy', filters.sortBy);
       params.append('sortOrder', filters.sortOrder);
-      
-      const res = await fetch(`${API_BASE_URL}/api/notifications/reports?${params.toString()}`, { 
-        credentials: 'include' 
+
+      const res = await fetch(`${API_BASE_URL}/api/notifications/reports?${params.toString()}`, {
+        credentials: 'include'
       });
       const data = await res.json();
       if (data?.success) setReports(data.reports || []);
@@ -2811,7 +2809,7 @@ function AdminAppointmentRow({
   // Debounced filter application for appointment reports
   useEffect(() => {
     if (!showReportsModal) return;
-    
+
     const timeoutId = setTimeout(() => {
       fetchAllReports(appt._id, reportsFilters, false); // Don't show loading for debounced calls
     }, 500); // 500ms delay
@@ -2833,7 +2831,7 @@ function AdminAppointmentRow({
       const res = await fetch(`${API_BASE_URL}/api/notifications/reports/message-ids?appointmentId=${appointmentId}`, { credentials: 'include' });
       const data = await res.json();
       if (data?.success) setReportedMessageIds(data.messageIds || []);
-    } catch (_) {}
+    } catch (_) { }
   }, []);
 
   // Fetch report details for a specific message
@@ -2853,10 +2851,10 @@ function AdminAppointmentRow({
   // Handle flag hover to show report details
   const handleFlagHover = useCallback(async (messageId, event) => {
     if (reportTooltip.show && reportTooltip.messageId === messageId) return;
-    
+
     const rect = event.target.getBoundingClientRect();
     const details = await fetchReportDetails(messageId);
-    
+
     if (details) {
       setReportTooltip({
         show: true,
@@ -2881,7 +2879,7 @@ function AdminAppointmentRow({
   }, []);
   const [deleteChatPassword, setDeleteChatPassword] = useLocalState("");
   const [deleteChatLoading, setDeleteChatLoading] = useLocalState(false);
-  
+
   // Message info modal state
   const [showMessageInfoModal, setShowMessageInfoModal] = useLocalState(false);
   const [selectedMessageForInfo, setSelectedMessageForInfo] = useLocalState(null);
@@ -2905,13 +2903,17 @@ function AdminAppointmentRow({
   const [forceTerminateReason, setForceTerminateReason] = useLocalState('');
   const [forceTerminateLoading, setForceTerminateLoading] = useLocalState(false);
 
+  // Audio activity detection for monitor
+  const isBuyerSpeaking = useAudioActivity(buyerMonitorStream);
+  const isSellerSpeaking = useAudioActivity(sellerMonitorStream);
+
   // STUN servers for admin WebRTC monitor (same as participant side)
   const MONITOR_STUN_SERVERS = React.useMemo(() => ([
     { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' },
     { urls: 'stun:stun2.l.google.com:19302' }
   ]), []);
-  
+
   const toggleMonitorAudio = useCallback((roleKey) => {
     setMonitorAudioMuted((prev) => ({ ...prev, [roleKey]: !prev[roleKey] }));
   }, [setMonitorAudioMuted]);
@@ -3223,7 +3225,7 @@ function AdminAppointmentRow({
             // Auto-resize textarea for drafted content
             autoResizeTextarea(inputRef.current);
           }
-        } catch(_) {}
+        } catch (_) { }
       }, 0);
     }
   }, [showChatModal, appt?._id, currentUser?._id]);
@@ -3233,7 +3235,7 @@ function AdminAppointmentRow({
     const draftKey = `admin_appt_draft_${appt._id}_${currentUser._id}`;
     localStorage.setItem(draftKey, newComment);
   }, [newComment, showChatModal, appt?._id, currentUser?._id]);
-  
+
   // Starred messages states
   const [showStarredModal, setShowStarredModal] = useLocalState(false);
   const [starredMessages, setStarredMessages] = useLocalState([]);
@@ -3243,19 +3245,19 @@ function AdminAppointmentRow({
   const [removingAllStarred, setRemovingAllStarred] = useLocalState(false);
   const [sendIconAnimating, setSendIconAnimating] = useLocalState(false);
   const [sendIconSent, setSendIconSent] = useLocalState(false);
-  
+
   // Chat options menu state
   const [showChatOptionsMenu, setShowChatOptionsMenu] = useLocalState(false);
-  
+
   // Text styling panel state
   const [showTextStylingPanel, setShowTextStylingPanel] = useLocalState(false);
-  
+
   // Helper function to apply formatting and close panel
   const applyFormattingAndClose = (formatFunction) => {
     formatFunction();
     setTimeout(() => setShowTextStylingPanel(false), 100); // Small delay for better UX
   };
-  
+
   // Multi-select message states
   const [isSelectionMode, setIsSelectionMode] = useLocalState(false);
   const [selectedMessages, setSelectedMessages] = useLocalState([]);
@@ -3264,20 +3266,20 @@ function AdminAppointmentRow({
     copying: false,
     deleting: false
   });
-  
+
   // Removed pinning feature state
-  
+
   // Search functionality state
   const [showSearchBox, setShowSearchBox] = useLocalState(false);
   const [searchQuery, setSearchQuery] = useLocalState("");
   const [searchResults, setSearchResults] = useLocalState([]);
   const [currentSearchIndex, setCurrentSearchIndex] = useLocalState(-1);
-  
+
   // Calendar functionality state
   const [showCalendar, setShowCalendar] = useLocalState(false);
   const [selectedDate, setSelectedDate] = useLocalState("");
   const [highlightedDateMessage, setHighlightedDateMessage] = useLocalState(null);
-  
+
   // File upload states
   const [uploadingFile, setUploadingFile] = useLocalState(false);
   const [fileUploadError, setFileUploadError] = useLocalState('');
@@ -3433,7 +3435,7 @@ function AdminAppointmentRow({
     if (!mediaRecorderRef.current) return;
     try {
       mediaRecorderRef.current.stop();
-    } catch {}
+    } catch { }
   };
 
   const pauseAudioRecording = () => {
@@ -3460,7 +3462,7 @@ function AdminAppointmentRow({
       const pauseEndTime = Date.now();
       const pauseStartTime = recordingStartTimeRef.current + recordingElapsedMs + pausedTimeRef.current;
       pausedTimeRef.current += (pauseEndTime - pauseStartTime);
-      
+
       // Restart the timer
       recordingTimerRef.current = setInterval(() => {
         const elapsed = Date.now() - recordingStartTimeRef.current - pausedTimeRef.current;
@@ -3477,7 +3479,7 @@ function AdminAppointmentRow({
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
         mediaRecorderRef.current.stop();
       }
-    } catch {}
+    } catch { }
     if (recordingStream) recordingStream.getTracks().forEach(t => t.stop());
     setRecordingStream(null);
     setIsRecording(false);
@@ -3505,10 +3507,10 @@ function AdminAppointmentRow({
   }, [showAttachmentPanel]);
 
   // Message selected for header options overlay
-  const selectedMessageForHeaderOptions = headerOptionsMessageId && headerOptionsMessageId.startsWith('call-') 
+  const selectedMessageForHeaderOptions = headerOptionsMessageId && headerOptionsMessageId.startsWith('call-')
     ? null // Call items handled separately
     : (headerOptionsMessageId ? localComments.find(msg => msg._id === headerOptionsMessageId) : null);
-  
+
   // Call selected for header options overlay
   const selectedCallForHeaderOptions = headerOptionsMessageId && headerOptionsMessageId.startsWith('call-')
     ? callHistory.find(call => `call-${call._id || call.callId}` === headerOptionsMessageId)
@@ -3522,33 +3524,33 @@ function AdminAppointmentRow({
         toast.error('Message not found');
         return;
       }
-      
+
       // Add reaction to the message
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${messageId}/react`, 
+      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${messageId}/react`,
         { emoji },
-        { 
+        {
           withCredentials: true,
           headers: { 'Content-Type': 'application/json' }
         }
       );
 
       // Update local state
-      setLocalComments(prev => prev.map(c => 
-        c._id === messageId 
-          ? { 
-              ...c, 
-              reactions: data.reactions || c.reactions || []
-            }
+      setLocalComments(prev => prev.map(c =>
+        c._id === messageId
+          ? {
+            ...c,
+            reactions: data.reactions || c.reactions || []
+          }
           : c
       ));
 
       // Update parent component state
-      updateAppointmentComments(appt._id, localComments.map(c => 
-        c._id === messageId 
-          ? { 
-              ...c, 
-              reactions: data.reactions || c.reactions || []
-            }
+      updateAppointmentComments(appt._id, localComments.map(c =>
+        c._id === messageId
+          ? {
+            ...c,
+            reactions: data.reactions || c.reactions || []
+          }
           : c
       ));
 
@@ -3558,7 +3560,7 @@ function AdminAppointmentRow({
       setReactionsMessageId(null);
 
       toast.success('Reaction added!');
-      
+
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to add reaction');
     }
@@ -3575,7 +3577,7 @@ function AdminAppointmentRow({
       document.body.style.position = '';
       document.body.style.width = '';
     }
-    
+
     return () => {
       document.body.style.overflow = '';
       document.body.style.position = '';
@@ -3593,7 +3595,7 @@ function AdminAppointmentRow({
       }).catch(err => {
         console.error('Error marking messages as read:', err);
       });
-      
+
       // Sync starred messages when chat opens
       if (starredMessages.length > 0) {
         // Update starred messages list with current comment states
@@ -3664,7 +3666,7 @@ function AdminAppointmentRow({
   // Function to fetch starred messages
   const fetchStarredMessages = async () => {
     if (!appt?._id) return;
-    
+
     setLoadingStarredMessages(true);
     try {
       // First, sync comments to ensure we have the latest starred status
@@ -3694,52 +3696,52 @@ function AdminAppointmentRow({
   // Function to remove all starred messages
   const handleRemoveAllStarredMessages = async () => {
     if (starredMessages.length === 0) return;
-    
+
     const messageCount = starredMessages.length; // Store count before clearing
     setRemovingAllStarred(true);
-    
+
     try {
 
-      
+
       // Process messages one by one to handle individual failures gracefully
       let successCount = 0;
       let failureCount = 0;
       const failedMessages = [];
-      
+
       for (const message of starredMessages) {
         try {
 
-          
-          const response = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${message._id}/star`, 
+
+          const response = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${message._id}/star`,
             { starred: false },
             {
               withCredentials: true,
               headers: { 'Content-Type': 'application/json' }
             }
           );
-          
+
 
           successCount++;
-          
+
           // Update this specific message in local comments
-          setLocalComments(prev => prev.map(c => 
-            c._id === message._id 
+          setLocalComments(prev => prev.map(c =>
+            c._id === message._id
               ? { ...c, starredBy: (c.starredBy || []).filter(id => id !== currentUser._id) }
               : c
           ));
-          
+
         } catch (err) {
           console.error(`Failed to unstar message ${message._id}:`, err);
           failureCount++;
           failedMessages.push(message);
         }
       }
-      
 
-      
+
+
       // Remove successfully unstarred messages from starred messages list
       setStarredMessages(prev => prev.filter(msg => !failedMessages.some(failed => failed._id === msg._id)));
-      
+
       // Show appropriate feedback
       if (successCount > 0 && failureCount === 0) {
         toast.success(`Successfully removed ${successCount} starred message${successCount !== 1 ? 's' : ''}`);
@@ -3750,7 +3752,7 @@ function AdminAppointmentRow({
       } else {
         toast.error(`Failed to unstar any messages. Please try again.`);
       }
-      
+
     } catch (err) {
       console.error('Error removing all starred messages:', err);
       toast.error('Failed to remove all starred messages. Please try again.');
@@ -3771,7 +3773,7 @@ function AdminAppointmentRow({
         setShowHeaderMoreMenu(false);
       }
     };
-    
+
     // Close search box when clicking outside
     const handleSearchClickOutside = (event) => {
       if (showSearchBox && !event.target.closest('.search-container') && !event.target.closest('.enhanced-search-header')) {
@@ -3820,7 +3822,7 @@ function AdminAppointmentRow({
     document.addEventListener('mousedown', handleCalendarClickOutside);
     document.addEventListener('mousedown', handleReactionsClickOutside);
     document.addEventListener('scroll', handleScroll, true); // Use capture phase to catch all scroll events
-    
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('mousedown', handleSearchClickOutside);
@@ -3856,43 +3858,43 @@ function AdminAppointmentRow({
   // Sync localComments with parent comments for real-time updates
   React.useEffect(() => {
     const serverComments = appt.comments || [];
-    
+
     // CRITICAL FIX: Use ref to track previous server comments length to avoid race conditions
     const prevServerLength = prevServerCommentsLengthRef.current;
     const currentServerLength = serverComments.length;
-    
+
     // Always merge server comments with local temp messages to ensure consistency
     setLocalComments(prev => {
       const serverCommentIds = new Set(serverComments.map(c => c._id));
       const localTempMessages = prev.filter(c => c._id.startsWith('temp-'));
-      
+
       // Always start with server comments as the source of truth
       const mergedComments = [...serverComments];
-      
+
       // Add back any local temp messages that haven't been confirmed yet
       localTempMessages.forEach(tempMsg => {
         if (!serverCommentIds.has(tempMsg._id)) {
           mergedComments.push(tempMsg);
         }
       });
-      
+
       // Sort by timestamp to maintain chronological order
       mergedComments.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-      
+
       return mergedComments;
     });
-    
+
     // Handle unread message count and auto-scroll for new messages
     if (currentServerLength > prevServerLength) {
       const newMessages = serverComments.slice(prevServerLength);
       const receivedMessages = newMessages.filter(msg => msg.senderEmail !== currentUser.email);
-      
+
       if (receivedMessages.length > 0) {
         // Increment unread count for messages from other users
         if (!showChatModal) {
           setUnreadNewMessages(prev => prev + receivedMessages.length);
         }
-        
+
         // Auto-scroll if chat is open and user is at bottom
         if (showChatModal && isAtBottom) {
           setTimeout(() => {
@@ -3901,7 +3903,7 @@ function AdminAppointmentRow({
             }
           }, 100);
         }
-        
+
         // Mark messages as read if chat is open
         if (showChatModal) {
           setTimeout(() => {
@@ -3914,7 +3916,7 @@ function AdminAppointmentRow({
         }
       }
     }
-    
+
     // Update the ref with current server comments length for next comparison
     prevServerCommentsLengthRef.current = currentServerLength;
   }, [appt.comments, appt._id, showChatModal, isAtBottom, currentUser.email]);
@@ -3938,13 +3940,13 @@ function AdminAppointmentRow({
   // Fetch call history for appointment when chat modal opens
   React.useEffect(() => {
     if (!showChatModal || !appt?._id) return;
-    
+
     const fetchCallHistory = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/api/calls/history/${appt._id}`, {
           credentials: 'include'
         });
-        
+
         if (response.ok) {
           const data = await response.json();
           if (data.calls) {
@@ -3955,7 +3957,7 @@ function AdminAppointmentRow({
         console.error('Error fetching call history:', error);
       }
     };
-    
+
     fetchCallHistory();
   }, [showChatModal, appt?._id]);
 
@@ -3969,7 +3971,7 @@ function AdminAppointmentRow({
         const response = await fetch(`${API_BASE_URL}/api/calls/history/${appt._id}`, {
           credentials: 'include'
         });
-        
+
         if (response.ok) {
           const data = await response.json();
           if (data.calls) {
@@ -4007,19 +4009,19 @@ function AdminAppointmentRow({
         if (chatContainerRef.current) {
           chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
         }
-        
+
         // Method 2: Also use scrollIntoView as backup
         if (chatEndRef.current) {
           chatEndRef.current.scrollIntoView({ behavior: 'instant', block: 'end' });
         }
       };
-      
+
       // Immediate scroll
       scrollToCompleteBottom();
-      
+
       // Delayed scroll to ensure DOM is fully rendered
       setTimeout(scrollToCompleteBottom, 100);
-      
+
       // Final scroll after comments are loaded
       setTimeout(scrollToCompleteBottom, 300);
     }
@@ -4047,7 +4049,7 @@ function AdminAppointmentRow({
   React.useEffect(() => {
     setVisibleCount(MESSAGES_PAGE_SIZE);
   }, [appt._id, showChatModal]);
- 
+
 
 
   // Track new messages and handle auto-scroll/unread count
@@ -4064,7 +4066,7 @@ function AdminAppointmentRow({
       const hasSentMessages = newMessages.some(msg => msg.senderEmail === currentUser.email);
       // Check if any new messages are from other users (received messages)
       const receivedMessages = newMessages.filter(msg => msg.senderEmail !== currentUser.email);
-      
+
       if (hasSentMessages || isAtBottom) {
         // Auto-scroll if user sent a message OR if user is at bottom
         setTimeout(() => {
@@ -4105,11 +4107,11 @@ function AdminAppointmentRow({
   // Function to update floating date based on visible messages
   const updateFloatingDate = React.useCallback(() => {
     if (!chatContainerRef.current || localComments.length === 0) return;
-    
+
     const container = chatContainerRef.current;
     const containerRect = container.getBoundingClientRect();
     const containerTop = containerRect.top + 60; // Account for header
-    
+
     // Find the first visible message
     let visibleDate = '';
     for (let i = 0; i < localComments.length; i++) {
@@ -4123,7 +4125,7 @@ function AdminAppointmentRow({
         }
       }
     }
-    
+
     // If no message is fully visible, find the one that's partially visible at the top
     if (!visibleDate) {
       for (let i = 0; i < localComments.length; i++) {
@@ -4138,7 +4140,7 @@ function AdminAppointmentRow({
         }
       }
     }
-    
+
     if (visibleDate && visibleDate !== currentFloatingDate) {
       setCurrentFloatingDate(visibleDate);
     }
@@ -4146,43 +4148,43 @@ function AdminAppointmentRow({
 
   // Mark messages as read when user can see them
   const markingReadRef = React.useRef(false);
-  
+
   const markMessagesAsRead = React.useCallback(async () => {
     if (markingReadRef.current) return; // Prevent concurrent requests
-    
-    const unreadMessages = localComments.filter(c => 
-      !c.readBy?.includes(currentUser._id) && 
+
+    const unreadMessages = localComments.filter(c =>
+      !c.readBy?.includes(currentUser._id) &&
       c.senderEmail !== currentUser.email
     );
-    
+
     if (unreadMessages.length > 0) {
       markingReadRef.current = true;
       try {
         // Mark messages as read in backend
-        const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comments/read`, 
+        const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comments/read`,
           {},
-          { 
+          {
             withCredentials: true,
             headers: { 'Content-Type': 'application/json' }
           }
         );
-          // Update local state immediately
-          setLocalComments(prev => 
-            prev.map(c => 
-              unreadMessages.some(unread => unread._id === c._id)
-                ? { ...c, readBy: [...(c.readBy || []), currentUser._id], status: 'read' }
-                : c
-            )
-          );
-          
-          // Emit socket event for real-time updates to other party
-          unreadMessages.forEach(msg => {
-            socket.emit('messageRead', {
-              appointmentId: appt._id,
-              messageId: msg._id,
-              userId: currentUser._id
-            });
+        // Update local state immediately
+        setLocalComments(prev =>
+          prev.map(c =>
+            unreadMessages.some(unread => unread._id === c._id)
+              ? { ...c, readBy: [...(c.readBy || []), currentUser._id], status: 'read' }
+              : c
+          )
+        );
+
+        // Emit socket event for real-time updates to other party
+        unreadMessages.forEach(msg => {
+          socket.emit('messageRead', {
+            appointmentId: appt._id,
+            messageId: msg._id,
+            userId: currentUser._id
           });
+        });
       } catch (error) {
         console.error('Error marking messages as read:', error);
       } finally {
@@ -4197,7 +4199,7 @@ function AdminAppointmentRow({
       const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
       const atBottom = scrollHeight - scrollTop - clientHeight < 5; // 5px threshold
       setIsAtBottom(atBottom);
-      
+
       // Clear unread count and mark messages as read when user reaches bottom
       if (atBottom && unreadNewMessages > 0) {
         setUnreadNewMessages(0);
@@ -4213,28 +4215,28 @@ function AdminAppointmentRow({
       const handleScroll = () => {
         checkIfAtBottom();
         updateFloatingDate();
-        
+
         // Show floating date when scrolling starts
         setIsScrolling(true);
-        
+
         // Clear existing timeout
         if (scrollTimeoutRef.current) {
           clearTimeout(scrollTimeoutRef.current);
         }
-        
+
         // Hide floating date after scrolling stops (1 second of inactivity)
         scrollTimeoutRef.current = setTimeout(() => {
           setIsScrolling(false);
         }, 1000);
       };
-      
+
       chatContainer.addEventListener('scroll', handleScroll);
       // Check initial position
       checkIfAtBottom();
-      
+
       // Initialize floating date
       setTimeout(updateFloatingDate, 100);
-      
+
       return () => {
         chatContainer.removeEventListener('scroll', handleScroll);
         if (scrollTimeoutRef.current) {
@@ -4248,19 +4250,19 @@ function AdminAppointmentRow({
   const scrollToBottom = React.useCallback(() => {
     // Clear unread count immediately
     setUnreadNewMessages(0);
-    
+
     // Use multiple methods to ensure scroll works
     setTimeout(() => {
       if (chatContainerRef.current) {
         // Method 1: Scroll the container to bottom
         chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
       }
-      
+
       // Method 2: Also use scrollIntoView as backup
       if (chatEndRef.current) {
         chatEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
       }
-      
+
       // Mark messages as read after scrolling
       setTimeout(() => {
         markMessagesAsRead();
@@ -4293,7 +4295,7 @@ function AdminAppointmentRow({
       setShowReactionsBar(false);
       setReactionsMessageId(null);
     }
-    
+
     function handleCommentRemovedForUser({ appointmentId, commentId }) {
       if (appointmentId !== appt._id) return;
       setLocalComments(prev => prev.filter(c => c._id !== commentId));
@@ -4322,7 +4324,7 @@ function AdminAppointmentRow({
         );
       }
     };
-    
+
     const handleCommentRead = (data) => {
       if (data.appointmentId === appt._id) {
         setLocalComments(prev =>
@@ -4334,7 +4336,7 @@ function AdminAppointmentRow({
         );
       }
     };
-    
+
     const handleChatCleared = (data) => {
       if (data.appointmentId === appt._id) {
         setLocalComments([]);
@@ -4347,7 +4349,7 @@ function AdminAppointmentRow({
     socket.on('chatCleared', handleChatCleared);
     socket.on('commentDelivered', handleCommentDelivered);
     socket.on('commentRead', handleCommentRead);
-    
+
     return () => {
       socket.off('chatCleared', handleChatCleared);
       socket.off('commentDelivered', handleCommentDelivered);
@@ -4358,7 +4360,7 @@ function AdminAppointmentRow({
   // Keyboard shortcut Ctrl+F to focus message input
   React.useEffect(() => {
     if (!showChatModal) return;
-    
+
     // Focus input when chat modal opens
     const focusInput = () => {
       if (inputRef.current) {
@@ -4366,10 +4368,10 @@ function AdminAppointmentRow({
         focusWithoutKeyboard(inputRef.current, inputRef.current.value.length);
       }
     };
-    
+
     // Focus input after a short delay to ensure modal is fully rendered
     setTimeout(focusInput, 100);
-    
+
     const handleKeyDown = (event) => {
       if (event.ctrlKey && event.key === 'f') {
         event.preventDefault(); // Prevent browser find dialog
@@ -4381,7 +4383,7 @@ function AdminAppointmentRow({
         setShowChatModal(false);
       }
     };
-    
+
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
@@ -4422,10 +4424,10 @@ function AdminAppointmentRow({
   // File upload handler
   const handleFileUpload = async (files) => {
     if (!files || files.length === 0) return;
-    
+
     const validFiles = [];
     const errors = [];
-    
+
     // Validate each file
     Array.from(files).forEach((file, index) => {
       // Validate file type
@@ -4433,30 +4435,30 @@ function AdminAppointmentRow({
         errors.push(`File ${index + 1}: Please select an image file`);
         return;
       }
-      
+
       // Validate file size (5MB limit)
       if (file.size > 5 * 1024 * 1024) {
         errors.push(`File ${index + 1}: File size must be less than 5MB`);
         return;
       }
-      
+
       validFiles.push(file);
     });
-    
+
     // Show errors if any
     if (errors.length > 0) {
       setFileUploadError(errors.join(', '));
       setTimeout(() => setFileUploadError(''), 5000);
       return;
     }
-    
+
     // Limit to 10 images maximum
     if (validFiles.length > 10) {
       setFileUploadError('Maximum 10 images allowed at once');
       setTimeout(() => setFileUploadError(''), 3000);
       return;
     }
-    
+
     // Show preview with caption input instead of directly sending
     setSelectedFiles(validFiles);
     setPreviewIndex(0); // Reset to first image
@@ -4482,7 +4484,7 @@ function AdminAppointmentRow({
 
     // Immediately update UI
     setLocalComments(prev => [...prev, tempMessage]);
-    
+
     // Scroll to bottom
     if (chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -4490,32 +4492,32 @@ function AdminAppointmentRow({
 
     // Send message in background
     try {
-      const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, 
-        { 
+      const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`,
+        {
           message: caption || '',
           imageUrl: imageUrl,
           type: "image"
         },
-        { 
+        {
           withCredentials: true,
           headers: { "Content-Type": "application/json" }
         }
       );
-        // Find the new comment from the response
-        const newCommentFromServer = data.comments[data.comments.length - 1];
-        
-        // Update only the status and ID of the temp message, keeping it visible
-        setLocalComments(prev => prev.map(msg => 
-          msg._id === tempId 
-            ? { 
-                ...msg, 
-                _id: newCommentFromServer._id,
-                status: newCommentFromServer.status,
-                readBy: newCommentFromServer.readBy || msg.readBy,
-                timestamp: newCommentFromServer.timestamp || msg.timestamp
-              }
-            : msg
-          ));
+      // Find the new comment from the response
+      const newCommentFromServer = data.comments[data.comments.length - 1];
+
+      // Update only the status and ID of the temp message, keeping it visible
+      setLocalComments(prev => prev.map(msg =>
+        msg._id === tempId
+          ? {
+            ...msg,
+            _id: newCommentFromServer._id,
+            status: newCommentFromServer.status,
+            readBy: newCommentFromServer.readBy || msg.readBy,
+            timestamp: newCommentFromServer.timestamp || msg.timestamp
+          }
+          : msg
+      ));
     } catch (error) {
       console.error('Send image error:', error);
       setLocalComments(prev => prev.filter(msg => msg._id !== tempId));
@@ -4529,38 +4531,38 @@ function AdminAppointmentRow({
       toast.error('Error: Invalid image URL. Cannot download image.');
       return;
     }
-    
+
     try {
       // Extract filename from URL or generate one
       const urlParts = imageUrl.split('/');
       const originalFilename = urlParts[urlParts.length - 1];
       let filename = originalFilename;
-      
+
       // If filename doesn't have an extension or is just a hash, generate a proper name
       if (!filename.includes('.') || filename.length < 5) {
         // Try to determine file extension from URL or default to jpg
         const extension = imageUrl.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?|$)/i)?.[1] || 'jpg';
         filename = `chat-image-${messageId || Date.now()}.${extension}`;
       }
-      
+
       // Try to fetch the image to handle CORS and get proper blob
       try {
         const response = await fetch(imageUrl, {
           mode: 'cors',
           cache: 'no-cache'
         });
-        
+
         if (response.ok) {
           try {
             const blob = await response.blob();
-            
+
             // Validate blob
             if (!blob || blob.size === 0) {
               throw new Error('Downloaded image is empty or corrupted');
             }
-            
+
             const blobUrl = window.URL.createObjectURL(blob);
-            
+
             const link = document.createElement('a');
             link.href = blobUrl;
             link.download = filename;
@@ -4568,14 +4570,14 @@ function AdminAppointmentRow({
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
+
             // Clean up blob URL
             setTimeout(() => window.URL.revokeObjectURL(blobUrl), 100);
-            
+
             // Show success feedback
             toast.success(`Image "${filename}" downloaded successfully!`);
             return; // Exit early on success
-            
+
           } catch (blobError) {
             console.error('Blob processing error:', blobError);
             throw new Error(`Failed to process image data: ${blobError.message}`);
@@ -4600,7 +4602,7 @@ function AdminAppointmentRow({
         }
       } catch (fetchError) {
         console.warn('Fetch failed, trying direct download:', fetchError);
-        
+
         // Show specific error for fetch failure
         if (fetchError.name === 'TypeError' && fetchError.message.includes('Failed to fetch')) {
           toast.warn('Network error: Trying alternative download method...');
@@ -4609,7 +4611,7 @@ function AdminAppointmentRow({
         } else {
           toast.warn(`Fetch error: ${fetchError.message}. Trying alternative download method...`);
         }
-        
+
         // Fallback to direct link download for CORS issues
         try {
           const link = document.createElement('a');
@@ -4621,11 +4623,11 @@ function AdminAppointmentRow({
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
-          
+
           // Show info message for direct download attempt
           toast.info('Alternative download initiated. If it doesn\'t start automatically, please try right-clicking the image and selecting "Save image as..."');
           return; // Exit early on fallback attempt
-          
+
         } catch (directDownloadError) {
           console.error('Direct download failed:', directDownloadError);
           throw new Error(`Direct download failed: ${directDownloadError.message}`);
@@ -4633,14 +4635,14 @@ function AdminAppointmentRow({
       }
     } catch (error) {
       console.error('Download process failed:', error);
-      
+
       // Show error notification for the main download process failure
       toast.error(`Download failed: ${error.message}. Attempting to open image in new tab...`);
-      
+
       // Final fallback - open image in new tab
       try {
         const newWindow = window.open(imageUrl, '_blank', 'noopener,noreferrer');
-        
+
         if (newWindow) {
           toast.info('Image opened in new tab. You can right-click to save it manually.');
         } else {
@@ -4649,7 +4651,7 @@ function AdminAppointmentRow({
         }
       } catch (openError) {
         console.error('Failed to open image in new tab:', openError);
-        
+
         // Final error - all methods failed
         if (openError.message.includes('Pop-up blocked')) {
           toast.error('Error: Pop-up blocked. Please allow pop-ups for this site or right-click the image and select "Save image as..."');
@@ -4667,40 +4669,40 @@ function AdminAppointmentRow({
       toast.error('Maximum 10 images allowed. Please remove some images first.');
       return;
     }
-    
+
     // Filter only image files
     const imageFiles = files.filter(file => file.type.startsWith('image/'));
     if (imageFiles.length === 0) {
       toast.error('No valid image files found');
       return;
     }
-    
+
     // Add new files to existing selection
     setSelectedFiles(prev => [...(prev || []), ...imageFiles]);
-    
+
     // Initialize captions for new files
     const newCaptions = {};
     imageFiles.forEach(file => {
       newCaptions[file.name] = '';
     });
     setImageCaptions(prev => ({ ...prev, ...newCaptions }));
-    
+
     // Show image preview modal
     setShowImagePreviewModal(true);
-    
+
     toast.success(`${imageFiles.length} image${imageFiles.length > 1 ? 's' : ''} added successfully!`);
   };
 
   const handleSendImagesWithCaptions = async () => {
     if (!selectedFiles || selectedFiles.length === 0) return;
-    
+
     setUploadingFile(true);
     setUploadProgress(0);
     setCurrentFileIndex(-1);
     setCurrentFileProgress(0);
     setFailedFiles([]);
     setIsCancellingUpload(false);
-    
+
     try {
       // Upload images sequentially so we can show progress
       let cancelledByUser = false;
@@ -4717,9 +4719,9 @@ function AdminAppointmentRow({
         currentUploadControllerRef.current = controller;
 
         try {
-          const { data } = await axios.post(`${API_BASE_URL}/api/upload/image`, 
+          const { data } = await axios.post(`${API_BASE_URL}/api/upload/image`,
             uploadFormData,
-            { 
+            {
               withCredentials: true,
               headers: { 'Content-Type': 'multipart/form-data' },
               signal: controller.signal,
@@ -4750,7 +4752,7 @@ function AdminAppointmentRow({
           }
         }
       }
-      
+
       if (failedLocal.length) setFailedFiles(failedLocal);
 
       // Clear state only if fully successful and not cancelled
@@ -4777,7 +4779,7 @@ function AdminAppointmentRow({
   // Cancel in-flight upload
   const handleCancelInFlightUpload = () => {
     if (currentUploadControllerRef.current) {
-      try { currentUploadControllerRef.current.abort(); } catch (_) {}
+      try { currentUploadControllerRef.current.abort(); } catch (_) { }
     }
     // Do not close preview; ensure send button remains available
     setUploadingFile(false);
@@ -4818,20 +4820,20 @@ function AdminAppointmentRow({
         const serverComments = data.comments || data.updated?.comments || data?.appointment?.comments || [];
         const serverCommentIds = new Set(serverComments.map(c => c._id));
         const localTempMessages = prev.filter(c => c._id.startsWith('temp-'));
-        
+
         // Combine server comments with local temp messages
         const mergedComments = [...serverComments];
-        
+
         // Add back any local temp messages that haven't been confirmed yet
         localTempMessages.forEach(tempMsg => {
           if (!serverCommentIds.has(tempMsg._id)) {
             mergedComments.push(tempMsg);
           }
         });
-        
+
         return mergedComments;
       });
-      
+
       // CRITICAL: Update parent appointments array to keep sync working
       updateAppointmentComments(appt._id, data.comments || data.updated?.comments || data?.appointment?.comments || []);
     } catch (err) {
@@ -4895,20 +4897,20 @@ function AdminAppointmentRow({
         const serverComments = data.comments || data.updated?.comments || data?.appointment?.comments || [];
         const serverCommentIds = new Set(serverComments.map(c => c._id));
         const localTempMessages = prev.filter(c => c._id.startsWith('temp-'));
-        
+
         // Combine server comments with local temp messages
         const mergedComments = [...serverComments];
-        
+
         // Add back any local temp messages that haven't been confirmed yet
         localTempMessages.forEach(tempMsg => {
           if (!serverCommentIds.has(tempMsg._id)) {
             mergedComments.push(tempMsg);
           }
         });
-        
+
         return mergedComments;
       });
-      
+
       // CRITICAL: Update parent appointments array to keep sync working
       updateAppointmentComments(appt._id, data.comments || data.updated?.comments || data?.appointment?.comments || []);
     } catch (err) {
@@ -4946,20 +4948,20 @@ function AdminAppointmentRow({
         const serverComments = data.comments || data.updated?.comments || data?.appointment?.comments || [];
         const serverCommentIds = new Set(serverComments.map(c => c._id));
         const localTempMessages = prev.filter(c => c._id.startsWith('temp-'));
-        
+
         // Combine server comments with local temp messages
         const mergedComments = [...serverComments];
-        
+
         // Add back any local temp messages that haven't been confirmed yet
         localTempMessages.forEach(tempMsg => {
           if (!serverCommentIds.has(tempMsg._id)) {
             mergedComments.push(tempMsg);
           }
         });
-        
+
         return mergedComments;
       });
-      
+
       // CRITICAL: Update parent appointments array to keep sync working
       updateAppointmentComments(appt._id, data.comments || data.updated?.comments || data?.appointment?.comments || []);
     } catch (err) {
@@ -4974,11 +4976,11 @@ function AdminAppointmentRow({
       setUploadingFile(true);
       const form = new FormData();
       form.append('audio', selectedAudio);
-      
+
       // Create abort controller for cancellation
       const controller = new AbortController();
       currentUploadControllerRef.current = controller;
-      
+
       const { data } = await axios.post(`${API_BASE_URL}/api/upload/audio`, form, {
         withCredentials: true,
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -5035,17 +5037,17 @@ function AdminAppointmentRow({
     if (!newComment.trim()) return;
     // Close emoji picker on send
     window.dispatchEvent(new Event('closeEmojiPicker'));
-    
+
     // Trigger send icon animation
     setSendIconAnimating(true);
-    
+
     // Store the message content and reply before clearing the input
     const messageContent = newComment.trim();
     const replyToData = replyTo;
-    
+
     // Store original replyTo for display purposes (even if it's a call)
     const originalReplyToId = replyToData ? replyToData._id : null;
-    
+
     // Create a temporary message object with immediate display
     const tempId = `temp-${Date.now()}`;
     const tempMessage = {
@@ -5064,12 +5066,12 @@ function AdminAppointmentRow({
 
     // Immediately update UI - this makes the message appear instantly
     setLocalComments(prev => [...prev, tempMessage]);
-    try { playMessageSent(); } catch(_) {}
+    try { playMessageSent(); } catch (_) { }
     setNewComment("");
     try {
       const draftKey = `admin_appt_draft_${appt._id}_${currentUser._id}`;
       localStorage.removeItem(draftKey);
-    } catch(_) {}
+    } catch (_) { }
     setDetectedUrl(null);
     setPreviewDismissed(false);
     setReplyTo(null);
@@ -5091,41 +5093,41 @@ function AdminAppointmentRow({
       try {
         // Check if replyTo is a call (starts with "call-") - if so, don't send replyTo as backend can't validate call IDs
         const replyToId = replyToData && !replyToData._id?.startsWith('call-') ? replyToData._id : null;
-        
-        const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, 
-          { 
-            message: messageContent, 
+
+        const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`,
+          {
+            message: messageContent,
             ...(replyToId ? { replyTo: replyToId } : {}),
             ...(previewDismissed ? { previewDismissed: true } : {})
           },
-          { 
+          {
             withCredentials: true,
             headers: { "Content-Type": "application/json" }
           }
         );
-        
+
         // Find the new comment from the response
         const newCommentFromServer = data.comments[data.comments.length - 1];
-        
+
         // Update only the status and ID of the temp message, keeping it visible
         // Preserve replyTo if it was a call (not sent to backend but stored locally)
-        setLocalComments(prev => prev.map(msg => 
-          msg._id === tempId 
-            ? { 
-                ...msg, 
-                _id: newCommentFromServer._id,
-                status: newCommentFromServer.status,
-                readBy: newCommentFromServer.readBy || msg.readBy,
-                timestamp: newCommentFromServer.timestamp || msg.timestamp,
-                // Preserve original replyTo if it was a call (backend won't return it)
-                replyTo: originalReplyToId || newCommentFromServer.replyTo || msg.replyTo
-              }
+        setLocalComments(prev => prev.map(msg =>
+          msg._id === tempId
+            ? {
+              ...msg,
+              _id: newCommentFromServer._id,
+              status: newCommentFromServer.status,
+              readBy: newCommentFromServer.readBy || msg.readBy,
+              timestamp: newCommentFromServer.timestamp || msg.timestamp,
+              // Preserve original replyTo if it was a call (backend won't return it)
+              replyTo: originalReplyToId || newCommentFromServer.replyTo || msg.replyTo
+            }
             : msg
         ));
-        
+
         // CRITICAL: Update parent appointments array to keep sync working
         updateAppointmentComments(appt._id, data.comments);
-        
+
         // Don't show success toast as it's too verbose for chat
       } catch (err) {
         // Remove the temp message and show error
@@ -5141,96 +5143,96 @@ function AdminAppointmentRow({
 
   const handleEditComment = async (commentId) => {
     if (!editText.trim()) return;
-    
+
     setSavingComment(commentId);
-    
+
     // Optimistic update - update UI immediately
     const optimisticUpdate = prev => {
-      const updated = prev.map(c => 
-        c._id === commentId 
+      const updated = prev.map(c =>
+        c._id === commentId
           ? { ...c, message: editText, edited: true, editedAt: new Date() }
           : c
       );
-      
+
       // Update parent component state immediately
       updateAppointmentComments(appt._id, updated);
-      
+
       return updated;
     };
     setLocalComments(optimisticUpdate);
-    
+
     try {
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${commentId}`, 
+      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${commentId}`,
         { message: editText },
-        { 
+        {
           withCredentials: true,
           headers: { "Content-Type": "application/json" }
         }
       );
 
-        // Update with server response
-        setLocalComments(prev => {
-          const updated = prev.map(c => {
-            const serverComment = data.comments.find(sc => sc._id === c._id);
-            if (serverComment) {
-              // For the edited message, preserve edited state and use server data
-              if (serverComment._id === commentId) {
-                return { 
-                  ...serverComment, 
-                  edited: true, 
-                  editedAt: serverComment.editedAt || new Date() 
-                };
-              }
-              // For other messages, preserve local read status if it exists
-              return c.status === 'read' && serverComment.status !== 'read' 
-                ? { ...serverComment, status: 'read' }
-                : serverComment;
+      // Update with server response
+      setLocalComments(prev => {
+        const updated = prev.map(c => {
+          const serverComment = data.comments.find(sc => sc._id === c._id);
+          if (serverComment) {
+            // For the edited message, preserve edited state and use server data
+            if (serverComment._id === commentId) {
+              return {
+                ...serverComment,
+                edited: true,
+                editedAt: serverComment.editedAt || new Date()
+              };
             }
-            return c;
-          });
-          
-          // Update parent component state with the updated comments
-          updateAppointmentComments(appt._id, updated);
-          
-          return updated;
-        });
-        setEditingComment(null);
-        setEditText("");
-        // Restore original draft and clear it after a small delay to ensure state update
-        const draftToRestore = originalDraft;
-        setNewComment(draftToRestore);
-        setTimeout(() => {
-          setOriginalDraft(""); // Clear stored draft after restoration
-        }, 100);
-        setDetectedUrl(null);
-        setPreviewDismissed(false);
-        // Auto-resize textarea for restored draft
-        setTimeout(() => {
-          if (inputRef.current) {
-            // Force a re-render by triggering the input event
-            const event = new Event('input', { bubbles: true });
-            inputRef.current.dispatchEvent(event);
-            autoResizeTextarea(inputRef.current);
+            // For other messages, preserve local read status if it exists
+            return c.status === 'read' && serverComment.status !== 'read'
+              ? { ...serverComment, status: 'read' }
+              : serverComment;
           }
-        }, 50);
-        
-        // Removed auto-focus: Don't automatically focus input after editing
-        // User can manually click to focus when needed
-        
-        toast.success("Message edited successfully!");
+          return c;
+        });
+
+        // Update parent component state with the updated comments
+        updateAppointmentComments(appt._id, updated);
+
+        return updated;
+      });
+      setEditingComment(null);
+      setEditText("");
+      // Restore original draft and clear it after a small delay to ensure state update
+      const draftToRestore = originalDraft;
+      setNewComment(draftToRestore);
+      setTimeout(() => {
+        setOriginalDraft(""); // Clear stored draft after restoration
+      }, 100);
+      setDetectedUrl(null);
+      setPreviewDismissed(false);
+      // Auto-resize textarea for restored draft
+      setTimeout(() => {
+        if (inputRef.current) {
+          // Force a re-render by triggering the input event
+          const event = new Event('input', { bubbles: true });
+          inputRef.current.dispatchEvent(event);
+          autoResizeTextarea(inputRef.current);
+        }
+      }, 50);
+
+      // Removed auto-focus: Don't automatically focus input after editing
+      // User can manually click to focus when needed
+
+      toast.success("Message edited successfully!");
     } catch (err) {
       console.error('Error editing comment:', err);
       // Revert optimistic update on error
       setLocalComments(prev => {
-        const reverted = prev.map(c => 
-          c._id === commentId 
+        const reverted = prev.map(c =>
+          c._id === commentId
             ? { ...c, message: c.originalMessage || c.message, edited: c.wasEdited || false }
             : c
         );
-        
+
         // Update parent component state with reverted changes
         updateAppointmentComments(appt._id, reverted);
-        
+
         return reverted;
       });
       setEditingComment(commentId);
@@ -5248,7 +5250,7 @@ function AdminAppointmentRow({
       textarea.style.height = '48px';
       const scrollHeight = textarea.scrollHeight;
       const maxHeight = 144;
-      
+
       if (scrollHeight <= maxHeight) {
         // If content fits within max height, expand the textarea
         textarea.style.height = scrollHeight + 'px';
@@ -5276,8 +5278,8 @@ function AdminAppointmentRow({
     setEditText(comment.message);
     setNewComment(comment.message); // Set the message in the main input
     // Store original data for potential rollback
-    setLocalComments(prev => prev.map(c => 
-      c._id === comment._id 
+    setLocalComments(prev => prev.map(c =>
+      c._id === comment._id
         ? { ...c, originalMessage: c.message, wasEdited: c.edited }
         : c
     ));
@@ -5288,7 +5290,7 @@ function AdminAppointmentRow({
         // Place cursor at end of text instead of selecting all
         const length = inputRef.current.value.length;
         inputRef.current.setSelectionRange(length, length);
-        
+
         // Auto-resize textarea for edited content
         autoResizeTextarea(inputRef.current);
       }
@@ -5315,18 +5317,18 @@ function AdminAppointmentRow({
 
   // Add function to check if appointment is upcoming
   const isUpcoming = new Date(appt.date) > new Date() || (new Date(appt.date).toDateString() === new Date().toDateString() && (!appt.time || appt.time > new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })));
-  
+
   // Chat availability: for admin context, allow sending for all appointments except certain statuses
   const isChatSendBlocked = appt.status === 'rejected' || appt.status === 'cancelledByAdmin' || appt.status === 'cancelledByBuyer' || appt.status === 'cancelledBySeller' || appt.status === 'deletedByAdmin';
-  
+
 
   // Function to highlight searched text within message content
   const highlightSearchedText = (text, searchQuery) => {
     if (!searchQuery || !text) return text;
-    
+
     const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
     const parts = text.split(regex);
-    
+
     return parts.map((part, index) => {
       if (regex.test(part)) {
         return `<span class="search-text-highlight">${part}</span>`;
@@ -5350,10 +5352,10 @@ function AdminAppointmentRow({
       });
       return;
     }
-    
+
     const results = localComments
       .filter(comment => !comment.deleted)
-      .filter(comment => 
+      .filter(comment =>
         comment.message.toLowerCase().includes(query.toLowerCase()) ||
         comment.senderName?.toLowerCase().includes(query.toLowerCase()) ||
         comment.senderEmail?.toLowerCase().includes(query.toLowerCase())
@@ -5362,9 +5364,9 @@ function AdminAppointmentRow({
         ...comment,
         matchIndex: comment.message.toLowerCase().indexOf(query.toLowerCase())
       }));
-    
+
     setSearchResults(results);
-    
+
     // Auto-scroll to first result if results found
     if (results.length > 0) {
       setCurrentSearchIndex(0);
@@ -5388,7 +5390,7 @@ function AdminAppointmentRow({
       e.preventDefault();
       if (searchResults.length > 0) {
         // Navigate to next result
-        setCurrentSearchIndex((prev) => 
+        setCurrentSearchIndex((prev) =>
           prev < searchResults.length - 1 ? prev + 1 : 0
         );
       }
@@ -5408,35 +5410,35 @@ function AdminAppointmentRow({
     const messageElement = messageRefs.current[commentId];
     if (messageElement) {
       // Enhanced scroll animation with better timing
-      messageElement.scrollIntoView({ 
-        behavior: 'smooth', 
+      messageElement.scrollIntoView({
+        behavior: 'smooth',
         block: 'center',
         inline: 'nearest'
       });
-      
+
       // Enhanced search highlight animation with multiple effects
       setTimeout(() => {
         // Remove any existing highlights first
         document.querySelectorAll('.search-highlight').forEach(el => {
           el.classList.remove('search-highlight', 'search-pulse', 'search-glow');
         });
-        
+
         // Add enhanced search highlight with multiple animation classes
         messageElement.classList.add('search-highlight', 'search-pulse', 'search-glow');
-        
+
         // Add a search ripple effect
         const ripple = document.createElement('div');
         ripple.className = 'search-ripple';
         messageElement.style.position = 'relative';
         messageElement.appendChild(ripple);
-        
+
         // Remove ripple after animation
         setTimeout(() => {
           if (ripple.parentNode) {
             ripple.parentNode.removeChild(ripple);
           }
         }, 1000);
-        
+
         // Remove highlight effects after enhanced duration
         setTimeout(() => {
           messageElement.classList.remove('search-highlight', 'search-pulse', 'search-glow');
@@ -5448,49 +5450,49 @@ function AdminAppointmentRow({
   const handleDateSelect = (date) => {
     setSelectedDate(date);
     setShowCalendar(false);
-    
+
     // Find the first message from the selected date
     const targetDate = new Date(date);
     const targetDateString = targetDate.toDateString();
-    
+
     const firstMessageOfDate = localComments.find(comment => {
       const commentDate = new Date(comment.timestamp);
       return commentDate.toDateString() === targetDateString;
     });
-    
+
     if (firstMessageOfDate) {
       // Enhanced animation for scrolling to the message
       const messageElement = messageRefs.current[firstMessageOfDate._id];
       if (messageElement) {
         // Add a pre-animation class for better visual feedback
         messageElement.classList.add('date-jump-preparing');
-        
+
         // Smooth scroll with enhanced timing
-        messageElement.scrollIntoView({ 
-          behavior: 'smooth', 
+        messageElement.scrollIntoView({
+          behavior: 'smooth',
           block: 'center',
           inline: 'nearest'
         });
-        
+
         // Enhanced highlight animation with multiple effects
         setTimeout(() => {
           messageElement.classList.remove('date-jump-preparing');
           setHighlightedDateMessage(firstMessageOfDate._id);
           messageElement.classList.add('date-highlight', 'date-jump-pulse');
-          
+
           // Add a ripple effect
           const ripple = document.createElement('div');
           ripple.className = 'date-jump-ripple';
           messageElement.style.position = 'relative';
           messageElement.appendChild(ripple);
-          
+
           // Remove ripple after animation
           setTimeout(() => {
             if (ripple.parentNode) {
               ripple.parentNode.removeChild(ripple);
             }
           }, 1000);
-          
+
           // Remove highlight effects after enhanced duration
           setTimeout(() => {
             messageElement.classList.remove('date-highlight', 'date-jump-pulse');
@@ -5548,38 +5550,38 @@ function AdminAppointmentRow({
         withCredentials: true
       });
       if (data.comments) {
-          // Preserve starred status and temp messages from current state
-          // Preserve starred status from current state
-          const updatedComments = data.comments.map(newComment => {
-            const existingComment = localComments.find(c => c._id === newComment._id);
-            if (existingComment && existingComment.starredBy) {
-              return { ...newComment, starredBy: existingComment.starredBy };
-            }
-            return newComment;
-          });
+        // Preserve starred status and temp messages from current state
+        // Preserve starred status from current state
+        const updatedComments = data.comments.map(newComment => {
+          const existingComment = localComments.find(c => c._id === newComment._id);
+          if (existingComment && existingComment.starredBy) {
+            return { ...newComment, starredBy: existingComment.starredBy };
+          }
+          return newComment;
+        });
 
-          // Add back any local temp messages that haven't been confirmed yet
-          const localTempMessages = localComments.filter(c => c._id.startsWith('temp-'));
-          const serverCommentIds = new Set(data.comments.map(c => c._id));
-          
-          localTempMessages.forEach(tempMsg => {
-            if (!serverCommentIds.has(tempMsg._id)) {
-              updatedComments.push(tempMsg);
-            }
-          });
-          
-          setLocalComments(updatedComments);
-          
-          // Auto-scroll to bottom when chat first opens (after password)
-          setTimeout(() => {
-            if (chatContainerRef.current && chatEndRef.current) {
-              chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-              chatEndRef.current.scrollIntoView({ behavior: 'instant', block: 'end' });
-            }
-          }, 100);
-          
-          // No toast notification for initial load
-        }
+        // Add back any local temp messages that haven't been confirmed yet
+        const localTempMessages = localComments.filter(c => c._id.startsWith('temp-'));
+        const serverCommentIds = new Set(data.comments.map(c => c._id));
+
+        localTempMessages.forEach(tempMsg => {
+          if (!serverCommentIds.has(tempMsg._id)) {
+            updatedComments.push(tempMsg);
+          }
+        });
+
+        setLocalComments(updatedComments);
+
+        // Auto-scroll to bottom when chat first opens (after password)
+        setTimeout(() => {
+          if (chatContainerRef.current && chatEndRef.current) {
+            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+            chatEndRef.current.scrollIntoView({ behavior: 'instant', block: 'end' });
+          }
+        }, 100);
+
+        // No toast notification for initial load
+      }
     } catch (err) {
       console.error('Error loading initial comments:', err);
       toast.error('Failed to load messages');
@@ -5596,36 +5598,36 @@ function AdminAppointmentRow({
         withCredentials: true
       });
       if (data.comments) {
-          // Preserve starred status and temp messages from current state
-          // Preserve starred status from current state
-          const updatedComments = data.comments.map(newComment => {
-            const existingComment = localComments.find(c => c._id === newComment._id);
-            if (existingComment && existingComment.starredBy) {
-              return { ...newComment, starredBy: existingComment.starredBy };
-            }
-            return newComment;
-          });
+        // Preserve starred status and temp messages from current state
+        // Preserve starred status from current state
+        const updatedComments = data.comments.map(newComment => {
+          const existingComment = localComments.find(c => c._id === newComment._id);
+          if (existingComment && existingComment.starredBy) {
+            return { ...newComment, starredBy: existingComment.starredBy };
+          }
+          return newComment;
+        });
 
-          // Add back any local temp messages that haven't been confirmed yet
-          const localTempMessages = localComments.filter(c => c._id.startsWith('temp-'));
-          const serverCommentIds = new Set(data.comments.map(c => c._id));
-          
-          localTempMessages.forEach(tempMsg => {
-            if (!serverCommentIds.has(tempMsg._id)) {
-              updatedComments.push(tempMsg);
-            }
-          });
-          
-          setLocalComments(updatedComments);
-          
-          // Don't auto-scroll to bottom - retain current scroll position
-          
-          // Show success toast notification
-          toast.success('Messages refreshed successfully!', {
-            autoClose: 2000,
-            position: 'top-center'
-          });
-        }
+        // Add back any local temp messages that haven't been confirmed yet
+        const localTempMessages = localComments.filter(c => c._id.startsWith('temp-'));
+        const serverCommentIds = new Set(data.comments.map(c => c._id));
+
+        localTempMessages.forEach(tempMsg => {
+          if (!serverCommentIds.has(tempMsg._id)) {
+            updatedComments.push(tempMsg);
+          }
+        });
+
+        setLocalComments(updatedComments);
+
+        // Don't auto-scroll to bottom - retain current scroll position
+
+        // Show success toast notification
+        toast.success('Messages refreshed successfully!', {
+          autoClose: 2000,
+          position: 'top-center'
+        });
+      }
     } catch (err) {
       console.error('Error fetching latest comments:', err);
       toast.error('Failed to refresh messages');
@@ -5640,9 +5642,9 @@ function AdminAppointmentRow({
     setPasswordError("");
     try {
       // Call backend to verify admin password
-      const { data } = await axios.post(`${API_BASE_URL}/api/auth/verify-password`, 
+      const { data } = await axios.post(`${API_BASE_URL}/api/auth/verify-password`,
         { password: adminPassword },
-        { 
+        {
           withCredentials: true,
           headers: { "Content-Type": "application/json" }
         }
@@ -5715,12 +5717,12 @@ function AdminAppointmentRow({
 
   const handleConfirmDelete = async () => {
     if (!messageToDelete) return;
-    
+
     try {
       // Handle call deletion (calls are stored in DB, we just remove from local display)
       if (messageToDelete.isCall || (messageToDelete._id && messageToDelete._id.startsWith('call-'))) {
         const callToDelete = messageToDelete.call || messageToDelete;
-        setCallHistory(prev => prev.filter(call => 
+        setCallHistory(prev => prev.filter(call =>
           (call._id || call.callId) !== (callToDelete._id || callToDelete.callId)
         ));
         toast.success('Call removed from chat');
@@ -5728,7 +5730,7 @@ function AdminAppointmentRow({
         setMessageToDelete(null);
         return;
       }
-      
+
       // Admin deletion is always for everyone
       if (Array.isArray(messageToDelete)) {
         const ids = messageToDelete.map(m => m._id);
@@ -5737,67 +5739,67 @@ function AdminAppointmentRow({
           headers: { 'Content-Type': 'application/json' },
           data: { commentIds: ids }
         });
-          if (data?.comments) {
-            // Merge server comments with local temp messages to prevent loss of temporary messages
-            setLocalComments(prev => {
-              const serverComments = data.comments;
-              const serverCommentIds = new Set(serverComments.map(c => c._id));
-              const localTempMessages = prev.filter(c => c._id.startsWith('temp-'));
-              
-              // Combine server comments with local temp messages
-              const mergedComments = [...serverComments];
-              
-              // Add back any local temp messages that haven't been confirmed yet
-              localTempMessages.forEach(tempMsg => {
-                if (!serverCommentIds.has(tempMsg._id)) {
-                  mergedComments.push(tempMsg);
-                }
-              });
-              
-              return mergedComments;
+        if (data?.comments) {
+          // Merge server comments with local temp messages to prevent loss of temporary messages
+          setLocalComments(prev => {
+            const serverComments = data.comments;
+            const serverCommentIds = new Set(serverComments.map(c => c._id));
+            const localTempMessages = prev.filter(c => c._id.startsWith('temp-'));
+
+            // Combine server comments with local temp messages
+            const mergedComments = [...serverComments];
+
+            // Add back any local temp messages that haven't been confirmed yet
+            localTempMessages.forEach(tempMsg => {
+              if (!serverCommentIds.has(tempMsg._id)) {
+                mergedComments.push(tempMsg);
+              }
             });
-            
-            // CRITICAL: Update parent appointments array to keep sync working
-            updateAppointmentComments(appt._id, data.comments);
-          }
-          toast.success(`Deleted ${ids.length} messages for everyone!`);
-        } else {
-          const wasUnread = !messageToDelete.readBy?.includes(currentUser._id) && 
-                           messageToDelete.senderEmail !== currentUser.email;
-          const { data } = await axios.delete(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${messageToDelete._id}`, {
-            withCredentials: true
+
+            return mergedComments;
           });
-            // Merge server comments with local temp messages to prevent loss of temporary messages
-            setLocalComments(prev => {
-              const serverComments = data.comments;
-              const serverCommentIds = new Set(serverComments.map(c => c._id));
-              const localTempMessages = prev.filter(c => c._id.startsWith('temp-'));
-              
-              // Combine server comments with local temp messages
-              const mergedComments = [...serverComments];
-              
-              // Add back any local temp messages that haven't been confirmed yet
-              localTempMessages.forEach(tempMsg => {
-                if (!serverCommentIds.has(tempMsg._id)) {
-                  mergedComments.push(tempMsg);
-                }
-              });
-              
-              return mergedComments;
-            });
-            
-            // CRITICAL: Update parent appointments array to keep sync working
-            updateAppointmentComments(appt._id, data.comments);
-            
-            if (wasUnread) {
-              setUnreadNewMessages(prev => Math.max(0, prev - 1));
-            }
-            toast.success("Message deleted successfully!");
+
+          // CRITICAL: Update parent appointments array to keep sync working
+          updateAppointmentComments(appt._id, data.comments);
         }
+        toast.success(`Deleted ${ids.length} messages for everyone!`);
+      } else {
+        const wasUnread = !messageToDelete.readBy?.includes(currentUser._id) &&
+          messageToDelete.senderEmail !== currentUser.email;
+        const { data } = await axios.delete(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${messageToDelete._id}`, {
+          withCredentials: true
+        });
+        // Merge server comments with local temp messages to prevent loss of temporary messages
+        setLocalComments(prev => {
+          const serverComments = data.comments;
+          const serverCommentIds = new Set(serverComments.map(c => c._id));
+          const localTempMessages = prev.filter(c => c._id.startsWith('temp-'));
+
+          // Combine server comments with local temp messages
+          const mergedComments = [...serverComments];
+
+          // Add back any local temp messages that haven't been confirmed yet
+          localTempMessages.forEach(tempMsg => {
+            if (!serverCommentIds.has(tempMsg._id)) {
+              mergedComments.push(tempMsg);
+            }
+          });
+
+          return mergedComments;
+        });
+
+        // CRITICAL: Update parent appointments array to keep sync working
+        updateAppointmentComments(appt._id, data.comments);
+
+        if (wasUnread) {
+          setUnreadNewMessages(prev => Math.max(0, prev - 1));
+        }
+        toast.success("Message deleted successfully!");
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to delete message.');
     }
-    
+
     setShowDeleteModal(false);
     setMessageToDelete(null);
   };
@@ -5810,7 +5812,7 @@ function AdminAppointmentRow({
       return [];
     }
   }
-  
+
   // Optimized functions that update both state and localStorage instantly
   const hideMessage = React.useCallback((msgId) => {
     setHiddenMessageIds(prev => {
@@ -5825,7 +5827,7 @@ function AdminAppointmentRow({
       return prev;
     });
   }, [appt._id]);
-  
+
   const showMessage = React.useCallback((msgId) => {
     setHiddenMessageIds(prev => {
       const updated = prev.filter(id => id !== msgId);
@@ -5838,7 +5840,7 @@ function AdminAppointmentRow({
   }, [appt._id]);
 
   return (
-          <tr className={`hover:bg-blue-50 transition align-top ${isArchived ? 'bg-gray-50' : ''} ${!isUpcoming ? (isArchived ? 'bg-gray-100' : 'bg-gray-100') : ''}`}>
+    <tr className={`hover:bg-blue-50 transition align-top ${isArchived ? 'bg-gray-50' : ''} ${!isUpcoming ? (isArchived ? 'bg-gray-100' : 'bg-gray-100') : ''}`}>
       <td className="border p-2">
         <div>
           <div>{new Date(appt.date).toLocaleDateString('en-GB')}</div>
@@ -5856,7 +5858,7 @@ function AdminAppointmentRow({
       <td className="border p-2">
         <div>
           {appt.listingId ? (
-            <Link 
+            <Link
               to={`/admin/listing/${appt.listingId._id}`}
               className="font-semibold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
             >
@@ -5945,17 +5947,17 @@ function AdminAppointmentRow({
       <td className="border p-2 text-center">
         <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(appt.status)}`}>
           {appt.status === "deletedByAdmin" ? "Deleted by Admin" :
-           appt.status === "cancelledByBuyer" ? "Cancelled by Buyer" :
-           appt.status === "cancelledBySeller" ? "Cancelled by Seller" :
-           appt.status === "cancelledByAdmin" ? "Cancelled by Admin" :
-           appt.status.charAt(0).toUpperCase() + appt.status.slice(1)}
+            appt.status === "cancelledByBuyer" ? "Cancelled by Buyer" :
+              appt.status === "cancelledBySeller" ? "Cancelled by Seller" :
+                appt.status === "cancelledByAdmin" ? "Cancelled by Admin" :
+                  appt.status.charAt(0).toUpperCase() + appt.status.slice(1)}
         </span>
         {appt.status === "deletedByAdmin" && appt.adminComment && (
           <div className="text-xs text-gray-600 mt-1">"{appt.adminComment}"</div>
         )}
         {(appt.status === "cancelledByBuyer" || appt.status === "cancelledBySeller") && (
           <div className="text-xs text-gray-600 mt-1">
-            {appt.status === "cancelledByBuyer" 
+            {appt.status === "cancelledByBuyer"
               ? `Buyer reinitiations: ${appt.buyerReinitiationCount || 0}/2`
               : `Seller reinitiations: ${appt.sellerReinitiationCount || 0}/2`
             }
@@ -5993,7 +5995,7 @@ function AdminAppointmentRow({
                   <FaUserShield /> Cancel
                 </button>
               ) : null}
-              
+
               {/* Archive button for all active appointments */}
               <button
                 className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2"
@@ -6030,15 +6032,15 @@ function AdminAppointmentRow({
               </h3>
               <form onSubmit={handlePasswordSubmit} className="w-full flex flex-col gap-3">
                 <div>
-                <input
-                  type="password"
-                  className="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-200"
-                  placeholder="Enter your password"
-                  value={adminPassword}
-                  onChange={e => setAdminPassword(e.target.value)}
-                  required
-                  autoFocus
-                />
+                  <input
+                    type="password"
+                    className="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-200"
+                    placeholder="Enter your password"
+                    value={adminPassword}
+                    onChange={e => setAdminPassword(e.target.value)}
+                    required
+                    autoFocus
+                  />
                   {passwordError && (
                     <div className="text-red-600 text-sm mt-1">{passwordError}</div>
                   )}
@@ -6057,7 +6059,7 @@ function AdminAppointmentRow({
         {showChatModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50 p-4">
             <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 rounded-3xl shadow-2xl w-full h-full max-w-6xl max-h-full p-0 relative animate-fadeIn flex flex-col border border-gray-200 transform transition-all duration-500 hover:shadow-3xl">
-                                                              <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 sm:py-4 border-b-2 border-blue-700 bg-gradient-to-r from-blue-700 via-purple-700 to-blue-900 rounded-t-3xl relative shadow-2xl sticky top-[env(safe-area-inset-top,0px)] z-30">
+              <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 sm:py-4 border-b-2 border-blue-700 bg-gradient-to-r from-blue-700 via-purple-700 to-blue-900 rounded-t-3xl relative shadow-2xl sticky top-[env(safe-area-inset-top,0px)] z-30">
                 {isSelectionMode ? (
                   // Multi-select header
                   <div className="flex items-center justify-between w-full">
@@ -6096,7 +6098,7 @@ function AdminAppointmentRow({
                                   <>
                                     <button
                                       className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
-                                      onClick={() => { 
+                                      onClick={() => {
                                         startReply(selectedMsg);
                                         setIsSelectionMode(false);
                                         setSelectedMessages([]);
@@ -6104,12 +6106,12 @@ function AdminAppointmentRow({
                                       title="Reply"
                                       aria-label="Reply"
                                     >
-                                      <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M10 9V5l-7 7 7 7v-4.1c4.28 0 6.92 1.45 8.84 4.55.23.36.76.09.65-.32C18.31 13.13 15.36 10.36 10 9z"/></svg>
+                                      <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M10 9V5l-7 7 7 7v-4.1c4.28 0 6.92 1.45 8.84 4.55.23.36.76.09.65-.32C18.31 13.13 15.36 10.36 10 9z" /></svg>
                                     </button>
                                     <button
                                       className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
-                                      onClick={() => { 
-                                        copyMessageToClipboard(selectedMsg.message); 
+                                      onClick={() => {
+                                        copyMessageToClipboard(selectedMsg.message);
                                         setIsSelectionMode(false);
                                         setSelectedMessages([]);
                                       }}
@@ -6120,45 +6122,45 @@ function AdminAppointmentRow({
                                     </button>
                                     <button
                                       className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
-                                      onClick={async () => { 
+                                      onClick={async () => {
                                         const isStarred = selectedMsg.starredBy?.includes(currentUser._id);
                                         setMultiSelectActions(prev => ({ ...prev, starring: true }));
                                         try {
-                                          const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${selectedMsg._id}/star`, 
+                                          const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${selectedMsg._id}/star`,
                                             { starred: !isStarred },
-                                            { 
+                                            {
                                               withCredentials: true,
                                               headers: { 'Content-Type': 'application/json' }
                                             }
                                           );
-                                            setLocalComments(prev => {
-                                              const updated = prev.map(c => 
-                                                c._id === selectedMsg._id 
-                                                  ? { 
-                                                      ...c, 
-                                                      starredBy: isStarred 
-                                                        ? (c.starredBy || []).filter(id => id !== currentUser._id)
-                                                        : [...(c.starredBy || []), currentUser._id]
-                                                    }
-                                                  : c
-                                              );
-                                              
-                                              // Update appointment comments for parent component with the updated state
-                                              updateAppointmentComments(appt._id, updated);
-                                              
-                                              return updated;
-                                            });
-                                            
-                                            // Update starred messages list
-                                            if (isStarred) {
-                                              // Remove from starred messages
-                                              setStarredMessages(prev => prev.filter(m => m._id !== selectedMsg._id));
-                                            } else {
-                                              // Add to starred messages
-                                              setStarredMessages(prev => [...prev, selectedMsg]);
-                                            }
-                                            
-                                            toast.success(isStarred ? 'Message unstarred.' : 'Message starred.');
+                                          setLocalComments(prev => {
+                                            const updated = prev.map(c =>
+                                              c._id === selectedMsg._id
+                                                ? {
+                                                  ...c,
+                                                  starredBy: isStarred
+                                                    ? (c.starredBy || []).filter(id => id !== currentUser._id)
+                                                    : [...(c.starredBy || []), currentUser._id]
+                                                }
+                                                : c
+                                            );
+
+                                            // Update appointment comments for parent component with the updated state
+                                            updateAppointmentComments(appt._id, updated);
+
+                                            return updated;
+                                          });
+
+                                          // Update starred messages list
+                                          if (isStarred) {
+                                            // Remove from starred messages
+                                            setStarredMessages(prev => prev.filter(m => m._id !== selectedMsg._id));
+                                          } else {
+                                            // Add to starred messages
+                                            setStarredMessages(prev => [...prev, selectedMsg]);
+                                          }
+
+                                          toast.success(isStarred ? 'Message unstarred.' : 'Message starred.');
                                         } catch (err) {
                                           toast.error('Failed to update star status');
                                         } finally {
@@ -6181,7 +6183,7 @@ function AdminAppointmentRow({
                                     </button>
                                     <button
                                       className="text-white hover:text-red-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
-                                      onClick={() => { 
+                                      onClick={() => {
                                         setMessageToDelete(selectedMsg);
                                         setShowDeleteModal(true);
                                         setIsSelectionMode(false);
@@ -6205,49 +6207,49 @@ function AdminAppointmentRow({
                             className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
                             onClick={async () => {
                               setMultiSelectActions(prev => ({ ...prev, starring: true }));
-                                                            try {
-  
-                                
+                              try {
+
+
                                 // Process messages one by one to handle individual failures gracefully
                                 let successCount = 0;
                                 let failureCount = 0;
                                 const failedMessages = [];
-                                
+
                                 for (const msg of selectedMessages) {
                                   try {
                                     const isStarred = msg.starredBy?.includes(currentUser._id);
 
-                                    
-                                    const response = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${msg._id}/star`, 
+
+                                    const response = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${msg._id}/star`,
                                       { starred: !isStarred },
                                       {
                                         withCredentials: true,
                                         headers: { 'Content-Type': 'application/json' }
                                       }
                                     );
-                                    
+
 
                                     successCount++;
-                                    
+
                                     // Update this specific message in local comments
                                     setLocalComments(prev => {
-                                      const updated = prev.map(c => 
-                                        c._id === msg._id 
-                                          ? { 
-                                              ...c, 
-                                              starredBy: isStarred 
-                                                ? (c.starredBy || []).filter(id => id !== currentUser._id)
-                                                : [...(c.starredBy || []), currentUser._id]
-                                            }
+                                      const updated = prev.map(c =>
+                                        c._id === msg._id
+                                          ? {
+                                            ...c,
+                                            starredBy: isStarred
+                                              ? (c.starredBy || []).filter(id => id !== currentUser._id)
+                                              : [...(c.starredBy || []), currentUser._id]
+                                          }
                                           : c
                                       );
-                                      
+
                                       // Update appointment comments for parent component with the updated state
                                       updateAppointmentComments(appt._id, updated);
-                                      
+
                                       return updated;
                                     });
-                                    
+
                                     // Update starred messages list for this message
                                     setStarredMessages(prev => {
                                       if (isStarred) {
@@ -6261,16 +6263,16 @@ function AdminAppointmentRow({
                                         return prev;
                                       }
                                     });
-                                    
+
                                   } catch (err) {
                                     console.error(`Failed to process message ${msg._id}:`, err);
                                     failureCount++;
                                     failedMessages.push(msg);
                                   }
                                 }
-                                
 
-                                
+
+
                                 // Show appropriate feedback
                                 if (successCount > 0 && failureCount === 0) {
                                   toast.success(`Successfully updated star status for ${successCount} messages`);
@@ -6279,7 +6281,7 @@ function AdminAppointmentRow({
                                 } else {
                                   toast.error(`Failed to update any messages. Please try again.`);
                                 }
-                                
+
                                 // Clear selection mode if all messages were processed successfully
                                 if (failureCount === 0) {
                                   setIsSelectionMode(false);
@@ -6350,67 +6352,67 @@ function AdminAppointmentRow({
                     </div>
                   </div>
                 ) : headerOptionsMessageId && selectedCallForHeaderOptions ? (
-                    // Header-level options overlay for call history items (admin view: reply, info modal, delete)
-                    <div className="flex items-center justify-end w-full gap-4">
-                      <div className="flex items-center gap-4">
-                        {/* Reply */}
-                        <button
-                          className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
-                          onClick={() => { 
-                            // Create a fake message-like object for reply functionality
-                            const fakeMessage = {
-                              _id: `call-${selectedCallForHeaderOptions._id || selectedCallForHeaderOptions.callId}`,
-                              senderEmail: selectedCallForHeaderOptions.callerId?.email || 'unknown',
-                              message: `${selectedCallForHeaderOptions.callType === 'video' ? 'Video' : 'Audio'} call`,
-                              timestamp: selectedCallForHeaderOptions.startTime || selectedCallForHeaderOptions.createdAt,
-                              isCall: true,
-                              call: selectedCallForHeaderOptions
-                            };
-                            startReply(fakeMessage);
-                            setHeaderOptionsMessageId(null);
-                          }}
-                          title="Reply"
-                          aria-label="Reply"
-                        >
-                          <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M10 9V5l-7 7 7 7v-4.1c4.28 0 6.92 1.45 8.84 4.55.23.36.76.09.65-.32C18.31 13.13 15.36 10.36 10 9z"/></svg>
-                        </button>
-                        {/* Call info modal */}
-                        <button
-                          className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
-                          onClick={() => {
-                            setSelectedCallForInfo(selectedCallForHeaderOptions);
-                            setShowCallInfoModal(true);
-                            setHeaderOptionsMessageId(null);
-                          }}
-                          title="Call info"
-                          aria-label="Call info"
-                        >
-                          <FaInfoCircle size={18} />
-                        </button>
-                        {/* Delete */}
-                        <button
-                          className="text-white hover:text-red-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
-                          onClick={() => { 
-                            // Show confirmation modal for call deletion
-                            setMessageToDelete({
-                              _id: `call-${selectedCallForHeaderOptions._id || selectedCallForHeaderOptions.callId}`,
-                              isCall: true,
-                              call: selectedCallForHeaderOptions
-                            });
-                            setShowDeleteModal(true);
-                            setHeaderOptionsMessageId(null);
-                          }}
-                          title="Delete call"
-                          aria-label="Delete call"
-                        >
-                          <FaTrash size={18} />
-                        </button>
-                        {/* Close button */}
-                        <button
-                          className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors z-10 shadow"
-                          onClick={() => { setHeaderOptionsMessageId(null); setShowHeaderMoreMenu(false); }}
-                          title="Close options"
-                          aria-label="Close options"
+                  // Header-level options overlay for call history items (admin view: reply, info modal, delete)
+                  <div className="flex items-center justify-end w-full gap-4">
+                    <div className="flex items-center gap-4">
+                      {/* Reply */}
+                      <button
+                        className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                        onClick={() => {
+                          // Create a fake message-like object for reply functionality
+                          const fakeMessage = {
+                            _id: `call-${selectedCallForHeaderOptions._id || selectedCallForHeaderOptions.callId}`,
+                            senderEmail: selectedCallForHeaderOptions.callerId?.email || 'unknown',
+                            message: `${selectedCallForHeaderOptions.callType === 'video' ? 'Video' : 'Audio'} call`,
+                            timestamp: selectedCallForHeaderOptions.startTime || selectedCallForHeaderOptions.createdAt,
+                            isCall: true,
+                            call: selectedCallForHeaderOptions
+                          };
+                          startReply(fakeMessage);
+                          setHeaderOptionsMessageId(null);
+                        }}
+                        title="Reply"
+                        aria-label="Reply"
+                      >
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M10 9V5l-7 7 7 7v-4.1c4.28 0 6.92 1.45 8.84 4.55.23.36.76.09.65-.32C18.31 13.13 15.36 10.36 10 9z" /></svg>
+                      </button>
+                      {/* Call info modal */}
+                      <button
+                        className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                        onClick={() => {
+                          setSelectedCallForInfo(selectedCallForHeaderOptions);
+                          setShowCallInfoModal(true);
+                          setHeaderOptionsMessageId(null);
+                        }}
+                        title="Call info"
+                        aria-label="Call info"
+                      >
+                        <FaInfoCircle size={18} />
+                      </button>
+                      {/* Delete */}
+                      <button
+                        className="text-white hover:text-red-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                        onClick={() => {
+                          // Show confirmation modal for call deletion
+                          setMessageToDelete({
+                            _id: `call-${selectedCallForHeaderOptions._id || selectedCallForHeaderOptions.callId}`,
+                            isCall: true,
+                            call: selectedCallForHeaderOptions
+                          });
+                          setShowDeleteModal(true);
+                          setHeaderOptionsMessageId(null);
+                        }}
+                        title="Delete call"
+                        aria-label="Delete call"
+                      >
+                        <FaTrash size={18} />
+                      </button>
+                      {/* Close button */}
+                      <button
+                        className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors z-10 shadow"
+                        onClick={() => { setHeaderOptionsMessageId(null); setShowHeaderMoreMenu(false); }}
+                        title="Close options"
+                        aria-label="Close options"
                       >
                         <FaTimes className="w-4 h-4" />
                       </button>
@@ -6425,46 +6427,46 @@ function AdminAppointmentRow({
                           {/* Star/Unstar - for deleted messages */}
                           <button
                             className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
-                            onClick={async () => { 
+                            onClick={async () => {
                               const isStarred = selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id);
                               setStarringSaving(true);
                               try {
-                                const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id}/star`, 
+                                const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id}/star`,
                                   { starred: !isStarred },
-                                  { 
+                                  {
                                     withCredentials: true,
                                     headers: { 'Content-Type': 'application/json' }
                                   }
                                 );
-                                  // Update the local state
-                                  setLocalComments(prev => {
-                                    const updated = prev.map(c => 
-                                      c._id === (selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id) 
-                                        ? { 
-                                            ...c, 
-                                            starredBy: isStarred 
-                                              ? (c.starredBy || []).filter(id => id !== currentUser._id)
-                                              : [...(c.starredBy || []), currentUser._id]
-                                          }
-                                        : c
-                                    );
-                                    
-                                    // Update appointment comments for parent component with the updated state
-                                    updateAppointmentComments(appt._id, updated);
-                                    
-                                    return updated;
-                                  });
-                                  
-                                  // Update starred messages list
-                                  if (isStarred) {
-                                    // Remove from starred messages
-                                    setStarredMessages(prev => prev.filter(m => m._id !== (selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id)));
-                                  } else {
-                                    // Add to starred messages
-                                    setStarredMessages(prev => [...prev, selectedMessageForHeaderOptions]);
-                                  }
-                                  
-                                  toast.success(isStarred ? 'Message unstarred' : 'Message starred');
+                                // Update the local state
+                                setLocalComments(prev => {
+                                  const updated = prev.map(c =>
+                                    c._id === (selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id)
+                                      ? {
+                                        ...c,
+                                        starredBy: isStarred
+                                          ? (c.starredBy || []).filter(id => id !== currentUser._id)
+                                          : [...(c.starredBy || []), currentUser._id]
+                                      }
+                                      : c
+                                  );
+
+                                  // Update appointment comments for parent component with the updated state
+                                  updateAppointmentComments(appt._id, updated);
+
+                                  return updated;
+                                });
+
+                                // Update starred messages list
+                                if (isStarred) {
+                                  // Remove from starred messages
+                                  setStarredMessages(prev => prev.filter(m => m._id !== (selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id)));
+                                } else {
+                                  // Add to starred messages
+                                  setStarredMessages(prev => [...prev, selectedMessageForHeaderOptions]);
+                                }
+
+                                toast.success(isStarred ? 'Message unstarred' : 'Message starred');
                               } catch (err) {
                                 toast.error('Failed to update star status');
                               } finally {
@@ -6490,14 +6492,14 @@ function AdminAppointmentRow({
                           {/* Regular message options for non-deleted messages */}
                           <button
                             className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
-                            onClick={() => { 
+                            onClick={() => {
                               startReply(selectedMessageForHeaderOptions);
                               setHeaderOptionsMessageId(null);
                             }}
                             title="Reply"
                             aria-label="Reply"
                           >
-                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M10 9V5l-7 7 7 7v-4.1c4.28 0 6.92 1.45 8.84 4.55.23.36.76.09.65-.32C18.31 13.13 15.36 10.36 10 9z"/></svg>
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M10 9V5l-7 7 7 7v-4.1c4.28 0 6.92 1.45 8.84 4.55.23.36.76.09.65-.32C18.31 13.13 15.36 10.36 10 9z" /></svg>
                           </button>
                           <button
                             className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
@@ -6510,46 +6512,46 @@ function AdminAppointmentRow({
                           {/* Star/Unstar - for regular messages */}
                           <button
                             className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
-                            onClick={async () => { 
+                            onClick={async () => {
                               const isStarred = selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id);
                               setStarringSaving(true);
                               try {
-                                const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id}/star`, 
+                                const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id}/star`,
                                   { starred: !isStarred },
-                                  { 
+                                  {
                                     withCredentials: true,
                                     headers: { 'Content-Type': 'application/json' }
                                   }
                                 );
-                                  // Update the local state
-                                  setLocalComments(prev => {
-                                    const updated = prev.map(c => 
-                                      c._id === (selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id) 
-                                        ? { 
-                                            ...c, 
-                                            starredBy: isStarred 
-                                              ? (c.starredBy || []).filter(id => id !== currentUser._id)
-                                              : [...(c.starredBy || []), currentUser._id]
-                                          }
-                                        : c
-                                    );
-                                    
-                                    // Update appointment comments for parent component with the updated state
-                                    updateAppointmentComments(appt._id, updated);
-                                    
-                                    return updated;
-                                  });
-                                  
-                                  // Update starred messages list
-                                  if (isStarred) {
-                                    // Remove from starred messages
-                                    setStarredMessages(prev => prev.filter(m => m._id !== (selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id)));
-                                  } else {
-                                    // Add to starred messages
-                                    setStarredMessages(prev => [...prev, selectedMessageForHeaderOptions]);
-                                  }
-                                  
-                                  toast.success(isStarred ? 'Message unstarred' : 'Message starred');
+                                // Update the local state
+                                setLocalComments(prev => {
+                                  const updated = prev.map(c =>
+                                    c._id === (selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id)
+                                      ? {
+                                        ...c,
+                                        starredBy: isStarred
+                                          ? (c.starredBy || []).filter(id => id !== currentUser._id)
+                                          : [...(c.starredBy || []), currentUser._id]
+                                      }
+                                      : c
+                                  );
+
+                                  // Update appointment comments for parent component with the updated state
+                                  updateAppointmentComments(appt._id, updated);
+
+                                  return updated;
+                                });
+
+                                // Update starred messages list
+                                if (isStarred) {
+                                  // Remove from starred messages
+                                  setStarredMessages(prev => prev.filter(m => m._id !== (selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id)));
+                                } else {
+                                  // Add to starred messages
+                                  setStarredMessages(prev => [...prev, selectedMessageForHeaderOptions]);
+                                }
+
+                                toast.success(isStarred ? 'Message unstarred' : 'Message starred');
                               } catch (err) {
                                 toast.error('Failed to update star status');
                               } finally {
@@ -6597,21 +6599,21 @@ function AdminAppointmentRow({
                                   {selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.imageUrl && (
                                     <button
                                       className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
-                                      onClick={() => { 
-                                        handleDownloadChatImage(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.imageUrl, selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id); 
-                                        setShowHeaderMoreMenu(false); 
-                                        setHeaderOptionsMessageId(null); 
+                                      onClick={() => {
+                                        handleDownloadChatImage(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.imageUrl, selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id);
+                                        setShowHeaderMoreMenu(false);
+                                        setHeaderOptionsMessageId(null);
                                       }}
                                     >
                                       <FaDownload className="text-sm" />
                                       Download Image
                                     </button>
                                   )}
-                                    {/* Download option for video messages */}
+                                  {/* Download option for video messages */}
                                   {selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.videoUrl && (
                                     <button
                                       className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
-                                      onClick={async () => { 
+                                      onClick={async () => {
                                         try {
                                           const response = await fetch(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.videoUrl, { mode: 'cors' });
                                           if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -6637,8 +6639,8 @@ function AdminAppointmentRow({
                                           a.remove();
                                           toast.success('Video download started');
                                         }
-                                        setShowHeaderMoreMenu(false); 
-                                        setHeaderOptionsMessageId(null); 
+                                        setShowHeaderMoreMenu(false);
+                                        setHeaderOptionsMessageId(null);
                                       }}
                                     >
                                       <FaDownload className="text-sm" />
@@ -6649,7 +6651,7 @@ function AdminAppointmentRow({
                                   {selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl && (
                                     <button
                                       className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
-                                      onClick={async () => { 
+                                      onClick={async () => {
                                         try {
                                           const response = await fetch(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
                                           if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -6673,8 +6675,8 @@ function AdminAppointmentRow({
                                           a.remove();
                                           toast.success('Audio download started');
                                         }
-                                        setShowHeaderMoreMenu(false); 
-                                        setHeaderOptionsMessageId(null); 
+                                        setShowHeaderMoreMenu(false);
+                                        setHeaderOptionsMessageId(null);
                                       }}
                                     >
                                       <FaDownload className="text-sm" />
@@ -6710,10 +6712,10 @@ function AdminAppointmentRow({
                                   {selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.imageUrl && (
                                     <button
                                       className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
-                                      onClick={() => { 
-                                        handleDownloadChatImage(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.imageUrl, selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id); 
-                                        setShowHeaderMoreMenu(false); 
-                                        setHeaderOptionsMessageId(null); 
+                                      onClick={() => {
+                                        handleDownloadChatImage(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.imageUrl, selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id);
+                                        setShowHeaderMoreMenu(false);
+                                        setHeaderOptionsMessageId(null);
                                       }}
                                     >
                                       <FaDownload className="text-sm" />
@@ -6724,7 +6726,7 @@ function AdminAppointmentRow({
                                   {selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.videoUrl && (
                                     <button
                                       className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
-                                      onClick={async () => { 
+                                      onClick={async () => {
                                         try {
                                           const response = await fetch(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.videoUrl, { mode: 'cors' });
                                           if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -6750,8 +6752,8 @@ function AdminAppointmentRow({
                                           a.remove();
                                           toast.success('Video download started');
                                         }
-                                        setShowHeaderMoreMenu(false); 
-                                        setHeaderOptionsMessageId(null); 
+                                        setShowHeaderMoreMenu(false);
+                                        setHeaderOptionsMessageId(null);
                                       }}
                                     >
                                       <FaDownload className="text-sm" />
@@ -6762,7 +6764,7 @@ function AdminAppointmentRow({
                                   {selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl && (
                                     <button
                                       className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
-                                      onClick={async () => { 
+                                      onClick={async () => {
                                         try {
                                           const response = await fetch(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
                                           if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -6786,8 +6788,8 @@ function AdminAppointmentRow({
                                           a.remove();
                                           toast.success('Audio download started');
                                         }
-                                        setShowHeaderMoreMenu(false); 
-                                        setHeaderOptionsMessageId(null); 
+                                        setShowHeaderMoreMenu(false);
+                                        setHeaderOptionsMessageId(null);
                                       }}
                                     >
                                       <FaDownload className="text-sm" />
@@ -6833,7 +6835,7 @@ function AdminAppointmentRow({
 
                     <div className="flex items-center gap-3 ml-auto">
 
-                      
+
                       {/* Search functionality */}
                       <div className="relative search-container">
                         <button
@@ -6850,7 +6852,7 @@ function AdminAppointmentRow({
                           <FaSearch className="text-sm" />
                         </button>
                       </div>
-                      
+
                       {/* Chat options menu */}
                       <div className="relative flex items-center gap-2">
                         {/* Loading icon when refreshing messages */}
@@ -6859,7 +6861,7 @@ function AdminAppointmentRow({
                             <FaSpinner className="text-sm animate-spin" />
                           </div>
                         )}
-                        
+
                         <button
                           className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors shadow"
                           onClick={() => {
@@ -6913,9 +6915,9 @@ function AdminAppointmentRow({
                               <FaStar className="text-sm" />
                               Starred Messages
                             </button>
-                            
+
                             {/* Pinned Messages option removed */}
-                            
+
                             {/* Select Messages option */}
                             <button
                               className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
@@ -6943,7 +6945,7 @@ function AdminAppointmentRow({
                               }}
                             >
                               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M5 4v3h5.5v12h3V7H19V4H5z"/>
+                                <path d="M5 4v3h5.5v12h3V7H19V4H5z" />
                               </svg>
                               Text Styling
                             </button>
@@ -7033,11 +7035,10 @@ function AdminAppointmentRow({
                       </div>
                       {/* Live Call Monitor button (admin view) */}
                       <button
-                        className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 transition-all duration-300 transform hover:scale-110 shadow text-[10px] ${
-                          activeLiveCall
-                            ? 'text-red-500 hover:text-red-600 bg-red-50/80 hover:bg-red-100'
-                            : 'text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200'
-                        }`}
+                        className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 transition-all duration-300 transform hover:scale-110 shadow text-[10px] ${activeLiveCall
+                          ? 'text-red-500 hover:text-red-600 bg-red-50/80 hover:bg-red-100'
+                          : 'text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200'
+                          }`}
                         onClick={async () => {
                           // Always fetch the latest active call just before opening the monitor
                           let latestActive = activeLiveCall;
@@ -7057,15 +7058,14 @@ function AdminAppointmentRow({
                         aria-label="Live audio/video monitor"
                       >
                         <FaCircle
-                          className={`text-[10px] ${
-                            activeLiveCall ? 'animate-pulse text-red-500' : 'text-gray-400'
-                          }`}
+                          className={`text-[10px] ${activeLiveCall ? 'animate-pulse text-red-500' : 'text-gray-400'
+                            }`}
                         />
                         <span className="text-[10px] font-semibold uppercase tracking-wide">
                           {activeLiveCall ? 'Live' : 'Not Live'}
                         </span>
                       </button>
-        {showShortcutTip && (
+                      {showShortcutTip && (
                         <div className="absolute top-full right-0 mt-2 bg-gray-800 text-white text-xs rounded-lg px-3 py-2 shadow-lg z-20 max-w-xs animate-fadeIn">
                           <div className="font-semibold mb-2">⌨️ Keyboard Shortcuts:</div>
                           <div className="mb-2">• Press Ctrl + F to quickly focus and type your message</div>
@@ -7140,7 +7140,7 @@ function AdminAppointmentRow({
                   </>
                 )}
               </div>
-              
+
               {/* Enhanced Search Header */}
               {showSearchBox && (
                 <div className="enhanced-search-header bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 px-3 sm:px-4 py-3 border-b-2 border-blue-700 flex-shrink-0 animate-slideDown">
@@ -7159,8 +7159,8 @@ function AdminAppointmentRow({
                         <FaCalendarAlt className="text-sm" />
                       </button>
                       {showCalendar && (
-                        <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 p-3 min-w-[250px] animate-fadeIn" 
-                             style={{zIndex: 9999}}>
+                        <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 p-3 min-w-[250px] animate-fadeIn"
+                          style={{ zIndex: 9999 }}>
                           <div className="flex items-center justify-between mb-3">
                             <span className="text-sm font-medium text-gray-700">Jump to Date</span>
                             <button
@@ -7189,7 +7189,7 @@ function AdminAppointmentRow({
                         </div>
                       )}
                     </div>
-                    
+
                     {/* Enhanced Search Bar */}
                     <div className="flex-1 flex items-center gap-2 bg-white/20 rounded-full px-3 sm:px-4 py-2 backdrop-blur-sm min-w-0 overflow-hidden">
                       <FaSearch className="text-white/70 text-sm" />
@@ -7226,7 +7226,7 @@ function AdminAppointmentRow({
                         </div>
                       )}
                     </div>
-                    
+
                     {/* Close Icon */}
                     <button
                       onClick={() => {
@@ -7249,11 +7249,11 @@ function AdminAppointmentRow({
                   </div>
                 </div>
               )}
-              
-              <div 
-                ref={chatContainerRef} 
+
+              <div
+                ref={chatContainerRef}
                 className={`flex-1 overflow-y-auto space-y-2 px-4 pt-4 animate-fadeInChat relative bg-gradient-to-b from-transparent to-blue-50/30 ${isDragOver ? 'bg-blue-50/50 border-2 border-dashed border-blue-300' : ''}`}
-                style={{minHeight: '400px', maxHeight: 'calc(100vh - 200px)'}}
+                style={{ minHeight: '400px', maxHeight: 'calc(100vh - 200px)' }}
                 onDragOver={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -7275,10 +7275,10 @@ function AdminAppointmentRow({
                   e.preventDefault();
                   e.stopPropagation();
                   setIsDragOver(false);
-                  
+
                   const files = Array.from(e.dataTransfer.files);
                   const imageFiles = files.filter(file => file.type.startsWith('image/'));
-                  
+
                   if (imageFiles.length > 0) {
                     handleImageFiles(imageFiles);
                   } else if (files.length > 0) {
@@ -7293,14 +7293,13 @@ function AdminAppointmentRow({
                     Chats are encrypted and secure. View only for valid purposes like disputes or fraud checks. Unauthorized access or sharing is prohibited and will be logged.
                   </p>
                 </div>
-                
+
                 {/* Pinned Messages Section removed */}
-                
+
                 {/* Floating Date Indicator */}
                 {currentFloatingDate && localComments.length > 0 && (
-                  <div className={`sticky top-0 left-0 right-0 z-30 pointer-events-none transition-all duration-300 ease-in-out ${
-                    isScrolling ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-                  }`}>
+                  <div className={`sticky top-0 left-0 right-0 z-30 pointer-events-none transition-all duration-300 ease-in-out ${isScrolling ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                    }`}>
                     <div className="w-full flex justify-center py-2">
                       <div className="bg-blue-600 text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white">
                         {currentFloatingDate}
@@ -7326,7 +7325,7 @@ function AdminAppointmentRow({
                   // For admin, we don't have user-specific clearTime, but we should still filter if needed
                   // For now, admin sees all calls (admin is observer, doesn't clear chat for users)
                   const filteredCallHistory = callHistory; // Admin sees all calls as observer
-                  
+
                   const mergedTimeline = [
                     // Convert filtered call history to timeline items
                     ...filteredCallHistory.map(call => ({
@@ -7349,17 +7348,17 @@ function AdminAppointmentRow({
                   // If no items at all
                   if (mergedTimeline.length === 0) {
                     return (
-                  <div className="flex flex-col items-center justify-center h-full text-center py-8">
-                    <FaCommentDots className="text-gray-300 text-4xl mb-3" />
-                    <p className="text-gray-500 font-medium text-sm">No messages in this conversation</p>
-                    <p className="text-gray-400 text-xs mt-1">Monitor and manage communication between parties</p>
-                  </div>
+                      <div className="flex flex-col items-center justify-center h-full text-center py-8">
+                        <FaCommentDots className="text-gray-300 text-4xl mb-3" />
+                        <p className="text-gray-500 font-medium text-sm">No messages in this conversation</p>
+                        <p className="text-gray-400 text-xs mt-1">Monitor and manage communication between parties</p>
+                      </div>
                     );
                   }
 
                   // Render visible items
                   const visibleItems = mergedTimeline.slice(Math.max(0, mergedTimeline.length - Math.min(visibleCount, mergedTimeline.length)));
-                  
+
                   return visibleItems.map((item, mapIndex) => {
                     const index = mergedTimeline.length - visibleItems.length + mapIndex;
                     const previousItem = index > 0 ? mergedTimeline[index - 1] : null;
@@ -7374,7 +7373,7 @@ function AdminAppointmentRow({
                       const receiverName = call.receiverId?.username || (typeof call.receiverId === 'string' ? 'Unknown' : 'Unknown');
                       // Admin is observer, so show on left side (received message style)
                       const isMe = false;
-                      
+
                       return (
                         <React.Fragment key={`call-${call._id || call.callId}`}>
                           {isNewDay && (
@@ -7387,11 +7386,10 @@ function AdminAppointmentRow({
                           {/* Call history as message bubble - admin view shows third person (Vishal called Varun) */}
                           <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-fadeInChatBubble`} style={{ animationDelay: `${0.03 * index}s` }}>
                             <div
-                              className={`relative rounded-2xl px-4 sm:px-5 py-3 text-sm shadow-xl max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] break-words overflow-visible transition-all duration-300 ${
-                                isMe 
-                                  ? 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white shadow-blue-200 hover:shadow-blue-300 hover:shadow-2xl' 
-                                  : 'bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 shadow-gray-200 hover:shadow-lg hover:border-gray-300 hover:shadow-xl'
-                              }`}
+                              className={`relative rounded-2xl px-4 sm:px-5 py-3 text-sm shadow-xl max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] break-words overflow-visible transition-all duration-300 ${isMe
+                                ? 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white shadow-blue-200 hover:shadow-blue-300 hover:shadow-2xl'
+                                : 'bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 shadow-gray-200 hover:shadow-lg hover:border-gray-300 hover:shadow-xl'
+                                }`}
                               style={{ animationDelay: `${0.03 * index}s` }}
                             >
                               <div className={`text-left ${isMe ? 'text-base font-medium' : 'text-sm'}`}>
@@ -7415,13 +7413,12 @@ function AdminAppointmentRow({
                                 </span>
                                 {/* Options icon - three dots menu */}
                                 <button
-                                  className={`${
-                                    isMe 
-                                      ? 'text-blue-200 hover:text-white' 
-                                      : 'text-gray-500 hover:text-gray-700'
-                                  } transition-all duration-200 hover:scale-110 p-1 rounded-full hover:bg-white hover:bg-opacity-20 ml-1`}
-                                  onClick={(e) => { 
-                                    e.stopPropagation(); 
+                                  className={`${isMe
+                                    ? 'text-blue-200 hover:text-white'
+                                    : 'text-gray-500 hover:text-gray-700'
+                                    } transition-all duration-200 hover:scale-110 p-1 rounded-full hover:bg-white hover:bg-opacity-20 ml-1`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     // Show reactions bar for calls (like regular messages)
                                     setReactionsMessageId(`call-${call._id || call.callId}`);
                                     setShowReactionsBar(true);
@@ -7442,68 +7439,67 @@ function AdminAppointmentRow({
 
                     // If it's a message, render chat message (existing logic)
                     const c = item.message;
-                  const isMe = c && c.senderEmail === currentUser.email;
-                  const isEditing = editingComment === (c && c._id);
+                    const isMe = c && c.senderEmail === currentUser.email;
+                    const isEditing = editingComment === (c && c._id);
                     const formattedDate = currentDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' });
 
-                  return (
+                    return (
                       <React.Fragment key={c._id || index}>
-                      {isNewDay && (
-                        <div className="w-full flex justify-center my-2">
-                          <span className="bg-blue-600 text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white">{getDateLabel(currentDate)}</span>
-                        </div>
-                      )}
-                      {/* New messages divider */}
+                        {isNewDay && (
+                          <div className="w-full flex justify-center my-2">
+                            <span className="bg-blue-600 text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white">{getDateLabel(currentDate)}</span>
+                          </div>
+                        )}
+                        {/* New messages divider */}
                         {unreadNewMessages > 0 && item.type === 'message' && (() => {
                           const messageIndex = localComments.findIndex(msg => msg._id === c._id);
                           return messageIndex === localComments.length - unreadNewMessages;
                         })() && (
-                        <div className="w-full flex items-center my-2">
-                          <div className="flex-1 h-px bg-gray-300"></div>
-                          <span className="mx-2 text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full border border-red-200">
-                            New messages
-                          </span>
-                          <div className="flex-1 h-px bg-gray-300"></div>
-                        </div>
-                      )}
-                      <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-fadeInChatBubble`} style={{ animationDelay: `${0.03 * index}s` }}>
-                        {/* Selection checkbox - only show in selection mode */}
-                        {isSelectionMode && (
-                          <div className={`flex items-start ${isMe ? 'order-2 ml-2' : 'order-1 mr-2'}`}>
-                            <input
-                              type="checkbox"
-                              checked={selectedMessages.some(msg => msg._id === c._id)}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setSelectedMessages(prev => [...prev, c]);
-                                } else {
-                                  setSelectedMessages(prev => prev.filter(msg => msg._id !== c._id));
-                                }
-                              }}
-                              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                            />
-                          </div>
-                        )}
-                        <div 
-                          ref={el => messageRefs.current[c && c._id ? c._id : 'unknown'] = el}
-                          data-message-id={c && c._id ? c._id : 'unknown'}
-                          className={`relative rounded-2xl px-4 sm:px-5 py-3 text-sm shadow-xl max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] break-words overflow-visible transition-all duration-300 min-h-[60px] ${c && c.audioUrl ? 'min-w-[280px] sm:min-w-[320px]' : ''} ${
-                            isMe 
-                              ? 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white shadow-blue-200 hover:shadow-blue-300 hover:shadow-2xl' 
+                            <div className="w-full flex items-center my-2">
+                              <div className="flex-1 h-px bg-gray-300"></div>
+                              <span className="mx-2 text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full border border-red-200">
+                                New messages
+                              </span>
+                              <div className="flex-1 h-px bg-gray-300"></div>
+                            </div>
+                          )}
+                        <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-fadeInChatBubble`} style={{ animationDelay: `${0.03 * index}s` }}>
+                          {/* Selection checkbox - only show in selection mode */}
+                          {isSelectionMode && (
+                            <div className={`flex items-start ${isMe ? 'order-2 ml-2' : 'order-1 mr-2'}`}>
+                              <input
+                                type="checkbox"
+                                checked={selectedMessages.some(msg => msg._id === c._id)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedMessages(prev => [...prev, c]);
+                                  } else {
+                                    setSelectedMessages(prev => prev.filter(msg => msg._id !== c._id));
+                                  }
+                                }}
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                              />
+                            </div>
+                          )}
+                          <div
+                            ref={el => messageRefs.current[c && c._id ? c._id : 'unknown'] = el}
+                            data-message-id={c && c._id ? c._id : 'unknown'}
+                            className={`relative rounded-2xl px-4 sm:px-5 py-3 text-sm shadow-xl max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] break-words overflow-visible transition-all duration-300 min-h-[60px] ${c && c.audioUrl ? 'min-w-[280px] sm:min-w-[320px]' : ''} ${isMe
+                              ? 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white shadow-blue-200 hover:shadow-blue-300 hover:shadow-2xl'
                               : 'bg-white hover:bg-gray-100 text-gray-800 border border-gray-200 shadow-gray-200 hover:shadow-lg hover:border-gray-300 hover:shadow-xl'
-                          } ${isSelectionMode && selectedMessages.some(msg => msg._id === (c && c._id)) ? 'ring-2 ring-blue-400' : ''}`}
-                        >
-      
-                                                    {/* Reply preview above message if this is a reply */}
+                              } ${isSelectionMode && selectedMessages.some(msg => msg._id === (c && c._id)) ? 'ring-2 ring-blue-400' : ''}`}
+                          >
+
+                            {/* Reply preview above message if this is a reply */}
                             {c && c.replyTo && (() => {
                               // Check if replyTo is a call (starts with "call-")
                               const isCallReply = c.replyTo.startsWith('call-');
                               let repliedMessage = null;
-                              
+
                               if (isCallReply) {
                                 // Look for the call in callHistory
                                 const callId = c.replyTo.replace('call-', '');
-                                const repliedCall = callHistory.find(call => 
+                                const repliedCall = callHistory.find(call =>
                                   (call._id || call.callId) === callId
                                 );
                                 if (repliedCall) {
@@ -7515,275 +7511,274 @@ function AdminAppointmentRow({
                                 // Look for the message in localComments
                                 repliedMessage = localComments.find(msg => msg._id === (c && c.replyTo));
                               }
-                              
+
                               return (
-                              <div className="border-l-4 border-purple-400 pl-3 mb-2 text-xs bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 rounded-lg w-full max-w-full break-words cursor-pointer transition-all duration-200 hover:shadow-sm" onClick={() => {
+                                <div className="border-l-4 border-purple-400 pl-3 mb-2 text-xs bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 rounded-lg w-full max-w-full break-words cursor-pointer transition-all duration-200 hover:shadow-sm" onClick={() => {
                                   if (c && c.replyTo && messageRefs.current[c.replyTo]) {
                                     messageRefs.current[c.replyTo].scrollIntoView({ behavior: 'smooth', block: 'center' });
                                     messageRefs.current[c.replyTo].classList.add('reply-highlight');
-                                     setTimeout(() => {
-                                       messageRefs.current[c.replyTo]?.classList.remove('reply-highlight');
-                                     }, 1600);
+                                    setTimeout(() => {
+                                      messageRefs.current[c.replyTo]?.classList.remove('reply-highlight');
+                                    }, 1600);
                                   }
                                 }} role="button" tabIndex={0} aria-label="Go to replied message">
-                                <span className="text-xs text-gray-700 font-medium truncate max-w-[150px] flex items-center gap-1">
-                                  <span className="text-purple-500">↩</span>
+                                  <span className="text-xs text-gray-700 font-medium truncate max-w-[150px] flex items-center gap-1">
+                                    <span className="text-purple-500">↩</span>
                                     {repliedMessage?.message?.substring(0, 30) || 'Original message'}{repliedMessage?.message?.length > 30 ? '...' : ''}
-                                </span>
-                              </div>
+                                  </span>
+                                </div>
                               );
                             })()}
-                        <div className="font-semibold mb-2 flex items-center gap-2 justify-start text-left">
-                          <span className={`truncate max-w-[120px] min-w-[60px] inline-block align-middle overflow-hidden text-ellipsis text-left ${
-                            isMe ? 'text-blue-100' : 'text-gray-700'
-                          }`}>
-                            {isMe ? "You" : (() => {
-                              // Check if sender is buyer or seller to get their name
-                              const isSenderBuyer = c && c.senderEmail === appt.buyerId?.email;
-                              const isSenderSeller = c && c.senderEmail === appt.sellerId?.email;
-                              
-                              if (isSenderBuyer) {
-                                return appt.buyerId?.username || (c && c.senderName) || (c && c.senderEmail);
-                              } else if (isSenderSeller) {
-                                return appt.sellerId?.username || (c && c.senderName) || (c && c.senderEmail);
-                              } else {
-                                // Sender is neither buyer nor seller (could be another admin)
-                                return (c && c.senderName) || (c && c.senderEmail);
-                              }
-                            })()}
-                          </span>
-                        </div>
-                        <div className={`text-left ${isMe ? 'text-base font-medium' : 'text-sm'}`}>
-                          {c && c.deleted ? (
-                            (() => {
-                              // Check if admin has hidden this deleted message locally using state
-                              const locallyHidden = c && hiddenMessageIds.includes(c._id);
-                              if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
-                                if (locallyHidden) {
-                                  // Show collapsed placeholder for hidden deleted message
-                                  return (
-                                    <div className="border border-gray-300 bg-gray-100 rounded p-2 mb-2">
-                                      <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2 text-gray-600 text-xs">
-                                          <FaBan className="inline-block" />
-                                          <span>Deleted message hidden from view</span>
-                                        </div>
-                                        <button
-                                          className="text-xs text-blue-500 hover:text-blue-700 underline"
-                                          onClick={() => showMessage(c._id)}
-                                          title="Show this deleted message content"
-                                        >
-                                          Show
-                                        </button>
-                                      </div>
-                                    </div>
-                                  );
-                                }
-                                
-                                // Show full deleted message content
-                                return (
-                                  <div className="border border-red-300 bg-red-50 rounded p-2 mb-2">
-                                    <div className="flex items-center gap-2 text-red-600 text-xs font-semibold mb-1">
-                                      <FaBan className="inline-block" />
-                                      Message deleted by {(c && c.deletedBy) || 'user'} (Admin view - preserved for records)
-                                    </div>
-                                    
-                                    {/* Show preserved image if exists */}
-                                    {c && (c.originalImageUrl || c.imageUrl) && (
-                                      <div className="mb-2">
-                                        <img
-                                          src={(c && c.originalImageUrl) || (c && c.imageUrl)}
-                                          alt="Preserved image from deleted message"
-                                          className="max-w-full max-h-64 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                                          onClick={() => {
-                                            const chatImages = (localComments || []).filter(msg => !!(msg.originalImageUrl || msg.imageUrl)).map(msg => msg.originalImageUrl || msg.imageUrl);
-                                            const currentUrl = (c && c.originalImageUrl) || (c && c.imageUrl);
-                                            const startIndex = Math.max(0, chatImages.indexOf(currentUrl));
-                                            setPreviewImages(chatImages);
-                                            setPreviewIndex(startIndex);
-                                            setShowImagePreview(true);
-                                          }}
-                                          onError={(e) => {
-                                            e.target.src = "https://via.placeholder.com/300x200?text=Image+Not+Found";
-                                            e.target.className = "max-w-full max-h-64 rounded-lg opacity-50";
-                                          }}
-                                        />
-                                      </div>
-                                    )}
-                                    
-                                    {/* Show preserved video if exists */}
-                                    {c && c.videoUrl && (
-                                      <div className="mb-2">
-                                        <video 
-                                          src={c.videoUrl} 
-                                          className="max-w-full max-h-64 rounded-lg border cursor-pointer hover:opacity-90 transition-opacity" 
-                                          controls 
-                                          onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            if (e.target.requestFullscreen) {
-                                              e.target.requestFullscreen();
-                                            } else if (e.target.webkitRequestFullscreen) {
-                                              e.target.webkitRequestFullscreen();
-                                            }
-                                          }}
-                                        />
-                                        <div className="mt-1 text-xs text-gray-600 italic">
-                                          Preserved video from deleted message
-                                        </div>
-                                      </div>
-                                    )}
-                                    
-                                    {/* Show preserved audio if exists */}
-                                    {c && c.audioUrl && (
-                                      <div className="mb-2">
-                                        <div className="bg-gray-100 border border-gray-300 rounded-lg p-3">
-                                          <audio
-                                            src={c.audioUrl}
-                                            className="w-full"
-                                            controls
-                                            preload="metadata"
-                                          />
-                                          <div className="mt-2 text-xs text-gray-600 italic">
-                                            Preserved audio from deleted message: {c.audioName || 'Audio file'}
-                                          </div>
-                                        </div>
-                                      </div>
-                                    )}
-                                    
-                                    {/* Show preserved document if exists */}
-                                    {c && c.documentUrl && (
-                                      <div className="mb-2">
-                                        <div className="bg-gray-100 border border-gray-300 rounded-lg p-3">
-                                          <div className="flex items-center gap-2 mb-2">
-                                            <span className="text-2xl">📄</span>
-                                            <div className="flex-1">
-                                              <div className="text-sm font-medium text-gray-800">
-                                                {c.documentName || 'Document'}
-                                              </div>
-                                              <div className="text-xs text-gray-600 italic">
-                                                Preserved document from deleted message
-                                              </div>
+                            <div className="font-semibold mb-2 flex items-center gap-2 justify-start text-left">
+                              <span className={`truncate max-w-[120px] min-w-[60px] inline-block align-middle overflow-hidden text-ellipsis text-left ${isMe ? 'text-blue-100' : 'text-gray-700'
+                                }`}>
+                                {isMe ? "You" : (() => {
+                                  // Check if sender is buyer or seller to get their name
+                                  const isSenderBuyer = c && c.senderEmail === appt.buyerId?.email;
+                                  const isSenderSeller = c && c.senderEmail === appt.sellerId?.email;
+
+                                  if (isSenderBuyer) {
+                                    return appt.buyerId?.username || (c && c.senderName) || (c && c.senderEmail);
+                                  } else if (isSenderSeller) {
+                                    return appt.sellerId?.username || (c && c.senderName) || (c && c.senderEmail);
+                                  } else {
+                                    // Sender is neither buyer nor seller (could be another admin)
+                                    return (c && c.senderName) || (c && c.senderEmail);
+                                  }
+                                })()}
+                              </span>
+                            </div>
+                            <div className={`text-left ${isMe ? 'text-base font-medium' : 'text-sm'}`}>
+                              {c && c.deleted ? (
+                                (() => {
+                                  // Check if admin has hidden this deleted message locally using state
+                                  const locallyHidden = c && hiddenMessageIds.includes(c._id);
+                                  if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
+                                    if (locallyHidden) {
+                                      // Show collapsed placeholder for hidden deleted message
+                                      return (
+                                        <div className="border border-gray-300 bg-gray-100 rounded p-2 mb-2">
+                                          <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2 text-gray-600 text-xs">
+                                              <FaBan className="inline-block" />
+                                              <span>Deleted message hidden from view</span>
                                             </div>
                                             <button
-                                              className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-                                              onClick={async (e) => {
-                                                e.stopPropagation();
-                                                try {
-                                                  const response = await fetch(c.documentUrl, { mode: 'cors' });
-                                                  if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                                                  const blob = await response.blob();
-                                                  const blobUrl = window.URL.createObjectURL(blob);
-                                                  const a = document.createElement('a');
-                                                  a.href = blobUrl;
-                                                  a.download = c.documentName || `document-${c._id || Date.now()}`;
-                                                  document.body.appendChild(a);
-                                                  a.click();
-                                                  a.remove();
-                                                  setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
-                                                  toast.success('Document downloaded successfully');
-                                                } catch (error) {
-                                                  const a = document.createElement('a');
-                                                  a.href = c.documentUrl;
-                                                  a.download = c.documentName || `document-${c._id || Date.now()}`;
-                                                  a.target = '_blank';
-                                                  document.body.appendChild(a);
-                                                  a.click();
-                                                  a.remove();
-                                                  toast.success('Document download started');
-                                                }
-                                              }}
+                                              className="text-xs text-blue-500 hover:text-blue-700 underline"
+                                              onClick={() => showMessage(c._id)}
+                                              title="Show this deleted message content"
                                             >
-                                              Download
+                                              Show
                                             </button>
                                           </div>
                                         </div>
-                                      </div>
-                                    )}
-                                    {/* Download option for audio messages */}
-                                    {selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl && (
-                                      <button
-                                        className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
-                                        onClick={async () => { 
-                                          try {
-                                            const response = await fetch(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
-                                            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                                            const blob = await response.blob();
-                                            const blobUrl = window.URL.createObjectURL(blob);
-                                            const a = document.createElement('a');
-                                            a.href = blobUrl;
-                                            a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id || Date.now()}`;
-                                            document.body.appendChild(a);
-                                            a.click();
-                                            a.remove();
-                                            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
-                                          toast.success('Audio downloaded successfully');
-                                          } catch (error) {
-                                            const a = document.createElement('a');
-                                            a.href = selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl;
-                                            a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id || Date.now()}`;
-                                            a.target = '_blank';
-                                            document.body.appendChild(a);
-                                            a.click();
-                                            a.remove();
-                                          toast.success('Audio download started');
-                                          }
-                                          setShowHeaderMoreMenu(false); 
-                                          setHeaderOptionsMessageId(null); 
-                                        }}
-                                      >
-                                        <FaDownload className="text-sm" />
-                                        Download Audio
-                                      </button>
-                                    )}
-                                    
-                                    <div className="text-gray-800 bg-white p-2 rounded border-l-4 border-red-400 relative group">
-                                      {(() => {
-                                        const messageContent = (c && c.originalMessage) || (c && c.message);
-                                        if (messageContent) {
-                                          return (
-                                            <>
-                                              <span className="whitespace-pre-wrap break-words">{messageContent}</span>
-                                              {/* Copy icon - visible on hover */}
-                                              <button
-                                                className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-gray-500 hover:text-gray-700 bg-white rounded p-1 shadow-sm"
-                                                onClick={() => copyMessageToClipboard(messageContent)}
-                                                title="Copy deleted message content"
-                                                aria-label="Copy deleted message content"
-                                              >
-                                                <FaCopy className="text-xs" />
-                                              </button>
-                                            </>
-                                          );
-                                        } else {
-                                          return (
-                                            <span className="text-gray-500 italic">
-                                              [Message content not preserved - this message was deleted before content preservation was implemented]
-                                            </span>
-                                          );
-                                        }
-                                      })()}
-                                    </div>
+                                      );
+                                    }
 
-                                    <button
-                                      className="mt-2 text-xs text-red-500 hover:text-red-700 underline"
-                                      onClick={() => hideMessage(c._id)}
-                                      title="Hide this deleted message from your admin view"
-                                    >
-                                      Hide from admin view
-                                    </button>
-                                  </div>
-                                );
-                              } else {
-                                // Regular users see standard deletion message
-                                return (
-                                  <span className="flex items-center gap-1 text-gray-400 italic">
-                                    <FaBan className="inline-block text-lg" /> This message has been deleted.
-                                  </span>
-                                );
-                              }
-                            })()
-                          ) : (
+                                    // Show full deleted message content
+                                    return (
+                                      <div className="border border-red-300 bg-red-50 rounded p-2 mb-2">
+                                        <div className="flex items-center gap-2 text-red-600 text-xs font-semibold mb-1">
+                                          <FaBan className="inline-block" />
+                                          Message deleted by {(c && c.deletedBy) || 'user'} (Admin view - preserved for records)
+                                        </div>
+
+                                        {/* Show preserved image if exists */}
+                                        {c && (c.originalImageUrl || c.imageUrl) && (
+                                          <div className="mb-2">
+                                            <img
+                                              src={(c && c.originalImageUrl) || (c && c.imageUrl)}
+                                              alt="Preserved image from deleted message"
+                                              className="max-w-full max-h-64 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                              onClick={() => {
+                                                const chatImages = (localComments || []).filter(msg => !!(msg.originalImageUrl || msg.imageUrl)).map(msg => msg.originalImageUrl || msg.imageUrl);
+                                                const currentUrl = (c && c.originalImageUrl) || (c && c.imageUrl);
+                                                const startIndex = Math.max(0, chatImages.indexOf(currentUrl));
+                                                setPreviewImages(chatImages);
+                                                setPreviewIndex(startIndex);
+                                                setShowImagePreview(true);
+                                              }}
+                                              onError={(e) => {
+                                                e.target.src = "https://via.placeholder.com/300x200?text=Image+Not+Found";
+                                                e.target.className = "max-w-full max-h-64 rounded-lg opacity-50";
+                                              }}
+                                            />
+                                          </div>
+                                        )}
+
+                                        {/* Show preserved video if exists */}
+                                        {c && c.videoUrl && (
+                                          <div className="mb-2">
+                                            <video
+                                              src={c.videoUrl}
+                                              className="max-w-full max-h-64 rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
+                                              controls
+                                              onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                if (e.target.requestFullscreen) {
+                                                  e.target.requestFullscreen();
+                                                } else if (e.target.webkitRequestFullscreen) {
+                                                  e.target.webkitRequestFullscreen();
+                                                }
+                                              }}
+                                            />
+                                            <div className="mt-1 text-xs text-gray-600 italic">
+                                              Preserved video from deleted message
+                                            </div>
+                                          </div>
+                                        )}
+
+                                        {/* Show preserved audio if exists */}
+                                        {c && c.audioUrl && (
+                                          <div className="mb-2">
+                                            <div className="bg-gray-100 border border-gray-300 rounded-lg p-3">
+                                              <audio
+                                                src={c.audioUrl}
+                                                className="w-full"
+                                                controls
+                                                preload="metadata"
+                                              />
+                                              <div className="mt-2 text-xs text-gray-600 italic">
+                                                Preserved audio from deleted message: {c.audioName || 'Audio file'}
+                                              </div>
+                                            </div>
+                                          </div>
+                                        )}
+
+                                        {/* Show preserved document if exists */}
+                                        {c && c.documentUrl && (
+                                          <div className="mb-2">
+                                            <div className="bg-gray-100 border border-gray-300 rounded-lg p-3">
+                                              <div className="flex items-center gap-2 mb-2">
+                                                <span className="text-2xl">📄</span>
+                                                <div className="flex-1">
+                                                  <div className="text-sm font-medium text-gray-800">
+                                                    {c.documentName || 'Document'}
+                                                  </div>
+                                                  <div className="text-xs text-gray-600 italic">
+                                                    Preserved document from deleted message
+                                                  </div>
+                                                </div>
+                                                <button
+                                                  className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                                                  onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    try {
+                                                      const response = await fetch(c.documentUrl, { mode: 'cors' });
+                                                      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                                      const blob = await response.blob();
+                                                      const blobUrl = window.URL.createObjectURL(blob);
+                                                      const a = document.createElement('a');
+                                                      a.href = blobUrl;
+                                                      a.download = c.documentName || `document-${c._id || Date.now()}`;
+                                                      document.body.appendChild(a);
+                                                      a.click();
+                                                      a.remove();
+                                                      setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                                      toast.success('Document downloaded successfully');
+                                                    } catch (error) {
+                                                      const a = document.createElement('a');
+                                                      a.href = c.documentUrl;
+                                                      a.download = c.documentName || `document-${c._id || Date.now()}`;
+                                                      a.target = '_blank';
+                                                      document.body.appendChild(a);
+                                                      a.click();
+                                                      a.remove();
+                                                      toast.success('Document download started');
+                                                    }
+                                                  }}
+                                                >
+                                                  Download
+                                                </button>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        )}
+                                        {/* Download option for audio messages */}
+                                        {selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl && (
+                                          <button
+                                            className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+                                            onClick={async () => {
+                                              try {
+                                                const response = await fetch(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
+                                                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                                const blob = await response.blob();
+                                                const blobUrl = window.URL.createObjectURL(blob);
+                                                const a = document.createElement('a');
+                                                a.href = blobUrl;
+                                                a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id || Date.now()}`;
+                                                document.body.appendChild(a);
+                                                a.click();
+                                                a.remove();
+                                                setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                                toast.success('Audio downloaded successfully');
+                                              } catch (error) {
+                                                const a = document.createElement('a');
+                                                a.href = selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl;
+                                                a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id || Date.now()}`;
+                                                a.target = '_blank';
+                                                document.body.appendChild(a);
+                                                a.click();
+                                                a.remove();
+                                                toast.success('Audio download started');
+                                              }
+                                              setShowHeaderMoreMenu(false);
+                                              setHeaderOptionsMessageId(null);
+                                            }}
+                                          >
+                                            <FaDownload className="text-sm" />
+                                            Download Audio
+                                          </button>
+                                        )}
+
+                                        <div className="text-gray-800 bg-white p-2 rounded border-l-4 border-red-400 relative group">
+                                          {(() => {
+                                            const messageContent = (c && c.originalMessage) || (c && c.message);
+                                            if (messageContent) {
+                                              return (
+                                                <>
+                                                  <span className="whitespace-pre-wrap break-words">{messageContent}</span>
+                                                  {/* Copy icon - visible on hover */}
+                                                  <button
+                                                    className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-gray-500 hover:text-gray-700 bg-white rounded p-1 shadow-sm"
+                                                    onClick={() => copyMessageToClipboard(messageContent)}
+                                                    title="Copy deleted message content"
+                                                    aria-label="Copy deleted message content"
+                                                  >
+                                                    <FaCopy className="text-xs" />
+                                                  </button>
+                                                </>
+                                              );
+                                            } else {
+                                              return (
+                                                <span className="text-gray-500 italic">
+                                                  [Message content not preserved - this message was deleted before content preservation was implemented]
+                                                </span>
+                                              );
+                                            }
+                                          })()}
+                                        </div>
+
+                                        <button
+                                          className="mt-2 text-xs text-red-500 hover:text-red-700 underline"
+                                          onClick={() => hideMessage(c._id)}
+                                          title="Hide this deleted message from your admin view"
+                                        >
+                                          Hide from admin view
+                                        </button>
+                                      </div>
+                                    );
+                                  } else {
+                                    // Regular users see standard deletion message
+                                    return (
+                                      <span className="flex items-center gap-1 text-gray-400 italic">
+                                        <FaBan className="inline-block text-lg" /> This message has been deleted.
+                                      </span>
+                                    );
+                                  }
+                                })()
+                              ) : (
                                 <div>
                                   {isEditing ? (
                                     <div className="bg-yellow-100 border-l-4 border-yellow-400 px-2 py-1 rounded">
@@ -7816,10 +7811,10 @@ function AdminAppointmentRow({
                                       {/* Video Message */}
                                       {c && c.videoUrl && (
                                         <div className="mb-2">
-                                          <video 
-                                            src={c && c.videoUrl ? c.videoUrl : ''} 
-                                            className="max-w-full max-h-64 rounded-lg border cursor-pointer hover:opacity-90 transition-opacity" 
-                                            controls 
+                                          <video
+                                            src={c && c.videoUrl ? c.videoUrl : ''}
+                                            className="max-w-full max-h-64 rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
+                                            controls
                                             onClick={(e) => {
                                               e.preventDefault();
                                               e.stopPropagation();
@@ -7855,16 +7850,16 @@ function AdminAppointmentRow({
                                         <div className="mb-2">
                                           <div className="relative">
                                             <div className="w-full min-w-[280px] sm:min-w-[320px]">
-                                            <audio
-                                              src={c && c.audioUrl ? c.audioUrl : ''}
-                                              className="w-full"
-                                              controls
+                                              <audio
+                                                src={c && c.audioUrl ? c.audioUrl : ''}
+                                                className="w-full"
+                                                controls
                                                 preload="metadata"
-                                              onClick={(e) => e.stopPropagation()}
+                                                onClick={(e) => e.stopPropagation()}
                                                 ref={(audioEl) => {
                                                   if (audioEl && !audioEl.dataset.audioId) {
                                                     audioEl.dataset.audioId = c._id;
-                                                    
+
                                                     // Add play event listener to pause other audios
                                                     audioEl.addEventListener('play', () => {
                                                       // Pause all other audio elements
@@ -7874,7 +7869,7 @@ function AdminAppointmentRow({
                                                         }
                                                       });
                                                     });
-                                                    
+
                                                     // Add playback rate change listener
                                                     audioEl.addEventListener('ratechange', () => {
                                                       const rate = audioEl.playbackRate;
@@ -7896,30 +7891,30 @@ function AdminAppointmentRow({
                                                         });
                                                       }
                                                     });
-                                                    
+
                                                     // Set initial speed display
                                                     const rateDisplay = document.querySelector(`[data-audio-id="${c._id}"].playback-rate-display`);
-                                                      if (rateDisplay) {
-                                                        rateDisplay.textContent = `${audioEl.playbackRate}x`;
-                                                      }
+                                                    if (rateDisplay) {
+                                                      rateDisplay.textContent = `${audioEl.playbackRate}x`;
+                                                    }
                                                   }
                                                 }}
                                               />
                                             </div>
                                             <div className="mt-2 flex justify-between items-center">
                                               <div className="flex items-center gap-2">
-                                              <button
+                                                <button
                                                   className={`px-3 py-1.5 text-xs rounded-full shadow-sm border transition-colors ${isMe ? 'bg-white text-blue-600 hover:bg-blue-50 border-blue-200' : 'bg-blue-600 text-white hover:bg-blue-700 border-transparent'}`}
                                                   onClick={async (e) => {
-                                                  e.stopPropagation();
+                                                    e.stopPropagation();
                                                     try {
                                                       const response = await fetch(c && c.audioUrl ? c.audioUrl : '', { mode: 'cors' });
                                                       if (!response.ok) throw new Error(`HTTP ${response.status}`);
                                                       const blob = await response.blob();
                                                       const blobUrl = window.URL.createObjectURL(blob);
-                                                  const a = document.createElement('a');
+                                                      const a = document.createElement('a');
                                                       a.href = blobUrl;
-                                                  a.download = (c && c.audioName) || `audio-${(c && c._id) || Date.now()}`;
+                                                      a.download = (c && c.audioName) || `audio-${(c && c._id) || Date.now()}`;
                                                       document.body.appendChild(a);
                                                       a.click();
                                                       a.remove();
@@ -7929,23 +7924,23 @@ function AdminAppointmentRow({
                                                       const a = document.createElement('a');
                                                       a.href = c && c.audioUrl ? c.audioUrl : '';
                                                       a.download = (c && c.audioName) || `audio-${(c && c._id) || Date.now()}`;
-                                                  a.target = '_blank';
-                                                  document.body.appendChild(a);
-                                                  a.click();
+                                                      a.target = '_blank';
+                                                      document.body.appendChild(a);
+                                                      a.click();
                                                       a.remove();
-                                                  toast.success('Audio download started');
+                                                      toast.success('Audio download started');
                                                     }
-                                                }}
-                                                title="Download audio"
-                                              >
+                                                  }}
+                                                  title="Download audio"
+                                                >
                                                   <span className="inline-flex items-center gap-1">
                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" /></svg>
                                                     Download
                                                   </span>
-                                              </button>
+                                                </button>
                                                 <span className={`text-xs playback-rate-display ${isMe ? 'text-blue-100' : 'text-gray-500'}`} data-audio-id={c._id}>1x</span>
                                               </div>
-                                              
+
                                               {/* Three dots menu for audio options */}
                                               <div className="relative">
                                                 <button
@@ -7968,12 +7963,12 @@ function AdminAppointmentRow({
                                                   title="Audio options"
                                                 >
                                                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                                    <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                                                    <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
                                                   </svg>
                                                 </button>
-                                                
+
                                                 {/* Audio options dropdown - Main Menu */}
-                                                <div 
+                                                <div
                                                   data-audio-menu={c._id}
                                                   className="hidden absolute right-0 bottom-full mb-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
                                                 >
@@ -7998,7 +7993,7 @@ function AdminAppointmentRow({
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                                       </svg>
                                                     </button>
-                                                    
+
                                                     <button
                                                       className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                                                       onClick={(e) => {
@@ -8023,7 +8018,7 @@ function AdminAppointmentRow({
                                                 </div>
 
                                                 {/* Audio Speed Menu */}
-                                                <div 
+                                                <div
                                                   data-audio-speed-menu={c._id}
                                                   className="hidden absolute right-0 bottom-full mb-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
                                                 >
@@ -8051,9 +8046,8 @@ function AdminAppointmentRow({
                                                       <button
                                                         key={speed}
                                                         data-speed-option={speed}
-                                                        className={`w-full px-3 py-2 text-left text-sm flex items-center justify-between transition-colors ${
-                                                          speed === 1 ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
-                                                        }`}
+                                                        className={`w-full px-3 py-2 text-left text-sm flex items-center justify-between transition-colors ${speed === 1 ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
+                                                          }`}
                                                         onClick={(e) => {
                                                           e.stopPropagation();
                                                           const audioEl = document.querySelector(`[data-audio-id="${c._id}"]`);
@@ -8065,7 +8059,7 @@ function AdminAppointmentRow({
                                                               rateDisplay.textContent = `${speed}x`;
                                                             }
                                                           }
-                                                          
+
                                                           // Update highlighting in the speed menu
                                                           const menu = document.querySelector(`[data-audio-speed-menu="${c._id}"]`);
                                                           if (menu) {
@@ -8075,7 +8069,7 @@ function AdminAppointmentRow({
                                                               btn.classList.remove('bg-blue-100', 'text-blue-700');
                                                               btn.classList.add('text-gray-700', 'hover:bg-gray-100');
                                                             });
-                                                            
+
                                                             // Add highlighting to the selected speed button
                                                             const selectedButton = menu.querySelector(`[data-speed-option="${speed}"]`);
                                                             if (selectedButton) {
@@ -8083,7 +8077,7 @@ function AdminAppointmentRow({
                                                               selectedButton.classList.add('bg-blue-100', 'text-blue-700');
                                                             }
                                                           }
-                                                          
+
                                                           const speedMenu = document.querySelector(`[data-audio-speed-menu="${c._id}"]`);
                                                           if (speedMenu) {
                                                             speedMenu.classList.add('hidden');
@@ -8098,7 +8092,7 @@ function AdminAppointmentRow({
                                                 </div>
 
                                                 {/* Audio Controls Menu */}
-                                                <div 
+                                                <div
                                                   data-audio-controls-menu={c._id}
                                                   className="hidden absolute right-0 bottom-full mb-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
                                                 >
@@ -8122,7 +8116,7 @@ function AdminAppointmentRow({
                                                       </button>
                                                       Audio Controls
                                                     </div>
-                                                    
+
                                                     <button
                                                       className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                                                       onClick={(e) => {
@@ -8146,7 +8140,7 @@ function AdminAppointmentRow({
                                                       </svg>
                                                       Toggle Play/Pause
                                                     </button>
-                                                    
+
                                                     <button
                                                       className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                                                       onClick={(e) => {
@@ -8166,7 +8160,7 @@ function AdminAppointmentRow({
                                                       </svg>
                                                       Restart Audio
                                                     </button>
-                                                    
+
                                                     <button
                                                       className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                                                       onClick={(e) => {
@@ -8245,10 +8239,10 @@ function AdminAppointmentRow({
                                       {(() => {
                                         // Only show preview if it wasn't dismissed before sending
                                         if (c && c.previewDismissed) return null;
-                                        
+
                                         const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
                                         const urls = ((c && c.message) || '').match(urlRegex);
-                                                                                if (urls && urls.length > 0) {
+                                        if (urls && urls.length > 0) {
                                           return (
                                             <div className="mb-2 max-h-40 overflow-hidden">
                                               <LinkPreview
@@ -8262,256 +8256,249 @@ function AdminAppointmentRow({
                                         }
                                         return null;
                                       })()}
-                                      
+
                                       {/* Only show message text for non-audio messages (audio messages handle their caption internally) */}
                                       {c && !c.audioUrl && (
                                         <div className="inline">
-                                      <FormattedTextWithReadMore 
-                                        text={(c && c.message || '').replace(/\n+$/, '')}
-                                        isSentMessage={isMe}
-                                        className="whitespace-pre-wrap break-words"
-                                        searchQuery={searchQuery}
-                                      />
-                                      {c && c.edited && (
-                                        <span className="ml-2 text-[10px] italic text-gray-300 whitespace-nowrap">(Edited)</span>
+                                          <FormattedTextWithReadMore
+                                            text={(c && c.message || '').replace(/\n+$/, '')}
+                                            isSentMessage={isMe}
+                                            className="whitespace-pre-wrap break-words"
+                                            searchQuery={searchQuery}
+                                          />
+                                          {c && c.edited && (
+                                            <span className="ml-2 text-[10px] italic text-gray-300 whitespace-nowrap">(Edited)</span>
                                           )}
                                         </div>
                                       )}
                                     </>
                                   )}
                                 </div>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1 justify-end mt-2" data-message-actions>
-                          {/* Star icon for starred messages */}
-                          {c && c.starredBy && c.starredBy.includes(currentUser._id) && (
-                            <FaStar className={`${isMe ? 'text-yellow-300' : 'text-yellow-500'} text-[10px]`} />
-                          )}
-                          <span className={`${isMe ? 'text-blue-200' : 'text-gray-500'} text-[10px]`}>
-                            {new Date(c && c.timestamp ? c.timestamp : Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
-                          </span>
-                          {/* Report flag right after time and before three dots */}
-                          {reportedMessageIds?.includes(c && c._id) && (
-                            <FaFlag 
-                              className="text-red-500 w-3.5 h-3.5 mx-1 cursor-pointer hover:text-red-600 transition-colors" 
-                              title="Reported message - hover for details"
-                              onMouseEnter={(e) => handleFlagHover(c._id, e)}
-                              onMouseLeave={handleFlagLeave}
-                            />
-                          )}
-                          {/* Options icon - visible for all messages (including deleted) */}
-                          <button
-                            className={`${(c && c.senderEmail) === currentUser.email ? 'text-blue-200 hover:text-white' : 'text-gray-500 hover:text-gray-700'} transition-all duration-200 hover:scale-110 p-1 rounded-full hover:bg-white hover:bg-opacity-20 ml-1`}
-                            onClick={(e) => { 
-                              e.stopPropagation(); 
-                              setHeaderOptionsMessageId(c && c._id); 
-                              toggleReactionsBar(c && c._id);
-                            }}
-                            title="Message options"
-                            aria-label="Message options"
-                          >
-                            <FaEllipsisV size={12} />
-                          </button>
-                          
-                          {/* Display reactions */}
-                          {c && !c.deleted && c.reactions && c.reactions.length > 0 && (
-                            <div className="flex items-center gap-1 ml-1">
-                              {(() => {
-                                // Group reactions by emoji
-                                const groupedReactions = {};
-                                (c && c.reactions || []).forEach(reaction => {
-                                  if (!groupedReactions[reaction.emoji]) {
-                                    groupedReactions[reaction.emoji] = [];
-                                  }
-                                  groupedReactions[reaction.emoji].push(reaction);
-                                });
-                                
-                                return Object.entries(groupedReactions).map(([emoji, reactions]) => {
-                                  const hasUserReaction = reactions.some(r => r.userId === currentUser._id);
-                                  const userNames = reactions.map(r => r.userName).join(', ');
-                                  
-                                  return (
-                                    <button
-                                      key={emoji}
-                                      onClick={() => handleQuickReaction(c && c._id, emoji)}
-                                      className={`text-xs rounded-full px-2 py-1 flex items-center gap-1 transition-all duration-200 hover:scale-105 ${
-                                        hasUserReaction 
-                                          ? 'bg-blue-500 border-2 border-blue-600 hover:bg-blue-600 shadow-md' 
-                                          : 'bg-gray-100 border border-gray-300 hover:bg-gray-200'
-                                      }`}
-                                      title={`${userNames} reacted with ${emoji}${hasUserReaction ? ' (Click to remove)' : ' (Click to add)'}`}
-                                    >
-                                      <span>{emoji}</span>
-                                      <span className={`${hasUserReaction ? 'text-white font-semibold' : 'text-gray-600'}`}>
-                                        {reactions.length}
-                                      </span>
-                                    </button>
-                                  );
-                                });
-                              })()}
+                              )}
                             </div>
-                          )}
-                          
-                          {/* Reactions Bar - positioned inside message container (above only) */}
-                          {(() => {
-                            const shouldShow = c && !c.deleted && showReactionsBar && reactionsMessageId === (c && c._id);
-                            if (!shouldShow) return false;
-                            
-                            // Only show inline reaction bar if message should be positioned above
-                            const messageElement = document.querySelector(`[data-message-id="${c && c._id}"]`);
-                            if (messageElement) {
-                              const messageRect = messageElement.getBoundingClientRect();
-                              const chatContainer = chatContainerRef.current;
-                              if (chatContainer) {
-                                const containerRect = chatContainer.getBoundingClientRect();
-                                const distanceFromTop = messageRect.top - containerRect.top;
-                                
-                                // If message is near top and has space below, don't show inline bar (floating bar will handle it)
-                                if (distanceFromTop < 120) {
-                                  const spaceBelow = containerRect.bottom - messageRect.bottom;
-                                  const reactionBarHeight = 60;
-                                  
-                                  if (spaceBelow >= reactionBarHeight + 20) {
-                                    return false; // Don't show inline bar, floating bar will handle it
+                            <div className="flex items-center gap-1 justify-end mt-2" data-message-actions>
+                              {/* Star icon for starred messages */}
+                              {c && c.starredBy && c.starredBy.includes(currentUser._id) && (
+                                <FaStar className={`${isMe ? 'text-yellow-300' : 'text-yellow-500'} text-[10px]`} />
+                              )}
+                              <span className={`${isMe ? 'text-blue-200' : 'text-gray-500'} text-[10px]`}>
+                                {new Date(c && c.timestamp ? c.timestamp : Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                              </span>
+                              {/* Report flag right after time and before three dots */}
+                              {reportedMessageIds?.includes(c && c._id) && (
+                                <FaFlag
+                                  className="text-red-500 w-3.5 h-3.5 mx-1 cursor-pointer hover:text-red-600 transition-colors"
+                                  title="Reported message - hover for details"
+                                  onMouseEnter={(e) => handleFlagHover(c._id, e)}
+                                  onMouseLeave={handleFlagLeave}
+                                />
+                              )}
+                              {/* Options icon - visible for all messages (including deleted) */}
+                              <button
+                                className={`${(c && c.senderEmail) === currentUser.email ? 'text-blue-200 hover:text-white' : 'text-gray-500 hover:text-gray-700'} transition-all duration-200 hover:scale-110 p-1 rounded-full hover:bg-white hover:bg-opacity-20 ml-1`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setHeaderOptionsMessageId(c && c._id);
+                                  toggleReactionsBar(c && c._id);
+                                }}
+                                title="Message options"
+                                aria-label="Message options"
+                              >
+                                <FaEllipsisV size={12} />
+                              </button>
+
+                              {/* Display reactions */}
+                              {c && !c.deleted && c.reactions && c.reactions.length > 0 && (
+                                <div className="flex items-center gap-1 ml-1">
+                                  {(() => {
+                                    // Group reactions by emoji
+                                    const groupedReactions = {};
+                                    (c && c.reactions || []).forEach(reaction => {
+                                      if (!groupedReactions[reaction.emoji]) {
+                                        groupedReactions[reaction.emoji] = [];
+                                      }
+                                      groupedReactions[reaction.emoji].push(reaction);
+                                    });
+
+                                    return Object.entries(groupedReactions).map(([emoji, reactions]) => {
+                                      const hasUserReaction = reactions.some(r => r.userId === currentUser._id);
+                                      const userNames = reactions.map(r => r.userName).join(', ');
+
+                                      return (
+                                        <button
+                                          key={emoji}
+                                          onClick={() => handleQuickReaction(c && c._id, emoji)}
+                                          className={`text-xs rounded-full px-2 py-1 flex items-center gap-1 transition-all duration-200 hover:scale-105 ${hasUserReaction
+                                            ? 'bg-blue-500 border-2 border-blue-600 hover:bg-blue-600 shadow-md'
+                                            : 'bg-gray-100 border border-gray-300 hover:bg-gray-200'
+                                            }`}
+                                          title={`${userNames} reacted with ${emoji}${hasUserReaction ? ' (Click to remove)' : ' (Click to add)'}`}
+                                        >
+                                          <span>{emoji}</span>
+                                          <span className={`${hasUserReaction ? 'text-white font-semibold' : 'text-gray-600'}`}>
+                                            {reactions.length}
+                                          </span>
+                                        </button>
+                                      );
+                                    });
+                                  })()}
+                                </div>
+                              )}
+
+                              {/* Reactions Bar - positioned inside message container (above only) */}
+                              {(() => {
+                                const shouldShow = c && !c.deleted && showReactionsBar && reactionsMessageId === (c && c._id);
+                                if (!shouldShow) return false;
+
+                                // Only show inline reaction bar if message should be positioned above
+                                const messageElement = document.querySelector(`[data-message-id="${c && c._id}"]`);
+                                if (messageElement) {
+                                  const messageRect = messageElement.getBoundingClientRect();
+                                  const chatContainer = chatContainerRef.current;
+                                  if (chatContainer) {
+                                    const containerRect = chatContainer.getBoundingClientRect();
+                                    const distanceFromTop = messageRect.top - containerRect.top;
+
+                                    // If message is near top and has space below, don't show inline bar (floating bar will handle it)
+                                    if (distanceFromTop < 120) {
+                                      const spaceBelow = containerRect.bottom - messageRect.bottom;
+                                      const reactionBarHeight = 60;
+
+                                      if (spaceBelow >= reactionBarHeight + 20) {
+                                        return false; // Don't show inline bar, floating bar will handle it
+                                      }
+                                    }
                                   }
                                 }
-                              }
-                            }
-                            return true; // Show inline bar for above positioning
-                          })() && (
-                            <div className={`absolute -top-8 ${isMe ? 'right-0' : 'left-0'} bg-red-500 rounded-full shadow-lg border-2 border-red-600 p-1 flex items-center gap-1 animate-reactions-bar z-[999999] reactions-bar transition-all duration-300`} style={{ minWidth: 'max-content' }}>
-                              {/* Quick reaction buttons */}
-                              <button
-                                onClick={() => handleQuickReaction(c && c._id, '👍')}
-                                className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                                  (c && c.reactions)?.some(r => r.emoji === '👍' && r.userId === currentUser._id)
-                                    ? 'bg-blue-100 border-2 border-blue-400'
-                                    : 'bg-gray-50 hover:bg-gray-100'
-                                }`}
-                                title="Like"
-                              >
-                                👍
-                              </button>
-                              <button
-                                onClick={() => handleQuickReaction(c && c._id, '❤️')}
-                                className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                                  (c && c.reactions)?.some(r => r.emoji === '❤️' && r.userId === currentUser._id)
-                                    ? 'bg-blue-100 border-2 border-blue-400'
-                                    : 'bg-gray-50 hover:bg-gray-100'
-                                }`}
-                                title="Love"
-                              >
-                                ❤️
-                              </button>
-                              <button
-                                onClick={() => handleQuickReaction(c && c._id, '😂')}
-                                className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                                  (c && c.reactions)?.some(r => r.emoji === '😂' && r.userId === currentUser._id)
-                                    ? 'bg-blue-100 border-2 border-blue-400'
-                                    : 'bg-gray-50 hover:bg-gray-100'
-                                }`}
-                                title="Laugh"
-                              >
-                                😂
-                              </button>
-                              <button
-                                onClick={() => handleQuickReaction(c && c._id, '😮')}
-                                className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                                  (c && c.reactions)?.some(r => r.emoji === '😮' && r.userId === currentUser._id)
-                                    ? 'bg-blue-100 border-2 border-blue-400'
-                                    : 'bg-gray-50 hover:bg-gray-100'
-                                }`}
-                                title="Wow"
-                              >
-                                😮
-                              </button>
-                              <button
-                                onClick={() => handleQuickReaction(c && c._id, '😢')}
-                                className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                                  (c && c.reactions)?.some(r => r.emoji === '😢' && r.userId === currentUser._id)
-                                    ? 'bg-blue-100 border-2 border-blue-400'
-                                    : 'bg-gray-50 hover:bg-gray-100'
-                                }`}
-                                title="Sad"
-                              >
-                                😢
-                              </button>
-                              <button
-                                onClick={() => handleQuickReaction(c && c._id, '😡')}
-                                className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                                  (c && c.reactions)?.some(r => r.emoji === '😡' && r.userId === currentUser._id)
-                                    ? 'bg-blue-100 border-2 border-blue-400'
-                                    : 'bg-gray-50 hover:bg-gray-100'
-                                }`}
-                                title="Angry"
-                              >
-                                😡
-                              </button>
-                              <div className="w-px h-6 bg-gray-300 mx-1"></div>
-                              <button
-                                onClick={toggleReactionsEmojiPicker}
-                                className="w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform bg-gray-50 hover:bg-gray-100 rounded-full"
-                                title="More emojis"
-                              >
-                                ➕
-                              </button>
-                              {/* Appointment Reports removed from quick actions bar */}
+                                return true; // Show inline bar for above positioning
+                              })() && (
+                                  <div className={`absolute -top-8 ${isMe ? 'right-0' : 'left-0'} bg-red-500 rounded-full shadow-lg border-2 border-red-600 p-1 flex items-center gap-1 animate-reactions-bar z-[999999] reactions-bar transition-all duration-300`} style={{ minWidth: 'max-content' }}>
+                                    {/* Quick reaction buttons */}
+                                    <button
+                                      onClick={() => handleQuickReaction(c && c._id, '👍')}
+                                      className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${(c && c.reactions)?.some(r => r.emoji === '👍' && r.userId === currentUser._id)
+                                        ? 'bg-blue-100 border-2 border-blue-400'
+                                        : 'bg-gray-50 hover:bg-gray-100'
+                                        }`}
+                                      title="Like"
+                                    >
+                                      👍
+                                    </button>
+                                    <button
+                                      onClick={() => handleQuickReaction(c && c._id, '❤️')}
+                                      className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${(c && c.reactions)?.some(r => r.emoji === '❤️' && r.userId === currentUser._id)
+                                        ? 'bg-blue-100 border-2 border-blue-400'
+                                        : 'bg-gray-50 hover:bg-gray-100'
+                                        }`}
+                                      title="Love"
+                                    >
+                                      ❤️
+                                    </button>
+                                    <button
+                                      onClick={() => handleQuickReaction(c && c._id, '😂')}
+                                      className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${(c && c.reactions)?.some(r => r.emoji === '😂' && r.userId === currentUser._id)
+                                        ? 'bg-blue-100 border-2 border-blue-400'
+                                        : 'bg-gray-50 hover:bg-gray-100'
+                                        }`}
+                                      title="Laugh"
+                                    >
+                                      😂
+                                    </button>
+                                    <button
+                                      onClick={() => handleQuickReaction(c && c._id, '😮')}
+                                      className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${(c && c.reactions)?.some(r => r.emoji === '😮' && r.userId === currentUser._id)
+                                        ? 'bg-blue-100 border-2 border-blue-400'
+                                        : 'bg-gray-50 hover:bg-gray-100'
+                                        }`}
+                                      title="Wow"
+                                    >
+                                      😮
+                                    </button>
+                                    <button
+                                      onClick={() => handleQuickReaction(c && c._id, '😢')}
+                                      className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${(c && c.reactions)?.some(r => r.emoji === '😢' && r.userId === currentUser._id)
+                                        ? 'bg-blue-100 border-2 border-blue-400'
+                                        : 'bg-gray-50 hover:bg-gray-100'
+                                        }`}
+                                      title="Sad"
+                                    >
+                                      😢
+                                    </button>
+                                    <button
+                                      onClick={() => handleQuickReaction(c && c._id, '😡')}
+                                      className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${(c && c.reactions)?.some(r => r.emoji === '😡' && r.userId === currentUser._id)
+                                        ? 'bg-blue-100 border-2 border-blue-400'
+                                        : 'bg-gray-50 hover:bg-gray-100'
+                                        }`}
+                                      title="Angry"
+                                    >
+                                      😡
+                                    </button>
+                                    <div className="w-px h-6 bg-gray-300 mx-1"></div>
+                                    <button
+                                      onClick={toggleReactionsEmojiPicker}
+                                      className="w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform bg-gray-50 hover:bg-gray-100 rounded-full"
+                                      title="More emojis"
+                                    >
+                                      ➕
+                                    </button>
+                                    {/* Appointment Reports removed from quick actions bar */}
+                                  </div>
+                                )}
+
+                              {/* Read status indicator - always visible for sent messages */}
+                              {c && (c.senderEmail === currentUser.email) && !c.deleted && (
+                                <span className="ml-1 flex items-center gap-1">
+                                  {(c && c.readBy)?.some(userId => userId !== currentUser._id)
+                                    ? <FaCheckDouble className="text-green-400 text-xs transition-all duration-300 animate-fadeIn" title="Read" />
+                                    : (c && c.status) === "delivered"
+                                      ? <FaCheckDouble className="text-blue-200 text-xs transition-all duration-300 animate-fadeIn" title="Delivered" />
+                                      : (c && c.status) === "sending"
+                                        ? <FaCheckDouble className="text-blue-200 text-xs animate-pulse transition-all duration-300" title="Sending..." />
+                                        : <FaCheck className="text-blue-200 text-xs transition-all duration-300 animate-fadeIn" title="Sent" />}
+                                </span>
+                              )}
                             </div>
-                          )}
-                          
-                          {/* Read status indicator - always visible for sent messages */}
-                          {c && (c.senderEmail === currentUser.email) && !c.deleted && (
-                            <span className="ml-1 flex items-center gap-1">
-                              {(c && c.readBy)?.some(userId => userId !== currentUser._id)
-                                ? <FaCheckDouble className="text-green-400 text-xs transition-all duration-300 animate-fadeIn" title="Read" />
-                                : (c && c.status) === "delivered"
-                                  ? <FaCheckDouble className="text-blue-200 text-xs transition-all duration-300 animate-fadeIn" title="Delivered" />
-                                  : (c && c.status) === "sending"
-                                    ? <FaCheckDouble className="text-blue-200 text-xs animate-pulse transition-all duration-300" title="Sending..." />
-                                    : <FaCheck className="text-blue-200 text-xs transition-all duration-300 animate-fadeIn" title="Sent" />}
-                            </span>
-                          )}
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                    </React.Fragment>
-                  );
+                      </React.Fragment>
+                    );
                   });
                 })()}
-                
+
                 <div ref={chatEndRef} />
               </div>
-              
+
               {/* Floating Reaction Bar for Bottom Positioning */}
               {(() => {
                 const shouldShow = showReactionsBar && reactionsMessageId;
                 if (!shouldShow) return null;
-                
+
                 const messageElement = document.querySelector(`[data-message-id="${reactionsMessageId}"]`);
                 if (!messageElement) return null;
-                
+
                 const messageRect = messageElement.getBoundingClientRect();
                 const chatContainer = chatContainerRef.current;
                 if (!chatContainer) return null;
-                
+
                 const containerRect = chatContainer.getBoundingClientRect();
                 const distanceFromTop = messageRect.top - containerRect.top;
-                
+
                 // Only show floating bar if message is near top and needs bottom positioning
                 if (distanceFromTop < 120) {
                   const spaceBelow = containerRect.bottom - messageRect.bottom;
                   const reactionBarHeight = 60;
-                  
+
                   if (spaceBelow >= reactionBarHeight + 20) {
                     const comment = localComments.find(c => c._id === reactionsMessageId);
                     if (!comment || comment.deleted) return null;
-                    
+
                     const isMe = comment.senderEmail === currentUser.email;
-                    
+
                     return (
-                      <div 
+                      <div
                         className="fixed bg-red-500 rounded-full shadow-lg border-2 border-red-600 p-1 flex items-center gap-1 animate-reactions-bar z-[999999] reactions-bar transition-all duration-300"
-                        style={{ 
+                        style={{
                           minWidth: 'max-content',
                           top: `${messageRect.bottom + 2}px`,
                           left: isMe ? 'auto' : `${messageRect.left}px`,
@@ -8521,66 +8508,60 @@ function AdminAppointmentRow({
                         {/* Quick reaction buttons */}
                         <button
                           onClick={() => handleQuickReaction(comment._id, '👍')}
-                          className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                            comment.reactions?.some(r => r.emoji === '👍' && r.userId === currentUser._id)
-                              ? 'bg-blue-100 border-2 border-blue-400'
-                              : 'bg-gray-50 hover:bg-gray-100'
-                          }`}
+                          className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${comment.reactions?.some(r => r.emoji === '👍' && r.userId === currentUser._id)
+                            ? 'bg-blue-100 border-2 border-blue-400'
+                            : 'bg-gray-50 hover:bg-gray-100'
+                            }`}
                           title="Like"
                         >
                           👍
                         </button>
                         <button
                           onClick={() => handleQuickReaction(comment._id, '❤️')}
-                          className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                            comment.reactions?.some(r => r.emoji === '❤️' && r.userId === currentUser._id)
-                              ? 'bg-blue-100 border-2 border-blue-400'
-                              : 'bg-gray-50 hover:bg-gray-100'
-                          }`}
+                          className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${comment.reactions?.some(r => r.emoji === '❤️' && r.userId === currentUser._id)
+                            ? 'bg-blue-100 border-2 border-blue-400'
+                            : 'bg-gray-50 hover:bg-gray-100'
+                            }`}
                           title="Love"
                         >
                           ❤️
                         </button>
                         <button
                           onClick={() => handleQuickReaction(comment._id, '😂')}
-                          className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                            comment.reactions?.some(r => r.emoji === '😂' && r.userId === currentUser._id)
-                              ? 'bg-blue-100 border-2 border-blue-400'
-                              : 'bg-gray-50 hover:bg-gray-100'
-                          }`}
+                          className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${comment.reactions?.some(r => r.emoji === '😂' && r.userId === currentUser._id)
+                            ? 'bg-blue-100 border-2 border-blue-400'
+                            : 'bg-gray-50 hover:bg-gray-100'
+                            }`}
                           title="Laugh"
                         >
                           😂
                         </button>
                         <button
                           onClick={() => handleQuickReaction(comment._id, '😮')}
-                          className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                            comment.reactions?.some(r => r.emoji === '😮' && r.userId === currentUser._id)
-                              ? 'bg-blue-100 border-2 border-blue-400'
-                              : 'bg-gray-50 hover:bg-gray-100'
-                          }`}
+                          className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${comment.reactions?.some(r => r.emoji === '😮' && r.userId === currentUser._id)
+                            ? 'bg-blue-100 border-2 border-blue-400'
+                            : 'bg-gray-50 hover:bg-gray-100'
+                            }`}
                           title="Wow"
                         >
                           😮
                         </button>
                         <button
                           onClick={() => handleQuickReaction(comment._id, '😢')}
-                          className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                            comment.reactions?.some(r => r.emoji === '😢' && r.userId === currentUser._id)
-                              ? 'bg-blue-100 border-2 border-blue-400'
-                              : 'bg-gray-50 hover:bg-gray-100'
-                          }`}
+                          className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${comment.reactions?.some(r => r.emoji === '😢' && r.userId === currentUser._id)
+                            ? 'bg-blue-100 border-2 border-blue-400'
+                            : 'bg-gray-50 hover:bg-gray-100'
+                            }`}
                           title="Sad"
                         >
                           😢
                         </button>
                         <button
                           onClick={() => handleQuickReaction(comment._id, '😡')}
-                          className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${
-                            comment.reactions?.some(r => r.emoji === '😡' && r.userId === currentUser._id)
-                              ? 'bg-blue-100 border-2 border-blue-400'
-                              : 'bg-gray-50 hover:bg-gray-100'
-                          }`}
+                          className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${comment.reactions?.some(r => r.emoji === '😡' && r.userId === currentUser._id)
+                            ? 'bg-blue-100 border-2 border-blue-400'
+                            : 'bg-gray-50 hover:bg-gray-100'
+                            }`}
                           title="Angry"
                         >
                           😡
@@ -8599,10 +8580,10 @@ function AdminAppointmentRow({
                 }
                 return null;
               })()}
-              
+
               {/* Quick Reactions Modal */}
               {showReactionsEmojiPicker && (
-                <div 
+                <div
                   className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-[999999] animate-fadeIn"
                   onMouseDown={(e) => {
                     // Only close on backdrop mousedown, not modal content
@@ -8617,7 +8598,7 @@ function AdminAppointmentRow({
                     }
                   }}
                 >
-                  <div 
+                  <div
                     className="bg-white rounded-2xl shadow-2xl border border-gray-200 p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-hidden quick-reactions-modal"
                     onMouseDown={(e) => {
                       e.stopPropagation(); // Prevent any event bubbling
@@ -8644,7 +8625,7 @@ function AdminAppointmentRow({
                         <FaTimes size={16} />
                       </button>
                     </div>
-                    
+
                     {/* Search Box */}
                     <div className="mb-4">
                       <div className="relative">
@@ -8669,7 +8650,7 @@ function AdminAppointmentRow({
                         </div>
                       )}
                     </div>
-                    <div 
+                    <div
                       className="overflow-y-auto max-h-[60vh] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
                       onMouseDown={(e) => {
                         e.stopPropagation(); // Prevent any event bubbling
@@ -8678,7 +8659,7 @@ function AdminAppointmentRow({
                         e.stopPropagation(); // Prevent any event bubbling
                       }}
                     >
-                      <div 
+                      <div
                         className="grid grid-cols-10 gap-2"
                         onMouseDown={(e) => {
                           e.stopPropagation(); // Prevent any event bubbling
@@ -8715,33 +8696,33 @@ function AdminAppointmentRow({
                   </div>
                 </div>
               )}
-              
-                              {/* Reply indicator */}
-                {replyTo && (
-                  <div className="px-4 mb-2">
-                    <div className="flex items-center bg-blue-50 border-l-4 border-blue-400 px-2 py-1 rounded">
-                      <span className="text-xs text-gray-700 font-semibold mr-2">Replying to:</span>
-                      <span className="text-xs text-gray-600 truncate max-w-[200px]">{replyTo.message?.substring(0, 40)}{replyTo.message?.length > 40 ? '...' : ''}</span>
-                      <button className="ml-auto text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-1 transition-colors" onClick={() => setReplyTo(null)} title="Cancel reply">
-                        <FaTimes className="w-3 h-3" />
-                      </button>
-                    </div>
+
+              {/* Reply indicator */}
+              {replyTo && (
+                <div className="px-4 mb-2">
+                  <div className="flex items-center bg-blue-50 border-l-4 border-blue-400 px-2 py-1 rounded">
+                    <span className="text-xs text-gray-700 font-semibold mr-2">Replying to:</span>
+                    <span className="text-xs text-gray-600 truncate max-w-[200px]">{replyTo.message?.substring(0, 40)}{replyTo.message?.length > 40 ? '...' : ''}</span>
+                    <button className="ml-auto text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-1 transition-colors" onClick={() => setReplyTo(null)} title="Cancel reply">
+                      <FaTimes className="w-3 h-3" />
+                    </button>
                   </div>
-                )}
+                </div>
+              )}
 
 
-              
+
               {/* Edit indicator */}
               {editingComment && (
                 <div className="px-4 mb-2">
                   <div className="flex items-center bg-yellow-50 border-l-4 border-yellow-400 px-2 py-1 rounded">
                     <span className="text-xs text-yellow-700 font-semibold mr-2">✏️ Editing message:</span>
                     <span className="text-xs text-yellow-600 truncate">{editText}</span>
-                    <button 
-                      className="ml-auto text-yellow-400 hover:text-yellow-700 bg-yellow-100 hover:bg-yellow-200 rounded-full p-1 transition-colors" 
-                      onClick={() => { 
-                        setEditingComment(null); 
-                        setEditText(""); 
+                    <button
+                      className="ml-auto text-yellow-400 hover:text-yellow-700 bg-yellow-100 hover:bg-yellow-200 rounded-full p-1 transition-colors"
+                      onClick={() => {
+                        setEditingComment(null);
+                        setEditText("");
                         // Restore original draft and clear it after a small delay to ensure state update
                         const draftToRestore = originalDraft;
                         setNewComment(draftToRestore);
@@ -8760,7 +8741,7 @@ function AdminAppointmentRow({
                             inputRef.current.style.height = '48px';
                             const scrollHeight = inputRef.current.scrollHeight;
                             const maxHeight = 144;
-                            
+
                             if (scrollHeight <= maxHeight) {
                               inputRef.current.style.height = scrollHeight + 'px';
                               inputRef.current.style.overflowY = 'hidden';
@@ -8770,7 +8751,7 @@ function AdminAppointmentRow({
                             }
                           }
                         }, 100);
-                      }} 
+                      }}
                       title="Cancel edit"
                     >
                       <FaTimes className="w-3 h-3" />
@@ -8778,13 +8759,13 @@ function AdminAppointmentRow({
                   </div>
                 </div>
               )}
-              
-                <div ref={chatEndRef} />
-              
+
+              <div ref={chatEndRef} />
+
               <div className="flex gap-2 mt-1 px-3 pb-2 flex-shrink-0 bg-gradient-to-b from-transparent to-white pt-2 items-end">
                 {/* Message Input Container with Attachment and Emoji Icons Inside */}
                 <div className="flex-1 relative">
-                                    {/* Link Preview Container with Height and Width Constraints */}
+                  {/* Link Preview Container with Height and Width Constraints */}
                   {detectedUrl && (
                     <div className="max-h-32 max-w-full overflow-y-auto mb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                       <LinkPreview
@@ -8814,74 +8795,74 @@ function AdminAppointmentRow({
                         </svg>
                       </button>
                       <div className="flex flex-wrap items-center gap-2 pr-8">
-                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
-                      applyFormattingAndClose(() => {
-                        const el = inputRef.current; if (!el) return; const start = el.selectionStart||0; const end=el.selectionEnd||0; const base=newComment||''; const selected=base.slice(start,end); const wrapped=`**${selected||'bold'}**`; const next=base.slice(0,start)+wrapped+base.slice(end); setNewComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2,start+2+(selected||'bold').length);}catch(_){}} ,0);
-                      });
-                    }}>B</button>
-                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100 italic" onClick={() => {
-                      applyFormattingAndClose(() => {
-                        const el = inputRef.current; if (!el) return; const start = el.selectionStart||0; const end=el.selectionEnd||0; const base=newComment||''; const selected=base.slice(start,end); const wrapped=`*${selected||'italic'}*`; const next=base.slice(0,start)+wrapped+base.slice(end); setNewComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+1,start+1+(selected||'italic').length);}catch(_){}} ,0);
-                      });
-                    }}>I</button>
-                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100 underline" onClick={() => {
-                      applyFormattingAndClose(() => {
-                        const el = inputRef.current; if (!el) return; const start = el.selectionStart||0; const end=el.selectionEnd||0; const base=newComment||''; const selected=base.slice(start,end); const wrapped=`__${selected||'underline'}__`; const next=base.slice(0,start)+wrapped+base.slice(end); setNewComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2,start+2+(selected||'underline').length);}catch(_){}} ,0);
-                      });
-                    }}>U</button>
-                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
-                      applyFormattingAndClose(() => {
-                        const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = newComment || ''; const selected = base.slice(start, end); const wrapped = `~~${selected || 'strike'}~~`; const next = base.slice(0, start) + wrapped + base.slice(end); setNewComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 2, start + 2 + (selected || 'strike').length); } catch (_) {} }, 0);
-                      });
-                    }}>S</button>
-                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
-                      applyFormattingAndClose(() => {
-                        const el=inputRef.current; if(!el)return; const base=newComment||''; const start=el.selectionStart||0; setNewComment(base.slice(0,start)+`- `+base.slice(start));
-                      });
-                    }}>• List</button>
-                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
-                      const el=inputRef.current; if(!el)return; const base=newComment||''; const start=el.selectionStart||0; const before = base.slice(0,start); const after = base.slice(start); 
-                      // Find existing numbered list items to determine next number
-                      const lines = before.split('\n');
-                      let nextNum = 1;
-                      
-                      // Check if we're continuing a list
-                      for (let i = lines.length - 1; i >= 0; i--) {
-                        const line = lines[i].trim();
-                        const match = line.match(/^(\d+)\.\s/);
-                        if (match) {
-                          nextNum = parseInt(match[1]) + 1;
-                          break;
-                        } else if (line && !line.match(/^\s*$/)) {
-                          // Non-empty, non-numbered line found, reset to 1
-                          break;
-                        }
-                      }
-                      
-                      applyFormattingAndClose(() => {
-                        setNewComment(base.slice(0,start)+`${nextNum}. `+base.slice(start));
-                      });
-                    }}>1. List</button>
-                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
-                      applyFormattingAndClose(() => {
-                        const el=inputRef.current; if(!el)return; const base=newComment||''; const start=el.selectionStart||0; setNewComment(base.slice(0,start)+`> `+base.slice(start));
-                      });
-                    }}>&gt; Quote</button>
-                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" title="Tag Property" onClick={() => {
-                      applyFormattingAndClose(() => {
-                        const el=inputRef.current; if(!el)return; const start=el.selectionStart||0; const base=newComment||''; const insert='@'; setNewComment(base.slice(0,start)+insert+base.slice(start));
-                      });
-                    }}>@Prop</button>
-                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" title="Insert appointment card" onClick={() => {
-                      applyFormattingAndClose(() => {
-                        const el=inputRef.current; if(!el)return; const start=el.selectionStart||0; const base=newComment||''; const card='[Appointment: date • time • with]'; setNewComment(base.slice(0,start)+card+base.slice(start));
-                      });
-                    }}>Appt</button>
-                    <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" title="Insert service link" onClick={() => {
-                      applyFormattingAndClose(() => {
-                        const el=inputRef.current; if(!el)return; const start=el.selectionStart||0; const base=newComment||''; const link='Book Movers: /user/movers'; setNewComment(base.slice(0,start)+link+base.slice(start));
-                      });
-                    }}>Service</button>
+                        <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
+                          applyFormattingAndClose(() => {
+                            const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = newComment || ''; const selected = base.slice(start, end); const wrapped = `**${selected || 'bold'}**`; const next = base.slice(0, start) + wrapped + base.slice(end); setNewComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 2, start + 2 + (selected || 'bold').length); } catch (_) { } }, 0);
+                          });
+                        }}>B</button>
+                        <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100 italic" onClick={() => {
+                          applyFormattingAndClose(() => {
+                            const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = newComment || ''; const selected = base.slice(start, end); const wrapped = `*${selected || 'italic'}*`; const next = base.slice(0, start) + wrapped + base.slice(end); setNewComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 1, start + 1 + (selected || 'italic').length); } catch (_) { } }, 0);
+                          });
+                        }}>I</button>
+                        <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100 underline" onClick={() => {
+                          applyFormattingAndClose(() => {
+                            const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = newComment || ''; const selected = base.slice(start, end); const wrapped = `__${selected || 'underline'}__`; const next = base.slice(0, start) + wrapped + base.slice(end); setNewComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 2, start + 2 + (selected || 'underline').length); } catch (_) { } }, 0);
+                          });
+                        }}>U</button>
+                        <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
+                          applyFormattingAndClose(() => {
+                            const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = newComment || ''; const selected = base.slice(start, end); const wrapped = `~~${selected || 'strike'}~~`; const next = base.slice(0, start) + wrapped + base.slice(end); setNewComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 2, start + 2 + (selected || 'strike').length); } catch (_) { } }, 0);
+                          });
+                        }}>S</button>
+                        <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
+                          applyFormattingAndClose(() => {
+                            const el = inputRef.current; if (!el) return; const base = newComment || ''; const start = el.selectionStart || 0; setNewComment(base.slice(0, start) + `- ` + base.slice(start));
+                          });
+                        }}>• List</button>
+                        <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
+                          const el = inputRef.current; if (!el) return; const base = newComment || ''; const start = el.selectionStart || 0; const before = base.slice(0, start); const after = base.slice(start);
+                          // Find existing numbered list items to determine next number
+                          const lines = before.split('\n');
+                          let nextNum = 1;
+
+                          // Check if we're continuing a list
+                          for (let i = lines.length - 1; i >= 0; i--) {
+                            const line = lines[i].trim();
+                            const match = line.match(/^(\d+)\.\s/);
+                            if (match) {
+                              nextNum = parseInt(match[1]) + 1;
+                              break;
+                            } else if (line && !line.match(/^\s*$/)) {
+                              // Non-empty, non-numbered line found, reset to 1
+                              break;
+                            }
+                          }
+
+                          applyFormattingAndClose(() => {
+                            setNewComment(base.slice(0, start) + `${nextNum}. ` + base.slice(start));
+                          });
+                        }}>1. List</button>
+                        <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
+                          applyFormattingAndClose(() => {
+                            const el = inputRef.current; if (!el) return; const base = newComment || ''; const start = el.selectionStart || 0; setNewComment(base.slice(0, start) + `> ` + base.slice(start));
+                          });
+                        }}>&gt; Quote</button>
+                        <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" title="Tag Property" onClick={() => {
+                          applyFormattingAndClose(() => {
+                            const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const base = newComment || ''; const insert = '@'; setNewComment(base.slice(0, start) + insert + base.slice(start));
+                          });
+                        }}>@Prop</button>
+                        <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" title="Insert appointment card" onClick={() => {
+                          applyFormattingAndClose(() => {
+                            const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const base = newComment || ''; const card = '[Appointment: date • time • with]'; setNewComment(base.slice(0, start) + card + base.slice(start));
+                          });
+                        }}>Appt</button>
+                        <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" title="Insert service link" onClick={() => {
+                          applyFormattingAndClose(() => {
+                            const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const base = newComment || ''; const link = 'Book Movers: /user/movers'; setNewComment(base.slice(0, start) + link + base.slice(start));
+                          });
+                        }}>Service</button>
                       </div>
                     </div>
                   )}
@@ -8932,33 +8913,33 @@ function AdminAppointmentRow({
                         // Combine and deduplicate by ID
                         const combined = [...apptProps, ...allPropsDetailed];
                         const uniquePropsMap = new Map();
-                        
+
                         // Add appointment properties first (they have more complete data)
                         apptProps.forEach(prop => {
                           if (prop.id && prop.name) {
                             uniquePropsMap.set(prop.id, prop);
                           }
                         });
-                        
+
                         // Add all properties, but don't override existing ones
                         allPropsDetailed.forEach(prop => {
                           if (prop.id && prop.name && !uniquePropsMap.has(prop.id)) {
                             uniquePropsMap.set(prop.id, prop);
                           }
                         });
-                        
+
                         const uniqueProps = Array.from(uniquePropsMap.values())
                           .filter(p => p.name && p.name.toLowerCase().includes(query));
-                        
-                        
+
+
                         if (uniqueProps.length === 0) return <div className="p-3 text-sm text-gray-500 text-center">No properties found. Try typing more characters.</div>;
-                        return uniqueProps.slice(0,8).map((p, index) => (
+                        return uniqueProps.slice(0, 8).map((p, index) => (
                           <button key={`${p.id}-${index}`} type="button" className="w-full text-left p-3 text-sm hover:bg-gray-100 transition-colors" onClick={() => {
                             const el = inputRef.current; const base = newComment || ''; const m = base.match(/@([^\s]*)$/); if (!m) return; const start = base.lastIndexOf('@');
                             const token = `@[${p.name}](${p.id})`;
-                            const next = base.slice(0,start) + token + ' ' + base.slice(start + m[0].length);
+                            const next = base.slice(0, start) + token + ' ' + base.slice(start + m[0].length);
                             setNewComment(next);
-                            setTimeout(()=>{ try{ el?.focus(); el?.setSelectionRange(start+token.length+1, start+token.length+1);}catch(_){}} ,0);
+                            setTimeout(() => { try { el?.focus(); el?.setSelectionRange(start + token.length + 1, start + token.length + 1); } catch (_) { } }, 0);
                           }}>
                             <div className="flex items-center space-x-3">
                               <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-gray-200 flex items-center justify-center">
@@ -9005,22 +8986,22 @@ function AdminAppointmentRow({
                     onChange={(e) => {
                       const value = e.target.value;
                       setNewComment(value);
-                      
-                                              // Detect URLs in the input
-                        const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
-                        const urls = value.match(urlRegex);
-                        if (urls && urls.length > 0) {
-                          setDetectedUrl(urls[0]);
-                          setPreviewDismissed(false); // Reset dismissed flag for new URL
-                        } else {
-                          setDetectedUrl(null);
-                          setPreviewDismissed(false);
-                        }
-                      
+
+                      // Detect URLs in the input
+                      const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
+                      const urls = value.match(urlRegex);
+                      if (urls && urls.length > 0) {
+                        setDetectedUrl(urls[0]);
+                        setPreviewDismissed(false); // Reset dismissed flag for new URL
+                      } else {
+                        setDetectedUrl(null);
+                        setPreviewDismissed(false);
+                      }
+
                       if (editingComment) {
                         setEditText(value);
                       }
-                      
+
                       // If cleared entirely, restore to original height
                       if ((e.target.value || '').trim() === '') {
                         const textarea = e.target;
@@ -9028,13 +9009,13 @@ function AdminAppointmentRow({
                         textarea.style.overflowY = 'hidden';
                         return;
                       }
-                      
+
                       // Auto-expand textarea (WhatsApp style) with scrolling support
                       const textarea = e.target;
                       textarea.style.height = '48px'; // Reset to min height
                       const scrollHeight = textarea.scrollHeight;
                       const maxHeight = 144; // 6 lines max
-                      
+
                       if (scrollHeight <= maxHeight) {
                         // If content fits within max height, expand the textarea
                         textarea.style.height = scrollHeight + 'px';
@@ -9058,7 +9039,7 @@ function AdminAppointmentRow({
                     onPaste={(e) => {
                       const items = Array.from(e.clipboardData.items);
                       const imageItems = items.filter(item => item.type.startsWith('image/'));
-                      
+
                       if (imageItems.length > 0) {
                         e.preventDefault();
                         const imageItem = imageItems[0];
@@ -9068,10 +9049,10 @@ function AdminAppointmentRow({
                         }
                       }
                     }}
-                    onKeyDown={e => { 
+                    onKeyDown={e => {
                       // Check if this is a desktop viewport only
                       const isDesktop = window.matchMedia('(min-width: 768px)').matches;
-                      
+
                       if (e.key === 'Enter') {
                         // Avoid sending while composing (IME)
                         if (e.isComposing || e.keyCode === 229) return;
@@ -9100,7 +9081,7 @@ function AdminAppointmentRow({
                   />
                   {/* Emoji Button - Inside textarea on the right */}
                   <div className="absolute right-12 bottom-2">
-                    <EmojiButton 
+                    <EmojiButton
                       onEmojiClick={(emoji) => {
                         // Use live input value and caret selection for robust insertion
                         const el = inputRef?.current;
@@ -9112,7 +9093,7 @@ function AdminAppointmentRow({
                             start = el.selectionStart;
                             end = el.selectionEnd;
                           }
-                        } catch (_) {}
+                        } catch (_) { }
                         const newText = baseText.slice(0, start) + emoji + baseText.slice(end);
                         setNewComment(newText);
                         if (editingComment) {
@@ -9126,11 +9107,11 @@ function AdminAppointmentRow({
                               el.focus();
                               el.setSelectionRange(caretPos, caretPos);
                             }
-                          } catch (_) {}
+                          } catch (_) { }
                         }, 0);
                       }}
                       className="w-8 h-8"
-                        inputRef={inputRef}
+                      inputRef={inputRef}
                     />
                   </div>
                   {/* Attachment Button with panel */}
@@ -9140,11 +9121,10 @@ function AdminAppointmentRow({
                       type="button"
                       onClick={() => setShowAttachmentPanel(prev => !prev)}
                       disabled={uploadingFile}
-                      className={`flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300 ${
-                        uploadingFile
-                          ? 'bg-gray-400 cursor-not-allowed'
-                          : 'bg-gray-100 hover:bg-gray-200 hover:shadow-md active:scale-95'
-                      }`}
+                      className={`flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300 ${uploadingFile
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'bg-gray-100 hover:bg-gray-200 hover:shadow-md active:scale-95'
+                        }`}
                       title="Attach"
                     >
                       {uploadingFile ? (
@@ -9291,7 +9271,7 @@ function AdminAppointmentRow({
                     )}
                   </div>
                 </div>
-                
+
                 <button
                   onClick={(e) => {
                     e.preventDefault();
@@ -9301,7 +9281,7 @@ function AdminAppointmentRow({
                       handleCommentSend();
                     }
                   }}
-                                      disabled={editingComment ? savingComment === editingComment : !newComment.trim()}
+                  disabled={editingComment ? savingComment === editingComment : !newComment.trim()}
                   className="bg-gradient-to-r from-blue-600 to-purple-700 text-white w-12 h-12 rounded-full shadow-lg hover:from-blue-700 hover:to-purple-800 hover:shadow-xl transform hover:scale-110 transition-all duration-300 disabled:opacity-50 disabled:transform-none flex items-center justify-center hover:shadow-2xl active:scale-95 group"
                 >
                   {editingComment ? (
@@ -9311,17 +9291,17 @@ function AdminAppointmentRow({
                       <FaPen className="text-lg text-white group-hover:scale-110 transition-transform duration-200" />
                     )
                   ) : (
-                      <div className="relative">
-                        {sendIconSent ? (
-                          <FaCheck className="text-lg text-white group-hover:scale-110 transition-all duration-300 send-icon animate-sent" />
-                        ) : (
-                          <FaPaperPlane className={`text-lg text-white group-hover:scale-110 transition-all duration-300 send-icon ${sendIconAnimating ? 'animate-fly' : ''}`} />
-                        )}
-                      </div>
-                    )}
+                    <div className="relative">
+                      {sendIconSent ? (
+                        <FaCheck className="text-lg text-white group-hover:scale-110 transition-all duration-300 send-icon animate-sent" />
+                      ) : (
+                        <FaPaperPlane className={`text-lg text-white group-hover:scale-110 transition-all duration-300 send-icon ${sendIconAnimating ? 'animate-fly' : ''}`} />
+                      )}
+                    </div>
+                  )}
                 </button>
               </div>
-              
+
               {/* File Upload Error */}
               {fileUploadError && (
                 <div className="px-3 pb-2">
@@ -9330,28 +9310,28 @@ function AdminAppointmentRow({
                   </div>
                 </div>
               )}
-              
+
               {/* Multi-Image Preview Modal - Positioned as overlay */}
               {showImagePreviewModal && selectedFiles.length > 0 && (
                 <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                                      <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                  <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-lg font-medium text-gray-700">
                         Image Preview ({selectedFiles.length} image{selectedFiles.length !== 1 ? 's' : ''})
                       </span>
                       <button
-                                                  onClick={() => {
-                            setSelectedFiles([]);
-                            setImageCaptions({});
-                            setPreviewIndex(0);
-                            setShowImagePreviewModal(false);
-                          }}
+                        onClick={() => {
+                          setSelectedFiles([]);
+                          setImageCaptions({});
+                          setPreviewIndex(0);
+                          setShowImagePreviewModal(false);
+                        }}
                         className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
                       >
                         <FaTimes className="w-5 h-5" />
                       </button>
                     </div>
-                    
+
                     {/* Image Slideshow */}
                     <div className="relative mb-4">
                       {/* Navigation Arrows */}
@@ -9375,7 +9355,7 @@ function AdminAppointmentRow({
                           </button>
                         </>
                       )}
-                      
+
                       {/* Current Image */}
                       <div className="mb-3">
                         <img
@@ -9384,108 +9364,107 @@ function AdminAppointmentRow({
                           className="w-full h-64 object-contain rounded-lg border"
                         />
                       </div>
-                      
-                                              {/* Image Counter */}
-                        <div className="text-center text-sm text-gray-600 mb-3">
-                          {previewIndex + 1} of {selectedFiles.length}
-                        </div>
-                      
-                                              {/* Image Thumbnails */}
-                        <div className="flex gap-2 mb-3 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pb-2 min-w-0 max-w-full" style={{ scrollbarWidth: 'thin', scrollbarColor: '#d1d5db #f3f4f6' }}>
-                          {selectedFiles.map((file, index) => (
-                            <div key={index} className="relative">
-                              <button
-                                onClick={() => setPreviewIndex(index)}
-                                className={`flex-shrink-0 w-12 h-12 rounded-lg border-2 transition-all duration-200 ${
-                                  index === previewIndex 
-                                    ? 'border-blue-500 shadow-lg' 
-                                    : 'border-gray-300 hover:border-gray-400'
+
+                      {/* Image Counter */}
+                      <div className="text-center text-sm text-gray-600 mb-3">
+                        {previewIndex + 1} of {selectedFiles.length}
+                      </div>
+
+                      {/* Image Thumbnails */}
+                      <div className="flex gap-2 mb-3 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pb-2 min-w-0 max-w-full" style={{ scrollbarWidth: 'thin', scrollbarColor: '#d1d5db #f3f4f6' }}>
+                        {selectedFiles.map((file, index) => (
+                          <div key={index} className="relative">
+                            <button
+                              onClick={() => setPreviewIndex(index)}
+                              className={`flex-shrink-0 w-12 h-12 rounded-lg border-2 transition-all duration-200 ${index === previewIndex
+                                ? 'border-blue-500 shadow-lg'
+                                : 'border-gray-300 hover:border-gray-400'
                                 }`}
+                            >
+                              <img
+                                src={URL.createObjectURL(file)}
+                                alt={`Thumbnail ${index + 1}`}
+                                className="w-full h-full object-cover rounded-lg"
+                              />
+                            </button>
+                            {/* Delete Icon on Thumbnail - Only show when multiple images are selected */}
+                            {selectedFiles.length > 1 && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent triggering the thumbnail selection
+                                  const newFiles = selectedFiles.filter((_, fileIndex) => fileIndex !== index);
+                                  const newCaptions = { ...imageCaptions };
+                                  // Remove caption for deleted image
+                                  delete newCaptions[file.name];
+
+                                  if (newFiles.length === 0) {
+                                    // If no images left, close modal
+                                    setSelectedFiles([]);
+                                    setImageCaptions({});
+                                    setShowImagePreviewModal(false);
+                                  } else {
+                                    // Update files and adjust preview index
+                                    setSelectedFiles(newFiles);
+                                    setImageCaptions(newCaptions);
+                                    // Adjust preview index if needed
+                                    if (previewIndex >= newFiles.length) {
+                                      setPreviewIndex(newFiles.length - 1);
+                                    } else if (previewIndex > index) {
+                                      // If we deleted an image before the current preview, adjust index
+                                      setPreviewIndex(previewIndex - 1);
+                                    }
+                                  }
+                                }}
+                                className="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-lg transition-all duration-200 hover:scale-110 z-10"
+                                title="Remove this image"
+                                aria-label="Remove this image"
                               >
-                                <img
-                                  src={URL.createObjectURL(file)}
-                                  alt={`Thumbnail ${index + 1}`}
-                                  className="w-full h-full object-cover rounded-lg"
-                                />
+                                <FaTimes className="w-2 h-2" />
                               </button>
-                              {/* Delete Icon on Thumbnail - Only show when multiple images are selected */}
-                              {selectedFiles.length > 1 && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation(); // Prevent triggering the thumbnail selection
-                                    const newFiles = selectedFiles.filter((_, fileIndex) => fileIndex !== index);
-                                    const newCaptions = { ...imageCaptions };
-                                    // Remove caption for deleted image
-                                    delete newCaptions[file.name];
-                                    
-                                    if (newFiles.length === 0) {
-                                      // If no images left, close modal
-                                      setSelectedFiles([]);
-                                      setImageCaptions({});
-                                      setShowImagePreviewModal(false);
-                                    } else {
-                                      // Update files and adjust preview index
+                            )}
+                          </div>
+                        ))}
+
+                        {/* Add More Images Button - Only show when less than 10 images */}
+                        {selectedFiles.length < 10 && (
+                          <div className="relative">
+                            <label className="flex-shrink-0 w-12 h-12 rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 cursor-pointer flex items-center justify-center group">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                className="hidden"
+                                onChange={(e) => {
+                                  const files = e.target.files;
+                                  if (files && files.length > 0) {
+                                    // Calculate how many more images can be added
+                                    const remainingSlots = 10 - selectedFiles.length;
+                                    const filesToAdd = Array.from(files).slice(0, remainingSlots);
+
+                                    if (filesToAdd.length > 0) {
+                                      // Add new files to existing selection
+                                      const newFiles = [...selectedFiles, ...filesToAdd];
                                       setSelectedFiles(newFiles);
-                                      setImageCaptions(newCaptions);
-                                      // Adjust preview index if needed
-                                      if (previewIndex >= newFiles.length) {
-                                        setPreviewIndex(newFiles.length - 1);
-                                      } else if (previewIndex > index) {
-                                        // If we deleted an image before the current preview, adjust index
-                                        setPreviewIndex(previewIndex - 1);
+
+                                      // Show notification if some files were skipped
+                                      if (filesToAdd.length < files.length) {
+                                        toast.info(`Added ${filesToAdd.length} images. Maximum limit of 10 images reached.`);
                                       }
                                     }
-                                  }}
-                                  className="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-lg transition-all duration-200 hover:scale-110 z-10"
-                                  title="Remove this image"
-                                  aria-label="Remove this image"
-                                >
-                                  <FaTimes className="w-2 h-2" />
-                                </button>
-                              )}
-                            </div>
-                          ))}
-                          
-                          {/* Add More Images Button - Only show when less than 10 images */}
-                          {selectedFiles.length < 10 && (
-                            <div className="relative">
-                              <label className="flex-shrink-0 w-12 h-12 rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 cursor-pointer flex items-center justify-center group">
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  multiple
-                                  className="hidden"
-                                  onChange={(e) => {
-                                    const files = e.target.files;
-                                    if (files && files.length > 0) {
-                                      // Calculate how many more images can be added
-                                      const remainingSlots = 10 - selectedFiles.length;
-                                      const filesToAdd = Array.from(files).slice(0, remainingSlots);
-                                      
-                                      if (filesToAdd.length > 0) {
-                                        // Add new files to existing selection
-                                        const newFiles = [...selectedFiles, ...filesToAdd];
-                                        setSelectedFiles(newFiles);
-                                        
-                                        // Show notification if some files were skipped
-                                        if (filesToAdd.length < files.length) {
-                                          toast.info(`Added ${filesToAdd.length} images. Maximum limit of 10 images reached.`);
-                                        }
-                                      }
-                                      // Reset the input
-                                      e.target.value = '';
-                                    }
-                                  }}
-                                />
-                                <svg className="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
-                              </label>
-                            </div>
-                          )}
-                        </div>
+                                    // Reset the input
+                                    e.target.value = '';
+                                  }
+                                }}
+                              />
+                              <svg className="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                              </svg>
+                            </label>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    
+
                     {/* Caption for Current Image */}
                     <div className="relative mb-4">
                       <textarea
@@ -9501,7 +9480,7 @@ function AdminAppointmentRow({
                       />
                       {/* Emoji Picker for Caption */}
                       <div className="absolute right-2 top-2">
-                        <EmojiButton 
+                        <EmojiButton
                           onEmojiClick={(emoji) => {
                             const currentCaption = imageCaptions[selectedFiles[previewIndex]?.name] || '';
                             setImageCaptions(prev => ({
@@ -9516,7 +9495,7 @@ function AdminAppointmentRow({
                         {(imageCaptions[selectedFiles[previewIndex]?.name] || '').length}/500
                       </div>
                     </div>
-                    
+
                     <div className="flex justify-between items-center">
                       <div className="text-sm text-gray-600">
                         {uploadingFile && currentFileIndex >= 0 ? (
@@ -9570,7 +9549,7 @@ function AdminAppointmentRow({
                   </div>
                 </div>
               )}
-              
+
               {/* Animations for chat bubbles */}
               <style jsx>{`
                 @keyframes fadeInChatBubble {
@@ -9698,125 +9677,125 @@ function AdminAppointmentRow({
                     50% { box-shadow: 0 0 25px rgba(168, 85, 247, 0.9); }
                   }
                 `}</style>
-              
-                             {/* Floating Scroll to bottom button - WhatsApp style */}
-               {!isAtBottom && !editingComment && !replyTo && (
-                 <div className="absolute bottom-20 right-6 z-20">
-                   <button
-                     onClick={() => { 
-                       setVisibleCount(Math.max(MESSAGES_PAGE_SIZE, localComments.length)); 
-                       setTimeout(() => scrollToBottom(), 50); // Small delay to ensure DOM updates
-                     }}
-                     className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-full p-3 shadow-xl transition-all duration-200 hover:scale-110 relative transform hover:shadow-2xl"
-                     title={unreadNewMessages > 0 ? `${unreadNewMessages} new message${unreadNewMessages > 1 ? 's' : ''} - Scroll to bottom` : "Scroll to bottom"}
-                     aria-label={unreadNewMessages > 0 ? `${unreadNewMessages} new messages, scroll to bottom` : "Scroll to bottom"}
-                   >
-                     <svg
-                       width="16"
-                       height="16"
-                       viewBox="0 0 24 24"
-                       fill="currentColor"
-                       className="transform"
-                     >
-                       <path d="M12 16l-6-6h12l-6 6z" />
-                     </svg>
-                     {unreadNewMessages > 0 && (
-                       <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1 border-2 border-white shadow-lg">
-                         {unreadNewMessages > 99 ? '99+' : unreadNewMessages}
-                       </div>
-                     )}
-                   </button>
-                 </div>
-               )}
-               {/* Delete Chat Confirmation Modal (overlay above chat) */}
-               {showDeleteChatModal && (
-                 <div className="absolute inset-0 bg-black/30 flex items-center justify-center z-50">
-                   <div className="bg-white rounded-xl p-6 w-full max-w-sm relative shadow-2xl">
-                     <button
-                       className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors"
-                       onClick={() => { setShowDeleteChatModal(false); setDeleteChatPassword(''); }}
-                       title="Close"
-                       aria-label="Close"
-                     >
-                       <FaTimes className="w-4 h-4" />
-                     </button>
-                     <h3 className="text-lg font-bold mb-4 text-red-600 flex items-center gap-2">
-                       <FaTrash /> Delete Entire Chat
-                     </h3>
-                     <p className="text-sm text-gray-600 mb-3">This will permanently delete all messages for this appointment. Enter admin password to confirm.</p>
-                     <input
-                       type="password"
-                       className="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-red-200 mb-4"
-                       placeholder="Admin password"
-                       value={deleteChatPassword}
-                       onChange={e => setDeleteChatPassword(e.target.value)}
-                       onKeyDown={e => {
-                         if (e.key === 'Enter' && deleteChatPassword.trim() && !deleteChatLoading) {
-                           e.preventDefault();
-                           // Execute delete chat functionality
-                           (async () => {
-                             try {
-                               setDeleteChatLoading(true);
-                               const { data } = await axios.delete(`${API_BASE_URL}/api/bookings/${appt._id}/comments`, {
-                                 withCredentials: true,
-                                 headers: { 'Content-Type': 'application/json' },
-                                 data: { password: deleteChatPassword }
-                               });
-                                 setLocalComments([]);
-                                 toast.success('Chat deleted successfully.');
-                                 setShowDeleteChatModal(false);
-                                 setDeleteChatPassword('');
-                             } catch (e) {
-                               toast.error(e.response?.data?.message || 'Failed to delete chat');
-                             } finally {
-                               setDeleteChatLoading(false);
-                             }
-                           })();
-                         }
-                       }}
-                       autoFocus
-                     />
-                     <div className="flex gap-3 justify-end">
-                       <button
-                         type="button"
-                         onClick={() => { setShowDeleteChatModal(false); setDeleteChatPassword(''); }}
-                         className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
-                       >
-                         Cancel
-                       </button>
-                       <button
-                         type="button"
-                         disabled={deleteChatLoading || !deleteChatPassword}
-                         onClick={async () => {
-                           try {
-                             setDeleteChatLoading(true);
-                             const { data } = await axios.delete(`${API_BASE_URL}/api/bookings/${appt._id}/comments`, {
-                               withCredentials: true,
-                               headers: { 'Content-Type': 'application/json' },
-                               data: { password: deleteChatPassword }
-                             });
-                                                                setLocalComments([]);
-                                 toast.success('Chat deleted successfully.');
-                                 setShowDeleteChatModal(false);
-                                 setDeleteChatPassword('');
-                             } catch (e) {
-                               toast.error(e.response?.data?.message || 'Failed to delete chat');
-                             } finally {
-                             setDeleteChatLoading(false);
-                           }
-                         }}
-                         className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors flex items-center gap-2 disabled:opacity-60"
-                       >
-                         {deleteChatLoading ? 'Deleting...' : (
-                           <>
-                             <FaTrash size={12} /> Delete Chat
-                           </>
-                         )}
-                       </button>
-                     </div>
-                   </div>
-                 </div>
-               )}
+
+              {/* Floating Scroll to bottom button - WhatsApp style */}
+              {!isAtBottom && !editingComment && !replyTo && (
+                <div className="absolute bottom-20 right-6 z-20">
+                  <button
+                    onClick={() => {
+                      setVisibleCount(Math.max(MESSAGES_PAGE_SIZE, localComments.length));
+                      setTimeout(() => scrollToBottom(), 50); // Small delay to ensure DOM updates
+                    }}
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-full p-3 shadow-xl transition-all duration-200 hover:scale-110 relative transform hover:shadow-2xl"
+                    title={unreadNewMessages > 0 ? `${unreadNewMessages} new message${unreadNewMessages > 1 ? 's' : ''} - Scroll to bottom` : "Scroll to bottom"}
+                    aria-label={unreadNewMessages > 0 ? `${unreadNewMessages} new messages, scroll to bottom` : "Scroll to bottom"}
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      className="transform"
+                    >
+                      <path d="M12 16l-6-6h12l-6 6z" />
+                    </svg>
+                    {unreadNewMessages > 0 && (
+                      <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1 border-2 border-white shadow-lg">
+                        {unreadNewMessages > 99 ? '99+' : unreadNewMessages}
+                      </div>
+                    )}
+                  </button>
+                </div>
+              )}
+              {/* Delete Chat Confirmation Modal (overlay above chat) */}
+              {showDeleteChatModal && (
+                <div className="absolute inset-0 bg-black/30 flex items-center justify-center z-50">
+                  <div className="bg-white rounded-xl p-6 w-full max-w-sm relative shadow-2xl">
+                    <button
+                      className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors"
+                      onClick={() => { setShowDeleteChatModal(false); setDeleteChatPassword(''); }}
+                      title="Close"
+                      aria-label="Close"
+                    >
+                      <FaTimes className="w-4 h-4" />
+                    </button>
+                    <h3 className="text-lg font-bold mb-4 text-red-600 flex items-center gap-2">
+                      <FaTrash /> Delete Entire Chat
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-3">This will permanently delete all messages for this appointment. Enter admin password to confirm.</p>
+                    <input
+                      type="password"
+                      className="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-red-200 mb-4"
+                      placeholder="Admin password"
+                      value={deleteChatPassword}
+                      onChange={e => setDeleteChatPassword(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && deleteChatPassword.trim() && !deleteChatLoading) {
+                          e.preventDefault();
+                          // Execute delete chat functionality
+                          (async () => {
+                            try {
+                              setDeleteChatLoading(true);
+                              const { data } = await axios.delete(`${API_BASE_URL}/api/bookings/${appt._id}/comments`, {
+                                withCredentials: true,
+                                headers: { 'Content-Type': 'application/json' },
+                                data: { password: deleteChatPassword }
+                              });
+                              setLocalComments([]);
+                              toast.success('Chat deleted successfully.');
+                              setShowDeleteChatModal(false);
+                              setDeleteChatPassword('');
+                            } catch (e) {
+                              toast.error(e.response?.data?.message || 'Failed to delete chat');
+                            } finally {
+                              setDeleteChatLoading(false);
+                            }
+                          })();
+                        }
+                      }}
+                      autoFocus
+                    />
+                    <div className="flex gap-3 justify-end">
+                      <button
+                        type="button"
+                        onClick={() => { setShowDeleteChatModal(false); setDeleteChatPassword(''); }}
+                        className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        disabled={deleteChatLoading || !deleteChatPassword}
+                        onClick={async () => {
+                          try {
+                            setDeleteChatLoading(true);
+                            const { data } = await axios.delete(`${API_BASE_URL}/api/bookings/${appt._id}/comments`, {
+                              withCredentials: true,
+                              headers: { 'Content-Type': 'application/json' },
+                              data: { password: deleteChatPassword }
+                            });
+                            setLocalComments([]);
+                            toast.success('Chat deleted successfully.');
+                            setShowDeleteChatModal(false);
+                            setDeleteChatPassword('');
+                          } catch (e) {
+                            toast.error(e.response?.data?.message || 'Failed to delete chat');
+                          } finally {
+                            setDeleteChatLoading(false);
+                          }
+                        }}
+                        className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors flex items-center gap-2 disabled:opacity-60"
+                      >
+                        {deleteChatLoading ? 'Deleting...' : (
+                          <>
+                            <FaTrash size={12} /> Delete Chat
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -9876,7 +9855,7 @@ function AdminAppointmentRow({
                 <div className="flex items-center gap-2">
                   {uploadingFile ? (
                     <>
-                      <button 
+                      <button
                         onClick={handleCancelInFlightUpload}
                         className="px-4 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50"
                       >
@@ -9898,9 +9877,8 @@ function AdminAppointmentRow({
                       <button
                         onClick={handleSendSelectedAudio}
                         disabled={isChatSendBlocked}
-                        className={`py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
-                          isChatSendBlocked ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'
-                        }`}
+                        className={`py-2 px-4 rounded-lg text-sm font-medium transition-colors ${isChatSendBlocked ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'
+                          }`}
                       >Send Audio</button>
                     </>
                   )}
@@ -9924,13 +9902,13 @@ function AdminAppointmentRow({
                       {messageToDelete?.isCall || (messageToDelete?._id && messageToDelete._id.startsWith('call-')) ? 'Delete Call' : 'Delete Message'}
                     </h3>
                     <p className="text-sm text-gray-600 leading-relaxed text-justify">
-                      {messageToDelete?.isCall || (messageToDelete?._id && messageToDelete._id.startsWith('call-')) 
-                        ? 'Are you sure you want to delete this call from the chat? The call will be removed from your view, but the call record will remain in the database.' 
+                      {messageToDelete?.isCall || (messageToDelete?._id && messageToDelete._id.startsWith('call-'))
+                        ? 'Are you sure you want to delete this call from the chat? The call will be removed from your view, but the call record will remain in the database.'
                         : 'Are you sure you want to delete this message for everyone?'}
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex gap-3 justify-end">
                   <button
                     type="button"
@@ -9984,7 +9962,7 @@ function AdminAppointmentRow({
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex gap-3 justify-end">
                   <button
                     type="button"
@@ -10016,21 +9994,21 @@ function AdminAppointmentRow({
           const isRefunded = reinitiatePaymentStatus && (reinitiatePaymentStatus.status === 'refunded' || reinitiatePaymentStatus.status === 'partially_refunded');
           const isCancelled = appt.status === 'cancelledByBuyer' || appt.status === 'cancelledBySeller' || appt.status === 'cancelledByAdmin';
           const showRefundWarning = isCancelled && isRefunded;
-          
+
           // Get reinitiation counts
           const buyerReinitiationCount = appt.buyerReinitiationCount || 0;
           const sellerReinitiationCount = appt.sellerReinitiationCount || 0;
           const maxReinitiations = 2;
 
           return (
-          <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-2 sm:mx-4 animate-fadeIn">
-              <div className="p-6">
-                <div className="flex items-start gap-4 mb-6">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <FaUndo className="text-green-600 text-xl" />
-                  </div>
-                  <div className="flex-1">
+            <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-2 sm:mx-4 animate-fadeIn">
+                <div className="p-6">
+                  <div className="flex items-start gap-4 mb-6">
+                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <FaUndo className="text-green-600 text-xl" />
+                    </div>
+                    <div className="flex-1">
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="text-lg font-semibold text-gray-800">Reinitiate Appointment</h3>
                         <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full font-medium">
@@ -10045,46 +10023,45 @@ function AdminAppointmentRow({
                       ) : (
                         <>
                           <p className="text-sm text-gray-600 leading-relaxed text-justify mb-3">
-                      Are you sure you want to reinitiate this appointment? This will notify both buyer and seller.
-                    </p>
+                            Are you sure you want to reinitiate this appointment? This will notify both buyer and seller.
+                          </p>
                           <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-2 rounded-lg mb-3">
                             <p className="text-xs font-semibold mb-1">Reinitiation Count:</p>
                             <p className="text-xs">Buyer: {buyerReinitiationCount}/{maxReinitiations} used • Seller: {sellerReinitiationCount}/{maxReinitiations} used</p>
                           </div>
                         </>
                       )}
+                    </div>
                   </div>
-                </div>
-                
-                <div className="flex gap-3 justify-end">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowReinitiateModal(false);
-                      setAppointmentToHandle(null);
-                      setReinitiatePaymentStatus(null);
-                    }}
-                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={confirmReinitiate}
-                    disabled={showRefundWarning}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
-                      showRefundWarning
+
+                  <div className="flex gap-3 justify-end">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowReinitiateModal(false);
+                        setAppointmentToHandle(null);
+                        setReinitiatePaymentStatus(null);
+                      }}
+                      className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={confirmReinitiate}
+                      disabled={showRefundWarning}
+                      className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${showRefundWarning
                         ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
                         : 'bg-green-600 text-white hover:bg-green-700'
-                    }`}
-                  >
-                    <FaUndo size={14} />
-                    Reinitiate
-                  </button>
+                        }`}
+                    >
+                      <FaUndo size={14} />
+                      Reinitiate
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
           );
         })()}
 
@@ -10104,7 +10081,7 @@ function AdminAppointmentRow({
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex gap-3 justify-end">
                   <button
                     type="button"
@@ -10146,7 +10123,7 @@ function AdminAppointmentRow({
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex gap-3 justify-end">
                   <button
                     type="button"
@@ -10214,7 +10191,7 @@ function AdminAppointmentRow({
                     {starredMessages.map((message, index) => {
                       const isMe = message.senderEmail === currentUser.email;
                       const messageDate = new Date(message.timestamp);
-                      
+
                       return (
                         <div key={message._id} className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} mb-4`}>
                           <div className={`relative max-w-[80%] ${isMe ? 'ml-12' : 'mr-12'}`}>
@@ -10248,29 +10225,29 @@ function AdminAppointmentRow({
                                 onClick={async () => {
                                   setUnstarringMessageId(message._id);
                                   try {
-                                    const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${message._id}/star`, 
+                                    const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${message._id}/star`,
                                       { starred: false },
-                                      { 
+                                      {
                                         withCredentials: true,
                                         headers: { 'Content-Type': 'application/json' }
                                       }
                                     );
-                                      // Remove from starred messages list
-                                      setStarredMessages(prev => prev.filter(m => m._id !== message._id));
-                                      // Update the main comments state
-                                      setLocalComments(prev => {
-                                        const updated = prev.map(c => 
-                                          c._id === message._id 
-                                            ? { ...c, starredBy: (c.starredBy || []).filter(id => id !== currentUser._id) }
-                                            : c
-                                        );
-                                        
-                                        // Update appointment comments for parent component with the updated state
-                                        updateAppointmentComments(appt._id, updated);
-                                        
-                                        return updated;
-                                      });
-                                      toast.success('Message unstarred');
+                                    // Remove from starred messages list
+                                    setStarredMessages(prev => prev.filter(m => m._id !== message._id));
+                                    // Update the main comments state
+                                    setLocalComments(prev => {
+                                      const updated = prev.map(c =>
+                                        c._id === message._id
+                                          ? { ...c, starredBy: (c.starredBy || []).filter(id => id !== currentUser._id) }
+                                          : c
+                                      );
+
+                                      // Update appointment comments for parent component with the updated state
+                                      updateAppointmentComments(appt._id, updated);
+
+                                      return updated;
+                                    });
+                                    toast.success('Message unstarred');
                                   } catch (err) {
                                     toast.error('Failed to unstar message');
                                   } finally {
@@ -10288,14 +10265,13 @@ function AdminAppointmentRow({
                                 )}
                               </button>
                             </div>
-                            
+
                             {/* Message bubble - styled like chatbox */}
-                            <div 
-                              className={`rounded-2xl px-4 py-3 text-sm shadow-lg break-words relative group cursor-pointer hover:shadow-xl transition-all duration-200 ${
-                                isMe 
-                                  ? 'bg-gradient-to-r from-blue-600 to-purple-700 text-white hover:from-blue-500 hover:to-purple-600' 
-                                  : 'bg-white text-gray-800 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
-                              }`}
+                            <div
+                              className={`rounded-2xl px-4 py-3 text-sm shadow-lg break-words relative group cursor-pointer hover:shadow-xl transition-all duration-200 ${isMe
+                                ? 'bg-gradient-to-r from-blue-600 to-purple-700 text-white hover:from-blue-500 hover:to-purple-600'
+                                : 'bg-white text-gray-800 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                                }`}
                               onClick={() => {
                                 setShowStarredModal(false);
                                 // Scroll to the message in the main chat if it exists
@@ -10309,7 +10285,7 @@ function AdminAppointmentRow({
                                 }
                               }}
                             >
-                          {/* Removed in-message corner flag; now shown near three-dots in live chat */}
+                              {/* Removed in-message corner flag; now shown near three-dots in live chat */}
                               <div className="whitespace-pre-wrap break-words">
                                 {/* Image Message - Always show if exists, even for deleted messages */}
                                 {(message.originalImageUrl || message.imageUrl) && (
@@ -10318,15 +10294,15 @@ function AdminAppointmentRow({
                                       src={message.originalImageUrl || message.imageUrl}
                                       alt="Shared image"
                                       className="max-w-full max-h-64 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                                                                              onClick={(e) => {
-                                          e.stopPropagation();
-                                          const chatImages = (localComments || []).filter(msg => !!(msg.originalImageUrl || msg.imageUrl)).map(msg => msg.originalImageUrl || msg.imageUrl);
-                                          const currentUrl = message.originalImageUrl || message.imageUrl;
-                                          const startIndex = Math.max(0, chatImages.indexOf(currentUrl));
-                                          setPreviewImages(chatImages);
-                                          setPreviewIndex(startIndex);
-                                          setShowImagePreview(true);
-                                        }}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const chatImages = (localComments || []).filter(msg => !!(msg.originalImageUrl || msg.imageUrl)).map(msg => msg.originalImageUrl || msg.imageUrl);
+                                        const currentUrl = message.originalImageUrl || message.imageUrl;
+                                        const startIndex = Math.max(0, chatImages.indexOf(currentUrl));
+                                        setPreviewImages(chatImages);
+                                        setPreviewIndex(startIndex);
+                                        setShowImagePreview(true);
+                                      }}
                                       onError={(e) => {
                                         e.target.src = "https://via.placeholder.com/300x200?text=Image+Not+Found";
                                         e.target.className = "max-w-full max-h-64 rounded-lg opacity-50";
@@ -10337,10 +10313,10 @@ function AdminAppointmentRow({
                                 {/* Video Message */}
                                 {message.videoUrl && (
                                   <div className="mb-2">
-                                    <video 
-                                      src={message.videoUrl} 
-                                      className="max-w-full max-h-64 rounded-lg border cursor-pointer hover:opacity-90 transition-opacity" 
-                                      controls 
+                                    <video
+                                      src={message.videoUrl}
+                                      className="max-w-full max-h-64 rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
+                                      controls
                                       onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
@@ -10376,7 +10352,7 @@ function AdminAppointmentRow({
                                     </button>
                                   </div>
                                 )}
-                                
+
                                 {/* Message content - Show preserved content for deleted messages */}
                                 {message.deleted ? (
                                   <div className="border border-red-300 bg-red-50 rounded p-2 mb-2">
@@ -10384,7 +10360,7 @@ function AdminAppointmentRow({
                                       <FaBan className="inline-block" />
                                       Message deleted by {message.deletedBy || 'user'} (Admin view - preserved for records)
                                     </div>
-                                    
+
                                     {/* Show preserved image if exists */}
                                     {(message.originalImageUrl || message.imageUrl) && (
                                       <div className="mb-2">
@@ -10411,14 +10387,14 @@ function AdminAppointmentRow({
                                         </div>
                                       </div>
                                     )}
-                                    
+
                                     {/* Show preserved video if exists */}
                                     {message.videoUrl && (
                                       <div className="mb-2">
-                                        <video 
-                                          src={message.videoUrl} 
-                                          className="max-w-full max-h-64 rounded-lg border cursor-pointer hover:opacity-90 transition-opacity" 
-                                          controls 
+                                        <video
+                                          src={message.videoUrl}
+                                          className="max-w-full max-h-64 rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
+                                          controls
                                           onClick={(e) => {
                                             e.preventDefault();
                                             e.stopPropagation();
@@ -10434,7 +10410,7 @@ function AdminAppointmentRow({
                                         </div>
                                       </div>
                                     )}
-                                    
+
                                     {/* Show preserved audio if exists */}
                                     {message.audioUrl && (
                                       <div className="mb-2">
@@ -10451,7 +10427,7 @@ function AdminAppointmentRow({
                                         </div>
                                       </div>
                                     )}
-                                    
+
                                     {/* Show preserved document if exists */}
                                     {message.documentUrl && (
                                       <div className="mb-2">
@@ -10501,7 +10477,7 @@ function AdminAppointmentRow({
                                         </div>
                                       </div>
                                     )}
-                                    
+
                                     <div className="text-gray-800 bg-white p-2 rounded border-l-4 border-red-400 relative group">
                                       {(() => {
                                         const messageContent = message.originalMessage || message.message;
@@ -10531,7 +10507,7 @@ function AdminAppointmentRow({
                                     </div>
                                   </div>
                                 ) : (
-                                  <FormattedTextWithReadMore 
+                                  <FormattedTextWithReadMore
                                     text={(message.message || '').replace(/\n+$/, '')}
                                     isSentMessage={isMe}
                                     className="whitespace-pre-wrap break-words"
@@ -10539,27 +10515,25 @@ function AdminAppointmentRow({
                                   />
                                 )}
                               </div>
-                              
+
                               {/* Copy button - appears on hover for non-deleted messages */}
                               {!message.deleted && (
                                 <button
                                   onClick={(e) => { e.stopPropagation(); copyMessageToClipboard(message.message); }}
-                                  className={`absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1.5 rounded-full ${
-                                    isMe 
-                                      ? 'bg-white/20 hover:bg-white/30 text-white' 
-                                      : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
-                                  }`}
+                                  className={`absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1.5 rounded-full ${isMe
+                                    ? 'bg-white/20 hover:bg-white/30 text-white'
+                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                                    }`}
                                   title="Copy message"
                                 >
                                   <FaCopy className="w-3 h-3" />
                                 </button>
                               )}
-                              
+
                               {/* Edited indicator only (no time display) */}
                               {message.edited && (
-                                <div className={`flex justify-end mt-2 text-xs ${
-                                  isMe ? 'text-blue-200' : 'text-gray-500'
-                                }`}>
+                                <div className={`flex justify-end mt-2 text-xs ${isMe ? 'text-blue-200' : 'text-gray-500'
+                                  }`}>
                                   <span className="italic">(Edited)</span>
                                 </div>
                               )}
@@ -10595,7 +10569,7 @@ function AdminAppointmentRow({
                             <FaTrash className="w-4 h-4" />
                             Remove All
                           </>
-                          )}
+                        )}
                       </button>
                     )}
                     <button
@@ -10705,7 +10679,7 @@ function AdminAppointmentRow({
                       </select>
                     </div>
                   </div>
-                  
+
                   {/* Secondary controls - compact on mobile */}
                   <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-stretch sm:items-center justify-between">
                     <div className="flex gap-2">
@@ -10757,7 +10731,7 @@ function AdminAppointmentRow({
                       </button>
                     </div>
                   </div>
-                  
+
                   {/* Report count - compact on mobile */}
                   <div className="text-xs text-gray-600 text-center sm:text-left">
                     Showing {reports.length} reports for this appointment
@@ -10803,7 +10777,7 @@ function AdminAppointmentRow({
                                   messageElement.style.boxShadow = prevBoxShadow || '';
                                 }, 1600);
                               }
-                            } catch (_) {}
+                            } catch (_) { }
                           }, 0);
                         }}
                       >
@@ -10836,7 +10810,7 @@ function AdminAppointmentRow({
 
         {/* Report Details Tooltip */}
         {reportTooltip.show && reportTooltip.details && createPortal((
-          <div 
+          <div
             className="fixed bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-[60] max-w-sm"
             style={{
               left: `${reportTooltip.position.x}px`,
@@ -10882,7 +10856,7 @@ function AdminAppointmentRow({
                   <div className="font-semibold mb-2">Message:</div>
                   <div className="whitespace-pre-wrap break-words">{(selectedMessageForInfo.message || '').slice(0, 200)}{(selectedMessageForInfo.message || '').length > 200 ? '...' : ''}</div>
                 </div>
-                
+
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-gray-600">Sent:</span>
@@ -10897,7 +10871,7 @@ function AdminAppointmentRow({
                       })}
                     </span>
                   </div>
-                  
+
                   {selectedMessageForInfo.deliveredAt && (
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium text-gray-600">Delivered:</span>
@@ -10913,7 +10887,7 @@ function AdminAppointmentRow({
                       </span>
                     </div>
                   )}
-                  
+
                   {selectedMessageForInfo.readAt && (
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium text-gray-600">Read:</span>
@@ -10929,21 +10903,21 @@ function AdminAppointmentRow({
                       </span>
                     </div>
                   )}
-                  
+
                   {!selectedMessageForInfo.deliveredAt && (
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium text-gray-600">Status:</span>
                       <span className="text-sm text-gray-500">Not delivered yet</span>
                     </div>
                   )}
-                  
+
                   {selectedMessageForInfo.deliveredAt && !selectedMessageForInfo.readAt && (
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium text-gray-600">Status:</span>
                       <span className="text-sm text-blue-600">Delivered</span>
                     </div>
                   )}
-                  
+
                   {selectedMessageForInfo.readAt && (
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium text-gray-600">Status:</span>
@@ -10963,533 +10937,617 @@ function AdminAppointmentRow({
             </div>
           </div>
         )}
-        
-              {/* Pin Message Modal */}
-      {/* Pin Message Modal removed */}
 
-      {/* Call Info Modal */}
-      {showCallInfoModal && selectedCallForInfo && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <FaInfoCircle className="text-blue-500" /> Call Info
-            </h3>
-            <div className="space-y-4">
-              <div className="bg-gray-50 rounded p-3 text-sm text-gray-700">
-                <div className="font-semibold mb-2">Call Type:</div>
-                <div>{selectedCallForInfo.callType === 'video' ? 'Video Call' : 'Audio Call'}</div>
-              </div>
-              
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Status:</span>
-                  <span className={`text-sm font-medium ${
-                    selectedCallForInfo.status === 'accepted' ? 'text-green-600' :
-                    selectedCallForInfo.status === 'missed' || selectedCallForInfo.status === 'rejected' || selectedCallForInfo.status === 'cancelled' ? 'text-red-600' :
-                    'text-yellow-600'
-                  }`}>
-                    {selectedCallForInfo.status.charAt(0).toUpperCase() + selectedCallForInfo.status.slice(1)}
-                  </span>
+        {/* Pin Message Modal */}
+        {/* Pin Message Modal removed */}
+
+        {/* Call Info Modal */}
+        {showCallInfoModal && selectedCallForInfo && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <FaInfoCircle className="text-blue-500" /> Call Info
+              </h3>
+              <div className="space-y-4">
+                <div className="bg-gray-50 rounded p-3 text-sm text-gray-700">
+                  <div className="font-semibold mb-2">Call Type:</div>
+                  <div>{selectedCallForInfo.callType === 'video' ? 'Video Call' : 'Audio Call'}</div>
                 </div>
-                
-                {selectedCallForInfo.duration && selectedCallForInfo.duration > 0 && (
+
+                <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Duration:</span>
-                    <span className="text-sm text-gray-800">
-                      {(() => {
-                        const hours = Math.floor(selectedCallForInfo.duration / 3600);
-                        const minutes = Math.floor((selectedCallForInfo.duration % 3600) / 60);
-                        const secs = selectedCallForInfo.duration % 60;
-                        if (hours > 0) {
-                          return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-                        }
-                        return `${minutes}:${secs.toString().padStart(2, '0')}`;
-                      })()}
+                    <span className="text-sm font-medium text-gray-600">Status:</span>
+                    <span className={`text-sm font-medium ${selectedCallForInfo.status === 'accepted' ? 'text-green-600' :
+                      selectedCallForInfo.status === 'missed' || selectedCallForInfo.status === 'rejected' || selectedCallForInfo.status === 'cancelled' ? 'text-red-600' :
+                        'text-yellow-600'
+                      }`}>
+                      {selectedCallForInfo.status.charAt(0).toUpperCase() + selectedCallForInfo.status.slice(1)}
                     </span>
                   </div>
-                )}
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Started:</span>
-                  <span className="text-sm text-gray-800">
-                    {new Date(selectedCallForInfo.startTime || selectedCallForInfo.createdAt).toLocaleString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      hour12: true
-                    })}
-                  </span>
-                </div>
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Participants:</span>
-                  <span className="text-sm text-gray-800">
-                    {selectedCallForInfo.callerId?.username || 'Unknown'} → {selectedCallForInfo.receiverId?.username || 'Unknown'}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={() => { setShowCallInfoModal(false); setSelectedCallForInfo(null); }}
-                className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Live Call Monitor Modal (admin observer view) */}
-      {showLiveMonitorModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-[90] p-3">
-          <div className="bg-gradient-to-br from-gray-900 via-blue-950 to-purple-900 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden relative">
-            {/* Header */}
-              <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-white/10">
-              <div className="flex items-center gap-2 text-white">
-                <span
-                  className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide ${
-                    activeLiveCall && monitorCallId === activeLiveCall.callId
-                      ? 'bg-red-600/90'
-                      : 'bg-gray-600/80'
-                  }`}
-                >
-                  <FaCircle
-                    className={`text-[10px] ${
-                      activeLiveCall && monitorCallId === activeLiveCall.callId
-                        ? 'animate-pulse text-red-100'
-                        : 'text-gray-300'
-                    }`}
-                  />
-                  <span>
-                    {activeLiveCall && monitorCallId === activeLiveCall.callId ? 'Live Monitor' : 'Not Live'}
-                  </span>
-                </span>
-                <span className="hidden sm:inline text-xs sm:text-sm text-white/70">
-                  {appt.propertyName || 'Appointment'} • {appt.date ? new Date(appt.date).toLocaleDateString('en-IN') : ''}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-              <button
-                onClick={() => {
-                  setShowLiveMonitorModal(false);
-                  cleanupMonitorPeers();
-                }}
-                className="text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors shadow"
-                title="Close live monitor"
-                aria-label="Close live monitor"
-              >
-                <FaTimes className="w-4 h-4" />
-              </button>
-              <button
-                onClick={async () => {
-                  // Re-fetch latest active call before refreshing monitor
-                  let latestActive = activeLiveCall;
-                  if (!latestActive || !latestActive.callId) {
-                    latestActive = await fetchLatestActiveCall();
-                  }
-
-                  if (latestActive && latestActive.callId) {
-                    socket.emit('admin-monitor-join', { callId: latestActive.callId });
-                  } else {
-                    toast.info('No active call detected for this appointment.');
-                    cleanupMonitorPeers();
-                  }
-                }}
-                className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 ml-2"
-                title="Refresh live monitor"
-              >
-                <FaSync className="w-3 h-3" />
-                Refresh
-              </button>
-              </div>
-            </div>
-
-            {/* Body */}
-            {activeLiveCall && monitorCallId === activeLiveCall.callId ? (
-              <>
-                <div className="px-4 sm:px-6 py-3 border-b border-white/10 bg-white/5 space-y-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[10px] uppercase tracking-wide text-white/60">Layout</span>
-                    <button
-                      onClick={() => setFocusedMonitorView(null)}
-                      className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full border ${
-                        focusedMonitorView === null
-                          ? 'bg-blue-600 text-white border-blue-600'
-                          : 'bg-transparent text-white/70 border-white/30 hover:border-white/70'
-                      }`}
-                    >
-                      <FaExpand className="text-[10px]" /> Split View
-                    </button>
-                    <button
-                      onClick={() => toggleFocusView('buyer')}
-                      className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full border ${
-                        focusedMonitorView === 'buyer'
-                          ? 'bg-yellow-500 text-black border-yellow-400'
-                          : 'bg-transparent text-white/70 border-white/30 hover:border-white/70'
-                      }`}
-                    >
-                      <FaUser className="text-[10px]" /> Focus Buyer
-                    </button>
-                    <button
-                      onClick={() => toggleFocusView('seller')}
-                      className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full border ${
-                        focusedMonitorView === 'seller'
-                          ? 'bg-yellow-500 text-black border-yellow-400'
-                          : 'bg-transparent text-white/70 border-white/30 hover:border-white/70'
-                      }`}
-                    >
-                      <FaUserShield className="text-[10px]" /> Focus Seller
-                    </button>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[10px] uppercase tracking-wide text-white/60">Controls</span>
-                    <button
-                      onClick={() => toggleMonitorAudio('buyer')}
-                      className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full ${
-                        monitorAudioMuted.buyer ? 'bg-gray-700 text-white' : 'bg-green-500 text-white'
-                      }`}
-                    >
-                      {monitorAudioMuted.buyer ? <FaVolumeMute className="text-[11px]" /> : <FaVolumeUp className="text-[11px]" />}
-                      Buyer Audio
-                    </button>
-                    <button
-                      onClick={() => toggleMonitorAudio('seller')}
-                      className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full ${
-                        monitorAudioMuted.seller ? 'bg-gray-700 text-white' : 'bg-green-500 text-white'
-                      }`}
-                    >
-                      {monitorAudioMuted.seller ? <FaVolumeMute className="text-[11px]" /> : <FaVolumeUp className="text-[11px]" />}
-                      Seller Audio
-                    </button>
-                    {activeLiveCall?.callType === 'video' && (
-                      <>
-                        <button
-                          onClick={() => toggleMonitorVideo('buyer')}
-                          className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full ${
-                            monitorVideoHidden.buyer ? 'bg-purple-600 text-white' : 'bg-blue-600 text-white'
-                          }`}
-                        >
-                          {monitorVideoHidden.buyer ? <FaEyeSlash className="text-[11px]" /> : <FaEye className="text-[11px]" />}
-                          Buyer Video
-                        </button>
-                        <button
-                          onClick={() => toggleMonitorVideo('seller')}
-                          className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full ${
-                            monitorVideoHidden.seller ? 'bg-purple-600 text-white' : 'bg-blue-600 text-white'
-                          }`}
-                        >
-                          {monitorVideoHidden.seller ? <FaEyeSlash className="text-[11px]" /> : <FaEye className="text-[11px]" />}
-                          Seller Video
-                        </button>
-                      </>
-                    )}
-                    <button
-                      onClick={() => setShowForceTerminateModal(true)}
-                      className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors"
-                    >
-                      <FaPowerOff className="text-[11px]" /> Terminate Call
-                    </button>
-                  </div>
-                </div>
-                <div className="flex-1 overflow-y-auto">
-                <div className={`p-4 sm:p-6 grid ${focusedMonitorView ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'} gap-4 sm:gap-6`}>
-                {/* Buyer side */}
-                <div className={`flex flex-col h-full rounded-2xl bg-white/5 border border-white/10 p-4 sm:p-5 ${focusedMonitorView === 'buyer' ? 'ring-2 ring-yellow-300' : ''}`}>
-                  <div className="flex items-center gap-3 mb-4">
-                    <UserAvatar
-                      user={{ username: appt.buyerId?.username, avatar: appt.buyerId?.avatar }}
-                      size="w-12 h-12"
-                      textSize="text-lg"
-                      showBorder={true}
-                      className="border-2 border-white/60 shadow-lg"
-                    />
-                    <div className="flex flex-col">
-                      <span className="text-sm sm:text-base font-semibold text-white">
-                        {appt.buyerId?.username || 'Buyer'}
+                  {selectedCallForInfo.duration && selectedCallForInfo.duration > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-gray-600">Duration:</span>
+                      <span className="text-sm text-gray-800">
+                        {(() => {
+                          const hours = Math.floor(selectedCallForInfo.duration / 3600);
+                          const minutes = Math.floor((selectedCallForInfo.duration % 3600) / 60);
+                          const secs = selectedCallForInfo.duration % 60;
+                          if (hours > 0) {
+                            return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                          }
+                          return `${minutes}:${secs.toString().padStart(2, '0')}`;
+                        })()}
                       </span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-white/60 uppercase tracking-wide">Buyer Side</span>
-                        <span
-                          className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full ${
-                            monitorAudioMuted.buyer ? 'bg-gray-700 text-white' : 'bg-green-600 text-white'
-                          }`}
-                        >
-                          {monitorAudioMuted.buyer ? <FaVolumeMute /> : <FaVolumeUp />} {monitorAudioMuted.buyer ? 'Muted' : 'Audio'}
-                        </span>
-                      </div>
                     </div>
-                  </div>
-                  <div className="flex-1 rounded-xl bg-black/60 flex flex-col items-center justify-center border border-white/10 relative overflow-hidden">
-                    {buyerMonitorStream ? (
-                      <>
-                        <video
-                          ref={buyerMonitorVideoRef}
-                          autoPlay
-                          playsInline
-                          muted={monitorAudioMuted.buyer}
-                          className={`w-full h-full object-contain bg-black transition-all ${monitorVideoHidden.buyer ? 'opacity-30 blur-sm' : ''}`}
-                        />
-                        {activeLiveCall?.callType === 'video' && monitorVideoHidden.buyer && (
-                          <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white gap-2 text-xs sm:text-sm">
-                            <FaEyeSlash className="text-lg" />
-                            <span>Buyer video hidden locally</span>
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center text-center px-4">
-                        {activeLiveCall.callType === 'video' ? (
-                          <FaVideo className="text-4xl sm:text-5xl text-white mb-3 animate-pulse" />
-                        ) : (
-                          <FaPhone className="text-4xl sm:text-5xl text-white mb-3 animate-pulse" />
-                        )}
-                        <p className="text-white text-sm sm:text-base font-semibold">
-                          Waiting for buyer stream - Live {activeLiveCall.callType === 'video' ? 'video' : 'audio'} call
-                        </p>
-                        <p className="mt-2 text-xs sm:text-sm text-white/70 max-w-xs">
-                          As soon as the buyer's device is streaming, the live feed will appear here.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                  )}
 
-                {/* Seller side */}
-                <div className={`flex flex-col h-full rounded-2xl bg-white/5 border border-white/10 p-4 sm:p-5 ${focusedMonitorView === 'seller' ? 'ring-2 ring-yellow-300' : ''}`}>
-                  <div className="flex items-center gap-3 mb-4">
-                    <UserAvatar
-                      user={{ username: appt.sellerId?.username, avatar: appt.sellerId?.avatar }}
-                      size="w-12 h-12"
-                      textSize="text-lg"
-                      showBorder={true}
-                      className="border-2 border-white/60 shadow-lg"
-                    />
-                    <div className="flex flex-col">
-                      <span className="text-sm sm:text-base font-semibold text-white">
-                        {appt.sellerId?.username || 'Seller'}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-white/60 uppercase tracking-wide">Seller Side</span>
-                        <span
-                          className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full ${
-                            monitorAudioMuted.seller ? 'bg-gray-700 text-white' : 'bg-green-600 text-white'
-                          }`}
-                        >
-                          {monitorAudioMuted.seller ? <FaVolumeMute /> : <FaVolumeUp />} {monitorAudioMuted.seller ? 'Muted' : 'Audio'}
-                        </span>
-                      </div>
-                    </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-600">Started:</span>
+                    <span className="text-sm text-gray-800">
+                      {new Date(selectedCallForInfo.startTime || selectedCallForInfo.createdAt).toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                    </span>
                   </div>
-                  <div className="flex-1 rounded-xl bg-black/60 flex flex-col items-center justify-center border border-white/10 relative overflow-hidden">
-                    {sellerMonitorStream ? (
-                      <>
-                        <video
-                          ref={sellerMonitorVideoRef}
-                          autoPlay
-                          playsInline
-                          muted={monitorAudioMuted.seller}
-                          className={`w-full h-full object-contain bg-black transition-all ${monitorVideoHidden.seller ? 'opacity-30 blur-sm' : ''}`}
-                        />
-                        {activeLiveCall?.callType === 'video' && monitorVideoHidden.seller && (
-                          <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white gap-2 text-xs sm:text-sm">
-                            <FaEyeSlash className="text-lg" />
-                            <span>Seller video hidden locally</span>
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center text-center px-4">
-                        {activeLiveCall.callType === 'video' ? (
-                          <FaVideo className="text-4xl sm:text-5xl text-white mb-3 animate-pulse" />
-                        ) : (
-                          <FaPhone className="text-4xl sm:text-5xl text-white mb-3 animate-pulse" />
-                        )}
-                        <p className="text-white text-sm sm:text-base font-semibold">
-                          Waiting for seller stream - Mirrored {activeLiveCall.callType === 'video' ? 'video' : 'audio'} feed
-                        </p>
-                        <p className="mt-2 text-xs sm:text-sm text-white/70 max-w-xs">
-                          Once the seller's device is streaming, their live feed will be visible here.
-                        </p>
-                      </div>
-                    )}
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-600">Participants:</span>
+                    <span className="text-sm text-gray-800">
+                      {selectedCallForInfo.callerId?.username || 'Unknown'} → {selectedCallForInfo.receiverId?.username || 'Unknown'}
+                    </span>
                   </div>
                 </div>
-                </div>
-                </div>
-              </>
-            ) : (
-              <div className="flex flex-col items-center justify-center p-8 sm:p-12 text-center text-white">
-                <FaVideo className="text-4xl sm:text-5xl text-white/60 mb-4" />
-                <p className="text-lg sm:text-xl font-semibold mb-2">
-                  Live call or video is not initiated by other parties
-                </p>
-                <p className="text-xs sm:text-sm text-white/70 mb-6 max-w-xl">
-                  When a buyer or seller starts an audio or video call from this appointment, you can monitor it here in real time.
-                </p>
+              </div>
+              <div className="mt-6 flex justify-end">
                 <button
-                  onClick={() => {
-                    navigate('/admin/call-history');
-                    setShowLiveMonitorModal(false);
-                  }}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-blue-700 font-semibold text-xs sm:text-sm shadow-lg hover:bg-blue-50 transition-colors"
+                  onClick={() => { setShowCallInfoModal(false); setSelectedCallForInfo(null); }}
+                  className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
                 >
-                  <FaHistory className="text-sm" />
-                  Go to Admin Call History
+                  Close
                 </button>
               </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {showForceTerminateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[95] p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-semibold text-gray-900">Force Terminate Live Call</h3>
-                <p className="text-sm text-gray-500">
-                  Use this action only when fraud, abuse, or policy violations are detected.
-                </p>
-              </div>
-              <button
-                onClick={() => {
-                  if (!forceTerminateLoading) {
-                    setShowForceTerminateModal(false);
-                    setForceTerminateReason('');
-                  }
-                }}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <FaTimes />
-              </button>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-700">Reason (optional)</label>
-              <textarea
-                value={forceTerminateReason}
-                onChange={(e) => setForceTerminateReason(e.target.value)}
-                rows={4}
-                placeholder="Example: Buyer attempted to solicit payments outside the platform."
-                className="mt-1 w-full rounded-lg border border-gray-300 p-3 focus:outline-none focus:ring-2 focus:ring-red-200"
-                disabled={forceTerminateLoading}
-              />
-            </div>
-
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
-              Both parties will be disconnected immediately and notified that the session was terminated by an administrator.
-            </div>
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => {
-                  if (!forceTerminateLoading) {
-                    setShowForceTerminateModal(false);
-                    setForceTerminateReason('');
-                  }
-                }}
-                className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200"
-                disabled={forceTerminateLoading}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleForceTerminateCall}
-                className="px-4 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 flex items-center gap-2 disabled:opacity-60"
-                disabled={forceTerminateLoading}
-              >
-                {forceTerminateLoading ? (
-                  <>
-                    <FaSpinner className="animate-spin" /> Terminating...
-                  </>
-                ) : (
-                  <>
-                    <FaPowerOff /> Terminate Now
-                  </>
-                )}
-              </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Image Preview Modal */}
-      <ImagePreview
-        isOpen={showImagePreview}
-        onClose={() => setShowImagePreview(false)}
-        images={previewImages}
-        initialIndex={previewIndex}
-        listingId={null}
-        metadata={{
-          addedFrom: 'chat',
-          chatType: 'appointment'
-        }}
-      />
+        {/* Live Call Monitor Modal (admin observer view) */}
+        {showLiveMonitorModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-[90] p-3">
+            <div className="bg-gradient-to-br from-gray-900 via-blue-950 to-purple-900 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden relative">
+              {/* Header */}
+              <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-white/10">
+                <div className="flex items-center gap-2 text-white">
+                  <span
+                    className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide ${activeLiveCall && monitorCallId === activeLiveCall.callId
+                      ? 'bg-red-600/90'
+                      : 'bg-gray-600/80'
+                      }`}
+                  >
+                    <FaCircle
+                      className={`text-[10px] ${activeLiveCall && monitorCallId === activeLiveCall.callId
+                        ? 'animate-pulse text-red-100'
+                        : 'text-gray-300'
+                        }`}
+                    />
+                    <span>
+                      {activeLiveCall && monitorCallId === activeLiveCall.callId ? 'Live Monitor' : 'Not Live'}
+                    </span>
+                  </span>
+                  <span className="hidden sm:inline text-xs sm:text-sm text-white/70">
+                    {appt.propertyName || 'Appointment'} • {appt.date ? new Date(appt.date).toLocaleDateString('en-IN') : ''}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      setShowLiveMonitorModal(false);
+                      cleanupMonitorPeers();
+                    }}
+                    className="text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors shadow"
+                    title="Close live monitor"
+                    aria-label="Close live monitor"
+                  >
+                    <FaTimes className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={async () => {
+                      // Re-fetch latest active call before refreshing monitor
+                      let latestActive = activeLiveCall;
+                      if (!latestActive || !latestActive.callId) {
+                        latestActive = await fetchLatestActiveCall();
+                      }
 
-      {/* Video Preview Modal */}
-      {showVideoPreviewModal && selectedVideo && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-lg font-medium text-gray-700">Video Preview</span>
-              <button
-                onClick={() => { setSelectedVideo(null); setShowVideoPreviewModal(false); }}
-                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
-              >
-                <FaTimes className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="flex-1 mb-4 min-h-0">
-              <video controls className="w-full h-full max-h-[60vh] rounded-lg border" src={videoObjectURL} />
-            </div>
-            
-            {/* Caption for Video */}
-            <div className="relative mb-4">
-              <div className="relative">
-                <textarea
-                  ref={videoCaptionRef}
-                  placeholder={`Add a caption for ${selectedVideo.name}...`}
-                  value={videoCaption}
-                  onChange={(e) => setVideoCaption(e.target.value)}
-                  className="w-full p-3 pr-12 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  rows={2}
-                  maxLength={500}
-                />
-                <div className="absolute right-2 top-2">
-                  <EmojiButton
-                    onEmojiClick={(emoji) => {
-                      const textarea = videoCaptionRef.current;
-                      if (textarea) {
-                        const start = textarea.selectionStart;
-                        const end = textarea.selectionEnd;
-                        const newValue = videoCaption.slice(0, start) + emoji + videoCaption.slice(end);
-                        setVideoCaption(newValue);
-                        setTimeout(() => {
-                          textarea.focus();
-                          textarea.setSelectionRange(start + emoji.length, start + emoji.length);
-                        }, 0);
+                      if (latestActive && latestActive.callId) {
+                        socket.emit('admin-monitor-join', { callId: latestActive.callId });
+                      } else {
+                        toast.info('No active call detected for this appointment.');
+                        cleanupMonitorPeers();
                       }
                     }}
-                    inputRef={videoCaptionRef}
-                  />
+                    className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 ml-2"
+                    title="Refresh live monitor"
+                  >
+                    <FaSync className="w-3 h-3" />
+                    Refresh
+                  </button>
                 </div>
               </div>
-              <div className="text-xs text-gray-500 mt-1 text-right">
-                {videoCaption.length}/500
+
+              {/* Body */}
+              {activeLiveCall && monitorCallId === activeLiveCall.callId ? (
+                <>
+                  <div className="px-4 sm:px-6 py-3 border-b border-white/10 bg-white/5 space-y-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[10px] uppercase tracking-wide text-white/60">Layout</span>
+                      <button
+                        onClick={() => setFocusedMonitorView(null)}
+                        className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full border ${focusedMonitorView === null
+                          ? 'bg-blue-600 text-white border-blue-600'
+                          : 'bg-transparent text-white/70 border-white/30 hover:border-white/70'
+                          }`}
+                      >
+                        <FaExpand className="text-[10px]" /> Split View
+                      </button>
+                      <button
+                        onClick={() => toggleFocusView('buyer')}
+                        className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full border ${focusedMonitorView === 'buyer'
+                          ? 'bg-yellow-500 text-black border-yellow-400'
+                          : 'bg-transparent text-white/70 border-white/30 hover:border-white/70'
+                          }`}
+                      >
+                        <FaUser className="text-[10px]" /> Focus Buyer
+                      </button>
+                      <button
+                        onClick={() => toggleFocusView('seller')}
+                        className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full border ${focusedMonitorView === 'seller'
+                          ? 'bg-yellow-500 text-black border-yellow-400'
+                          : 'bg-transparent text-white/70 border-white/30 hover:border-white/70'
+                          }`}
+                      >
+                        <FaUserShield className="text-[10px]" /> Focus Seller
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[10px] uppercase tracking-wide text-white/60">Controls</span>
+                      <button
+                        onClick={() => toggleMonitorAudio('buyer')}
+                        className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full ${monitorAudioMuted.buyer ? 'bg-gray-700 text-white' : 'bg-green-500 text-white'
+                          }`}
+                      >
+                        {monitorAudioMuted.buyer ? <FaVolumeMute className="text-[11px]" /> : <FaVolumeUp className="text-[11px]" />}
+                        Buyer Audio
+                      </button>
+                      <button
+                        onClick={() => toggleMonitorAudio('seller')}
+                        className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full ${monitorAudioMuted.seller ? 'bg-gray-700 text-white' : 'bg-green-500 text-white'
+                          }`}
+                      >
+                        {monitorAudioMuted.seller ? <FaVolumeMute className="text-[11px]" /> : <FaVolumeUp className="text-[11px]" />}
+                        Seller Audio
+                      </button>
+                      {activeLiveCall?.callType === 'video' && (
+                        <>
+                          <button
+                            onClick={() => toggleMonitorVideo('buyer')}
+                            className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full ${monitorVideoHidden.buyer ? 'bg-purple-600 text-white' : 'bg-blue-600 text-white'
+                              }`}
+                          >
+                            {monitorVideoHidden.buyer ? <FaEyeSlash className="text-[11px]" /> : <FaEye className="text-[11px]" />}
+                            Buyer Video
+                          </button>
+                          <button
+                            onClick={() => toggleMonitorVideo('seller')}
+                            className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full ${monitorVideoHidden.seller ? 'bg-purple-600 text-white' : 'bg-blue-600 text-white'
+                              }`}
+                          >
+                            {monitorVideoHidden.seller ? <FaEyeSlash className="text-[11px]" /> : <FaEye className="text-[11px]" />}
+                            Seller Video
+                          </button>
+                        </>
+                      )}
+                      <button
+                        onClick={() => setShowForceTerminateModal(true)}
+                        className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors"
+                      >
+                        <FaPowerOff className="text-[11px]" /> Terminate Call
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex-1 overflow-y-auto">
+                    <div className={`p-4 sm:p-6 grid ${focusedMonitorView ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'} gap-4 sm:gap-6`}>
+                      {/* Buyer side */}
+                      <div className={`flex flex-col h-full rounded-2xl bg-white/5 border border-white/10 p-4 sm:p-5 ${focusedMonitorView === 'buyer' ? 'ring-2 ring-yellow-300' : ''}`}>
+                        <div className="flex items-center gap-3 mb-4">
+                          <UserAvatar
+                            user={{ username: appt.buyerId?.username, avatar: appt.buyerId?.avatar }}
+                            size="w-12 h-12"
+                            textSize="text-lg"
+                            showBorder={true}
+                            className="border-2 border-white/60 shadow-lg"
+                          />
+                          <div className="flex flex-col">
+                            <span className="text-sm sm:text-base font-semibold text-white">
+                              {appt.buyerId?.username || 'Buyer'}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] text-white/60 uppercase tracking-wide">Buyer Side</span>
+                              <span
+                                className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full ${monitorAudioMuted.buyer ? 'bg-gray-700 text-white' : 'bg-green-600 text-white'
+                                  }`}
+                              >
+                                {monitorAudioMuted.buyer ? <FaVolumeMute /> : <FaVolumeUp />} {monitorAudioMuted.buyer ? 'Muted' : 'Audio'}
+                              </span>
+                              {isBuyerSpeaking && !monitorAudioMuted.buyer && (
+                                <div className="bg-green-500 rounded-full p-1 animate-pulse ml-2">
+                                  <FaVolumeUp className="text-white text-xs" />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex-1 rounded-xl bg-black/60 flex flex-col items-center justify-center border border-white/10 relative overflow-hidden">
+                          {buyerMonitorStream ? (
+                            <>
+                              <video
+                                ref={buyerMonitorVideoRef}
+                                autoPlay
+                                playsInline
+                                muted={monitorAudioMuted.buyer}
+                                className={`w-full h-full object-contain bg-black transition-all ${monitorVideoHidden.buyer ? 'opacity-30 blur-sm' : ''}`}
+                              />
+                              {activeLiveCall?.callType === 'video' && monitorVideoHidden.buyer && (
+                                <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white gap-2 text-xs sm:text-sm">
+                                  <FaEyeSlash className="text-lg" />
+                                  <span>Buyer video hidden locally</span>
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <div className="flex flex-col items-center justify-center text-center px-4">
+                              {activeLiveCall.callType === 'video' ? (
+                                <FaVideo className="text-4xl sm:text-5xl text-white mb-3 animate-pulse" />
+                              ) : (
+                                <FaPhone className="text-4xl sm:text-5xl text-white mb-3 animate-pulse" />
+                              )}
+                              <p className="text-white text-sm sm:text-base font-semibold">
+                                Waiting for buyer stream - Live {activeLiveCall.callType === 'video' ? 'video' : 'audio'} call
+                              </p>
+                              <p className="mt-2 text-xs sm:text-sm text-white/70 max-w-xs">
+                                As soon as the buyer's device is streaming, the live feed will appear here.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Seller side */}
+                      <div className={`flex flex-col h-full rounded-2xl bg-white/5 border border-white/10 p-4 sm:p-5 ${focusedMonitorView === 'seller' ? 'ring-2 ring-yellow-300' : ''}`}>
+                        <div className="flex items-center gap-3 mb-4">
+                          <UserAvatar
+                            user={{ username: appt.sellerId?.username, avatar: appt.sellerId?.avatar }}
+                            size="w-12 h-12"
+                            textSize="text-lg"
+                            showBorder={true}
+                            className="border-2 border-white/60 shadow-lg"
+                          />
+                          <div className="flex flex-col">
+                            <span className="text-sm sm:text-base font-semibold text-white">
+                              {appt.sellerId?.username || 'Seller'}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] text-white/60 uppercase tracking-wide">Seller Side</span>
+                              <span
+                                className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full ${monitorAudioMuted.seller ? 'bg-gray-700 text-white' : 'bg-green-600 text-white'
+                                  }`}
+                              >
+                                {monitorAudioMuted.seller ? <FaVolumeMute /> : <FaVolumeUp />} {monitorAudioMuted.seller ? 'Muted' : 'Audio'}
+                              </span>
+                              {isSellerSpeaking && !monitorAudioMuted.seller && (
+                                <div className="bg-green-500 rounded-full p-1 animate-pulse ml-2">
+                                  <FaVolumeUp className="text-white text-xs" />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex-1 rounded-xl bg-black/60 flex flex-col items-center justify-center border border-white/10 relative overflow-hidden">
+                          {sellerMonitorStream ? (
+                            <>
+                              <video
+                                ref={sellerMonitorVideoRef}
+                                autoPlay
+                                playsInline
+                                muted={monitorAudioMuted.seller}
+                                className={`w-full h-full object-contain bg-black transition-all ${monitorVideoHidden.seller ? 'opacity-30 blur-sm' : ''}`}
+                              />
+                              {activeLiveCall?.callType === 'video' && monitorVideoHidden.seller && (
+                                <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white gap-2 text-xs sm:text-sm">
+                                  <FaEyeSlash className="text-lg" />
+                                  <span>Seller video hidden locally</span>
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <div className="flex flex-col items-center justify-center text-center px-4">
+                              {activeLiveCall.callType === 'video' ? (
+                                <FaVideo className="text-4xl sm:text-5xl text-white mb-3 animate-pulse" />
+                              ) : (
+                                <FaPhone className="text-4xl sm:text-5xl text-white mb-3 animate-pulse" />
+                              )}
+                              <p className="text-white text-sm sm:text-base font-semibold">
+                                Waiting for seller stream - Mirrored {activeLiveCall.callType === 'video' ? 'video' : 'audio'} feed
+                              </p>
+                              <p className="mt-2 text-xs sm:text-sm text-white/70 max-w-xs">
+                                Once the seller's device is streaming, their live feed will be visible here.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center p-8 sm:p-12 text-center text-white">
+                  <FaVideo className="text-4xl sm:text-5xl text-white/60 mb-4" />
+                  <p className="text-lg sm:text-xl font-semibold mb-2">
+                    Live call or video is not initiated by other parties
+                  </p>
+                  <p className="text-xs sm:text-sm text-white/70 mb-6 max-w-xl">
+                    When a buyer or seller starts an audio or video call from this appointment, you can monitor it here in real time.
+                  </p>
+                  <button
+                    onClick={() => {
+                      navigate('/admin/call-history');
+                      setShowLiveMonitorModal(false);
+                    }}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-blue-700 font-semibold text-xs sm:text-sm shadow-lg hover:bg-blue-50 transition-colors"
+                  >
+                    <FaHistory className="text-sm" />
+                    Go to Admin Call History
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {showForceTerminateModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[95] p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900">Force Terminate Live Call</h3>
+                  <p className="text-sm text-gray-500">
+                    Use this action only when fraud, abuse, or policy violations are detected.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    if (!forceTerminateLoading) {
+                      setShowForceTerminateModal(false);
+                      setForceTerminateReason('');
+                    }
+                  }}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <FaTimes />
+                </button>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700">Reason (optional)</label>
+                <textarea
+                  value={forceTerminateReason}
+                  onChange={(e) => setForceTerminateReason(e.target.value)}
+                  rows={4}
+                  placeholder="Example: Buyer attempted to solicit payments outside the platform."
+                  className="mt-1 w-full rounded-lg border border-gray-300 p-3 focus:outline-none focus:ring-2 focus:ring-red-200"
+                  disabled={forceTerminateLoading}
+                />
+              </div>
+
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+                Both parties will be disconnected immediately and notified that the session was terminated by an administrator.
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => {
+                    if (!forceTerminateLoading) {
+                      setShowForceTerminateModal(false);
+                      setForceTerminateReason('');
+                    }
+                  }}
+                  className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200"
+                  disabled={forceTerminateLoading}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleForceTerminateCall}
+                  className="px-4 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 flex items-center gap-2 disabled:opacity-60"
+                  disabled={forceTerminateLoading}
+                >
+                  {forceTerminateLoading ? (
+                    <>
+                      <FaSpinner className="animate-spin" /> Terminating...
+                    </>
+                  ) : (
+                    <>
+                      <FaPowerOff /> Terminate Now
+                    </>
+                  )}
+                </button>
               </div>
             </div>
-            
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-600 truncate flex-1 mr-4">{selectedVideo.name}</div>
-              <div className="flex gap-2 flex-shrink-0">
+          </div>
+        )}
+
+        {/* Image Preview Modal */}
+        <ImagePreview
+          isOpen={showImagePreview}
+          onClose={() => setShowImagePreview(false)}
+          images={previewImages}
+          initialIndex={previewIndex}
+          listingId={null}
+          metadata={{
+            addedFrom: 'chat',
+            chatType: 'appointment'
+          }}
+        />
+
+        {/* Video Preview Modal */}
+        {showVideoPreviewModal && selectedVideo && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-lg font-medium text-gray-700">Video Preview</span>
+                <button
+                  onClick={() => { setSelectedVideo(null); setShowVideoPreviewModal(false); }}
+                  className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+                >
+                  <FaTimes className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="flex-1 mb-4 min-h-0">
+                <video controls className="w-full h-full max-h-[60vh] rounded-lg border" src={videoObjectURL} />
+              </div>
+
+              {/* Caption for Video */}
+              <div className="relative mb-4">
+                <div className="relative">
+                  <textarea
+                    ref={videoCaptionRef}
+                    placeholder={`Add a caption for ${selectedVideo.name}...`}
+                    value={videoCaption}
+                    onChange={(e) => setVideoCaption(e.target.value)}
+                    className="w-full p-3 pr-12 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    rows={2}
+                    maxLength={500}
+                  />
+                  <div className="absolute right-2 top-2">
+                    <EmojiButton
+                      onEmojiClick={(emoji) => {
+                        const textarea = videoCaptionRef.current;
+                        if (textarea) {
+                          const start = textarea.selectionStart;
+                          const end = textarea.selectionEnd;
+                          const newValue = videoCaption.slice(0, start) + emoji + videoCaption.slice(end);
+                          setVideoCaption(newValue);
+                          setTimeout(() => {
+                            textarea.focus();
+                            textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+                          }, 0);
+                        }
+                      }}
+                      inputRef={videoCaptionRef}
+                    />
+                  </div>
+                </div>
+                <div className="text-xs text-gray-500 mt-1 text-right">
+                  {videoCaption.length}/500
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-gray-600 truncate flex-1 mr-4">{selectedVideo.name}</div>
+                <div className="flex gap-2 flex-shrink-0">
+                  {uploadingFile ? (
+                    <>
+                      <button
+                        onClick={handleCancelInFlightUpload}
+                        className="px-4 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50"
+                      >
+                        Cancel
+                      </button>
+                      <div className="flex items-center gap-2">
+                        <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                          <div className="h-2 bg-blue-600 rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
+                        </div>
+                        <span className="text-sm text-gray-700 w-10 text-right">{uploadProgress}%</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <button onClick={() => { setSelectedVideo(null); setShowVideoPreviewModal(false); setVideoCaption(''); }} className="px-4 py-2 rounded-lg border">Cancel</button>
+                      <button onClick={handleSendSelectedVideo} className="px-4 py-2 rounded-lg bg-blue-600 text-white">Send</button>
+                    </>
+                  )}
+
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Document Preview Modal */}
+        {showDocumentPreviewModal && selectedDocument && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-md w-full">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-lg font-medium text-gray-700">Document Preview</span>
+                <button
+                  onClick={() => { setSelectedDocument(null); setShowDocumentPreviewModal(false); }}
+                  className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+                >
+                  <FaTimes className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="mb-4 flex items-center gap-3">
+                <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center text-gray-600">📄</div>
+                <div className="min-w-0">
+                  <div className="text-sm font-medium truncate">{selectedDocument.name}</div>
+                  <div className="text-xs text-gray-500 truncate">{selectedDocument.type || 'Document'}</div>
+                </div>
+              </div>
+
+              {/* Caption for Document */}
+              <div className="relative mb-4">
+                <div className="relative">
+                  <textarea
+                    ref={documentCaptionRef}
+                    placeholder={`Add a caption for ${selectedDocument.name}...`}
+                    value={documentCaption}
+                    onChange={(e) => setDocumentCaption(e.target.value)}
+                    className="w-full p-3 pr-12 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    rows={2}
+                    maxLength={500}
+                  />
+                  <div className="absolute right-2 top-2">
+                    <EmojiButton
+                      onEmojiClick={(emoji) => {
+                        const textarea = documentCaptionRef.current;
+                        if (textarea) {
+                          const start = textarea.selectionStart;
+                          const end = textarea.selectionEnd;
+                          const newValue = documentCaption.slice(0, start) + emoji + documentCaption.slice(end);
+                          setDocumentCaption(newValue);
+                          setTimeout(() => {
+                            textarea.focus();
+                            textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+                          }, 0);
+                        }
+                      }}
+                      inputRef={documentCaptionRef}
+                    />
+                  </div>
+                </div>
+                <div className="text-xs text-gray-500 mt-1 text-right">
+                  {documentCaption.length}/500
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
                 {uploadingFile ? (
                   <>
-                    <button 
+                    <button
                       onClick={handleCancelInFlightUpload}
                       className="px-4 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50"
                     >
@@ -11504,154 +11562,68 @@ function AdminAppointmentRow({
                   </>
                 ) : (
                   <>
-                    <button onClick={() => { setSelectedVideo(null); setShowVideoPreviewModal(false); setVideoCaption(''); }} className="px-4 py-2 rounded-lg border">Cancel</button>
-                    <button onClick={handleSendSelectedVideo} className="px-4 py-2 rounded-lg bg-blue-600 text-white">Send</button>
+                    <button onClick={() => { setSelectedDocument(null); setShowDocumentPreviewModal(false); setDocumentCaption(''); }} className="px-4 py-2 rounded-lg border">Cancel</button>
+                    <button onClick={handleSendSelectedDocument} className="px-4 py-2 rounded-lg bg-blue-600 text-white">Send</button>
                   </>
                 )}
-
-                      </div>
-                      </div>
-          </div>
-        </div>
-      )}
-
-      {/* Document Preview Modal */}
-      {showDocumentPreviewModal && selectedDocument && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-md w-full">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-lg font-medium text-gray-700">Document Preview</span>
-              <button
-                onClick={() => { setSelectedDocument(null); setShowDocumentPreviewModal(false); }}
-                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
-              >
-                <FaTimes className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="mb-4 flex items-center gap-3">
-              <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center text-gray-600">📄</div>
-              <div className="min-w-0">
-                <div className="text-sm font-medium truncate">{selectedDocument.name}</div>
-                <div className="text-xs text-gray-500 truncate">{selectedDocument.type || 'Document'}</div>
               </div>
             </div>
-            
-            {/* Caption for Document */}
-            <div className="relative mb-4">
-              <div className="relative">
-                <textarea
-                  ref={documentCaptionRef}
-                  placeholder={`Add a caption for ${selectedDocument.name}...`}
-                  value={documentCaption}
-                  onChange={(e) => setDocumentCaption(e.target.value)}
-                  className="w-full p-3 pr-12 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  rows={2}
-                  maxLength={500}
-                />
-                <div className="absolute right-2 top-2">
-                  <EmojiButton
-                    onEmojiClick={(emoji) => {
-                      const textarea = documentCaptionRef.current;
-                      if (textarea) {
-                        const start = textarea.selectionStart;
-                        const end = textarea.selectionEnd;
-                        const newValue = documentCaption.slice(0, start) + emoji + documentCaption.slice(end);
-                        setDocumentCaption(newValue);
-                        setTimeout(() => {
-                          textarea.focus();
-                          textarea.setSelectionRange(start + emoji.length, start + emoji.length);
-                        }, 0);
-                      }
-                    }}
-                    inputRef={documentCaptionRef}
-                  />
+          </div>
+        )}
+
+        {/* Record Audio Modal */}
+        {showRecordAudioModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-md w-full">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-lg font-medium text-gray-700">Record Audio</span>
+                <button
+                  onClick={() => {
+                    if (isRecording) {
+                      cancelAudioRecording();
+                    } else {
+                      setShowRecordAudioModal(false);
+                    }
+                  }}
+                  className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+                >
+                  <FaTimes className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="flex flex-col items-center justify-center py-6">
+                <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-4 ${isRecording ? 'bg-rose-100 animate-pulse' : 'bg-gray-100'}`}>
+                  <svg className={`w-10 h-10 ${isRecording ? 'text-rose-600' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 1a3 3 0 00-3 3v8a3 3 0 106 0V4a3 3 0 00-3-3z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 10v2a7 7 0 11-14 0v-2" />
+                  </svg>
                 </div>
+                <div className="text-sm text-gray-600 mb-4">
+                  {isRecording ? (
+                    isPaused ?
+                      `${Math.floor(recordingElapsedMs / 60000).toString().padStart(2, '0')}:${Math.floor((recordingElapsedMs % 60000) / 1000).toString().padStart(2, '0')} (Paused)` :
+                      `${Math.floor(recordingElapsedMs / 60000).toString().padStart(2, '0')}:${Math.floor((recordingElapsedMs % 60000) / 1000).toString().padStart(2, '0')}`
+                  ) : 'Ready'}
+                </div>
+                <div className="flex items-center gap-3">
+                  {!isRecording ? (
+                    <button onClick={startAudioRecording} className="px-4 py-2 rounded-lg bg-rose-600 text-white hover:bg-rose-700">Start</button>
+                  ) : (
+                    <>
+                      <button onClick={stopAudioRecording} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Stop & Preview</button>
+                      {isPaused ? (
+                        <button onClick={resumeAudioRecording} className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">Resume</button>
+                      ) : (
+                        <button onClick={pauseAudioRecording} className="px-4 py-2 rounded-lg bg-yellow-600 text-white hover:bg-yellow-700">Pause</button>
+                      )}
+                      <button onClick={cancelAudioRecording} className="px-4 py-2 rounded-lg border">Cancel</button>
+                    </>
+                  )}
+                </div>
+                <div className="text-xs text-gray-500">Your mic input stays on device until you choose to send.</div>
               </div>
-              <div className="text-xs text-gray-500 mt-1 text-right">
-                {documentCaption.length}/500
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              {uploadingFile ? (
-                <>
-                  <button 
-                    onClick={handleCancelInFlightUpload}
-                    className="px-4 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50"
-                  >
-                    Cancel
-                  </button>
-                  <div className="flex items-center gap-2">
-                    <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div className="h-2 bg-blue-600 rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
-                    </div>
-                    <span className="text-sm text-gray-700 w-10 text-right">{uploadProgress}%</span>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <button onClick={() => { setSelectedDocument(null); setShowDocumentPreviewModal(false); setDocumentCaption(''); }} className="px-4 py-2 rounded-lg border">Cancel</button>
-                  <button onClick={handleSendSelectedDocument} className="px-4 py-2 rounded-lg bg-blue-600 text-white">Send</button>
-                </>
-              )}
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Record Audio Modal */}
-      {showRecordAudioModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-md w-full">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-lg font-medium text-gray-700">Record Audio</span>
-              <button
-                onClick={() => {
-                  if (isRecording) {
-                    cancelAudioRecording();
-                  } else {
-                    setShowRecordAudioModal(false);
-                  }
-                }}
-                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
-              >
-                <FaTimes className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="flex flex-col items-center justify-center py-6">
-              <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-4 ${isRecording ? 'bg-rose-100 animate-pulse' : 'bg-gray-100'}`}>
-                <svg className={`w-10 h-10 ${isRecording ? 'text-rose-600' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 1a3 3 0 00-3 3v8a3 3 0 106 0V4a3 3 0 00-3-3z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 10v2a7 7 0 11-14 0v-2" />
-                </svg>
-              </div>
-              <div className="text-sm text-gray-600 mb-4">
-                {isRecording ? (
-                  isPaused ? 
-                    `${Math.floor(recordingElapsedMs / 60000).toString().padStart(2, '0')}:${Math.floor((recordingElapsedMs % 60000) / 1000).toString().padStart(2, '0')} (Paused)` : 
-                    `${Math.floor(recordingElapsedMs / 60000).toString().padStart(2, '0')}:${Math.floor((recordingElapsedMs % 60000) / 1000).toString().padStart(2, '0')}`
-                ) : 'Ready'}
-              </div>
-              <div className="flex items-center gap-3">
-                {!isRecording ? (
-                  <button onClick={startAudioRecording} className="px-4 py-2 rounded-lg bg-rose-600 text-white hover:bg-rose-700">Start</button>
-                ) : (
-                  <>
-                    <button onClick={stopAudioRecording} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Stop & Preview</button>
-                    {isPaused ? (
-                      <button onClick={resumeAudioRecording} className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">Resume</button>
-                    ) : (
-                      <button onClick={pauseAudioRecording} className="px-4 py-2 rounded-lg bg-yellow-600 text-white hover:bg-yellow-700">Pause</button>
-                    )}
-                    <button onClick={cancelAudioRecording} className="px-4 py-2 rounded-lg border">Cancel</button>
-                  </>
-                )}
-              </div>
-              <div className="text-xs text-gray-500">Your mic input stays on device until you choose to send.</div>
-            </div>
-          </div>
-        </div>
-      )}
+        )}
 
       </td>
     </tr>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { FaPhone, FaVideo, FaMicrophone, FaMicrophoneSlash, FaVideoSlash, FaSync, FaExpand, FaCompress, FaDesktop, FaSignLanguage, FaWifi, FaVolumeUp } from 'react-icons/fa';
+import { FaPhone, FaVideo, FaMicrophone, FaMicrophoneSlash, FaVideoSlash, FaSync, FaExpand, FaCompress, FaDesktop, FaSignLanguage, FaWifi, FaVolumeUp, FaWaveSquare } from 'react-icons/fa';
 import UserAvatar from './UserAvatar';
+import { useAudioActivity } from '../hooks/useAudioActivity';
 
 const ActiveCallModal = ({
   callType,
@@ -55,6 +56,10 @@ const ActiveCallModal = ({
   const [forceRender, setForceRender] = useState(0); // Force re-render when screen share state changes
   const isPanningRef = useRef(false); // Track if user is panning
   const lastPanPosRef = useRef({ x: 0, y: 0 }); // Last pan position
+
+  // Audio activity detection
+  const isLocalSpeaking = useAudioActivity(localStream);
+  const isRemoteSpeaking = useAudioActivity(remoteStream);
 
   useEffect(() => {
     setIsVisible(true);
@@ -335,9 +340,9 @@ const ActiveCallModal = ({
       {connectionQuality && (
         <div className="absolute top-16 right-4 z-30 flex items-center gap-2 bg-black bg-opacity-70 rounded-full px-3 py-2">
           <div className={`w-2 h-2 rounded-full ${connectionQuality === 'excellent' ? 'bg-green-500' :
-              connectionQuality === 'good' ? 'bg-green-400' :
-                connectionQuality === 'fair' ? 'bg-yellow-500' :
-                  'bg-red-500'
+            connectionQuality === 'good' ? 'bg-green-400' :
+              connectionQuality === 'fair' ? 'bg-yellow-500' :
+                'bg-red-500'
             }`}></div>
           <span className="text-white text-xs font-medium capitalize">{connectionQuality}</span>
         </div>
@@ -466,8 +471,13 @@ const ActiveCallModal = ({
                   </div>
                 )}
                 {/* Local video label in big view */}
-                <div className="absolute bottom-24 left-4 bg-black bg-opacity-70 rounded-full px-4 py-2 z-20">
+                <div className="absolute bottom-24 left-4 bg-black bg-opacity-70 rounded-full px-4 py-2 z-20 flex items-center gap-2">
                   <p className="text-white text-sm font-medium">You</p>
+                  {isLocalSpeaking && !isMuted && (
+                    <div className="bg-green-500 rounded-full p-1 animate-pulse">
+                      <FaVolumeUp className="text-white text-xs" />
+                    </div>
+                  )}
                 </div>
               </>
             ) : (
@@ -498,8 +508,13 @@ const ActiveCallModal = ({
                   </div>
                 )}
                 {/* Remote video label - show name or fallback */}
-                <div className="absolute bottom-24 left-4 bg-black bg-opacity-70 rounded-full px-4 py-2 z-20">
+                <div className="absolute bottom-24 left-4 bg-black bg-opacity-70 rounded-full px-4 py-2 z-20 flex items-center gap-2">
                   <p className="text-white text-sm font-medium">{otherPartyName || 'Caller'}</p>
+                  {isRemoteSpeaking && !remoteIsMuted && (
+                    <div className="bg-green-500 rounded-full p-1 animate-pulse">
+                      <FaVolumeUp className="text-white text-xs" />
+                    </div>
+                  )}
                 </div>
               </>
             )}
@@ -577,14 +592,21 @@ const ActiveCallModal = ({
                   size="w-32 h-32"
                   textSize="text-4xl"
                   showBorder={true}
-                  className="border-4 border-white shadow-2xl mx-auto mb-4"
+                  className={`border-4 ${isRemoteSpeaking && !remoteIsMuted ? 'border-green-500 shadow-[0_0_20px_rgba(34,197,94,0.6)]' : 'border-white'} shadow-2xl mx-auto mb-4 transition-all duration-300`}
                 />
               ) : (
-                <div className="w-32 h-32 bg-white bg-opacity-20 rounded-full mx-auto mb-4 flex items-center justify-center">
+                <div className={`w-32 h-32 bg-white bg-opacity-20 rounded-full mx-auto mb-4 flex items-center justify-center ${isRemoteSpeaking && !remoteIsMuted ? 'ring-4 ring-green-500 shadow-[0_0_20px_rgba(34,197,94,0.6)]' : ''} transition-all duration-300`}>
                   <FaPhone className="text-6xl" />
                 </div>
               )}
-              <h3 className="text-3xl font-bold mb-2">{otherPartyName || 'Loading...'}</h3>
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <h3 className="text-3xl font-bold">{otherPartyName || 'Loading...'}</h3>
+                {isRemoteSpeaking && !remoteIsMuted && (
+                  <div className="bg-green-500 rounded-full p-1.5 animate-pulse">
+                    <FaVolumeUp className="text-white text-sm" />
+                  </div>
+                )}
+              </div>
               <p className="text-xl">{formatDuration(callDuration)}</p>
               {/* Remote mute indicator for audio calls */}
               {remoteIsMuted && (
@@ -631,8 +653,13 @@ const ActiveCallModal = ({
                       <FaVideoSlash className="text-white text-xl" />
                     </div>
                   )}
-                  <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 rounded-full px-3 py-1">
+                  <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 rounded-full px-3 py-1 flex items-center gap-1">
                     <p className="text-white text-xs font-medium">{otherPartyName || 'Caller'}</p>
+                    {isRemoteSpeaking && !remoteIsMuted && (
+                      <div className="bg-green-500 rounded-full p-0.5 animate-pulse">
+                        <FaVolumeUp className="text-white text-[8px]" />
+                      </div>
+                    )}
                   </div>
                 </>
               ) : (
@@ -671,8 +698,13 @@ const ActiveCallModal = ({
                       <FaVideoSlash className="text-white text-xl" />
                     </div>
                   )}
-                  <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 rounded-full px-3 py-1">
+                  <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 rounded-full px-3 py-1 flex items-center gap-1">
                     <p className="text-white text-xs font-medium">You</p>
+                    {isLocalSpeaking && !isMuted && (
+                      <div className="bg-green-500 rounded-full p-0.5 animate-pulse">
+                        <FaVolumeUp className="text-white text-[8px]" />
+                      </div>
+                    )}
                   </div>
                 </>
               )
@@ -696,8 +728,13 @@ const ActiveCallModal = ({
                     <FaVideoSlash className="text-white text-xl" />
                   </div>
                 )}
-                <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 rounded-full px-3 py-1">
+                <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 rounded-full px-3 py-1 flex items-center gap-1">
                   <p className="text-white text-xs font-medium">{otherPartyName || 'Caller'}</p>
+                  {isRemoteSpeaking && !remoteIsMuted && (
+                    <div className="bg-green-500 rounded-full p-0.5 animate-pulse">
+                      <FaVolumeUp className="text-white text-[8px]" />
+                    </div>
+                  )}
                 </div>
               </>
             ) : (
@@ -720,8 +757,13 @@ const ActiveCallModal = ({
                     <FaVideoSlash className="text-white text-xl" />
                   </div>
                 )}
-                <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 rounded-full px-3 py-1">
+                <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 rounded-full px-3 py-1 flex items-center gap-1">
                   <p className="text-white text-xs font-medium">You</p>
+                  {isLocalSpeaking && !isMuted && (
+                    <div className="bg-green-500 rounded-full p-0.5 animate-pulse">
+                      <FaVolumeUp className="text-white text-[8px]" />
+                    </div>
+                  )}
                 </div>
               </>
             )}
